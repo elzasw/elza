@@ -1,7 +1,9 @@
+import * as permissions from 'actions/user/Permission';
 export enum AuthType {
     PASSWORD = "PASSWORD"
 }
 
+    /*
 export enum PermissionType {
     ADMIN = "ADMIN",
     FUND_RD = "FUND_RD",
@@ -37,6 +39,8 @@ export enum PermissionType {
     GROUP_CONTROL_ENTITITY = "GROUP_CONTROL_ENTITITY",
     FUND_ARR_NODE = "FUND_ARR_NODE",
 }
+    */
+type PermissionType = keyof typeof permissions;
 
 export interface Permission {
     fundIds: number[];
@@ -59,7 +63,7 @@ export interface UserDetail {
     hasArrOutputPage: () => unknown;
     hasArrPage: () => unknown;
     hasFundActionPage: () => unknown;
-    hasOne: () => unknown;
+    hasOne: (permission: PermissionType) => boolean;
     hasRdPage: () => unknown;
     id: number | null;
     isAdmin: () => unknown;

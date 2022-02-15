@@ -11,6 +11,6 @@ import cz.tacr.elza.domain.ArrLevel;
  */
 public interface DesctItemProvider {
 
-    void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion, MultiplItemChangeContext changeContext);
+    void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion, MultipleItemChangeContext changeContext);
 
 }

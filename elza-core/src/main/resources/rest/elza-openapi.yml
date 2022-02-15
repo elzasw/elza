@@ -152,6 +152,28 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /accesspoints/{id}/autoitems:
+    get:
+      summary: Vrátí seznam automaticky generovaných prvků popisu
+      operationId: getAutoitems
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Seznam navržených prvků popisu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultAutoItems"
+        404:
+          description: AP neexistuje
   /accesspoints:
     delete:
       summary: Zneplatnění přístupovych bodu
@@ -231,6 +253,28 @@ paths:
           description: Potvrzení o úspěšné změně stavu revize
         404:
           description: AP nebo revize neexistuje
+  /revision/{id}/autoitems:
+    get:
+      summary: Vrátí seznam automaticky generovaných prvků popisu pro revizi
+      operationId: getRevAutoitems
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Seznam navržených prvků popisu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultAutoItems"
+        404:
+          description: AP neexistuje
   /revision/{id}/part/{partId}:
     delete:
       summary: Smazání části popisu z revize
@@ -734,3 +778,25 @@ components:
         - ACTIVE
         - TO_APPROVE
         - TO_AMEND
+    AutoValue:
+      title: Jeden automaticky generovaný prvek popisu
+      type: object
+      properties:
+        itemTypeId:
+          description: Identifikátor typu prvku popisu
+          type: integer
+          format: int32
+        itemSpecId:
+          description: Identifikátor specifikace prvku popisu
+          type: integer
+          format: int32
+        value:
+          type: string
+          description: Item value
+    ResultAutoItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AutoValue"

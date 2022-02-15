@@ -404,8 +404,8 @@
     <#local level="item">
     <#break>
   <#case "ZP2015_LEVEL_PART">
-    <#local otherlevel="itempart">    
-    <${tagname} level="otherlevel" otherlevel="itempart">
+    <#local level="otherlevel">
+    <#local otherlevel="itempart">
     <#break>  	
   </#switch>
   <${tagname} level="${level}" <#rt>

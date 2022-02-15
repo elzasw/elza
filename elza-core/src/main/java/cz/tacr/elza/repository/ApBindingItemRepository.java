@@ -19,7 +19,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding = :binding AND bi.value = :uuid AND bi.deleteChange IS NULL")
     ApBindingItem findByBindingAndUuid(@Param("binding") ApBinding binding, @Param("uuid") String uuid);
 
-    @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding IN :bindings")
+    @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding IN :bindings AND bi.deleteChange IS NULL")
     List<ApBindingItem> findByBindings(@Param("bindings") Collection<ApBinding> bindingList);
 
     @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding AND bi.deleteChange IS NULL")

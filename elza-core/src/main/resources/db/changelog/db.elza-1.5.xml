@@ -1559,6 +1559,130 @@ where no.level_id = l.level_id
 			DROP INDEX ap_binding_state_access_point_idx</sql>
     </changeSet>
 
+    <changeSet id="20211105113000" author="sergey.iryupin">
+        <addColumn tableName="ap_binding_state">
+            <column name="external_system_id" type="int"/>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ap_binding_state a SET external_system_id = b.external_system_id
+            FROM (SELECT external_system_id, binding_id FROM ap_binding) b
+            WHERE a.binding_id = b.binding_id;</sql>
+        <addNotNullConstraint tableName="ap_binding_state"
+            columnName="external_system_id"  
+            columnDataType="int"/> 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_access_point_idx 
+            ON ap_binding_state(access_point_id,external_system_id)
+			WHERE delete_change_id IS NULL;</sql>
+        <sql dbms="postgresql">DROP INDEX ap_binding_state_access_point_pidx</sql>
+    </changeSet>
+
+    <changeSet id="20211202113000" author="sergey.iryupin">
+        <!-- opravy pro speciální případy -->
+        <sql dbms="postgresql">UPDATE rul_item_spec SET name='blíže neurčený eskymácko-aleutský jazyk' WHERE code='ZP2015_LANGUAGE_154'</sql>
+        <sql dbms="postgresql">UPDATE rul_item_spec SET name='blíže neurčený izolovaný jazyk' WHERE code='ZP2015_LANGUAGE_157'</sql>
+        <!-- změna balíčku -->
+		<sql dbms="postgresql">UPDATE rul_item_type SET package_id = (SELECT package_id FROM rul_package WHERE code = 'CZ_BASE')
+                WHERE code = 'ZP2015_LANGUAGE'</sql>
+        <!-- vytvoření migrační tabulky jazyků -->
+        <sql dbms="postgresql">CREATE TABLE mig_lng_table (src_spec_id INTEGER NOT NULL PRIMARY KEY, trg_spec_id INTEGER);
+            INSERT INTO mig_lng_table
+                SELECT s.item_spec_id, sz.item_spec_id FROM rul_item_spec s
+                LEFT JOIN rul_item_spec sz ON lower(s.name)=lower(sz.name)
+                WHERE s.code LIKE 'ZP2015_LANGUAGE_%' AND sz.code like 'LNG_%'
+                ORDER BY s.item_spec_id</sql>
+        <!-- změna jazykových specifikací na nové -->
+        <sql dbms="postgresql">UPDATE rul_item_type_spec_assign rul SET item_spec_id = mig.trg_spec_id
+                FROM mig_lng_table mig
+                WHERE mig.src_spec_id=rul.item_spec_id</sql>
+        <!-- změna hodnot na nové -->
+		<sql dbms="postgresql">UPDATE arr_item i SET item_spec_id = mig.trg_spec_id
+                FROM mig_lng_table mig
+                WHERE mig.src_spec_id=i.item_spec_id</sql>
+        <!-- závěrečný úklid -->
+		<sql dbms="postgresql">DROP TABLE mig_lng_table</sql>
+        <sql dbms="postgresql">DELETE FROM rul_item_spec WHERE code LIKE 'ZP2015_LANGUAGE_%'</sql>
+		<sql dbms="postgresql">DELETE FROM arr_cached_node</sql>
+    </changeSet>
+
+    <changeSet id="20211210162200" author="sergey.iryupin">
+        <addColumn tableName="ap_external_system">
+            <column name="user_info" type="nvarchar(50)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="user_id" type="int">
+                <constraints nullable="true"
+                foreignKeyName="fk_ext_syncs_queue_item_user"
+                referencedTableName="usr_user"
+                referencedColumnNames="user_id" />
+            </column>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ext_syncs_queue_item i
+                SET user_id = u.user_id
+                FROM usr_user u
+                WHERE i.username = u.username</sql>
+        <dropColumn tableName="ext_syncs_queue_item" columnName="username"/>
+    </changeSet>
+
+    <!-- V 2.3.6, ulozene smazane binding v cache -->
+    <changeSet id="20211215112200" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+    <changeSet id="20211215115000" author="ppyt">
+        <sql dbms="postgresql">CREATE INDEX ap_binding_item_binding_pidx 
+			ON ap_binding_item(binding_id, delete_change_id)
+			WHERE delete_change_id IS NULL</sql>
+    </changeSet>
+    <!-- Oprava nekonzistence v DB, prazdne party bez item -->
+    <changeSet id="20211218223400" author="ppyt">
+       <sql>delete from ap_binding_item where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+       <sql>delete from ap_part where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+    </changeSet>
+    
+    <changeSet id="20220115003800" author="ppyt">
+        <addColumn tableName="ap_external_system">
+            <column name="publish_only_approved" type="boolean"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20220119233800" author="ppyt">
+      <sql dbms="postgresql">insert into arr_data_integer (data_id, value)
+          select ai.data_id as data_id, ai.data_id as value from rul_item_type rit
+          join ap_item ai on ai.item_type_id = rit.item_type_id
+          where rit.code = 'NM_SUP_DIFF'
+      </sql>
+      <sql dbms="postgresql">delete from arr_data_string where data_id in (
+         select ai.data_id as data_id from rul_item_type rit
+         join ap_item ai on ai.item_type_id = rit.item_type_id
+         where rit.code = 'NM_SUP_DIFF' )
+      </sql>
+      <sql dbms="postgresql">update arr_data set data_type_id = (select data_type_id from rul_data_type where code = 'INT')
+         where data_id in (
+           select ai.data_id as data_id from rul_item_type rit
+           join ap_item ai on ai.item_type_id = rit.item_type_id 
+           where rit.code = 'NM_SUP_DIFF'
+           )
+      </sql>
+      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in 
+          (select distinct p.access_point_id from rul_item_type rit
+           join ap_item ai on ai.item_type_id = rit.item_type_id
+           join ap_part p on p.part_id = ai.part_id
+           where rit.code = 'NM_SUP_DIFF'
+           )
+      </sql>
+      <sql dbms="postgresql">update rul_item_type set data_type_id = (select data_type_id from rul_data_type where code = 'INT')
+          where code = 'NM_SUP_DIFF'
+      </sql>
+    </changeSet>
     <changeSet id="20211115162900" author="fantis">
         <createTable tableName="ap_revision">
             <column name="revision_id" type="int">

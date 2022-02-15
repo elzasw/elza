@@ -37,46 +37,114 @@ export function validateDuration(duration) {
 }
 
 /**
+ * Validace jednoho bodu X Y
+ * 
+ * Vstupem je hodnota bez závorek s možnými mezerami před a za
+ * @param point 
+ */
+function validateSinglePoint(point) {
+  if(typeof point !== 'string' && ! (point instanceof String) ) {
+      return false;
+  }
+  while(point.startsWith(' ')) {
+      point = point.substring(1);
+  }
+  while(point.endsWith(' ')) {
+    point = point.substring(0, point.length-1);
+  }
+  let coords = point.split(' ');
+  if(coords.length!==2)  {
+      return false;
+  }
+  if(isNaN(Number(coords[0]))) {
+      return false;
+  }
+  if(isNaN(Number(coords[1]))) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Validate list of points
+ * 
+ * Example: 10 15, 11 15
+ * @param points 
+ */
+function validateListOfPoints(points) {
+    if(typeof points !== 'string' && ! (points instanceof String) ) {
+        return false;
+    }
+
+    let data = points.split(',');
+    if (data.length == 0) {
+        return false;
+    }
+
+    // Kontrola, zda jsou vzdy uvedeny dve souradnice [x y]
+    for(var i = 0; i<data.length; i++) {
+        if(!validateSinglePoint(data[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Validace souřadnice typu bod.
  * @param value
  */
 export function validateCoordinatePoint(value) {
     if (value.indexOf('POINT') === 0) {
-        let left = value.indexOf('(') + 1;
+        let left = value.indexOf('(');
         let right = value.indexOf(')');
-        if (right - left === 0) {
+        if (left<0 || left > right) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, value.indexOf(')') - left).split(' ');
-        if (
-            value === '' ||
-            value === ' ' ||
-            data.length !== 2 ||
-            data[0] == null ||
-            data[0] === '' ||
-            data[1] == null ||
-            data[1] === ''
-        ) {
+        let data = value.substring(left + 1, right);
+        if(!validateSinglePoint(data)) {
             return i18n('subNodeForm.errorPointCoordinates');
         } else {
             return null;
         }
-    } else if (value.indexOf('POLYGON') || value.indexOf('LINESTRING')) {
-        let left = value.indexOf('(') + 1;
+    } else if (value.indexOf('LINESTRING') === 0) {
+        let left = value.indexOf('(');
         let right = value.indexOf(')');
-        if (right - left === 0) {
+        if (left<0 || left > right) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, value.indexOf(')') - left).split(' ');
-        if (
-            value === '' ||
-            value === ' ' ||
-            data.length % 2 !== 0
-        ) {
+        let data = value.substring(left + 1, right);
+        if (!validateListOfPoints(data)) {
             return i18n('subNodeForm.errorPointCoordinates');
-        } else {
-            return null;
         }
+        return null;
+    } else if(value.indexOf('POLYGON') === 0) {
+        let left = value.indexOf('(');
+        let right = value.lastIndexOf(')');
+        if (left<0 || left > right) {
+            return i18n('subNodeForm.validate.value.notEmpty');
+        }
+        let data = value.substring(left + 1, right);
+        // check lines
+        left = data.indexOf('(');
+        let count = 0;
+        while(left>=0) {
+            right = data.indexOf(')');
+            if(right<left) {
+                return i18n('subNodeForm.validate.value.notEmpty');
+            }
+            let points = data.substring(left + 1, right);
+            if (!validateListOfPoints(points)) {
+                return i18n('subNodeForm.errorPointCoordinates');
+            }
+            data = data.substring(right+1);
+            left = data.indexOf('(');
+            count++;
+        }
+        if(count==0) {
+            return i18n('subNodeForm.validate.value.notEmpty');
+        }
+        return null;
     }
     return i18n('subNodeForm.errorPointCoordinates');
 }

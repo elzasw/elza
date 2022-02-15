@@ -166,7 +166,7 @@ public class ArrangementWebsocketController {
 
         List<ArrLevel> newLevels = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
                                                          addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                                                         descItemCopyTypes, null, addLevelParam.getCount());
+                                                         descItemCopyTypes, null, addLevelParam.getCount(), null);
         List<ArrNodeVO> nodes = new ArrayList<>(newLevels.size());
         Collection<TreeNodeVO> nodeClients = null;
 

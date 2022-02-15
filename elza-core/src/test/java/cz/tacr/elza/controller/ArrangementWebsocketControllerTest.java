@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -118,7 +119,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptCreate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
-        waitingForReceipt(receiptCreate);
+        waitingForReceipt(receiptCreate, sessionHandler);
         recepipt = receiptStore.get(receiptCreate.getReceiptId());
         assertNotNull(recepipt);
 
@@ -134,7 +135,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptUpdate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
-        waitingForReceipt(receiptUpdate);
+        waitingForReceipt(receiptUpdate, sessionHandler);
         recepipt = receiptStore.get(receiptUpdate.getReceiptId());
 
         List<UpdateItemResult> updResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
@@ -148,7 +149,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptDelete = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
-        waitingForReceipt(receiptDelete);
+        waitingForReceipt(receiptDelete, sessionHandler);
         recepipt = receiptStore.get(receiptDelete.getReceiptId());
 
         List<UpdateItemResult> delResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
@@ -191,7 +192,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         addLevelParam.setCount(2); // přidat více než 1 úroveň
 
         Receiptable receipt = session.send(ADD_LEVEL_MSG_MAPPING, addLevelParam);
-        waitingForReceipt(receipt);
+        waitingForReceipt(receipt, sessionHandler);
 
         // Monitorování výsledků dotazu
         List<ArrNode> nodes = nodeRepository.findAll();
@@ -217,7 +218,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .replace("{nodeVersion}", nodeVersion.toString());
     }
 
-    private void waitingForReceipt(Receiptable receipt) throws InterruptedException {
+    private void waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
         AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
         receipt.addReceiptTask(() -> {
             logger.debug("Receipt received");
@@ -227,9 +228,13 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
             logger.debug("Receipt lost");
             receiptStatus.set(ReceiptStatus.RCP_LOST);
         });
-        while (receiptStatus.get() == null) {
+        while (receiptStatus.get() == null && !sessionHandler.hasError()) {
             logger.info("Waiting on receipt...");
             Thread.sleep(100);
+        }
+        if (sessionHandler.hasError()) {
+            logger.debug("Receipt error ove WebSocket");            
+            fail("Receipt error over WebSocket");
         }
         assertEquals(ReceiptStatus.RCP_RECEIVED, receiptStatus.get());
     }
@@ -278,6 +283,8 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     class MyStompSessionHandler implements StompSessionHandler {
 
         private Logger logger = LoggerFactory.getLogger(this.getClass());
+        
+        int errorCount = 0;
 
         @Override
         public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
@@ -297,11 +304,17 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         @Override
         public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
             logger.error("Got an exception: ", exception);
+            errorCount++;
         }
 
         @Override
         public void handleTransportError(StompSession session, Throwable exception) {
-            logger.error("Got an exception: ", exception);
+            logger.error("Got an transport error: ", exception);
+            errorCount++;
+        }
+
+        public boolean hasError() {
+            return errorCount > 0;
         }
     }
 

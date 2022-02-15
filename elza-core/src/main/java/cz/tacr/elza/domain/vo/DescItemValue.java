@@ -7,7 +7,6 @@ import cz.tacr.elza.service.FilterTreeService;
 /**
  * Jednoduchý objekt s hodnotou atributu (může obsahovat specifikaci)
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @see FilterTreeService
  * @since 22.03.2016
  */

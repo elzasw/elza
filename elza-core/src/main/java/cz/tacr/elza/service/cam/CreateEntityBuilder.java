@@ -10,6 +10,7 @@ import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.CreateEntityXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityRefXml;
+import cz.tacr.cam.schema.cam.PartsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -47,15 +48,21 @@ public class CreateEntityBuilder extends BatchUpdateBuilder {
     	return er;
     }
 
-    public List<Object> build(List<ApPart> partList,
+    public boolean build(List<ApPart> partList,
                                  Map<Integer, List<ApItem>> itemMap) {
         Validate.isTrue(CollectionUtils.isEmpty(trgList));
+
+        PartsXml xmlParts = createParts(partList, itemMap);
+        // Check if parts exists
+        if(xmlParts==null||xmlParts.getList().size()==0) {
+        	return false;
+        }
 
         this.createEntity = new CreateEntityXml();
         createEntity.setLid("LID" + apState.getAccessPointId());
         createEntity.setEt(new CodeXml(apState.getApType().getCode()));
         createEntity.setEuid(new UuidXml(accessPoint.getUuid()));
-        createEntity.setPrts(createParts(partList, itemMap));
+        createEntity.setPrts(xmlParts);
 
         trgList.add(createEntity);
         
@@ -68,6 +75,6 @@ public class CreateEntityBuilder extends BatchUpdateBuilder {
 			bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_NEW.toString());
 		}
 
-		return trgList;
+		return true;
     }
 }

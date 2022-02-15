@@ -116,7 +116,7 @@ when $ae: Ap($aeParts : parts)
      $i: Item(type == "GEO_TYPE", spec in ("GT_SETTLEMENT")) from $part.items
      $geo: GeoModel(country in ("SK", "SVK", "CZ", "CZE"), parentGeoType not in ("GT_MUNIP", "GT_MUNIPPART", "GT_MUNIPDISTR"))
 then
-    results.addError("Nezaniklá entita v ČR/SR typu nižší sídelní jednotka musí být zařazena pod obec, část obce nebo obec s charakterem okresu.");
+    results.addError("Nezaniklá entita v ČR/SR typu nižší sídelní jednotka musí být zařazena pod vojenský újezd, obec, část obce nebo obec s charakterem okresu.");
 end
 
 /*

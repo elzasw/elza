@@ -538,7 +538,7 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
 
-        daoService.deleteDaoLink(fundVersion, daoLink);
+        daoService.deleteDaoLink(fundVersion, null, daoLink);
     }
 
     /**
@@ -1605,7 +1605,7 @@ public class ArrangementController {
 
 
         List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
-                addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null);
+                addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null, null);
         ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {

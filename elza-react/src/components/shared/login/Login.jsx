@@ -6,7 +6,7 @@ import {checkUserLogged, login} from 'actions/global/login.jsx';
 import {WebApi} from 'actions/index.jsx';
 
 import './Login.scss';
-import ModalDialogWrapper from '../dialog/ModalDialogWrapper';
+import {ModalDialogWrapper} from '../dialog/ModalDialogWrapper';
 import FormInput from 'components/shared/form/FormInput';
 import i18n from '../../i18n';
 import AbstractReactComponent from '../../AbstractReactComponent';

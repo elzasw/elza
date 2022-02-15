@@ -34,7 +34,7 @@ export {default as ContextMenu} from 'components/shared/context-menu/ContextMenu
 export {default as ModalDialog} from 'components/shared/dialog/ModalDialog';
 export {default as WebSocket} from 'components/shared/web-socket/WebSocket';
 // export {default as Login} from 'components/shared/login/Login'; -- Nelze reexportovat Cyklická závislost
-export {default as ModalDialogWrapper} from 'components/shared/dialog/ModalDialogWrapper';
+export {ModalDialogWrapper} from 'components/shared/dialog/ModalDialogWrapper';
 export {default as Autocomplete} from 'components/shared/autocomplete/Autocomplete';
 export {default as Splitter} from 'components/shared/splitter/Splitter';
 // export {default as Scope} from 'components/shared/scope/Scope'; -- Nelze reexportovat Cyklická závislost

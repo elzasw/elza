@@ -182,6 +182,8 @@ public class ArrangementFormService {
 
 	/**
 	 * Hromadná úprava hodnot JP.
+	 * 
+	 * Funkce je volána z UI a respektuje read-only u prvků popisu
 	 *
 	 * @param fundVersionId  identifikátor verze AS
 	 * @param params         parametry pro úpravu
@@ -231,6 +233,19 @@ public class ArrangementFormService {
 		return descItem;
 	}
 
+	/**
+	 * Hromadná úprava prvků popisu
+	 * 
+	 * Funkce je volána z UI a respektuje read-only u prvků popisu
+	 * 
+	 * @param fundVersion
+	 * @param node
+	 * @param nodeVersion
+	 * @param createItems
+	 * @param updateItems
+	 * @param deleteItems
+	 * @return
+	 */
 	private List<ArrDescItem> updateDescItems(final ArrFundVersion fundVersion,
 											  final ArrNode node,
 											  final Integer nodeVersion,
@@ -254,12 +269,12 @@ public class ArrangementFormService {
 		List<ArrDescItem> deletedItems = null;
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-            deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true);
+            deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true, false);
 			result.addAll(deletedItems);
 		}
 
 		if (CollectionUtils.isNotEmpty(updateItems)) {
-			updatedItems = descriptionItemService.updateDescriptionItems(updateItems, fundVersion, change);
+			updatedItems = descriptionItemService.updateDescriptionItems(updateItems, fundVersion, change, false);
 			result.addAll(updatedItems);
 		}
 

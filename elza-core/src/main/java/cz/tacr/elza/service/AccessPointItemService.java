@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
@@ -644,6 +645,10 @@ public class AccessPointItemService {
                                   final String partTypeCode) {
         return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes,
                                                                                   partTypeCode);
+    }
+
+    public List<ApItem> findItems(ApAccessPoint accessPoint) {
+        return itemRepository.findValidItemsByAccessPoint(accessPoint);
     }
 
     public static void normalize(ArrDataUnitdate aeDataUnitdate) {

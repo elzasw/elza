@@ -29,7 +29,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -81,7 +81,7 @@ public abstract class BulkAction {
      * 
      * This can speed up processing of operation.
      */
-    protected MultiplItemChangeContext multipleItemChangeContext = null;
+    protected MultipleItemChangeContext multipleItemChangeContext = null;
 
 	/**
 	 * Změna
@@ -161,7 +161,8 @@ public abstract class BulkAction {
             } else {
                 result = descriptionItemService.updateValueAsNewVersion(version, getChange(),
                                                                         descItem,
-                                                                        multipleItemChangeContext);
+                                                                        multipleItemChangeContext,
+                                                                        false);
             }
             multipleItemChangeContext.flushIfNeeded();
         }
@@ -242,6 +243,6 @@ public abstract class BulkAction {
     public void deleteDescItem(ArrDescItem oldDescItem) {
         List<ArrDescItem> items = Collections.singletonList(oldDescItem);
         descriptionItemService.deleteDescriptionItems(items, oldDescItem.getNode(), getFundVersion(), getChange(),
-                                                      true);
+                                                      true, false);
     }
 }

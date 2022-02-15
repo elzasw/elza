@@ -1094,9 +1094,9 @@ class DescItemType extends AbstractReactComponent {
                         <NoFocusButton
                             key="upload"
                             onClick={() => {this.showImportDialog()}}
-                            title={i18n('subNodeForm.descItemType.title.add')}
+                            title={i18n('subNodeForm.descItemType.title.importCoord')}
                         >
-                            <Icon glyph="fa-upload" />
+                            <Icon glyph="fa-file" />
                         </NoFocusButton>,
                         <FormInput
                             key="upload-field"

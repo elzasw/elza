@@ -23,17 +23,21 @@ public enum RegistryCode implements ErrorCode {
      */
     CANT_DELETE_PREFERRED_NAME,
 
-
     /**
      * Nelze migrovat přístupový bod.
      */
     CANT_MIGRATE_AP,
 
     /**
+     * Cílová entita je schválená nebo čeká na schválení a nelze ji měnit.
+     */
+    CANT_MERGE,
+
+    /**
      * Nalezeno použití hesla v návazné tabulce.
      */
     EXIST_FOREIGN_DATA,
-    
+
     /**
      * Existuje vazba z osoby
      */

@@ -59,7 +59,7 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({store: 'app', ...data}));
                 break;
             case 'REGISTRY_REGION':
-                dispatch(storeLoad({store: 'app', ...data}));
+                dispatch(storeLoad({store: 'app', registryDetail: {...data}}));
                 if (switchView) {
                     dispatch(routerNavigate('/registry'));
                     dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));

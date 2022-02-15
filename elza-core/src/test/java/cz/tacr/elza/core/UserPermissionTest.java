@@ -79,7 +79,8 @@ public class UserPermissionTest extends AbstractTest {
 
         // NEW -> TO_APPROVE, TO_AMEND
         List<StateApproval> states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 2);
+        Assert.assertTrue(states.size() == 3);
+        Assert.assertTrue(states.contains(StateApproval.NEW));
         Assert.assertTrue(states.contains(StateApproval.TO_APPROVE));
         Assert.assertTrue(states.contains(StateApproval.TO_AMEND));
 
@@ -93,7 +94,8 @@ public class UserPermissionTest extends AbstractTest {
         // TO_AMEND -> NEW, TO_APPROVE
         state.setStateApproval(StateApproval.TO_AMEND);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 2);
+        Assert.assertTrue(states.size() == 3);
+        Assert.assertTrue(states.contains(StateApproval.TO_AMEND));
         Assert.assertTrue(states.contains(StateApproval.NEW));
         Assert.assertTrue(states.contains(StateApproval.TO_APPROVE));
 
@@ -128,7 +130,8 @@ public class UserPermissionTest extends AbstractTest {
         // REV_NEW -> REV_PREPARED
         state.setStateApproval(StateApproval.REV_NEW);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
+        Assert.assertTrue(states.size() == 2);
+        Assert.assertTrue(states.contains(StateApproval.REV_NEW));
         Assert.assertTrue(states.contains(StateApproval.REV_PREPARED));
 
         // REV_PREPARED -> REV_AMEND
@@ -140,7 +143,8 @@ public class UserPermissionTest extends AbstractTest {
         // REV_AMEND -> REV_PREPARED
         state.setStateApproval(StateApproval.REV_AMEND);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
+        Assert.assertTrue(states.size() == 2);
+        Assert.assertTrue(states.contains(StateApproval.REV_AMEND));
         Assert.assertTrue(states.contains(StateApproval.REV_PREPARED));
     }
 

@@ -196,7 +196,7 @@
 	<detail>
 		<band height="200" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement x="0" y="0" width="142" height="30" uuid="a9c7279e-d0de-489f-add5-486585a57a06">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
@@ -299,10 +299,9 @@
 				</textElement>
 				<textFieldExpression><![CDATA[" ukl. j. / poř. č.:"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement positionType="Float" x="275" y="130" width="268" height="30" uuid="ab824ceb-9561-45e4-a280-21110de4d211">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
-					<printWhenExpression><![CDATA[$P{fund}.getFundNumber()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font size="12" isBold="false" pdfEncoding="Cp1250"/>

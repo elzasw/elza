@@ -28,15 +28,6 @@ then
 	approach.addDescItem("ZP2015_ARRANGEMENT_TYPE", "ZP2015_ARRANGEMENT_MAN");
 end
 
-rule "Dílčí list"
-when
-	$level: NewLevel( parent!=null && $items: parent.descItems )
-    DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_ROOT" ) from $items
-then
-	NewLevelApproach approach = results.create("Dílčí list");
-	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SECTION");
-end
-
 rule "Série"
 when
 	$level: NewLevel( parent!=null && $items: parent.descItems )

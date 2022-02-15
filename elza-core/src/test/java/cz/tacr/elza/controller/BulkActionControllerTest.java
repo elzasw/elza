@@ -201,7 +201,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         int fundVersionId = importAndGetVersionId();
         BulkActionRunVO state;
 
-        state = get((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR), BULK_ACTION_QUEUE).getBody().as(BulkActionRunVO.class);
+        state = get((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR), BULK_ACTION_QUEUE).getBody().as(BulkActionRunVO.class);
         int actionId = state.getId();
         Assert.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
 

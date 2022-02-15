@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller;
 
-
-import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
@@ -19,7 +17,6 @@ import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import static cz.tacr.elza.repository.ExceptionThrow.ruleSet;
-
 
 /**
  * Test for rule controller

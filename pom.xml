@@ -681,6 +681,10 @@
             <id>jaspersoft-third-party-ce</id>
             <url>http://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
         </repository>
+        <repository>
+            <id>lc-public-release</id>
+            <url>https://www.lightcomp.cz/releases/repository/lc-public-release/</url>
+        </repository>
     </repositories>
 
 </project>

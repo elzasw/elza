@@ -36,39 +36,56 @@ const DIRECTION = {
     DESC: 'DESC',
 };
 
-const allowedDatatypes = ['INT', 'STRING', 'TEXT', 'UNITDATE', 'FORMATTED_TEXT', 'DECIMAL'];
+// const allowedDatatypes = ['INT', 'STRING', 'TEXT', 'UNITDATE', 'FORMATTED_TEXT', 'DECIMAL'];
+
+// const RULE_ID_ZP2015 = 2;
 
 class PersistentSortForm extends AbstractReactComponent {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         node: PropTypes.object,
+        fund: PropTypes.object,
     };
 
     static FORM = 'persistentSortForm';
 
     componentDidMount = () => {
+        const { fund } = this.props;
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
+        this.getItemTypeCodesByRuleSet(fund.activeVersion.ruleSetId);
     };
 
-    findDataTypeById = (rulDataTypes, id) => {
-        return rulDataTypes.find(dataType => dataType.id === id);
-    };
-
-    filterDescItems = (descItems, rulDataTypes, allowedDatatypes) => {
-        return descItems.filter(item => {
-            const dataType = this.findDataTypeById(rulDataTypes, item.dataTypeId);
-            let find = allowedDatatypes.find(allowedDataType => {
-                return dataType && dataType.code === allowedDataType;
+    getItemTypeCodesByRuleSet = (ruleSetId) => {
+        WebApi.getItemTypeCodesByRuleSet(ruleSetId).then(items => {
+            this.setState({
+                itemTypeCodes: items
             });
-            return !!find;
+        });
+    };
+
+    filterDescItems = (descItems, itemTypeCodes) => {
+        return descItems.filter(item => {
+            if (itemTypeCodes !== undefined) {
+                return itemTypeCodes.indexOf(item.code) != -1;
+            }
+            return false;
         });
     };
 
     render() {
-        const {descItemTypes, rulDataTypes, itemType, submitting} = this.props;
+        const {descItemTypes, itemType, submitting} = this.props;
 
-        const filteredDescItems = this.filterDescItems(descItemTypes.items, rulDataTypes.items, allowedDatatypes);
+        const {itemTypeCodes} = this.state;
+
+        const filteredDescItems = this.filterDescItems(descItemTypes.items, itemTypeCodes);
+
+        filteredDescItems.sort((a, b) => a.name.localeCompare(b.name));
 
         return (
             <Form>

@@ -45,6 +45,13 @@ public class ApBindingState implements AccessPointCacheSerializable {
     @Column(updatable = false, insertable = false)
     private Integer accessPointId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
+    @JoinColumn(name = "externalSystemId", nullable = false)
+    private ApExternalSystem apExternalSystem;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer externalSystemId;
+
     @Column(length = StringLength.LENGTH_50)
     private String extState;
 
@@ -67,7 +74,6 @@ public class ApBindingState implements AccessPointCacheSerializable {
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
     private SyncState syncOk;
-
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -126,6 +132,19 @@ public class ApBindingState implements AccessPointCacheSerializable {
         } else {
             return null;
         }
+    }
+
+    public ApExternalSystem getApExternalSystem() {
+        return apExternalSystem;
+    }
+
+    public void setApExternalSystem(ApExternalSystem apExternalSystem) {
+        this.apExternalSystem = apExternalSystem;
+        this.externalSystemId = apExternalSystem != null ? apExternalSystem.getExternalSystemId() : null;
+    }
+
+    public Integer getExternalSystemId() {
+        return externalSystemId;
     }
 
     public String getExtState() {

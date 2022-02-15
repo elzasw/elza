@@ -101,8 +101,8 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
     @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
     private Integer dataId;
 
-    @Column(name = FIELD_READ_ONLY, nullable = false, updatable = false, insertable = false)
-    private Boolean readOnly;
+    @Column(name = FIELD_READ_ONLY, nullable = false)
+    private Boolean readOnly = false;
 
 	/**
 	 * Default constructor
@@ -130,6 +130,7 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
 		this.itemType = src.itemType;
 		this.itemTypeId = src.itemTypeId;
 		this.position = src.position;
+		this.readOnly = src.readOnly;
 	}
 
     @Field

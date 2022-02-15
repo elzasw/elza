@@ -1,7 +1,5 @@
 package cz.tacr.elza.service.cache;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -10,7 +8,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -22,6 +22,8 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
@@ -64,18 +66,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
-
-    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-    private final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
-    private final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
 
     private final ObjectMapper mapper;
 
@@ -105,9 +101,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
+    
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
-     * MaximĂˇlnĂ­ poÄŤet AP, kterĂ© se majĂ­ dĂˇvkovÄ› zpracovĂˇvat pro
+     * Maximální počet AP, které se mají dávkově zpracovávat pro
      * synchronizaci.
      */
     @Value("${elza.ap.cache.batchsize:800}")
@@ -130,32 +129,27 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     /**
-     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
+     * Synchronizace záznamů v databázi.
      *
-     * SynchronnĂ­ metoda volanĂˇ z transakce.
+     * Synchronní metoda volaná z transakce.
      */
-    public void syncCache() {
-        writeLock.lock();
-        try {
-            logger.info("SpuĹˇtÄ›nĂ­ synchronizace cache pro AP");
-            int off = 0;
-            Integer numProcessed;
-            do {
-                TransactionTemplate tt = new TransactionTemplate(txManager);
-                final int off2 = off;
-                numProcessed = tt.execute(t -> syncCacheInternal(off2));
-                off += numProcessed;
-            } while (numProcessed > 0);
+    synchronized public void syncCache() {
+		logger.info("Spuštění - synchronizace cache pro AP");
+		int off = 0;
+		Integer numProcessed;
+		do {
+			TransactionTemplate tt = new TransactionTemplate(txManager);
+			final int off2 = off;
+			numProcessed = tt.execute(t -> syncCacheInternal(off2));
+			off += numProcessed;
+		} while (numProcessed > 0);
 
-            logger.info("VĹˇechny AP jsou synchronizovĂˇny");
-            logger.info("UkonÄŤenĂ­ synchronizace cache pro AP");
-        } finally {
-            writeLock.unlock();
-        }
+		logger.info("Všechny AP jsou synchronizovány");
+		logger.info("Ukončení synchronizace cache pro AP");
     }
 
     /**
-     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
+     * Synchronizace záznamů v databázi.
      * 
      * @param offset
      * @return Number of processed items
@@ -265,15 +259,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
-        writeLock.lock();
-        try {
-            ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-            if (oldApCachedAccessPoint != null) {
-                cachedAccessPointRepository.delete(oldApCachedAccessPoint);
-            }
-            processNewAPs(Collections.singletonList(accessPointId));
-        } finally {
-            writeLock.unlock();
+    	
+        //flush a batch of updates and release memory:
+        this.entityManager.flush();
+        this.entityManager.clear();
+    
+        synchronized (this){
+			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+			if (oldApCachedAccessPoint != null) {
+				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+			}
+			processNewAPs(Collections.singletonList(accessPointId));
         }
     }
 
@@ -328,7 +324,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return partMap;
     }
 
-    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
+    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList,
+    		Map<Integer, CachedPart> partMap) {
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apItems)) {
             for (ApItem item : apItems) {
@@ -404,17 +401,26 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        readLock.lock();
-        try {
-            ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+		ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+		CachedAccessPoint cachedAccessPoint = null;
+		if (apCachedAccessPoint != null) {
+			cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+		}
+		return cachedAccessPoint;
+    }
+
+    @Transactional
+    public List<CachedAccessPoint> findCachedAccessPoints(Collection<Integer> accessPointIds) {
+        List<CachedAccessPoint> cachedAccessPoints = new ArrayList<>(accessPointIds.size()); 
+        List<ApCachedAccessPoint> apCachedAccessPoints = cachedAccessPointRepository.findByAccessPointIds(accessPointIds);
+        for (ApCachedAccessPoint apCachedAccessPoint : apCachedAccessPoints) {
             CachedAccessPoint cachedAccessPoint = null;
             if (apCachedAccessPoint != null) {
                 cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+                cachedAccessPoints.add(cachedAccessPoint);
             }
-            return cachedAccessPoint;
-        } finally {
-            readLock.unlock();
         }
+        return cachedAccessPoints;
     }
 
     /**
@@ -447,18 +453,54 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             ApScope scope = entityManager.getReference(ApScope.class, state.getScopeId());
             state.setScope(scope);
         }
+        
+        Map<Integer, ApPart> partMap =  new HashMap<>();
+        Map<Integer, ApItem> itemMap =  new HashMap<>();
+        
         if (cap.getParts() != null) {
+        	// restore parts
+        	StaticDataProvider sdp = staticDataService.getData();
+        	
             for (CachedPart part : cap.getParts()) {
                 ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+                partMap.put(part.getPartId(), apPart);
 
                 if (part.getItems() != null) {
+                	// Copy items to new list and sort
+                	List<ApItem> items = new ArrayList<>(part.getItems().size());
+                	
                     for (ApItem item : part.getItems()) {
+                    	itemMap.put(item.getItemId(), item);
+                    	
                         item.setPart(apPart);
                         item.setCreateChange(entityManager.getReference(ApChange.class, item.getCreateChangeId()));
                         if (item.getDeleteChangeId() != null) {
                             item.setDeleteChange(entityManager.getReference(ApChange.class, item.getDeleteChangeId()));
                         }
+                        ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+                        Validate.notNull(itemType, "Item type not found, itemTypeId: %s", item.getItemTypeId());
+                       	item.setItemType(itemType.getEntity());
+
+                        if(item.getItemSpecId()!=null) {
+                        	RulItemSpec itemSpec = sdp.getItemSpecById(item.getItemSpecId());
+                        	Validate.notNull(itemSpec, "Item specification not found, itemSpecId: %s", item.getItemSpecId());
+                       		item.setItemSpec(itemSpec);
+                        }
+                        items.add(item);
                     }
+                    // sort items
+                    items.sort((a,b) -> {
+                    	Integer aViewOrder = a.getItemType().getViewOrder();
+                    	Integer bViewOrder = b.getItemType().getViewOrder();
+                    	int ret = aViewOrder.compareTo(bViewOrder);
+                    	if(ret==0) {
+                    		aViewOrder = a.getPosition();
+                    		bViewOrder = b.getPosition();
+                    		ret = aViewOrder.compareTo(bViewOrder);
+                    	}
+                    	return ret;
+                    });
+                    part.setItems(items);
                 }
             }
         }
@@ -475,6 +517,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             bs.setBinding(b);
             bs.setCreateChange(entityManager.getReference(ApChange.class, bs.getCreateChangeId()));
             if (bs.getDeleteChangeId() != null) {
+            	// TODO: Vymazane bindingState nemaji byt v cache
                 bs.setDeleteChange(entityManager.getReference(ApChange.class, bs.getDeleteChangeId()));
             }
             if (bs.getSyncChangeId() != null) {
@@ -484,7 +527,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             // set items
             List<ApBindingItem> bil = cachedBinding.getBindingItemList();
             if (bil != null) {
-                restoreLinks(b, bil);
+                restoreLinks(b, bil, partMap, itemMap);
             }
         }
         /*
@@ -516,18 +559,25 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }*/
     }
 
-    private void restoreLinks(ApBinding b, List<ApBindingItem> bil) {
+    private void restoreLinks(ApBinding b, List<ApBindingItem> bil, 
+    		Map<Integer, ApPart> partMap, Map<Integer, ApItem> itemMap) {
         for (ApBindingItem bi : bil) {
             bi.setBinding(b);
             bi.setCreateChange(entityManager.getReference(ApChange.class, bi.getCreateChangeId()));
             if (bi.getDeleteChangeId() != null) {
+            	// TODO: Vymazane bindingItem nemaji byt v cache
                 bi.setDeleteChange(entityManager.getReference(ApChange.class, bi.getDeleteChangeId()));
             }
             if (bi.getItemId() != null) {
-                bi.setItem(entityManager.getReference(ApItem.class, bi.getItemId()));
+            	ApItem item = itemMap.get(bi.getItemId());
+            	Validate.notNull(item, "Referenced item not found, itemId: %s", bi.getItemId());
+            	
+                bi.setItem(item);
             }
             if (bi.getPartId() != null) {
-                bi.setPart(entityManager.getReference(ApPart.class, bi.getPartId()));
+            	ApPart part = partMap.get(bi.getPartId());
+            	Validate.notNull(part, "Referenced part not found, partId: %s", bi.getPartId());
+                bi.setPart(part);
             }
         }
 
@@ -566,6 +616,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         // validate parts
         CachedPart prefPart = null;
         Set<Integer> partIds = new HashSet<>();
+        Set<Integer> itemIds = new HashSet<>();
         for (CachedPart cachedPart : cachedAccessPoint.getParts()) {
             if (cachedPart.getDeleteChangeId() != null) {
                 Validate.isTrue(cachedPart.getDeleteChangeId() == null,
@@ -588,7 +639,20 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                 cachedAccessPoint.getAccessPointId(),
                                 cachedPart.getPartId());
             }
-        }
+            for(ApItem item: cachedPart.getItems()) {
+            	if(item.getDeleteChangeId()!=null||item.getDeleteChange()!=null) {
+                    Validate.isTrue(false,
+                            "Deleted item cannot be cached, accessPointId=%s",
+                            cachedAccessPoint.getAccessPointId());            		
+            	}
+            	if(!itemIds.add(item.getItemId())) {
+                    Validate.isTrue(false,
+                            "Duplicated item in cache, accessPointId=%s, itemId=%s",
+                            cachedAccessPoint.getAccessPointId(),
+                            item.getItemId());
+            	}
+            }
+        }      
         // validate preferred name
         if (prefPart == null) {
             Validate.notNull(prefPart, "Missing preferred parts, accessPointId=%s",
@@ -600,6 +664,57 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                             "Invalid prefName type, accessPointId=%s, partId=%s",
                             cachedAccessPoint.getAccessPointId(),
                             prefPart.getPartId());
+        }
+        
+        // Validate bindings
+        List<CachedBinding> bindings = cachedAccessPoint.getBindings();
+        if(bindings!=null) {
+        	for(CachedBinding binding: bindings) {
+        		ApBindingState bs = binding.getBindingState();
+        		if(bs==null) {
+                    Validate.notNull(bs, "Binding without BindingState, accessPointId=%s",
+                            cachedAccessPoint.getAccessPointId());        			
+        		}
+        		if(bs.getDeleteChangeId()!=null||bs.getDeleteChange()!=null) {
+                    Validate.isTrue(false,
+                            "Deleted bindingState cannot be cached, accessPointId=%s",
+                            cachedAccessPoint.getAccessPointId());        			
+        		}
+        		// check items and parts
+        		List<ApBindingItem> bindingItems = binding.getBindingItemList();
+        		if(bindingItems!=null) {
+        			for(ApBindingItem bi: bindingItems) {
+        				if(bi.getDeleteChange()!=null||bi.getDeleteChangeId()!=null) {
+                            Validate.isTrue(false,
+                                    "Deleted bindingItem cannot be cached, accessPointId=%s",
+                                    cachedAccessPoint.getAccessPointId());
+        				}
+        				// check existence of part or item
+        				if(bi.getItemId()!=null) {
+        					if(!itemIds.contains(bi.getItemId())) {
+        						Validate.isTrue(false, "BindigItem is referencing non existing item, accessPointId=%s",
+        								cachedAccessPoint.getAccessPointId());
+        					} 
+        				} else {
+        					if(bi.getItem()!=null) {
+        						Validate.isTrue(false, "BindigItem is referencing item without id, accessPointId=%s",
+        								cachedAccessPoint.getAccessPointId());        							
+        					}        					
+        				}
+        				if(bi.getPartId()!=null) {
+        					if(!partIds.contains(bi.getPartId())) {
+        						Validate.isTrue(false, "BindigItem is referencing non existing part, accessPointId=%s",
+        								cachedAccessPoint.getAccessPointId());
+        					}
+        				} else {
+        					if(bi.getPart()!=null) {
+        						Validate.isTrue(false, "BindigItem is referencing part without id, accessPointId=%s",
+        								cachedAccessPoint.getAccessPointId());        							
+        					}        					
+        				}
+        			}
+        		}
+        	}
         }
     }
 

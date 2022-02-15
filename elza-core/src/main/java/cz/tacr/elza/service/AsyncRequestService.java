@@ -271,8 +271,18 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 .orElseThrow(bulkAction(bulkActionId));
 
         ArrBulkActionRun.State originalState = bulkActionRun.getState();
+        
+        if(originalState.equals(ArrBulkActionRun.State.FINISHED)||
+        		originalState.equals(ArrBulkActionRun.State.ERROR)||
+        		originalState.equals(ArrBulkActionRun.State.INTERRUPTED)
+        		) {
+        	// action already finished
+        	return;
+        }
 
-        if (!originalState.equals(ArrBulkActionRun.State.WAITING) && !originalState.equals(ArrBulkActionRun.State.PLANNED) && !originalState.equals(ArrBulkActionRun.State.RUNNING)) {
+        if (!originalState.equals(ArrBulkActionRun.State.WAITING) && 
+        		!originalState.equals(ArrBulkActionRun.State.PLANNED) && 
+        		!originalState.equals(ArrBulkActionRun.State.RUNNING)) {
             throw new IllegalArgumentException("Nelze přerušit hromadnou akci ve stavu " + originalState + "!");
         }
 

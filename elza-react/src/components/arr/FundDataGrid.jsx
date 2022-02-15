@@ -538,7 +538,7 @@ class FundDataGrid extends AbstractReactComponent {
         });
 
 
-        WebApi.getItemTypeCodesByRuleSet(rule.code).then(items => {
+        WebApi.getItemTypeCodesByRuleSet(rule.id).then(items => {
             // this.setState({itemTypeCodes: items});
             // const {itemTypeCodes} = items;
             this.props.dispatch(
