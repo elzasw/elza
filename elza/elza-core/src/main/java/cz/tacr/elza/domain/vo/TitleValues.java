@@ -1,7 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
@@ -9,9 +8,7 @@ import java.util.TreeSet;
  */
 public class TitleValues {
 
-    private static final Comparator<TitleValue> TITLE_VALUE_COMPARATOR = Comparator.comparing(TitleValue::getPosition);
-
-    private final TreeSet<TitleValue> values = new TreeSet<>(TITLE_VALUE_COMPARATOR);
+    private final TreeSet<TitleValue> values = new TreeSet<>();
 
     public TreeSet<TitleValue> getValues() {
         return values;

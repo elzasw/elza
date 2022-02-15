@@ -129,7 +129,7 @@ class FundTreeMain extends React.Component {
             modalDialogShow(
                 this,
                 i18n('arr.functions.persistentSort'),
-                <PersistentSortDialog versionId={fund.versionId} node={node} />,
+                <PersistentSortDialog versionId={fund.versionId} fund={fund} node={node} />,
             ),
         );
     };

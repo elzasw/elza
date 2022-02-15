@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Internal service for description items.
@@ -51,12 +52,30 @@ public class DescriptionItemServiceInternal {
      */
     public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
         Validate.notNull(lockChange);
+        Validate.notNull(node);
         List<ArrDescItem> itemList;
         itemList = descItemRepository.findByNodeAndChange(node, lockChange);
         return itemList;
     }
 
-    public TitleValue createTitleValue(ArrDescItem descItem, final boolean dataExport) {
+    /**
+     * Return list of description items for node
+     * 
+     * Description items are returned including data
+     * 
+     * Method will return only valid / non deleted items.
+     * 
+     * @param node
+     * @return
+     */
+    public List<ArrDescItem> getDescItems(final ArrNode node) {
+        Validate.notNull(node);
+        List<ArrDescItem> itemList;
+        itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+        return itemList;
+    }
+
+    public TitleValue createTitleValue(ArrDescItem descItem, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {
         // prepare item specification if present
         RulItemSpec itemSpec = null;
         if (descItem.getItemSpecId() != null) {
@@ -64,7 +83,7 @@ public class DescriptionItemServiceInternal {
             itemSpec = staticData.getItemSpecById(descItem.getItemSpecId());
         }
         // create new title value
-        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec, dataExport);
+        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec, accessPointNames, dataExport);
         // set common values
         titleValue.setPosition(descItem.getPosition());
         if (itemSpec != null) {
@@ -79,7 +98,7 @@ public class DescriptionItemServiceInternal {
         return titleValue;
     }
 
-    private TitleValue createTitleValueInternal(ArrData data, RulItemSpec itemSpec, final boolean dataExport) {
+    private TitleValue createTitleValueInternal(ArrData data, RulItemSpec itemSpec, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {
         // handle undefined data
         if (data == null) {
             return new TitleValue(ArrangementService.UNDEFINED);
@@ -91,8 +110,9 @@ public class DescriptionItemServiceInternal {
             return new TitleValue(itemSpec.getName());
         case RECORD_REF: {
             ArrDataRecordRef apData = (ArrDataRecordRef) data;
-            //TODO: smazáno - metoda pro získání jména
-            TitleValue value = new TitleValue("tempValue");
+            ApIndex apIndex = accessPointNames.get(apData.getRecordId());
+            String title = apIndex == null? "unknownName" : apIndex.getValue();  
+            TitleValue value = new TitleValue(title);
             if (dataExport) {
                 value.setEntityId(apData.getRecord().getAccessPointId());
             }

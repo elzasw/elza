@@ -166,6 +166,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -344,13 +345,6 @@ public class ClientFactoryVO {
         Assert.notNull(template, "Šablona musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(template, RulTemplateVO.class);
-    }
-
-    private void nameBuilderHelper(final StringBuilder a, final String b) {
-        if (b != null) {
-            a.append(b);
-            a.append(" ");
-        }
     }
 
     /**
@@ -846,9 +840,12 @@ public class ClientFactoryVO {
             SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 StaticDataProvider sdp = staticDataService.getData();
-                List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
-                        .map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId())
-                        .collect(Collectors.toList());
+                List<Integer> itemSpecsIds = new ArrayList<>();
+                for (FavoriteItem fi : setting.getFavoriteItems()) {
+                    RulItemSpec ris = sdp.getItemSpecByCode(fi.getValue());
+                    Validate.notNull(ris);
+                    itemSpecsIds.add(ris.getItemSpecId());
+                }
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
@@ -1867,22 +1864,24 @@ public class ClientFactoryVO {
 
         ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
 
-        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-        String url = daoService.getDaoUrl(arrDao, digitalRepository);
-        vo.setUrl(url);
-
+        ArrDaoLink daoLink;
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
         if (CollectionUtils.isNotEmpty(daoLinkList)) {
             if (daoLinkList.size() > 1) {
                 throw new SystemException("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
             }
-            final ArrDaoLink daoLink = daoLinkList.iterator().next();
+            daoLink = daoLinkList.iterator().next();
 
             ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
 
             vo.setDaoLink(daoLinkVo);
+        } else {
+        	daoLink = null;
         }
 
+        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
+        String url = daoService.getDaoUrl(arrDao, daoLink, digitalRepository.getViewDaoUrl());
+        vo.setUrl(url);
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);

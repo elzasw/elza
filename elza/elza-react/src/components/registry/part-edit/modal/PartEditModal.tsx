@@ -5,7 +5,7 @@ import { PartType } from "api/generated/model";
 import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
 import i18n from "components/i18n";
 import { Loading } from 'components/shared';
-import ModalDialogWrapper from 'components/shared/dialog/ModalDialogWrapper';
+import { ModalDialogWrapper } from 'components/shared/dialog/ModalDialogWrapper';
 import { Button } from "components/ui";
 import arrayMutators from 'final-form-arrays';
 import React, { FC, useEffect, useState } from 'react';
@@ -16,9 +16,9 @@ import debounce from 'shared/utils/debounce';
 import storeFromArea from 'shared/utils/storeFromArea';
 import { DetailStoreState } from 'types';
 import { AppState } from 'typings/store';
+import { ApItemVO } from "../../../../api/ApItemVO";
 import { AP_VIEW_SETTINGS } from '../../../../constants';
 import { getUpdatedForm, getValueChangeMutators, PartEditForm } from '../form';
-import {ApItemVO} from "../../../../api/ApItemVO";
 
 type Props = {
     partTypeId: number;

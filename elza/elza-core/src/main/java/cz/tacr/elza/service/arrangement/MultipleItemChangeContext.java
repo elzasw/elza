@@ -21,7 +21,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 
 @Component
 @Scope("prototype")
-public class MultiplItemChangeContext implements BatchChangeContext {
+public class MultipleItemChangeContext implements BatchChangeContext {
 
     final private RuleService ruleService;
     final private EventNotificationService notificationService;
@@ -115,7 +115,7 @@ public class MultiplItemChangeContext implements BatchChangeContext {
         this.publishNodeChanges = publishNodeChanges;
     }
 
-    public MultiplItemChangeContext(final Integer fundVersionId,
+    public MultipleItemChangeContext(final Integer fundVersionId,
                                     final DescItemRepository descItemRepository,
                                     final NodeCacheService nodeCacheService,
                                     final RuleService ruleService,

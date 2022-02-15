@@ -131,6 +131,21 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému podle id.
+     *
+     * @param id identifikátor externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem findApExternalSystemById(final Integer id) {
+        Optional<ApExternalSystem> extSystem = apExternalSystemRepository.findById(id);
+        if (!extSystem.isPresent()) {
+            throw new BusinessException("External system not found, id: " + id, BaseCode.ID_NOT_EXIST)
+                    .set("id", id);
+        }
+        return extSystem.get();
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru bez kontroly práv.
      *
      * @param id identifikátor externího systému
@@ -343,15 +358,16 @@ public class ExternalSystemService {
                                                final ApChange apChange,
                                                final String state,
                                                final String revisionUuid,
-                                               final String user,
+                                               final String userName,
                                                final Long replacedById,
                                                final SyncState syncState) {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(binding);
         apBindingState.setAccessPoint(accessPoint);
+        apBindingState.setApExternalSystem(binding.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
-        apBindingState.setExtUser(user);
+        apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
@@ -374,13 +390,14 @@ public class ExternalSystemService {
                 Objects.equals(syncState, oldbindingState.getSyncOk())) {
             return oldbindingState;
         }
-        
+
         oldbindingState.setDeleteChange(apChange);
         bindingStateRepository.saveAndFlush(oldbindingState);
 
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(oldbindingState.getBinding());
         apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
+        apBindingState.setApExternalSystem(oldbindingState.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
         apBindingState.setExtUser(user);

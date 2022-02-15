@@ -65,7 +65,9 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -392,9 +394,10 @@ public class RuleController {
     }
 
     @Transactional
-    @RequestMapping(value = "/itemTypeCodes/{ruleSetCode}", method = RequestMethod.GET)
-    public List<String> getItemTypeCodesByRuleSet(@PathVariable(value = "ruleSetCode") final String ruleSetCode) {
-        RulRuleSet rulRuleSet = ruleSetRepository.findByCode(ruleSetCode);
+    @RequestMapping(value = "/itemTypeCodes/{ruleSetId}", method = RequestMethod.GET)
+    public List<String> getItemTypeCodesByRuleSet(@PathVariable(value = "ruleSetId") final Integer ruleSetId) {
+        RulRuleSet rulRuleSet = ruleSetRepository.findById(ruleSetId)
+                .orElseThrow(() -> new ObjectNotFoundException("RuleSet neexistuje", BaseCode.ID_NOT_EXIST).setId(ruleSetId));
         return ruleService.getItemTypeCodesByRuleSet(rulRuleSet);
     }
 

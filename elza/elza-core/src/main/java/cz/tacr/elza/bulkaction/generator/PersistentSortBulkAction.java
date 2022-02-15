@@ -92,7 +92,7 @@ public class PersistentSortBulkAction extends BulkAction {
 
         DataType dataType = DataType.fromId(itemType.getDataTypeId());
         List<DataType> allowedDataTypes = Arrays.asList(DataType.INT, DataType.DECIMAL, DataType.STRING, DataType.TEXT,
-                DataType.FORMATTED_TEXT, DataType.UNITDATE);
+                DataType.FORMATTED_TEXT, DataType.UNITDATE, DataType.STRUCTURED);
         if (!allowedDataTypes.contains(dataType)) {
             throw createConfigException("Unsupported data type").set("dataTypeCode", dataType.getCode());
         }
@@ -211,17 +211,23 @@ public class PersistentSortBulkAction extends BulkAction {
                 return result;
             };
         case INT:
-            return (arg0, arg1) ->
-                arg0.getValueInt().compareTo(arg1.getValueInt());
+            return (o1, o2) ->
+                o1.getValueInt().compareTo(o2.getValueInt());
         case DECIMAL:
-            return (arg0, arg1) ->
-                arg0.getValueDouble().compareTo(arg1.getValueDouble());
+            return (o1, o2) ->
+                o1.getValueDouble().compareTo(o2.getValueDouble());
         case UNITDATE:
-            return (arg0, arg1) -> arg0.getNormalizedFrom().compareTo(arg1.getNormalizedFrom());
+            return (o1, o2) ->
+                o1.getNormalizedFrom().compareTo(o2.getNormalizedFrom());
         case DATE:
-            return (arg0, arg1) -> arg0.getValueDate().compareTo(arg1.getValueDate());
+            return (o1, o2) ->
+                o1.getValueDate().compareTo(o2.getValueDate());
         case BIT:
-            return (arg0, arg1) -> arg0.isValue().compareTo(arg1.isValue());
+            return (o1, o2) ->
+                o1.isValue().compareTo(o2.isValue());
+        case STRUCTURED:
+            return (o1, o2) -> 
+                o1.getFulltextValue().compareTo(o2.getFulltextValue());
         default:
             throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR)
                     .set("dataTypeCode", dataType.getCode());

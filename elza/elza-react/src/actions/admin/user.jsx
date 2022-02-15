@@ -170,9 +170,9 @@ export function userCreate(username, valuesMap, accessPointId) {
     };
 }
 
-export function userUpdate(id, username, valuesMap) {
+export function userUpdate(id, accessPointId, username, valuesMap) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateUser(id, username, valuesMap)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.updateUser(id, accessPointId, username, valuesMap)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.update.success')));
             dispatch(usersSelectUser(response.id));
         });

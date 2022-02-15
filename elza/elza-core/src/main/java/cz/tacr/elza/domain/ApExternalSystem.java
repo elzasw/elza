@@ -35,7 +35,13 @@ public class ApExternalSystem extends SysExternalSystem {
     @Column(updatable = false, insertable = false, nullable = true)
     private Integer scopeId;
 
-    public ApExternalSystemType getType() {
+    @Column(length = StringLength.LENGTH_50, nullable = true)
+    private String userInfo;
+    
+    @Column(nullable = true)
+    private Boolean publishOnlyApproved;
+
+	public ApExternalSystemType getType() {
         return type;
     }
 
@@ -53,6 +59,22 @@ public class ApExternalSystem extends SysExternalSystem {
 
     public Integer getScopeId() {
         return scopeId;
+    }
+
+    public Boolean getPublishOnlyApproved() {
+		return publishOnlyApproved;
+	}
+
+	public void setPublishOnlyApproved(Boolean publishOnlyApproved) {
+		this.publishOnlyApproved = publishOnlyApproved;
+	}
+
+	public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
     }
 
     @Override

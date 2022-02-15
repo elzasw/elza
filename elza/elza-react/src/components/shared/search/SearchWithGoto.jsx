@@ -28,6 +28,7 @@ class SearchWithGoto extends AbstractReactComponent {
         extendedSearch: PropTypes.bool,
         extendedReadOnly: PropTypes.bool,
         onClickExtendedSearch: PropTypes.func,
+        onClear: PropTypes.func,
     };
 
     static defaultProps = {
@@ -111,8 +112,9 @@ class SearchWithGoto extends AbstractReactComponent {
     };
 
     handleClear = () => {
-        const {onFulltextSearch} = this.props;
+        const {onClear} = this.props;
 
+        if(onClear){onClear()}
         this.handleFulltextChange('');
     };
 

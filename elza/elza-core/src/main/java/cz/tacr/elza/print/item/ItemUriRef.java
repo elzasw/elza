@@ -1,5 +1,7 @@
 package cz.tacr.elza.print.item;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.print.Node;
 
 public class ItemUriRef extends AbstractItem {
@@ -37,6 +39,13 @@ public class ItemUriRef extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return value;
+    	StringBuilder sb = new StringBuilder();
+    	if(StringUtils.isNotEmpty(description)) {
+    		sb.append(description).append(": ");
+    	}
+    	if(StringUtils.isNotEmpty(value)) {
+    		sb.append(value);
+    	}
+        return sb.toString();
     }
 }

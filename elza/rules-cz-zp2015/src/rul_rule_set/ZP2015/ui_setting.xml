@@ -179,7 +179,7 @@
                 <!-- ZP5.2.5 Měřítko -->
                 <type code="ZP2015_SCALE" width="1"/>
                 <!-- 5.2.6 Souřadnice - tvar a souřadnice -->
-                <type code="ZP2015_POSITION" width="1"/>
+                <type code="ZP2015_POSITION" width="2"/>
                 <!-- 5.2.7 Orientace z hlediska světových stran -->
                 <type code="ZP2015_ORIENTATION" width="1"/>
                 <!-- 5.2.8 Technika, adjustace, nosič a látka záznamu -->
@@ -196,11 +196,14 @@
                 <type code="ZP2015_WRITING" width="2"/>
                 <!-- 5.2.11 Edice a literatura -->
                 <type code="ZP2015_EDITION" width="0"/>
+                <!-- 5.2.10 Prameny literatura -->
+                <type code="ZP2015_SOURCES" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
                 <!-- Matrika -->
                 <type code="ZP2015_RECORD_TYPE" width="1"/>
                 <type code="ZP2015_GEO_REF" width="0"/>
+                <type code="ZP2015_LEGEND" width="2"/>
             </group>
             <!-- Other items -->
             <group code="08_OTHERS">

@@ -58,14 +58,12 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
@@ -130,7 +128,7 @@ import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -148,14 +146,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
-
-    @Autowired
-    private FundRegisterScopeRepository faRegisterRepository;
-
-    //TODO smazat závislost až bude DescItemService
-    @Autowired
-    protected FundRegisterScopeRepository fundRegisterScopeRepository;
+    
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
+
+    @Autowired
+    protected FundRegisterScopeRepository fundRegisterScopeRepository;    
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
@@ -356,9 +351,9 @@ public class ArrangementService {
         originalFund.setUnitdate(fund.getUnitdate());
         originalFund.setMark(fund.getMark());
 
-        fundRepository.save(originalFund);
+        ArrFund savedFund = fundRepository.save(originalFund);
 
-        ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
+        ArrFundVersion openVersion = arrangementInternalService.getOpenVersionByFund(savedFund);
         if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
             fundVersionRepository.save(openVersion);
@@ -378,9 +373,9 @@ public class ArrangementService {
         }
 
         eventNotificationService
-                .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
+                .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, savedFund.getFundId()));
 
-        return originalFund;
+        return savedFund;
     }
 
     /**
@@ -391,7 +386,7 @@ public class ArrangementService {
         Assert.notNull(fund, "AS musí být vyplněn");
 
         Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-                .createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+                .createEntityMap(fundRegisterScopeRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
         for (ApScope newScope : newApScopes) {
@@ -405,10 +400,10 @@ public class ArrangementService {
                 removeScopes.remove(oldScope);
             }
 
-            faRegisterRepository.save(oldScope);
+            fundRegisterScopeRepository.save(oldScope);
         }
 
-        faRegisterRepository.deleteAll(removeScopes);
+        fundRegisterScopeRepository.deleteAll(removeScopes);
     }
 
     /**
@@ -525,35 +520,6 @@ public class ArrangementService {
         return levelRepository.saveAndFlush(level);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange,
-                                final ArrNode parentNode,
-                                final int position,
-                                final String uuid,
-                                final ArrFund fund) {
-        Assert.notNull(createChange, "Change nesmí být prázdná");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(createNode(fund, uuid, createChange));
-        return levelRepository.saveAndFlush(level);
-    }
-
-    public ArrLevel createLevelSimple(final ArrChange createChange,
-                                      final ArrNode parentNode,
-                                      final int position,
-                                      final String uuid,
-                                      final ArrFund fund) {
-        Assert.notNull(createChange, "Change nesmí být prázdná");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(createNodeSimple(fund, uuid, createChange));
-        return levelRepository.save(level);
-    }
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
@@ -683,21 +649,23 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    public ArrFundVersion getOpenVersionByFundId(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
+        Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
     }
 
     /**
-     * Načte neuzavřené verze archivních pomůcek.
+     * Načte neuzavřenou verzi archivní pomůcky.
      *
-     * @param fundIds ids archivních pomůcek
+     * @param fundId id archivní pomůcky
      * @return verze
-     * @deprecated use cz.tacr.elza.service.ArrangementInternalService#getOpenVersionsByFundIds(java.util.Collection)
      */
-    @Deprecated
-    public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
-        return arrangementInternalService.getOpenVersionsByFundIds(fundIds);
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    public ArrFundVersion getOpenVersionByFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
+        Validate.notNull(fund, "Nebyl vyplněn AS");
+        Validate.notNull(fund.getFundId(), "Nebyl vyplněn identifikator AS");
+        return fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
     }
 
     /**
@@ -719,7 +687,7 @@ public class ArrangementService {
 
         ArrNode node = baselevel.getNode();
         ArrFund fund = baselevel.getNode().getFund();
-        ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
 
         // check if connected Dao(type=Level) exists
         if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
@@ -732,7 +700,7 @@ public class ArrangementService {
             descItemRepository.save(descItem);
         }
 
-        daoService.deleteDaoLinkByNode(fundVersion, node);
+        daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
 
         // vyhledani node, ktere odkazuji na mazany
         List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
@@ -790,7 +758,7 @@ public class ArrangementService {
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                                        final RulItemType descItemType,
                                                        final ArrLevel level,
@@ -812,13 +780,17 @@ public class ArrangementService {
         // Read source data
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
-        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
         // Delete old values for these items
         // ? Can we use descriptionItemService.deleteDescriptionItemsByType
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
+                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+            	
                 descriptionItemService.deleteDescriptionItem(descItem, version,
                         change, false, changeContext);
             }
@@ -904,7 +876,7 @@ public class ArrangementService {
 
         if (!fundToNodeList.isEmpty()) {
             List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
-            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
                     .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
             Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
 
@@ -941,7 +913,7 @@ public class ArrangementService {
         ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
         if (fundToNodeList != null) {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
-            ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
+            ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
             return levelTreeCacheService.getNodesByIds(sortedList, fundVersion);
         }
@@ -1003,8 +975,9 @@ public class ArrangementService {
         return versionNodeIds;
     }
 
+    // TODO: check permissions here
     public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
-        return fundVersionRepository.getOneCheckExist(fundVersionId);
+        return arrangementInternalService.getFundVersionById(fundVersionId);
     }
 
     /**
@@ -1885,7 +1858,7 @@ public class ArrangementService {
 
                 if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
                     List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
-                    ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(node.getFundId());
 
                     if (CollectionUtils.isEmpty(nodeItems)) {
                         // vytvoření nových itemů
@@ -1893,7 +1866,7 @@ public class ArrangementService {
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
                         // smazání a vytvoření
-                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false);
+                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false, false);
 
                         List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);

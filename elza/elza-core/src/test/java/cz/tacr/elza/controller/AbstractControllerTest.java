@@ -351,7 +351,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
     protected static final String OUTPUT_FILTERS = RULE_CONTROLLER_URL + "/outputFilters";
     protected static final String EXPORT_FILTERS = RULE_CONTROLLER_URL + "/exportFilters";
-    protected static final String ITEM_TYPE_CODES = RULE_CONTROLLER_URL + "/itemTypeCodes/{ruleSetCode}";
+    protected static final String ITEM_TYPE_CODES = RULE_CONTROLLER_URL + "/itemTypeCodes/{ruleSetId}";
     protected static final String POLICY = RULE_CONTROLLER_URL + "/policy";
     protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
     protected static final String POLICY_ALL_TYPES = POLICY + "/types";
@@ -1085,7 +1085,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return list kódů item typů
      */
     protected List<String> getItemTypeCodesByRuleSet(RulRuleSetVO rulRuleSetVO) {
-        Response response = get(spec -> spec.pathParam("ruleSetCode", rulRuleSetVO.getCode()), ITEM_TYPE_CODES);
+        Response response = get(spec -> spec.pathParam("ruleSetId", rulRuleSetVO.getId()), ITEM_TYPE_CODES);
         return Arrays.asList(response.getBody().as(String[].class));
     }
 

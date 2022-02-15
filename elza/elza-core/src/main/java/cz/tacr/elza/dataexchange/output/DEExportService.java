@@ -195,6 +195,9 @@ public class DEExportService {
             response.flushBuffer();
             exportData(os, exportBuilder, params);
             response.flushBuffer();
+        } catch(Exception e) {
+        	log.error("Failed to export data", e);
+        	throw e;
         }
     }
 

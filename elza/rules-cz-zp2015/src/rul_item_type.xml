@@ -18,7 +18,7 @@
     <item-type code="ZP2015_FOLDER_TYPE" data-type="ENUM">
         <name>Typ složky</name>
         <shortcut>Typ složky</shortcut>
-        <description>Počet evidenčních jednotek, uvádí se pro složku s uvedením EJ</description>
+        <description>Typ složky - ZP 3.3.3</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
@@ -26,7 +26,7 @@
     <item-type code="ZP2015_UNIT_TYPE" data-type="ENUM">
         <name>Typ archiválie</name>
         <shortcut>Typ arch.</shortcut>
-        <description>Typ archiválie</description>
+        <description>Typ archiválie - ZP 2.9.3</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
@@ -34,7 +34,7 @@
     <item-type code="ZP2015_UNIT_SUBTYPE" data-type="ENUM">
         <name>Podtyp</name>
         <shortcut>Podtyp</shortcut>
-        <description>Podtyp úrovně popisu</description>
+        <description>Podtyp (druh) archiválie - ZP 5.2.12</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
@@ -47,7 +47,7 @@
     <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet archiválií</name>
         <shortcut>Počet arch.</shortcut>
-        <description>Počet evidenčních jednotek - ZP4.2.8</description>
+        <description>Počet evidenčních jednotek - ZP 4.2.8</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -87,7 +87,7 @@
     <item-type code="ZP2015_UNIT_EXT_TYPE" data-type="ENUM">
         <name>Rozšířený popis archiválie</name>
         <shortcut>Rozšířený typ</shortcut>
-        <description>Rozšíený typ archiválií</description>
+        <description>Rozšířený typ archiválií</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -177,7 +177,7 @@
     <item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
         <shortcut>Dat. vzniku - Textově</shortcut>
-        <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
+        <description>ZP4.2.5 Datace vzniku jednotky popisu - textový zápis</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -201,7 +201,7 @@
     <item-type code="ZP2015_ORIGINATOR" data-type="RECORD_REF">
         <name>Původce</name>
         <shortcut>Původce</shortcut>
-        <description>ZP4.3.1 Odkaz na původce</description>
+        <description>ZP6.2.1 Odkaz na popis původce</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -271,7 +271,7 @@
     <item-type code="ZP2015_RESTRICTION_ACCESS_SHARED" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND_TYPE">
         <name>Druh omezení přístupnosti</name>
         <shortcut>Druh omezení přístupnosti</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <description>ZP4.4.1 Podmínky přístupu - druh omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -279,7 +279,7 @@
     <item-type code="ZP2015_RESTRICTION_ACCESS_INLINE" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND">
         <name>Zvláštní omezení přístupnosti</name>
         <shortcut>Omezení přístupnosti</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <description>ZP4.4.1 Podmínky přístupu - zvláštní omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -287,7 +287,7 @@
     <item-type code="ZP2015_RESTRICTION_ACCESS_NAME" data-type="STRING">
         <name>Název omezení přístupnosti</name>
         <shortcut>Název omezení</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <description>ZP4.4.1 Podmínky přístupu - název omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -295,7 +295,7 @@
     <item-type code="ZP2015_RESTRICTED_ACCESS_REASON" data-type="ENUM">
         <name>Důvod omezení zpřístupnění</name>
         <shortcut>Důvod</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu, důvod omezení</description>
+        <description>ZP4.4.1 Podmínky přístupu - důvod omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -303,7 +303,7 @@
     <item-type code="ZP2015_RESTRICTION_ACCESS_DATE" data-type="DATE">
         <name>Datum zpřístupnění</name>
         <shortcut>Datum zpřístupnění</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <description>ZP4.4.1 Podmínky přístupu - datum zpřístupnění</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -311,7 +311,7 @@
     <item-type code="ZP2015_RESTRICTED_ACCESS_TYPE" data-type="ENUM">
         <name>Rozsah omezení zpřístupnění</name>
         <shortcut>Rozsah</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu, rozsah omezení</description>
+        <description>ZP4.4.1 Podmínky přístupu - rozsah omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -412,7 +412,7 @@
     <item-type code="ZP2015_AWARD_LEVEL" data-type="STRING">
         <name>Úroveň vyznamenání/ceny</name>
         <shortcut>Úroveň vyznamenání/ceny</shortcut>
-        <description>třída nebo úroveň</description>
+        <description>Úroveň vyznamenání / ceny (třída nebo stupeň)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -420,7 +420,7 @@
     <item-type code="ZP2015_AWARD_GROUP" data-type="STRING">
         <name>Skupina vyznamenání/ceny</name>
         <shortcut>Skupina vyznamenání/ceny</shortcut>
-        <description>Skupina vyznamenání/ceny (civilní, vojenské)</description>
+        <description>Skupina vyznamenání / ceny (civilní, vojenské)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -438,7 +438,7 @@
     <item-type code="ZP2015_ITEM_TITLE_REF" data-type="RECORD_REF">
         <name>Autorské dílo</name>
         <shortcut>Aut. dílo</shortcut>
-        <description>ZP5.2.2 Název autorského díla</description>
+        <description>ZP5.2.2 Název autorského díla, ZP4.2.4 Formální název jednotky popisu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -505,14 +505,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_LANGUAGE" data-type="ENUM">
-        <name>Jazyk</name>
-        <shortcut>Jazyk</shortcut>
-        <description>ZP5.2.10 Jazyk</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>false</can-be-ordered>
-        <use-specification>true</use-specification>
-    </item-type>
     <item-type code="ZP2015_WRITING" data-type="TEXT">
         <name>Písmo</name>
         <shortcut>Písmo</shortcut>
@@ -529,10 +521,18 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_SOURCES" data-type="TEXT">
+        <name>Prameny a literatura</name>
+        <shortcut>Pram. a lit.</shortcut>
+        <description>ZP2.10 seznam použitých pramenů a literatury</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_ENTITY_ROLE" data-type="RECORD_REF">
         <name>Role entit</name>
         <shortcut>Role entit</shortcut>
-        <description>ZP5.3-5.6 Role entit</description>
+        <description>ZP5.3-5.23 Role entit</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
@@ -680,7 +680,7 @@
     <item-type code="ZP2015_UNITS_AMOUNT" data-type="STRING">
         <name>Rozsah archivní pomůckou zpřístupněných archiválií</name>
         <shortcut>Rozsah archiválií</shortcut>
-        <description>Rozsah archivní pomůckou zpřístupněných archiválií (uvádí se v tiráži)</description>
+        <description>Rozsah archivní pomůckou zpřístupněných archiválií v běžných metrech (uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -696,7 +696,7 @@
     <item-type code="ZP2015_FINDING_AID_APPROVED_BY" data-type="STRING">
         <name>Archivní pomůcku schválil</name>
         <shortcut>Schválil</shortcut>
-        <description>Archivní pomůcku schválil(uvádí se v tiráži)</description>
+        <description>Archivní pomůcku schválil (uvádí se v tiráži)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -754,7 +754,7 @@
     <item-type code="ZP2015_PACKET_FIXED_PREFIX" data-type="ENUM">
         <name>Pevný prefix uložení</name>
         <shortcut>Prefix</shortcut>
-        <description>Pevný  Prefix pro ukládací číslo</description>
+        <description>Pevný Prefix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -857,7 +857,7 @@
     <item-type code="ZP2015_SIZE_DEPTH" data-type="DECIMAL">
         <name>Hloubka</name>
         <shortcut>Hloubka</shortcut>
-        <description>ZP5.2.4  Hloubka</description>
+        <description>ZP5.2.4 Hloubka</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -885,7 +885,7 @@
     <item-type code="ZP2015_AMOUNT" data-type="DECIMAL">
         <name>Množství</name>
         <shortcut>Množství</shortcut>
-        <description>ZP5.2.4 Množství (velikost dat, kusy)</description>
+        <description>ZP5.2.4 Množství (velikost dat, kusy, listy, strany)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
@@ -965,7 +965,7 @@
     <item-type code="ZP2015_LEGALACT_REF" data-type="RECORD_REF">
         <name>Právní akt</name>
         <shortcut>Právní akt</shortcut>
-        <description>Odkaz druh právního aktu</description>
+        <description>Odkaz na druh právního aktu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -1001,7 +1001,7 @@
     <item-type code="ZP2015_PUBLISH_EVENT_TYPE" data-type="ENUM">
         <name>Spouštěcí událost</name>
         <shortcut>Spouštěcí událost</shortcut>
-        <description>Spouštěcí událost zpřístupnění</description>
+        <description>ZP4.4.1 Podmínky přístupu - spouštěcí událost zpřístupnění</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -1009,7 +1009,7 @@
     <item-type code="ZP2015_PUBLISH_EVENT_DATE" data-type="DATE">
         <name>Datum spouštěcí události</name>
         <shortcut>Datum spouštěcí události</shortcut>
-        <description>Datum spouštěcí události</description>
+        <description>ZP4.4.1 Podmínky přístupu - datum spouštěcí události</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -1017,7 +1017,7 @@
     <item-type code="ZP2015_PUBLISH_EVENT_PERIOD" data-type="INT">
         <name>Jiná lhůta zpřístupnění</name>
         <shortcut>Lhůta</shortcut>
-        <description>Jiná lhůta zpřístupnění</description>
+        <description>ZP4.4.1 Podmínky přístupu - jiná lhůta zpřístupnění</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>

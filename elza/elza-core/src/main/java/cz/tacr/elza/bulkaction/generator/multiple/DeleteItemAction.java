@@ -84,7 +84,7 @@ public class DeleteItemAction extends Action {
                                                           change,
                                                           // mazou se vsechny prvky popisu daneho typu,
                                                           // nemohou se posouvat pozice
-                                                          false);
+                                                          false, false);
         }
     }
 

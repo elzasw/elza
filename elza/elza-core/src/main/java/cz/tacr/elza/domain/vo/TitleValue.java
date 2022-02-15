@@ -8,7 +8,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  *
  * @since 18.03.2016
  */
-public class TitleValue extends DescItemValue {
+public class TitleValue extends DescItemValue
+	implements Comparable<TitleValue>
+{
 
     private String iconValue;
 
@@ -84,4 +86,23 @@ public class TitleValue extends DescItemValue {
                 .append(getValue())
                 .toHashCode();
     }
+
+	@Override
+	public int compareTo(TitleValue o) {
+		int ret = getPosition().compareTo(o.getPosition());
+		if(ret!=0) {
+			return ret;
+		}
+		if(getSpecId()!=null&&
+				o.getSpecId()!=null) {
+			ret = getSpecId().compareTo(o.getSpecId());
+			if(ret!=0) {
+				return ret;
+			}
+		}
+		if(getValue()!=null&&o.getValue()!=null) {
+			ret = getValue().compareTo(o.getValue());
+		}
+		return ret;
+	}
 }

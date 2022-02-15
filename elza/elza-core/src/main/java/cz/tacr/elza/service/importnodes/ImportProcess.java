@@ -164,7 +164,7 @@ public class ImportProcess {
     private DmsService dmsService;
 
     @Autowired
-    private FundLevelService arrMoveLevelService;
+    private FundLevelService fundLevelService;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -268,7 +268,7 @@ public class ImportProcess {
 
             DeepData deepData = stack.peek();
 
-            ArrLevel level = arrangementService.createLevelSimple(change, deepData.getParentNode(), deepData.getPosition(), node.getUuid(), targetFundVersion.getFund());
+            ArrLevel level = fundLevelService.createLevelSimple(change, deepData.getParentNode(), deepData.getPosition(), node.getUuid(), targetFundVersion.getFund());
             levels.add(level);
 
             Collection<? extends Item> items = node.getItems();
@@ -323,7 +323,7 @@ public class ImportProcess {
                 data = stack.pop();
             }
             if (data != null) {
-                arrMoveLevelService.shiftNodes(levelsToShift, change, data.position + 1);
+                fundLevelService.shiftNodes(levelsToShift, change, data.position + 1);
             }
         }
 
@@ -381,7 +381,7 @@ public class ImportProcess {
             data = new ArrDataCoordinates();
             Geometry geo = ((ItemCoordinates) item).getGeometry();
             // clone value
-            Geometry geoClone = (Geometry) geo.clone();
+            Geometry geoClone = geo.copy();
             ((ArrDataCoordinates) data).setValue(geoClone);
         } else if (item instanceof ItemFileRef) {
             data = new ArrDataFileRef();
@@ -460,7 +460,7 @@ public class ImportProcess {
                                     throw new SystemException("Neplatný směr založení levelu: " + selectedDirection, BaseCode.INVALID_STATE);
                                 }
                             }
-                            arrMoveLevelService.shiftNodes(levelsToShift, change, data.position + 1);
+                            fundLevelService.shiftNodes(levelsToShift, change, data.position + 1);
                         }
                     }
 
@@ -475,7 +475,7 @@ public class ImportProcess {
                         case BEFORE: {
                             ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
                             int position = selectedDirection.equals(FundLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
-                            levelsToShift = arrMoveLevelService.nodesToShift(staticLevel);
+                            levelsToShift = fundLevelService.nodesToShift(staticLevel);
                             if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
                                 levelsToShift.add(0, staticLevel);
                             }
