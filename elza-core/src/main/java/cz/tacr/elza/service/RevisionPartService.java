@@ -182,7 +182,7 @@ public class RevisionPartService {
                 .orElseThrow(revPart(partId));
     }
 
-    public void createParts(List<ApRevPart> createdParts, Map<Integer, List<ApRevItem>> revItemMap, ApAccessPoint accessPoint) {
+    public void createParts(List<ApRevPart> createdParts, Map<Integer, List<ApRevItem>> revItemMap, ApAccessPoint accessPoint, ApRevision revision) {
         if (CollectionUtils.isNotEmpty(createdParts)) {
             createdParts.sort((o1, o2) -> {
                 if (o1.getParentPart() != null || o1.getRevParentPart() != null) {
@@ -203,6 +203,11 @@ public class RevisionPartService {
 
                 ApPart part = createPart(revPart, accessPoint, parentPart);
                 revPart.setOriginalPart(part);
+
+                if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(revPart.getPartId())) {
+                    revision.setPreferredPart(part);
+                }
+
                 parts.add(part);
             }
 

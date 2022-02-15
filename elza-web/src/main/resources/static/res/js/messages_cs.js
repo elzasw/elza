@@ -1021,7 +1021,7 @@ var messages = {
     "registry.createRevisionQuestion": "Opravdu chcete vytvořit revizi archivní entity?",
     "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
     "registry.changeStateRevision": "Změna stavu revize",
-    "registry.mergeRevision": "Merge revize",
+    "registry.mergeRevision": "Potvrzení revize",
     "registry.allRevisionStates": "Všechny stavy revize",
 
     "registry.entity.notFound": "Archivní entita nenalezena",
@@ -1052,7 +1052,7 @@ var messages = {
     "ap.history.title.state.REV_NEW": "příprava revize",
     "ap.history.title.state.REV_PREPARED": "revize ke schválení",
     "ap.history.title.state.REV_AMEND": "revize k doplnění",
-    
+
     "ap.changeState": "Změna stavu",
     "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
