@@ -75,7 +75,7 @@ const DetailMultiSection: FC<Props> = ({
     }
     */
 
-    const groupRelatedPartsByParent = (data: RevisionPart[]):Record<string, RevisionPart[]> => 
+    const groupRelatedPartsByParent = (data: RevisionPart[]):Record<string, RevisionPart[]> =>
     data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
         const parentId = value.part?.partParentId || value.updatedPart?.partParentId;
         if(parentId != undefined){
@@ -95,7 +95,7 @@ const DetailMultiSection: FC<Props> = ({
                         <Icon glyph="fa-plus"/>
                     </SmallButton>
                 )}
-                {singlePart && parts.length === 0 && 
+                {singlePart && parts.length === 0 &&
                     <SmallButton title={i18n("ap.detail.edit", partType.name)} onClick={()=> onAdd()}>
                         <Icon glyph="fa-pencil"/>
                     </SmallButton>
@@ -117,6 +117,28 @@ const DetailMultiSection: FC<Props> = ({
         return isPreferred;
     };
 
+    const isPartOldPreferred = (part: ApPartVO | undefined) => {
+        let isOldPreferred;
+        if (revPreferred || newPreferred) {
+            isOldPreferred = part ? part.id === preferred && newPreferred !== preferred : false;
+        } else {
+            isOldPreferred = false;
+        }
+        return isOldPreferred;
+    };
+
+    const isPartNewPreferred = (part: ApPartVO | undefined, updatedPart: ApPartVO | undefined) => {
+        let isNewPreferred;
+        if (newPreferred) {
+            isNewPreferred = part ? part.id === newPreferred && newPreferred !== preferred : false;
+        } else if (revPreferred) {
+            isNewPreferred = updatedPart ? updatedPart.id === revPreferred : false;
+        } else {
+            isNewPreferred = false;
+        }
+        return isNewPreferred;
+    };
+
     const renderPartActions = (part: RevisionPart, forceRender: boolean = false) => {
         if(singlePart && !forceRender){
             return undefined;
@@ -124,8 +146,8 @@ const DetailMultiSection: FC<Props> = ({
         const typeId = part.updatedPart ? part.updatedPart.typeId : part.part?.typeId;
         const id = part.updatedPart ? part.updatedPart.id : part.part?.id;
 
-        if(typeId == undefined || id == undefined) { 
-            return; 
+        if(typeId == undefined || id == undefined) {
+            return;
         }
 
         let showPreferredSwitch = false;
@@ -178,6 +200,8 @@ const DetailMultiSection: FC<Props> = ({
             {parts.map(({part, updatedPart}, index) => {
                     const relatedParts = part?.id != null && relatedRevisionPartsMap[part.id] ? relatedRevisionPartsMap[part.id] : [];
                     let isPreferred = isPartPreferred(part, updatedPart);
+                    let isOldPreferred = isPartOldPreferred(part);
+                    let isNewPreferred = isPartNewPreferred(part, updatedPart);
                     return (
                         <div key={index} className={`part ${isPreferred ? "preferred" : ""}`}>
                             {!singlePart && <div className="bracket"/>}
@@ -185,6 +209,8 @@ const DetailMultiSection: FC<Props> = ({
                                 key={index}
                                 part={{part, updatedPart}}
                                 preferred={isPreferred}
+                                oldPreferred={isOldPreferred}
+                                newPreferred={isNewPreferred}
                                 revision={revision}
                                 globalCollapsed={globalCollapsed}
                                 partValidationError={part?.id && objectById(partValidationErrors, part.id)}
