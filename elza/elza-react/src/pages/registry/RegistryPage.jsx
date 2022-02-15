@@ -6,8 +6,10 @@ import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
-import {registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision} from '../../actions/registry/registry.jsx';
+import {
+    registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear
+} from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
 import {Shortcuts} from 'react-shortcuts';
@@ -403,7 +405,7 @@ class RegistryPage extends AbstractReactComponent {
     handleChangeStateRevision = () => {
         const {
             registryDetail: {
-                data: {id, typeId, scopeId, revStateApproval},
+                data: {id, typeId, revStateApproval},
             },
         } = this.props;
         const form = (
@@ -411,13 +413,11 @@ class RegistryPage extends AbstractReactComponent {
                 initialValues={{
                     state: revStateApproval,
                     typeId: typeId,
-                    scopeId: scopeId,
                 }}
                 onSubmit={data => {
                     const finalData = {
                         state: data.state,
                         typeId: data.typeId,
-                        scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
                     this.props.dispatch(registryChangeStateRevision(id, finalData));
                 }}
@@ -448,6 +448,7 @@ class RegistryPage extends AbstractReactComponent {
                 }}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
+                    this.props.dispatch(registryDetailInvalidate());
                     this.props.dispatch(registryDetailFetchIfNeeded(id, true));
                     this.props.dispatch(registryListInvalidate());
                 }}

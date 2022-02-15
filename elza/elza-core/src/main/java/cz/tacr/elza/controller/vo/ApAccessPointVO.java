@@ -109,6 +109,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private RevStateApproval revStateApproval;
 
     /**
+     * Nový typ rejstříku.
+     */
+    private Integer newTypeId;
+
+    /**
      * Identifikátor nové preferované části z revize
      */
     private Integer newPreferredPart;
@@ -275,6 +280,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setRevStateApproval(RevStateApproval revStateApproval) {
         this.revStateApproval = revStateApproval;
+    }
+
+    public Integer getNewTypeId() {
+        return newTypeId;
+    }
+
+    public void setNewTypeId(Integer newTypeId) {
+        this.newTypeId = newTypeId;
     }
 
     public Integer getNewPreferredPart() {
