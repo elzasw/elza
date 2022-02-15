@@ -50,7 +50,7 @@ class RevMergeForm extends React.Component<Props> {
     }
 
     componentDidMount() {
-        WebApi.getStateApproval(this.props.accessPointId).then(data => {
+        WebApi.getStateApprovalRevision(this.props.accessPointId).then(data => {
             this.props.change('states', data);
         });
     }

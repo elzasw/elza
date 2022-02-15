@@ -507,6 +507,17 @@ public class ApController {
         return states.stream().map(p -> p.name()).collect(Collectors.toList());
     }
 
+    @RequestMapping(value = "/{accessPointId}/nextStatesRevision", method = RequestMethod.GET)
+    @Transactional
+    public List<String> getStateApprovalRevision(@PathVariable final Integer accessPointId) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+
+        ApState apState = accessPointService.getStateInternal(accessPointId);
+        List<StateApproval> states = accessPointService.getNextStatesRevision(apState);
+
+        return states.stream().map(p -> p.name()).collect(Collectors.toList());
+    }
+
     /**
      * Vrátí seznam typů rejstříku (typů hesel).
      *
