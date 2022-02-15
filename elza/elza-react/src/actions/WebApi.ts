@@ -675,6 +675,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
 	}
 
+    getStateApprovalRevision(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStatesRevision');
+    }
+
     findAccessPoint(
         search = null,
         registryParent = null,
