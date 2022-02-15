@@ -105,6 +105,11 @@ export interface ApAccessPointVO {
     revStateApproval: RevStateApproval;
 
     /**
+     * Nový typ rejstříku.
+     */
+    newTypeId: number;
+
+    /**
      * Identifikátor nové preferované části z revize
      */
     newPreferredPart: number;

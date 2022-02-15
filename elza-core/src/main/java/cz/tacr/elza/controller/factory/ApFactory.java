@@ -935,6 +935,7 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision) {
         vo.setRevStateApproval(revision.getStateApproval());
+        vo.setNewTypeId(revision.getTypeId());
         vo.setRevPreferredPart(revision.getRevPreferredPartId());
         vo.setNewPreferredPart(revision.getPreferredPartId());
 
