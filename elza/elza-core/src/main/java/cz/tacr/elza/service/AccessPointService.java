@@ -1772,6 +1772,51 @@ public class AccessPointService {
     }
 
     /**
+     * Získání seznamu stavů do niž může být přístupový bod přepnut při promítnutí revize
+     *
+     * @param apState
+     * @return seznam stavů
+     */
+    public List<StateApproval> getNextStatesRevision(@NotNull ApState apState) {
+        ApScope apScope = apState.getScope();
+        UserDetail user = userService.getLoggedUserDetail();
+
+        Set<StateApproval> result = new HashSet<>();
+
+        if (user.hasPermission(Permission.ADMIN)) {
+            result.add(StateApproval.NEW);
+            result.add(StateApproval.TO_AMEND);
+            result.add(StateApproval.TO_APPROVE);
+            result.add(StateApproval.APPROVED);
+        }
+
+        // zakládání a změny nových
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+            if (apState.getStateApproval().equals(StateApproval.NEW)) {
+                result.add(StateApproval.NEW);
+                result.add(StateApproval.TO_AMEND);
+                result.add(StateApproval.TO_APPROVE);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_AMEND)) {
+                result.add(StateApproval.TO_AMEND);
+                result.add(StateApproval.TO_APPROVE);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+                result.add(StateApproval.TO_APPROVE);
+            }
+        }
+
+        // schvalování
+        if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+            result.add(StateApproval.APPROVED);
+        }
+
+        return new ArrayList<>(result);
+    }
+
+    /**
      * Vyhodnocuje oprávnění přihlášeného uživatele k úpravám na přístupovém bodu dle uvedené oblasti entit.
      *
      * @param apScope oblast entit
