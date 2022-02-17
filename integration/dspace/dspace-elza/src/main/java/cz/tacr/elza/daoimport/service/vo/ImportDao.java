@@ -1,5 +1,7 @@
 package cz.tacr.elza.daoimport.service.vo;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,16 +16,33 @@ public class ImportDao {
     private String daoName;
     Map<Integer, String> metadata = new HashMap<>();
 
-    private List<DaoFile> files = new LinkedList();
+    private List<ImportBundle> bundles = new ArrayList<>();
+    private Map<String, ImportBundle> bundleMap = new HashMap<>();
 
-    public void addFile(DaoFile file){
+    public void addFile(String bitStream, DaoFile file){
         if (file != null) {
-            files.add(file);
+        	ImportBundle importBundle = bundleMap.get(bitStream);
+        	if(importBundle==null) {
+        		importBundle = new ImportBundle(bitStream);
+        		bundles.add(importBundle);
+        		bundleMap.put(bitStream, importBundle);
+        	}
+        	
+        	importBundle.add(file);
         }
     }
 
-    public List<DaoFile> getFiles() {
-        return files;
+	public void addFile(String bitStream, Path destPath) {
+		if (destPath == null) {
+			return;
+		}
+		DaoFile file = new DaoFile();
+		file.setFile(destPath);
+		addFile(bitStream, file);
+	}
+
+	public List<ImportBundle> getBundles() {
+        return bundles;
     }
 
     public UUID getCommunityId() {
@@ -54,8 +73,8 @@ public class ImportDao {
         return metadata;
     }
 
-    public void setMetadata(Map<Integer, String> metadata) {
-        this.metadata = metadata;
+    public void addMetadata(Integer metadataId, String value) {
+        metadata.put(metadataId, value);
     }
 
     public String getDaoName() {
@@ -65,4 +84,5 @@ public class ImportDao {
     public void setDaoName(String daoName) {
         this.daoName = daoName;
     }
+
 }

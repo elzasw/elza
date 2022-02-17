@@ -1,7 +1,7 @@
 package cz.tacr.elza.daoimport.service;
 
+import cz.tacr.elza.daoimport.protocol.Protocol;
 // import com.mcgath.jhove.module.PngModule;
-import cz.tacr.elza.daoimport.schema.dao.Dao;
 import cz.tacr.elza.daoimport.service.vo.MetadataInfo;
 // import edu.harvard.hul.ois.jhove.*;
 // import edu.harvard.hul.ois.jhove.handler.XmlHandler;
@@ -25,7 +25,7 @@ public class JhoveService {
 
     //private List<Module> modules = new LinkedList<>();
 
-    public boolean generateMetadata(final Path file, final BufferedWriter protocol, final Path destPath, final MetadataInfo metadataInfo) throws IOException {
+    public boolean generateMetadata(final Path file, final Protocol protocol, final Path destPath, final MetadataInfo metadataInfo) {
         boolean moduleFound = false;
         /*
         try {

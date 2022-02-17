@@ -17,6 +17,8 @@ import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.daoimport.protocol.Protocol;
+
 /*
  * import uk.gov.nationalarchives.droid.core.BinarySignatureIdentifier;
  * import uk.gov.nationalarchives.droid.core.SignatureParseException;
@@ -40,7 +42,7 @@ public class DroidService {
 
     private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
 
-    public String getMimeType(final Path file, final BufferedWriter protocol) throws IOException {
+    public String getMimeType(final Path file, final Protocol protocol) throws IOException {
         String mimeType = null;
         
         // Simplified mimetype detection from extension

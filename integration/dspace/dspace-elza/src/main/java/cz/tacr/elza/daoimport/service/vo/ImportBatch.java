@@ -1,17 +1,18 @@
 package cz.tacr.elza.daoimport.service.vo;
 
-import java.io.BufferedWriter;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+
+import cz.tacr.elza.daoimport.protocol.Protocol;
 
 public class ImportBatch {
 
     private Path batchDir;
     private String batchName;
-    private BufferedWriter protocol;
+    private Protocol protocol;
 
-    private List<ImportDao> daos = new LinkedList();
+    private List<ImportDao> daos = new LinkedList<>();
 
     public void addDao(ImportDao dao){
         daos.add(dao);
@@ -33,11 +34,11 @@ public class ImportBatch {
         this.batchName = batchName;
     }
 
-    public BufferedWriter getProtocol() {
+    public Protocol getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(BufferedWriter protocol) {
+    public void setProtocol(final Protocol protocol) {
         this.protocol = protocol;
     }
 
