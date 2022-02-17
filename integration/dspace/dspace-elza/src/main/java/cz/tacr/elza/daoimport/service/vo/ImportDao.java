@@ -19,26 +19,26 @@ public class ImportDao {
     private List<ImportBundle> bundles = new ArrayList<>();
     private Map<String, ImportBundle> bundleMap = new HashMap<>();
 
-    public void addFile(String bitStream, DaoFile file){
+    public void addFile(String bundleName, DaoFile file){
         if (file != null) {
-        	ImportBundle importBundle = bundleMap.get(bitStream);
+        	ImportBundle importBundle = bundleMap.get(bundleName);
         	if(importBundle==null) {
-        		importBundle = new ImportBundle(bitStream);
+        		importBundle = new ImportBundle(bundleName);
         		bundles.add(importBundle);
-        		bundleMap.put(bitStream, importBundle);
+        		bundleMap.put(bundleName, importBundle);
         	}
         	
         	importBundle.add(file);
         }
     }
 
-	public void addFile(String bitStream, Path destPath) {
+	public void addFile(String bundleName, Path destPath) {
 		if (destPath == null) {
 			return;
 		}
 		DaoFile file = new DaoFile();
 		file.setFile(destPath);
-		addFile(bitStream, file);
+		addFile(bundleName, file);
 	}
 
 	public List<ImportBundle> getBundles() {

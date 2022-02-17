@@ -76,9 +76,9 @@
 		<xs:sequence>
 			<xs:element name="page" type="s1:Page" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
-		<xs:attribute name="bitstream" use="optional" type="xs:string">
+		<xs:attribute name="bundle" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Optional bitstream name. If not defined ORIGINAL is used.</xs:documentation>
+				<xs:documentation>Optional bundle name. If not defined ORIGINAL is used.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>

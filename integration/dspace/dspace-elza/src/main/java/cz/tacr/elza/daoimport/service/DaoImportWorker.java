@@ -151,7 +151,7 @@ public class DaoImportWorker {
             // ulozeni pozice v dao
             List<Pages> pagesCol = daoXml.getPages();
             for(Pages pages: pagesCol) {
-            	if(pages.getBitstream()==null||DaoImportService.ORIGINAL_BUNDLE.equals(pages.getBitstream())) {            		
+            	if(pages.getBundle()==null||DaoImportService.ORIGINAL_BUNDLE.equals(pages.getBundle())) {            		
             		int pos = 0;
             		for(Page page: pages.getPage()) {
             			positions.put(page.getFile(), pos++);
@@ -272,7 +272,7 @@ public class DaoImportWorker {
 	}
 	
     private MetadataInfo fillBasicdaoXmlSpecification(Dao daoXmlSpecification, DaoFile daoFile, 
-    		String bitStream,
+    		String bundle,
     		String fileName) {
     	if(daoXmlSpecification == null  ) {
     		return null;
@@ -284,7 +284,7 @@ public class DaoImportWorker {
     	}
         // find metadata for bitStream
     	for(Pages pages: pagesCol) {
-    		if(!Objects.equals(pages.getBitstream(), bitStream)) {
+    		if(!Objects.equals(pages.getBundle(), bundle)) {
     			continue;
     		}
     		
