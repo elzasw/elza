@@ -484,13 +484,6 @@ public class DaoImportService {
         return importDao;
     }
     
-
-	private void processBitstreamDir(ImportConfig config, Path generatedDir, ImportDao importDao, Path contentFile,
-			Protocol protocol, Dao daoXml) {
-		// TODO Auto-generated method stub
-		
-	}
-
     private List<Path> getBatchDirs(Path inputDir) throws IOException {
         List<Path> possibleBatches = new LinkedList<>();
 

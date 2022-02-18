@@ -110,7 +110,7 @@ public class DaoImportWorker {
         daoXml = readDaoXml(daoDir, protocol);
 		
         List<String> daoPages = new ArrayList<>();
-        List<Path> daoBitStreams = new ArrayList<>();
+        List<Path> daoBundles = new ArrayList<>();
 
         // rotřídění souborů a adresářů k dalšímu zpracování
         try (DirectoryStream<Path> fileStream = Files.newDirectoryStream(daoDir)) {
@@ -125,10 +125,10 @@ public class DaoImportWorker {
             		continue;
             	}
             	if (Files.isRegularFile(contentFile)) {
-            		daoPages.add(contentFile.getFileName().toString());
+            		daoPages.add(fileName);
             	} else 
             	if (Files.isDirectory(contentFile)) {
-            		daoBitStreams.add(contentFile);
+            		daoBundles.add(contentFile);
             	} else {
         			protocol.add("Nelze zpracovat poožku: " + contentFile);
                 }
@@ -138,10 +138,73 @@ public class DaoImportWorker {
         fillDaoAttributes(importDao);
 		
         processDaoPages(generatedDir, importDao, daoPages);
-        /*for(Path daoBitStream: daoBitStreams) {
-        	processBitstreamDir(config, generatedDir, importDao, daoBitStream, protocol, daoXml);
-        }*/
         
+        for(Path daoBundle: daoBundles) {
+        	processBundleDir(generatedDir, importDao, daoBundle);
+        }
+        
+	}
+	
+	private void processBundleDir(Path generatedDir, ImportDao importDao, Path daoBundle) throws IOException {
+		String bundleName = daoBundle.getFileName().toString();
+		
+		protocol.add("Příprava souborů pro bundle: " + bundleName);
+		
+		List<String> daoPages = new ArrayList<>();
+		
+		try (DirectoryStream<Path> fileStream = Files.newDirectoryStream(daoBundle)) {
+            for (Path contentFile : fileStream) {            	
+            	String fileName = contentFile.getFileName().toString();
+            	if (Files.isRegularFile(contentFile)) {
+            		daoPages.add(fileName);
+            	}
+            }			
+		}
+
+        final Map<String, Integer> positions = new HashMap<>();        
+        if (daoXml != null) {        
+            // ulozeni pozice v dao
+            List<Pages> pagesCol = daoXml.getPages();
+            for(Pages pages: pagesCol) {
+            	if(bundleName.equals(pages.getBundle())) {            		
+            		int pos = 0;
+            		for(Page page: pages.getPage()) {
+            			positions.put(page.getFile(), pos++);
+            		}
+            		break;
+            	}
+            }
+        }
+		// nejprve serazeni dle pozice a abecedy
+		daoPages.sort(new Comparator<String>() {
+
+			@Override
+			public int compare(String o1, String o2) {
+				Integer pos1 = positions.get(o1);
+				Integer pos2 = positions.get(o2);
+				if (pos1 != null) {
+					if (pos2 == null) {
+						return -1;
+					}
+					return pos1.compareTo(pos2);
+				} else if (pos2 != null) {
+					return 1;
+				}
+				// pozice neni definovana - porovna se dle abecedy
+				return o1.compareTo(o2);
+			}
+		});
+		
+        for(String daoPageName: daoPages) {
+        	Path daoPage = this.daoDir.resolve(daoPageName);
+        	// create special target dir
+        	Path genBundleDir = generatedDir.resolve(bundleName);
+        	if(!Files.isDirectory(genBundleDir)) {
+        		Files.createDirectory(genBundleDir);
+        	}
+        	
+        	DaoFile daoFile = processFile(bundleName, genBundleDir, importDao, daoPage);
+        }
 	}
 	
     private void processDaoPages(Path generatedDir, ImportDao importDao, List<String> daoPages) throws IOException {
@@ -184,7 +247,7 @@ public class DaoImportWorker {
         for(String daoPageName: daoPages) {
         	Path daoPage = this.daoDir.resolve(daoPageName);
         	
-        	DaoFile daoFile = processFile(generatedDir, importDao, daoPage);
+        	DaoFile daoFile = processFile(DaoImportService.ORIGINAL_BUNDLE, generatedDir, importDao, daoPage);
         	if(daoFile!=null) {
         		processMetadata(generatedDir, importDao, daoPage, daoFile);
         	
@@ -229,13 +292,15 @@ public class DaoImportWorker {
 	}
 
 	/**
-     * Process file stored in DAO folder without BITSTREAM
+     * Process file
+     * 
+     * @param bundleName
      * @param generatedDir
      * @param importDao
      * @param contentFile
      * @throws IOException
      */
-	private DaoFile processFile(Path generatedDir, ImportDao importDao, Path contentFile) throws IOException {		
+	private DaoFile processFile(String bundleName, Path generatedDir, ImportDao importDao, Path contentFile) throws IOException {		
         DaoFile daoFile = new DaoFile();
         BasicFileAttributes fileAttributes = Files.readAttributes(contentFile, BasicFileAttributes.class);
         daoFile.setCreatedDate(new Date(fileAttributes.creationTime().toMillis()));
@@ -267,7 +332,7 @@ public class DaoImportWorker {
 		}
 		daoFile.setFile(destPath);
 		
-        importDao.addFile(DaoImportService.ORIGINAL_BUNDLE, daoFile);
+        importDao.addFile(bundleName, daoFile);
         return daoFile;
 	}
 	
