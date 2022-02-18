@@ -843,7 +843,7 @@ public class ClientFactoryVO {
                 List<Integer> itemSpecsIds = new ArrayList<>();
                 for (FavoriteItem fi : setting.getFavoriteItems()) {
                     RulItemSpec ris = sdp.getItemSpecByCode(fi.getValue());
-                    Validate.notNull(ris);
+                    Validate.notNull(ris, "Cannot find specification: {}", fi.getValue());
                     itemSpecsIds.add(ris.getItemSpecId());
                 }
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
