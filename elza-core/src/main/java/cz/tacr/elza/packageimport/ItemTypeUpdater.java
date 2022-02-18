@@ -348,13 +348,17 @@ public class ItemTypeUpdater {
             processItemAptypesByItemTypes(itemTypes.getItemTypes(), rulItemTypeNew, apTypeCache);
         }
 
-        // cache all records RulItemType by codes from itemSpecs 
-        List<String> rulItemTypeCodes = itemSpecs.getItemSpecs().stream()
-                .flatMap(p -> p.getItemTypeAssigns().stream())
-                .map(p -> p.getCode())
-                .collect(Collectors.toList());
-        Map<String, RulItemType> rulItemTypeCache = itemTypeRepository.findByCodeIn(rulItemTypeCodes).stream()
-                .collect(Collectors.toMap(p -> p.getCode(), p -> p));
+        Map<String, RulItemType> rulItemTypeCache = new HashMap<>();
+
+        // cache all records RulItemType by codes from itemSpecs
+        if (itemSpecs != null) {
+            List<String> rulItemTypeCodes = itemSpecs.getItemSpecs().stream()
+                    .flatMap(p -> p.getItemTypeAssigns().stream())
+                    .map(p -> p.getCode())
+                    .collect(Collectors.toList());
+            rulItemTypeCache = itemTypeRepository.findByCodeIn(rulItemTypeCodes).stream()
+                    .collect(Collectors.toMap(p -> p.getCode(), p -> p));
+        }
 
         // update specifications
         processItemSpecs(itemSpecs, rulItemTypeCache, apTypeCache, puc.getPackage());
