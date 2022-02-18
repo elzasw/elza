@@ -565,7 +565,7 @@ public class ClientFactoryDO {
     }
 
     private String getConditionValueString(final List<String> conditions) {
-        return getFirstValue(conditions, Function.identity());
+        return getFirstValue(conditions, Function.identity()).toLowerCase();
     }
 
     private Double getConditionValueDouble(final List<String> conditions) {
