@@ -1830,12 +1830,10 @@ public class RuleService {
         // add in reverse order
         List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
         for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
-            String extCode = executeDrls.get(pos);
-            RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-            if (ruleSetExt != null) {
-                List<RulExtensionRule> extRules = ruleSetExt
-                        .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                rules.addAll(extRules);
+            String condition = executeDrls.get(pos);
+            List<RulExtensionRule> rulExtensionRule = ruleSet.getExtByCondition(condition);
+            if (rulExtensionRule != null) {
+                rules.addAll(rulExtensionRule);
             }
         }
         return rules;
