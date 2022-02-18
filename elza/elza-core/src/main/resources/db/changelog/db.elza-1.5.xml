@@ -1683,6 +1683,7 @@ where no.level_id = l.level_id
           where code = 'NM_SUP_DIFF'
       </sql>
     </changeSet>
+
     <changeSet id="20211115162900" author="fantis">
         <createTable tableName="ap_revision">
             <column name="revision_id" type="int">
@@ -1839,6 +1840,12 @@ where no.level_id = l.level_id
                              referencedTableName="ap_rev_part"
                              referencedColumnNames="part_id"/>
             </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20220216115500" author="sergey.iryupin">
+        <addColumn tableName="rul_extension_rule">
+            <column name="condition" type="nvarchar(250)" />
         </addColumn>
     </changeSet>
 
