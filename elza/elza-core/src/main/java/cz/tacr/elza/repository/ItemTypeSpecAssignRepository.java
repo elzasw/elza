@@ -17,8 +17,8 @@ public interface ItemTypeSpecAssignRepository extends JpaRepository<RulItemTypeS
     @Query("SELECT COUNT(itsa) FROM RulItemTypeSpecAssign itsa WHERE itsa.itemType = :itemType")
     Long countByType(@Param("itemType") RulItemType rulItemType);
 
-    @Query("SELECT itsa FROM RulItemTypeSpecAssign itsa JOIN FETCH itsa.itemSpec ris WHERE itsa.itemType = :itemType")
-    List<RulItemTypeSpecAssign> findByItemType(@Param("itemType") RulItemType rulItemType);
+    @Query("SELECT itsa FROM RulItemTypeSpecAssign itsa JOIN FETCH itsa.itemSpec ris WHERE itsa.itemType = :itemType ORDER BY itsa.viewOrder")
+    List<RulItemTypeSpecAssign> findByItemTypeSorted(@Param("itemType") RulItemType rulItemType);
 
     List<RulItemTypeSpecAssign> findByItemSpecIn(Collection<RulItemSpec> itemSpecs);
 
