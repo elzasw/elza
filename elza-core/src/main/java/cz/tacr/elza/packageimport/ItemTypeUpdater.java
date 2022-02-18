@@ -215,7 +215,7 @@ public class ItemTypeUpdater {
                 }
                 RulItemSpec rulItemSpecSaved = itemSpecRepository.save(rulItemSpec);
                 rulItemSpecNew.put(rulItemSpec.getCode(), rulItemSpecSaved);
-                processItemTypeAssignAdd(itemSpec.getItemTypeAssigns(), rulItemSpecSaved, rulItemTypesCache,viewOrderMap);
+                processItemTypeAssignAdd(itemSpec.getItemTypeAssigns(), rulItemSpecSaved, rulItemTypesCache, viewOrderMap);
             }
 
             processItemAptypesByItemSpecs(itemSpecs.getItemSpecs(), rulItemSpecNew, apTypeCache);
@@ -283,14 +283,14 @@ public class ItemTypeUpdater {
      */
     public void update(ItemTypes itemTypes,
                        ItemSpecs itemSpecs,
-                       @Nonnull final PackageContext puc) {
+                       @Nonnull final PackageContext pkgCtx) {
 
-        prepareForUpdate(puc.getPackage());
+        prepareForUpdate(pkgCtx.getPackage());
         List<ApType> typeList = apTypeRepository.findAll();
         Map<String, ApType> apTypeCache = typeList.stream()
                 .collect(toMap(apType -> apType.getCode(), apType -> apType));
 
-        processItemTypes(itemTypes, itemSpecs, puc, apTypeCache);
+        processItemTypes(itemTypes, itemSpecs, pkgCtx, apTypeCache);
     }
 
     private void processItemTypes(ItemTypes itemTypes, ItemSpecs itemSpecs, @Nonnull PackageContext puc, @Nonnull Map<String, ApType> apTypeCache) {
@@ -348,9 +348,17 @@ public class ItemTypeUpdater {
             processItemAptypesByItemTypes(itemTypes.getItemTypes(), rulItemTypeNew, apTypeCache);
         }
 
+        // cache all records RulItemType by codes from itemSpecs 
+        List<String> rulItemTypeCodes = itemSpecs.getItemSpecs().stream()
+                .flatMap(p -> p.getItemTypeAssigns().stream())
+                .map(p -> p.getCode())
+                .collect(Collectors.toList());
+        Map<String, RulItemType> rulItemTypeCache = itemTypeRepository.findByCodeIn(rulItemTypeCodes).stream()
+                .collect(Collectors.toMap(p -> p.getCode(), p -> p));
+
         // update specifications
-        processItemSpecs(itemSpecs, rulItemTypeNew, apTypeCache, puc.getPackage());
-        postSpecsOrder();
+        processItemSpecs(itemSpecs, rulItemTypeCache, apTypeCache, puc.getPackage());
+        postSpecsOrder(rulItemTypeCache.values());
 
         // delete unused item types
         if (!rulItemTypesOrig.isEmpty()) {
@@ -363,42 +371,31 @@ public class ItemTypeUpdater {
     }
 
     /**
-     * Seřazení specifikací podle balíčků.
-     * TODO: gotzy - jak řadit, jestli vůbec řadit? Není itemType ani viewOrder
+     * Seřazení záznamů v tabulce RulItemSpecAssing (rul_item_type_spec_assign)
+     * 
+     * @param rulItemTypes
      */
-    private void postSpecsOrder() {
-
-        // potřeba seřadit podle typu, balíčku a "lokálnímu" ražení
-       /* Sort sort = new Sort(
-                new Sort.Order(Sort.Direction.ASC, "itemType"),
-                new Sort.Order(Sort.Direction.ASC, "rulPackage"),
-                new Sort.Order(Sort.Direction.ASC, "viewOrder")
-        );
-        List<RulItemSpec> itemSpecList = itemSpecRepository.findAll(sort);
+    private void postSpecsOrder(Collection<RulItemType> rulItemTypes) {
 
         final List<RulPackage> sortedPackages = getSortedPackages();
 
-        // item type id -> list spec
-        Map<Integer, List<RulItemSpec>> itemSpecMap = itemSpecList.stream()
-                .collect(Collectors.groupingBy(RulItemSpec::getItemTypeId));
+        for (RulItemType rulItemType : rulItemTypes) {
+            List<RulItemTypeSpecAssign> ritsaList = itemTypeSpecAssignRepository.findByItemTypeSorted(rulItemType);
 
-        for (List<RulItemSpec> rulItemSpecs : itemSpecMap.values()) {
-
-            // seřazení podle priority balíčků (lokální seřazení se změní na globální)
-            rulItemSpecs.sort((o1, o2) -> {
-                int i1 = sortedPackages.indexOf(o1.getPackage());
-                int i2 = sortedPackages.indexOf(o2.getPackage());
+            // seřazení podle priority balíčků
+            ritsaList.sort((o1, o2) -> {
+                int i1 = sortedPackages.indexOf(o1.getItemSpec().getPackage());
+                int i2 = sortedPackages.indexOf(o2.getItemSpec().getPackage());
                 return Integer.compare(i1, i2);
             });
 
             // provede přečíslování
-            for (int i = 0; i < rulItemSpecs.size(); i++) {
-                RulItemSpec rulItemSpec = rulItemSpecs.get(i);
-                rulItemSpec.setViewOrder(i + 1);
+            for (int i = 0; i < ritsaList.size(); i++) {
+                RulItemTypeSpecAssign ritsa = ritsaList.get(i);
+                ritsa.setViewOrder(i + 1);
             }
+            itemTypeSpecAssignRepository.saveAll(ritsaList);
         }
-
-        itemSpecRepository.save(itemSpecList);*/
     }
 
     /**
