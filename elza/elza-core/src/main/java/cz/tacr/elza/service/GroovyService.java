@@ -125,7 +125,7 @@ public class GroovyService {
         GroovyItems groovyItems = new GroovyItems();
         for (AccessPointItem item : items) {
             AccessPointPart itemPart = item.getPart();
-            if (Objects.equals(itemPart.getPartId(), part.getPartId())) {
+            if (Objects.equals(itemPart.getPartId(), part.getPartId()) && item.getData() != null) {
                 ArrData data = item.getData();
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
                 String itemTypeCode = itemType.getCode();
