@@ -157,7 +157,9 @@ public class ApFactory {
     private final ApRevItemRepository revItemRepository;
 
     private final ApRevIndexRepository revIndexRepository;
-    
+
+    private final RevisionItemService revisionItemService;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
