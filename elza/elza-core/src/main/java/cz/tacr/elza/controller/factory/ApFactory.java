@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
+import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
@@ -175,6 +176,7 @@ public class ApFactory {
                      final ApRevPartRepository revPartRepository,
                      final ApRevItemRepository revItemRepository,
                      final ApRevIndexRepository revIndexRepository,
+                     final RevisionItemService revisionItemService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -193,6 +195,7 @@ public class ApFactory {
         this.revPartRepository = revPartRepository;
         this.revItemRepository = revItemRepository;
         this.revIndexRepository = revIndexRepository;
+        this.revisionItemService = revisionItemService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -968,7 +971,7 @@ public class ApFactory {
 
         ChangeType changeType = ChangeType.NEW;
         if (part.getOriginalPartId() != null) {
-            if (CollectionUtils.isEmpty(items)) {
+            if (revisionItemService.allItemsDeleted(items)) {
                 changeType = ChangeType.DELETED;
             } else {
                 changeType = ChangeType.UPDATED;
@@ -995,6 +998,9 @@ public class ApFactory {
             ChangeType changeType = ChangeType.NEW;
             if (item.getOrigObjectId() != null) {
                 changeType = ChangeType.UPDATED;
+                if (item.getData() == null) {
+                    changeType = ChangeType.DELETED;
+                }
             }
             itemVO.setChangeType(changeType);
             itemVO.setOrigObjectId(item.getOrigObjectId());
