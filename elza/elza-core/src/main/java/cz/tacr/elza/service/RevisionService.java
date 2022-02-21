@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
@@ -289,6 +290,8 @@ public class RevisionService {
         }
         ApPart apPart = partService.getPart(partId);
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
+        List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+        ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
 
         if (revPart != null) {
             // smazat itemy a indexi
@@ -296,7 +299,6 @@ public class RevisionService {
                 throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
             }
 
-            ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
             List<ApRevIndex> indices = revIndexRepository.findByPart(revPart);
             List<ApRevItem> items = revisionItemService.findByPart(revPart);
 
@@ -304,9 +306,10 @@ public class RevisionService {
             revisionItemService.deleteRevisionItems(items, apChange);
         } else {
             // vytvořit nový záznam
-            ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
-            revisionPartService.createPart(revision, apChange, apPart);
+            revPart = revisionPartService.createPart(revision, apChange, apPart);
         }
+
+        revisionItemService.createDeletedItems(revPart, apChange, apItems);
     }
 
     @Transactional
@@ -346,7 +349,7 @@ public class RevisionService {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
         }
 
-        if (apPart.getDeleteChange() != null || (revPart != null && CollectionUtils.isEmpty(revItems))) {
+        if (apPart.getDeleteChange() != null || (revPart != null && revisionItemService.allItemsDeleted(revItems))) {
             throw new IllegalArgumentException("Smazaný part nelze označit za preferovaný");
         }
 
@@ -399,32 +402,74 @@ public class RevisionService {
 
         Map<Integer, ApRevItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApRevItem::getItemId, i -> i));
 
+        List<ApItem> apItems = new ArrayList<>();
+        Map<Integer, ApItem> apItemMap = null;
+
+        if (revPart.getOriginalPart() != null) {
+            apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+        }
+
+
         List<ApItemVO> itemListVO = apPartFormVO.getItems();
         List<ApItemVO> createItems = new ArrayList<>();
+        List<ApItemVO> newRevisionCreateItems = new ArrayList<>();
+        List<ApItemVO> allCreateItems = new ArrayList<>();
 
         // určujeme, které záznamy: přidat, odstranit, nebo ponechat
         for (ApItemVO itemVO : itemListVO) {
             if (itemVO.getId() == null) {
                 createItems.add(itemVO); // new -> add
             } else {
-                ApRevItem item = itemMap.get(itemVO.getId());
-                if (item != null) {
-                    if (itemVO.equalsValue(item)) {
-                        deleteItems.remove(item); // no change -> don't delete
-                    } else {
-                        createItems.add(itemVO); // changed -> add + delete
+                if (itemVO.getOrigObjectId() != null || itemVO.getChangeType() == ChangeType.NEW) {
+                    ApRevItem item = itemMap.get(itemVO.getId());
+                    if (item != null) {
+                        if (itemVO.equalsValue(item)) {
+                            deleteItems.remove(item); // no change -> don't delete
+                        } else {
+                            createItems.add(itemVO); // changed -> add + delete
+                        }
+                    }
+                } else {
+                    if (apItemMap != null) {
+                        ApItem i = apItemMap.get(itemVO.getId());
+                        if (i != null && !itemVO.equalsValue(i)) {
+                            newRevisionCreateItems.add(itemVO);
+                        }
                     }
                 }
             }
         }
 
+        List<ApItem> notDeletedItems = new ArrayList<>();
+        allCreateItems.addAll(createItems);
+        allCreateItems.addAll(newRevisionCreateItems);
+        if (CollectionUtils.isNotEmpty(allCreateItems) && CollectionUtils.isNotEmpty(apItems)) {
+            for (ApItemVO createItem : allCreateItems) {
+                Integer objectId = createItem.getOrigObjectId();
+                if (objectId == null && createItem.getChangeType() != ChangeType.NEW) {
+                    objectId = createItem.getObjectId();
+                }
+                for (ApItem apItem : apItems) {
+                    if (apItem.getObjectId().equals(objectId)) {
+                        notDeletedItems.add(apItem);
+                    }
+                }
+            }
+            apItems.removeAll(notDeletedItems);
+        }
+
         // pokud nedojde ke změně
-        if (!createItems.isEmpty() || !deleteItems.isEmpty()) {
+        if (!createItems.isEmpty() || !deleteItems.isEmpty() || !apItems.isEmpty() || !newRevisionCreateItems.isEmpty()) {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
 
             revisionItemService.createItems(revPart, createItems, change, false);
 
+            revisionItemService.createItems(revPart, newRevisionCreateItems, change, true);
+
             revisionItemService.deleteRevisionItems(deleteItems, change);
+
+            revisionItemService.createDeletedItems(revPart, change, apItems);
 
             updatePartValue(revPart, revision);
         }
@@ -440,7 +485,37 @@ public class RevisionService {
 
             revPart = revisionPartService.createPart(revision, change, apPart);
 
-            revisionItemService.createItems(revPart, apPartFormVO.getItems(), change, true);
+            List<ApItem> apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+            List<ApItemVO> createItems = new ArrayList<>();
+
+            for (ApItemVO itemVO : apPartFormVO.getItems()) {
+                if (itemVO.getId() == null) {
+                    createItems.add(itemVO); // new -> add
+                } else {
+                    ApItem i = apItemMap.get(itemVO.getId());
+                    if (i != null && !itemVO.equalsValue(i)) {
+                        createItems.add(itemVO);
+                    }
+                }
+            }
+
+            List<ApItem> notDeletedItems = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(createItems) && CollectionUtils.isNotEmpty(apItems)) {
+                for (ApItemVO createItem : createItems) {
+                    Integer objectId = createItem.getObjectId();
+                    for (ApItem apItem : apItems) {
+                        if (apItem.getObjectId().equals(objectId)) {
+                            notDeletedItems.add(apItem);
+                        }
+                    }
+                }
+                apItems.removeAll(notDeletedItems);
+            }
+
+            revisionItemService.createItems(revPart, createItems, change, true);
+
+            revisionItemService.createDeletedItems(revPart, change, apItems);
 
             updatePartValue(revPart, revision);
         }
@@ -479,7 +554,7 @@ public class RevisionService {
                 } else {
                     List<ApRevItem> revPartItems = revItemMap.get(revPart.getPartId());
 
-                    if (CollectionUtils.isNotEmpty(revPartItems)) {
+                    if (!revisionItemService.allItemsDeleted(revPartItems)) {
                         updatedParts.add(revPart);
                     } else {
                         deletedParts.add(revPart);

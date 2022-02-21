@@ -148,11 +148,13 @@ public class RevisionItemService {
             List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
 
             for (ApRevItem revItem : revItems) {
-                ArrData newData = revItem.getData().makeCopy();
-                dataList.add(newData);
-                createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
-                        newData, revItem.getItemType(), revItem.getItemSpec(),
-                        revItem.getCreateChange(), revItem.getObjectId(), revItem.getPosition()));
+                if (revItem.getData() != null) {
+                    ArrData newData = revItem.getData().makeCopy();
+                    dataList.add(newData);
+                    createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
+                            newData, revItem.getItemType(), revItem.getItemSpec(),
+                            revItem.getCreateChange(), revItem.getObjectId(), revItem.getPosition()));
+                }
             }
         }
 
@@ -206,5 +208,27 @@ public class RevisionItemService {
 
     public List<ApRevItem> findByPart(ApRevPart revPart) {
         return revItemRepository.findByPart(revPart);
+    }
+
+    public void createDeletedItems(ApRevPart revPart, ApChange apChange, List<ApItem> apItems) {
+        if (CollectionUtils.isNotEmpty(apItems)) {
+            List<ApRevItem> revItems = new ArrayList<>();
+            for (ApItem apItem : apItems) {
+                revItems.add(createItem(revPart, null, apItem.getItemType(), apItem.getItemSpec(), apChange,
+                        accessPointItemService.nextItemObjectId(), apItem.getPosition(), apItem.getObjectId()));
+            }
+            revItemRepository.saveAll(revItems);
+        }
+    }
+
+    public boolean allItemsDeleted(List<ApRevItem> revItems) {
+        if (CollectionUtils.isNotEmpty(revItems)) {
+            for (ApRevItem revItem : revItems) {
+                if (revItem.getData() != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
