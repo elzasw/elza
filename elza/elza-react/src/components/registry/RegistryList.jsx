@@ -37,6 +37,8 @@ import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog
 import {Area} from '../../api/Area';
 import ExtFilterModal from './modal/ExtFilterModal';
 import {Button} from '../ui';
+import {withRouter} from "react-router";
+import {goToAe} from "../../actions/registry/registry";
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -199,7 +201,8 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryDetail = item => {
-        this.props.dispatch(registryDetailFetchIfNeeded(item.id));
+        const {dispatch, history} = this.props;
+        dispatch(goToAe(history, item.id));
     };
 
     renderListItem = props => {
@@ -474,7 +477,7 @@ class RegistryList extends AbstractReactComponent {
     }
 }
 
-export default connect(state => {
+export default withRouter(connect(state => {
     const {
         app: {registryList, registryDetail},
         userDetail,
@@ -491,4 +494,4 @@ export default connect(state => {
         userDetail,
         eidTypes: eidTypes.data,
     };
-})(RegistryList);
+})(RegistryList));

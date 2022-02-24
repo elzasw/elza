@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe
 } from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
@@ -42,6 +42,7 @@ import {objectById} from '../../shared/utils';
 import RegistryUsageForm from '../../components/form/RegistryUsageForm';
 import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
 import {StateApproval} from '../../api/StateApproval';
+import {withRouter} from "react-router";
 
 /**
  * Stránka rejstříků.
@@ -53,6 +54,10 @@ class RegistryPage extends AbstractReactComponent {
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
+    }
+
+    shouldComponentUpdate() {
+        return true;
     }
 
     getChildContext() {
@@ -73,8 +78,8 @@ class RegistryPage extends AbstractReactComponent {
         this.initData();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        this.initData(nextProps);
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.initData(this.props);
     }
 
     canDeleteRegistry = () => {
@@ -85,7 +90,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     initData = (props = this.props) => {
-        const {dispatch} = this.props;
+        const {dispatch, registryDetail, history} = this.props;
 
         //todo: prevest na apTypes
         dispatch(refRecordTypesFetchIfNeeded());
@@ -99,6 +104,17 @@ class RegistryPage extends AbstractReactComponent {
 
         if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || props.userDetail.hasOne(perms.AP_SCOPE_WR) || props.userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
             dispatch(apExtSystemListFetchIfNeeded());
+        }
+
+        const matchId = this.props.match.params.id;
+
+        // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
+        if (registryDetail.id !== null && matchId == null) {
+            history.replace(`/registry/${registryDetail.id}`);
+        }
+
+        if (matchId) {
+            dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
         }
 
         this.trySetFocus(props);
@@ -146,7 +162,7 @@ class RegistryPage extends AbstractReactComponent {
     isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ?  item.specId !== undefined : item.value !== undefined;
 
     handleAddRegistry = () => {
-        const {dispatch} = this.props;
+        const {dispatch, history} = this.props;
 
         dispatch(
             modalDialogShow(
@@ -174,7 +190,7 @@ class RegistryPage extends AbstractReactComponent {
                         };
                         return WebApi.createAccessPoint(submitData).then((data)=>{
                             dispatch(modalDialogHide());
-                            this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+                            this.props.dispatch(goToAe(history, data.id));
                             this.props.dispatch(registryListInvalidate());
                         });
                     }}
@@ -220,7 +236,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleExtSyncs = () => {
-        const {extSystems, dispatch} = this.props;
+        const {extSystems, dispatch, history} = this.props;
         const initialValues = {};
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
@@ -232,7 +248,7 @@ class RegistryPage extends AbstractReactComponent {
                 <ExtSyncsModal
                     onNavigateAp={accessPointId => {
                         dispatch(modalDialogHide());
-                        dispatch(registryDetailFetchIfNeeded(accessPointId, true));
+                        dispatch(goToAe(history, accessPointId, true));
                     }}
                     initialValues={initialValues}
                     extSystems={extSystems}
@@ -247,6 +263,7 @@ class RegistryPage extends AbstractReactComponent {
             extSystems,
             registryDetail: {data},
             dispatch,
+            history,
         } = this.props;
         const id = data.id;
         const initialValues = {
@@ -268,7 +285,7 @@ class RegistryPage extends AbstractReactComponent {
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal
                     onConnected={() => {
-                        dispatch(registryDetailFetchIfNeeded(id, true));
+                        dispatch(goToAe(history, id, true));
                     }}
                     itemType={TypeModal.CONNECT}
                     accessPointId={id}
@@ -285,6 +302,7 @@ class RegistryPage extends AbstractReactComponent {
             extSystems,
             registryDetail: {data},
             dispatch,
+            history,
         } = this.props;
         const id = data.id;
         const initialValues = {};
@@ -307,7 +325,7 @@ class RegistryPage extends AbstractReactComponent {
                     }}
                     onSubmitSuccess={() => {
                         dispatch(modalDialogHide());
-                        dispatch(registryDetailFetchIfNeeded(id, true));
+                        dispatch(goToAe(history, id, true));
                     }}
                     initialValues={initialValues}
                     extSystems={filteredExtSystems}
@@ -349,6 +367,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleChangeApState = () => {
         const {
+            history,
             registryDetail: {
                 data: {id, typeId, scopeId, stateApproval},
             },
@@ -371,7 +390,7 @@ class RegistryPage extends AbstractReactComponent {
                 }}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(registryDetailFetchIfNeeded(id, true));
+                    this.props.dispatch(goToAe(history, id, true));
                 }}
                 accessPointId={id}
             />
@@ -382,27 +401,30 @@ class RegistryPage extends AbstractReactComponent {
     handleCreateRevision = () => {
         if (window.confirm(i18n('registry.createRevisionQuestion'))) {
             const {
+                history,
                 registryDetail: {
                     data: {id},
                 },
             } = this.props;
-            this.props.dispatch(registryCreateRevision(id));
+            this.props.dispatch(registryCreateRevision(id, history));
         }
     };
 
     handleDeleteRevision = () => {
         if (window.confirm(i18n('registry.deleteRevisionQuestion'))) {
             const {
+                history,
                 registryDetail: {
                     data: {id},
                 },
             } = this.props;
-            this.props.dispatch(registryDeleteRevision(id));
+            this.props.dispatch(registryDeleteRevision(id, history));
         }
     };
 
     handleChangeStateRevision = () => {
         const {
+            history,
             registryDetail: {
                 data: {id, typeId, revStateApproval},
             },
@@ -418,11 +440,11 @@ class RegistryPage extends AbstractReactComponent {
                         state: data.state,
                         typeId: data.typeId,
                     };
-                    this.props.dispatch(registryChangeStateRevision(id, finalData));
+                    this.props.dispatch(registryChangeStateRevision(id, finalData, history));
                 }}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(registryDetailFetchIfNeeded(id, true));
+                    this.props.dispatch(goToAe(history, id, true));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
@@ -433,6 +455,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleMergeRevision = () => {
         const {
+            history,
             registryDetail: {
                 data: {id, stateApproval},
             },
@@ -448,7 +471,7 @@ class RegistryPage extends AbstractReactComponent {
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
-                    this.props.dispatch(registryDetailFetchIfNeeded(id, true));
+                    this.props.dispatch(goToAe(history, id, true));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
@@ -727,7 +750,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 }
 
-export default connect(state => {
+export default withRouter(connect(state => {
     const {
         app: {apExtSystemList, registryDetail, registryList},
         splitter,
@@ -744,4 +767,4 @@ export default connect(state => {
         focus,
         userDetail,
     };
-})(RegistryPage);
+})(RegistryPage));

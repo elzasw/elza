@@ -4,7 +4,7 @@ import { WebApi } from '../../../../actions/WebApi';
 import { modalDialogShow } from '../../../../actions/global/modalDialog';
 import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
-import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
+import {goToAe} from '../../../../actions/registry/registry';
 import { ApPartVO } from '../../../../api/ApPartVO';
 // import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
 import { DetailStoreState } from '../../../../types';
@@ -14,6 +14,7 @@ import { sortItems } from '../../../../utils/ItemInfo';
 import PartEditModal from './PartEditModal';
 import { RefTablesState } from '../../../../typings/store';
 import { PartType } from '../../../../api/generated/model';
+import * as H from "history";
 
 export const showPartEditModal = (
     part: ApPartVO | undefined,
@@ -23,6 +24,7 @@ export const showPartEditModal = (
     apTypeId: number,
     ruleSetId: number,
     scopeId: number,
+    history: H.History<H.LocationState>,
     refTables: RefTablesState,
     apViewSettings: DetailStoreState<ApViewSettings>,
     revision: boolean,
@@ -56,7 +58,7 @@ export const showPartEditModal = (
 
                 const result = part ? await WebApi.updatePart(apId, partId, submitData) : await WebApi.updateRevisionPart(apId, partId, submitData);
                 onClose();
-                await dispatch(registryDetailFetchIfNeeded(apId, true))
+                await dispatch(goToAe(history, apId, true))
                 onUpdateFinish();
                 return result
             }
