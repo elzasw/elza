@@ -7,15 +7,17 @@ import { modalDialogShow } from '../../../../actions/global/modalDialog';
 import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';
 import { PartType } from '../../../../api/generated/model';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
-import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
+import {goToAe} from '../../../../actions/registry/registry';
 import { globalFundTreeInvalidate } from '../../../../actions/arr/globalFundTree';
 import PartEditModal from './PartEditModal';
+import * as H from "history";
 
 export const showPartCreateModal = (
     partType: RulPartTypeVO,
     apId: number,
     apTypeId: number,
     scopeId: number,
+    history: H.History<H.LocationState>,
     parentPartId?: number,
     onUpdateFinish: () => void = () => { },
 ) => (dispatch: any) => dispatch(
@@ -43,7 +45,7 @@ export const showPartCreateModal = (
 
                 await WebApi.createPart(apId, submitData)
                 onClose();
-                await dispatch(registryDetailFetchIfNeeded(apId, true))
+                await dispatch(goToAe(history, apId, true))
                 onUpdateFinish();
             }
 

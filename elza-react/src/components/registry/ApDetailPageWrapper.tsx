@@ -4,7 +4,7 @@ import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
 import * as registry from '../../actions/registry/registry';
-import { registryDetailFetchIfNeeded } from '../../actions/registry/registry';
+import {goToAe} from '../../actions/registry/registry';
 import { WebApi } from '../../actions/WebApi';
 import { ApAccessPointVO } from '../../api/ApAccessPointVO';
 import { ApPartVO } from '../../api/ApPartVO';
@@ -29,6 +29,7 @@ import './ApDetailPageWrapper.scss';
 import { RevisionPart, getRevisionParts } from './revision';
 import { ApStateVO } from 'api/ApStateVO';
 import {Api} from '../../api';
+import {RouteComponentProps, withRouter} from "react-router";
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -501,7 +502,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<string>>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, {history}: RouteComponentProps) => ({
     showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
         part: ApPartVO | undefined,
@@ -515,7 +516,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         apViewSettings: DetailStoreState<ApViewSettings>,
         revision: boolean,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, apViewSettings, revision, onUpdateFinish)),
+    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,
@@ -523,22 +524,22 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, parentPartId, onUpdateFinish)),
+    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, parentPartId, onUpdateFinish)),
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
-        return dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(goToAe(history, apId, true));
     },
     setRevisionPreferred: async (apId: number, partId: number) => {
         await Api.accesspoints.setPreferNameRevision(apId, partId);
-        return dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(goToAe(history, apId, true));
     },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
-        return dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(goToAe(history, apId, true));
     },
     deleteRevisionPart: async (apId: number, partId: number) => {
         await Api.accesspoints.deleteRevisionPart(apId, partId);
-        return dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(goToAe(history, apId, true));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {
         for (let part of parts) {
@@ -547,7 +548,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
             }
         }
 
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+        dispatch(goToAe(history, apId, true));
     },
     refreshValidation: (apId: number) => {
         dispatch(
@@ -562,7 +563,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         );
     },
     refreshDetail: (apId: number, force: boolean = true) => {
-        dispatch(registryDetailFetchIfNeeded(apId, force));
+        dispatch(goToAe(history, apId, force));
     },
     fetchViewSettings: () => {
         dispatch(
@@ -583,4 +584,4 @@ const mapStateToProps = (state: AppState) => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ApDetailPageWrapper);
+export default withRouter(connect<any, any, RouteComponentProps>(mapStateToProps, mapDispatchToProps)(ApDetailPageWrapper));
