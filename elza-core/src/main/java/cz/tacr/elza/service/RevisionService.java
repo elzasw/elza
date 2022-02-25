@@ -414,7 +414,6 @@ public class RevisionService {
         List<ApItemVO> itemListVO = apPartFormVO.getItems();
         List<ApItemVO> createItems = new ArrayList<>();
         List<ApItemVO> newRevisionCreateItems = new ArrayList<>();
-        List<ApItemVO> allCreateItems = new ArrayList<>();
 
         // určujeme, které záznamy: přidat, odstranit, nebo ponechat
         for (ApItemVO itemVO : itemListVO) {
@@ -441,18 +440,19 @@ public class RevisionService {
             }
         }
 
+        // zjištění, které z původních itemů v partu zůstávají
         List<ApItem> notDeletedItems = new ArrayList<>();
-        allCreateItems.addAll(createItems);
-        allCreateItems.addAll(newRevisionCreateItems);
-        if (CollectionUtils.isNotEmpty(allCreateItems) && CollectionUtils.isNotEmpty(apItems)) {
-            for (ApItemVO createItem : allCreateItems) {
+        if (CollectionUtils.isNotEmpty(apItems)) {
+            for (ApItemVO createItem : itemListVO) {
                 Integer objectId = createItem.getOrigObjectId();
                 if (objectId == null && createItem.getChangeType() != ChangeType.NEW) {
                     objectId = createItem.getObjectId();
                 }
-                for (ApItem apItem : apItems) {
-                    if (apItem.getObjectId().equals(objectId)) {
-                        notDeletedItems.add(apItem);
+                if (objectId != null) {
+                    for (ApItem apItem : apItems) {
+                        if (apItem.getObjectId().equals(objectId)) {
+                            notDeletedItems.add(apItem);
+                        }
                     }
                 }
             }
@@ -469,6 +469,7 @@ public class RevisionService {
 
             revisionItemService.deleteRevisionItems(deleteItems, change);
 
+            //založení záznamů o smazaných původních itemech
             revisionItemService.createDeletedItems(revPart, change, apItems);
 
             updatePartValue(revPart, revision);
@@ -500,12 +501,14 @@ public class RevisionService {
                 }
             }
 
+            // zjištění, které z původních itemů v partu zůstávají
             List<ApItem> notDeletedItems = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(createItems) && CollectionUtils.isNotEmpty(apItems)) {
-                for (ApItemVO createItem : createItems) {
-                    Integer objectId = createItem.getObjectId();
-                    for (ApItem apItem : apItems) {
-                        if (apItem.getObjectId().equals(objectId)) {
+            if (CollectionUtils.isNotEmpty(apItems)) {
+                for (ApItemVO itemVO : apPartFormVO.getItems()) {
+                    Integer id = itemVO.getId();
+                    if (id != null) {
+                        ApItem apItem = apItemMap.get(itemVO.getId());
+                        if (apItem != null) {
                             notDeletedItems.add(apItem);
                         }
                     }
@@ -515,6 +518,7 @@ public class RevisionService {
 
             revisionItemService.createItems(revPart, createItems, change, true);
 
+            //založení záznamů o smazaných původních itemech
             revisionItemService.createDeletedItems(revPart, change, apItems);
 
             updatePartValue(revPart, revision);
