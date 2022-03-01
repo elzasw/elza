@@ -32,6 +32,7 @@ interface OwnProps extends ReturnType<typeof mapStateToProps> {
     globalEntity: boolean;
     bindings?: Bindings;
     revision?: boolean;
+    select: boolean;
 }
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & RouteComponentProps;
@@ -179,9 +180,9 @@ const DetailItemContent: FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, {history}: RouteComponentProps) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, {history, select}: RouteComponentProps & {select: boolean}) => ({
     selectAp: (apId: number) => {
-        dispatch(goToAe(history, apId, true));
+        dispatch(goToAe(history, apId, true, !select));
     },
 });
 

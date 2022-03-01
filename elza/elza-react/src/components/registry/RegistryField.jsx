@@ -107,7 +107,6 @@ class RegistryField extends AbstractReactComponent {
             onDetail(id);
         } else {
             this.props.dispatch(goToAe(history, id));
-            this.props.dispatch(routerNavigate('registry'));
         }
     };
 

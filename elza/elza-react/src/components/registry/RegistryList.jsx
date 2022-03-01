@@ -17,7 +17,6 @@ import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes';
 import {indexById} from 'stores/app/utils';
 import {
     DEFAULT_REGISTRY_LIST_MAX_SIZE,
-    registryDetailFetchIfNeeded,
     registryListFetchIfNeeded,
     registryListFilter,
     registryListInvalidate,
@@ -201,8 +200,8 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryDetail = item => {
-        const {dispatch, history} = this.props;
-        dispatch(goToAe(history, item.id));
+        const {dispatch, history, select} = this.props;
+        dispatch(goToAe(history, item.id, false, !select));
     };
 
     renderListItem = props => {

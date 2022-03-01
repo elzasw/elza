@@ -12,7 +12,6 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {
     AREA_REGISTRY_LIST,
     registryDetailClear,
-    registryDetailFetchIfNeeded,
     registryListFilter,
 } from 'actions/registry/registry.jsx';
 import classNames from 'classnames';
@@ -64,7 +63,7 @@ class DescItemRecordRef extends AbstractReactComponent {
             }),
         );
 
-        this.props.dispatch(goToAe(history, value ? value.id : null));
+        this.props.dispatch(goToAe(history, value ? value.id : null, false, false));
         this.props.dispatch(
             modalDialogShow(
                 this,

@@ -91,6 +91,7 @@ type OwnProps = {
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
+    select: boolean;
 };
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
@@ -121,6 +122,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     showPartCreateModal,
     descItemTypesMap,
     refTables,
+    select,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
@@ -130,7 +132,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     useEffect(() => {
         if (id) {
-            refreshDetail(id, false);
+            refreshDetail(id, false, false);
         }
     }, []);
 
@@ -466,6 +468,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         partType={partType}
                                         onDelete={handleDelete}
                                         revision={detail.data ? !!detail.data.revStateApproval : false}
+                                        select={select}
                                     />
                                 );
                             }
@@ -492,6 +495,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                     globalEntity={globalEntity}
                                     partType={partType}
+                                    select={select}
                                 />
                             );
                         })}
@@ -502,7 +506,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, {history}: RouteComponentProps) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, {history, select}: RouteComponentProps & {select: boolean}) => ({
     showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
         part: ApPartVO | undefined,
@@ -516,7 +520,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         apViewSettings: DetailStoreState<ApViewSettings>,
         revision: boolean,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish)),
+    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish, select)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,
@@ -524,22 +528,22 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, parentPartId, onUpdateFinish)),
+    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish)),
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
-        return dispatch(goToAe(history, apId, true));
+        return dispatch(goToAe(history, apId, true, !select));
     },
     setRevisionPreferred: async (apId: number, partId: number) => {
         await Api.accesspoints.setPreferNameRevision(apId, partId);
-        return dispatch(goToAe(history, apId, true));
+        return dispatch(goToAe(history, apId, true, !select));
     },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
-        return dispatch(goToAe(history, apId, true));
+        return dispatch(goToAe(history, apId, true, !select));
     },
     deleteRevisionPart: async (apId: number, partId: number) => {
         await Api.accesspoints.deleteRevisionPart(apId, partId);
-        return dispatch(goToAe(history, apId, true));
+        return dispatch(goToAe(history, apId, true, !select));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {
         for (let part of parts) {
@@ -548,7 +552,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
             }
         }
 
-        dispatch(goToAe(history, apId, true));
+        dispatch(goToAe(history, apId, true, !select));
     },
     refreshValidation: (apId: number) => {
         dispatch(
@@ -562,8 +566,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
             ),
         );
     },
-    refreshDetail: (apId: number, force: boolean = true) => {
-        dispatch(goToAe(history, apId, force));
+    refreshDetail: (apId: number, force: boolean = true, redirect: boolean = true) => {
+        dispatch(goToAe(history, apId, force, redirect));
     },
     fetchViewSettings: () => {
         dispatch(

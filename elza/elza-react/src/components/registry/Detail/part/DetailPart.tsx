@@ -24,6 +24,7 @@ type Props = {
     bindings: Bindings;
     itemTypeSettings: ItemType[];
     renderActions?: (part?: RevisionPart) => React.ReactNode;
+    select: boolean;
 };
 
 const DetailPart: FC<Props> = ({
@@ -38,6 +39,7 @@ const DetailPart: FC<Props> = ({
     bindings,
     itemTypeSettings,
     renderActions = () => undefined,
+    select,
 }) => {
     const [collapsed, setCollapsed] = useState(globalCollapsed);
 
@@ -128,6 +130,7 @@ const DetailPart: FC<Props> = ({
             {!isCollapsed && (
                 <div className={classNameContent}>
                     <DetailPartInfo
+                        select={select}
                         items={items}
                         globalEntity={globalEntity}
                         bindings={bindings}
