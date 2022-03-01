@@ -95,6 +95,14 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
+export function goToAe(history, id, force = false) {
+    return dispatch => {
+        const result = dispatch(registryDetailFetchIfNeeded(id, force))
+        history.push(`/registry/${(id == null ? "" : id)}`);
+        return result;
+    };
+}
+
 export function registryDetailFetchIfNeeded(id, force = false) {
     return (dispatch, getState) => {
         return dispatch(
@@ -168,7 +176,7 @@ export function registryDelete(id) {
     };
 }
 
-export function registryCreateRevision(id) {
+export function registryCreateRevision(id, history) {
     return (dispatch, getState) => {
         Api.accesspoints.createRevision(id).then(() => {
             const store = getState();
@@ -176,7 +184,7 @@ export function registryCreateRevision(id) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(registryDetailFetchIfNeeded(id, true));
+                dispatch(goToAe(history, id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -186,7 +194,7 @@ export function registryCreateRevision(id) {
     };
 }
 
-export function registryDeleteRevision(id) {
+export function registryDeleteRevision(id, history) {
     return (dispatch, getState) => {
         Api.accesspoints.deleteRevision(id).then(() => {
             const store = getState();
@@ -194,7 +202,7 @@ export function registryDeleteRevision(id) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(registryDetailFetchIfNeeded(id, true));
+                dispatch(goToAe(history, id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -204,7 +212,7 @@ export function registryDeleteRevision(id) {
     };
 }
 
-export function registryChangeStateRevision(id, revisionState) {
+export function registryChangeStateRevision(id, revisionState, history) {
     return (dispatch, getState) => {
 
         Api.accesspoints.changeStateRevision(id, revisionState).then(() => {
@@ -213,7 +221,7 @@ export function registryChangeStateRevision(id, revisionState) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(registryDetailFetchIfNeeded(id, true));
+                dispatch(goToAe(history, id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {

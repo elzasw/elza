@@ -160,9 +160,8 @@ class Layout extends AbstractReactComponent {
                                 </Switch>
                             </Route>
 
-                            <Route path="/registry">
-                                <RegistryPage/>
-                            </Route>
+                            <Route path="/registry/ae/:uuid" component={EntityPage} />
+                            <Route path="/registry/:id?" component={RegistryPage} />
 
                             <Route path="/admin">
                                 <Switch>
