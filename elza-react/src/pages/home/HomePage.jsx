@@ -13,7 +13,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import './HomePage.scss';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY} from '../../constants.tsx';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import {WebApi} from "../../actions/WebApi";
 
@@ -209,7 +209,7 @@ class HomePage extends AbstractReactComponent {
         }
 
         arrItems.push(this.renderLink('/fund', i18n('home.recent.fund.goTo')));
-        registryItems.push(this.renderLink('/registry', i18n('home.recent.registry.goTo')));
+        registryItems.push(this.renderLink(URL_ENTITY, i18n('home.recent.registry.goTo')));
 
         return (
             <div ref="list" className="history-list-container">

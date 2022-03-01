@@ -41,7 +41,7 @@ import {
 import './Layout.scss';
 import {modalDialogShow} from '../actions/global/modalDialog';
 import i18n from '../components/i18n';
-import {FOCUS_KEYS} from '../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 
 let _gameRunner = null;
@@ -81,7 +81,7 @@ class Layout extends AbstractReactComponent {
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'registry':
-                this.props.dispatch(routerNavigate('/registry'));
+                this.props.dispatch(routerNavigate(URL_ENTITY));
                 this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 break;
             case 'admin':
@@ -146,8 +146,9 @@ class Layout extends AbstractReactComponent {
                         <Switch>
                             <Route path="/fund" component={FundPage} />
                             <Route path="/node/:uuid" component={NodePage} />
-                            <Route path="/entity/:uuid" component={EntityPage} />
-                            <Route path="/entity-create" component={EntityCreatePage} />
+                            <Route path={URL_ENTITY + "/:uuid([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"} component={EntityPage} />
+                            <Route path={URL_ENTITY + "/:id([0-9]+)?"} component={RegistryPage} />
+                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
                             <Route path="/arr">
                                 <Switch>
                                     <Route path="/arr/dataGrid" component={ArrDataGridPage} />
@@ -159,9 +160,6 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-
-                            <Route path="/registry/ae/:uuid" component={EntityPage} />
-                            <Route path="/registry/:id?" component={RegistryPage} />
 
                             <Route path="/admin">
                                 <Switch>

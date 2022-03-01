@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {Accordion, Card} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils';
 import DescItemType from './nodeForm/DescItemType';
-import {registryDetailFetchIfNeeded} from 'actions/registry/registry';
 import {routerNavigate} from 'actions/router';
 import {setInputFocus} from 'components/Utils';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
@@ -537,7 +536,6 @@ class SubNodeForm extends AbstractReactComponent {
         if (submitType === 'storeAndViewDetail') {
             // přesměrování na detail
             this.props.dispatch(goToAe(history, data.id));
-            this.props.dispatch(routerNavigate('registry'));
         } else {
             // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
@@ -567,7 +565,6 @@ class SubNodeForm extends AbstractReactComponent {
         const {singleDescItemTypeEdit, history} = this.props;
         singleDescItemTypeEdit && this.props.dispatch(modalDialogHide());
         this.props.dispatch(goToAe(history, recordId));
-        this.props.dispatch(routerNavigate('registry'));
     }
 
     /**

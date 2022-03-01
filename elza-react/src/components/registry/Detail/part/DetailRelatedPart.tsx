@@ -26,6 +26,7 @@ type Props = {
   bindings: Bindings;
   revision?: boolean;
   itemTypeSettings: ItemType[];
+  select: boolean;
 };
 
 const DetailRelatedPart: FC<Props> = ({
@@ -40,6 +41,7 @@ const DetailRelatedPart: FC<Props> = ({
     bindings,
     revision,
     itemTypeSettings,
+    select,
 }) => {
     const [collapsed, setCollapsed] = useState(true);
     // const [modalVisible, setModalVisible] = useState(false);
@@ -124,6 +126,7 @@ const DetailRelatedPart: FC<Props> = ({
         {!isCollapsed && <div className={classNameContent}>
             <div>
                 <DetailPartInfo
+                    select={select}
                     items={revisionItems}
                     globalEntity={globalEntity}
                     bindings={bindings}

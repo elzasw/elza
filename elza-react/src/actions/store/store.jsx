@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {routerNavigate} from 'actions/router.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY} from '../../constants.tsx';
 
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
@@ -61,7 +61,7 @@ export function storeLoadData(type, data, switchView = true) {
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({store: 'app', registryDetail: {...data}}));
                 if (switchView) {
-                    dispatch(routerNavigate('/registry'));
+                    dispatch(routerNavigate(URL_ENTITY));
                     dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 }
                 break;

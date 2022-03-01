@@ -15,6 +15,7 @@ interface Props {
     itemTypeSettings: ItemType[];
     isModified: boolean | undefined;
     revision?: boolean;
+    select: boolean;
 }
 
 export const DetailPartInfo: FC<Props> = ({
@@ -24,6 +25,7 @@ export const DetailPartInfo: FC<Props> = ({
     itemTypeSettings,
     isModified,
     revision,
+    select,
 }) => {
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap || {})
 
@@ -63,6 +65,7 @@ export const DetailPartInfo: FC<Props> = ({
             if( typeId !== nextTypeId){
                 result.push(
                     <DetailMultipleItem
+                        select={select}
                         key={groupStartIndex}
                         items={itemGroup}
                         globalEntity={globalEntity}

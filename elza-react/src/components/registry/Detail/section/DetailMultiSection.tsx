@@ -33,6 +33,7 @@ interface Props {
     partValidationErrors?: PartValidationErrorsVO[];
     itemTypeSettings: ItemType[];
     partType: RulPartTypeVO;
+    select: boolean;
 }
 
 const DetailMultiSection: FC<Props> = ({
@@ -55,7 +56,8 @@ const DetailMultiSection: FC<Props> = ({
     partValidationErrors,
     bindings,
     itemTypeSettings,
-    partType
+    partType,
+    select,
 }) => {
     if (!editMode && parts.length === 0) {
         return null;
@@ -218,6 +220,7 @@ const DetailMultiSection: FC<Props> = ({
                                 bindings={bindings}
                                 itemTypeSettings={itemTypeSettings}
                                 renderActions={renderPartActions}
+                                select={select}
                                 />
                             {relatedParts.length > 0 &&
                                 <div className="related-parts">
@@ -236,6 +239,7 @@ const DetailMultiSection: FC<Props> = ({
                                                 bindings={bindings}
                                                 itemTypeSettings={itemTypeSettings}
                                                 revision={revision}
+                                                select={select}
                                                 />
                                         );
                                     })}

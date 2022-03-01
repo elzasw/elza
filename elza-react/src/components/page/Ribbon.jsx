@@ -18,6 +18,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {userPasswordChange} from 'actions/admin/user.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import PasswordForm from '../admin/PasswordForm';
+import {URL_ENTITY} from "../../constants";
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
@@ -290,7 +291,7 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.fund')}</span>
                         </Button>
                     </LinkContainer>
-                    <LinkContainer key="ribbon-btn-registry" to="/registry">
+                    <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-th-list" />
                             <span className="btnText">{i18n('ribbon.action.registry')}</span>

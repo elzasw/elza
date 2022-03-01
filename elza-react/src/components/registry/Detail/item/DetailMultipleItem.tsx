@@ -16,6 +16,7 @@ interface Props extends ReturnType<typeof mapStateToProps> {
     typeId?: number;
     isPartModified?: boolean | undefined;
     revision?: boolean;
+    select: boolean;
 }
 
 const DetailMultipleItem: FC<Props> = ({
@@ -26,6 +27,7 @@ const DetailMultipleItem: FC<Props> = ({
     typeId,
     isPartModified,
     revision,
+    select,
 }) => {
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
@@ -60,6 +62,7 @@ const DetailMultipleItem: FC<Props> = ({
                                     isNew={isNew}
                                     renderPrevValue={() => {
                                         return item ? <DetailItemContent
+                                            select={select}
                                             item={item}
                                             key={index}
                                             globalEntity={globalEntity}
@@ -69,6 +72,7 @@ const DetailMultipleItem: FC<Props> = ({
                                     }}
                                     renderValue={() => {
                                         return updatedItem ? <DetailItemContent
+                                            select={select}
                                             item={updatedItem}
                                             key={index}
                                             bindings={bindings}
