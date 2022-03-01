@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
-import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
 
 import {Button} from '../ui';
 import {connect} from 'react-redux';
@@ -18,6 +17,8 @@ import './RegistryField.scss';
 import RegistryListItem from './RegistryListItem';
 import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
 import {JAVA_ATTR_CLASS, JAVA_CLASS_AP_ACCESS_POINT_VO} from '../../constants';
+import {goToAe} from "../../actions/registry/registry";
+import {withRouter} from "react-router";
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -88,7 +89,7 @@ class RegistryField extends AbstractReactComponent {
 
     handleDetail = id => {
         const {searchText} = this.state;
-        const {onDetail, onSelectModule, value} = this.props;
+        const {onDetail, onSelectModule, value, history} = this.props;
 
         this.refAutocomplete.closeMenu();
 
@@ -105,7 +106,7 @@ class RegistryField extends AbstractReactComponent {
         } else if (onDetail) {
             onDetail(id);
         } else {
-            this.props.dispatch(registryDetailFetchIfNeeded(id));
+            this.props.dispatch(goToAe(history, id));
             this.props.dispatch(routerNavigate('registry'));
         }
     };
@@ -245,7 +246,7 @@ class RegistryField extends AbstractReactComponent {
     }
 }
 
-export default connect(
+export default withRouter(connect(
     state => {
         const {
             userDetail,
@@ -260,4 +261,4 @@ export default connect(
     null,
     null,
     {forwardRef: true},
-)(RegistryField);
+)(RegistryField));

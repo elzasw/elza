@@ -4,14 +4,14 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent} from '../../components/shared';
+import {AbstractReactComponent, i18n} from '../../components/shared';
 import PageLayout from "../shared/layout/PageLayout";
 import Ribbon from "../../components/page/Ribbon";
-import {routerNavigate} from "../../actions/router";
-import {registryDetailFetchIfNeeded} from '../../actions/registry/registry'
 import Loading from "../../components/shared/loading/Loading";
 import './EntityPage.less';
-import {i18n} from '../../components/shared';
+import {WebApi} from "../../actions";
+import {withRouter} from "react-router";
+import {goToAe} from "../../actions/registry/registry";
 
 class EntityPage extends AbstractReactComponent {
 
@@ -24,24 +24,28 @@ class EntityPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const { dispatch, match} = this.props;
+        const {dispatch, match, history} = this.props;
         const uuid = match.params.uuid;
 
-        // vybrani pozadovane archivni entity
-        dispatch(registryDetailFetchIfNeeded(uuid)).then(()=>{
-            // presmerovani na stranku s archivnimi entitami
-            dispatch(routerNavigate('/registry'));
-        }).catch(()=>{
-            // zobrazeni chybove hlasky pokud entita nebyla nalezena
-            this.setState({
-                message: i18n("registry.entity.notFound")
-            });
-        }).finally(()=>{
-            this.setState({
-                fetching: false,
-            });
-        })
+        console.info('Select AE: ', uuid);
+
         this.setState({fetching: true});
+        WebApi.getAccessPoint(uuid)
+            .then(data => {
+                console.info('Select AE: ', data);
+                dispatch(goToAe(history, data.id));
+            })
+            .catch(() => {
+                // zobrazeni chybove hlasky pokud entita nebyla nalezena
+                this.setState({
+                    message: i18n("registry.entity.notFound")
+                });
+            })
+            .finally(() => {
+                this.setState({
+                    fetching: false,
+                });
+            });
     }
 
     buildRibbon = () => {
@@ -75,4 +79,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(EntityPage);
+export default withRouter(connect(mapStateToProps)(EntityPage));

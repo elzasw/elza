@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
+import {goToAe} from '../../../../actions/registry/registry';
 import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
@@ -25,6 +25,7 @@ import DetailCoordinateItem from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';
+import {RouteComponentProps, withRouter} from "react-router";
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -33,12 +34,12 @@ interface OwnProps extends ReturnType<typeof mapStateToProps> {
     revision?: boolean;
 }
 
-type Props = OwnProps & ReturnType<typeof mapDispatchToProps>;
+type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & RouteComponentProps;
 
 const DetailItemContent: FC<Props> = ({
     item, 
     globalEntity, 
-    rulDataTypes, 
+    rulDataTypes,
     descItemTypes, 
     bindings, 
     selectAp,
@@ -178,9 +179,9 @@ const DetailItemContent: FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, {history}: RouteComponentProps) => ({
     selectAp: (apId: number) => {
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+        dispatch(goToAe(history, apId, true));
     },
 });
 
@@ -192,4 +193,4 @@ const mapStateToProps = state => ({
     },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(DetailItemContent);
+export default withRouter(connect<any, any, RouteComponentProps>(mapStateToProps, mapDispatchToProps)(DetailItemContent)) as any;
