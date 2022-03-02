@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.RevStateApproval;
@@ -1333,6 +1334,12 @@ public class ApController {
     @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
     public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
         externalSystemService.deleteQueueItem(itemId);
+    }
+
+    @RequestMapping(value = "/layer/configuration", method = RequestMethod.GET)
+    public List<MapLayerVO> mapLayerConfiguration() {
+        List<MapLayerVO> result = new ArrayList<>();
+        return result;
     }
 
 }
