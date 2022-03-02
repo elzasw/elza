@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.layers.LayersConfig;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -188,6 +189,9 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
+
+    @Autowired
+    private LayersConfig layersConfig;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -1338,8 +1342,7 @@ public class ApController {
 
     @RequestMapping(value = "/layer/configuration", method = RequestMethod.GET)
     public List<MapLayerVO> mapLayerConfiguration() {
-        List<MapLayerVO> result = new ArrayList<>();
-        return result;
+        return layersConfig.getLayers();
     }
 
 }
