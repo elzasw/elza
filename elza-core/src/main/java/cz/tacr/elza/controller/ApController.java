@@ -461,7 +461,7 @@ public class ApController {
 
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
-            vo = apFactory.createVO(vo, revision);
+            vo = apFactory.createVO(vo, revision, apState.getAccessPoint());
         }
 
         return vo;
