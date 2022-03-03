@@ -1842,6 +1842,13 @@ where no.level_id = l.level_id
             </column>
         </addColumn>
     </changeSet>
+    <changeSet id="20220302162800" author="fantis">
+        <addColumn tableName="ap_rev_item">
+            <column name="deleted" type="boolean"/>
+        </addColumn>
+        <sql>UPDATE ap_rev_item SET deleted = 'false'</sql>
+        <addNotNullConstraint tableName="ap_rev_item" columnName="deleted"/>
+    </changeSet>
 
     <changeSet id="20220216115500" author="sergey.iryupin">
         <addColumn tableName="rul_extension_rule">

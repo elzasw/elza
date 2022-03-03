@@ -340,6 +340,7 @@ public class RevisionService {
         ApPart apPart = partService.getPart(partId);
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         List<ApRevItem> revItems = revPart != null ? revisionItemService.findByPart(revPart) : null;
+        List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
 
         if (!apPart.getPartType().getCode().equals(defaultPartType.getCode())) {
             throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
@@ -349,7 +350,7 @@ public class RevisionService {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
         }
 
-        if (apPart.getDeleteChange() != null || (revPart != null && revisionItemService.allItemsDeleted(revItems))) {
+        if (apPart.getDeleteChange() != null || (revPart != null && revisionItemService.allItemsDeleted(revItems, apItems))) {
             throw new IllegalArgumentException("Smazaný part nelze označit za preferovaný");
         }
 
@@ -548,6 +549,9 @@ public class RevisionService {
 
             List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
+            Map<Integer, List<ApItem>> itemMap = items.stream()
+                    .collect(Collectors.groupingBy(ApItem::getPartId));
+
             List<ApRevPart> createdParts = new ArrayList<>();
             List<ApRevPart> updatedParts = new ArrayList<>();
             List<ApRevPart> deletedParts = new ArrayList<>();
@@ -557,8 +561,9 @@ public class RevisionService {
                     createdParts.add(revPart);
                 } else {
                     List<ApRevItem> revPartItems = revItemMap.get(revPart.getPartId());
+                    List<ApItem> apItems = itemMap.get(revPart.getOriginalPartId());
 
-                    if (!revisionItemService.allItemsDeleted(revPartItems)) {
+                    if (!revisionItemService.allItemsDeleted(revPartItems, apItems)) {
                         updatedParts.add(revPart);
                     } else {
                         deletedParts.add(revPart);

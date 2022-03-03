@@ -141,3 +141,6 @@ export enum CoordinateFileType {
 }
 
 export const CLS_CALCULABLE = 'calculable';
+
+export const URL_ENTITY = '/entity'
+export const URL_ENTITY_CREATE = '/entity-create'

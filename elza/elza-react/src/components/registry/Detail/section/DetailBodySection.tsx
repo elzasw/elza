@@ -25,6 +25,7 @@ interface Props {
     itemTypeSettings: ItemType[];
     partType: RulPartTypeVO;
     revision?: boolean;
+    select: boolean;
 }
 
 const DetailBodySection: FC<Props> = ({
@@ -41,6 +42,7 @@ const DetailBodySection: FC<Props> = ({
     partType,
     partValidationErrors = [],
     revision,
+    select,
 }) => {
     if (!editMode && !part) {
         return null;
@@ -104,6 +106,7 @@ const DetailBodySection: FC<Props> = ({
                 {!hasInfo(part) ? <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span> :
                 <div className={`part`}>
                     <DetailPartInfo
+                        select={select}
                         globalEntity={globalEntity}
                         itemTypeSettings={itemTypeSettings}
                         bindings={bindings}

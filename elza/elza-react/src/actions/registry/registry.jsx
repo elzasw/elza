@@ -6,7 +6,7 @@ import {SimpleListActions} from 'shared/list';
 import {DetailActions} from '../../shared/detail';
 import {indexById, storeFromArea} from 'shared/utils';
 
-import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import {DEFAULT_LIST_SIZE, URL_ENTITY} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -95,10 +95,12 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
-export function goToAe(history, id, force = false) {
+export function goToAe(history, id, force = false, redirect = true) {
     return dispatch => {
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
-        history.push(`/registry/${(id == null ? "" : id)}`);
+        if (redirect) {
+            history.push(`${URL_ENTITY}/${(id == null ? "" : id)}`);
+        }
         return result;
     };
 }
@@ -176,7 +178,7 @@ export function registryDelete(id) {
     };
 }
 
-export function registryCreateRevision(id, history) {
+export function registryCreateRevision(id, history, select) {
     return (dispatch, getState) => {
         Api.accesspoints.createRevision(id).then(() => {
             const store = getState();
@@ -184,7 +186,7 @@ export function registryCreateRevision(id, history) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(goToAe(history, id, true));
+                dispatch(goToAe(history, id, true, !select));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -194,7 +196,7 @@ export function registryCreateRevision(id, history) {
     };
 }
 
-export function registryDeleteRevision(id, history) {
+export function registryDeleteRevision(id, history, select) {
     return (dispatch, getState) => {
         Api.accesspoints.deleteRevision(id).then(() => {
             const store = getState();
@@ -202,7 +204,7 @@ export function registryDeleteRevision(id, history) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(goToAe(history, id, true));
+                dispatch(goToAe(history, id, true, !select));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -212,7 +214,7 @@ export function registryDeleteRevision(id, history) {
     };
 }
 
-export function registryChangeStateRevision(id, revisionState, history) {
+export function registryChangeStateRevision(id, revisionState, history, select) {
     return (dispatch, getState) => {
 
         Api.accesspoints.changeStateRevision(id, revisionState).then(() => {
@@ -221,7 +223,7 @@ export function registryChangeStateRevision(id, revisionState, history) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(goToAe(history, id, true));
+                dispatch(goToAe(history, id, true, !select));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {

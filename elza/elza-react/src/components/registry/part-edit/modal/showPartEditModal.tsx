@@ -29,6 +29,7 @@ export const showPartEditModal = (
     apViewSettings: DetailStoreState<ApViewSettings>,
     revision: boolean,
     onUpdateFinish: () => void = () => {},
+    select: boolean,
 ) => (dispatch:any) => dispatch(
     modalDialogShow(
         this,
@@ -58,7 +59,7 @@ export const showPartEditModal = (
 
                 const result = part ? await WebApi.updatePart(apId, partId, submitData) : await WebApi.updateRevisionPart(apId, partId, submitData);
                 onClose();
-                await dispatch(goToAe(history, apId, true))
+                await dispatch(goToAe(history, apId, true, !select))
                 onUpdateFinish();
                 return result
             }
