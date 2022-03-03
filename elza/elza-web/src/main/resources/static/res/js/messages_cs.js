@@ -49,6 +49,7 @@ var messages = {
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
     "global.action.export": "Exportovat",
+    "global.action.showInMap": "Zobrazit v mapě",
     "global.action.download": "Stáhnout",
     "global.action.download.file": "Stáhnout soubor '{0}'",
     "global.action.downloadAll": "Stáhnout vše",

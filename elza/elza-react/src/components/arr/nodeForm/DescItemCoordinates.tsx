@@ -13,6 +13,8 @@ import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDia
 import ExportCoordinateModal from "../../registry/Detail/coordinate/ExportCoordinateModal";
 import {Action, Dispatch} from "redux";
 import {connect} from "react-redux";
+import {CLS_ITEM_COORDINATES} from "../../../shared/factory/factoryConsts";
+import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../CrossTabHelper";
 
 type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
 type State = {type: null | string; data: null | string};
@@ -72,6 +74,14 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         }
     };
 
+    showInMap(polygon) {
+        const thisLayout = getThisLayout();
+
+        if (thisLayout) {
+            CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
+        }
+    }
+
     render() {
         const {descItem, locked, repeatable, onUpload, readMode, cal, coordinatesUpload} = this.props;
         const {type, data} = this.state;
@@ -125,6 +135,9 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                         />
                     </div>
                 )}
+                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <Button className={'mr-1'} onClick={() => this.showInMap(value)} title={i18n('global.action.showInMap')} variant={'action' as any}>
+                    <Icon glyph={'fa-map'} />
+                </Button>}
             </div>
         );
     }
