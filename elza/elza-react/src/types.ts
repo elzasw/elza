@@ -200,3 +200,9 @@ export interface ArrRefTemplateMapSpecVO {
     fromItemSpecId: number;
     toItemSpecId: number;
 }
+
+export interface MapLayerVO {
+    name: string;
+    url: string;
+    zIndex: number;
+}

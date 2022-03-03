@@ -46,6 +46,7 @@ const initialState = {
     scopeList: SimpleListReducer(), // Seznam oblastí
     scopeDetail: DetailReducer(), // Detail oblasti
     languageList: SimpleListReducer(), // Seznam jazyků
+    registryLayerList: SimpleListReducer(), // seznam vrstev pro mapu openlayers
     shared: SharedReducer(),
 };
 
