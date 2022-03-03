@@ -13,6 +13,7 @@ import {
     IssueVO,
     RowsResponse,
     UpdateFund,
+    MapLayerVO,
 } from '../types';
 import {ApAccessPointCreateVO} from '../api/ApAccessPointCreateVO';
 import {ApAccessPointVO} from '../api/ApAccessPointVO';
@@ -2230,6 +2231,10 @@ export class WebApiCls {
             },
             body,
         );
+    }
+
+    mapLayerConfiguration(): Promise<MapLayerVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/layer/configuration');
     }
 }
 
