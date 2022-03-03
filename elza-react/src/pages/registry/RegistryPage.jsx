@@ -20,7 +20,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE} from '../../constants.tsx';
+import {AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, URL_ENTITY} from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
@@ -90,7 +90,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     initData = (props = this.props) => {
-        const {dispatch, registryDetail, history} = this.props;
+        const {dispatch, registryDetail, history, select = false} = this.props;
 
         //todo: prevest na apTypes
         dispatch(refRecordTypesFetchIfNeeded());
@@ -106,15 +106,17 @@ class RegistryPage extends AbstractReactComponent {
             dispatch(apExtSystemListFetchIfNeeded());
         }
 
-        const matchId = this.props.match.params.id;
+        if (!select) {
+            const matchId = this.props.match.params.id;
 
-        // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
-        if (registryDetail.id !== null && matchId == null) {
-            history.replace(`/registry/${registryDetail.id}`);
-        }
+            // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
+            if (registryDetail.id !== null && matchId == null) {
+                history.replace(`${URL_ENTITY}/${registryDetail.id}`);
+            }
 
-        if (matchId) {
-            dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
+            if (matchId) {
+                dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
+            }
         }
 
         this.trySetFocus(props);
@@ -162,7 +164,7 @@ class RegistryPage extends AbstractReactComponent {
     isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ?  item.specId !== undefined : item.value !== undefined;
 
     handleAddRegistry = () => {
-        const {dispatch, history} = this.props;
+        const {dispatch, history, select = false} = this.props;
 
         dispatch(
             modalDialogShow(
@@ -190,7 +192,7 @@ class RegistryPage extends AbstractReactComponent {
                         };
                         return WebApi.createAccessPoint(submitData).then((data)=>{
                             dispatch(modalDialogHide());
-                            this.props.dispatch(goToAe(history, data.id));
+                            this.props.dispatch(goToAe(history, data.id, false, !select));
                             this.props.dispatch(registryListInvalidate());
                         });
                     }}
@@ -236,7 +238,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleExtSyncs = () => {
-        const {extSystems, dispatch, history} = this.props;
+        const {extSystems, dispatch, history, select = false} = this.props;
         const initialValues = {};
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
@@ -248,7 +250,7 @@ class RegistryPage extends AbstractReactComponent {
                 <ExtSyncsModal
                     onNavigateAp={accessPointId => {
                         dispatch(modalDialogHide());
-                        dispatch(goToAe(history, accessPointId, true));
+                        dispatch(goToAe(history, accessPointId, true, !select));
                     }}
                     initialValues={initialValues}
                     extSystems={extSystems}
@@ -264,6 +266,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {data},
             dispatch,
             history,
+            select = false,
         } = this.props;
         const id = data.id;
         const initialValues = {
@@ -285,7 +288,7 @@ class RegistryPage extends AbstractReactComponent {
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal
                     onConnected={() => {
-                        dispatch(goToAe(history, id, true));
+                        dispatch(goToAe(history, id, true, !select));
                     }}
                     itemType={TypeModal.CONNECT}
                     accessPointId={id}
@@ -303,6 +306,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {data},
             dispatch,
             history,
+            select = false,
         } = this.props;
         const id = data.id;
         const initialValues = {};
@@ -325,7 +329,7 @@ class RegistryPage extends AbstractReactComponent {
                     }}
                     onSubmitSuccess={() => {
                         dispatch(modalDialogHide());
-                        dispatch(goToAe(history, id, true));
+                        dispatch(goToAe(history, id, true, !select));
                     }}
                     initialValues={initialValues}
                     extSystems={filteredExtSystems}
@@ -371,6 +375,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {
                 data: {id, typeId, scopeId, stateApproval},
             },
+            select = false,
         } = this.props;
         const form = (
             <ApStateChangeForm
@@ -390,7 +395,7 @@ class RegistryPage extends AbstractReactComponent {
                 }}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(goToAe(history, id, true));
+                    this.props.dispatch(goToAe(history, id, true, !select));
                 }}
                 accessPointId={id}
             />
@@ -405,8 +410,9 @@ class RegistryPage extends AbstractReactComponent {
                 registryDetail: {
                     data: {id},
                 },
+                select = false
             } = this.props;
-            this.props.dispatch(registryCreateRevision(id, history));
+            this.props.dispatch(registryCreateRevision(id, history, select));
         }
     };
 
@@ -417,8 +423,9 @@ class RegistryPage extends AbstractReactComponent {
                 registryDetail: {
                     data: {id},
                 },
+                select = false,
             } = this.props;
-            this.props.dispatch(registryDeleteRevision(id, history));
+            this.props.dispatch(registryDeleteRevision(id, history, select));
         }
     };
 
@@ -428,6 +435,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {
                 data: {id, typeId, revStateApproval},
             },
+            select = false,
         } = this.props;
         const form = (
             <RevStateChangeForm
@@ -440,11 +448,11 @@ class RegistryPage extends AbstractReactComponent {
                         state: data.state,
                         typeId: data.typeId,
                     };
-                    this.props.dispatch(registryChangeStateRevision(id, finalData, history));
+                    this.props.dispatch(registryChangeStateRevision(id, finalData, history, select));
                 }}
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(goToAe(history, id, true));
+                    this.props.dispatch(goToAe(history, id, true, !select));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
@@ -459,6 +467,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {
                 data: {id, stateApproval},
             },
+            select = false,
         } = this.props;
         const form = (
             <RevMergeForm
@@ -471,7 +480,7 @@ class RegistryPage extends AbstractReactComponent {
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
-                    this.props.dispatch(goToAe(history, id, true));
+                    this.props.dispatch(goToAe(history, id, true, !select));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
@@ -696,7 +705,8 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     render() {
-        const {splitter, status, registryDetail, userDetail} = this.props;
+        const {splitter, status, registryDetail, userDetail, select = false} = this.props;
+        const matchId = this.props.match.params.id;
 
         let editMode = false;
         if (registryDetail.id && registryDetail.data) {
@@ -718,7 +728,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const centerPanel = (
             <div className="registry-page">
-                {registryDetail.id && <ApDetailPageWrapper id={registryDetail.id} editMode={editMode} />}
+                {(matchId != null || (select && registryDetail.id && registryDetail.fetched)) && <ApDetailPageWrapper select={select} id={matchId != null ? parseInt(matchId) : registryDetail.id} editMode={editMode} />}
             </div>
         );
 
@@ -740,7 +750,7 @@ class RegistryPage extends AbstractReactComponent {
                     splitter={splitter}
                     key="registryPage"
                     ribbon={this.buildRibbon()}
-                    leftPanel={<RegistryList fund={this.props.fund} />}
+                    leftPanel={<RegistryList select={select} fund={this.props.fund} />}
                     centerPanel={centerPanel}
                     // rightPanel={rightPanel}
                     status={status}

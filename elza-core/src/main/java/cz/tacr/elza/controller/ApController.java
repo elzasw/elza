@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.RevStateApproval;
@@ -27,6 +28,7 @@ import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.layers.LayersConfig;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -187,6 +189,9 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
+
+    @Autowired
+    private LayersConfig layersConfig;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -456,7 +461,7 @@ public class ApController {
 
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
-            vo = apFactory.createVO(vo, revision);
+            vo = apFactory.createVO(vo, revision, apState.getAccessPoint());
         }
 
         return vo;
@@ -1333,6 +1338,11 @@ public class ApController {
     @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
     public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
         externalSystemService.deleteQueueItem(itemId);
+    }
+
+    @RequestMapping(value = "/layer/configuration", method = RequestMethod.GET)
+    public List<MapLayerVO> mapLayerConfiguration() {
+        return layersConfig.getLayers();
     }
 
 }

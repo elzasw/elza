@@ -18,6 +18,7 @@ export const showPartCreateModal = (
     apTypeId: number,
     scopeId: number,
     history: H.History<H.LocationState>,
+    select: boolean,
     parentPartId?: number,
     onUpdateFinish: () => void = () => { },
 ) => (dispatch: any) => dispatch(
@@ -45,7 +46,7 @@ export const showPartCreateModal = (
 
                 await WebApi.createPart(apId, submitData)
                 onClose();
-                await dispatch(goToAe(history, apId, true))
+                await dispatch(goToAe(history, apId, true, !select))
                 onUpdateFinish();
             }
 

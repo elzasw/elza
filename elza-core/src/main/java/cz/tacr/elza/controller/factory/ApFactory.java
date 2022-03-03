@@ -940,7 +940,7 @@ public class ApFactory {
         return apValidationErrorsVO;
     }
 
-    public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision) {
+    public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApAccessPoint accessPoint) {
         vo.setRevStateApproval(revision.getStateApproval());
         vo.setNewTypeId(revision.getTypeId());
         vo.setRevPreferredPart(revision.getRevPreferredPartId());
@@ -955,25 +955,29 @@ public class ApFactory {
         Map<Integer, List<ApRevIndex>> indices = ObjectListIterator.findIterable(parts, p -> revIndexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
                 .collect(Collectors.groupingBy(ApRevIndex::getPartId));
 
-        vo.setRevParts(createRevVO(parts, items, indices));
+        Map<Integer, List<ApItem>> apItems = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        vo.setRevParts(createRevVO(parts, items, indices, apItems));
 
         return vo;
     }
 
-    private List<ApPartVO> createRevVO(List<ApRevPart> parts, Map<Integer, List<ApRevItem>> items, Map<Integer, List<ApRevIndex>> indices) {
+    private List<ApPartVO> createRevVO(List<ApRevPart> parts, Map<Integer, List<ApRevItem>> items, Map<Integer, List<ApRevIndex>> indices, Map<Integer, List<ApItem>> apItems) {
         List<ApPartVO> partVOList = new ArrayList<>();
         for (ApRevPart part : parts) {
-            partVOList.add(createVO(part, items.get(part.getPartId()), indices.get(part.getPartId())));
+            List<ApItem> apItemList = part.getOriginalPartId() != null ? apItems.get(part.getOriginalPartId()) : null;
+            partVOList.add(createVO(part, items.get(part.getPartId()), indices.get(part.getPartId()), apItemList));
         }
         return partVOList;
     }
 
-    private ApPartVO createVO(ApRevPart part, List<ApRevItem> items, List<ApRevIndex> indices) {
+    private ApPartVO createVO(ApRevPart part, List<ApRevItem> items, List<ApRevIndex> indices, List<ApItem> apItems) {
         ApPartVO apPartVO = new ApPartVO();
 
         ChangeType changeType = ChangeType.NEW;
         if (part.getOriginalPartId() != null) {
-            if (revisionItemService.allItemsDeleted(items)) {
+            if (revisionItemService.allItemsDeleted(items, apItems)) {
                 changeType = ChangeType.DELETED;
             } else {
                 changeType = ChangeType.UPDATED;
@@ -1000,7 +1004,7 @@ public class ApFactory {
             ChangeType changeType = ChangeType.NEW;
             if (item.getOrigObjectId() != null) {
                 changeType = ChangeType.UPDATED;
-                if (item.getData() == null) {
+                if (item.isDeleted()) {
                     changeType = ChangeType.DELETED;
                 }
             }

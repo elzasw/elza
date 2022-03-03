@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,7 +112,7 @@ public class RevisionItemService {
 
             Integer origObjectId = updateOrigItems ? createItem.getObjectId() : createItem.getOrigObjectId();
 
-            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, accessPointItemService.nextItemObjectId(), position, origObjectId);
+            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, accessPointItemService.nextItemObjectId(), position, origObjectId, false);
             itemsCreated.add(itemCreated);
 
             existsItems.add(itemCreated);
@@ -127,7 +128,8 @@ public class RevisionItemService {
     private ApRevItem createItem(final ApRevPart part,
                                 final ArrData data,
                                 final RulItemType it, final RulItemSpec is, final ApChange c,
-                                final int objectId, final int position, final Integer origObjectId) {
+                                final int objectId, final int position, final Integer origObjectId,
+                                 final boolean deleted) {
         ApRevItem item = new ApRevItem();
         item.setData(data);
         item.setItemType(it);
@@ -137,6 +139,7 @@ public class RevisionItemService {
         item.setPosition(position);
         item.setPart(part);
         item.setOrigObjectId(origObjectId);
+        item.setDeleted(deleted);
         return item;
     }
 
@@ -148,7 +151,7 @@ public class RevisionItemService {
             List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
 
             for (ApRevItem revItem : revItems) {
-                if (revItem.getData() != null) {
+                if (!revItem.isDeleted() && revItem.getData() != null) {
                     ArrData newData = revItem.getData().makeCopy();
                     dataList.add(newData);
                     createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
@@ -215,20 +218,40 @@ public class RevisionItemService {
             List<ApRevItem> revItems = new ArrayList<>();
             for (ApItem apItem : apItems) {
                 revItems.add(createItem(revPart, null, apItem.getItemType(), apItem.getItemSpec(), apChange,
-                        accessPointItemService.nextItemObjectId(), apItem.getPosition(), apItem.getObjectId()));
+                        accessPointItemService.nextItemObjectId(), apItem.getPosition(), apItem.getObjectId(), true));
             }
             revItemRepository.saveAll(revItems);
         }
     }
 
-    public boolean allItemsDeleted(List<ApRevItem> revItems) {
+    public boolean allItemsDeleted(List<ApRevItem> revItems, List<ApItem> apItems) {
         if (CollectionUtils.isNotEmpty(revItems)) {
             for (ApRevItem revItem : revItems) {
-                if (revItem.getData() != null) {
+                if (!revItem.isDeleted()) {
+                    return false;
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(apItems)) {
+            for (ApItem apItem : apItems) {
+                ApRevItem revItem = findRevItem(revItems, apItem);
+                if (revItem == null || !revItem.isDeleted()) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    @Nullable
+    private ApRevItem findRevItem(List<ApRevItem> revItems, ApItem apItem) {
+        if (CollectionUtils.isNotEmpty(revItems)) {
+            for (ApRevItem revItem : revItems) {
+                if (revItem.getOrigObjectId() != null && revItem.getOrigObjectId().equals(apItem.getObjectId())) {
+                    return revItem;
+                }
+            }
+        }
+        return null;
     }
 }

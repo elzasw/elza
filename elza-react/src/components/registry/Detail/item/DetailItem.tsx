@@ -10,12 +10,14 @@ interface Props {
     bindings?: Bindings;
     item: ApItemVO;
     globalEntity: boolean;
+    select: boolean;
 }
 
 const DetailItem: FC<Props> = ({
     item, 
     globalEntity, 
-    bindings
+    bindings,
+    select
 }) => {
     const descItemTypesMap = useSelector((state: AppState)=> state.refTables.descItemTypes.itemsMap || {})
     const typeId = item.typeId;
@@ -28,7 +30,7 @@ const DetailItem: FC<Props> = ({
                 {itemTypeName}
             </div>
             <div className="detail-item-content">
-                <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity} revision={false}/>
+                <DetailItemContent select={select} item={item} bindings={bindings} globalEntity={globalEntity} revision={false}/>
             </div>
         </div>
     );

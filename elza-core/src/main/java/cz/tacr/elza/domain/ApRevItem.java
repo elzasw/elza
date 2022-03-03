@@ -76,6 +76,9 @@ public class ApRevItem implements AccessPointItem {
     @Column
     private Integer origObjectId;
 
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted;
+
     public ApRevItem() {
 
     }
@@ -96,6 +99,7 @@ public class ApRevItem implements AccessPointItem {
         this.part = other.part;
         this.partId = other.partId;
         this.origObjectId = other.origObjectId;
+        this.deleted = other.deleted;
     }
 
     public ApRevItem copy() {
@@ -211,5 +215,13 @@ public class ApRevItem implements AccessPointItem {
 
     public void setOrigObjectId(Integer origObjectId) {
         this.origObjectId = origObjectId;
+    }
+
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }

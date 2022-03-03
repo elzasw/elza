@@ -8,6 +8,11 @@ import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
 import {SyncIcon} from "../sync-icon";
 import {SyncState} from "../../../../api/SyncState";
+import {Button} from '../../../ui';
+import {ApItemCoordinatesClass, itemValue} from "../../../../utils/ItemInfo";
+import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
+import Icon from "../../../shared/icon/Icon";
+import i18n from 'components/i18n';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -16,16 +21,18 @@ interface Props extends ReturnType<typeof mapStateToProps> {
     typeId?: number;
     isPartModified?: boolean | undefined;
     revision?: boolean;
+    select: boolean;
 }
 
 const DetailMultipleItem: FC<Props> = ({
-    items = [], 
-    globalEntity, 
-    descItemTypesMap, 
+    items = [],
+    globalEntity,
+    descItemTypesMap,
     bindings,
     typeId,
     isPartModified,
     revision,
+    select,
 }) => {
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
@@ -37,9 +44,17 @@ const DetailMultipleItem: FC<Props> = ({
     }
 
     const isValueNew = (item?: any, updatedItem?: any) => {
-        return (!item?.value && !item?.specId) 
+        return (!item?.value && !item?.specId)
             && (updatedItem?.value != undefined || updatedItem?.specId != undefined);
     }
+
+    const showInMap = (polygon) => {
+        const thisLayout = getThisLayout();
+
+        if (thisLayout) {
+            CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
+        }
+    };
 
     return (
         <div className="detail-item">
@@ -53,6 +68,7 @@ const DetailMultipleItem: FC<Props> = ({
                             const isDeleted = isPartModified ? updatedItem == null : false;
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
+
                             return <div style={{display: "flex", alignItems: "center"}}>
                                 <RevisionDisplay
                                     valuesEqual={!isModified}
@@ -60,6 +76,7 @@ const DetailMultipleItem: FC<Props> = ({
                                     isNew={isNew}
                                     renderPrevValue={() => {
                                         return item ? <DetailItemContent
+                                            select={select}
                                             item={item}
                                             key={index}
                                             globalEntity={globalEntity}
@@ -69,6 +86,7 @@ const DetailMultipleItem: FC<Props> = ({
                                     }}
                                     renderValue={() => {
                                         return updatedItem ? <DetailItemContent
+                                            select={select}
                                             item={updatedItem}
                                             key={index}
                                             bindings={bindings}
@@ -88,6 +106,9 @@ const DetailMultipleItem: FC<Props> = ({
                                             }
                                         />
                                     )}
+                                    {item?.['@class'] === ApItemCoordinatesClass && <Button className={'mb-1'} onClick={() => showInMap(itemValue(item))} title={i18n('global.action.showInMap')} variant={'action' as any}>
+                                        <Icon glyph={'fa-map'} />
+                                    </Button>}
                                 </div>
                         </div>
                         })}
