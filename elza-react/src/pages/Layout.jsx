@@ -36,6 +36,7 @@ import {
     RegistryPage,
     EntityCreatePage,
     EntityPage,
+    MapPage,
 } from 'pages';
 
 import './Layout.scss';
@@ -43,12 +44,16 @@ import {modalDialogShow} from '../actions/global/modalDialog';
 import i18n from '../components/i18n';
 import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
 
 let _gameRunner = null;
 
 class Layout extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    child = null;
+    parent = null;
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap, keymap);
@@ -61,13 +66,27 @@ class Layout extends AbstractReactComponent {
     state = {
         showGame: false,
         canStartGame: false,
+        polygon: undefined,
     };
+
+    componentDidMount() {
+        CrossTabHelper.init(this);
+        window.thisLayout = this;
+    }
 
     componentWillUnmount() {
         if (_gameRunner) {
             clearTimeout(_gameRunner);
         }
+        CrossTabHelper.onUnmount(this);
+        delete window.thisLayout
     }
+
+    processCrossTabEvent = (event) => {
+        if (event.type === CrossTabEventType.SHOW_IN_MAP) {
+            this.setState({polygon: event.data});
+        }
+    };
 
     handleShortcuts = action => {
         console.log('#handleShortcuts', '[' + action + ']', this);
@@ -111,7 +130,7 @@ class Layout extends AbstractReactComponent {
     };
 
     render() {
-        const {canStartGame, showGame} = this.state;
+        const {canStartGame, showGame, polygon} = this.state;
 
         if (showGame) {
             return (
@@ -160,7 +179,7 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-
+                            <Route path="/map" component={(props) => <MapPage polygon={polygon} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />

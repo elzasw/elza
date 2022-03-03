@@ -167,6 +167,12 @@ public class ElzaWebController {
         return "web";
     }
 
+    @RequestMapping(value = "/map", method = RequestMethod.GET)
+    public String mapPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
     @RequestMapping(value = "/admin/**", method = RequestMethod.GET)
     public String adminPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);

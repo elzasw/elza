@@ -24,6 +24,7 @@ const filterApiUrl = (pathname, req) => {
         '/arr',
         '/registry',
         '/admin',
+        '/map',
     ]
     if (req.method === 'GET' && (
         inArray(paths, pathname) ||
