@@ -4,7 +4,7 @@ export enum CrossTabEventType {SHOW_IN_MAP = 'SHOW_IN_MAP'}
 
 export interface CrossTabEvent {
     type: CrossTabEventType;
-    data: object;
+    data: string;
 }
 interface CrossTabUserClassInstance {
     child?: AcrossTabs.Child;

@@ -8,11 +8,6 @@ import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
 import {SyncIcon} from "../sync-icon";
 import {SyncState} from "../../../../api/SyncState";
-import {Button} from '../../../ui';
-import {ApItemCoordinatesClass, itemValue} from "../../../../utils/ItemInfo";
-import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
-import Icon from "../../../shared/icon/Icon";
-import i18n from 'components/i18n';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -47,14 +42,6 @@ const DetailMultipleItem: FC<Props> = ({
         return (!item?.value && !item?.specId)
             && (updatedItem?.value != undefined || updatedItem?.specId != undefined);
     }
-
-    const showInMap = (polygon) => {
-        const thisLayout = getThisLayout();
-
-        if (thisLayout) {
-            CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
-        }
-    };
 
     return (
         <div className="detail-item">
@@ -107,9 +94,6 @@ const DetailMultipleItem: FC<Props> = ({
                                             }
                                         />
                                     )}
-                                    {item?.['@class'] === ApItemCoordinatesClass && <Button className={'mb-1'} onClick={() => showInMap(itemValue(item))} title={i18n('global.action.showInMap')} variant={'action' as any}>
-                                        <Icon glyph={'fa-map'} />
-                                    </Button>}
                                 </div>
                         </div>
                         })}
