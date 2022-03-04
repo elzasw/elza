@@ -1027,7 +1027,7 @@ var messages = {
     "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
     "registry.allRevisionStates": "Všechny stavy revize",
-    "registry.revision.state.active": "Revize v příravě",
+    "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
     
