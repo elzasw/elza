@@ -26,7 +26,7 @@ export const RevStateApprovalCaption = (value: RevStateApproval): string => {
 export const RevStateApprovalIcon = (value: RevStateApproval): string => {
     switch (value) {
         case RevStateApproval.ACTIVE:
-            return 'fa-check';
+            return 'fa-plus';
         case RevStateApproval.TO_AMEND:
             return 'fa-arrow-right';
         case RevStateApproval.TO_APPROVE:
