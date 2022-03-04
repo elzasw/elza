@@ -116,6 +116,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     setRevisionPreferred,
     deletePart,
     deleteRevisionPart,
+    updateRevisionPart,
     // deleteParts,
     showConfirmDialog,
     showPartEditModal,
@@ -188,6 +189,18 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             refreshValidation(id);
         }
     };
+
+    const handleRevert = async ({part, updatedPart}: RevisionPart) => {
+        if(!part || !updatedPart){throw "No part to update."}
+        const confirmResult = await showConfirmDialog(i18n("ap.detail.revert.confirm"));
+
+        if(confirmResult){
+            saveScrollPosition();
+            await deleteRevisionPart(id, updatedPart.id);
+            restoreScrollPosition();
+            refreshValidation(id);
+        }
+    }
 
     const saveScrollPosition = () => {
         scrollTop = containerRef.current?.scrollTop || undefined;
@@ -360,7 +373,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const bindings = createBindings(detail.data);
-
     const groupPartsByType = (data: RevisionPart[]) => {
         return data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
             const typeId = value.part?.typeId || value.updatedPart?.typeId;
@@ -467,6 +479,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         globalEntity={globalEntity}
                                         partType={partType}
                                         onDelete={handleDelete}
+                                        onRevert={handleRevert}
                                         revision={detail.data ? !!detail.data.revStateApproval : false}
                                         select={select}
                                     />
@@ -488,6 +501,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
+                                    onRevert={handleRevert}
                                     bindings={bindings}
                                     onAdd={() => handleAdd(partType)}
                                     onAddRelated={onAddRelated}
@@ -553,6 +567,14 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         }
 
         dispatch(goToAe(history, apId, true, !select));
+    },
+    updateRevisionPart: async (apId: number, part: ApPartVO, typeCode: string) => {
+        await WebApi.updateRevisionPart(apId, part.id, {
+            parentPartId: part.partParentId,
+            partId: part.id,
+            items: part.items?.filter((item) => item) || [],
+            partTypeCode: typeCode,
+        })
     },
     refreshValidation: (apId: number) => {
         dispatch(

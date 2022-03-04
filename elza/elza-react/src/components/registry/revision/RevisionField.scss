@@ -1,0 +1,24 @@
+.revision-field {
+    &:hover {
+        .actions.hidable {
+            width: auto;
+        }
+    }
+    .actions {
+        display: inline-flex;
+        margin: 2px 2px;
+
+        &.hidable {
+            width: 0px;
+            overflow: hidden;
+        }
+    }
+    .revision-field-title {
+        display: flex;
+        align-items: center;
+
+        label {
+            margin: 3px 0;
+        }
+    }
+}

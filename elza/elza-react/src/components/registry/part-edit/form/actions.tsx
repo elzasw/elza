@@ -6,7 +6,7 @@ import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
 import {RulDataTypeVO} from 'api/RulDataTypeVO';
 import {RequiredType} from 'api/RequiredType';
 import * as ItemInfo from 'utils/ItemInfo';
-import { findItemPlacePosition, sortOwnItems } from 'utils/ItemInfo';
+import { findItemPlacePosition, sortOwnItems } from 'utils/partEdit';
 import {ApItemBitVO} from 'api/ApItemBitVO';
 import {WebApi} from 'actions/WebApi';
 import { RefTablesState } from 'typings/store'
@@ -15,13 +15,15 @@ import {ApAccessPointCreateVO} from 'api/ApAccessPointCreateVO';
 import { ApPartFormVO } from "api/ApPartFormVO";
 import { compareCreateTypes, hasItemValue } from 'utils/ItemInfo';
 import { DetailStoreState } from 'types';
+import { RevisionItem } from '../../revision';
+import { RevisionApPartForm } from '../form';
 
 export const addItems = (
     attributes: Array<ApCreateTypeVO>,
     refTables: RefTablesState,
-    formItems: ApItemVO[],
+    formItems: RevisionItem[],
     partTypeId: number,
-    arrayInsert: (index: number, value: ApItemVO) => void,
+    arrayInsert: (index: number, value: RevisionItem) => void,
     userAction: boolean,
     apViewSettings?: ApViewSettingRule,
 ) => {
@@ -62,13 +64,17 @@ const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: RefTablesStat
             }
         }
 
-        return item;
+        return {
+            updatedItem: item,
+            typeId: attribute.itemTypeId,
+            '@class': ItemInfo.getItemClass(dataType.code),
+        };
     });
 
 }
 
 export const getUpdatedForm = async (
-    data: ApPartFormVO, 
+    data: RevisionApPartForm, 
     typeId: number, 
     scopeId: number, 
     apViewSettings: DetailStoreState<ApViewSettings>,
@@ -79,12 +85,18 @@ export const getUpdatedForm = async (
     accessPointId?: number,
 ) => {
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
+    const items = data.items.filter((item) => 
+        item.updatedItem?.changeType !== "DELETED"
+    ).map((item) => 
+        item.updatedItem || item.item as any
+    );
+    // console.log("get updated form items", items, data);
     const form: ApAccessPointCreateVO = {
         typeId,
         partForm: {
             ...data,
             parentPartId,
-            items: [...data.items.filter(hasItemValue)],
+            items: [...items.filter(hasItemValue)],
             partId: partId,
         },
         accessPointId,
@@ -103,17 +115,17 @@ export const getUpdatedForm = async (
         data: {
             ...data,
             items: getItemsWithRequired(data.items, attributes, partTypeId, refTables),
-        } as ApPartFormVO
+        } as RevisionApPartForm
     }
 };
 
 export const getItemsWithRequired = ( 
-    items: ApItemVO[], 
+    items: RevisionItem[], 
     attributes: ApCreateTypeVO[], 
     partTypeId: number,
     refTables: RefTablesState,
 ) => {
-    const newItems: ApItemVO[] = [];
+    const newItems: RevisionItem[] = [];
     addItems(
         getRequiredAttributes(items, attributes), 
         refTables,
@@ -125,13 +137,13 @@ export const getItemsWithRequired = (
     return sortApItems([...items, ...newItems], refTables.descItemTypes.itemsMap);
 }
 
-const sortApItems = (items: ApItemVO[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
+const sortApItems = (items: RevisionItem[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
     return [...items].sort((a, b) => {
         return descItemTypesMap[a.typeId].viewOrder - descItemTypesMap[b.typeId].viewOrder;
     })
 }
 
-const getRequiredAttributes = (items: ApItemVO[], attributes: ApCreateTypeVO[]) => {
+const getRequiredAttributes = (items: RevisionItem[], attributes: ApCreateTypeVO[]) => {
     const existingItemTypeIds = items.map(i => i.typeId);
     const requiredAttributes = attributes.filter(attributes => {
         if (attributes.requiredType === RequiredType.REQUIRED) {

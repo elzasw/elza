@@ -4,23 +4,23 @@ import FormInput from '../../../../shared/form/FormInput';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample } from '../../../revision';
+import { ApItemBitVO } from 'api/ApItemBitVO';
+import { CommonFieldProps } from './types';
 
-export const FormCheckbox:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    prevValue?: string;
-    disableRevision?: boolean;
-}> = ({
+export const FormCheckbox:FC<CommonFieldProps<ApItemBitVO>> = ({
     name,
     label,
     disabled = false,
-    prevValue,
+    prevItem,
     disableRevision,
 }) => {
     const form = useForm();
+    const getValue = (item?: ApItemBitVO) => {
+        if(!item){return undefined}
+        return item.value ? "Ano" : "Ne";
+    }
     return <Field
-        name={`${name}.value`}
+        name={`${name}.updatedItem.value`}
         label={label}
     >
         {(props) => {
@@ -29,11 +29,17 @@ export const FormCheckbox:FC<{
                 handleValueUpdate(form, props);
             }
 
+            const handleRevert = () => {
+                form.change(`${name}.updatedItem`, prevItem)
+                handleValueUpdate(form, props);
+            }
+
             return <RevisionFieldExample
                 label={label}
-                prevValue={prevValue}
+                prevValue={getValue(prevItem)}
                 disableRevision={disableRevision}
-                value={props.input.value ? "Ano" : "Ne"}
+                value={getValue(props.input.value)}
+                onRevert={handleRevert}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

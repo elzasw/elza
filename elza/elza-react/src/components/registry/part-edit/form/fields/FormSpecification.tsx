@@ -1,27 +1,32 @@
 import React, { FC } from 'react';
-import { Field, useForm } from 'react-final-form';
+import { Field, useForm, useField } from 'react-final-form';
 import { RulDescItemTypeExtVO } from '../../../../../api/RulDescItemTypeExtVO';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import SpecificationField from '../../../field/SpecificationField';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from '../../../revision';
+import { RevisionFieldExample, RevisionItem } from '../../../revision';
+import { ApItemVO } from 'api/ApItemVO';
+import { CommonFieldProps } from './types';
 
-export const FormSpecification:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
+export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
     itemSpecIds?: number[];
     itemType: RulDescItemTypeExtVO;
+    getSpecName?: (id:number) => string;
 }> = ({
     name,
     label,
     disabled = false,
     itemSpecIds = [],
-    itemType
+    itemType,
+    getSpecName = () => "-",
+    disableRevision,
 }) => {
     const form = useForm();
+    const field = useField<RevisionItem>(`${name}`);
+    const {item, updatedItem} = field.input.value;
+
     return <Field
-        name={`${name}.specId`}
+        name={`${name}.updatedItem.specId`}
     >
         {(props) => {
             const handleChange = (e: any) => { 
@@ -29,10 +34,32 @@ export const FormSpecification:FC<{
                 handleValueUpdate(form);
             }
 
+            const handleRevert = () => {
+                form.change(`${name}.updatedItem`, item)
+                handleValueUpdate(form);
+            }
+
+            const handleDelete = () => {
+                form.change(`${name}.updatedItem`, {
+                    ...updatedItem,
+                    changeType: "DELETED",
+                    specId: undefined,
+                })
+                handleValueUpdate(form);
+            }
+
+            const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
+            const isDeleted = updatedItem?.changeType === "DELETED";
+            const prevValue = item?.specId != null ? getSpecName(item.specId) : undefined
+
             return <RevisionFieldExample 
                 label={label} 
-                prevValue={(59).toString()} 
-                value={props.input.value.toString()}
+                prevValue={prevValue} 
+                value={isDeleted ? undefined : getSpecName(parseInt(props.input.value))}
+                disableRevision={disableRevision}
+                onRevert={!isNew ? handleRevert : undefined}
+                onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                isDeleted={isDeleted}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

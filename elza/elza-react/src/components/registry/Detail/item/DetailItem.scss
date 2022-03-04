@@ -28,4 +28,21 @@
             padding: 0 10px;
         }
     }
+    .actions {
+        display: flex;
+        align-items: center;
+        margin-left: 5px;
+        margin-right: 5px;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        &.hidable {
+            width: 0px;
+        }
+
+        .info-icon {
+            margin: 2px;
+            padding: 3px;
+        }
+    }
 }

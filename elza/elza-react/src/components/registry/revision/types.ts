@@ -9,4 +9,6 @@ export interface RevisionPart {
 export interface RevisionItem {
     item?: ApItemVO;
     updatedItem?: ApItemVO;
+    typeId: number;
+    "@class": string;
 }

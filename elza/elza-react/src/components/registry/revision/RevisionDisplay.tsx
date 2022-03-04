@@ -35,16 +35,18 @@ export const RevisionDisplay: FC<Props> = ({
     })
     return (
         <div className={className}>
-            {
-                <div className="value-previous">
-                    {!isNew ? renderPrevValue() : <i>Nevyplněno</i>}
-                </div>
-            }
-            {!isDeleted && !disableRevision && !valuesEqual &&
+            {!valuesEqual && !disableRevision &&
                 <>
+                    <div className="value-previous">
+                        {!isNew ? renderPrevValue() : <i>Nevyplněno</i>}
+                    </div>
                     <div className="arrow">
                     🡒
                     </div>
+                </>
+            }
+            {!isDeleted &&  
+                <>
                     <div className="value-current">
                         <div style={{flex: 1}}>
                             {renderValue()}
@@ -54,9 +56,6 @@ export const RevisionDisplay: FC<Props> = ({
             }
             {isDeleted && !disableRevision &&
                 <>
-                    <div className="arrow">
-                    🡒
-                    </div>
                     <div className="value-current">
                         <i>Smazáno</i>
                     </div>

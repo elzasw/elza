@@ -1,3 +1,4 @@
+import i18n from "components/i18n";
 /**
  * Stav revize přístupového bodu.
  */
@@ -11,11 +12,11 @@ export enum RevStateApproval {
 export const RevStateApprovalCaption = (value: RevStateApproval): string => {
     switch (value) {
         case RevStateApproval.ACTIVE:
-            return 'aktivní';
+            return i18n("registry.revision.state.active")
         case RevStateApproval.TO_APPROVE:
-            return 'ke schválení';
+            return i18n("registry.revision.state.toApprove")
         case RevStateApproval.TO_AMEND:
-            return "k doplnění";
+            return i18n("registry.revision.state.toAmend")
         default:
             console.warn('Nepřeložená hodnota', value);
             return '?';

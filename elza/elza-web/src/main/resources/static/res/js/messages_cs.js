@@ -1024,9 +1024,12 @@ var messages = {
     "registry.deleteRevision": "Smazat revizi",
     "registry.createRevisionQuestion": "Opravdu chcete vytvořit revizi archivní entity?",
     "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
-    "registry.changeStateRevision": "Změna stavu revize",
+    "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
     "registry.allRevisionStates": "Všechny stavy revize",
+    "registry.revision.state.active": "Revize v příravě",
+    "registry.revision.state.toApprove": "Revize ke schválení",
+    "registry.revision.state.toAmend": "Revize k doplnění",
     
     "registry.entity.notFound": "Archivní entita nenalezena",
 
@@ -1056,8 +1059,7 @@ var messages = {
     "ap.history.title.state.REV_NEW": "příprava revize",
     "ap.history.title.state.REV_PREPARED": "revize ke schválení",
     "ap.history.title.state.REV_AMEND": "revize k doplnění",
-
-    "ap.changeState": "Změna stavu",
+    "ap.changeState": "Změnit vlastnosti entity",
     "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
     "ap.state.title.scope": "Oblast",
@@ -1083,7 +1085,7 @@ var messages = {
     "ap.binding.action.synchronize": "Aktualizace údajů z ext. systému",
     "ap.binding.action.update": "Zápis změn do ext. systému",
     "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
-    "ap.binding.action.take-rel-entities": "Založení přístupových bodů z návazných",
+    "ap.binding.action.take-rel-entities": "Převzetí napojených entit",
 
     "ap.binding.processing.synchronize": "Probíhá aktualizace údajů z ext. systému...",
     "ap.binding.processing.update": "Probíhá zápis změn do ext. systému...",
@@ -1102,6 +1104,8 @@ var messages = {
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
     "ap.detail.delete": "Smazat",
+    "ap.detail.revert": "Vrátit zpět",
+    "ap.detail.revert.confirm": "Přejete si vrátit zpět původní hodnoty?",
     "ap.detail.delete.confirm.value": "Smazat celou část? ({0})",
     "ap.detail.delete.confirm": "Smazat celou část?",
     "ap.detail.add.related": "Přidat vztah",

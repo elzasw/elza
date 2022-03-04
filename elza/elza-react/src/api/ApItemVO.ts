@@ -30,4 +30,8 @@ export interface ApItemVO {
      * identifikátor původní hodnoty atributu
      */
     origObjectId?: number;
+    /**
+    * Typ zmeny v revizi
+    */
+    changeType?: "DELETED" | "NEW" | "UPDATED";
 }

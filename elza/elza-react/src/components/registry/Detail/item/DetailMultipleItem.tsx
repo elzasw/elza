@@ -38,7 +38,7 @@ const DetailMultipleItem: FC<Props> = ({
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
 
     const isValueModified = (item?: any, updatedItem?: any) => {
-        if(item && !updatedItem) {return false};
+        if(updatedItem?.changeType === "DELETED") {return true};
         if(!item && updatedItem) {return true};
         return item?.value !== updatedItem?.value || item?.specId !== updatedItem?.specId;
     }
@@ -65,12 +65,13 @@ const DetailMultipleItem: FC<Props> = ({
                 <div style={{display: "flex"}}>
                     <div style={{}}>
                         {items.map(({item, updatedItem}, index) => {
-                            const isDeleted = isPartModified ? updatedItem == null : false;
+                            const isDeleted = isPartModified ? updatedItem?.changeType === "DELETED" : false;
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
 
                             return <div style={{display: "flex", alignItems: "center"}}>
                                 <RevisionDisplay
+                                    disableRevision={!revision}
                                     valuesEqual={!isModified}
                                     isDeleted={isDeleted}
                                     isNew={isNew}

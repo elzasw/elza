@@ -19,6 +19,7 @@ type Props = {
   part: RevisionPart;
   globalCollapsed: boolean;
   onDelete?: (part?: RevisionPart) => void;
+  onRevert?: (part: RevisionPart) => void;
   onEdit?: (part?: RevisionPart) => void;
   editMode?: boolean;
   globalEntity: boolean;
@@ -35,6 +36,7 @@ const DetailRelatedPart: FC<Props> = ({
     globalEntity,
     editMode,
     onDelete,
+    onRevert = () => console.warn("Neni definovan 'onRevert' callback"),
     onEdit,
     globalCollapsed = true,
     partValidationError,
@@ -69,7 +71,7 @@ const DetailRelatedPart: FC<Props> = ({
 
     const classNameHeader = classNames( "detail-part-header",);
     const classNameContent = classNames( { "detail-part-expanded": !isCollapsed }); // Rozbalený content
-    
+
     return <div className="detail-related-part">
         <div className={classNameHeader + " align-items-center"}>
             <div style={{display: "flex", alignItems: "center"}}>
@@ -96,14 +98,14 @@ const DetailRelatedPart: FC<Props> = ({
                 </RevisionDisplay>
 
                 <div className="actions">
-                    {partBinding != null && 
-                        <SyncIcon syncState={(partBinding || updatedPart) ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                    {(partBinding || revision) && 
+                        <SyncIcon syncState={!isModified ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}
                 </div>
 
                 <div className="actions hidable">
-                    { editMode &&
+                    { editMode && !isDeleted &&
                         <SmallButton
                             onClick={() => onEdit && onEdit({part, updatedPart})}
                             title={i18n("ap.detail.edit", "")}
@@ -111,14 +113,19 @@ const DetailRelatedPart: FC<Props> = ({
                             <Icon glyph={'fa-pencil'} />
                         </SmallButton>
                     }
-                    {editMode && (
+                    {editMode && !isDeleted &&
                         <SmallButton
                             onClick={() => onDelete && onDelete({part, updatedPart})}
                             title={i18n("ap.detail.delete")}
                         >
                             <Icon glyph={'fa-trash'} />
                         </SmallButton>
-                    )}
+                    }
+                    {(isDeleted || isModified) &&
+                        <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert({part, updatedPart})}>
+                            <Icon glyph="fa-undo" />
+                        </SmallButton>
+                    }
                 </div>
             </div>
         </div>
