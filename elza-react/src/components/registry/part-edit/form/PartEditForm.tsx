@@ -16,6 +16,12 @@ import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
+import { RevisionItem } from '../../revision'
+import { ApPartFormVO } from "api/ApPartFormVO";
+
+export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
+    items: RevisionItem[];
+}
 
 type Props = {
     partTypeId: number;
@@ -25,7 +31,7 @@ type Props = {
     availableAttributes?: ApCreateTypeVO[];
     editErrors?: string[];
     arrayName?: string;
-    partItems: ApItemVO[] | null | undefined;
+    revision?: boolean;
 };
 
 const renderValidationErrors = (errors: Array<string>) => {
@@ -46,7 +52,7 @@ export const PartEditForm = ({
     availableAttributes,
     editErrors,
     arrayName = "items",
-    partItems,
+    revision = false,
 }: Props) => {
     const handleAddItems = (
         attributes: Array<ApCreateTypeVO>,
@@ -140,7 +146,7 @@ export const PartEditForm = ({
                             partTypeId={partTypeId}
                             scopeId={scopeId}
                             apTypeId={apTypeId}
-                            partItems={partItems}
+                            revision={revision}
                             />
                     </Row>
                 </div>

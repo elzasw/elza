@@ -1,26 +1,25 @@
 import React, { FC } from 'react';
-import { Field, useForm } from 'react-final-form';
+import { Field, useForm, useField } from 'react-final-form';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import UnitdateField from '../../../field/UnitdateField';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from '../../../revision';
+import { RevisionFieldExample, RevisionItem } from '../../../revision';
+import {ApItemUnitdateVO} from 'api/ApItemUnitdateVO';
+import { CommonFieldProps } from './types';
 
-export const FormUnitdate:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    prevValue?: string;
-    disableRevision?: boolean;
-}> = ({
+export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
     name,
     label,
     disabled = false,
-    prevValue,
     disableRevision,
 }) => {
     const form = useForm();
+    const field = useField<RevisionItem>(`${name}`);
+    const {item, updatedItem} = field.input.value;
+    const prevValue = (item as ApItemUnitdateVO | undefined)?.value;
+
     return <Field
-        name={`${name}.value`}
+        name={`${name}.updatedItem.value`}
     >
         {(props) => {
             const handleChange = (e: any) => {
@@ -28,11 +27,31 @@ export const FormUnitdate:FC<{
                 handleValueUpdate(form, props);
             }
 
+            const handleRevert = () => {
+                form.change(`${name}.updatedItem`, item)
+                handleValueUpdate(form, props);
+            }
+
+            const handleDelete = () => {
+                form.change(`${name}.updatedItem`, {
+                    ...updatedItem,
+                    changeType: "DELETED",
+                    value: null,
+                })
+                handleValueUpdate(form);
+            }
+
+            const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
+            const isDeleted = updatedItem?.changeType === "DELETED";
+
             return <RevisionFieldExample
                 label={label}
                 prevValue={prevValue}
                 disableRevision={disableRevision}
                 value={props.input.value}
+                onRevert={!isNew ? handleRevert : undefined}
+                onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                isDeleted={isDeleted}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

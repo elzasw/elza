@@ -44,6 +44,7 @@ export const DetailPartInfo: FC<Props> = ({
 
         items.forEach(({item, updatedItem}, index, array)=>{
             const typeId = item?.typeId || updatedItem?.typeId;
+            const classString = item?.["@class"] || updatedItem?.["@class"];
             // create item group for current typeId, if it doesn't exist
             if(typeId !== itemGroupId){
                 itemGroupId = typeId;
@@ -52,8 +53,13 @@ export const DetailPartInfo: FC<Props> = ({
             }
 
             // add item in item group
-            if(typeId === itemGroupId){
-                itemGroup.push({item, updatedItem});
+            if(typeId === itemGroupId && typeId != null && classString != null){
+                itemGroup.push({
+                    item, 
+                    updatedItem, 
+                    typeId,
+                    "@class": classString,
+                });
             }
 
             const nextItem = array.length > index ? array[index + 1] : undefined;

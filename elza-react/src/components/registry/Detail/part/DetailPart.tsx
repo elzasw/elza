@@ -76,13 +76,17 @@ const DetailPart: FC<Props> = ({
 
     const areValuesEqual = (value: string, prevValue: string) => value === prevValue
 
-    const items = getRevisionItems(part?.items || [], updatedPart?.items || []);
+    // const items = getRevisionItems(part?.items || [], updatedPart?.items || []);
+            const items = getRevisionItems(
+                    revision ? part?.items || [] : undefined, 
+                    revision ? updatedPart?.items || [] : part?.items || [])
 
     return (
         <div className="detail-part">
             <div className={classNameHeader}>
                 <div style={{display: "flex", alignItems: "center"}}>
-                    <RevisionDisplay
+                    <RevisionDisplay 
+                        disableRevision={!revision}
                         isDeleted={isDeleted}
                         isNew={isNew}
                         valuesEqual={areValuesEqual(part?.value || "", updatedPart ? updatedPart.value : part?.value || "")}

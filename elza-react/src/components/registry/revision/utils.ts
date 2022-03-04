@@ -28,14 +28,23 @@ export const getRevisionItems = (items: ApItemVO[] = [], updatedItems: ApItemVO[
     // add updated items
     items.forEach((item)=>{
         const updatedItem = updatedItems.find((updatedItem) => updatedItem.origObjectId === item.objectId);
-        revisionItems.push({item, updatedItem});
+        revisionItems.push({
+            item, 
+            updatedItem: updatedItem || item,
+            typeId: item.typeId,
+            '@class': item["@class"],
+        });
     })
 
     // add potentially added items
     updatedItems.forEach((updatedItem)=>{
         const item = items.find((item)=> item.objectId === updatedItem.origObjectId)
         if(!item){
-            revisionItems.push({updatedItem});
+            revisionItems.push({
+                updatedItem,
+                typeId: updatedItem.typeId,
+                '@class': updatedItem["@class"],
+            });
         }
     })
 

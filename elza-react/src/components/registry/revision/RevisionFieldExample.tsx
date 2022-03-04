@@ -1,6 +1,8 @@
 import { Icon } from 'components';
 import React, { FC } from 'react';
 import { RevisionDisplay } from './RevisionDisplay';
+import { SmallButton } from "components/shared/button/small-button";
+import './RevisionField.scss';
 
 export const RevisionFieldExample:FC<{
     prevValue?: string;
@@ -10,6 +12,8 @@ export const RevisionFieldExample:FC<{
     disableRevision?: boolean;
     alignTop?: boolean;
     equalSplit?: boolean;
+    onRevert?: () => void;
+    onDelete?: () => void;
 }> = ({
     prevValue, 
     value,
@@ -19,20 +23,59 @@ export const RevisionFieldExample:FC<{
     disableRevision = true,
     alignTop,
     equalSplit,
+    onRevert,
+    // onDelete,
 }) => {
     const valuesEqual = value === prevValue;
-    // console.log(valuesEqual, prevValue, value)
     const renderPrevValue = () => prevValue;
     const renderValue = () => <div style={{flex: 1}}>{children}</div>;
-    return <div>
-        <label>
-            {label}
-            {!disableRevision && !valuesEqual && <span style={{marginLeft: "10px"}}>
+
+    const renderActions = () => {
+        const actions: React.ReactNode[] = [];
+        if(!disableRevision && !valuesEqual && onRevert){
+            actions.push(<SmallButton 
+                onClick={onRevert} 
+            >
                 <Icon glyph="fa-undo"/>
-            </span>}
-        </label>
+            </SmallButton>)
+        }
+
+        if(actions.length === 0) {return <></>}
+
+        return <div className="actions">
+            {actions}
+        </div>
+    }
+
+    const renderHidableActions = () => {
+        const actions: React.ReactNode[] = [];
+        /* prozatim skryte 
+        if(onDelete){
+            actions.push(<SmallButton 
+                onClick={onDelete} 
+            >
+                <Icon glyph="fa-trash"/>
+            </SmallButton>)
+        }
+        */
+
+        if(actions.length === 0) {return <></>}
+
+        return <div className="actions hidable">
+            {actions}
+        </div>
+    }
+
+    return <div className="revision-field">
+        <div className="revision-field-title">
+            <label>
+                {label}
+            </label>
+            {renderActions()}
+            {renderHidableActions()}
+        </div>
         <RevisionDisplay
-            renderPrevValue={valuesEqual || disableRevision ? renderValue : renderPrevValue}
+            renderPrevValue={renderPrevValue}
             renderValue={renderValue}
             valuesEqual={valuesEqual}
             alignTop={alignTop}
@@ -40,6 +83,7 @@ export const RevisionFieldExample:FC<{
             disableRevision={disableRevision}
             equalSplit={equalSplit}
             isField={true}
+            isNew={!prevValue}
             />
     </div>
 }

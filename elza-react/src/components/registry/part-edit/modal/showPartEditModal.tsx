@@ -9,12 +9,14 @@ import { ApPartVO } from '../../../../api/ApPartVO';
 // import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
 import { DetailStoreState } from '../../../../types';
 import { ApViewSettings } from '../../../../api/ApViewSettings';
-import { objectById } from '../../../../shared/utils';
-import { sortItems } from '../../../../utils/ItemInfo';
+// import { objectById } from '../../../../shared/utils';
+import { sortItems } from '../../../../utils/partEdit';
 import PartEditModal from './PartEditModal';
 import { RefTablesState } from '../../../../typings/store';
 import { PartType } from '../../../../api/generated/model';
 import * as H from "history";
+import { getRevisionItems } from '../../revision';
+import { RevisionApPartForm } from '../form';
 
 export const showPartEditModal = (
     part: ApPartVO | undefined,
@@ -35,34 +37,43 @@ export const showPartEditModal = (
         this,
         PartTypeInfo.getPartEditDialogLabel(partType, false),
         ({ onClose }) => {
-            const partTypeId = objectById(refTables.partTypes.items, partType, 'code').id;
-            const mainPart = updatedPart ? updatedPart : part as ApPartVO;
-            const partId = part ? part.id : updatedPart?.id as number;
-            const parentPartId = mainPart.partParentId;
+            const modifiedPart = updatedPart ? updatedPart : part;
+            if(!modifiedPart){throw "No part";}
 
-            const handleSubmit = async (data: ApPartFormVO) => {
-                if (mainPart?.id == undefined) { return; }
-                const submitData = {
-                    items: data.items.filter(i => {
-                        if (i['@class'] === '.ApItemEnumVO') {
-                            return i.specId !== undefined;
+            const partTypeId = modifiedPart.typeId; // objectById(refTables.partTypes.items, partType, 'code').id;
+            // const partId = part ? part.id : updatedPart?.id as number;
+            const parentPartId = modifiedPart.partParentId;
+
+            const handleSubmit = async (data: RevisionApPartForm) => {
+                const updatedItems = data.items.map(({updatedItem}) => updatedItem);
+                const items = updatedItems.filter(item => {
+                        if(item?.changeType === "DELETED"){return false;}
+                        if (item?.['@class'] === '.ApItemEnumVO') { //TODO - predelat @class na typeId
+                            return item.specId !== undefined;
                         } else {
-                            return (i as ApItemBitVO).value !== undefined;
+                            return (item as ApItemBitVO)?.value !== undefined;
                         }
-                    }),
+                    })
+                const submitData:ApPartFormVO = {
+                    items,
                     parentPartId,
-                    partId: mainPart.id,
+                    partId: modifiedPart.id,
                     partTypeCode: partType,
                 } as ApPartFormVO;
 
-                console.log('SUBMIT EDIT', apId, mainPart.id, submitData);
+                // console.log('SUBMIT EDIT', apId, modifiedPart.id, submitData);
 
-                const result = part ? await WebApi.updatePart(apId, partId, submitData) : await WebApi.updateRevisionPart(apId, partId, submitData);
+                const result = !updatedPart 
+                        ? await WebApi.updatePart(apId, modifiedPart.id, submitData) 
+                        : await WebApi.updateRevisionPart(apId, modifiedPart.id, submitData);
                 onClose();
                 await dispatch(goToAe(history, apId, true, !select))
                 onUpdateFinish();
                 return result
             }
+            const items = getRevisionItems(
+                    revision ? part?.items || [] : undefined, 
+                    revision ? updatedPart?.items || [] : part?.items || [])
 
             /*
             const initialValues = {
@@ -78,16 +89,17 @@ export const showPartEditModal = (
             */
 
             const formData = {
-                partId: mainPart?.id,
+                partId: modifiedPart?.id,
                 parentPartId,
-                partTypeCode: refTables.partTypes.itemsMap[mainPart.typeId].code,
-                items: mainPart.items ? sortItems(
-                    partType as any,
-                    mainPart.items,
+                partTypeCode: refTables.partTypes.itemsMap[modifiedPart.typeId].code,
+                items: sortItems(
+                    partTypeId,
+                    items,
                     refTables,
                     apViewSettings.data!.rules[ruleSetId],
-                ) : [],
+                ),
             } as ApPartFormVO
+            console.log('show part edit modal revision', revision)
 
             return <PartEditModal
                 partTypeId={partTypeId}
@@ -95,11 +107,11 @@ export const showPartEditModal = (
                 apTypeId={apTypeId}
                 scopeId={scopeId}
                 initialValues={formData}
-                parentPartId={mainPart.partParentId}
+                parentPartId={modifiedPart.partParentId}
                 apId={apId}
-                partId={mainPart.id}
+                partId={modifiedPart.id}
                 onClose={() => onClose()}
-                partItems={updatedPart ? part?.items : null}
+                revision={revision}
                 />
         },
         'dialog-lg',
