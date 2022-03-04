@@ -651,7 +651,7 @@ class RegistryPage extends AbstractReactComponent {
             if (data.revStateApproval) {
                 itemActions.push(
                     <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
-                        <Icon glyph="fa-trash" />
+                        <Icon glyph="fa-undo" />
                         <div>
                             <span className="btnText">{i18n('registry.deleteRevision')}</span>
                         </div>
@@ -667,7 +667,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
                 itemActions.push(
                     <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
-                        <Icon glyph="fa-arrow-left" />
+                        <Icon glyph="fa-check" />
                         <div>
                             <span className="btnText">{i18n('registry.mergeRevision')}</span>
                         </div>
@@ -726,7 +726,7 @@ class RegistryPage extends AbstractReactComponent {
                     });
                 }
             }
-            if(revisionState === RevStateApproval.ACTIVE){
+            if(revisionState === RevStateApproval.ACTIVE || revisionState === RevStateApproval.TO_AMEND){
                 editMode = true;
             }
         }
