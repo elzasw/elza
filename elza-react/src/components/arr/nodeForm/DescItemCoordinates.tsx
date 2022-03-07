@@ -136,7 +136,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                         />
                     </div>
                 )}
-                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <PolygonShowInMap className={'mr-1'} polygon={value} />}
+                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <PolygonShowInMap className={'mx-1'} polygon={value} />}
             </div>
         );
     }
