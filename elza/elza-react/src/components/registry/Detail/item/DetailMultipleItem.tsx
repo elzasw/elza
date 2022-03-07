@@ -104,7 +104,7 @@ const DetailMultipleItem: FC<Props> = ({
                                             }
                                         />
                                     )}
-                                    {item?.['@class'] === ApItemCoordinatesClass && <PolygonShowInMap className={'mb-1'} polygon={itemValue(item)} />}
+                                    {item?.['@class'] === ApItemCoordinatesClass && <PolygonShowInMap className={'mb-1 ml-1'} polygon={itemValue(item)} />}
                                 </div>
                         </div>
                         })}
