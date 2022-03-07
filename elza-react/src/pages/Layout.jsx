@@ -40,11 +40,10 @@ import {
 } from 'pages';
 
 import './Layout.scss';
-import {modalDialogShow} from '../actions/global/modalDialog';
-import i18n from '../components/i18n';
 import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
+import {MAP_URL} from './map/MapPage';
 
 let _gameRunner = null;
 
@@ -179,7 +178,7 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-                            <Route path="/map" component={(props) => <MapPage polygon={polygon} {...props} />} />
+                            <Route path={MAP_URL} component={(props) => <MapPage polygon={polygon} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />

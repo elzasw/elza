@@ -15,12 +15,17 @@ import {connect} from "react-redux";
 import {storeFromArea} from 'shared/utils';
 import 'ol/ol.css';
 
+export const MAP_URL = '/map';
+
 /**
  * Stránka mapy.
  * Zobrazuje stranku s mapou a vybraným poygonem
  */
 class MapPage extends AbstractReactComponent {
     mapRef = null;
+    state = {
+        polygon: null
+    }
 
     constructor(props) {
         super(props);
@@ -28,8 +33,27 @@ class MapPage extends AbstractReactComponent {
         this.mapRef = React.createRef();
     }
 
+    UNSAFE_componentWillMount() {
+        window.addEventListener('message', (event) => {
+            const origin = event.origin || event.originalEvent.origin;
+            const {data} = event;
+
+            if (origin !== window.location.origin)
+                return;
+            if (!data || (typeof data === 'object' && data.call !== 'sendPolygon')) {
+                return;
+            }
+
+            this.setState({polygon: data.polygon})
+        }, false);
+    }
+
     componentDidMount() {
         this.initMap();
+
+        if (!this.state.polygon) {
+            this.setState({polygon: this.props.polygon});
+        }
     }
 
     componentDidUpdate() {
@@ -37,7 +61,8 @@ class MapPage extends AbstractReactComponent {
     }
 
     createMap() {
-        const {polygon, registryLayerList} = this.props;
+        const {registryLayerList} = this.props;
+        const {polygon} = this.state;
 
         if (polygon && registryLayerList.fetched) {
             const layers = []

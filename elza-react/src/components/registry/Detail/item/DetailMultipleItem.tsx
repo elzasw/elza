@@ -8,11 +8,9 @@ import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
 import {SyncIcon} from "../sync-icon";
 import {SyncState} from "../../../../api/SyncState";
-import {Button} from '../../../ui';
 import {ApItemCoordinatesClass, itemValue} from "../../../../utils/ItemInfo";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
-import Icon from "../../../shared/icon/Icon";
-import i18n from 'components/i18n';
+import {PolygonShowInMap} from "../../../PolygonShowInMap";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -69,7 +67,7 @@ const DetailMultipleItem: FC<Props> = ({
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
 
-                            return <div style={{display: "flex", alignItems: "center"}}>
+                            return <div style={{display: "flex", alignItems: "center"}} key={index}>
                                 <RevisionDisplay
                                     valuesEqual={!isModified}
                                     isDeleted={isDeleted}
@@ -106,9 +104,7 @@ const DetailMultipleItem: FC<Props> = ({
                                             }
                                         />
                                     )}
-                                    {item?.['@class'] === ApItemCoordinatesClass && <Button className={'mb-1'} onClick={() => showInMap(itemValue(item))} title={i18n('global.action.showInMap')} variant={'action' as any}>
-                                        <Icon glyph={'fa-map'} />
-                                    </Button>}
+                                    {item?.['@class'] === ApItemCoordinatesClass && <PolygonShowInMap className={'mb-1'} polygon={itemValue(item)} />}
                                 </div>
                         </div>
                         })}
