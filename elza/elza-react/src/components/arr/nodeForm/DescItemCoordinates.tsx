@@ -15,6 +15,7 @@ import {Action, Dispatch} from "redux";
 import {connect} from "react-redux";
 import {CLS_ITEM_COORDINATES} from "../../../shared/factory/factoryConsts";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../CrossTabHelper";
+import {PolygonShowInMap} from "../../PolygonShowInMap";
 
 type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
 type State = {type: null | string; data: null | string};
@@ -135,9 +136,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                         />
                     </div>
                 )}
-                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <Button className={'mr-1'} onClick={() => this.showInMap(value)} title={i18n('global.action.showInMap')} variant={'action' as any}>
-                    <Icon glyph={'fa-map'} />
-                </Button>}
+                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <PolygonShowInMap className={'mr-1'} polygon={value} />}
             </div>
         );
     }
