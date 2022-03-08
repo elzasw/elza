@@ -1842,6 +1842,7 @@ where no.level_id = l.level_id
             </column>
         </addColumn>
     </changeSet>
+
     <changeSet id="20220302162800" author="fantis">
         <addColumn tableName="ap_rev_item">
             <column name="deleted" type="boolean"/>
