@@ -51,6 +51,7 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
     scopeId,
     apTypeId,
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const dispatch = useThunkDispatch<AppState>();
     const form = useForm();
@@ -59,27 +60,31 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
     const updatedItem = field.input.value.updatedItem as ApItemAccessPointRefVO;
     const prevValue = item ? getDisplayValue(item as ApItemAccessPointRefVO, itemType) : undefined;
 
+    const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
+    const isDeleted = updatedItem?.changeType === "DELETED";
+
     const handleEditItem = async () => {
         const fieldValue = await dispatch(handleSelectAccessPointRef(updatedItem as ApItemAccessPointRefVO, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
         form.change(`${name}.updatedItem`, fieldValue)
         handleValueUpdate(form);
     }
+    
     const handleRevert = () => {
         form.change(`${name}.updatedItem`, item)
         handleValueUpdate(form);
     }
 
     const handleDelete = () => {
-        form.change(`${name}.updatedItem`, {
-            ...updatedItem,
-            changeType: "DELETED",
-            value: null,
-        })
+        if(disableRevision || isNew){onDelete()}
+        else {
+            form.change(`${name}.updatedItem`, {
+                ...updatedItem,
+                changeType: "DELETED",
+                value: null,
+            })
+        }
         handleValueUpdate(form);
     }
-
-    const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
-    const isDeleted = updatedItem?.changeType === "DELETED";
 
     return (
         <Row className={'d-flex'}>
@@ -90,7 +95,7 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
                     disableRevision={disableRevision}
                     value={getDisplayValue(updatedItem, itemType)}
                     onRevert={!isNew ? handleRevert : undefined}
-                    onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                    onDelete={isDeleted ? undefined : handleDelete}
                     isDeleted={isDeleted}
                 >
                     <div style={{display: "flex"}}>

@@ -15,6 +15,7 @@ export const FormTextarea:FC<CommonFieldProps<ApItemFormattedTextVO> & {
     disabled = false,
     limitLength,
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
     const field = useField<RevisionItem>(`${name}`);
@@ -25,6 +26,9 @@ export const FormTextarea:FC<CommonFieldProps<ApItemFormattedTextVO> & {
         name={`${name}.updatedItem.value`}
     >
         {(props) => {
+            const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
+            const isDeleted = updatedItem?.changeType === "DELETED";
+
             const handleChange = (e: any) => {
                 props.input.onBlur(e)
                 handleValueUpdate(form, props);
@@ -36,16 +40,16 @@ export const FormTextarea:FC<CommonFieldProps<ApItemFormattedTextVO> & {
             }
 
             const handleDelete = () => {
-                form.change(`${name}.updatedItem`, {
-                    ...updatedItem,
-                    changeType: "DELETED",
-                    value: null,
-                })
+                if(disableRevision || isNew){onDelete()}
+                else {
+                    form.change(`${name}.updatedItem`, {
+                        ...updatedItem,
+                        changeType: "DELETED",
+                        value: null,
+                    })
+                }
                 handleValueUpdate(form);
             }
-
-            const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
-            const isDeleted = updatedItem?.changeType === "DELETED";
 
             return <RevisionFieldExample
                 label={label}
@@ -55,7 +59,7 @@ export const FormTextarea:FC<CommonFieldProps<ApItemFormattedTextVO> & {
                 alignTop={true}
                 equalSplit={true}
                 onRevert={!isNew ? handleRevert : undefined}
-                onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
             >
                 <ReduxFormFieldErrorDecorator

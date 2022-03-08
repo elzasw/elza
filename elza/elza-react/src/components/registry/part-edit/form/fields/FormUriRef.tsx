@@ -6,24 +6,25 @@ import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormField
 import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemUriRefVO } from 'api/ApItemUriRefVO';
+import { CommonFieldProps } from './types';
 
-export const FormUriRef:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    prevItem?: ApItemUriRefVO;
-    disableRevision?: boolean;
-}> = ({
+export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     name,
     label,
     disabled = false,
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
     const field = useField<RevisionItem>(`${name}`);
     const {item, updatedItem} = field.input.value;
+
     const descriptionField = useField(`${name}.updatedItem.description`);
     const valueField = useField(`${name}.updatedItem.value`)
+
+    const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
+    const isDeleted = updatedItem?.changeType === "DELETED";
+
     const validate = (value:string) => {
         if(!value?.match(/^.+:.+$/g)){
             return "Nesprávný formát odkazu";
@@ -42,16 +43,17 @@ export const FormUriRef:FC<{
     }
 
     const handleDelete = () => {
-        form.change(`${name}.updatedItem`, {
-            ...updatedItem,
-            changeType: "DELETED",
-            value: null,
-        })
+        if(disableRevision || isNew){onDelete()}
+        else {
+            form.change(`${name}.updatedItem`, {
+                ...updatedItem,
+                changeType: "DELETED",
+                value: null,
+                specId: undefined,
+            })
+        }
         handleValueUpdate(form);
     }
-
-    const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
-    const isDeleted = updatedItem?.changeType === "DELETED";
 
     return <Row>
         <Col xs={10}>
@@ -64,7 +66,7 @@ export const FormUriRef:FC<{
                 })}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
-                onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
             >
                 <div style={{display: "flex"}}>
