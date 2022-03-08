@@ -28,6 +28,7 @@ export const DetailPartInfo: FC<Props> = ({
     select,
 }) => {
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap || {})
+    console.log(bindings)
 
     const renderItems = (items: RevisionItem[]) => {
         if (items.length === 0) {

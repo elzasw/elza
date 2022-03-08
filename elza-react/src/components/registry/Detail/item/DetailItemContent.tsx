@@ -154,7 +154,7 @@ const DetailItemContent: FC<Props> = ({
             break;
     }
 
-    let valueSpecification;
+    let valueSpecification: React.ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
         valueSpecification = <i>Bez specifikace</i>;
         if (item.specId) {
@@ -165,13 +165,12 @@ const DetailItemContent: FC<Props> = ({
         }
     }
 
-
     return (
         <div className="detail-item-content-value">
             {valueSpecification}
             {valueSpecification && valueField && ': '}
             {valueField}
-            {(itemBinding != null && !revision) && (
+            {(itemBinding != null) && (
                 <span className="sync-wrapper">
                     <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                 </span>
