@@ -56,6 +56,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                 key={groupIndex}
                 items={items}
                 itemTypeSettings={itemTypeSettings}
+                revisionActive={revision}
             >
                 {(item) => {
                     const index = absoluteIndex;
@@ -85,15 +86,17 @@ const ApDescItemGroup: FC<{
     items: RevisionItem[];
     itemTypeSettings: ItemType[];
     children: (item: RevisionItem, index: number) => ReactNode;
+    revisionActive?: boolean;
 }> = ({
     items,
     itemTypeSettings,
     children,
+    revisionActive = false,
 }) => {
     const descItemTypesMap = useSelector((state:AppState) => state.refTables.descItemTypes.itemsMap)
 
     return <Col
-        xs={getItemWidth(items.length > 0 ? items[0].updatedItem : undefined, descItemTypesMap, itemTypeSettings)}
+        xs={getItemWidth(items.length > 0 ? items[0].updatedItem : undefined, descItemTypesMap, itemTypeSettings, revisionActive)}
         className="item-wrapper"
     >
         {items.map(children)}
@@ -116,20 +119,26 @@ const groupItemsByType = (items: RevisionItem[]) => {
 const getItemWidth = (
     item: ApItemVO | undefined,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    itemTypeSettings: ItemType[]
+    itemTypeSettings: ItemType[],
+    revisionActive: boolean = false,
 ) => {
     const groupTypeId = item?.typeId;
     const itemTypeExt = groupTypeId && descItemTypesMap ? descItemTypesMap[groupTypeId] : undefined;
 
     let width = 2; // default
+    const max = 12;
 
     if (itemTypeExt) {
         const itemType: ItemType = objectById(itemTypeSettings, itemTypeExt.code, 'code');
         if (itemType && itemType.width) {
             width = itemType.width;
         }
+        if(revisionActive){
+            const increase = 3;
+            width = width + increase <= max ? width + increase : max;
+        }
     }
 
-    return width <= 0 ? 12 : width;
+    return width <= 0 ? max : width;
 }
 

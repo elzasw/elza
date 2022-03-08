@@ -3,6 +3,7 @@ import React, { FC } from 'react';
 import { RevisionDisplay } from './RevisionDisplay';
 import { SmallButton } from "components/shared/button/small-button";
 import './RevisionField.scss';
+import FormInput from '../../shared/form/FormInput';
 
 export const RevisionFieldExample:FC<{
     prevValue?: string;
@@ -24,10 +25,26 @@ export const RevisionFieldExample:FC<{
     alignTop,
     equalSplit,
     onRevert,
-    // onDelete,
+    onDelete,
 }) => {
     const valuesEqual = value === prevValue;
-    const renderPrevValue = () => prevValue;
+    const isLongValue = prevValue && prevValue.length > 1000 || false;
+
+    const renderPrevValue = () => {
+        if(!isLongValue) { return prevValue }
+        return <FormInput 
+            style={{
+                resize: isDeleted ? undefined : "none",
+                height: "100%",
+                minHeight: "6em",
+            }}
+            type="textarea" 
+            disabled={true}
+        >
+            {prevValue}
+        </FormInput>
+    };
+
     const renderValue = () => <div style={{flex: 1}}>{children}</div>;
 
     const renderActions = () => {
@@ -49,7 +66,6 @@ export const RevisionFieldExample:FC<{
 
     const renderHidableActions = () => {
         const actions: React.ReactNode[] = [];
-        /* prozatim skryte 
         if(onDelete){
             actions.push(<SmallButton 
                 onClick={onDelete} 
@@ -57,9 +73,9 @@ export const RevisionFieldExample:FC<{
                 <Icon glyph="fa-trash"/>
             </SmallButton>)
         }
-        */
 
         if(actions.length === 0) {return <></>}
+        console.log(onDelete, actions)
 
         return <div className="actions hidable">
             {actions}
@@ -68,7 +84,7 @@ export const RevisionFieldExample:FC<{
 
     return <div className="revision-field">
         <div className="revision-field-title">
-            <label>
+            <label title={label}>
                 {label}
             </label>
             {renderActions()}
@@ -82,6 +98,7 @@ export const RevisionFieldExample:FC<{
             isDeleted={isDeleted}
             disableRevision={disableRevision}
             equalSplit={equalSplit}
+            expandLeft={isLongValue}
             isField={true}
             isNew={!prevValue}
             />

@@ -87,6 +87,7 @@ export const renderItem = (
         disabled: fieldDisabled,
         label: itemType.shortcut,
         onChange: (a: any) => { console.log("field on change", a);},
+        onDelete: () => {onDeleteItem(index);},
         prevItem: prevItem as any,
         disableRevision,
     }
@@ -152,27 +153,14 @@ export const renderItem = (
 
         valueSpecification = (
             <FormSpecification
-                name={name}
-                label={valueField ? 'Specifikace' : itemType.shortcut}
+                {...commonFieldProps}
+                label={valueField ? 'Specifikace' : commonFieldProps.label}
                 itemType={itemType}
                 itemSpecIds={useItemSpecIds}
-                disabled={fieldDisabled}
-                prevItem={prevItem}
                 getSpecName={getSpecName}
-                disableRevision={disableRevision}
                 />
         );
     }
-
-    const deleteAction = deleteMode ?
-        <Button
-            className={'item-delete-action'}
-            onClick={() => onDeleteItem(index)}
-            variant={'action'}
-        >
-            <Icon glyph={'fa-trash'} />
-        </Button>
-        : undefined;
 
     const cls = classNames('item-value-wrapper', {
         'has-specification': !!valueSpecification,
@@ -184,13 +172,11 @@ export const renderItem = (
             {valueSpecification && (
                 <Col xs={valueSpecification && valueField ? 6 : 12} className={'spcification-wrapper'}>
                     {valueSpecification}
-                    {!valueField && deleteAction}
                 </Col>
             )}
             {valueField && (
                 <Col xs={valueSpecification && valueField ? 6 : 12} className={valueSpecification ? 'pl-1' : ''}>
                     { valueField }
-                    { deleteAction }
                 </Col>
             )}
         </Row>

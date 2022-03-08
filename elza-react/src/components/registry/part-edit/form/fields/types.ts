@@ -4,4 +4,5 @@ export interface CommonFieldProps<Type> {
     disabled?: boolean;
     prevItem?: Type;
     disableRevision?: boolean;
+    onDelete?: () => void;
 }

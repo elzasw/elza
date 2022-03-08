@@ -20,6 +20,7 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
     itemType,
     getSpecName = () => "-",
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
     const field = useField<RevisionItem>(`${name}`);
@@ -29,6 +30,10 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
         name={`${name}.updatedItem.specId`}
     >
         {(props) => {
+            const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
+            const isDeleted = updatedItem?.changeType === "DELETED";
+            const prevValue = item?.specId != null ? getSpecName(item.specId) : undefined
+
             const handleChange = (e: any) => { 
                 props.input.onChange(e)
                 handleValueUpdate(form);
@@ -40,17 +45,17 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
             }
 
             const handleDelete = () => {
-                form.change(`${name}.updatedItem`, {
-                    ...updatedItem,
-                    changeType: "DELETED",
-                    specId: undefined,
-                })
+                if(disableRevision || isNew){onDelete()}
+                else {
+                    form.change(`${name}.updatedItem`, {
+                        ...updatedItem,
+                        changeType: "DELETED",
+                        value: null,
+                        specId: undefined,
+                    })
+                }
                 handleValueUpdate(form);
             }
-
-            const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
-            const isDeleted = updatedItem?.changeType === "DELETED";
-            const prevValue = item?.specId != null ? getSpecName(item.specId) : undefined
 
             return <RevisionFieldExample 
                 label={label} 
@@ -58,7 +63,7 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
                 value={isDeleted ? undefined : getSpecName(parseInt(props.input.value))}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
-                onDelete={disableRevision || isNew || isDeleted ? undefined : handleDelete}
+                onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
             >
                 <ReduxFormFieldErrorDecorator

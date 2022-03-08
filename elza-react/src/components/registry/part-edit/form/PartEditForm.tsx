@@ -127,11 +127,6 @@ export const PartEditForm = ({
                                     meta,
                                 })}
                         </Col>
-                        <Col xs="auto">
-                            <Button disabled={isDisabled} variant={'outline-dark'} onClick={() => handleDeleteMode()}>
-                                {deleteMode ? 'Ukončit režim odstraňování' : 'Odstranit položky formuláře'}
-                            </Button>
-                        </Col>
                     </Row>
                     <Row key="inputs" className="part-edit-form d-flex">
                         <ItemsWrapper
