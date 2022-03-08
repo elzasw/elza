@@ -6,8 +6,6 @@ import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
-import {SyncIcon} from "../sync-icon";
-import {SyncState} from "../../../../api/SyncState";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -55,6 +53,7 @@ const DetailMultipleItem: FC<Props> = ({
                             const isDeleted = isPartModified ? updatedItem?.changeType === "DELETED" : false;
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
+                            // const isRevisionModified = updatedItem?.changeType === "UPDATED";
 
                             return <div style={{display: "flex", alignItems: "center"}}>
                                 <RevisionDisplay
@@ -68,7 +67,7 @@ const DetailMultipleItem: FC<Props> = ({
                                             item={item}
                                             key={index}
                                             globalEntity={globalEntity}
-                                            bindings={!isModified ? bindings : undefined}
+                                            bindings={bindings}
                                             revision={revision}
                                         /> : "no prev"
                                     }}
@@ -84,17 +83,6 @@ const DetailMultipleItem: FC<Props> = ({
                                     }}
                                 >
                                 </RevisionDisplay>
-                                <div className="actions">
-                                    {(revision) && (
-                                        <SyncIcon
-                                            syncState={
-                                                !isModified && !isDeleted ?
-                                                    SyncState.SYNC_OK :
-                                                    SyncState.LOCAL_CHANGE
-                                            }
-                                        />
-                                    )}
-                                </div>
                         </div>
                         })}
                     </div>

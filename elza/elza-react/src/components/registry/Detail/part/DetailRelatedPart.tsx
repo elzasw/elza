@@ -59,15 +59,16 @@ const DetailRelatedPart: FC<Props> = ({
         }
     };
 
-    const partBinding = !updatedPart && part ? bindings.partsMap[part.id] : false;
-    const hasBinding = partBinding != null;
-    const isModified = (hasBinding && !partBinding) || (part != null && updatedPart != null);
-    const isCollapsed = collapsed && !isModified;
-    const isDeleted = updatedPart ? updatedPart.value == null : false;
-    const isNew = !part?.value && updatedPart?.value != undefined;
-    const areValuesEqual = (value: string, prevValue: string) => value === prevValue
     
+    const partBinding = part ? bindings.partsMap[part.id] : false;
+    const hasBinding = partBinding != null;
+    const hasLocalChange = hasBinding && !partBinding;
+    const isRevisionModified = updatedPart?.changeType === "UPDATED";
+    const isCollapsed = collapsed && !isRevisionModified;
+    const isDeleted = updatedPart?.changeType === "DELETED";
+    const isNew = updatedPart?.changeType === "NEW";
     const revisionItems = getRevisionItems(part?.items || undefined, updatedPart?.items || undefined)
+    const areValuesEqual = (value: string, prevValue: string) => value === prevValue
 
     const classNameHeader = classNames( "detail-part-header",);
     const classNameContent = classNames( { "detail-part-expanded": !isCollapsed }); // Rozbalený content
@@ -98,8 +99,8 @@ const DetailRelatedPart: FC<Props> = ({
                 </RevisionDisplay>
 
                 <div className="actions">
-                    {(partBinding || revision) && 
-                        <SyncIcon syncState={!isModified ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                    {partBinding && 
+                        <SyncIcon syncState={!hasLocalChange ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}
                 </div>
@@ -121,7 +122,7 @@ const DetailRelatedPart: FC<Props> = ({
                             <Icon glyph={'fa-trash'} />
                         </SmallButton>
                     }
-                    {(isDeleted || isModified) &&
+                    {(isDeleted || hasLocalChange) &&
                         <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert({part, updatedPart})}>
                             <Icon glyph="fa-undo" />
                         </SmallButton>
@@ -138,7 +139,7 @@ const DetailRelatedPart: FC<Props> = ({
                     globalEntity={globalEntity}
                     bindings={bindings}
                     itemTypeSettings={itemTypeSettings}
-                    isModified={isModified}
+                    isModified={isRevisionModified}
                     revision={revision}
                 />
             </div>

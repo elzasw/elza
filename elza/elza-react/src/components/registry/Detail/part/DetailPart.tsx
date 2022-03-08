@@ -63,11 +63,13 @@ const DetailPart: FC<Props> = ({
     };
 
     const partBinding = part ? bindings.partsMap[part.id] : false;
-    const hasBinding = partBinding != null;
-    const isModified = (hasBinding && !partBinding) || (part != null && updatedPart != null);
-    const isCollapsed = collapsed && !isModified;
-    const isDeleted = updatedPart ? updatedPart.value == null : false;
-    const isNew = !part?.value && updatedPart?.value != undefined;
+    const updatedPartBinding = updatedPart ? bindings.partsMap[updatedPart.id] : false;
+    // const hasBinding = partBinding != null;
+    // const hasLocalChange = hasBinding && !partBinding;
+    const isRevisionModified = updatedPart?.changeType === "UPDATED";
+    const isCollapsed = collapsed && !isRevisionModified;
+    const isDeleted = updatedPart?.changeType === "DELETED";
+    const isNew = updatedPart?.changeType === "NEW";
 
     const classNameContent = classNames({
         'detail-part-preferred': preferred,
@@ -91,14 +93,18 @@ const DetailPart: FC<Props> = ({
                         isNew={isNew}
                         valuesEqual={areValuesEqual(part?.value || "", updatedPart ? updatedPart.value : part?.value || "")}
                         renderPrevValue={() => {
-                            return <PartName
-                                label={part?.value || "no value"}
-                                collapsed={isCollapsed}
-                                preferred={preferred}
-                                oldPreferred={oldPreferred}
-                                newPreferred={newPreferred}
-                                onClick={() => setCollapsed(!collapsed)}
-                                />
+                            return <div style={{display: "flex"}}>
+                                <PartName
+                                    label={part?.value || "no value"}
+                                    collapsed={isCollapsed}
+                                    preferred={preferred}
+                                    oldPreferred={oldPreferred}
+                                    newPreferred={newPreferred}
+                                    onClick={() => setCollapsed(!collapsed)}
+                                    binding={partBinding}
+                                    />
+
+                                </div>
                         }}
                         renderValue={() => {
                             return <PartName
@@ -108,21 +114,13 @@ const DetailPart: FC<Props> = ({
                                 oldPreferred={oldPreferred}
                                 newPreferred={newPreferred}
                                 onClick={() => setCollapsed(!collapsed)}
+                                binding={updatedPart ? updatedPartBinding : partBinding}
                                 />
                         }}
                     >
 
                     </RevisionDisplay>
                     <div className="actions">
-                        {(hasBinding || revision) && (
-                            <SyncIcon
-                                syncState={
-                                !isModified ?
-                                SyncState.SYNC_OK :
-                                SyncState.LOCAL_CHANGE
-                                }
-                                />
-                        )}
                         {showValidationError()}
                     </div>
                     <div className="actions hidable">
@@ -139,7 +137,7 @@ const DetailPart: FC<Props> = ({
                         globalEntity={globalEntity}
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}
-                        isModified={isModified}
+                        isModified={isRevisionModified || isDeleted}
                         revision={revision}
                         />
                 </div>
