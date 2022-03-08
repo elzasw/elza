@@ -72,8 +72,8 @@ public class GroovyAppender {
 
                     for (GroovyItem groovyItem : itemPart.items) {
                         StringBuilder sgi = new StringBuilder();
-                        if (itemPart.useSpec && groovyItem.getSpecName() != null) {
-                            sgi.append(groovyItem.getSpecName());
+                        if (itemPart.useSpec && groovyItem.getSpec() != null) {
+                            sgi.append(groovyItem.getSpec());
                             sgi.append(itemPart.specSeparator);
                         }
                         sgi.append(groovyItem.getValue());
@@ -100,8 +100,8 @@ public class GroovyAppender {
 
                     for (GroovyItem groovyItem : boolPart.items) {
                         StringBuilder sgi = new StringBuilder();
-                        if (boolPart.useSpec && groovyItem.getSpecName() != null) {
-                            sgi.append(groovyItem.getSpecName());
+                        if (boolPart.useSpec && groovyItem.getSpec() != null) {
+                            sgi.append(groovyItem.getSpec());
                             sgi.append(boolPart.specSeparator);
                         }
                         sgi.append(groovyItem.getBoolValue() ? boolPart.trueValue : boolPart.falseValue);
@@ -128,8 +128,8 @@ public class GroovyAppender {
 
                     for (GroovyItem groovyItem : intPart.items) {
                         StringBuilder sgi = new StringBuilder();
-                        if (intPart.useSpec && groovyItem.getSpecName() != null) {
-                            sgi.append(groovyItem.getSpecName());
+                        if (intPart.useSpec && groovyItem.getSpec() != null) {
+                            sgi.append(groovyItem.getSpec());
                             sgi.append(intPart.specSeparator);
                         }
                         sgi.append(groovyItem.getIntValue());

@@ -119,7 +119,7 @@ public class GroovyItem {
         return (rulItemSpec != null) ? rulItemSpec.getItemSpecId() : null;
     }
 
-    public String getSpecName() {
+    public String getSpec() {
         return (rulItemSpec != null) ? rulItemSpec.getName() : null;
     }
 
