@@ -8,6 +8,8 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.groovy.GroovyAe;
+import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -47,6 +49,7 @@ public class GroovyScriptService {
 
     private final NodeCacheService nodeCacheService;
 
+    private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
@@ -108,6 +111,13 @@ public class GroovyScriptService {
         return result;
     }
 
+    /**
+     * Spuštění groovy skriptu pro zpracování dat v Part
+     * 
+     * @param part
+     * @param groovyFilePath
+     * @return
+     */
     public GroovyResult process(GroovyPart part, String groovyFilePath) {
         GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
 
@@ -115,6 +125,25 @@ public class GroovyScriptService {
         input.put(PART, part);
 
         return (GroovyResult) groovyScriptFile.evaluate(input);
+    }
+
+    /**
+     * Spuštění groovy skriptu pro zpracování dat v AccessPoint
+     * 
+     * @param groovyAe
+     * @param groovyFilePath
+     * @return
+     */
+    public List<GroovyItem> process(GroovyAe groovyAe, String groovyFilePath) {
+        if (groovyFilePath == null) {
+            return Collections.emptyList();
+        }
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(ENTITA, groovyAe);
+
+        return (List<GroovyItem>) groovyScriptFile.evaluate(input);
     }
 
     public List<ApItem> filterOutgoingItems(ApPart part,

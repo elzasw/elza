@@ -115,7 +115,7 @@ public class RevisionService {
         }
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
-        List<ApRevPart> parts = revisionPartService.findByRevision(revision);
+        List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = null;
         List<ApRevIndex> indices = null;
         if (CollectionUtils.isNotEmpty(parts)) {
@@ -215,7 +215,7 @@ public class RevisionService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     public void updatePartValues(final ApRevision revision) {
-        List<ApRevPart> partList = revisionPartService.findByRevision(revision);
+        List<ApRevPart> partList = revisionPartService.findPartsByRevision(revision);
         Map<Integer, List<ApRevItem>> itemMap = revisionItemService.findByParts(partList).stream()
                 .collect(Collectors.groupingBy(ApRevItem::getPartId));
 
@@ -535,7 +535,7 @@ public class RevisionService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
-        List<ApRevPart> revParts = revisionPartService.findByRevision(revision);
+        List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> revItems = null;
         List<ApRevIndex> revIndices = null;
 

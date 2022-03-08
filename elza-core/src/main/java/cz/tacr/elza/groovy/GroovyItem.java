@@ -115,7 +115,11 @@ public class GroovyItem {
         return unitdateValue;
     }
 
-    public String getSpec() {
+    public Integer getSpecId() {
+        return (rulItemSpec != null) ? rulItemSpec.getItemSpecId() : null;
+    }
+
+    public String getSpecName() {
         return (rulItemSpec != null) ? rulItemSpec.getName() : null;
     }
 

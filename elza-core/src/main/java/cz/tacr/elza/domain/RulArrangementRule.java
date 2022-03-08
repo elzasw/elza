@@ -157,6 +157,7 @@ public class RulArrangementRule {
         NEW_LEVEL,
         AP_MAPPING_TYPE,
         // TODO: Remove AP_MAPPING_SPEC, not used
-        AP_MAPPING_SPEC
+        AP_MAPPING_SPEC,
+        AUTO_ITEMS        
     }
 }

@@ -59,7 +59,7 @@ public class RevisionPartService {
     private ApPartRepository partRepository;
 
 
-    public List<ApRevPart> findByRevision(ApRevision revision) {
+    public List<ApRevPart> findPartsByRevision(ApRevision revision) {
         return revPartRepository.findByRevision(revision);
     }
 
