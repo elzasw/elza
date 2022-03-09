@@ -112,6 +112,7 @@ class MapPage extends AbstractReactComponent {
             const view = new View({
                 center: [0, 0],
                 zoom: 0,
+                maxZoom: 20,
             });
             // vytvoření mapy s dvoumi vrstvami a výchozím view
             new Map({
