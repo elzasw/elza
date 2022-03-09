@@ -778,6 +778,12 @@ public class ApController {
         Validate.notNull(stateChange.getState(), "AP State is null");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState state = accessPointService.getApState(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+
+        if (revision != null) {
+            throw new BusinessException("Nemůžeme změnit stav entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.generateSync(accessPointId);
