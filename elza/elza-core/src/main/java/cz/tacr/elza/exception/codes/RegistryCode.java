@@ -134,7 +134,7 @@ public enum RegistryCode implements ErrorCode {
     INVALID_ENTITY_SCOPE,
     
     /**
-     * Nemůžeme změnit stav entity, která má revizi
+     * Nelze změnit stav archivní entity, která má revizi
      */
     CANT_CHANGE_STATE_ENTITY_WITH_REVISION,
 }
