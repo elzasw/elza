@@ -781,6 +781,7 @@ public class ApController {
         ApState state = accessPointService.getApState(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
 
+        // Nelze změnit stav archivní entity, která má revizi
         if (revision != null) {
             throw new BusinessException("Nemůžeme změnit stav entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
