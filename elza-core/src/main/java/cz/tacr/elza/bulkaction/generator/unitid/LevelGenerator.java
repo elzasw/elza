@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.BulkActionCode;
 
 public class LevelGenerator {
     
@@ -154,7 +155,11 @@ public class LevelGenerator {
         AssignedUnitId sealedSubTree;
         if(StringUtils.isNotEmpty(prefix)) {
             PartSealedUnitId parentSealedUnitId = sealedTree.find(prefix);
-            Validate.notNull(parentSealedUnitId);
+            if(parentSealedUnitId==null) {
+                throw new SystemException("UNIT_ID is not sealed: " + prefix, 
+                		BulkActionCode.UNITID_NOT_SEALED)
+                	.set("unitId", prefix);
+            }
             
             sealedSubTree = parentSealedUnitId;
         } else {
