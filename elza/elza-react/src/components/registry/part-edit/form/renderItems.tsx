@@ -11,9 +11,9 @@ import { ItemType } from 'api/ApViewSettings';
 import { ApDescItem } from './renderItem'
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store'
-import {getRevisionItems, RevisionItem} from "../../revision";
+import { RevisionItem } from "../../revision";
 
-interface RenderItemsProps extends FieldArrayRenderProps<ApItemVO, any> {
+interface RenderItemsProps extends FieldArrayRenderProps<RevisionItem, any> {
     disabled: boolean;
     deleteMode: boolean;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
@@ -23,7 +23,7 @@ interface RenderItemsProps extends FieldArrayRenderProps<ApItemVO, any> {
     partTypeId: number;
     scopeId: number;
     apTypeId: number;
-    partItems: ApItemVO[] | null | undefined;
+    revision?: boolean;
 }
 
 export const ItemsWrapper:FC<RenderItemsProps> = ({
@@ -37,7 +37,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
     partTypeId,
     scopeId,
     apTypeId,
-    partItems,
+    revision = false,
 }) => {
     if (!fields.value) { return <></>; }
 
@@ -46,7 +46,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
         onDeleteItem?.(index);
     };
 
-    const revisionItems = getRevisionItems(partItems || undefined, fields.value);
+    const revisionItems = fields.value // getRevisionItems(partItems || undefined, fields.value);
     const itemGroups = groupItemsByType(revisionItems);
     let absoluteIndex = 0;
 
@@ -56,6 +56,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                 key={groupIndex}
                 items={items}
                 itemTypeSettings={itemTypeSettings}
+                revisionActive={revision}
             >
                 {(item) => {
                     const index = absoluteIndex;
@@ -68,7 +69,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                         index={index}
                         item={item.updatedItem}
                         prevItem={item.item}
-                        disableRevision={partItems === null}
+                        disableRevision={!revision}
                         onDeleteItem={handleDeleteItem}
                         itemTypeAttributeMap={itemTypeAttributeMap}
                         partTypeId={partTypeId}
@@ -85,15 +86,17 @@ const ApDescItemGroup: FC<{
     items: RevisionItem[];
     itemTypeSettings: ItemType[];
     children: (item: RevisionItem, index: number) => ReactNode;
+    revisionActive?: boolean;
 }> = ({
     items,
     itemTypeSettings,
     children,
+    revisionActive = false,
 }) => {
     const descItemTypesMap = useSelector((state:AppState) => state.refTables.descItemTypes.itemsMap)
 
     return <Col
-        xs={getItemWidth(items.length > 0 ? items[0].updatedItem : undefined, descItemTypesMap, itemTypeSettings)}
+        xs={getItemWidth(items.length > 0 ? items[0].updatedItem : undefined, descItemTypesMap, itemTypeSettings, revisionActive)}
         className="item-wrapper"
     >
         {items.map(children)}
@@ -116,20 +119,26 @@ const groupItemsByType = (items: RevisionItem[]) => {
 const getItemWidth = (
     item: ApItemVO | undefined,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    itemTypeSettings: ItemType[]
+    itemTypeSettings: ItemType[],
+    revisionActive: boolean = false,
 ) => {
     const groupTypeId = item?.typeId;
     const itemTypeExt = groupTypeId && descItemTypesMap ? descItemTypesMap[groupTypeId] : undefined;
 
     let width = 2; // default
+    const max = 12;
 
     if (itemTypeExt) {
         const itemType: ItemType = objectById(itemTypeSettings, itemTypeExt.code, 'code');
         if (itemType && itemType.width) {
             width = itemType.width;
         }
+        if(revisionActive){
+            const increase = 3;
+            width = width + increase <= max ? width + increase : max;
+        }
     }
 
-    return width <= 0 ? 12 : width;
+    return width <= 0 ? max : width;
 }
 

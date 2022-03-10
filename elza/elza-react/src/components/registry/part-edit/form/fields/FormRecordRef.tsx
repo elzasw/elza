@@ -16,7 +16,8 @@ import { objectById } from '../../../../../shared/utils';
 import { Icon } from '../../../../index';
 import RelationPartItemEditModalForm from '../../../modal/RelationPartItemEditModalForm';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from '../../../revision';
+import { RevisionFieldExample, RevisionItem } from '../../../revision';
+import { CommonFieldProps } from './types';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -33,39 +34,58 @@ interface RelationPartItemEditModalFormFields {
 }
 
 
-export const FormRecordRef:FC<{
-    name: string;
-    label: string;
-    disabled: boolean;
+export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
     item: ApItemAccessPointRefVO;
     itemType: RulDescItemTypeExtVO;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     partTypeId: number;
     scopeId: number;
     apTypeId: number;
-    prevValue?: string;
-    disableRevision?: boolean;
 }> = ({
     name,
     label,
     disabled,
-    item,
     itemType,
     itemTypeAttributeMap,
     partTypeId,
     scopeId,
     apTypeId,
-    prevValue,
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const dispatch = useThunkDispatch<AppState>();
     const form = useForm();
-    const field = useField(name);
+    const field = useField<RevisionItem>(`${name}`);
+    const {item} = field.input.value;
+    const updatedItem = field.input.value.updatedItem as ApItemAccessPointRefVO;
+    const prevValue = item ? getDisplayValue(item as ApItemAccessPointRefVO, itemType) : undefined;
+
+    const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
+    const isDeleted = updatedItem?.changeType === "DELETED";
+
     const handleEditItem = async () => {
-        const fieldValue = await dispatch(handleSelectAccessPointRef(item, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
-        form.change(name, fieldValue)
+        const fieldValue = await dispatch(handleSelectAccessPointRef(updatedItem as ApItemAccessPointRefVO, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
+        form.change(`${name}.updatedItem`, fieldValue)
         handleValueUpdate(form);
     }
+    
+    const handleRevert = () => {
+        form.change(`${name}.updatedItem`, item)
+        handleValueUpdate(form);
+    }
+
+    const handleDelete = () => {
+        if(disableRevision || isNew){onDelete()}
+        else {
+            form.change(`${name}.updatedItem`, {
+                ...updatedItem,
+                changeType: "DELETED",
+                value: null,
+            })
+        }
+        handleValueUpdate(form);
+    }
+
     return (
         <Row className={'d-flex'}>
             <Col>
@@ -73,10 +93,13 @@ export const FormRecordRef:FC<{
                     label={label}
                     prevValue={prevValue}
                     disableRevision={disableRevision}
-                    value={getDisplayValue(item, itemType)}
+                    value={getDisplayValue(updatedItem, itemType)}
+                    onRevert={!isNew ? handleRevert : undefined}
+                    onDelete={isDeleted ? undefined : handleDelete}
+                    isDeleted={isDeleted}
                 >
                     <div style={{display: "flex"}}>
-                        <Form.Control style={{flexShrink: 1}} value={getDisplayValue(item, itemType)} disabled={true} />
+                        <Form.Control style={{flexShrink: 1}} value={getDisplayValue(updatedItem, itemType)} disabled={true} />
                         <Button
                             disabled={disabled}
                             variant={'action'}

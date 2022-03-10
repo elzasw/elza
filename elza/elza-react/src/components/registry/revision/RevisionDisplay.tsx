@@ -11,6 +11,7 @@ type Props = {
     alignTop?: boolean;
     valuesEqual?: boolean;
     equalSplit?: boolean;
+    expandLeft?: boolean;
     isField?: boolean;
 };
 
@@ -24,6 +25,7 @@ export const RevisionDisplay: FC<Props> = ({
     alignTop,
     valuesEqual,
     equalSplit,
+    expandLeft,
     isField,
 }) => {
     // const valuesEqual = renderValue === renderPrevValue; // fake equality with empty field
@@ -31,21 +33,25 @@ export const RevisionDisplay: FC<Props> = ({
         "revision-display": true,
         "align-center": !alignTop,
         "equal-split": equalSplit,
+        "expand-left": expandLeft,
         "field": isField,
     })
+    const colorize = !valuesEqual && !disableRevision && !isField;
     return (
         <div className={className}>
-            {
-                <div className="value-previous">
-                    {!isNew ? renderPrevValue() : <i>Nevyplněno</i>}
-                </div>
-            }
-            {!isDeleted && !disableRevision && !valuesEqual &&
+            {!valuesEqual && !disableRevision &&
                 <>
-                    <div className="arrow">
+                    <div className={`value-previous ${colorize && !isNew ? 'colored' : ''}`}>
+                        {!isNew ? renderPrevValue() : <span className="constant">Nevyplněno</span>}
+                    </div>
+                    <div className="arrow constant">
                     🡒
                     </div>
-                    <div className="value-current">
+                </>
+            }
+            {!isDeleted &&  
+                <>
+                    <div className={`value-current ${colorize ? 'colored' : ''}`}>
                         <div style={{flex: 1}}>
                             {renderValue()}
                         </div>
@@ -54,11 +60,8 @@ export const RevisionDisplay: FC<Props> = ({
             }
             {isDeleted && !disableRevision &&
                 <>
-                    <div className="arrow">
-                    🡒
-                    </div>
                     <div className="value-current">
-                        <i>Smazáno</i>
+                        <span className="constant">Smazáno</span>
                     </div>
                 </>
             }

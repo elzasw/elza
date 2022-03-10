@@ -47,7 +47,7 @@
     <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
         <name>Počet archiválií</name>
         <shortcut>Počet arch.</shortcut>
-        <description>Počet evidenčních jednotek - ZP 4.2.8</description>
+        <description>Počet archiválií / evidenčních jednotek - ZP 4.2.8 a 4.2.9</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -977,7 +977,7 @@
     <item-type code="ZP2015_ITEM_LINK" data-type="URI_REF">
         <name>Pevné spojení</name>
         <shortcut>Spojeno s</shortcut>
-        <description>Pevné spojení s jinou jednotkou popisu</description>
+        <description>Pevné spojení s jinou jednotkou popisu - ZP 4.5.2</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>

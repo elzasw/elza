@@ -6,11 +6,6 @@ import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
-import {SyncIcon} from "../sync-icon";
-import {SyncState} from "../../../../api/SyncState";
-import {ApItemCoordinatesClass, itemValue} from "../../../../utils/ItemInfo";
-import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
-import {PolygonShowInMap} from "../../../PolygonShowInMap";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -36,7 +31,7 @@ const DetailMultipleItem: FC<Props> = ({
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
 
     const isValueModified = (item?: any, updatedItem?: any) => {
-        if(item && !updatedItem) {return false};
+        if(updatedItem?.changeType === "DELETED") {return true};
         if(!item && updatedItem) {return true};
         return item?.value !== updatedItem?.value || item?.specId !== updatedItem?.specId;
     }
@@ -45,14 +40,6 @@ const DetailMultipleItem: FC<Props> = ({
         return (!item?.value && !item?.specId)
             && (updatedItem?.value != undefined || updatedItem?.specId != undefined);
     }
-
-    const showInMap = (polygon) => {
-        const thisLayout = getThisLayout();
-
-        if (thisLayout) {
-            CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
-        }
-    };
 
     return (
         <div className="detail-item">
@@ -63,12 +50,14 @@ const DetailMultipleItem: FC<Props> = ({
                 <div style={{display: "flex"}}>
                     <div style={{}}>
                         {items.map(({item, updatedItem}, index) => {
-                            const isDeleted = isPartModified ? updatedItem == null : false;
+                            const isDeleted = isPartModified ? updatedItem?.changeType === "DELETED" : false;
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
+                            // const isRevisionModified = updatedItem?.changeType === "UPDATED";
 
                             return <div style={{display: "flex", alignItems: "center"}} key={index}>
                                 <RevisionDisplay
+                                    disableRevision={!revision}
                                     valuesEqual={!isModified}
                                     isDeleted={isDeleted}
                                     isNew={isNew}
@@ -78,7 +67,7 @@ const DetailMultipleItem: FC<Props> = ({
                                             item={item}
                                             key={index}
                                             globalEntity={globalEntity}
-                                            bindings={!isModified ? bindings : undefined}
+                                            bindings={bindings}
                                             revision={revision}
                                         /> : "no prev"
                                     }}
@@ -94,18 +83,6 @@ const DetailMultipleItem: FC<Props> = ({
                                     }}
                                 >
                                 </RevisionDisplay>
-                                <div className="actions">
-                                    {(revision) && (
-                                        <SyncIcon
-                                            syncState={
-                                                !isModified && !isDeleted ?
-                                                    SyncState.SYNC_OK :
-                                                    SyncState.LOCAL_CHANGE
-                                            }
-                                        />
-                                    )}
-                                    {item?.['@class'] === ApItemCoordinatesClass && <PolygonShowInMap className={'mb-1 ml-1'} polygon={itemValue(item)} />}
-                                </div>
                         </div>
                         })}
                     </div>

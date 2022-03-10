@@ -12,29 +12,47 @@ import Icon from '../../../shared/icon/Icon';
 import {ApItemCoordinatesVO} from '../../../../api/ApItemCoordinatesVO';
 import {modalDialogHide, modalDialogShow} from '../../../../actions/global/modalDialog';
 import i18n from '../../../i18n';
+import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
+import {itemValue} from "../../../../utils/ItemInfo";
 
 interface Props extends ReturnType<typeof mapDispatchToProps> {
     item: ApItemCoordinatesVO;
 }
 
-const DetailCoordinateItem: React.FC<Props> = props => {
+const DetailCoordinateItem: React.FC<Props> = ({
+    item,
+    showExportDialog,
+    showCoordinateDetail,
+}) => {
     const getLabel = (value: string) => {
         return value.split(' ')[0];
     };
 
+    const showInMap = (polygon: string) => {
+        console.log(polygon)
+        const thisLayout = getThisLayout();
+
+        if (thisLayout) {
+            CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
+        }
+    };
+
     return (
         <>
-            <Button variant="link" onClick={() => props.showCoordinateDetail(props.item)}>
-                {getLabel(props.item.value)}
+            <Button variant="link" onClick={() => showCoordinateDetail(item)}>
+                {getLabel(item.value)}
             </Button>
             <Button
                 variant={'action' as any}
                 className={classNames('side-container-button', 'mb-1')}
                 title={i18n('global.action.export')}
                 size="sm"
-                onClick={() => props.showExportDialog(props.item)}
+                onClick={() => showExportDialog(item)}
             >
                 <Icon glyph="fa-download" fixedWidth className="icon" />
+            </Button>
+            <Button className={'mb-1'} onClick={() => showInMap(itemValue(item))} title={i18n('global.action.showInMap')} variant={'action' as any}>
+                <Icon glyph={'fa-map'} />
             </Button>
         </>
     );

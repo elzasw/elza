@@ -2,6 +2,8 @@ import classNames from 'classnames';
 import React, { FC } from 'react';
 import i18n from '../../../i18n';
 import './DetailPart.scss';
+import { SyncState } from '../../../../api/SyncState';
+import { SyncIcon } from "../sync-icon";
 
 export const PartName:FC<{
     label: string,
@@ -10,6 +12,7 @@ export const PartName:FC<{
     newPreferred?: boolean,
     oldPreferred?: boolean,
     onClick?: (event: React.MouseEvent) => void,
+    binding?: boolean;
 }> = ({
     label,
     collapsed = true,
@@ -17,6 +20,7 @@ export const PartName:FC<{
     newPreferred = false,
     oldPreferred = false,
     onClick,
+    binding,
 }) => {
 
     // label = label.replace(/^\w/, (c) => c.toUpperCase())
@@ -50,5 +54,16 @@ export const PartName:FC<{
                 {preferredText()}
             </span>
         )}
+        <div className="sync-wrapper">
+            {(binding != null) && (
+                <SyncIcon
+                    syncState={
+                    binding ?
+                        SyncState.SYNC_OK :
+                        SyncState.LOCAL_CHANGE
+                }
+                    />
+            )}
+        </div>
     </div>
 }

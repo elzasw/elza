@@ -1,5 +1,4 @@
 import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
-import { ApPartFormVO } from "api/ApPartFormVO";
 import { ApViewSettings } from 'api/ApViewSettings';
 import { PartType } from "api/generated/model";
 import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
@@ -16,13 +15,13 @@ import debounce from 'shared/utils/debounce';
 import storeFromArea from 'shared/utils/storeFromArea';
 import { DetailStoreState } from 'types';
 import { AppState } from 'typings/store';
-import { ApItemVO } from "../../../../api/ApItemVO";
 import { AP_VIEW_SETTINGS } from '../../../../constants';
 import { getUpdatedForm, getValueChangeMutators, PartEditForm } from '../form';
+import { RevisionApPartForm } from '../form';
 
 type Props = {
     partTypeId: number;
-    initialValues?: ApPartFormVO;
+    initialValues?: RevisionApPartForm;
     apTypeId: number;
     scopeId: number;
     parentPartId?: number;
@@ -30,7 +29,7 @@ type Props = {
     partId?: number;
     onClose: () => void;
     onSubmit: (data:any) => Promise<void>;
-    partItems: ApItemVO[] | null | undefined;
+    revision?: boolean;
 }
 
 const PartEditModal:FC<Props> = ({
@@ -42,8 +41,8 @@ const PartEditModal:FC<Props> = ({
     parentPartId,
     apId,
     partId,
-    partItems,
     onSubmit,
+    revision = false,
 }) => {
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state:AppState) => state.refTables);
@@ -59,7 +58,7 @@ const PartEditModal:FC<Props> = ({
 
     if (!refTables) { return <Loading/> }
 
-    const fetchAttributes = async (data: ApPartFormVO) => {
+    const fetchAttributes = async (data: RevisionApPartForm) => {
         const {attributes, errors, data: formData} = await getUpdatedForm(
             data, 
             apTypeId, 
@@ -87,7 +86,7 @@ const PartEditModal:FC<Props> = ({
         title={getPartEditDialogLabel(partType.code as PartType, createMode)}
         onHide={handleClose}
     >
-        <Form<ApPartFormVO> 
+        <Form<RevisionApPartForm> 
             mutators={{ 
                 ...arrayMutators as any, 
                 ...getValueChangeMutators(debouncedFetchAttributes),
@@ -105,7 +104,7 @@ const PartEditModal:FC<Props> = ({
                             submitting={submitting}
                             availableAttributes={availableAttributes}
                             editErrors={editErrors}
-                            partItems={partItems}
+                            revision={revision} 
                             />
                     </Modal.Body>
                     <Modal.Footer>

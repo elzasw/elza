@@ -43,6 +43,7 @@ import RegistryUsageForm from '../../components/form/RegistryUsageForm';
 import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
 import {StateApproval} from '../../api/StateApproval';
 import {withRouter} from "react-router";
+import {RevStateApproval} from '../../api/RevStateApproval';
 
 /**
  * Stránka rejstříků.
@@ -180,7 +181,7 @@ class RegistryPage extends AbstractReactComponent {
                             ...formData,
                             partForm: {
                                 ...formData.partForm,
-                                items: formData.partForm.items.filter(this.isFormItemValid),
+                                items: formData.partForm.items.map(({updatedItem}) => updatedItem).filter(this.isFormItemValid),
                             },
                         };
                         const submitData = {
@@ -400,7 +401,7 @@ class RegistryPage extends AbstractReactComponent {
                 accessPointId={id}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('ap.state.change'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
     };
 
     handleCreateRevision = () => {
@@ -650,7 +651,7 @@ class RegistryPage extends AbstractReactComponent {
             if (data.revStateApproval) {
                 itemActions.push(
                     <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
-                        <Icon glyph="fa-trash" />
+                        <Icon glyph="fa-undo" />
                         <div>
                             <span className="btnText">{i18n('registry.deleteRevision')}</span>
                         </div>
@@ -666,7 +667,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
                 itemActions.push(
                     <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
-                        <Icon glyph="fa-arrow-left" />
+                        <Icon glyph="fa-check" />
                         <div>
                             <span className="btnText">{i18n('registry.mergeRevision')}</span>
                         </div>
@@ -711,8 +712,9 @@ class RegistryPage extends AbstractReactComponent {
         let editMode = false;
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
+            const revisionState = registryDetail.data.revStateApproval;
             if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.REV_PREPARED && apState !== StateApproval.APPROVED ) {
-                if (apState === StateApproval.REV_NEW||apState === StateApproval.REV_AMEND) {
+                if (apState === StateApproval.REV_NEW || apState === StateApproval.REV_AMEND) {
                     editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
                         type: perms.AP_EDIT_CONFIRMED,
                         scopeId: registryDetail.data.scopeId,
@@ -723,6 +725,9 @@ class RegistryPage extends AbstractReactComponent {
                         scopeId: registryDetail.data.scopeId,
                     });
                 }
+            }
+            if(revisionState === RevStateApproval.ACTIVE || revisionState === RevStateApproval.TO_AMEND){
+                editMode = true;
             }
         }
 

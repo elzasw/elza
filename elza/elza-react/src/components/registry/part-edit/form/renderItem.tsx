@@ -71,12 +71,13 @@ export const renderItem = (
     prevItem?: ApItemVO,
     disableRevision?: boolean,
 ) => {
-    const typeId = item ? item.typeId : 0;
+    const typeId = item ? item.typeId : prevItem?.typeId as number;
     const itemType = refTables.descItemTypes.itemsMap[typeId] as RulDescItemTypeExtVO;
+    if(!itemType){return <>{typeId}</>}
     const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
     const dataTypeCode = dataType.code;
     const fieldDisabled = disabled || deleteMode;
-    const prevValue = prevItem ? itemValue(prevItem) : '';
+    // const prevValue = prevItem ? itemValue(prevItem) : '';
 
     // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
     let customFieldRender = false;
@@ -86,7 +87,8 @@ export const renderItem = (
         disabled: fieldDisabled,
         label: itemType.shortcut,
         onChange: (a: any) => { console.log("field on change", a);},
-        prevValue,
+        onDelete: () => {onDeleteItem(index);},
+        prevItem: prevItem as any,
         disableRevision,
     }
 
@@ -118,6 +120,7 @@ export const renderItem = (
                 scopeId={scopeId}
                 itemTypeAttributeMap={itemTypeAttributeMap}
                 apTypeId={apTypeId}
+                prevItem={prevItem as ApItemAccessPointRefVO}
             />
             break;
         case RulDataTypeCodeEnum.URI_REF:
@@ -144,27 +147,20 @@ export const renderItem = (
     let valueSpecification: ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
         const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, item?.specId);
+        const getSpecName = (id: number) => {
+            return itemType.descItemSpecs.find((spec) => spec.id === id)?.name || "-";
+        }
 
         valueSpecification = (
             <FormSpecification
-                name={name}
-                label={valueField ? 'Specifikace' : itemType.shortcut}
+                {...commonFieldProps}
+                label={valueField ? 'Specifikace' : commonFieldProps.label}
                 itemType={itemType}
                 itemSpecIds={useItemSpecIds}
-                disabled={fieldDisabled}
+                getSpecName={getSpecName}
                 />
         );
     }
-
-    const deleteAction = deleteMode ?
-        <Button
-            className={'item-delete-action'}
-            onClick={() => onDeleteItem(index)}
-            variant={'action'}
-        >
-            <Icon glyph={'fa-trash'} />
-        </Button>
-        : undefined;
 
     const cls = classNames('item-value-wrapper', {
         'has-specification': !!valueSpecification,
@@ -176,13 +172,11 @@ export const renderItem = (
             {valueSpecification && (
                 <Col xs={valueSpecification && valueField ? 6 : 12} className={'spcification-wrapper'}>
                     {valueSpecification}
-                    {!valueField && deleteAction}
                 </Col>
             )}
             {valueField && (
                 <Col xs={valueSpecification && valueField ? 6 : 12} className={valueSpecification ? 'pl-1' : ''}>
                     { valueField }
-                    { deleteAction }
                 </Col>
             )}
         </Row>

@@ -7,47 +7,68 @@ import FormInput from 'components/shared/form/FormInput';
 import ReduxFormFieldErrorDecorator from 'components/shared/form/ReduxFormFieldErrorDecorator';
 import React, { FC } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
-import { Field, useForm } from 'react-final-form';
+import { Field, useForm, useField } from 'react-final-form';
 import { useDispatch } from 'react-redux';
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { AppState } from 'typings/store';
 import ImportCoordinateModal from '../../../Detail/coordinate/ImportCoordinateModal';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from '../../../revision';
+import { RevisionFieldExample, RevisionItem } from '../../../revision';
+import { ApItemCoordinatesVO } from 'api/ApItemCoordinatesVO';
+import { CommonFieldProps } from './types';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
-export const FormCoordinates:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    prevValue?: string;
-    disableRevision?: boolean;
-}> = ({
+export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     name,
     label,
     disabled = false,
-    prevValue,
     disableRevision,
+    onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
-    const fieldName = `${name}.value`;
-    const form = useForm();
+    const fieldName = `${name}.updatedItem.value`;
     const dispatch = useThunkDispatch<AppState>()
+    const form = useForm();
+    const field = useField<RevisionItem>(`${name}`);
+    const {updatedItem, item} = field.input.value;
+    const prevValue = (item as ApItemCoordinatesVO | undefined)?.value;
+
     const handleImport = async () => {
         const fieldValue = await dispatch(importCoordinateFile());
         form.change(fieldName, fieldValue)
     }
+
     return <Row>
         <Col>
             <Field
                 name={fieldName}
             >
                 {(props) => {
+                    const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
+                    const isDeleted = updatedItem?.changeType === "DELETED";
+
                     const handleChange = (e: any) => {
                         props.input.onBlur(e)
                         handleValueUpdate(form, props);
+                    }
+
+                    const handleRevert = () => {
+                        form.change(`${name}.updatedItem`, item)
+                        handleValueUpdate(form, props);
+                    }
+
+                    const handleDelete = () => {
+                        if(disableRevision || isNew){onDelete()}
+                        else {
+                            form.change(`${name}.updatedItem`, {
+                                ...updatedItem,
+                                changeType: "DELETED",
+                                value: null,
+                            })
+                        }
+                        handleValueUpdate(form);
                     }
 
                     return <RevisionFieldExample
@@ -55,6 +76,11 @@ export const FormCoordinates:FC<{
                         prevValue={prevValue}
                         disableRevision={disableRevision}
                         value={props.input.value}
+                        onRevert={!isNew ? handleRevert : undefined}
+                        onDelete={isDeleted ? undefined : handleDelete}
+                        isDeleted={isDeleted}
+                        equalSplit={true}
+                        alignTop={true}
                     >
                         <div style={{display: "flex"}}>
                             <div style={{flexGrow: 1}}>

@@ -1468,12 +1468,9 @@ public class PackageService {
      * @param ruc                      importované řídící pravidla
      * @param rulArrangementExtensions definice rozšíření
      */
-    private List<RulExtensionRule> processExtensionRules(
-            final RuleUpdateContext ruc,
-            final List<RulArrangementExtension> rulArrangementExtensions
-    ) {
-        ExtensionRules extensionRules = ruc
-                .convertXmlStreamToObject(ExtensionRules.class, EXTENSION_RULE_XML);
+    private List<RulExtensionRule> processExtensionRules(final RuleUpdateContext ruc,
+                                                         final List<RulArrangementExtension> rulArrangementExtensions) {
+        ExtensionRules extensionRules = ruc.convertXmlStreamToObject(ExtensionRules.class, EXTENSION_RULE_XML);
 
         List<RulExtensionRule> rulExtensionRules = rulArrangementExtensions.size() == 0 ? Collections.emptyList() :
                 extensionRuleRepository.findByRulPackageAndArrangementExtensionIn(ruc.getRulPackage(),
@@ -1540,6 +1537,7 @@ public class PackageService {
                 .findFirst()
                 .orElse(null));
         rulExtensionRule.setCompatibilityRulPackage(extensionRule.getCompatibilityRulPackage());
+        rulExtensionRule.setCondition(extensionRule.getCondition());
 
         String filename = extensionRule.getFilename();
         if (filename != null) {
@@ -1939,18 +1937,18 @@ public class PackageService {
     /**
      * Zpracování typů atributů.
      *
-     * @param puc balíček
+     * @param pkgCtx balíček
      */
-    private void processItemTypes(final PackageContext puc) {
-        ItemSpecs itemSpecs = puc.convertXmlStreamToObject(ItemSpecs.class, ITEM_SPEC_XML);
-        ItemTypes itemTypes = puc.convertXmlStreamToObject(ItemTypes.class, ITEM_TYPE_XML);
+    private void processItemTypes(final PackageContext pkgCtx) {
+        ItemSpecs itemSpecs = pkgCtx.convertXmlStreamToObject(ItemSpecs.class, ITEM_SPEC_XML);
+        ItemTypes itemTypes = pkgCtx.convertXmlStreamToObject(ItemTypes.class, ITEM_TYPE_XML);
 
         ItemTypeUpdater updater = applicationContext.getBean(ItemTypeUpdater.class);
 
-        updater.update(itemTypes, itemSpecs, puc);
+        updater.update(itemTypes, itemSpecs, pkgCtx);
         // check if node cache should be sync
         if (updater.getNumDroppedCachedNode() > 0) {
-            puc.setSyncNodeCache(true);
+            pkgCtx.setSyncNodeCache(true);
         }
     }
 

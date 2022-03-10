@@ -10,32 +10,17 @@ import cz.tacr.elza.metadataconstants.MetadataEnum;
 
 public class DaoFile {
 
-    private Path contentFile;
-    private Path metadataFile;
-    private Path thumbnailFile;
+    private Path file;
     private String createdDate;
-    private Integer orderNumber;
     private String description;
     private Map<MetadataEnum, String> techMD;
 
-    public Path getContentFile() {
-        return contentFile;
+    public Path getFile() {
+        return file;
     }
 
-    public void setContentFile(Path contentFile) {
-        this.contentFile = contentFile;
-    }
-
-    public Path getMetadataFile() {
-        return metadataFile;
-    }
-
-    public void setMetadataFile(Path metadataFile) {
-        this.metadataFile = metadataFile;
-    }
-
-    public Path getThumbnailFile() {
-        return thumbnailFile;
+    public void setFile(Path contentFile) {
+        this.file = contentFile;
     }
 
     public String getCreatedDate() {
@@ -49,18 +34,6 @@ public class DaoFile {
             date = dcDate.toString();
         }
         this.createdDate = date;
-    }
-
-    public void setThumbnailFile(Path thumbnailFile) {
-        this.thumbnailFile = thumbnailFile;
-    }
-
-    public Integer getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(Integer orderNumber) {
-        this.orderNumber = orderNumber;
     }
 
     public String getDescription() {

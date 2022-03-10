@@ -11,6 +11,7 @@ import {goToAe} from '../../../../actions/registry/registry';
 import { globalFundTreeInvalidate } from '../../../../actions/arr/globalFundTree';
 import PartEditModal from './PartEditModal';
 import * as H from "history";
+import { RevisionApPartForm } from '../form';
 
 export const showPartCreateModal = (
     partType: RulPartTypeVO,
@@ -29,7 +30,8 @@ export const showPartCreateModal = (
         ({ onClose }) => {
             const handleClose = () => onClose();
 
-            const handleSubmit = async (data: ApPartFormVO) => {
+            const handleSubmit = async (data: RevisionApPartForm) => {
+                    /*
                 const submitData = {
                     items: data.items.filter(i => {
                         if (i['@class'] === '.ApItemEnumVO') {
@@ -39,6 +41,21 @@ export const showPartCreateModal = (
                         }
                     }),
                     parentPartId: parentPartId,
+                    partTypeCode: partType.code,
+                } as ApPartFormVO;
+                    */
+                const updatedItems = data.items.map(({updatedItem}) => updatedItem);
+                const items = updatedItems.filter(item => {
+                        if (item?.['@class'] === '.ApItemEnumVO') {
+                            return item.specId !== undefined;
+                        } else {
+                            return (item as ApItemBitVO)?.value !== undefined;
+                        }
+                    })
+
+                const submitData = {
+                    items,
+                    parentPartId,
                     partTypeCode: partType.code,
                 } as ApPartFormVO;
 
@@ -64,7 +81,6 @@ export const showPartCreateModal = (
                 initialValues={formData}
                 onSubmit={handleSubmit}
                 onClose={handleClose}
-                partItems={null}
                 />},
         'dialog-lg',
         dispatch(globalFundTreeInvalidate()),
