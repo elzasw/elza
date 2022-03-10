@@ -41,4 +41,8 @@ export interface ApPartVO {
      * Identifikátor původního partu
      */
     origPartId?: number;
+    /**
+    * Typ zmeny v revizi
+    */
+    changeType?: "DELETED" | "NEW" | "UPDATED";
 }

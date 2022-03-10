@@ -40,8 +40,9 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
             + "WHERE dt.code = 'INT'")
     Set<RulItemType> findDescItemTypesForIntegers();
 
-    RulItemType getOneByCode(String code);
+    RulItemType findOneByCode(String code);
 
+    List<RulItemType> findByCodeIn(List<String> codes);
 
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
 
@@ -53,9 +54,5 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
      */
     RulItemType findFirstByOrderByViewOrderDesc();
 
-
     void deleteByRulPackage(RulPackage rulPackage);
-
-
-    RulItemType findOneByCode(String code);
 }

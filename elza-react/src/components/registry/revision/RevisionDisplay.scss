@@ -1,32 +1,71 @@
+$deletion-color: #de8f8f;
+$addition-color: #97d697;
+
 .revision-display {
     display: flex;
 
-    &.align-center {
-        align-items: center;
+    .constant {
+        font-style: italic;
+        margin-top: 5px;
+        display: inline-block;
     }
-
     .arrow {
-        margin: 0 10px;
+        font-style: normal;
+        /* margin: 0 10px; */
+        margin-left: 10px;
+        margin-right: 10px;
     }
 
     &.equal-split {
         .value-previous {
-            width: 50%;
-            flex: 1;
+            max-width: 50%;
+            /* flex: 1; */
         }
         .value-current {
             width: 50%;
+            flex: 1;
         }
+    }
+
+    &.expand-left {
+        .value-previous {
+            width: 50%;
+            flex: 1;
+        }
+    }
+
+    .colored {
+        padding: 3px 6px;
+        background-color: lighten($color: #bbb, $amount: 20);
+        border-radius: 5px;
+        border: 1px solid #bbb;
     }
 
     .value-current {
         display: flex;
         flex-direction: column;
+
+        &.colored {
+            background-color: lighten($color: $addition-color, $amount: 20);
+            border-color: $addition-color;
+        }
+    }
+    .value-previous {
+        &.colored {
+            background-color:lighten($color: $deletion-color, $amount: 20);
+            border-color: $deletion-color;
+        }
     }
 
     &.field {
+        &.align-center {
+            align-items: center;
+        }
         .value-current {
             flex: 1;
+        }
+        .constant {
+            margin-top: 0;
         }
     }
 }

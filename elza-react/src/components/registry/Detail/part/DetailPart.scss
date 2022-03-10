@@ -29,7 +29,13 @@
 
         .detail-part-label {
             cursor: pointer;
-            margin-right: 5px;
+            /* margin-right: 5px; */
+            display: flex;
+            align-items: center;
+
+            .sync-wrapper {
+                margin-left: 5px;
+            }
 
             &:hover {
                 color: #317E9F;
@@ -50,12 +56,12 @@
         padding: 7px 17px;
         background-color: #eee;
         margin: 10px;
-        margin-top: 0;
+        margin-top: 5px;
         display: inline-block;
         border: 1px solid #ccc;
 
     }
-    .opened {
-        color: #1A5EBB;
-    }
+    /* .opened { */
+    /*     color: #1A5EBB; */
+    /* } */
 }

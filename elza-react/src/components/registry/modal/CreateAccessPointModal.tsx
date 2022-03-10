@@ -21,11 +21,12 @@ import { getUpdatedForm } from '../part-edit/form/actions';
 import { PartEditForm } from '../part-edit/form/PartEditForm';
 import { FormAutocomplete, FormScope } from '../part-edit/form/fields';
 import { getValueChangeMutators } from '../part-edit/form/valueChangeMutators';
+import { RevisionApPartForm } from '../part-edit/form';
 
 export interface CreateAccessPointModalFields {
     apType?: any;
     scopeId?: any;
-    partForm?: ApPartFormVO;
+    partForm?: RevisionApPartForm;
 }
 
 export interface CreateAccessPointModalProps {
@@ -136,7 +137,6 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
                                     availableAttributes={availableAttributes}
                                     editErrors={editErrors}
                                     arrayName="partForm.items"
-                                    partItems={null}
                                     />
                                 </>
                         )}

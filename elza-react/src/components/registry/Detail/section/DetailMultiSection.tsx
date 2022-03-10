@@ -26,6 +26,7 @@ interface Props {
     onEdit?: (part: RevisionPart) => void;
     onAdd?: () => void;
     onAddRelated?: (parentPartId: number) => void;
+    onRevert?: (part: RevisionPart) => void;
     editMode?: boolean;
     globalEntity: boolean;
     singlePart?: boolean;
@@ -51,6 +52,7 @@ const DetailMultiSection: FC<Props> = ({
     onDelete = () => console.warn("Neni definovan 'onDelte' callback"),
     onEdit = () => console.warn("Neni definovan 'onEdit' callback"),
     onAdd = () => console.warn("Neni definovan 'onAdd' callback"),
+    onRevert = () => console.warn("Neni definovan 'onRevert' callback"),
     onAddRelated,
     globalCollapsed,
     partValidationErrors,
@@ -142,9 +144,11 @@ const DetailMultiSection: FC<Props> = ({
     };
 
     const renderPartActions = (part: RevisionPart, forceRender: boolean = false) => {
+        /*
         if(singlePart && !forceRender){
             return undefined;
         }
+        */
         const typeId = part.updatedPart ? part.updatedPart.typeId : part.part?.typeId;
         const id = part.updatedPart ? part.updatedPart.id : part.part?.id;
 
@@ -156,28 +160,37 @@ const DetailMultiSection: FC<Props> = ({
         if (typeId === partType.id && partType?.code === 'PT_NAME') {
             showPreferredSwitch = !singlePart;
         }
-        let isPreferred = isPartPreferred(part.part, part.updatedPart);
+        const isPreferred = isPartPreferred(part.part, part.updatedPart);
+        const isDeleted = part.updatedPart?.changeType === "DELETED";
+        const isModified = part.updatedPart?.changeType === "UPDATED";
 
         return <>
             {editMode &&
                 <>
-                    {showPreferredSwitch && !isPreferred && (
+                    {showPreferredSwitch && !isPreferred && !isDeleted && (
                         <SmallButton title={i18n("ap.detail.setPreferred")} onClick={()=> onSetPreferred(part)}>
                             <Icon glyph={'fa-star'} />
                         </SmallButton>
                     )}
-                    <SmallButton title={i18n("ap.detail.edit", "")} onClick={()=> onEdit(part)}>
-                        <Icon glyph="fa-pencil" />
-                    </SmallButton>
-                    {!isPreferred &&
-                        <SmallButton title={i18n("ap.detail.delete")} onClick={()=> onDelete(part)}>
-                            <Icon glyph="fa-trash"/>
-                        </SmallButton>}
-                    {onAddRelated && (
+                    {!isDeleted &&
+                        <SmallButton title={i18n("ap.detail.edit", "")} onClick={()=> onEdit(part)}>
+                            <Icon glyph="fa-pencil" />
+                        </SmallButton>
+                    }
+                    {!isDeleted && onAddRelated && (
                         <SmallButton title={i18n("ap.detail.add.related")} onClick={() => onAddRelated(id)}>
                             <Icon glyph="fa-link"/>
                         </SmallButton>
                     )}
+                    {!isPreferred && !isDeleted &&
+                        <SmallButton title={i18n("ap.detail.delete")} onClick={()=> onDelete(part)}>
+                            <Icon glyph="fa-trash"/>
+                        </SmallButton>}
+                    {(isDeleted || isModified) &&
+                        <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert(part)}>
+                            <Icon glyph="fa-undo" />
+                        </SmallButton>
+                    }
                 </>
             }
         </>
@@ -191,8 +204,9 @@ const DetailMultiSection: FC<Props> = ({
                 <span className="">{label}</span>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
                     {renderHeaderActions()}
-                    { singlePart && firstPart &&
+                    { /*singlePart && firstPart &&
                         renderPartActions(firstPart, true)
+                    */
                     }
                 </div>
             </div>
@@ -240,6 +254,7 @@ const DetailMultiSection: FC<Props> = ({
                                                 itemTypeSettings={itemTypeSettings}
                                                 revision={revision}
                                                 select={select}
+                                                onRevert={onRevert}
                                                 />
                                         );
                                     })}

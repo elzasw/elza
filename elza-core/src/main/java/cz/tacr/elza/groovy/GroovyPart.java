@@ -1,6 +1,8 @@
 package cz.tacr.elza.groovy;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -63,6 +65,15 @@ public class GroovyPart {
 
     public List<GroovyItem> getItems(@NotNull String itemType) {
         return items.getItems(itemType);
+    }
+
+    public List<GroovyItem> getItems() {
+        List<GroovyItem> listItems = new ArrayList<>();
+        Map<String, List<GroovyItem>> mapItems = items.getItems();
+        for (String key : mapItems.keySet()) {
+            listItems.addAll(mapItems.get(key));
+        }
+        return listItems;
     }
 
     public List<GroovyPart> getChildren() {

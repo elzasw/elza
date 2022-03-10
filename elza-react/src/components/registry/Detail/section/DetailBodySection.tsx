@@ -18,6 +18,7 @@ interface Props {
     onEdit?: (part: RevisionPart) => void;
     onAdd?: () => void;
     onDelete?: (part: RevisionPart) => void;
+    onRevert?: (part: RevisionPart) => void;
     editMode?: boolean;
     globalEntity: boolean;
     bindings: Bindings;
@@ -37,6 +38,7 @@ const DetailBodySection: FC<Props> = ({
     // onAdd = () => console.warn("Neni definovan 'onAdd' callback"),
     onDelete = () => console.warn("Neni definovan 'onDelete' callback"),
     // partValidationErrors = [],
+    onRevert = () =>  console.warn("Neni definovan 'onRevert' callback"),
     bindings,
     itemTypeSettings,
     partType,
@@ -70,8 +72,9 @@ const DetailBodySection: FC<Props> = ({
     const revisionItems = getRevisionItems(part.part?.items || undefined, part.updatedPart?.items || undefined);
 
     const renderPartActions = (part: RevisionPart) => {
+        const isDeleted = part.updatedPart?.changeType === "DELETED";
         return <>
-            {editMode &&
+            {editMode && !isDeleted &&
                 <>
                     <SmallButton 
                         title={i18n("ap.detail.edit", partType.name)}
@@ -86,6 +89,11 @@ const DetailBodySection: FC<Props> = ({
                         <Icon glyph="fa-trash"/>
                     </SmallButton>
                 </>
+            }
+            {isDeleted &&
+                <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert(part)}>
+                    <Icon glyph="fa-undo" />
+                </SmallButton>
             }
         </>
     }

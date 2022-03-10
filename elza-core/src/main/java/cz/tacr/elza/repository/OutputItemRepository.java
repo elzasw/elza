@@ -30,7 +30,7 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return output item
      */
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+    @Query("SELECT i FROM arr_output_item i JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrOutputItem findOpenOutputItem(Integer descItemObjectId);
 
     /**

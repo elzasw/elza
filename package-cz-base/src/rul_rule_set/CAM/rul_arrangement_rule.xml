@@ -7,4 +7,8 @@
         <rule-type>AP_MAPPING_SPEC</rule-type>
         <priority>100</priority>
     </arrangement-rule>
+    <arrangement-rule filename="AutoItems.groovy">
+        <rule-type>AUTO_ITEMS</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
 </arrangement-rules>

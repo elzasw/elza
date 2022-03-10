@@ -4,12 +4,13 @@ import { FieldArrayRenderProps } from 'react-final-form-arrays';
 import './PartEditForm.scss';
 import {Icon} from '../../../index';
 import {Button} from 'react-bootstrap';
-import {ApItemVO} from '../../../../api/ApItemVO';
+// import {ApItemVO} from '../../../../api/ApItemVO';
 import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
 import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
 import {ApViewSettingRule} from '../../../../api/ApViewSettings';
+import {RevisionItem} from "../../revision";
 
-interface RenderActionsProps extends FieldArrayRenderProps<ApItemVO, any> {
+interface RenderActionsProps extends FieldArrayRenderProps<RevisionItem, any> {
     attributes: Array<ApCreateTypeVO>;
     refTables: any;
     partTypeId: number;
@@ -18,7 +19,7 @@ interface RenderActionsProps extends FieldArrayRenderProps<ApItemVO, any> {
     handleAddItems: (
         attributes: Array<ApCreateTypeVO>,
         refTables: any,
-        formItems: Array<ApItemVO>,
+        formItems: Array<RevisionItem>,
         partTypeId: number,
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
@@ -37,8 +38,11 @@ export const renderAddActions = ({
     apViewSettings,
 }:RenderActionsProps) => {
     const existingItemTypeIds: Record<number, boolean> = {};
-    fields.value.forEach(i => {
-        existingItemTypeIds[i.typeId] = true;
+    fields.value.forEach(({item, updatedItem}) => {
+        const typeId = item?.typeId || updatedItem?.typeId;
+        if(typeId != null){
+            existingItemTypeIds[typeId] = true;
+        }
     });
 
 
