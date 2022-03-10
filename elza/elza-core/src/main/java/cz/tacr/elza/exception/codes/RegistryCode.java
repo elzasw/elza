@@ -137,4 +137,9 @@ public enum RegistryCode implements ErrorCode {
      * Nelze změnit stav archivní entity, která má revizi
      */
     CANT_CHANGE_STATE_ENTITY_WITH_REVISION,
+    
+    /**
+     * Nelze vytvořit revizi, pokud archivná entita má nevhodný stav
+     */
+    CANT_CREATE_REVISION,
 }

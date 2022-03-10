@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -24,9 +25,11 @@ import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyItem;
-import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 
@@ -78,6 +81,13 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> createRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
+
+        // Nelze vytvořit revizi, pokud archivná entita mimo stav NEW, TO_AMEND nebo APPROVED
+        if (!Arrays.asList(StateApproval.NEW, StateApproval.TO_AMEND, StateApproval.APPROVED).contains(state.getStateApproval())) {
+            throw new BusinessException("Nelze vytvořit revizi, pokud archivná entita má nevhodný stav", RegistryCode.CANT_CREATE_REVISION)
+                .set("state", state.getStateApproval());
+        }
+
         revisionService.createRevision(state);
         return ResponseEntity.ok().build();
     }
