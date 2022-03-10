@@ -142,6 +142,7 @@ var messages = {
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
+    "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
 
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
