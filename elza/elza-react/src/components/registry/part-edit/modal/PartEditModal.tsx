@@ -98,6 +98,7 @@ const PartEditModal:FC<Props> = ({
                 return <>
                     <Modal.Body>
                         <PartEditForm
+                            apId={apId}
                             partTypeId={partTypeId}
                             apTypeId={apTypeId}
                             scopeId={scopeId}

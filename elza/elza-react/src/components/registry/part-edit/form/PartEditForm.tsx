@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import { Api } from 'api';
+import { ApPartFormVO } from "api/ApPartFormVO";
+import { i18n } from 'components/shared';
+import React from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-final-form';
 import { FieldArray } from 'react-final-form-arrays';
 import { useSelector } from 'react-redux';
-import { AppState } from 'typings/store';
+import { AppState, PartTypeCodes, RefTablesState } from 'typings/store';
 import { ApCreateTypeVO } from '../../../../api/ApCreateTypeVO';
 import { ApItemVO } from '../../../../api/ApItemVO';
 import { ApViewSettings } from '../../../../api/ApViewSettings';
@@ -11,13 +14,13 @@ import { AP_VIEW_SETTINGS } from '../../../../constants';
 import storeFromArea from '../../../../shared/utils/storeFromArea';
 import { DetailStoreState } from '../../../../types';
 import { Loading } from '../../../shared';
-import { addItems } from './actions';
+import { RevisionItem } from '../../revision';
+import { addEmptyItems, addItemsWithValues } from './actions';
 import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
-import { RevisionItem } from '../../revision'
-import { ApPartFormVO } from "api/ApPartFormVO";
+// import { RequiredType } from 'api/RequiredType';
 
 export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
     items: RevisionItem[];
@@ -32,6 +35,7 @@ type Props = {
     editErrors?: string[];
     arrayName?: string;
     revision?: boolean;
+    apId?: string | number;
 };
 
 const renderValidationErrors = (errors: Array<string>) => {
@@ -45,6 +49,7 @@ const renderValidationErrors = (errors: Array<string>) => {
 };
 
 export const PartEditForm = ({
+    apId,
     partTypeId,
     apTypeId,
     submitting,
@@ -56,13 +61,12 @@ export const PartEditForm = ({
 }: Props) => {
     const handleAddItems = (
         attributes: Array<ApCreateTypeVO>,
-        refTables: any,
+        refTables: RefTablesState,
         formItems: ApItemVO[],
         partTypeId: number,
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
-        apViewSettings: any,
-    ) => addItems(
+    ) => addEmptyItems(
         attributes, 
         refTables, 
         formItems,
@@ -72,22 +76,17 @@ export const PartEditForm = ({
             handleValueUpdate(form);
         },
         userAction,
-        apViewSettings
     )
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap);
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state:AppState) => state.refTables);
-    const [deleteMode, setDeleteMode] = useState<boolean>(false);
     const form = useForm();
 
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]];
 
-
-    const handleDeleteMode = () => {
-        setDeleteMode(!deleteMode);
-    };
-
     const isDisabled = submitting || !availableAttributes;
+    const partType = refTables.partTypes.itemsMap[partTypeId];
+    const isName = partType.code === PartTypeCodes.PT_NAME;
 
     const itemTypeAttributeMap: Record<number, ApCreateTypeVO> = {};
     if (availableAttributes) {
@@ -100,6 +99,36 @@ export const PartEditForm = ({
 
     return (
         <FieldArray name={arrayName}>{({fields, meta})=>{
+
+            const handleAutoItems = async () => {
+                if(apId == undefined) {throw Error("no 'apId'");}
+                const {data} = await Api.accesspoints.getAutoitems(apId.toString())
+                const existingItemTypeIds: Record<number, boolean> = {};
+
+                fields.value.forEach(({item, updatedItem}) => {
+                    const typeId = item?.typeId || updatedItem?.typeId;
+                    if(typeId != null){
+                        existingItemTypeIds[typeId] = true;
+                    }
+                });
+
+                const atts = availableAttributes
+                    .filter((attribute) => attribute.repeatable || !existingItemTypeIds[attribute.itemTypeId])
+                    .filter((attribute) => data?.items?.find((item) => item.itemTypeId === attribute.itemTypeId))
+
+                addItemsWithValues(
+                    atts, 
+                    data.items || [],
+                    refTables, 
+                    fields.value,
+                    partTypeId,
+                    (index: number, value: any) => {
+                        fields.insert(index, value);
+                        handleValueUpdate(form);
+                    },
+                )
+            };
+
             return <>
                 <div>
                     {editErrors && editErrors.length > 0 && (
@@ -114,24 +143,27 @@ export const PartEditForm = ({
                     )}
                     <Row key="actions" className="mb-3 d-flex justify-content-between">
                         <Col style={{flex: 1}}>
-                            {!deleteMode 
-                                && availableAttributes 
+                            { availableAttributes 
                                 && renderAddActions({
                                     partTypeId, 
                                     attributes: availableAttributes,
                                     refTables,
                                     handleAddItems,
                                     descItemTypesMap,
-                                    apViewSettings:apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]],
                                     fields,
                                     meta,
                                 })}
                         </Col>
+                        { apId != undefined && isName && <Col xs="auto">
+                            <Button variant={'outline-dark'} onClick={() => handleAutoItems()}>
+                                {i18n('ap.part.complements.create')}
+                            </Button>
+                        </Col>}
                     </Row>
                     <Row key="inputs" className="part-edit-form d-flex">
                         <ItemsWrapper
                             disabled={isDisabled}
-                            deleteMode={deleteMode}
+                            deleteMode={false}
                             fields={fields}
                             meta={meta}
                             itemTypeAttributeMap={itemTypeAttributeMap}
