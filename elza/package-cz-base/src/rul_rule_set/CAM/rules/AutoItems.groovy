@@ -31,14 +31,18 @@ static List<GroovyItem> generate(final GroovyAe ae) {
 
     // geografický doplněk
     GroovyItem geo = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
-    GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, geo.getValue())
-    items.add(geoItem)
+    if (geo != null) {
+        GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, geo.getValue())
+        items.add(geoItem)
+    }
 
     // obecný doplněk
     GroovyItem geoType = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
     // TODO vytvořit seznam výjimek
-    GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, geoType.getValue())
-    items.add(obecItem)
+    if (geoType != null) {
+        GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, geoType.getValue())
+        items.add(obecItem)
+    }
 
     List<GroovyItem> rels = GroovyUtils.findAllItems(ae, "PT_REL", GroovyPart.PreferredFilter.ALL, "REL_ENTITY")
     for (GroovyItem rel : rels) {
