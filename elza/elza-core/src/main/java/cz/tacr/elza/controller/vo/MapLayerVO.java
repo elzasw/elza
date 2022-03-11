@@ -8,6 +8,10 @@ public class MapLayerVO {
 
     private Integer zIndex;
 
+    private String layer;
+
+    private Boolean initial;
+
     public String getName() {
         return name;
     }
@@ -30,5 +34,21 @@ public class MapLayerVO {
 
     public void setzIndex(Integer zIndex) {
         this.zIndex = zIndex;
+    }
+
+    public String getLayer() {
+        return layer;
+    }
+
+    public void setLayer(String layer) {
+        this.layer = layer;
+    }
+
+    public Boolean getInitial() {
+        return initial;
+    }
+
+    public void setInitial(Boolean initial) {
+        this.initial = initial;
     }
 }
