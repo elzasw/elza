@@ -36,7 +36,7 @@
 				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName() 
  + (StringUtils.isBlank($V{znackaFondu})?"":"<br><b>Značka archivního souboru:</b> "+$V{znackaFondu})
  + "<br><b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )
- +"<br><b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" ).getValue(cz.tacr.elza.domain.table.ElzaTable.class).sum("COUNT")+" ( "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )+" )"
+ +"<br><b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" ).getValue(cz.tacr.elza.domain.table.ElzaTable.class).sum("COUNT")+" ("+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )+")"
  +"<br><b>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_SUM" )
  +"<br><b>Rozsah archivní pomůckou zpřístupněných archiválií:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNITS_AMOUNT" )
  +"<br><b>Stav archivní pomůckou zpřístupněných archiválií ke dni:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )
