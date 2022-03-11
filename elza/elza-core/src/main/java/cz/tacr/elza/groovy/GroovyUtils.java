@@ -5,6 +5,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import javax.annotation.Nullable;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +85,7 @@ public class GroovyUtils {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
         Validate.notNull(filter, "Nebyl předán filter preferované části");
-        StaticDataProvider.getInstance().getItemTypeByCode(itemType);
+        //StaticDataProvider.getInstance().getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
@@ -100,4 +102,27 @@ public class GroovyUtils {
         }
         return null;
     }
+    
+    @Nullable
+    public static List<GroovyItem> findAllItems(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
+        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
+        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
+        Validate.notNull(filter, "Nebyl předán filter preferované části");
+        List<GroovyItem> groovyItems = new ArrayList<>();
+
+        for (GroovyPart part : groovyAe.getParts()) {
+            if (filter == GroovyPart.PreferredFilter.ALL
+                || filter == GroovyPart.PreferredFilter.NO && !part.isPreferred()
+                || filter == GroovyPart.PreferredFilter.YES && part.isPreferred()
+            ) {
+                if (part.getPartTypeCode().equals(partTypeCode)) {
+                    List<GroovyItem> items = part.getItems(itemType);
+                    groovyItems.addAll(items);
+                }
+            }
+        }
+
+        return groovyItems;
+    }
+    
 }
