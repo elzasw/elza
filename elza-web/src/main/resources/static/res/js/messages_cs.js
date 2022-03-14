@@ -50,6 +50,8 @@ var messages = {
     "global.action.import": "Importovat",
     "global.action.export": "Exportovat",
     "global.action.showInMap": "Zobrazit v mapě",
+    "global.action.layerSelection": "Výběr vrstvy",
+    "global.action.systemLayerOSM": "Systémová OSM",
     "global.action.download": "Stáhnout",
     "global.action.download.file": "Stáhnout soubor '{0}'",
     "global.action.downloadAll": "Stáhnout vše",
@@ -1031,7 +1033,7 @@ var messages = {
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
-    
+
     "registry.entity.notFound": "Archivní entita nenalezena",
 
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
@@ -1413,8 +1415,6 @@ var messages = {
     "admin.perms.fund.tabs.users.add.title": "Přidat uživatele",
     "admin.perms.fund.tabs.groups": "Skupiny",
     "admin.perms.fund.tabs.groups.add.title": "Přidat skupiny",
-    "admin.user.group.action.delete": "Odebrat členství ve skupině",
-    "admin.user.group.action.add": "Přiřadit skupiny",
     "admin.user.permission.action.delete": "Odebrat oprávnění uživatele",
     "admin.user.permission.action.add": "Přiřadit oprávnění pro uživatele",
     "admin.user.noSelection.title": "Není vybrán uživatel",
