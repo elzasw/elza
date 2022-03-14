@@ -45,6 +45,21 @@ elza:
   #          command: "\"c:\\Program Files (x86)\\LibreOffice 5\\program\\soffice.exe\" --headless --convert-to pdf {2}"
   #          outputFileName: "{0}.pdf"
 
+  #map:
+  #  layers:
+  #    - name: OSM
+  #      url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
+  #      zIndex: 0
+  #      type: WMS
+  #      initial: false
+  #      layer: GR_ZM25
+  #    - name: OSM2
+  #      url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
+  #      zIndex: 1
+  #      type: WMS
+  #      initial: true
+  #      layer: GR_ORTFOTORGB
+
 spring:
   app:
       buildType: DEV
