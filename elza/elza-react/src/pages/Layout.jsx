@@ -66,6 +66,7 @@ class Layout extends AbstractReactComponent {
         showGame: false,
         canStartGame: false,
         polygon: undefined,
+        selectedLayer: null,
     };
 
     componentDidMount() {
@@ -128,8 +129,12 @@ class Layout extends AbstractReactComponent {
         }, 1000);
     };
 
+    handleChangeSelectedLayer = (selectedLayer) => {
+        this.setState({selectedLayer})
+    }
+
     render() {
-        const {canStartGame, showGame, polygon} = this.state;
+        const {canStartGame, polygon, showGame, selectedLayer} = this.state;
 
         if (showGame) {
             return (
@@ -178,7 +183,7 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-                            <Route path={MAP_URL} component={(props) => <MapPage polygon={polygon} {...props} />} />
+                            <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />

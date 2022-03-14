@@ -1,7 +1,8 @@
 import React from 'react';
-import {AbstractReactComponent} from '../../components/shared';
+import {AbstractReactComponent, Autocomplete} from '../../components/shared';
 import Map from 'ol/Map';
 import OSM, {ATTRIBUTION} from 'ol/source/OSM';
+import {TileWMS} from "ol/source";
 import TileLayer from 'ol/layer/Tile';
 import View from 'ol/View';
 import WKT from 'ol/format/WKT';
@@ -13,18 +14,31 @@ import {
 } from "../../actions/registry/registry";
 import {connect} from "react-redux";
 import {storeFromArea} from 'shared/utils';
+import {LayerType} from "../../api/LayerType";
+import {i18n} from 'components/shared';
+import {PropTypes} from "prop-types";
 import 'ol/ol.css';
+import './MapPage.scss';
 
 export const MAP_URL = '/map';
+export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM')};
 
 /**
  * Stránka mapy.
  * Zobrazuje stranku s mapou a vybraným poygonem
  */
 class MapPage extends AbstractReactComponent {
+    static propTypes = {
+        handleChangeSelectedLayer: PropTypes.func.isRequired,
+        polygon: PropTypes.string.isRequired,
+        selectedLayer: PropTypes.object.isRequired,
+    };
+
     mapRef = null;
+    iframe = false;
+
     state = {
-        polygon: null
+        polygon: null,
     }
 
     constructor(props) {
@@ -34,24 +48,30 @@ class MapPage extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillMount() {
-        window.addEventListener('message', (event) => {
-            const origin = event.origin || event.originalEvent.origin;
-            const {data} = event;
+        const query = new URLSearchParams(this.props.location.search);
+        this.iframe = query.get('iframe');
 
-            if (origin !== window.location.origin)
-                return;
-            if (!data || (typeof data === 'object' && data.call !== 'sendPolygon')) {
-                return;
-            }
+        if (this.iframe) {
+            window.addEventListener('message', (event) => {
+                const origin = event.origin || event.originalEvent.origin;
+                const {data} = event;
 
-            this.setState({polygon: data.polygon})
-        }, false);
+                if (origin !== window.location.origin) {
+                    return;
+                }
+                if (!data || (typeof data === 'object' && data.call !== 'sendPolygon')) {
+                    return;
+                }
+
+                this.setState({polygon: data.polygon});
+            }, false);
+        }
     }
 
     componentDidMount() {
         this.initMap();
 
-        if (!this.state.polygon) {
+        if (!this.state.polygon && !this.iframe) {
             this.setState({polygon: this.props.polygon});
         }
     }
@@ -61,28 +81,52 @@ class MapPage extends AbstractReactComponent {
     }
 
     createMap() {
-        const {registryLayerList} = this.props;
+        const {handleChangeSelectedLayer, registryLayerList: {fetched, rows}, selectedLayer} = this.props;
         const {polygon} = this.state;
 
-        if (polygon && registryLayerList.fetched) {
+        if (polygon && fetched) {
             const layers = []
 
-            if (registryLayerList.rows.length) {
+            if (rows.length && JSON.stringify(DEFAULT_SYSTEM_LAYER) !== JSON.stringify(selectedLayer)) {
+                let selectedLayerInitial = selectedLayer;
+                // nastavení viditelné / inicializační vrstvy
+                if (!selectedLayerInitial) {
+                    selectedLayerInitial = rows.find(item => item.initial);
+
+                    if (!this.iframe) {
+                        handleChangeSelectedLayer(selectedLayerInitial || {});
+                    }
+                }
                 // nastavení podkladových vrstev pro polygon
-                registryLayerList.rows.forEach(item => {
-                    layers.push(new TileLayer({
-                        source: new OSM(
-                            {
+                switch (selectedLayerInitial.type) {
+                    case LayerType.OSM:
+                        layers.push(new TileLayer({
+                            source: new OSM({
                                 attributions: [
-                                    item.name,
+                                    selectedLayerInitial.name,
                                     ATTRIBUTION,
                                 ],
-                                url: item.url,
-                                zDirection: item.zIndex
-                            }
-                        ),
-                    }));
-                })
+                                url: selectedLayerInitial.url,
+                                zDirection: selectedLayerInitial.zIndex,
+                            }),
+                        }));
+                        break;
+                    case LayerType.WMS:
+                        layers.push(new TileLayer({
+                            source: new TileWMS({
+                                attributions: [
+                                    selectedLayerInitial.name,
+                                    ATTRIBUTION,
+                                ],
+                                layers: [selectedLayerInitial.layer],
+                                url: selectedLayerInitial.url,
+                                zDirection: selectedLayerInitial.zIndex,
+                            }),
+                        }));
+                        break;
+                    default:
+                        console.error('Neznámý typ vrstvy: ' + selectedLayerInitial.type);
+                }
             } else {
                 // defaultní podkladová OSM vstva (celý svět) pro polygon
                 layers.push(new TileLayer({
@@ -130,9 +174,33 @@ class MapPage extends AbstractReactComponent {
         this.createMap();
     };
 
+    handleChangeSelected = (value) => {
+        const {handleChangeSelectedLayer, selectedLayer} = this.props;
+
+        if (JSON.stringify(value) !== JSON.stringify(selectedLayer)) {
+            this.mapRef.current.innerHTML = null;
+            handleChangeSelectedLayer(value);
+        }
+    }
+
     render() {
+        const {registryLayerList: {fetched, rows}, selectedLayer} = this.props;
+
         return (
-            <div className={'h-100 w-100'} ref={this.mapRef} />
+            <div className={'h-100 map-page position-relative w-100'}>
+                {fetched && rows.length && !this.iframe &&
+                    <div className={'pl-5 position-absolute wrapper-layer-select'}>
+                        <Autocomplete
+                            getItemId={item => item ? JSON.stringify(item) : null}
+                            getItemName={item => item ? item.name : ''}
+                            items={[...rows, DEFAULT_SYSTEM_LAYER]}
+                            label={i18n('global.action.layerSelection')}
+                            onChange={this.handleChangeSelected}
+                            value={selectedLayer}
+                        />
+                    </div>}
+                <div className={'h-100 w-100'} ref={this.mapRef} />
+            </div>
         );
     }
 }

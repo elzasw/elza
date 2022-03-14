@@ -21,7 +21,7 @@ class PolygonTooltip extends React.Component<PolygonTooltipProps> {
     componentDidMount() {
         this.iframeRef.current.addEventListener('load', () => this.iframeRef.current.contentWindow.postMessage({
             call: 'sendPolygon',
-            polygon: this.props.polygon
+            polygon: this.props.polygon,
         }));
     }
 
@@ -30,7 +30,7 @@ class PolygonTooltip extends React.Component<PolygonTooltipProps> {
             <iframe className={'border-0 float-left'} ref={this.iframeRef} style={{
                 height: IFRAME_SIZE,
                 width: IFRAME_SIZE,
-            }} src={MAP_URL} />
+            }} src={MAP_URL + '?iframe=1'} />
         </>);
     }
 }

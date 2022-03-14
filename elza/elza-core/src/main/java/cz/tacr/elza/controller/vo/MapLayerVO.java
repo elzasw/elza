@@ -12,6 +12,8 @@ public class MapLayerVO {
 
     private Boolean initial;
 
+    private LayerType type;
+
     public String getName() {
         return name;
     }
@@ -50,5 +52,13 @@ public class MapLayerVO {
 
     public void setInitial(Boolean initial) {
         this.initial = initial;
+    }
+
+    public LayerType getType() {
+        return type;
+    }
+
+    public void setType(LayerType type) {
+        this.type = type;
     }
 }
