@@ -6,8 +6,6 @@ public class MapLayerVO {
 
     private String url;
 
-    private Integer zIndex;
-
     private String layer;
 
     private Boolean initial;
@@ -28,14 +26,6 @@ public class MapLayerVO {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public Integer getzIndex() {
-        return zIndex;
-    }
-
-    public void setzIndex(Integer zIndex) {
-        this.zIndex = zIndex;
     }
 
     public String getLayer() {
