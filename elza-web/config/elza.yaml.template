@@ -49,13 +49,11 @@ elza:
   #  layers:
   #    - name: OSM
   #      url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
-  #      zIndex: 0
   #      type: WMS
   #      initial: false
   #      layer: GR_ZM25
   #    - name: OSM2
   #      url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
-  #      zIndex: 1
   #      type: WMS
   #      initial: true
   #      layer: GR_ORTFOTORGB

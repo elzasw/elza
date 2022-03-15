@@ -107,7 +107,6 @@ class MapPage extends AbstractReactComponent {
                                     ATTRIBUTION,
                                 ],
                                 url: selectedLayerInitial.url,
-                                zDirection: selectedLayerInitial.zIndex,
                             }),
                         }));
                         break;
@@ -120,7 +119,6 @@ class MapPage extends AbstractReactComponent {
                                 ],
                                 layers: [selectedLayerInitial.layer],
                                 url: selectedLayerInitial.url,
-                                zDirection: selectedLayerInitial.zIndex,
                             }),
                         }));
                         break;
