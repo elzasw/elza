@@ -56,13 +56,16 @@ class MapPage extends AbstractReactComponent {
                 const origin = event.origin || event.originalEvent.origin;
                 const {data} = event;
 
+                console.log('origin', origin);
+                console.log('origin', window.location.origin);
+
                 if (origin !== window.location.origin) {
                     return;
                 }
                 if (!data || (typeof data === 'object' && data.call !== 'sendPolygon')) {
                     return;
                 }
-
+                console.log('polygon', data.polygon);
                 this.setState({polygon: data.polygon});
             }, false);
         }
@@ -88,7 +91,6 @@ class MapPage extends AbstractReactComponent {
             let layer = new TileLayer({
                 source: new OSM(),
             });
-
             // nastavení viditelné / inicializační vrstvy
             let initialSelectedLayer = selectedLayer
             if (!initialSelectedLayer) {
