@@ -21,7 +21,7 @@ import 'ol/ol.css';
 import './MapPage.scss';
 
 export const MAP_URL = '/map';
-export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM')};
+export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM'), type: LayerType.OSM};
 
 /**
  * Stránka mapy.
@@ -85,51 +85,47 @@ class MapPage extends AbstractReactComponent {
         const {polygon} = this.state;
 
         if (polygon && fetched) {
-            const layers = []
+            let layer = new TileLayer({
+                source: new OSM(),
+            });
 
-            if (rows.length && JSON.stringify(DEFAULT_SYSTEM_LAYER) !== JSON.stringify(selectedLayer)) {
-                let selectedLayerInitial = selectedLayer;
-                // nastavení viditelné / inicializační vrstvy
-                if (!selectedLayerInitial) {
-                    selectedLayerInitial = rows.find(item => item.initial);
-
-                    if (!this.iframe) {
-                        handleChangeSelectedLayer(selectedLayerInitial || {});
-                    }
+            // nastavení viditelné / inicializační vrstvy
+            let initialSelectedLayer = selectedLayer
+            if (!initialSelectedLayer) {
+                initialSelectedLayer = rows.find(item => item.initial) || DEFAULT_SYSTEM_LAYER;
+                if (!this.iframe) {
+                    handleChangeSelectedLayer(initialSelectedLayer);
                 }
-                // nastavení podkladových vrstev pro polygon
-                switch (selectedLayerInitial.type) {
-                    case LayerType.OSM:
-                        layers.push(new TileLayer({
+            }
+            // nastavení podkladových vrstev pro polygon
+            if (initialSelectedLayer && initialSelectedLayer.type) {
+                switch (initialSelectedLayer.type) {
+                    case LayerType.OSM.toString():
+                        layer = new TileLayer({
                             source: new OSM({
                                 attributions: [
-                                    selectedLayerInitial.name,
+                                    initialSelectedLayer.name,
                                     ATTRIBUTION,
                                 ],
-                                url: selectedLayerInitial.url,
+                                url: initialSelectedLayer.url,
                             }),
-                        }));
+                        });
                         break;
-                    case LayerType.WMS:
-                        layers.push(new TileLayer({
+                    case LayerType.WMS.toString():
+                        layer = new TileLayer({
                             source: new TileWMS({
                                 attributions: [
-                                    selectedLayerInitial.name,
+                                    initialSelectedLayer.name,
                                     ATTRIBUTION,
                                 ],
-                                params: { LAYERS: selectedLayerInitial.layer },
-                                url: selectedLayerInitial.url,
+                                params: {LAYERS: initialSelectedLayer.layer},
+                                url: initialSelectedLayer.url,
                             }),
-                        }));
+                        });
                         break;
                     default:
-                        console.error('Neznámý typ vrstvy: ' + selectedLayerInitial.type);
+                        console.error('Neznámý typ vrstvy: ' + initialSelectedLayer.type);
                 }
-            } else {
-                // defaultní podkladová OSM vstva (celý svět) pro polygon
-                layers.push(new TileLayer({
-                    source: new OSM(),
-                }));
             }
             // souřadnice v polygonu máme ve formátu WKT
             const format = new WKT();
@@ -158,7 +154,7 @@ class MapPage extends AbstractReactComponent {
             });
             // vytvoření mapy s dvoumi vrstvami a výchozím view
             new Map({
-                layers: [...layers, vectorLayer],
+                layers: [layer, vectorLayer],
                 target: this.mapRef.current,
                 view,
             });
@@ -186,7 +182,7 @@ class MapPage extends AbstractReactComponent {
 
         return (
             <div className={'h-100 map-page position-relative w-100'}>
-                {fetched && rows.length && !this.iframe &&
+                {fetched && rows.length && !this.iframe ?
                     <div className={'position-absolute wrapper-layer-select'}>
                         <Autocomplete
                             getItemId={item => item ? JSON.stringify(item) : null}
@@ -196,7 +192,7 @@ class MapPage extends AbstractReactComponent {
                             onChange={this.handleChangeSelected}
                             value={selectedLayer}
                         />
-                    </div>}
+                    </div> : null}
                 <div className={'h-100 w-100'} ref={this.mapRef} />
             </div>
         );
