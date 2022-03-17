@@ -117,7 +117,7 @@ class MapPage extends AbstractReactComponent {
                                     selectedLayerInitial.name,
                                     ATTRIBUTION,
                                 ],
-                                layers: [selectedLayerInitial.layer],
+                                params: { LAYERS: selectedLayerInitial.layer },
                                 url: selectedLayerInitial.url,
                             }),
                         }));
@@ -187,7 +187,7 @@ class MapPage extends AbstractReactComponent {
         return (
             <div className={'h-100 map-page position-relative w-100'}>
                 {fetched && rows.length && !this.iframe &&
-                    <div className={'pl-5 position-absolute wrapper-layer-select'}>
+                    <div className={'position-absolute wrapper-layer-select'}>
                         <Autocomplete
                             getItemId={item => item ? JSON.stringify(item) : null}
                             getItemName={item => item ? item.name : ''}
