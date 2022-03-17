@@ -38,7 +38,6 @@ import {
     EntityPage,
     MapPage,
 } from 'pages';
-
 import './Layout.scss';
 import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
@@ -66,7 +65,7 @@ class Layout extends AbstractReactComponent {
         showGame: false,
         canStartGame: false,
         polygon: undefined,
-        selectedLayer: null,
+        selectedLayer: undefined,
     };
 
     componentDidMount() {
