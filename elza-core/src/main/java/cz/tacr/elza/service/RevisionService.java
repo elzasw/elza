@@ -22,6 +22,8 @@ import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApItemRepository;
@@ -152,6 +154,16 @@ public class RevisionService {
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
+        }
+
+        // nemůžeme změnit třídu revize, pokud je entita v CAM
+        if (!revStateChange.getTypeId().equals(state.getApTypeId())) {
+            int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
+            if (countBinding > 0) {
+                throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", state.getAccessPointId())
+                    .set("revisionId", revision.getRevisionId());
+            }
         }
 
         StaticDataProvider sdp = staticDataService.createProvider();
