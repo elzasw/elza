@@ -5,7 +5,9 @@ import React from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-final-form';
 import { FieldArray } from 'react-final-form-arrays';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { AnyAction } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
 import { AppState, PartTypeCodes, RefTablesState } from 'typings/store';
 import { ApCreateTypeVO } from '../../../../api/ApCreateTypeVO';
 import { ApItemVO } from '../../../../api/ApItemVO';
@@ -16,15 +18,17 @@ import { DetailStoreState } from '../../../../types';
 import { Loading } from '../../../shared';
 import { RevisionItem } from '../../revision';
 import { addEmptyItems, addItemsWithValues } from './actions';
+import { showAutoItemsModal } from './AutoItemsModal';
 import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
-// import { RequiredType } from 'api/RequiredType';
 
 export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
     items: RevisionItem[];
 }
+
+const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
 type Props = {
     partTypeId: number;
@@ -80,6 +84,7 @@ export const PartEditForm = ({
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap);
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state:AppState) => state.refTables);
+    const dispatch = useThunkDispatch();
     const form = useForm();
 
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]];
@@ -103,30 +108,52 @@ export const PartEditForm = ({
             const handleAutoItems = async () => {
                 if(apId == undefined) {throw Error("no 'apId'");}
                 const {data} = await Api.accesspoints.getAutoitems(apId.toString())
-                const existingItemTypeIds: Record<number, boolean> = {};
 
-                fields.value.forEach(({item, updatedItem}) => {
-                    const typeId = item?.typeId || updatedItem?.typeId;
-                    if(typeId != null){
-                        existingItemTypeIds[typeId] = true;
-                    }
-                });
+                const result = await dispatch(showAutoItemsModal({
+                    attributes: availableAttributes,
+                    autoItems: data.items || [],
+                    values: fields.value
+                }));
 
-                const atts = availableAttributes
-                    .filter((attribute) => attribute.repeatable || !existingItemTypeIds[attribute.itemTypeId])
-                    .filter((attribute) => data?.items?.find((item) => item.itemTypeId === attribute.itemTypeId))
+                if(result){
+                    result.forEach((autoValue)=>{
+                        const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
+                        let currentIndex:number | undefined = undefined;
+                        const currentValue = fields.value.find((item, index)=>{
+                            if(item.typeId === autoValue.itemTypeId){
+                                currentIndex = index;
+                                return true;
+                            }
 
-                addItemsWithValues(
-                    atts, 
-                    data.items || [],
-                    refTables, 
-                    fields.value,
-                    partTypeId,
-                    (index: number, value: any) => {
-                        fields.insert(index, value);
-                        handleValueUpdate(form);
-                    },
-                )
+                        })
+                        const currentItem = currentValue?.item || currentValue?.updatedItem;
+
+                        // modify existing value
+                        if(currentItem && !attribute?.repeatable){
+                            form.change(`${arrayName}[${currentIndex}].updatedItem`, {
+                                ...currentItem, 
+                                value: autoValue.value,
+                                specId: autoValue.itemSpecId,
+                            })
+                        }
+
+                        // add new value
+                        if(attribute?.repeatable || !currentItem){
+                            addItemsWithValues(
+                                attribute ? [attribute] : [], 
+                                autoValue ? [autoValue] : [],
+                                refTables, 
+                                fields.value,
+                                partTypeId,
+                                (index: number, value: any) => {
+                                    fields.insert(index, value);
+                                    handleValueUpdate(form);
+                                },
+                            )
+                        }
+
+                    })
+                }
             };
 
             return <>
