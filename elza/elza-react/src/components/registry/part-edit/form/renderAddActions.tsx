@@ -7,7 +7,6 @@ import {Button} from 'react-bootstrap';
 // import {ApItemVO} from '../../../../api/ApItemVO';
 import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
 import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
-import {ApViewSettingRule} from '../../../../api/ApViewSettings';
 import {RevisionItem} from "../../revision";
 
 interface RenderActionsProps extends FieldArrayRenderProps<RevisionItem, any> {
@@ -15,7 +14,6 @@ interface RenderActionsProps extends FieldArrayRenderProps<RevisionItem, any> {
     refTables: any;
     partTypeId: number;
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>;
-    apViewSettings: ApViewSettingRule;
     handleAddItems: (
         attributes: Array<ApCreateTypeVO>,
         refTables: any,
@@ -24,7 +22,6 @@ interface RenderActionsProps extends FieldArrayRenderProps<RevisionItem, any> {
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-        apViewSettings: ApViewSettingRule,
     ) => void;
 }
 
@@ -35,7 +32,6 @@ export const renderAddActions = ({
     fields,
     handleAddItems,
     descItemTypesMap,
-    apViewSettings,
 }:RenderActionsProps) => {
     const existingItemTypeIds: Record<number, boolean> = {};
     fields.value.forEach(({item, updatedItem}) => {
@@ -65,7 +61,6 @@ export const renderAddActions = ({
                             fields.insert,
                             true,
                             descItemTypesMap,
-                            apViewSettings,
                         );
                     }}
                 >
