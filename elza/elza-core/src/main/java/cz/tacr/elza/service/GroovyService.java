@@ -130,7 +130,16 @@ public class GroovyService {
                                       @Nullable final List<AccessPointPart> childrenParts,
                                       @NotNull final List<AccessPointItem> items,
                                       final boolean preferred) {
-        GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, preferred);
+        return processGroovy(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
+    }
+
+    public GroovyResult processGroovy(@NotNull final Integer apTypeId,
+                                      @NotNull final AccessPointPart part,
+                                      @Nullable final List<AccessPointPart> childrenParts,
+                                      @NotNull final List<AccessPointItem> items,
+                                      @NotNull final List<ApRevItem> revItems,
+                                      final boolean preferred) {
+        GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, revItems, preferred);
         return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
@@ -154,14 +163,6 @@ public class GroovyService {
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
         return groovyScriptService.process(groovyAe, groovyFilePath);
-    }
-
-    public GroovyPart convertPart(@NotNull final Integer apTypeId,
-                                  @NotNull final AccessPointPart part,
-                                  @Nullable final List<AccessPointPart> childrenParts,
-                                  @NotNull final List<AccessPointItem> items,
-                                  final boolean preferred) {
-        return convertPart(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
     }
 
     public GroovyPart convertPart(@NotNull final Integer apTypeId,
