@@ -6,7 +6,11 @@ public class MapLayerVO {
 
     private String url;
 
-    private Integer zIndex;
+    private String layer;
+
+    private Boolean initial;
+
+    private LayerType type;
 
     public String getName() {
         return name;
@@ -24,11 +28,27 @@ public class MapLayerVO {
         this.url = url;
     }
 
-    public Integer getzIndex() {
-        return zIndex;
+    public String getLayer() {
+        return layer;
     }
 
-    public void setzIndex(Integer zIndex) {
-        this.zIndex = zIndex;
+    public void setLayer(String layer) {
+        this.layer = layer;
+    }
+
+    public Boolean getInitial() {
+        return initial;
+    }
+
+    public void setInitial(Boolean initial) {
+        this.initial = initial;
+    }
+
+    public LayerType getType() {
+        return type;
+    }
+
+    public void setType(LayerType type) {
+        this.type = type;
     }
 }

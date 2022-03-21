@@ -14,6 +14,7 @@ import {modalDialogHide, modalDialogShow} from '../../../../actions/global/modal
 import i18n from '../../../i18n';
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../../CrossTabHelper";
 import {itemValue} from "../../../../utils/ItemInfo";
+import {PolygonShowInMap} from "../../../PolygonShowInMap";
 
 interface Props extends ReturnType<typeof mapDispatchToProps> {
     item: ApItemCoordinatesVO;
@@ -51,9 +52,7 @@ const DetailCoordinateItem: React.FC<Props> = ({
             >
                 <Icon glyph="fa-download" fixedWidth className="icon" />
             </Button>
-            <Button className={'mb-1'} onClick={() => showInMap(itemValue(item))} title={i18n('global.action.showInMap')} variant={'action' as any}>
-                <Icon glyph={'fa-map'} />
-            </Button>
+            <PolygonShowInMap className={'mb-1 ml-1'} polygon={itemValue(item)}/>
         </>
     );
 };
