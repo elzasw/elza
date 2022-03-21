@@ -15,6 +15,7 @@ import {AP_VALIDATION} from '../../constants';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
+export const AREA_REGISTRY_LAYER_LIST = 'registryLayerList';
 
 const createFilter = values => {
     const extFilters = values.extFilters
@@ -231,4 +232,13 @@ export function registryChangeStateRevision(id, revisionState, history, select) 
             }
         });
     };
+}
+
+/**
+ * Načtení konfiguračních vrstev pro openlayers mapu
+ */
+export function layerConfigurationListFetchIfNeeded() {
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LAYER_LIST, null, () => {
+        return WebApi.mapLayerConfiguration().then(json => ({rows: json, count: 0}));
+    });
 }

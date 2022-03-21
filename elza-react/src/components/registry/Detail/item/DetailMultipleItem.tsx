@@ -55,7 +55,7 @@ const DetailMultipleItem: FC<Props> = ({
                             const isModified = isValueModified(item, updatedItem);
                             // const isRevisionModified = updatedItem?.changeType === "UPDATED";
 
-                            return <div style={{display: "flex", alignItems: "center"}}>
+                            return <div style={{display: "flex", alignItems: "center"}} key={index}>
                                 <RevisionDisplay
                                     disableRevision={!revision}
                                     valuesEqual={!isModified}

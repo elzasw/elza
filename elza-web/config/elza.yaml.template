@@ -3,6 +3,18 @@ elza:
       url: jdbc:postgresql://localhost/elza
       user: app
       pass: app
+  map:
+      layers:
+        - name: GR_ZM25
+          url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
+          type: WMS
+          initial: false
+          layer: GR_ZM25
+        - name: GR_ORTFOTORGB
+          url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
+          type: WMS
+          initial: false
+          layer: GR_ORTFOTORGB
   security:
   #  sso-header:
   #    user-header: X-SSO-User

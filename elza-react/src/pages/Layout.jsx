@@ -38,13 +38,11 @@ import {
     EntityPage,
     MapPage,
 } from 'pages';
-
 import './Layout.scss';
-import {modalDialogShow} from '../actions/global/modalDialog';
-import i18n from '../components/i18n';
 import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
+import {MAP_URL} from './map/MapPage';
 
 let _gameRunner = null;
 
@@ -67,6 +65,7 @@ class Layout extends AbstractReactComponent {
         showGame: false,
         canStartGame: false,
         polygon: undefined,
+        selectedLayer: undefined,
     };
 
     componentDidMount() {
@@ -129,8 +128,12 @@ class Layout extends AbstractReactComponent {
         }, 1000);
     };
 
+    handleChangeSelectedLayer = (selectedLayer) => {
+        this.setState({selectedLayer})
+    }
+
     render() {
-        const {canStartGame, showGame, polygon} = this.state;
+        const {canStartGame, polygon, showGame, selectedLayer} = this.state;
 
         if (showGame) {
             return (
@@ -179,7 +182,7 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-                            <Route path="/map" component={(props) => <MapPage polygon={polygon} {...props} />} />
+                            <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />
