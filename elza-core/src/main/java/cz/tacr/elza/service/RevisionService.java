@@ -15,8 +15,6 @@ import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
@@ -240,16 +238,25 @@ public class RevisionService {
     }
 
     private void updatePartValue(final ApRevision revision,
-                                 final ApRevPart part,
-                                 final List<ApRevPart> childrenParts,
-                                 final List<ApRevItem> items) {
+                                 final ApRevPart revPart,
+                                 final List<ApRevPart> childRevParts,
+                                 final List<ApRevItem> revItems) {
+        GroovyResult result;
 
-        boolean preferred = isPrefered(revision, part);
-        List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
-        List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
-        GroovyResult result = groovyService.processGroovy(revision.getTypeId(), part, childParts, accessPointItemList, preferred);
+        boolean preferred = isPrefered(revision, revPart);
+        ApPart apPart = revPart.getOriginalPart();
 
-        revisionPartService.updatePartValue(part, result);
+        // pokud je to nový Part
+        if (apPart == null) {
+
+            result = groovyService.processGroovy(revision.getTypeId(), revPart, childRevParts, revItems, preferred);
+        } else {
+            List<ApPart> childParts = partService.findPartsByParentPart(apPart);
+            List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+
+            result = groovyService.processGroovy(revision.getTypeId(), apPart, childParts, apItems, revItems, preferred);
+        }
+        revisionPartService.updatePartValue(revPart, result);
     }
 
     private boolean isPrefered(final ApRevision revision, ApRevPart part) {
