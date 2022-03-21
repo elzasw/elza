@@ -1185,6 +1185,8 @@ var messages = {
     "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
     "ap.coordinate.format": "Formát {0}",
 
+    "ap.part.complements.create": "Vytvořit doplňky",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation": "Neznámý typ relace",

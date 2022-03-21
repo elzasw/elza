@@ -75,7 +75,6 @@ export const RevisionFieldExample:FC<{
         }
 
         if(actions.length === 0) {return <></>}
-        console.log(onDelete, actions)
 
         return <div className="actions hidable">
             {actions}
