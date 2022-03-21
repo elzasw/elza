@@ -7,16 +7,24 @@ import cz.tacr.elza.groovy.GroovyPart
 import cz.tacr.elza.groovy.GroovyItem
 import cz.tacr.elza.groovy.GroovyUtils
 
+import cz.tacr.elza.exception.codes.BaseCode
+import cz.tacr.elza.exception.ObjectNotFoundException
+
 return generate(AE)
+
+// convert string like: Kladno (Kladno, Česko) -> Kladno, Kladno, Česko
+static String convertString(String str) {
+    return str.replaceAll(" \\(", ", ").replaceAll("\\)", "")
+}
 
 static List<GroovyItem> generate(final GroovyAe ae) {
     List<GroovyItem> items = new ArrayList<>()
 
     // dočasně, jen pro ladění
     for (GroovyPart part : ae.getParts()) {
-        System.out.println(part.getPartType().getCode())
+        //System.out.println(part.getPartType().getCode())
         for (GroovyItem item : part.getItems()) {
-            System.out.println(item)
+            //System.out.println(item)
             //items.add(item)
         }
     }
@@ -27,13 +35,23 @@ static List<GroovyItem> generate(final GroovyAe ae) {
     String nmSupChro = GroovyUtils.formatUnitdate(from, to).formatYear().build()
 
     GroovyItem itemChro = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
-    items.add(itemChro)
+    if (!itemChro.getValue().isEmpty()) {
+        items.add(itemChro)
+    }
 
     // geografický doplněk
     GroovyItem geo = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
     if (geo != null) {
-        GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, geo.getValue())
-        items.add(geoItem)
+        //System.out.println(geo)
+        if (geo.getValue() != null) {
+            if (geo.getIntValue() > 0) {
+                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, convertString(geo.getValue()))
+                items.add(geoItem)
+            } else {
+                throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("entityId", geo.getValue())
+            }
+        }
     }
 
     // obecný doplněk
@@ -48,8 +66,15 @@ static List<GroovyItem> generate(final GroovyAe ae) {
     for (GroovyItem rel : rels) {
         // geografický doplněk
         if (Arrays.asList("RT_RESIDENCE", "RT_VENUE", "RT_LOCATION").contains(rel.getSpecCode())) {
-            GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, rel.getValue())
-            items.add(itemGeo)
+            if (rel.getValue() != null) {
+                if (geo.getIntValue() > 0) {
+                    GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertString(rel.getValue()))
+                    items.add(itemGeo)
+                } else {
+                    throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("entityId", rel.getValue())
+                }
+            }
         }
         // autor/tvůrce
         if (rel.getSpecCode().equals("RT_AUTHOROFCHANGE")) {
