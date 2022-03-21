@@ -127,16 +127,16 @@ public class GroovyService {
 
     public GroovyResult processGroovy(@NotNull final Integer apTypeId,
                                       @NotNull final AccessPointPart part,
-                                      @Nullable final List<AccessPointPart> childrenParts,
-                                      @NotNull final List<AccessPointItem> items,
+                                      @Nullable final List<? extends AccessPointPart> childrenParts,
+                                      @NotNull final List<? extends AccessPointItem> items,
                                       final boolean preferred) {
         return processGroovy(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
     }
 
     public GroovyResult processGroovy(@NotNull final Integer apTypeId,
                                       @NotNull final AccessPointPart part,
-                                      @Nullable final List<AccessPointPart> childrenParts,
-                                      @NotNull final List<AccessPointItem> items,
+                                      @Nullable final List<? extends AccessPointPart> childrenParts,
+                                      @NotNull final List<? extends AccessPointItem> items,
                                       @NotNull final List<ApRevItem> revItems,
                                       final boolean preferred) {
         GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, revItems, preferred);
@@ -167,8 +167,8 @@ public class GroovyService {
 
     public GroovyPart convertPart(@NotNull final Integer apTypeId,
                                   @NotNull final AccessPointPart part,
-                                  @Nullable final List<AccessPointPart> childrenParts,
-                                  @NotNull final List<AccessPointItem> items,
+                                  @Nullable final List<? extends AccessPointPart> childrenParts,
+                                  @NotNull final List<? extends AccessPointItem> items,
                                   @NotNull final List<ApRevItem> revItems,
                                   final boolean preferred) {
         StaticDataProvider sdp = staticDataService.getData();
