@@ -1186,6 +1186,10 @@ var messages = {
     "ap.coordinate.format": "Formát {0}",
 
     "ap.part.complements.create": "Vytvořit doplňky",
+    "ap.part.complements.noChanges.title": "Existující hodnoty",
+    "ap.part.complements.noChanges.message": "Doplňky jsou již vytvořeny.",
+    "ap.part.complements.noItems.title": "Doplňky nevytvořeny",
+    "ap.part.complements.noItems.message": "Nebylo možné vytvořit doplňky.",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
