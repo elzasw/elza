@@ -147,10 +147,10 @@ export const PartEditForm = ({
                                 partTypeId,
                                 (index: number, value: any) => {
                                     fields.insert(index, value);
-                                    handleValueUpdate(form);
                                 },
                             )
                         }
+                        handleValueUpdate(form);
 
                     })
                 }
