@@ -13,9 +13,18 @@ import cz.tacr.elza.exception.ObjectNotFoundException
 
 return generate(AE)
 
-// convert string like: Kladno (Kladno, Česko) -> Kladno, Kladno, Česko
-static String convertString(String str) {
+// převést řetězec jako: Kladno (Kladno, Česko) -> Kladno, Kladno, Česko
+static String convertGeoString(String str) {
     return str.replaceAll(" \\(", ", ").replaceAll("\\)", "")
+}
+
+// převést řetězec jako: Svoboda Karel (1900-1990) -> Karel Svoboda
+static String convertAuthString(String str) {
+    String[] parts = str.split(",? ")
+    if (parts.length > 1) {
+        return parts[1] + " " + parts[0]
+    }
+    return str
 }
 
 static List<GroovyItem> generate(final GroovyAe ae) {
@@ -128,7 +137,7 @@ static List<GroovyItem> generate(final GroovyAe ae) {
     GroovyItem itemChro = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
     if (!itemChro.getValue().isEmpty()) {
         // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
-        if (to != null && disappearedTerritory.contains(geoType.getSpecCode())) {
+        if (to != null && geoType != null && disappearedTerritory.contains(geoType.getSpecCode())) {
             items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
         } else {
             items.add(itemChro)
@@ -140,7 +149,7 @@ static List<GroovyItem> generate(final GroovyAe ae) {
     if (geo != null) {
         if (geo.getValue() != null) {
             if (geo.getIntValue() > 0) {
-                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, convertString(geo.getValue()))
+                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, convertGeoString(geo.getValue()))
                 items.add(geoItem)
             } else {
                 throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
@@ -155,8 +164,8 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         // geografický doplněk
         if (Arrays.asList("RT_RESIDENCE", "RT_VENUE", "RT_LOCATION").contains(rel.getSpecCode())) {
             if (rel.getValue() != null) {
-                if (geo.getIntValue() > 0) {
-                    GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertString(rel.getValue()))
+                if (rel.getIntValue() > 0) {
+                    GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertGeoString(rel.getValue()))
                     items.add(itemGeo)
                 } else {
                     throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
@@ -166,7 +175,7 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         }
         // autor/tvůrce
         if (rel.getSpecCode().equals("RT_AUTHOROFCHANGE")) {
-            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, rel.getValue())
+            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel.getValue()))
             items.add(itemAuth)
         }
     }
