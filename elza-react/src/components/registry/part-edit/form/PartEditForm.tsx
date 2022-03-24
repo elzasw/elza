@@ -23,6 +23,7 @@ import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
+import { AutoValue } from 'elza-api';
 
 export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
     items: RevisionItem[];
@@ -116,7 +117,9 @@ export const PartEditForm = ({
                 }));
 
                 if(result){
-                    result.forEach((autoValue)=>{
+                    const newItems: AutoValue[] = [];
+
+                    result.forEach((autoValue) => {
                         const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
                         let currentIndex:number | undefined = undefined;
                         const currentValue = fields.value.find((item, index)=>{
@@ -124,34 +127,36 @@ export const PartEditForm = ({
                                 currentIndex = index;
                                 return true;
                             }
-
                         })
                         const currentItem = currentValue?.item || currentValue?.updatedItem;
 
-                        // modify existing value
                         if(currentItem && !attribute?.repeatable){
                             form.change(`${arrayName}[${currentIndex}].updatedItem`, {
                                 ...currentItem, 
                                 value: autoValue.value,
                                 specId: autoValue.itemSpecId,
                             })
+                            handleValueUpdate(form);
                         }
-
-                        // add new value
-                        if(attribute?.repeatable || !currentItem){
-                            addItemsWithValues(
-                                attribute ? [attribute] : [], 
-                                autoValue ? [autoValue] : [],
-                                refTables, 
-                                fields.value,
-                                partTypeId,
-                                (index: number, value: any) => {
-                                    fields.insert(index, value);
-                                },
-                            )
+                        if(!currentItem || attribute?.repeatable){
+                            newItems.push(autoValue);
                         }
-                        handleValueUpdate(form);
+                    })
 
+                    newItems.forEach((autoValue)=>{
+                        const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
+                        addItemsWithValues(
+                            attribute ? [attribute] : [], 
+                            autoValue ? [autoValue] : [],
+                            refTables, 
+                            fields.value,
+                            partTypeId,
+                            (index: number, value: any) => {
+                                console.log("insert item with value", value, index)
+                                fields.insert(index, value);
+                                handleValueUpdate(form);
+                            },
+                        )
                     })
                 }
             };
