@@ -392,7 +392,7 @@ public class UnitDateConvertor {
     public static String convertYear(final IUnitdate unitdate, final boolean first) {
         LocalDateTime date = getLocalDateTimeFromUnitDate(unitdate, first);
         if (date != null) {
-            return date.getYear() + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+            return Math.abs(date.getYear()) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
         }
         return unitdate.getFormat();
     }
