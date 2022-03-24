@@ -116,7 +116,7 @@ public class GroovyUnitdateFormatter {
 
         if (from == null && to == null) {
             return result;
-        } else if (from != null && to != null && formatYear && yearEqual && fromStr.equals(toStr)) {
+        } else if (from != null && to != null && formatYear && yearEqual && fromStr.equals(toStr) && prefixFrom.equals(prefixTo)) {
             result = completeEqualUnitdate(from.getUnitdateValue(), to.getUnitdateValue(), fromStr);
         } else if (from != null && to != null) {
             result = completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);
