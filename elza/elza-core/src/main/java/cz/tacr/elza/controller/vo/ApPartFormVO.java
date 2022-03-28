@@ -25,6 +25,12 @@ public class ApPartFormVO {
     private Integer parentPartId;
 
     /**
+     * Identifikátor nadřízené části z revize
+     */
+    @Nullable
+    private Integer revParentPartId;
+
+    /**
      * Identifikátor části
      */
     @Nullable
@@ -60,5 +66,14 @@ public class ApPartFormVO {
 
     public void setPartId(Integer partId) {
         this.partId = partId;
+    }
+
+    @Nullable
+    public Integer getRevParentPartId() {
+        return revParentPartId;
+    }
+
+    public void setRevParentPartId(@Nullable Integer revParentPartId) {
+        this.revParentPartId = revParentPartId;
     }
 }

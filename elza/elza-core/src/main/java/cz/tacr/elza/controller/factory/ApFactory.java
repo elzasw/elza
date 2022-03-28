@@ -19,9 +19,19 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRevIndex;
+import cz.tacr.elza.domain.ApRevItem;
+import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.repository.ApRevIndexRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
+import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
@@ -141,7 +151,15 @@ public class ApFactory {
     private final ApChangeRepository changeRepository;
 
     private final ElzaLocale elzaLocale;
-    
+
+    private final ApRevPartRepository revPartRepository;
+
+    private final ApRevItemRepository revItemRepository;
+
+    private final ApRevIndexRepository revIndexRepository;
+
+    private final RevisionItemService revisionItemService;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -157,6 +175,10 @@ public class ApFactory {
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
                      final ApChangeRepository changeRepository,
+                     final ApRevPartRepository revPartRepository,
+                     final ApRevItemRepository revItemRepository,
+                     final ApRevIndexRepository revIndexRepository,
+                     final RevisionItemService revisionItemService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -172,6 +194,10 @@ public class ApFactory {
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
         this.changeRepository = changeRepository;
+        this.revPartRepository = revPartRepository;
+        this.revItemRepository = revItemRepository;
+        this.revIndexRepository = revIndexRepository;
+        this.revisionItemService = revisionItemService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -575,6 +601,7 @@ public class ApFactory {
         apPartVO.setErrorDescription(part.getErrorDescription());
         apPartVO.setValue(findDisplayIndexValue(part.getIndices()));
         apPartVO.setPartParentId(part.getParentPartId());
+        apPartVO.setChangeType(ChangeType.ORIGINAL);
         apPartVO.setItems(CollectionUtils.isNotEmpty(part.getItems()) ? createItemsVO(part.getItems()) : null);
 
         return apPartVO;
@@ -628,6 +655,7 @@ public class ApFactory {
         apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
+        apPartVO.setChangeType(ChangeType.ORIGINAL);
 
         return apPartVO;
     }
@@ -729,7 +757,7 @@ public class ApFactory {
         }
     }
 
-    private ApItemVO createItem(final ApItem apItem) {
+    private ApItemVO createItem(final AccessPointItem apItem) {
         StaticDataProvider sdp = staticDataService.getData();
         ItemType type = sdp.getItemTypeById(apItem.getItemTypeId());
 
@@ -786,6 +814,7 @@ public class ApFactory {
                 throw new NotImplementedException("Není implementováno: " + dataType.getCode());
         }
 
+        item.setChangeType(ChangeType.ORIGINAL);
         return item;
     }
 
@@ -909,5 +938,81 @@ public class ApFactory {
         apValidationErrorsVO.setErrors(errors);
         apValidationErrorsVO.setPartErrors(partErrors);
         return apValidationErrorsVO;
+    }
+
+    public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApAccessPoint accessPoint) {
+        vo.setRevStateApproval(revision.getStateApproval());
+        vo.setNewTypeId(revision.getTypeId());
+        vo.setRevPreferredPart(revision.getRevPreferredPartId());
+        vo.setNewPreferredPart(revision.getPreferredPartId());
+
+        // prepare parts
+        List<ApRevPart> parts = revPartRepository.findByRevision(revision);
+        // prepare items
+        Map<Integer, List<ApRevItem>> items = ObjectListIterator.findIterable(parts, revItemRepository::findByParts).stream()
+                .collect(Collectors.groupingBy(ApRevItem::getPartId));
+
+        Map<Integer, List<ApRevIndex>> indices = ObjectListIterator.findIterable(parts, p -> revIndexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
+                .collect(Collectors.groupingBy(ApRevIndex::getPartId));
+
+        Map<Integer, List<ApItem>> apItems = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        vo.setRevParts(createRevVO(parts, items, indices, apItems));
+
+        return vo;
+    }
+
+    private List<ApPartVO> createRevVO(List<ApRevPart> parts, Map<Integer, List<ApRevItem>> items, Map<Integer, List<ApRevIndex>> indices, Map<Integer, List<ApItem>> apItems) {
+        List<ApPartVO> partVOList = new ArrayList<>();
+        for (ApRevPart part : parts) {
+            List<ApItem> apItemList = part.getOriginalPartId() != null ? apItems.get(part.getOriginalPartId()) : null;
+            partVOList.add(createVO(part, items.get(part.getPartId()), indices.get(part.getPartId()), apItemList));
+        }
+        return partVOList;
+    }
+
+    private ApPartVO createVO(ApRevPart part, List<ApRevItem> items, List<ApRevIndex> indices, List<ApItem> apItems) {
+        ApPartVO apPartVO = new ApPartVO();
+
+        ChangeType changeType = ChangeType.NEW;
+        if (part.getOriginalPartId() != null) {
+            if (revisionItemService.allItemsDeleted(items, apItems)) {
+                changeType = ChangeType.DELETED;
+            } else {
+                changeType = ChangeType.UPDATED;
+            }
+        }
+
+        apPartVO.setId(part.getPartId());
+        apPartVO.setTypeId(part.getPartType().getPartTypeId());
+        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getValue() : null);
+        apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPartId() : null);
+        apPartVO.setRevPartParentId(part.getRevParentPart() != null ? part.getRevParentPartId() : null);
+        apPartVO.setOrigPartId(part.getOriginalPart() != null ? part.getOriginalPartId() : null);
+        apPartVO.setChangeType(changeType);
+        apPartVO.setItems(CollectionUtils.isNotEmpty(items) ? createRevItemsVO(items) : null);
+
+        return apPartVO;
+    }
+
+    private List<ApItemVO> createRevItemsVO(List<ApRevItem> revItems) {
+        List<ApItemVO> items = new ArrayList<>(revItems.size());
+        for (ApRevItem item : revItems) {
+            ApItemVO itemVO = createItem(item);
+
+            ChangeType changeType = ChangeType.NEW;
+            if (item.getOrigObjectId() != null) {
+                changeType = ChangeType.UPDATED;
+                if (item.isDeleted()) {
+                    changeType = ChangeType.DELETED;
+                }
+            }
+            itemVO.setChangeType(changeType);
+            itemVO.setOrigObjectId(item.getOrigObjectId());
+            items.add(itemVO);
+        }
+        fillRefEntities(items);
+        return items;
     }
 }

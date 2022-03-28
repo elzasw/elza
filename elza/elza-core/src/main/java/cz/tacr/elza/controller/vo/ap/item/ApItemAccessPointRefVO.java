@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApItem;
@@ -28,7 +29,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     public ApItemAccessPointRefVO() {
     }
 
-    public ApItemAccessPointRefVO(final ApItem item, final GetExternalUrl getExternalUrl) {
+    public ApItemAccessPointRefVO(final AccessPointItem item, final GetExternalUrl getExternalUrl) {
         super(item);
         ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
         if (data != null) {
@@ -95,7 +96,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
         return equalsBase(item) && Objects.equals(value, data.getRecordId());
     }

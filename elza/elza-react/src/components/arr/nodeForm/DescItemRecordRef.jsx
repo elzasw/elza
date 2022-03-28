@@ -12,12 +12,13 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {
     AREA_REGISTRY_LIST,
     registryDetailClear,
-    registryDetailFetchIfNeeded,
     registryListFilter,
 } from 'actions/registry/registry.jsx';
 import classNames from 'classnames';
 import {objectById, storeFromArea} from 'shared/utils';
 import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx';
+import {withRouter} from "react-router";
+import {goToAe} from "../../../actions/registry/registry";
 
 //import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 let RegistrySelectPage;
@@ -48,7 +49,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName} = this.props;
+        const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history} = this.props;
         const oldFilter = {...registryList.filter};
 
         this.props.dispatch(
@@ -62,7 +63,7 @@ class DescItemRecordRef extends AbstractReactComponent {
             }),
         );
 
-        this.props.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
+        this.props.dispatch(goToAe(history, value ? value.id : null, false, false));
         this.props.dispatch(
             modalDialogShow(
                 this,
@@ -149,7 +150,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     }
 }
 
-export default connect(
+export default withRouter(connect(
     (state, props) => {
         let nodeName = null;
         let fund = undefined;
@@ -175,4 +176,4 @@ export default connect(
     null,
     null,
     {forwardRef: true},
-)(DescItemRecordRef);
+)(DescItemRecordRef));

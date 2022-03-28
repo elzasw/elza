@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ChangeType;
 
 import java.util.Objects;
 
@@ -40,10 +42,20 @@ public abstract class ApItemVO {
      */
     private Integer specId;
 
+    /**
+     * identifikátor původní hodnoty atributu
+     */
+    private Integer origObjectId;
+
+    /**
+     * typ změny
+     */
+    private ChangeType changeType;
+
     public ApItemVO() {
     }
 
-    public ApItemVO(final ApItem item) {
+    public ApItemVO(final AccessPointItem item) {
         id = item.getItemId();
         objectId = item.getObjectId();
         position = item.getPosition();
@@ -91,6 +103,22 @@ public abstract class ApItemVO {
         this.typeId = typeId;
     }
 
+    public Integer getOrigObjectId() {
+        return origObjectId;
+    }
+
+    public void setOrigObjectId(Integer origObjectId) {
+        this.origObjectId = origObjectId;
+    }
+
+    public ChangeType getChangeType() {
+        return changeType;
+    }
+
+    public void setChangeType(ChangeType changeType) {
+        this.changeType = changeType;
+    }
+
     /**
      * Fill correspoding Aptem with values from this object
      *
@@ -118,7 +146,7 @@ public abstract class ApItemVO {
      * @param apItem
      * @return true if equals
      */
-    public abstract boolean equalsValue(ApItem apItem);
+    public abstract boolean equalsValue(AccessPointItem apItem);
 
     /**
      * Comparison of base fields: position, typeId, specId
@@ -126,7 +154,7 @@ public abstract class ApItemVO {
      * @param apItem
      * @return true if equals in three fields
      */
-    public boolean equalsBase(@NotNull ApItem apItem) {
+    public boolean equalsBase(@NotNull AccessPointItem apItem) {
         return Objects.equals(position, apItem.getPosition()) 
                 && Objects.equals(typeId, apItem.getItemTypeId())
                 && Objects.equals(specId, apItem.getItemSpecId());

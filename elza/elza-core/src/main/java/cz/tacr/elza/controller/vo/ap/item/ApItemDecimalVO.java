@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -19,12 +20,12 @@ public class ApItemDecimalVO extends ApItemVO {
     public ApItemDecimalVO() {
     }
 
-    public ApItemDecimalVO(final ApItem item) {
+    public ApItemDecimalVO(final AccessPointItem item) {
         super(item);
         value = getBigDecimalValue(item);
     }
 
-    final public BigDecimal getBigDecimalValue(final ApItem item) {
+    final public BigDecimal getBigDecimalValue(final AccessPointItem item) {
         ArrDataDecimal data = (ArrDataDecimal) item.getData();
         return data == null ? null : data.getValue();
     }
@@ -46,7 +47,7 @@ public class ApItemDecimalVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         return equalsBase(item) && Objects.equals(value, getBigDecimalValue(item));
     }
 }

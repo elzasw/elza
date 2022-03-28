@@ -18,6 +18,8 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Řídící pravidla archivního popisu, které definuje dané rozšíření.
@@ -59,6 +61,9 @@ public class RulExtensionRule {
     @Basic
     @Column(name = "compatibility_rul_package")
     private Integer compatibilityRulPackage;
+
+    @Column(length = StringLength.LENGTH_250)
+    private String condition;
 
     /**
      * @return identifikátor entity
@@ -144,6 +149,14 @@ public class RulExtensionRule {
 
     public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
         this.compatibilityRulPackage = compatibilityRulPackage;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 
     /**

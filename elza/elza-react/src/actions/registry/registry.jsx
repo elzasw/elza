@@ -6,7 +6,7 @@ import {SimpleListActions} from 'shared/list';
 import {DetailActions} from '../../shared/detail';
 import {indexById, storeFromArea} from 'shared/utils';
 
-import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import {DEFAULT_LIST_SIZE, URL_ENTITY} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -15,6 +15,7 @@ import {AP_VALIDATION} from '../../constants';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
+export const AREA_REGISTRY_LAYER_LIST = 'registryLayerList';
 
 const createFilter = values => {
     const extFilters = values.extFilters
@@ -71,6 +72,7 @@ export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST
             filter.state,
             undefined,
             undefined,
+            filter.revState,
             searchFilter,
         );
     });
@@ -93,6 +95,16 @@ export function registryListInvalidate() {
 }
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
+
+export function goToAe(history, id, force = false, redirect = true) {
+    return dispatch => {
+        const result = dispatch(registryDetailFetchIfNeeded(id, force))
+        if (redirect) {
+            history.push(`${URL_ENTITY}/${(id == null ? "" : id)}`);
+        }
+        return result;
+    };
+}
 
 export function registryDetailFetchIfNeeded(id, force = false) {
     return (dispatch, getState) => {
@@ -165,4 +177,68 @@ export function registryDelete(id) {
             }
         });
     };
+}
+
+export function registryCreateRevision(id, history, select) {
+    return (dispatch, getState) => {
+        Api.accesspoints.createRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+                dispatch(goToAe(history, id, true, !select));
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryDeleteRevision(id, history, select) {
+    return (dispatch, getState) => {
+        Api.accesspoints.deleteRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+                dispatch(goToAe(history, id, true, !select));
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryChangeStateRevision(id, revisionState, history, select) {
+    return (dispatch, getState) => {
+
+        Api.accesspoints.changeStateRevision(id, revisionState).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+                dispatch(goToAe(history, id, true, !select));
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+/**
+ * Načtení konfiguračních vrstev pro openlayers mapu
+ */
+export function layerConfigurationListFetchIfNeeded() {
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LAYER_LIST, null, () => {
+        return WebApi.mapLayerConfiguration().then(json => ({rows: json, count: 0}));
+    });
 }

@@ -13,6 +13,7 @@ import {
     IssueVO,
     RowsResponse,
     UpdateFund,
+    MapLayerVO,
 } from '../types';
 import {ApAccessPointCreateVO} from '../api/ApAccessPointCreateVO';
 import {ApAccessPointVO} from '../api/ApAccessPointVO';
@@ -675,6 +676,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
 	}
 
+    getStateApprovalRevision(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStatesRevision');
+    }
+
     findAccessPoint(
         search = null,
         registryParent = null,
@@ -689,6 +694,7 @@ export class WebApiCls {
         state = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
+        revState = null,
         searchFilter?: SearchFilterVO,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxPost(
@@ -707,6 +713,7 @@ export class WebApiCls {
                 state,
                 searchTypeName,
                 searchTypeUsername,
+                revState,
             },
             searchFilter,
         );
@@ -893,6 +900,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/state', null, data);
     }
 
+    mergeRevision(accessPointId, state) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/merge', {state: state}, null);
+    }
+
     updateAccessPoint(accessPointId, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
     }
@@ -968,6 +979,17 @@ export class WebApiCls {
      */
     updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, null, apPartFormVO);
     }
 
     /**
@@ -2095,7 +2117,7 @@ export class WebApiCls {
 
     /**
      * Odebrání existujícího protokolu
-     * 
+     *
      * @param issueListId identifikátor protokolu
      */
     deleteIssueList(issueListId: number) {
@@ -2209,6 +2231,10 @@ export class WebApiCls {
             },
             body,
         );
+    }
+
+    mapLayerConfiguration(): Promise<MapLayerVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/layer/configuration');
     }
 }
 

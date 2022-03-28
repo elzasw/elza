@@ -174,7 +174,7 @@ public class WsClient {
 
         FileGroup fileGroup = new FileGroup();
 
-        List<Bundle> bundles = item.getBundles(DaoImportService.CONTENT_BUNDLE);
+        List<Bundle> bundles = item.getBundles(DaoImportService.ORIGINAL_BUNDLE);
 
         //"http://localhost:8080/xmlui/handle/123456789/8"
 

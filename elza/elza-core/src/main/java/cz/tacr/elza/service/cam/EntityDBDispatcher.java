@@ -405,9 +405,7 @@ public class EntityDBDispatcher {
             break;
         }
 
-        accessPointService.generateSync(accessPoint, state,
-                                        syncRes.getParts(), syncRes.getItemMap(),
-                                        syncQueue);
+        accessPointService.generateSync(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
@@ -800,6 +798,7 @@ public class EntityDBDispatcher {
      * Update part
      * 
      * Return list of items in part
+     * 
      * @param partXml
      * @param apPart
      * @param srcItems
@@ -830,15 +829,11 @@ public class EntityDBDispatcher {
         for (ApBindingItem notChangeItem : itemUpdates.getNotChangeItems()) {
             ApBindingItem removedItem = bindingItemLookup.remove(notChangeItem.getValue());
             if (removedItem == null) {
-                throw new SystemException("Missing item in lookup.")
-                        .set("missingValue", notChangeItem.getValue());
+                throw new SystemException("Missing item in lookup.").set("missingValue", notChangeItem.getValue());
             }
             result.add(removedItem.getItem());
             srcItemsMap.remove(removedItem.getItem().getItemId());
         }
-
-        // added all items without binding
-        result.addAll(srcItemsMap.values());
 
         List<ChangedBindedItem> changedItems = itemUpdates.getChangedItems();
         if (CollectionUtils.isNotEmpty(changedItems)) {
@@ -846,12 +841,19 @@ public class EntityDBDispatcher {
             List<ApBindingItem> bindedItems = changedItems.stream().map(ChangedBindedItem::getBindingItem)
                     .collect(Collectors.toList());
             deleteBindedItems(bindedItems, procCtx.getApChange());
-            
+
             List<Object> xmlItems = changedItems.stream().map(ChangedBindedItem::getXmlItem)
                     .collect(Collectors.toList());
             // import changed items
             result.addAll(createItems(xmlItems, apPart, procCtx.getApChange(), binding, dataRefList));
+            // remove processed items from srcItemMap
+            for (ChangedBindedItem changedItem : itemUpdates.getChangedItems()) {
+                srcItemsMap.remove(changedItem.getBindingItem().getItemId());
+            }
         }
+
+        // added all items without binding
+        result.addAll(srcItemsMap.values());
 
         List<Object> newItems = itemUpdates.getNewItems();
         if (CollectionUtils.isNotEmpty(newItems)) {
@@ -1268,17 +1270,10 @@ public class EntityDBDispatcher {
                 } else {
                     ApItem iud = bindingItem.getItem();
                     ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
-                    if (!(iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) &&
-                            compareItemSpec(iud.getItemSpec(), itemUnitDate.getS()) &&
-                            dataUnitdate.getValueFrom().equals(itemUnitDate.getF().trim()) &&
-                            dataUnitdate.getValueFromEstimated().equals(itemUnitDate.isFe()) &&
-                            dataUnitdate.getFormat().equals(itemUnitDate.getFmt()) &&
-                            dataUnitdate.getValueTo().equals(itemUnitDate.getTo().trim()) &&
-                            dataUnitdate.getValueToEstimated().equals(itemUnitDate.isToe()))) {
-
-                    	result.addChanged(bindingItem, itemUnitDate);
+                    if (compareUnitDate(iud, dataUnitdate, itemUnitDate)) {
+                        result.addNotChanged(bindingItem);
                     } else {
-                    	result.addNotChanged(bindingItem);
+                    	result.addChanged(bindingItem, itemUnitDate);
                     }
                 }
             } else {
@@ -1346,6 +1341,28 @@ public class EntityDBDispatcher {
         }
         return true;
     }
+
+	private boolean compareUnitDate(ApItem iud, ArrDataUnitdate dataUnitdate, ItemUnitDateXml itemUnitDate) {
+	    // porovnání typu
+	    if (!iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) ||
+	            !compareItemSpec(iud.getItemSpec(), itemUnitDate.getS())) {
+	       return false;
+	    }
+	    // porovnání hodnot
+	    if (!dataUnitdate.getValueFrom().equals(itemUnitDate.getF().trim()) ||
+	            !dataUnitdate.getValueTo().equals(itemUnitDate.getTo().trim()) ||
+	            !dataUnitdate.getFormat().equals(itemUnitDate.getFmt())) {
+	        return false;
+	    }
+	    // porovnání zda jde o odhad
+	    Boolean fromEstimated = (itemUnitDate.isFe() == null) ? false : itemUnitDate.isFe();
+	    Boolean toEstimated = (itemUnitDate.isToe() == null) ? false : itemUnitDate.isToe();
+	    if (!dataUnitdate.getValueFromEstimated().equals(fromEstimated) ||
+	            !dataUnitdate.getValueToEstimated().equals(toEstimated)) {
+	        return false;
+	    }
+	    return true;
+	}
 
     private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
         if (itemSpec == null) {

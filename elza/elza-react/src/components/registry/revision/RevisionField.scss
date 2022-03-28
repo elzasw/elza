@@ -1,0 +1,39 @@
+.revision-field {
+    &:hover {
+        .actions.hidable {
+            width: auto;
+        }
+    }
+    .actions {
+        display: inline-flex;
+        margin: 2px 2px;
+        flex-shrink: 0;
+
+        &.hidable {
+            width: 0px;
+            overflow: hidden;
+        }
+    }
+    .expand-left {
+        .value-previous {
+            display: flex;
+            flex-direction: column;
+
+            .form-group {
+                flex: 1;
+            }
+        }
+    }
+    .revision-field-title {
+        display: flex;
+        align-items: center;
+
+        label {
+            margin: 3px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1;
+        }
+    }
+}

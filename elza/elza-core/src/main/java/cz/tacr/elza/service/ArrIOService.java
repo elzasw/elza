@@ -127,10 +127,9 @@ public class ArrIOService {
                 .map(ElzaColumn::getCode)
                 .collect(Collectors.toList());
 
-        try (
-                OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
-                CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
-        ) {
+        try (OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
+                CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
+
             ElzaTable table = ((ArrDataJsonTable) item.getData()).getValue();
 
             for (ElzaRow elzaRow : table.getRows()) {
@@ -143,7 +142,6 @@ public class ArrIOService {
             }
         }
     }
-
 
     /**
      * Import csv ze stromu do konkrétní hodnoty desc item, která bude nahrazena.

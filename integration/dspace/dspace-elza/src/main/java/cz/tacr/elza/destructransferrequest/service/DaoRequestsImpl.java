@@ -314,7 +314,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.debug("Zapisuji technická metadata položky digitalizátu s handle=" + handle + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
-                    if (bundle.getName().contains(DaoImportService.CONTENT_BUNDLE)) {
+                    if (bundle.getName().contains(DaoImportService.ORIGINAL_BUNDLE)) {
                         Dao dao = WsClient.createDao(item);
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();

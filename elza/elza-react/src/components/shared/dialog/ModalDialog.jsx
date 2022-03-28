@@ -1,13 +1,12 @@
 /**
  * Render Modálního dialogu ze store
  */
+import { modalDialogHide } from 'actions/global/modalDialog.jsx';
 import React from 'react';
-import {connect} from 'react-redux';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-
-import './ModalDialog.scss';
+import { connect } from 'react-redux';
 import AbstractReactComponent from '../../AbstractReactComponent';
-import ModalDialogWrapper from './ModalDialogWrapper';
+import './ModalDialog.scss';
+import { ModalDialogWrapper } from './ModalDialogWrapper';
 
 class ModalDialog extends AbstractReactComponent {
     /**
@@ -39,16 +38,22 @@ class ModalDialog extends AbstractReactComponent {
                 }),
             );
 
-            return (
-                <ModalDialogWrapper
-                    key={index}
-                    className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${dialog.dialogClassName}`}
-                    title={dialog.title}
-                    onHide={this.handleClose.bind(this, 'DIALOG')}
-                >
-                    {children}
-                </ModalDialogWrapper>
-            );
+            if(typeof dialog.content === "function"){
+                return dialog.content({
+                    onClose: this.handleClose.bind(this, 'DIALOG_CONTENT'),
+                })
+            } else {
+                return (
+                    <ModalDialogWrapper
+                        key={index}
+                        className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${dialog.dialogClassName}`}
+                        title={dialog.title}
+                        onHide={this.handleClose.bind(this, 'DIALOG')}
+                    >
+                        {children}
+                    </ModalDialogWrapper>
+                );
+            }
         });
 
         return <div>{dialogs}</div>;

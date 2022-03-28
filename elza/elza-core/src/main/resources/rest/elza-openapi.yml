@@ -152,6 +152,28 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /accesspoints/{id}/autoitems:
+    get:
+      summary: Vrátí seznam automaticky generovaných prvků popisu
+      operationId: getAutoitems
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Seznam navržených prvků popisu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultAutoItems"
+        404:
+          description: AP neexistuje
   /accesspoints:
     delete:
       summary: Zneplatnění přístupovych bodu
@@ -169,6 +191,142 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /revision/{id}:
+    post:
+      summary: Vytvoření nové revize přístupového bodu
+      operationId: createRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném založení
+        404:
+          description: AP neexistuje
+    delete:
+      summary: Smazání revize přístupového bodu
+      operationId: deleteRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném smazání
+        404:
+          description: AP nebo revize neexistuje
+  /revision/{id}/state:
+    post:
+      summary: Změna stavu revize přístupového bodu
+      operationId: changeStateRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: Nový stav revize
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/RevStateChange'
+      responses:
+        200:
+          description: Potvrzení o úspěšné změně stavu revize
+        404:
+          description: AP nebo revize neexistuje
+  /revision/{id}/autoitems:
+    get:
+      summary: Vrátí seznam automaticky generovaných prvků popisu pro revizi
+      operationId: getRevAutoitems
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Seznam navržených prvků popisu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultAutoItems"
+        404:
+          description: AP neexistuje
+  /revision/{id}/part/{partId}:
+    delete:
+      summary: Smazání části popisu z revize
+      operationId: deleteRevisionPart
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor části popisu
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+         200:
+           description: Potvrzení o úspěšném smažání částí popisu
+         404:
+           description: AP nebo revize neexistuje
+  /revision/{id}/part/{partId}/prefer-name:
+    post:
+      summary: Nastavení preferovaného jména
+      operationId: setPreferNameRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor části popisu
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném nastavení preferovaného jména
+        404:
+          description: AP nebo revize neexistuje
   /daos/{id}/change-scenario:
     post:
       summary: Změna scénáře napojení dao
@@ -470,7 +628,7 @@ components:
         - filterType
     FieldValueFilter:
       title: FieldValueFilter
-      description: Compares specified attribute of the entity with specified value using specified operation.      
+      description: Compares specified attribute of the entity with specified value using specified operation.
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
         - type: object
@@ -517,7 +675,7 @@ components:
       description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter.
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
-        - type: object      
+        - type: object
           properties:
             filters:
               description: Collection of filters
@@ -534,11 +692,11 @@ components:
             - filters
             - operation
     SearchParams:
-      type: object      
+      type: object
       properties:
         filters:
           description: Array of conditions. Conditions are joined by AND operator.
-          type: array          
+          type: array
           items:
             $ref: "#/components/schemas/AbstractFilter"
         offset:
@@ -551,7 +709,7 @@ components:
           format: int32
         sort:
           description: Array of sort conditions
-          type: array          
+          type: array
           items:
             $ref: "#/components/schemas/Sorting"
       title: Search parameters
@@ -581,7 +739,7 @@ components:
         id:
           description: ID of entity
           type: string
-        label:          
+        label:
           description: Visible name of entity
           type: string
         note:
@@ -603,3 +761,42 @@ components:
       required:
         - count
       title: Result«EntityRef»
+    RevStateChange:
+      type: object
+      properties:
+        typeId:
+          description: Identifikátor typu archivní entity
+          type: integer
+          format: int32
+        state:
+          description: Stav revize
+          $ref: "#/components/schemas/RevisionState"
+    RevisionState:
+      title: Stav revize
+      type: string
+      enum:
+        - ACTIVE
+        - TO_APPROVE
+        - TO_AMEND
+    AutoValue:
+      title: Jeden automaticky generovaný prvek popisu
+      type: object
+      properties:
+        itemTypeId:
+          description: Identifikátor typu prvku popisu
+          type: integer
+          format: int32
+        itemSpecId:
+          description: Identifikátor specifikace prvku popisu
+          type: integer
+          format: int32
+        value:
+          type: string
+          description: Item value
+    ResultAutoItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AutoValue"

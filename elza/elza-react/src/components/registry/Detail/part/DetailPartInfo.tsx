@@ -1,18 +1,21 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { ApItemVO } from '../../../../api/ApItemVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { objectById } from '../../../../shared/utils';
 import { Bindings } from '../../../../types';
 import { AppState } from '../../../../typings/store';
 import { DetailMultipleItem } from '../item';
 import './DetailPartInfo.scss';
+import { RevisionItem } from '../../revision';
 
 interface Props {
-    items: ApItemVO[];
+    items: RevisionItem[];
     globalEntity: boolean;
     bindings: Bindings;
     itemTypeSettings: ItemType[];
+    isModified: boolean | undefined;
+    revision?: boolean;
+    select: boolean;
 }
 
 export const DetailPartInfo: FC<Props> = ({
@@ -20,10 +23,14 @@ export const DetailPartInfo: FC<Props> = ({
     globalEntity,
     bindings,
     itemTypeSettings,
+    isModified,
+    revision,
+    select,
 }) => {
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap || {})
+    console.log(bindings)
 
-    const renderItems = (items: ApItemVO[]) => {
+    const renderItems = (items: RevisionItem[]) => {
         if (items.length === 0) {
             return (
                 <i>Nejsou definovány žádné hodnoty atributů</i>
@@ -32,35 +39,48 @@ export const DetailPartInfo: FC<Props> = ({
 
         const result: React.ReactNode[] = [];
 
-        let itemGroup: ApItemVO[] = [];
+        let itemGroup: RevisionItem[] = [];
         let itemGroupId: number | undefined;
         let groupStartIndex: number | undefined;
 
-        items.forEach((item, index, array)=>{
+        items.forEach(({item, updatedItem}, index, array)=>{
+            const typeId = item?.typeId || updatedItem?.typeId;
+            const classString = item?.["@class"] || updatedItem?.["@class"];
             // create item group for current typeId, if it doesn't exist
-            if(item.typeId !== itemGroupId){
-                itemGroupId = item.typeId;
+            if(typeId !== itemGroupId){
+                itemGroupId = typeId;
                 itemGroup = [];
                 groupStartIndex = index;
             }
 
             // add item in item group
-            if(item.typeId === itemGroupId){
-                itemGroup.push(item);
+            if(typeId === itemGroupId && typeId != null && classString != null){
+                itemGroup.push({
+                    item, 
+                    updatedItem, 
+                    typeId,
+                    "@class": classString,
+                });
             }
 
             const nextItem = array.length > index ? array[index + 1] : undefined;
+            const nextTypeId = nextItem ? nextItem.item?.typeId || nextItem.updatedItem?.typeId : undefined;
 
             // add itemGroup to 'rendered' items only when the next item is not in the same
             // typeId group.
-            if(item.typeId !== nextItem?.typeId){
+
+            if( typeId !== nextTypeId){
                 result.push(
-                        <DetailMultipleItem
-                            key={groupStartIndex}
-                            items={itemGroup}
-                            globalEntity={globalEntity}
-                            bindings={bindings}
-                            />
+                    <DetailMultipleItem
+                        select={select}
+                        key={groupStartIndex}
+                        items={itemGroup}
+                        globalEntity={globalEntity}
+                        bindings={bindings}
+                        typeId={typeId}
+                        isPartModified={isModified}
+                        revision={revision}
+                        />
                 )
             }
         })
@@ -69,8 +89,10 @@ export const DetailPartInfo: FC<Props> = ({
     };
 
     const sortedItems = items.sort((a, b) => {
-        const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
-        const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
+        const aTypeId = a.item?.typeId || a.updatedItem?.typeId;
+        const bTypeId = b.updatedItem?.typeId || b.updatedItem?.typeId;
+        const aItemType: ItemType = aTypeId ? objectById(itemTypeSettings, descItemTypesMap[aTypeId].code, 'code') : null;
+        const bItemType: ItemType = bTypeId ? objectById(itemTypeSettings, descItemTypesMap[bTypeId].code, 'code') : null;
         if (aItemType == null && bItemType == null) {
             return 0;
         } else if (aItemType == null) {

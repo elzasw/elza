@@ -525,11 +525,16 @@ public class ClientFactoryDO {
 
         return null;
     }
-    
-    private <T> T getFirstValue(final List<String> conditions, Function<String, T> convertor) {
+
+    private <T> T getSingleValue(final List<String> conditions, Function<String, T> convertor) {
         if (CollectionUtils.isEmpty(conditions)) {
             throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID)
             	.set("property", "conditions");
+        }
+        if (conditions.size() > 1) {
+            throw new BusinessException("Musí existovat pouze jedna podmínka.", BaseCode.PROPERTY_IS_INVALID)
+            .set("property", "conditions")
+            .set("size", conditions.size());
         }
         String value = conditions.iterator().next();
         if(StringUtils.isBlank(value)) {
@@ -537,7 +542,6 @@ public class ClientFactoryDO {
         		.set("property", "conditions");        	
         }
         return convertor.apply(value);
-    	
     }
 
     private <T> Interval<T> getConditionValueInterval(final List<String> conditions, 
@@ -564,12 +568,19 @@ public class ClientFactoryDO {
         return new Interval<>(from, to);
     }
 
+    /**
+     * Vrací hodnotu jako řetězec pro filtr.
+     * Pro vyhledávání bez ohledu na velikost písmen, text musí být napsán malými písmeny.
+     * 
+     * @param conditions
+     * @return String
+     */
     private String getConditionValueString(final List<String> conditions) {
-        return getFirstValue(conditions, Function.identity());
+        return getSingleValue(conditions, Function.identity()).toLowerCase();
     }
 
     private Double getConditionValueDouble(final List<String> conditions) {
-        return getFirstValue(conditions, value -> Double.valueOf(value.replace(',', '.')));
+        return getSingleValue(conditions, value -> Double.valueOf(value.replace(',', '.')));
     }
     
     private static Date valueOfDate(String value) {
@@ -577,7 +588,7 @@ public class ClientFactoryDO {
     }
 
     private Date getConditionValueDate(final List<String> conditions) {
-        return getFirstValue(conditions, ClientFactoryDO::valueOfDate);
+        return getSingleValue(conditions, ClientFactoryDO::valueOfDate);
     }
 
     private Interval<Date> getConditionValueIntervalDate(final List<String> conditions) {
@@ -589,7 +600,7 @@ public class ClientFactoryDO {
     }
 
     private Integer getConditionValueInteger(final List<String> conditions) {
-        return getFirstValue(conditions, Integer::valueOf);
+        return getSingleValue(conditions, Integer::valueOf);
     }
 
     private Interval<Integer> getConditionValueIntervalInteger(final List<String> conditions) {

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -19,12 +20,12 @@ public class ApItemIntVO extends ApItemVO {
     public ApItemIntVO() {
     }
 
-    public ApItemIntVO(final ApItem item) {
+    public ApItemIntVO(final AccessPointItem item) {
         super(item);
         value = getIntegerValue(item);
     }
 
-    final public Integer getIntegerValue(final ApItem item) {
+    final public Integer getIntegerValue(final AccessPointItem item) {
         ArrDataInteger data = (ArrDataInteger) item.getData();
         return data == null ? null : data.getIntegerValue();
     }
@@ -46,7 +47,7 @@ public class ApItemIntVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         return equalsBase(item) && Objects.equals(value, getIntegerValue(item));
     }
 }

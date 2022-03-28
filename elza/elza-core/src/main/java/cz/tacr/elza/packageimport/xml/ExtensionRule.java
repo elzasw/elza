@@ -42,8 +42,17 @@ public class ExtensionRule {
     @XmlElement(name = "priority", required = true)
     private Integer priority;
 
+    /**
+     * Kompatibilní balíček.
+     */
     @XmlAttribute(name="compatibility-rul-package")
     private Integer compatibilityRulPackage;
+
+    /**
+     * Stav.
+     */
+    @XmlElement(name="condition")
+    private String condition;
 
     public String getFilename() {
         return filename;
@@ -83,5 +92,13 @@ public class ExtensionRule {
 
     public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
         this.compatibilityRulPackage = compatibilityRulPackage;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
     }
 }
