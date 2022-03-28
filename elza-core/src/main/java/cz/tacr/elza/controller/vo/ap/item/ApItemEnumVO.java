@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
@@ -13,7 +14,7 @@ public class ApItemEnumVO extends ApItemVO {
     public ApItemEnumVO() {
     }
 
-    public ApItemEnumVO(final ApItem item) {
+    public ApItemEnumVO(final AccessPointItem item) {
         super(item);
     }
 
@@ -25,7 +26,7 @@ public class ApItemEnumVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem apItem) {
+    public boolean equalsValue(AccessPointItem apItem) {
         return equalsBase(apItem); 
     }
 }

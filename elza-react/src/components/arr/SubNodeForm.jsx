@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import {Accordion, Card} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils';
 import DescItemType from './nodeForm/DescItemType';
-import {registryDetailFetchIfNeeded} from 'actions/registry/registry';
 import {routerNavigate} from 'actions/router';
 import {setInputFocus} from 'components/Utils';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
@@ -26,6 +25,8 @@ import {SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 import classNames from 'classnames';
 import {Button} from '../ui';
 import FormDescItemGroup from './FormDescItemGroup';
+import {goToAe} from "../../actions/registry/registry";
+import {withRouter} from "react-router";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -524,7 +525,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param submitType {String} typ submitu
      */
     handleCreatedRecord(valueLocation, data, submitType) {
-        const {versionId, routingKey, subNodeForm} = this.props;
+        const {versionId, routingKey, subNodeForm, history} = this.props;
 
         // Uložení hodnoty
         this.props.dispatch(
@@ -534,8 +535,7 @@ class SubNodeForm extends AbstractReactComponent {
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {
             // přesměrování na detail
-            this.props.dispatch(registryDetailFetchIfNeeded(data.id));
-            this.props.dispatch(routerNavigate('registry'));
+            this.props.dispatch(goToAe(history, data.id));
         } else {
             // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
@@ -562,10 +562,9 @@ class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        const {singleDescItemTypeEdit} = this.props;
+        const {singleDescItemTypeEdit, history} = this.props;
         singleDescItemTypeEdit && this.props.dispatch(modalDialogHide());
-        this.props.dispatch(registryDetailFetchIfNeeded(recordId));
-        this.props.dispatch(routerNavigate('registry'));
+        this.props.dispatch(goToAe(history, recordId));
     }
 
     /**
@@ -944,7 +943,7 @@ class SubNodeForm extends AbstractReactComponent {
     }
 }
 
-export default connect(
+export default withRouter(connect(
     state => {
         const {userDetail, arrRegion} = state;
 
@@ -956,4 +955,4 @@ export default connect(
     null,
     null,
     {forwardRef: true},
-)(SubNodeForm);
+)(SubNodeForm));

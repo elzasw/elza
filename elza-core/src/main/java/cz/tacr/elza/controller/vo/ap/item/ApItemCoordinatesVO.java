@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.domain.AccessPointItem;
 import org.locationtech.jts.geom.Geometry;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.DataType;
@@ -21,12 +22,12 @@ public class ApItemCoordinatesVO extends ApItemVO {
     public ApItemCoordinatesVO() {
     }
 
-    public ApItemCoordinatesVO(final ApItem item) {
+    public ApItemCoordinatesVO(final AccessPointItem item) {
         super(item);
         value = getCoordinatesValue(item);
     }
 
-    final public String getCoordinatesValue(final ApItem item) {
+    final public String getCoordinatesValue(final AccessPointItem item) {
         ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
         return data == null ? null : GeometryConvertor.convert(data.getValue());
     }
@@ -49,7 +50,7 @@ public class ApItemCoordinatesVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         return equalsBase(item) && Objects.equals(value, getCoordinatesValue(item));
     }
 }

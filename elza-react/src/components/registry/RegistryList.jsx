@@ -17,7 +17,6 @@ import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes';
 import {indexById} from 'stores/app/utils';
 import {
     DEFAULT_REGISTRY_LIST_MAX_SIZE,
-    registryDetailFetchIfNeeded,
     registryListFetchIfNeeded,
     registryListFilter,
     registryListInvalidate,
@@ -25,6 +24,7 @@ import {
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus';
 import {getTreeItemById} from './../../components/registry/registryUtils';
 import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
+import {RevStateApproval, RevStateApprovalCaption} from '../../api/RevStateApproval';
 import './RegistryList.scss';
 import RegistryListItem from './RegistryListItem';
 import ListPager from '../shared/listPager/ListPager';
@@ -36,6 +36,8 @@ import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog
 import {Area} from '../../api/Area';
 import ExtFilterModal from './modal/ExtFilterModal';
 import {Button} from '../ui';
+import {withRouter} from "react-router";
+import {goToAe} from "../../actions/registry/registry";
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -150,6 +152,16 @@ class RegistryList extends AbstractReactComponent {
         );
     };
 
+    handleFilterRegistryRevState = revState => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                revState: revState,
+            }),
+        );
+    };
+
     handleFilterPrev = () => {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from >= DEFAULT_REGISTRY_LIST_MAX_SIZE) {
@@ -188,7 +200,8 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryDetail = item => {
-        this.props.dispatch(registryDetailFetchIfNeeded(item.id));
+        const {dispatch, history, select} = this.props;
+        dispatch(goToAe(history, item.id, false, !select));
     };
 
     renderListItem = props => {
@@ -254,6 +267,19 @@ class RegistryList extends AbstractReactComponent {
                 return {
                     id: item,
                     name: StateApprovalCaption(item),
+                };
+            }),
+        ];
+    }
+
+    getRevStateWithAll() {
+        const defaultValue = {name: i18n('registry.allRevisionStates')};
+        return [
+            defaultValue,
+            ...Object.values(RevStateApproval).map(item => {
+                return {
+                    id: item,
+                    name: RevStateApprovalCaption(item),
                 };
             }),
         ];
@@ -368,6 +394,13 @@ class RegistryList extends AbstractReactComponent {
                         useIdAsValue
                     />
                     <Autocomplete
+                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.allRevisionStates')}
+                        items={this.getRevStateWithAll()}
+                        onChange={this.handleFilterRegistryRevState}
+                        value={filter.revState}
+                        useIdAsValue
+                    />
+                    <Autocomplete
                         placeholder={!filter.registryTypeId ? this.registryTypeDefaultValue : ''}
                         items={apTypesWithAll}
                         disabled={
@@ -443,7 +476,7 @@ class RegistryList extends AbstractReactComponent {
     }
 }
 
-export default connect(state => {
+export default withRouter(connect(state => {
     const {
         app: {registryList, registryDetail},
         userDetail,
@@ -460,4 +493,4 @@ export default connect(state => {
         userDetail,
         eidTypes: eidTypes.data,
     };
-})(RegistryList);
+})(RegistryList));

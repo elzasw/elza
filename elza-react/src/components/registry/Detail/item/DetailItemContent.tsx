@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
+import {goToAe} from '../../../../actions/registry/registry';
 import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
@@ -25,22 +25,26 @@ import DetailCoordinateItem from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';
+import {RouteComponentProps, withRouter} from "react-router";
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
     globalEntity: boolean;
     bindings?: Bindings;
+    revision?: boolean;
+    select: boolean;
 }
 
-type Props = OwnProps & ReturnType<typeof mapDispatchToProps>;
+type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & RouteComponentProps;
 
 const DetailItemContent: FC<Props> = ({
     item, 
     globalEntity, 
-    rulDataTypes, 
+    rulDataTypes,
     descItemTypes, 
     bindings, 
-    selectAp
+    selectAp,
+    revision
 }) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
@@ -150,7 +154,7 @@ const DetailItemContent: FC<Props> = ({
             break;
     }
 
-    let valueSpecification;
+    let valueSpecification: React.ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
         valueSpecification = <i>Bez specifikace</i>;
         if (item.specId) {
@@ -161,13 +165,12 @@ const DetailItemContent: FC<Props> = ({
         }
     }
 
-
     return (
         <div className="detail-item-content-value">
             {valueSpecification}
             {valueSpecification && valueField && ': '}
             {valueField}
-            {itemBinding != null && (
+            {(itemBinding != null) && (
                 <span className="sync-wrapper">
                     <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                 </span>
@@ -176,9 +179,9 @@ const DetailItemContent: FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, {history, select}: RouteComponentProps & {select: boolean}) => ({
     selectAp: (apId: number) => {
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+        dispatch(goToAe(history, apId, true, !select));
     },
 });
 
@@ -190,4 +193,4 @@ const mapStateToProps = state => ({
     },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(DetailItemContent);
+export default withRouter(connect<any, any, RouteComponentProps>(mapStateToProps, mapDispatchToProps)(DetailItemContent)) as any;

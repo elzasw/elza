@@ -25,4 +25,13 @@ export interface ApItemVO {
      * specifikace atributu
      */
     specId?: number;
+
+    /**
+     * identifikátor původní hodnoty atributu
+     */
+    origObjectId?: number;
+    /**
+    * Typ zmeny v revizi
+    */
+    changeType?: "DELETED" | "NEW" | "UPDATED";
 }

@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "ap_part")
-public class ApPart {
+public class ApPart implements AccessPointPart {
 
     public static final String PART_ID = "partId";
     public static final String ACCESS_POINT_ID = "accessPointId";

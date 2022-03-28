@@ -36,4 +36,13 @@ export interface ApPartVO {
      * Seznam hodnot atributů
      */
     items: ApItemVO[] | null;
+
+    /**
+     * Identifikátor původního partu
+     */
+    origPartId?: number;
+    /**
+    * Typ zmeny v revizi
+    */
+    changeType?: "DELETED" | "NEW" | "UPDATED";
 }

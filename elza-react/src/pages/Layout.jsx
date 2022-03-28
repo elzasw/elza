@@ -36,19 +36,22 @@ import {
     RegistryPage,
     EntityCreatePage,
     EntityPage,
+    MapPage,
 } from 'pages';
-
 import './Layout.scss';
-import {modalDialogShow} from '../actions/global/modalDialog';
-import i18n from '../components/i18n';
-import {FOCUS_KEYS} from '../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
+import {MAP_URL} from './map/MapPage';
 
 let _gameRunner = null;
 
 class Layout extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    child = null;
+    parent = null;
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap, keymap);
@@ -61,13 +64,28 @@ class Layout extends AbstractReactComponent {
     state = {
         showGame: false,
         canStartGame: false,
+        polygon: undefined,
+        selectedLayer: undefined,
     };
+
+    componentDidMount() {
+        CrossTabHelper.init(this);
+        window.thisLayout = this;
+    }
 
     componentWillUnmount() {
         if (_gameRunner) {
             clearTimeout(_gameRunner);
         }
+        CrossTabHelper.onUnmount(this);
+        delete window.thisLayout
     }
+
+    processCrossTabEvent = (event) => {
+        if (event.type === CrossTabEventType.SHOW_IN_MAP) {
+            this.setState({polygon: event.data});
+        }
+    };
 
     handleShortcuts = action => {
         console.log('#handleShortcuts', '[' + action + ']', this);
@@ -81,7 +99,7 @@ class Layout extends AbstractReactComponent {
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'registry':
-                this.props.dispatch(routerNavigate('/registry'));
+                this.props.dispatch(routerNavigate(URL_ENTITY));
                 this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 break;
             case 'admin':
@@ -110,8 +128,12 @@ class Layout extends AbstractReactComponent {
         }, 1000);
     };
 
+    handleChangeSelectedLayer = (selectedLayer) => {
+        this.setState({selectedLayer})
+    }
+
     render() {
-        const {canStartGame, showGame} = this.state;
+        const {canStartGame, polygon, showGame, selectedLayer} = this.state;
 
         if (showGame) {
             return (
@@ -146,8 +168,9 @@ class Layout extends AbstractReactComponent {
                         <Switch>
                             <Route path="/fund" component={FundPage} />
                             <Route path="/node/:uuid" component={NodePage} />
-                            <Route path="/entity/:uuid" component={EntityPage} />
-                            <Route path="/entity-create" component={EntityCreatePage} />
+                            <Route path={URL_ENTITY + "/:uuid([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"} component={EntityPage} />
+                            <Route path={URL_ENTITY + "/:id([0-9]+)?"} component={RegistryPage} />
+                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
                             <Route path="/arr">
                                 <Switch>
                                     <Route path="/arr/dataGrid" component={ArrDataGridPage} />
@@ -159,11 +182,7 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-
-                            <Route path="/registry">
-                                <RegistryPage/>
-                            </Route>
-
+                            <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />

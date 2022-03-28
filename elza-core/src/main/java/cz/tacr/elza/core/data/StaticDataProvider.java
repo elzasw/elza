@@ -359,7 +359,7 @@ public class StaticDataProvider {
                 .map(rs -> {
                     List<RulArrangementExtension> exts = ruleSetExtsById.getOrDefault(rs.getRuleSetId(), Collections
                             .emptyList());
-                    return new RuleSet(rs, exts, extRulesByExtId);
+                    return new RuleSet(rs, exts, extRulesByExtId, dbExtRules);
                 })
                 .collect(Collectors.toList());
         this.ruleSets = Collections.unmodifiableList(ruleSets);

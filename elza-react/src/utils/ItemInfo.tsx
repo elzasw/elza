@@ -17,6 +17,7 @@ import {ApItemDecimalVO} from '../api/ApItemDecimalVO';
 import {ApItemUnitidVO} from '../api/ApItemUnitidVO';
 import {ApViewSettingRule, ItemType} from '../api/ApViewSettings';
 import {RulPartTypeVO} from '../api/RulPartTypeVO';
+import {RefTablesState} from 'typings/store';
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
 export const ApItemBitClass = '.ApItemBitVO';
@@ -73,56 +74,15 @@ export function getItemClass(code: RulDataTypeCodeEnum): string {
     }
 }
 
-export function compareItems(
-    a: ApItemVO,
-    b: ApItemVO,
-    partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
-): number {
-    const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
-
-    const aInfo = descItemTypesMap[a.typeId];
-    const bInfo = descItemTypesMap[b.typeId];
-
-    if (aInfo && bInfo && part) {
-        let itemTypes = apViewSettings.itemTypes || [];
-        let aIt = findViewItemType(itemTypes, part, aInfo.code);
-        let bIt = findViewItemType(itemTypes, part, bInfo.code);
-        if (aIt && bIt) {
-            if (aIt.position && bIt.position) {
-                return aIt.position - bIt.position;
-            } else if (aIt.position && !bIt.position) {
-                return -1;
-            } else if (!aIt.position && bIt.position) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else if (aIt) {
-            return -1;
-        } else {
-            return 1;
-        }
-    } else if (aInfo && !bInfo) {
-        return -1;
-    } else if (!aInfo && bInfo) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
 export function compareCreateTypes(
     a: ApCreateTypeVO,
     b: ApCreateTypeVO,
     partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    refTables: RefTablesState,
     apViewSettings: ApViewSettingRule,
 ): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
+    const descItemTypesMap = refTables.descItemTypes.itemsMap;
 
     const aInfo = descItemTypesMap[a.itemTypeId];
     const bInfo = descItemTypesMap[b.itemTypeId];
@@ -155,48 +115,23 @@ export function compareCreateTypes(
     }
 }
 
-export function sortItems(
-    partTypeId: number,
-    items: ApItemVO[],
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
-): ApItemVO[] {
-    return [...items].sort((a, b) => {
-        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
-    });
-}
+// export function findItemPlacePosition(
+//     item: ApItemVO,
+//     items: ApItemVO[],
+//     partTypeId: number,
+//     refTables: RefTablesState,
+//     apViewSettings?: ApViewSettingRule,
+// ): number {
+//     for (let index = items.length - 1; index >= 0; index--) {
+//         let i = items[index];
+//         let n = compareItems(item, i, partTypeId, refTables, apViewSettings);
+//         if (n >= 0) {
+//             return index + 1;
+//         }
+//     }
 
-export function sortOwnItems(
-    partTypeId: number,
-    items: ApItemVO[],
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
-): ApItemVO[] {
-    return items.sort((a, b) => {
-        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
-    });
-}
-
-export function findItemPlacePosition(
-    item: ApItemVO,
-    items: ApItemVO[],
-    partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
-): number {
-    for (let index = items.length - 1; index >= 0; index--) {
-        let i = items[index];
-        let n = compareItems(item, i, partTypeId, refTables, descItemTypesMap, apViewSettings);
-        if (n >= 0) {
-            return index + 1;
-        }
-    }
-
-    return 0;
-}
+//     return 0;
+// }
 
 export function findViewItemType(
     itemTypeSettings: ItemType[],
@@ -277,5 +212,40 @@ export function hasItemValue(item: ApItemVO): boolean {
         default:
             console.error('Chybí podpora typu class', item['@class']);
             return false;
+    }
+}
+
+export function itemValue(item: ApItemVO): string {
+    switch (item['@class']) {
+        case ApItemAccessPointRefClass:
+            return (item as ApItemAccessPointRefVO).value.toString();
+        case ApItemBitClass:
+            return (item as ApItemBitVO).value.toString();
+        case ApItemCoordinatesClass:
+            return (item as ApItemCoordinatesVO).value;
+        case ApItemDateClass:
+            return (item as ApItemDateVO).value;
+        case ApItemDecimalClass:
+            return (item as ApItemDecimalVO).value.toString();
+        case ApItemFormattedTextClass:
+            return (item as ApItemFormattedTextVO).value;
+        case ApItemIntClass:
+            return (item as ApItemIntVO).value.toString();
+        case ApItemStringClass:
+            return (item as ApItemStringVO).value;
+        case ApItemTextClass:
+            return (item as ApItemTextVO).value;
+        case ApItemUnitdateClass:
+            return (item as ApItemUnitdateVO).value;
+        case ApItemUnitidClass:
+            return (item as ApItemUnitidVO).value;
+        case ApItemUriRefClass:
+            return (item as ApItemUriRefVO).value;
+
+        case ApItemEnumClass:
+        case ApItemJsonTableClass:
+        default:
+            console.error('Chybí podpora typu class', item['@class']);
+            return '';
     }
 }

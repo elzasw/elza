@@ -148,7 +148,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
         ItemType itemType = ItemType.fromEntity(dbItemType, itemAptypeRepository);
         if (Boolean.TRUE.equals(dbItemType.getUseSpecification())) {
             // Copy specifications
-            List<RulItemTypeSpecAssign> dbSpecs = this.itemTypeSpecAssignRepository.findByItemType(dbItemType);
+            List<RulItemTypeSpecAssign> dbSpecs = this.itemTypeSpecAssignRepository.findByItemTypeSorted(dbItemType);
             for (RulItemTypeSpecAssign dbSpec : dbSpecs) {
                 ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec.getItemSpec(), itemAptypeRepository);
                 itemSpecList.add(itemSpec);

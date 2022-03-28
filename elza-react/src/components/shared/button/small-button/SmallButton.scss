@@ -3,8 +3,9 @@
     padding: 3px;
     margin: 2px;
     border-radius: 3px;
-    display: inline-block;
+    display: inline-flex;
     line-height: 1em;
+    align-items: center;
 
     &:hover {
         background-color: #ddd;
