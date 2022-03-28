@@ -19,10 +19,14 @@ class PolygonTooltip extends React.Component<PolygonTooltipProps> {
     }
 
     componentDidMount() {
-        this.iframeRef.current.addEventListener('load', () => setTimeout(() => this.iframeRef.current.contentWindow.postMessage({
-            call: 'sendPolygon',
-            polygon: this.props.polygon,
-        }), 750));
+        this.iframeRef.current.addEventListener('load', () => setTimeout(() => {
+            if (this.iframeRef.current.contentWindow) {
+                this.iframeRef.current.contentWindow.postMessage({
+                    call: 'sendPolygon',
+                    polygon: this.props.polygon,
+                });
+            }
+        }), 750);
     }
 
     render() {
