@@ -797,7 +797,7 @@ var messages = {
     "arr.fund.subNodes.next": "Skok o záznam vpřed",
     "arr.fund.subNodes.prevPage": "Skok o {0} záznamů vzad",
     "arr.fund.subNodes.nextPage": "Skok o {0} záznamů vpřed",
-    "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
+    "arr.fund.subNodes.findPosition": "Přejít na JP podle pozice záznamu",
     "arr.fund.subNodes.findPosition.filterActive": "Skok na jednotku popisu není možný, pokud je aktivní filtr",
     "arr.fund.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
     "arr.fund.subNodes.findPositionNumber.error.required": "Pozice JP musí být vyplněna",
