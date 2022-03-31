@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;import org.drools.core.common.InstanceEqualsConstraint.InstanceEqualsConstraintContextEntry;
+import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +48,8 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -80,6 +82,7 @@ abstract public class CamXmlBuilder {
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
+    protected final Collection<ApBindingState> bindingStates;
     protected final ApScope scope;
 
     protected final GroovyService groovyService;
@@ -110,11 +113,13 @@ abstract public class CamXmlBuilder {
 
 	CamXmlBuilder(final StaticDataProvider sdp,
                   final ApAccessPoint accessPoint,
+                  final Collection<ApBindingState> bindingStates,
                   final GroovyService groovyService,
                   final AccessPointDataService apDataService,
                   final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
+        this.bindingStates = bindingStates;
         this.groovyService = groovyService;
         this.apDataService = apDataService;
         this.scope = scope;
@@ -224,6 +229,36 @@ abstract public class CamXmlBuilder {
                 cnt++;
                 subpartCounter.put(partXml.getPrnt().getValue(), cnt++);
             }
+        }
+
+        // získání hodnoty pro CAM_REAL_ID
+        String bindingValue = null;
+        if (!bindingStates.isEmpty()) {
+            ApExternalSystem externalSystem = sdp.getApExternalSystemByCode("CAM");
+            if (externalSystem != null) {
+                Optional<ApBindingState> bindingState = bindingStates.stream()
+                        .filter(p -> p.getExternalSystemId().equals(externalSystem.getExternalSystemId()))
+                        .findFirst();
+                if (bindingState.isPresent()) {
+                    bindingValue = bindingState.get().getBinding().getValue();
+                }
+            }
+        }
+
+        // přidání externího ID CAM
+        if (bindingValue != null) {
+
+            List<Object> items = new ArrayList<>();
+            items.add(new ItemEnumXml(new CodeXml("CAM_REAL_ID"), new CodeXml("IDN_TYPE"), new UuidXml(UUID.randomUUID().toString())));
+            items.add(new ItemStringXml(new StringXml(bindingValue), null, new CodeXml("IDN_VALUE"), new UuidXml(UUID.randomUUID().toString()))); 
+            ItemsXml itemsXml = new ItemsXml(items);
+    
+            PartXml partXml = new PartXml();
+            partXml.setT(PartTypeXml.PT_IDENT);
+            partXml.setPid(new UuidXml(UUID.randomUUID().toString()));
+            partXml.setItms(itemsXml);
+    
+            partXmlList.add(partXml);
         }
 
         // do filtering
