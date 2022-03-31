@@ -108,6 +108,7 @@ public class GroovyUnitdateFormatter {
         return prefix + str;
     }
 
+    // získat první slovo v řetězci, kde jsou slova oddělena mezerami
     private String getFirstWord(String str) {
         return str != null? str.split(" ")[0] : null;
     }
