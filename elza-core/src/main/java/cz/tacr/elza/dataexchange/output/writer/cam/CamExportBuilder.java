@@ -96,6 +96,7 @@ public class CamExportBuilder implements ExportBuilder {
                 staticDataService.getData(),
                 apInfo.getAccessPoint(),
                 apInfo.getApState(),
+                apInfo.getExternalIds(),
                 groovyService,
                 apDataService,
                 apInfo.getApState().getScope());
