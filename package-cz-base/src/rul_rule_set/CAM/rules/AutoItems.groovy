@@ -27,6 +27,17 @@ static String convertAuthString(String str) {
     return str
 }
 
+// přidáme nový záznam nebo hodnotu, pokud je typ již v seznamu
+static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem) {
+    for (GroovyItem item : items) {
+        if (item.getTypeCode().equals(groovyItem.getTypeCode())) {
+            item.addValue(groovyItem)
+            return
+        }
+    }
+    items.add(groovyItem)
+}
+
 static List<GroovyItem> generate(final GroovyAe ae) {
     List<GroovyItem> items = new ArrayList<>()
 
@@ -35,7 +46,6 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         //System.out.println(part.getPartType().getCode())
         for (GroovyItem item : part.getItems()) {
             //System.out.println(item)
-            //items.add(item)
         }
     }
 
@@ -166,7 +176,8 @@ static List<GroovyItem> generate(final GroovyAe ae) {
             if (rel.getValue() != null) {
                 if (rel.getIntValue() > 0) {
                     GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertGeoString(rel.getValue()))
-                    items.add(itemGeo)
+                    addGroovyItem(items, itemGeo)
+                    //System.out.println(itemGeo)
                 } else {
                     throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
                         .set("entityId", rel.getValue())

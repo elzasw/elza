@@ -135,6 +135,12 @@ public class GroovyItem {
         return typeCode;
     }
 
+    public void addValue(GroovyItem item) {
+        if (item != null && item.getValue() != null) {
+            value = "; " + item.getValue();
+        }
+    }
+
     @Override
     public String toString() {
         return "GroovyItem{" +
