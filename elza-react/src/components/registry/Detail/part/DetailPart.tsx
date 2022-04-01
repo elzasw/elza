@@ -4,13 +4,11 @@ import React, { FC, useEffect, useState } from 'react';
 // import { ApPartVO } from '../../../../api/ApPartVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
-import { SyncState } from '../../../../api/SyncState';
 import { Bindings } from '../../../../types';
-import { SyncIcon } from "../sync-icon";
+import { getRevisionItems, RevisionDisplay, RevisionPart } from '../../revision';
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
-import { RevisionDisplay, RevisionPart, getRevisionItems } from '../../revision';
 
 type Props = {
     part: RevisionPart;
@@ -79,9 +77,19 @@ const DetailPart: FC<Props> = ({
     const areValuesEqual = (value: string, prevValue: string) => value === prevValue
 
     // const items = getRevisionItems(part?.items || [], updatedPart?.items || []);
-            const items = getRevisionItems(
-                    revision ? part?.items || [] : undefined, 
-                    revision ? updatedPart?.items || [] : part?.items || [])
+    const items = getRevisionItems(
+        revision ? part?.items || [] : undefined, 
+        revision ? updatedPart?.items || [] : part?.items || [])
+
+    const preferredText = () => {
+        if (newPreferred) {
+            return 'Nové preferované';
+        } else if (oldPreferred) {
+            return 'Předchozí preferované';
+        } else if (preferred) {
+            return 'Preferované';
+        }
+    };
 
     return (
         <div className="detail-part">
@@ -98,8 +106,6 @@ const DetailPart: FC<Props> = ({
                                     label={part?.value || "no value"}
                                     collapsed={isCollapsed}
                                     preferred={preferred}
-                                    oldPreferred={oldPreferred}
-                                    newPreferred={newPreferred}
                                     onClick={() => setCollapsed(!collapsed)}
                                     binding={partBinding}
                                     />
@@ -111,8 +117,6 @@ const DetailPart: FC<Props> = ({
                                 label={ updatedPart ? updatedPart.value : part?.value || "no new value"}
                                 collapsed={isCollapsed}
                                 preferred={preferred}
-                                oldPreferred={oldPreferred}
-                                newPreferred={newPreferred}
                                 onClick={() => setCollapsed(!collapsed)}
                                 binding={updatedPart ? updatedPartBinding : partBinding}
                                 />
@@ -120,6 +124,11 @@ const DetailPart: FC<Props> = ({
                     >
 
                     </RevisionDisplay>
+                    {(preferred || newPreferred || oldPreferred) && <span 
+                        className={classNames('detail-part-label-alt', collapsed ? false : 'opened')}
+                    >
+                        {preferredText()}
+                    </span>}
                     <div className="actions">
                         {showValidationError()}
                     </div>

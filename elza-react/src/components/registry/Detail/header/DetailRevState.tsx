@@ -11,7 +11,6 @@ interface Props {
  */
 const DetailRevState: React.FC<Props> = ({state}) => (
     <div className="d-inline-block">
-        <Icon glyph={RevStateApprovalIcon(state)} className={'mr-1'}/>
         {RevStateApprovalCaption(state)}
     </div>
 );
