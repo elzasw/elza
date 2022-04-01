@@ -44,11 +44,15 @@
 
         &.detail-part-preferred {
             font-weight: bold;
+        }
 
-            .detail-part-label-alt {
-                font-weight: normal;
-                font-style: italic;
-            }
+        .detail-part-label-alt {
+            font-weight: normal;
+            padding: 5px;
+            line-height: 1em;
+            border-radius: 5px;
+            margin-left: 5px;
+            background-color: #eee;
         }
     }
     .detail-part-expanded {

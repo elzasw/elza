@@ -116,18 +116,16 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     setRevisionPreferred,
     deletePart,
     deleteRevisionPart,
-    updateRevisionPart,
-    // deleteParts,
     showConfirmDialog,
     showPartEditModal,
     showPartCreateModal,
-    descItemTypesMap,
     refTables,
     select,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [revisionActive, setRevisionActive] = useState<boolean>(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -250,108 +248,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         refreshValidation(id);
     };
 
-
-    /*
-    const handleDeletePart = (parts: Array<ApPartVO>) => {
-        deleteParts(id, parts);
-        refreshValidation(id);
-    };
-    */
-
-   /**
-    *   Prikladova data pro revize
-    *
-    *   Mela by fungovat s archivni entitou Tomas Garrigue Masaryk z camu.
-    *   Pro zprovozneni je potreba upravit id, aby odpovidala databazi a
-    *   zmenit promennou revisionTest na true.
-    */
-    const revisionTest = false;
-    const exampleUpdatedParts = [
-        {
-            // Preferovane jmeno
-            id: 1169,
-            value: "modified name",
-            state: ApStateVO.OK,
-            typeId: 1,
-            items: [{
-                "@class": ".ApItemStringVO",
-                id: 2403,
-                typeId: 24,
-                value: "modified value",
-                position: 1,
-                specId: null,
-            }] as any
-        },
-        {
-            // 2. jmeno (Masaryk, T. G.)
-            id: 1170,
-            value: null as any,
-            specId: null as any,
-            state: ApStateVO.OK,
-            typeId: 1,
-            items: [] as any
-        },
-        {
-            // Pridane jmeno - neni potreba menit id
-            id: 9999,
-            value: "new name",
-            state: ApStateVO.OK,
-            typeId: 1,
-            items: [{
-                typeId: 29,
-                specId: 18,
-                id: 9875,
-            }]
-        },
-        {
-            // Udalost - manzelstvi, upraveny item - misto uzavreni
-            id: 1175,
-            value: "modified relation",
-            parentPartId: 1124,
-            typeId: 5,
-            state: null as any,
-            items: [{
-                "@class": ".ApItemAccessPointRefVO",
-                externalName: "modified ref item",
-                externalUrl: "https://www.google.com",
-                id: 2415,
-                position: 1,
-                specId: 384,
-                typeId: 32,
-            }] as any
-        },
-        {
-            // Telo - Strucna charakteristika
-            id: 1163,
-            value: "modified body",
-            typeId: 7,
-            state: null as any,
-            items: [{
-                "@class": ".ApItemStringVO",
-                id: 2385,
-                position: 1,
-                typeId: 26,
-                value: "modified body value",
-            }] as any
-        }
-    ]
-
     const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
     const allRevisionParts = detail.data.revStateApproval ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
     const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId );
-
-    /*
-    const getRelatedPartSections = (parentParts: ApPartVO[]) => {
-        if (parentParts.length === 0) { return []; }
-
-        const parentIds = parentParts
-            .filter(value => value.id)
-            .map(value => value.id);
-            
-        return allParts
-            .filter(value => value.partParentId && parentIds.includes(value.partParentId));
-    };
-    */
 
     const getRelatedPartSections = (parentParts: RevisionPart[]) => {
         if (parentParts.length === 0) { return []; }
@@ -384,36 +283,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }, {});
     }
 
-    /*
-    const groupPartsByType = (data: ApPartVO[]):Record<string, ApPartVO[]> => 
-        data.reduce<Record<string, ApPartVO[]>>((accumulator, value) => {
-            (accumulator[value.typeId.toString()] = accumulator[value.typeId] || []).push(value);
-            return accumulator;
-        }, {});
-    */
-
-    /*
-    const groupedParts = groupPartsByType(
-        sortPrefer(
-            allParts.filter(part => !part.partParentId),
-            detail.data?.preferredPart,
-        )
-    );
-    */
-
     const groupedRevisionParts = groupPartsByType(filteredRevisionParts);
     const validationResult = apValidation.data;
 
-    /*
-    const getSectionValidationErrors = (parts:ApPartVO[] = []) => {
-        const errors:PartValidationErrorsVO[] = [];
-        parts.forEach((part)=>{
-            const error = objectByProperty(validationResult?.partErrors, part.id, "id");
-            if(error){errors.push(error)}
-        })
-        return errors;
-    };
-    */
     const getSectionValidationErrors = (parts:RevisionPart[] = []) => {
         const errors:PartValidationErrorsVO[] = [];
         parts.forEach(({part, updatedPart})=>{
@@ -436,11 +308,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     item={detail.data!}
                     id={detail.data!.id}
                     collapsed={collapsed}
-                    onToggleCollapsed={() => {
-                        setCollapsed(!collapsed);
-                    }}
+                    onToggleCollapsed={() => setCollapsed(!collapsed)}
+                    onToggleRevision={() => setRevisionActive(!revisionActive)}
                     validationErrors={validationResult && validationResult.errors}
                     onInvalidateDetail={() => refreshDetail(detail.data!.id)}
+                    revisionActive={revisionActive}
                 />
 
                 {allParts && (
@@ -469,7 +341,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     <DetailBodySection
                                         key={partType.code}
                                         label={partType.name}
-                                        editMode={editMode}
+                                        editMode={!!detail.data?.revStateApproval ? editMode && revisionActive : editMode}
                                         part={revisionParts[0]}
                                         onEdit={handleEdit}
                                         bindings={bindings}
@@ -480,7 +352,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         partType={partType}
                                         onDelete={handleDelete}
                                         onRevert={handleRevert}
-                                        revision={detail.data ? !!detail.data.revStateApproval : false}
+                                        revision={detail.data ? !!detail.data.revStateApproval && revisionActive : false}
                                         select={select}
                                     />
                                 );
@@ -490,13 +362,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     key={partType.code}
                                     label={partType.name}
                                     singlePart={!partType.repeatable && revisionParts.length === 1}
-                                    editMode={editMode}
+                                    editMode={!!detail.data?.revStateApproval ? editMode && revisionActive : editMode}
                                     parts={revisionParts}
                                     relatedParts={getRelatedPartSections(revisionParts)}
                                     preferred={detail.data ? detail.data.preferredPart : undefined}
-                                    newPreferred={detail.data ? detail.data.newPreferredPart : undefined}
-                                    revPreferred={detail.data ? detail.data.revPreferredPart : undefined}
-                                    revision={detail.data ? !!detail.data.revStateApproval : false}
+                                    newPreferred={detail.data && revisionActive ? detail.data.newPreferredPart : undefined}
+                                    revPreferred={detail.data && revisionActive ? detail.data.revPreferredPart : undefined}
+                                    revision={detail.data ? !!detail.data.revStateApproval && revisionActive : false}
                                     globalCollapsed={globalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}

@@ -1,78 +1,50 @@
 import React, { FC } from 'react';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
-import { connect } from 'react-redux';
-import { showAsyncWaiting } from '../../../../actions/global/modalDialog';
-import * as perms from '../../../../actions/user/Permission';
-import { WebApi } from '../../../../actions/WebApi';
+import { useSelector } from 'react-redux';
+import { AppState } from 'typings/store';
 import { ApAccessPointVO } from '../../../../api/ApAccessPointVO';
-import { ApBindingVO } from '../../../../api/ApBindingVO';
-import { SyncState } from '../../../../api/SyncState';
-import { indexById, objectById } from '../../../../shared/utils';
+import { objectById } from '../../../../shared/utils';
 import { FundScope } from '../../../../types';
-import i18n from '../../../i18n';
 import { Icon } from '../../../index';
 import { Button } from '../../../ui';
 import ValidationResultIcon from '../../../ValidationResultIcon';
+import { ApTypeNames } from './ApTypeNames';
 import DetailDescriptions from './DetailDescriptions';
-import DetailDescriptionsItem from './DetailDescriptionsItem';
+import DetailDescriptionsItem, {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
 import './DetailHeader.scss';
-import DetailState from './DetailState';
-import { SyncIcon } from "../sync-icon";
 import DetailRevState from "./DetailRevState";
-import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
-import { AppState, RefTablesState } from 'typings/store';
-import {RulDataTypeVO} from 'api/RulDataTypeVO';
-import {RulDataTypeCodeEnum} from 'api/RulDataTypeCodeEnum';
+import DetailState from './DetailState';
+import { EntityBindings } from './EntityBindings';
+import { TooltipTrigger } from 'components/shared';
+import { Tooltip } from 'react-bootstrap';
 
-interface Props extends ReturnType<typeof mapStateToProps> {
+interface Props {
     item: ApAccessPointVO;
     onToggleCollapsed?: () => void;
     onInvalidateDetail?: () => void;
+    onToggleRevision?: () => void;
     collapsed: boolean;
     id?: number;
     validationErrors?: string[];
-    apTypesMap: object;
-    scopes: any;
-    externalSystems: any[];
-    dispatch: any;
+    revisionActive?: boolean;
 }
 
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;
 
-const getProcessingMessage = (key: string) => {
-    return <h4 className="processing">{i18n(key)}</h4>;
-};
-
-const hasUnimportedEntity = (accessPoint: ApAccessPointVO, refTables: RefTablesState) => {
-    const externalEntity = accessPoint.parts.find((part)=>{
-        return part.items?.find((item: any)=>{
-            const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
-            const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
-            const isRef = dataType.code === RulDataTypeCodeEnum.RECORD_REF;
-            if(isRef && !item.accessPoint || isRef && !item.value){
-                return item;
-            }
-        })
-    })
-    return !!externalEntity;
-}
-
 const DetailHeader: FC<Props> = ({
-    dispatch,
     onInvalidateDetail,
     item,
     id,
     collapsed,
     onToggleCollapsed,
+    onToggleRevision,
     validationErrors,
-    apTypesMap,
-    scopes,
-    externalSystems,
-    userDetail,
-    refTables,
+    revisionActive,
 }) => {
-    const apType = apTypesMap[item.typeId];
+    const scopes = useSelector(({ refTables: { scopesData } }:AppState) =>
+        scopesData.scopes.find((scope) => scope.versionId === -1)?.scopes || []) // všechny scope
+    const apTypesMap = useSelector(({refTables}:AppState) => refTables.recordTypes.itemsMap);
+    const apType = apTypesMap[item.typeId] as any;
 
     const showValidationError = () => {
         if (validationErrors && validationErrors.length > 0) {
@@ -80,177 +52,10 @@ const DetailHeader: FC<Props> = ({
         }
     };
 
-    const renderApTypeNames = (delimiter: React.ReactNode = '>') => {
-        let elements: JSX.Element[] = [];
-
-        if (apType.parents) {
-            apType.parents.reverse().forEach((name, i) => {
-                elements.push(
-                    <span key={'name-' + i} className="hierarchy-level">
-                        {name.toUpperCase()}
-                    </span>,
-                );
-                elements.push(
-                    <span key={'delimiter-' + i} className="hierarchy-delimiter">
-                        {delimiter}
-                    </span>,
-                );
-            });
-        }
-        elements.push(
-            <span key="name-main" className="hierarchy-level main">
-                {apType.name.toUpperCase()}
-            </span>,
-        );
-
-        return elements;
-    };
-
-    const handleSynchronize = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.synchronize'),
-                WebApi.synchronizeAccessPoint(id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
-    };
-
-    const handleUpdate = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.update'),
-                WebApi.updateArchiveEntity(id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
-    };
-
-    // const handleDisconnect = (binding: ApBindingVO) => {
-    //     dispatch(
-    //         showAsyncWaiting(
-    //             null,
-    //             getProcessingMessage('ap.binding.processing.disconnect'),
-    //             WebApi.disconnectAccessPoint(id!, binding.externalSystemCode),
-    //             () => {
-    //                 onInvalidateDetail && onInvalidateDetail();
-    //             },
-    //         ),
-    //     );
-    // };
-
-    const handleTakeRelEntities = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.take-rel-entities'),
-                WebApi.takeRelArchiveEntities(id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
-    };
-
-    const hasState = (state: string, approvedStates: string[]) => {
-        return approvedStates.indexOf(state) >= 0;
-    }
-
-    const renderBindings = () => {
-        if (item.bindings.length > 0 && externalSystems.length > 0) {
-            const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
-            return (
-                <div className="bindings" key="bindings">
-                    {item.bindings.map(binding => {
-                        const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
-                        const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'')
-                                      + (binding.extUser?(', '+i18n('ap.binding.user')+': '+binding.extUser):'');
-                        return (
-                            <div className="binding" key={'binding-' + binding.id}>
-                                <div className="info" title={tooltip}>
-                                    {i18n('ap.binding.source')}{': '}
-                                    <span className="system">{externalSystem.name}</span>
-                                    {/*
-                                    <span className="link">
-                                        <a href={binding.detailUrl} target="_blank" rel="noopener noreferrer">
-                                            {binding.value}
-                                        </a>
-                                    </span>*/}
-                                    , {i18n('ap.binding.extState.' + binding.extState)}
-                                    {binding.extReplacedBy && (
-                                        <span className="link">
-                                            {' '}
-                                            (
-                                            <a
-                                                href={binding.detailUrlExtReplacedBy}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {binding.detailUrlExtReplacedBy}
-                                            </a>
-                                            )
-                                        </span>
-                                    )}                                    
-                                </div>
-                                <div className="action">
-                                    <SyncIcon syncState={binding.syncState || undefined}/>
-                                </div>
-                                <div className="action">
-                                    <DropdownButton
-                                        variant="action"
-                                        id={'binding-action-' + binding.id}
-                                        title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}
-                                    >
-                                        { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED", "REV_NEW", "REV_AMEND"]) &&
-                                            <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
-                                                {i18n('ap.binding.action.synchronize')}
-                                            </Dropdown.Item>}
-                                        { apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) 
-                                            && binding.syncState === SyncState.LOCAL_CHANGE 
-                                            && (
-                                                <Dropdown.Item key="update" onClick={() => handleUpdate(binding)}>
-                                                    {i18n('ap.binding.action.update')}
-                                                </Dropdown.Item>
-                                        )}
-                                        {
-                                            // Vypnutí možnosti odpojení entity
-                                            // TODO: Odstranit relevantní kód
-                                        /*
-                                        <Dropdown.Item key="disconnect" onClick={() => handleDisconnect(binding)}>
-                                            {i18n('ap.binding.action.disconnect')}
-                                        </Dropdown.Item>
-                                        */
-                                        }
-
-                                        {hasUnimportedEntity(item, refTables) &&
-                                            <Dropdown.Item
-                                                key="take-rel-entities"
-                                                onClick={() => handleTakeRelEntities(binding)}
-                                            >
-                                                {i18n('ap.binding.action.take-rel-entities')}
-                                            </Dropdown.Item>
-                                        }
-                                    </DropdownButton>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        }
-    };
-
     let scope: FundScope | null = null;
     if (item.scopeId) {
         scope = objectById(scopes, item.scopeId);
     }
-
 
     return (
         <div className={'detail-header-wrapper'}>
@@ -284,72 +89,73 @@ const DetailHeader: FC<Props> = ({
                                 <div className="description">
                                     {item.description}
                                 </div>
+                        }
+                        </div>
+                        <DetailDescriptions>
+                            {id && 
+                                <DetailDescriptionsItem>
+                                    <TooltipTrigger 
+                                        content={
+                                            <>
+                                                <div>id: {id}</div>
+                                                <div>uuid: {item.uuid}</div>
+                                            </>
+                                        }
+                                    >
+                                        {`id: ${id}`}
+                                    </TooltipTrigger>
+                                </DetailDescriptionsItem>
                             }
-                        </div>
-                        <div style={{padding: "5px"}}>
-                            <DetailDescriptions>
-                                {id && <DetailDescriptionsItem label="ID:">{id}</DetailDescriptionsItem>}
-                                {item.stateApproval && (
-                                    <DetailDescriptionsItem>
-                                        <DetailState state={item.stateApproval} />
-                                    </DetailDescriptionsItem>
-                                )}
-                                {item.revStateApproval && (
-                                    <DetailDescriptionsItem>
-                                        <DetailRevState state={item.revStateApproval} />
-                                    </DetailDescriptionsItem>
-                                )}
-                                {scope && (
-                                    <DetailDescriptionsItem>
-                                        <Icon glyph={'fa-globe'} className={'mr-1'} />
-                                        {scope.name}
-                                    </DetailDescriptionsItem>
-                                )}
-                                {item.lastChange && item.lastChange.user && (
-                                    <DetailDescriptionsItem label="Upravil:">
-                                        {item.lastChange.user.displayName}
-                                        <span title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>
-                                            ({formatDate(item.lastChange.change)})
-                                        </span>
-                                    </DetailDescriptionsItem>
-                                )}
-                            </DetailDescriptions>
-                            {renderBindings()}
-                        </div>
+                            {item.stateApproval && (
+                                <DetailDescriptionsItem className={item.stateApproval.toLowerCase()}>
+                                    <DetailState state={item.stateApproval} />
+                                </DetailDescriptionsItem>
+                            )}
+                            {scope && (
+                                <DetailDescriptionsItem>
+                                    <Icon glyph={'fa-globe'} className={'mr-1'} />
+                                    {scope.name}
+                                </DetailDescriptionsItem>
+                            )}
+                            {item.lastChange && item.lastChange.user && (
+                                <DetailDescriptionsItem label="Upravil:">
+                                    {item.lastChange.user.displayName}
+                                    <span title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>
+                                        ({formatDate(item.lastChange.change)})
+                                    </span>
+                                </DetailDescriptionsItem>
+                            )}
+                            <EntityBindings item={item} onInvalidateDetail={onInvalidateDetail}/>
+                            <div style={{flex: 1}}/>
+                            {item.revStateApproval && (
+                                <DetailDescriptionsItemWithButton
+                                    renderButton={onToggleRevision ? () => 
+                                        <Button onClick={onToggleRevision}>
+                                            <Icon glyph={'fa-eye'}/>
+                                        </Button> : undefined
+                                }
+                                    className={revisionActive ? "revision" : undefined}
+                                >
+                                    <DetailRevState state={item.revStateApproval} />
+                                </DetailDescriptionsItemWithButton>
+                            )}
+                        </DetailDescriptions>
                     </div>
                 )}
+                <Button
+                    onClick={onToggleCollapsed}
+                    variant={'light'}
+                    className="collapse-button"
+                    title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
+                >
+                    <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
+                </Button>
                 <div>
-                    <Button
-                        onClick={onToggleCollapsed}
-                        variant={'light'}
-                        className="collapse-button"
-                        title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
-                    >
-                        <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
-                    </Button>
                 </div>
             </div>
-            <div className="ap-type">
-                    {renderApTypeNames(<Icon glyph="fa-angle-right"/>)}
-            </div>
+            <ApTypeNames apType={apType}/>
         </div>
     );
 };
 
-const mapStateToProps = (state: AppState) => {
-    const scopesData = state.refTables.scopesData;
-    const id = scopesData && indexById(scopesData.scopes, -1, 'versionId'); // všechny scope
-    const scopes = id === null ? [] : scopesData.scopes[id].scopes;
-    const recordTypes = state.refTables.recordTypes as any;
-    const app = state.app as any;
-
-    return {
-        externalSystems: app.apExtSystemList.rows as any,
-        apTypesMap: recordTypes.typeIdMap as any,
-        scopes: scopes,
-        userDetail: state.userDetail,
-        refTables: state.refTables,
-    };
-};
-
-export default connect(mapStateToProps)(DetailHeader);
+export default DetailHeader;

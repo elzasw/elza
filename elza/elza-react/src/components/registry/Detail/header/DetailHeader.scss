@@ -1,4 +1,30 @@
 .detail-header-wrapper {
+    .detail-descriptions {
+        margin: -4px;
+        margin-top: 0;
+
+        .detail-descriptions-item {
+            margin: 4px;
+
+            &.revision {
+                background-color: #d7760d;
+                color: white;
+                .btn {
+                    background-color: #fff3;
+                    color: white;
+                }
+            }
+            &.to_amend, &.to_approve {
+                background-color: #d7760d;
+                color: white;
+            }
+            &.new {
+                background-color: #0092ff;
+                color: white;
+            }
+        }
+
+    }
     .header-container {
         padding: 15px; 
         position: relative;
@@ -60,16 +86,36 @@
             margin: 0 10px;
         }
     }
+
+    .detail-descriptions-item-button {
+        display: flex;
+
+        .btn {
+            height: auto;
+            background-color: #ddd;
+            color: #333;
+            border-radius: 0 5px 5px 0;
+            padding: 0px 8px;
+
+            &:hover, &:active, &:focus {
+                background-color: #ccc;
+                box-shadow: none;
+            }
+
+        }
+    }
+
     .bindings {
-        margin-top: 0.5rem;
-        font-size: 1.2em;
-        font-weight: 500;
+
         .binding {
             display: flex;
             align-items: center;
             .info {
                 .system, .link, .user {
                     font-weight: 700;
+                }
+                .system {
+                    margin-right: 5px;
                 }
             }
             .action {
@@ -84,6 +130,11 @@
                     font-size: 1.3em;
                 }
             }
+            .binding-dropdown {
+                height: 100%;
+                display: flex;
+            }
+
         }
     }
 }
