@@ -137,7 +137,7 @@ public class GroovyItem {
 
     public void addValue(GroovyItem item) {
         if (item != null && item.getValue() != null) {
-            value = "; " + item.getValue();
+            value += "; " + item.getValue();
         }
     }
 
