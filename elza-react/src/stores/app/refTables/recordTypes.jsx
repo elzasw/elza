@@ -21,6 +21,7 @@ export default function recordTypes(state = initialState, action = {}) {
 
             return {
                 ...state,
+                itemsMap: state.typeIdMap,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
