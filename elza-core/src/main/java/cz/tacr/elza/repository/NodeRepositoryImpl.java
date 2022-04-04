@@ -38,9 +38,6 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.engine.spi.FacetManager;
-import org.hibernate.search.query.facet.Facet;
-import org.hibernate.search.query.facet.FacetSortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -60,7 +57,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -351,7 +347,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         for (UnitdateSearchParam searchParam : searchParams) {
             String value = searchParam.getValue();
             if (StringUtils.isNotBlank(value)) {
-                Query dateQuery = createDateQuery(value, searchParam.getCalendarId(), searchParam.getCondition(), queryBuilder);
+                Query dateQuery = createDateQuery(value, searchParam.getCondition(), queryBuilder);
                 dateBool.must(dateQuery);
             }
         }
@@ -368,16 +364,13 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * Vytvoří lucene dotaz na hledání arr_data podle datace.
      *
      * @param value datace
-     * @param calendarId id typu kalendáře
      * @param condition typ podmínky
      * @param queryBuilder query builder
      *
      * @return dotaz
      */
-    private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
-            final QueryBuilder queryBuilder) {
+    private Query createDateQuery(final String value, final UnitdateCondition condition, final QueryBuilder queryBuilder) {
         Assert.notNull(value, "Hodnota musí být vyplněna");
-        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
         Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
