@@ -18,24 +18,49 @@ static String convertGeoString(String str) {
     return str.replaceAll(" \\(", ", ").replaceAll("\\)", "")
 }
 
-// převést řetězec jako: Svoboda Karel (1900-1990) -> Karel Svoboda
-static String convertAuthString(String str) {
-    String[] parts = str.split(",? ")
-    if (parts.length > 1) {
-        return parts[1] + " " + parts[0]
+// konverze řetězců pro výstup
+static String convertAuthString(GroovyItem item) {
+    Integer typeId = item.getApTypeId()
+    if (typeId != null) {
+        // převést řetězec jako: Svoboda Karel (1900-1990) -> Karel Svoboda
+        if (GroovyUtils.hasParent(typeId, "PERSON")) {
+            String[] parts = item.getValue().split(",? ")
+            if (parts.length > 1) {
+                return parts[1] + " " + parts[0]
+            }
+        }
     }
-    return str
+    return item.getValue()
 }
 
-// přidáme nový záznam nebo hodnotu, pokud je typ již v seznamu
+// přidáme nový záznam do seznamu nebo přidání hodnoty k existující
 static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem) {
+    addGroovyItem(items, groovyItem, "; ")
+}
+
+// přidáme nový záznam nebo hodnoty se speciálním oddělovačem
+static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem, String separator) {
     for (GroovyItem item : items) {
         if (item.getTypeCode().equals(groovyItem.getTypeCode())) {
-            item.addValue(groovyItem)
+            item.addValue(groovyItem, separator)
             return
         }
     }
     items.add(groovyItem)
+}
+
+// získání zobrazení separátoru
+static String getSeperator(GroovyItem item) {
+    Integer typeId = item.getApTypeId()
+    if (typeId != null) {
+        if (GroovyUtils.hasParent(typeId, "PERSON")) {
+            return " a "
+        }
+        if (GroovyUtils.hasParent(typeId, "PARTY_GROUP")) {
+            return "; "
+        }
+    }
+    return null
 }
 
 static List<GroovyItem> generate(final GroovyAe ae) {
@@ -134,23 +159,23 @@ static List<GroovyItem> generate(final GroovyAe ae) {
                 .build()
 
     // obecný doplněk
-    GroovyItem geoType = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
-    if (geoType != null) {
-        System.out.println(geoType)
-        if (!excludeTerritory.contains(geoType.getSpecCode())) {
-            GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, geoType.getValue())
+    GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
+    if (genItem != null) {
+        System.out.println(genItem)
+        if (!excludeTerritory.contains(genItem.getSpecCode())) {
+            GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, genItem.getValue())
             items.add(obecItem)
         }
     }
 
     // chronologický doplněk
-    GroovyItem itemChro = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
-    if (!itemChro.getValue().isEmpty()) {
+    GroovyItem chroItem = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
+    if (!chroItem.getValue().isEmpty()) {
         // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
-        if (to != null && geoType != null && disappearedTerritory.contains(geoType.getSpecCode())) {
+        if (to != null && genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
             items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
         } else {
-            items.add(itemChro)
+            items.add(chroItem)
         }
     }
 
@@ -175,19 +200,20 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         if (Arrays.asList("RT_RESIDENCE", "RT_VENUE", "RT_LOCATION").contains(rel.getSpecCode())) {
             if (rel.getValue() != null) {
                 if (rel.getIntValue() > 0) {
-                    GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertGeoString(rel.getValue()))
-                    addGroovyItem(items, itemGeo)
-                    //System.out.println(itemGeo)
+                    GroovyItem relGeoItem = new GroovyItem("NM_SUP_GEO", null, convertGeoString(rel.getValue()))
+                    addGroovyItem(items, relGeoItem)
+                    //System.out.println(relGeoItem)
                 } else {
                     throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
                         .set("entityId", rel.getValue())
                 }
             }
         }
-        // autor/tvůrce
+        // autor změny/tvůrce změny
         if (rel.getSpecCode().equals("RT_AUTHOROFCHANGE")) {
-            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel.getValue()))
-            items.add(itemAuth)
+            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel))
+            addGroovyItem(items, itemAuth, getSeperator(rel))
+            System.out.println(rel)
         }
     }
 

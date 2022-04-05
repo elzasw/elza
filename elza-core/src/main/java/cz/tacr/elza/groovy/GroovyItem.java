@@ -3,6 +3,7 @@ package cz.tacr.elza.groovy;
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -39,6 +40,11 @@ public class GroovyItem {
      */
     private IUnitdate unitdateValue = null;
 
+    /**
+     * AP z mezipaměti.
+     */
+    private CachedAccessPoint accessPoint = null;
+
     public GroovyItem(@NotNull final String typeCode,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value) {
@@ -50,11 +56,13 @@ public class GroovyItem {
     public GroovyItem(@NotNull final String typeCode,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value,
-                      @NotNull final Integer intValue) {
+                      @NotNull final Integer intValue,
+                      @Nullable final CachedAccessPoint accessPoint) {
         this.value = value;
         this.rulItemSpec = rulItemSpec;
         this.intValue = intValue;
         this.typeCode = typeCode;
+        this.accessPoint = accessPoint;
     }
 
     public GroovyItem(@NotNull final String typeCode,
@@ -141,6 +149,20 @@ public class GroovyItem {
         }
     }
 
+    public void addValue(GroovyItem item, String separator) {
+        if (item != null && item.getValue() != null) {
+            value += separator + item.getValue();
+        }
+    }
+
+    public CachedAccessPoint getAccessPoint() {
+        return accessPoint;
+    }
+
+    public Integer getApTypeId() {
+        return (accessPoint != null) ? accessPoint.getApState().getApTypeId() : null; 
+    }
+
     @Override
     public String toString() {
         return "GroovyItem{" +
@@ -150,6 +172,7 @@ public class GroovyItem {
                 ", value='" + value + '\'' +
                 ", intValue=" + intValue +
                 ", unitdateValue=" + unitdateValue +
+                ", apTypeId=" + getApTypeId() +
                 '}';
     }
 }
