@@ -1,6 +1,8 @@
 package cz.tacr.elza.groovy;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApType;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -56,10 +58,10 @@ public class GroovyUtils {
                                                     final String itemType) {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        StaticDataProvider sdp = StaticDataProvider.getInstance();
-        sdp.getItemTypeByCode(containItemType);
-        sdp.getItemSpecByCode(containItemSpec);
-        sdp.getItemTypeByCode(itemType);
+        //StaticDataProvider sdp = StaticDataProvider.getInstance();
+        //sdp.getItemTypeByCode(containItemType);
+        //sdp.getItemSpecByCode(containItemSpec);
+        //sdp.getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {
@@ -85,7 +87,6 @@ public class GroovyUtils {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
         Validate.notNull(filter, "Nebyl předán filter preferované části");
-        //StaticDataProvider.getInstance().getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
@@ -121,8 +122,20 @@ public class GroovyUtils {
                 }
             }
         }
-
         return groovyItems;
     }
+
+    public static boolean hasParent(Integer typeId, String parentCode) {
+        Validate.notNull(typeId, "Nebyla předán typ entity");
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ApType itemType = sdp.getApTypeById(typeId);
+        if (itemType != null) {
+            Integer parentItemTypeId = itemType.getParentApTypeId();
+            ApType parentItemType = sdp.getApTypeById(parentItemTypeId);
     
+            return Objects.equals(parentItemType.getCode(), parentCode);
+        }
+        return false;
+    }
+
 }

@@ -58,6 +58,8 @@ import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @Service
 public class GroovyService {
@@ -90,6 +92,9 @@ public class GroovyService {
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
+    
+    @Autowired
+    protected AccessPointCacheService accessPointCacheService;
 
     @PostConstruct
     public void setStatic() {
@@ -270,9 +275,11 @@ public class GroovyService {
                 ArrDataRecordRef dataTmp = (ArrDataRecordRef) data;
                 String value;
                 Integer intValue;
+                CachedAccessPoint accessPoint = null;
                 if (dataTmp.getRecord() != null) {
                     value = dataTmp.getFulltextValue();
                     intValue = dataTmp.getRecordId();
+                    accessPoint = accessPointCacheService.findCachedAccessPoint(intValue);
                 } else if (dataTmp.getBinding() != null) {
                     value = dataTmp.getBinding().getValue();
                     // pokud se jedná o pouhý odkaz do externího systému (bez lokálního AP)
@@ -285,7 +292,7 @@ public class GroovyService {
                                     .set("dataId", dataTmp.getDataId());
                 }
 
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue);
+                groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue, accessPoint);
                 break;
             }
             case ENUM: {
