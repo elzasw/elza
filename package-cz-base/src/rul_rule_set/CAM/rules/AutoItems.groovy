@@ -22,12 +22,15 @@ static String convertGeoString(String str) {
 static String convertAuthString(GroovyItem item) {
     Integer typeId = item.getApTypeId()
     if (typeId != null) {
-        // převést řetězec jako: Svoboda Karel (1900-1990) -> Karel Svoboda
+        String nmMain = GroovyUtils.findStringByRulItemTypeCode(item, "NM_MAIN")
+        String nmMinor = GroovyUtils.findStringByRulItemTypeCode(item, "NM_MINOR")
+        // konverze pro osoby: Svoboda Karel -> Karel Svoboda
         if (GroovyUtils.hasParent(typeId, "PERSON")) {
-            String[] parts = item.getValue().split(",? ")
-            if (parts.length > 1) {
-                return parts[1] + " " + parts[0]
-            }
+            return nmMinor + " " + nmMain
+        }
+        // konverze pro korporace : Hlavní část jména. Vedlejší část jména
+        if (GroovyUtils.hasParent(typeId, "PARTY_GROUP")) {
+            return nmMain + (nmMinor == null? "" : ". " + nmMinor)
         }
     }
     return item.getValue()
@@ -53,14 +56,13 @@ static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem, String 
 static String getSeperator(GroovyItem item) {
     Integer typeId = item.getApTypeId()
     if (typeId != null) {
+        // osoby jsou od sebe odděleny písmenem "a"
         if (GroovyUtils.hasParent(typeId, "PERSON")) {
             return " a "
         }
-        if (GroovyUtils.hasParent(typeId, "PARTY_GROUP")) {
-            return "; "
-        }
     }
-    return null
+    // korporace a další jsou odděleny ";"
+    return "; "
 }
 
 static List<GroovyItem> generate(final GroovyAe ae) {
