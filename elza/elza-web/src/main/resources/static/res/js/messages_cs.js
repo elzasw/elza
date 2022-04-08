@@ -211,7 +211,7 @@ var messages = {
     "exception.reg.EXT_SYSTEM_CONNECTED": "Archivní entita má jíž existující propojení s externím systémem",
     "exception.reg.INVALID_ENTITY_SCOPE": "Archivní entita má nevhodné scope",
     "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION": "Nelze změnit stav archivní entity, která má revizi",
-    "exception.reg.CANT_CREATE_REVISION": "Nelze vytvořit revizi, pokud archivná entita má nevhodný stav",
+    "exception.reg.CANT_CREATE_REVISION": "Nelze vytvořit revizi, protože archivní entita má nevhodný stav",
 
     "exception.sobj.NO_VALID_ITEMS":
         "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",

@@ -139,7 +139,7 @@ public enum RegistryCode implements ErrorCode {
     CANT_CHANGE_STATE_ENTITY_WITH_REVISION,
     
     /**
-     * Nelze vytvořit revizi, pokud archivná entita má nevhodný stav
+     * Nelze vytvořit revizi, protože archivní entita má nevhodný stav
      */
     CANT_CREATE_REVISION,
 }

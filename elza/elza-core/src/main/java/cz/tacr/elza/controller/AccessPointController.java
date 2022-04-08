@@ -82,9 +82,9 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<Void> createRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
 
-        // Nelze vytvořit revizi, pokud archivná entita mimo stav NEW, TO_AMEND nebo APPROVED
+        // Nelze vytvořit revizi, pokud má archivní entita jiný stav než NEW, TO_AMEND nebo APPROVED
         if (!Arrays.asList(StateApproval.NEW, StateApproval.TO_AMEND, StateApproval.APPROVED).contains(state.getStateApproval())) {
-            throw new BusinessException("Nelze vytvořit revizi, pokud archivná entita má nevhodný stav", RegistryCode.CANT_CREATE_REVISION)
+            throw new BusinessException("Nelze vytvořit revizi, protože archivní entita má nevhodný stav", RegistryCode.CANT_CREATE_REVISION)
                 .set("state", state.getStateApproval());
         }
 
