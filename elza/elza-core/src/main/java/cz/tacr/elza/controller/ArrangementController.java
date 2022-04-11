@@ -2446,7 +2446,7 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
+        revertingChangesService.revertChanges(fundVersion, node, fromChange, toChange);
     }
 
     /**

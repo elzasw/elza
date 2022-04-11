@@ -257,7 +257,7 @@ public class StartupService implements SmartLifecycle {
             @Override
             public void afterCommit() {
                 asyncRequestService.start();
-                arrangementService.startNodeValidation(true);
+                arrangementService.startNodeValidation();
             }
         });
 
