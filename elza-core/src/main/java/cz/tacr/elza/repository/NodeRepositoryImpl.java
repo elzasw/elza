@@ -436,18 +436,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     /**
-     * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
-     */
-    @Override
-    public List<ArrNode> findByNodeConformityIsNull() {
-        String hql = "SELECT n FROM arr_node n JOIN arr_level l ON l.node = n LEFT JOIN arr_node_conformity nc ON nc.node = n WHERE l.deleteChange IS NULL AND nc IS NULL";
-
-        javax.persistence.Query query = entityManager.createQuery(hql);
-
-        return query.getResultList();
-    }
-
-    /**
      * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
      *
      * @param text hodnota podle které se hledá
