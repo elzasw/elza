@@ -260,7 +260,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getStateWithAll() {
-        const defaultValue = {name: i18n('party.apState')};
+        const defaultValue = {name: i18n('party.allApStates')};
         return [
             defaultValue,
             ...Object.values(StateApproval).map(item => {
@@ -394,14 +394,14 @@ class RegistryList extends AbstractReactComponent {
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.allRevisionStates')}
+                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.revisionState')}
                         items={this.getRevStateWithAll()}
                         onChange={this.handleFilterRegistryRevState}
                         value={filter.revState}
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={!filter.registryTypeId ? this.registryTypeDefaultValue : ''}
+                        placeholder={!filter.registryTypeId ? i18n('registry.type') : ''}
                         items={apTypesWithAll}
                         disabled={
                             !registryTypes
