@@ -114,7 +114,7 @@ const DetailPart: FC<Props> = ({
                         }}
                         renderValue={() => {
                             return <PartName
-                                label={ updatedPart ? updatedPart.value : part?.value || "no new value"}
+                                label={ revision && updatedPart ? updatedPart.value : part?.value || "no new value"}
                                 collapsed={isCollapsed}
                                 preferred={preferred}
                                 onClick={() => setCollapsed(!collapsed)}
