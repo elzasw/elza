@@ -1044,6 +1044,7 @@ var messages = {
     "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
     "registry.allRevisionStates": "Všechny stavy revize",
+    "registry.revisionState": "Stav revize",
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
@@ -1056,6 +1057,7 @@ var messages = {
     "registry.add.type": "Třída archivních entit",
     "registry.update.title": "Změna archivní entity",
     "registry.update.type": "Třída archivní entity",
+    "registry.type": "Třída / podtřída entity",
     "registry.scopeClass": "Oblast",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
@@ -1229,7 +1231,8 @@ var messages = {
     "party.detail.formNames": "Formy jména",
     "party.detail.formNames.prefferedName": "(Preferovaná forma jména)",
     "party.detail.partyGroupIdentifiers": "Identifikátory korporace",
-    "party.apState": "Všechny stavy",
+    "party.allApStates": "Všechny stavy",
+    "party.apState": "Stav",
 
     "party.detail.errors.undefinedCreator": "Nebyl vybrán autor",
 
