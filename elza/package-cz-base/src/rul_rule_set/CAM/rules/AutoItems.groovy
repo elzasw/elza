@@ -229,7 +229,7 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
     if (geo != null) {
         if (geo.getValue() != null) {
             if (geo.getIntValue() > 0) {
-                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, getGeoName(geo))
+                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, getGeoName(geo, apcp))
                 items.add(geoItem)
             } else {
                 throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
