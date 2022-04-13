@@ -30,6 +30,7 @@ import { RevisionPart, getRevisionParts } from './revision';
 import { ApStateVO } from 'api/ApStateVO';
 import {Api} from '../../api';
 import {RouteComponentProps, withRouter} from "react-router";
+import { RevStateApproval } from 'api/RevStateApproval';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -297,6 +298,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         return errors;
     };
 
+    const canEdit = () => {
+        const revState = detail.data?.revStateApproval;
+        if(!revState){return editMode;}
+        if(revState === RevStateApproval.TO_APPROVE){ return false; }
+        return  editMode && revisionActive;
+    }
+
     const sortedParts = detail.data && refTables.partTypes.items
         ? sortPart(refTables.partTypes.items, apViewSettings.data?.rules[detail.data.ruleSetId])
         : [];
@@ -341,7 +349,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     <DetailBodySection
                                         key={partType.code}
                                         label={partType.name}
-                                        editMode={!!detail.data?.revStateApproval ? editMode && revisionActive : editMode}
+                                        editMode={canEdit()}
                                         part={revisionParts[0]}
                                         onEdit={handleEdit}
                                         bindings={bindings}
@@ -362,7 +370,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     key={partType.code}
                                     label={partType.name}
                                     singlePart={!partType.repeatable && revisionParts.length === 1}
-                                    editMode={!!detail.data?.revStateApproval ? editMode && revisionActive : editMode}
+                                    editMode={canEdit()}
                                     parts={revisionParts}
                                     relatedParts={getRelatedPartSections(revisionParts)}
                                     preferred={detail.data ? detail.data.preferredPart : undefined}

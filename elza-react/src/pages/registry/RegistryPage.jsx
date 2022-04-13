@@ -705,10 +705,8 @@ class RegistryPage extends AbstractReactComponent {
         return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
     };
 
-    render() {
-        const {splitter, status, registryDetail, userDetail, select = false} = this.props;
-        const matchId = this.props.match.params.id;
-
+    getEditMode = () => {
+        const {registryDetail, userDetail} = this.props;
         let editMode = false;
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
@@ -726,14 +724,28 @@ class RegistryPage extends AbstractReactComponent {
                     });
                 }
             }
-            if(revisionState === RevStateApproval.ACTIVE || revisionState === RevStateApproval.TO_AMEND){
+            if(
+                revisionState === RevStateApproval.ACTIVE 
+                    || revisionState === RevStateApproval.TO_AMEND
+            ){
                 editMode = true;
             }
         }
+        return editMode;
+    }
+
+    render() {
+        const {splitter, status, registryDetail, select = false} = this.props;
+        const matchId = this.props.match.params.id;
 
         const centerPanel = (
             <div className="registry-page">
-                {(matchId != null || (select && registryDetail.id && registryDetail.fetched)) && <ApDetailPageWrapper select={select} id={matchId != null ? parseInt(matchId) : registryDetail.id} editMode={editMode} />}
+                {(matchId != null || (select && registryDetail.id && registryDetail.fetched)) && 
+                    <ApDetailPageWrapper 
+                        select={select} 
+                        id={matchId != null ? parseInt(matchId) : registryDetail.id} 
+                        editMode={this.getEditMode()} 
+                        />}
             </div>
         );
 
