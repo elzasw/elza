@@ -7,7 +7,7 @@ import { FundScope } from '../../../../types';
 import { Icon } from '../../../index';
 import { Button } from '../../../ui';
 import ValidationResultIcon from '../../../ValidationResultIcon';
-import { ApTypeNames } from './ApTypeNames';
+import { RevisionApTypeNames } from './ApTypeNames';
 import DetailDescriptions from './DetailDescriptions';
 import DetailDescriptionsItem, {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
 import './DetailHeader.scss';
@@ -45,6 +45,7 @@ const DetailHeader: FC<Props> = ({
         scopesData.scopes.find((scope) => scope.versionId === -1)?.scopes || []) // všechny scope
     const apTypesMap = useSelector(({refTables}:AppState) => refTables.recordTypes.itemsMap);
     const apType = apTypesMap[item.typeId] as any;
+    const apTypeNew = apTypesMap[item.newTypeId] as any;
 
     const showValidationError = () => {
         if (validationErrors && validationErrors.length > 0) {
@@ -153,7 +154,7 @@ const DetailHeader: FC<Props> = ({
                 <div>
                 </div>
             </div>
-            <ApTypeNames apType={apType}/>
+            <RevisionApTypeNames className={"test"} apType={apType} apTypeNew={revisionActive ? apTypeNew : undefined}/>
         </div>
     );
 };

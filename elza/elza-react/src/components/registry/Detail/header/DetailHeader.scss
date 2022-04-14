@@ -72,21 +72,6 @@
         }
     }
 
-    .ap-type {
-        background-color: #333333;
-        color: #adadad;
-        font-size: 1.2em;
-        padding: 5px 10px;
-        .hierarchy-level {
-            &.main {
-                color: #ffffff;
-            }
-        }
-        .hierarchy-delimiter {
-            margin: 0 10px;
-        }
-    }
-
     .detail-descriptions-item-button {
         display: flex;
 
