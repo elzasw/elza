@@ -233,7 +233,7 @@ public class EntityDBDispatcher {
                     String srcUuid = CamHelper.getEntityUuid(entity);
                     binding = procCtx.getBindingByValue(srcUuid);
                     if (binding == null) {
-                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
                         procCtx.addBinding(binding);
                     }
                 }
@@ -252,7 +252,7 @@ public class EntityDBDispatcher {
                 String bindingValue = CamHelper.getEntityUuid(entity);
                 ApBinding binding = procCtx.getBindingByValue(bindingValue);
                 if (binding == null) {
-                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
                     procCtx.addBinding(binding);
                 }
                 return binding;
@@ -319,7 +319,7 @@ public class EntityDBDispatcher {
         }
 
         ApBinding binding = externalSystemService.createApBinding(Long.toString(entity.getEid().getValue()),
-                                                                  procCtx.getApExternalSystem());
+                                                                  procCtx.getApExternalSystem(), true);
 
         createPartsFromEntityXml(entity, accessPoint, apChange, state, binding, async);
 
@@ -1127,49 +1127,11 @@ public class EntityDBDispatcher {
     	ItemUpdates result = new ItemUpdates();
         for (Object item : items) {
             if (item instanceof ItemBinaryXml) {
-                ItemBinaryXml itemBinary = (ItemBinaryXml) item;
-                ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
-
-                if (bindingItem == null) {
-                	result.addNewItem(itemBinary);
-                } else {
-                    ApItem is = bindingItem.getItem();
-                    boolean processed = false;
-                    if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
-                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
-                        Geometry value = dataCoordinates.getValue();
-                        Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
-                        // try to compare coordinates
-                        try {
-                            if (xmlValue.equals(value)) {
-                            	result.addNotChanged(bindingItem);
-                                processed = true;
-                            }
-                        } catch (Exception e) {
-                            log.error("Failed to compare received coordinates. Item will be updated as changed.", e);
-                        }
-                    }
-                    if (!processed) {
-                    	result.addChanged(bindingItem, itemBinary);
-                    }
-                }
+                ItemBinaryXml itemBinary = (ItemBinaryXml) item;                
+                prepareBinaryUpdate(itemBinary, result);                
             } else if (item instanceof ItemBooleanXml) {
                 ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
-                ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
-
-                if (bindingItem == null) {
-                	result.addNewItem(itemBoolean);
-                } else {
-                    ApItem ib = bindingItem.getItem();
-                    ArrDataBit dataBit = (ArrDataBit) ib.getData();
-                    if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
-                            compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
-                            dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
-                    	result.addChanged(bindingItem, itemBoolean);
-                    } else {
-                    	result.addNotChanged(bindingItem);
-                    }
-                }
+                prepareBooleanUpdate(itemBoolean, result);
             } else if (item instanceof ItemEntityRefXml) {
                 ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
                 prepareEntityRefUpdate(itemEntityRef, result);
@@ -1283,7 +1245,77 @@ public class EntityDBDispatcher {
         return result;
     }
 
-    private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
+	private void prepareBooleanUpdate(ItemBooleanXml itemBoolean, ItemUpdates result) {
+		ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
+        if (bindingItem == null) {
+        	result.addNewItem(itemBoolean);
+        } else {
+            ApItem ib = bindingItem.getItem();
+            ArrDataBit dataBit = (ArrDataBit) ib.getData();
+            if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
+                    compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
+                    dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
+            	result.addChanged(bindingItem, itemBoolean);
+            } else {
+            	result.addNotChanged(bindingItem);
+            }
+        }
+	}
+
+	private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
+        RulItemType itemType = this.procCtx.getStaticDataProvider().getItemType(t.getValue());
+        if (!Objects.equals(itemType.getItemTypeId(), is.getItemTypeId())) {
+            return false;
+        }
+        // check if we have any spec
+        if (is.getItemSpecId() == null && (s == null || s.getValue() == null)) {
+            return true;
+        }
+        // check if we have spec from CAM
+        if (s == null || s.getValue() == null) {
+            // spec is empty -> difference
+            return false;
+        }
+        RulItemSpec itemSpec = this.procCtx.getStaticDataProvider().getItemSpec(s.getValue());
+        if (itemSpec == null) {
+            // spec not found
+            return false;
+        }
+        if (!Objects.equals(itemSpec.getItemSpecId(), is.getItemSpecId())) {
+            return false;
+        }
+        return true;
+    }
+    
+    private void prepareBinaryUpdate(ItemBinaryXml itemBinary, ItemUpdates result) {
+    	ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
+        if (bindingItem == null) {
+        	result.addNewItem(itemBinary);
+        } else {
+            ApItem is = bindingItem.getItem();
+            boolean processed = false;
+            if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
+                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                Geometry value = dataCoordinates.getValue();
+                Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
+                // try to compare coordinates
+                try {
+                    if (xmlValue.equals(value)) {
+                    	result.addNotChanged(bindingItem);
+                        processed = true;
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to compare received coordinates. Item will be updated as changed.", e);
+                }
+            }
+            if (!processed) {
+            	result.addChanged(bindingItem, itemBinary);
+            }
+        }		
+
+	}
+
+	private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
         ApBindingItem bindingItem = bindingItemLookup.get(itemEntityRef.getUuid().getValue());
 
         if (bindingItem == null) {
@@ -1316,32 +1348,6 @@ public class EntityDBDispatcher {
         }		
 	}
 
-	private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
-        StaticDataProvider sdp = this.procCtx.getStaticDataProvider();
-        RulItemType itemType = sdp.getItemType(t.getValue());
-        if (!Objects.equals(itemType.getItemTypeId(), is.getItemTypeId())) {
-            return false;
-        }
-        // check if we have any spec
-        if (is.getItemSpecId() == null && (s == null || s.getValue() == null)) {
-            return true;
-        }
-        // check if we have spec from CAM
-        if (s == null || s.getValue() == null) {
-            // spec is empty -> difference
-            return false;
-        }
-        RulItemSpec itemSpec = sdp.getItemSpec(s.getValue());
-        if (itemSpec == null) {
-            // spec not found
-            return false;
-        }
-        if (!Objects.equals(itemSpec.getItemSpecId(), is.getItemSpecId())) {
-            return false;
-        }
-        return true;
-    }
-
 	private boolean compareUnitDate(ApItem iud, ArrDataUnitdate dataUnitdate, ItemUnitDateXml itemUnitDate) {
 	    // porovnání typu
 	    if (!iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) ||
@@ -1364,7 +1370,7 @@ public class EntityDBDispatcher {
 	    return true;
 	}
 
-    private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
+    static private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
         if (itemSpec == null) {
             return itemSpecCode == null;
         } else {

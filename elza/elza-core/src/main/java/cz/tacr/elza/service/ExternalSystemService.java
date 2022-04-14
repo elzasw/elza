@@ -329,7 +329,7 @@ public class ExternalSystemService {
                             .set("code", externalSystemCode);
         }
 
-        return createApBinding(value, apExternalSystem);
+        return createApBinding(value, apExternalSystem, true);
     }
 
     /**
@@ -340,17 +340,23 @@ public class ExternalSystemService {
      *  
      * @param value Binding value
      * @param apExternalSystem Binded system
+     * @param flush Flag if binding should be immediately flushed to DB
      * @return saved binding
      */
     public ApBinding createApBinding(final String value,
-                                     final ApExternalSystem apExternalSystem) {
+                                     final ApExternalSystem apExternalSystem,
+                                     final boolean flush) {
         Validate.notNull(value);
         Validate.notNull(apExternalSystem);
 
         ApBinding apBinding = new ApBinding();
         apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
-        return bindingRepository.saveAndFlush(apBinding);
+        if(flush) {
+        	return bindingRepository.saveAndFlush(apBinding);
+        } else {
+        	return bindingRepository.save(apBinding);
+        }
     }
 
     public ApBindingState createApBindingState(final ApBinding binding,

@@ -251,7 +251,7 @@ public class ImportServiceImpl implements ImportService {
                     String v = idGetter.apply(entity);
                     ApBinding binding = bindingLookup.get(v);
                     if (binding == null) {
-                        binding = externalSystemService.createApBinding(v, externalSystem);
+                        binding = externalSystemService.createApBinding(v, externalSystem, true);
                     }
                     ApBindingState bindingState = externalSystemService
                             .createApBindingState(binding,
