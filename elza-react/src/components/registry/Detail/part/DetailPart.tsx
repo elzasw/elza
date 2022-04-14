@@ -65,7 +65,7 @@ const DetailPart: FC<Props> = ({
     // const hasBinding = partBinding != null;
     // const hasLocalChange = hasBinding && !partBinding;
     const isRevisionModified = updatedPart?.changeType === "UPDATED";
-    const isCollapsed = collapsed && !isRevisionModified;
+    const isCollapsed = collapsed && (!isRevisionModified || !revision);
     const isDeleted = updatedPart?.changeType === "DELETED";
     const isNew = updatedPart?.changeType === "NEW";
 
