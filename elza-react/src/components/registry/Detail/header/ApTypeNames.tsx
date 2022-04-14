@@ -1,5 +1,7 @@
+import classnames from 'classnames';
 import React, { FC, ReactNode } from 'react';
 import { Icon } from '../../../index';
+import './ApTypeNames.scss';
 
 interface ApType {
     parents: string[];
@@ -9,10 +11,12 @@ interface ApType {
 interface ApTypeNamesProps {
     apType: ApType;
     delimiter?: ReactNode;
+    className?: string;
 }
 
 export const ApTypeNames:FC<ApTypeNamesProps> = ({
     apType,
+    className,
     delimiter = <Icon glyph="fa-angle-right"/>,
 }) => {
     const elements: ReactNode[] = [];
@@ -37,8 +41,28 @@ export const ApTypeNames:FC<ApTypeNamesProps> = ({
         </span>,
     );
 
-    return <div className="ap-type">
-        {elements}
-    </div>;
+    return <div className={`ap-type ${className}`}>
+            {elements}
+        </div>
+}
+
+export const RevisionApTypeNames:FC<ApTypeNamesProps & {apTypeNew?: ApType}> = ({
+    apType,
+    apTypeNew,
+    className,
+    ...otherProps
+}) => {
+    const isApTypeChanged = apTypeNew?.name !== apType.name;
+    const oldClassName = classnames({
+        old: apTypeNew && isApTypeChanged,
+    }, className)
+    const newClassName = classnames({
+        new: apTypeNew && isApTypeChanged,
+    }, className)
+
+    return <>
+        <ApTypeNames apType={apType} {...otherProps} className={oldClassName}/>
+        {apTypeNew && isApTypeChanged && <ApTypeNames apType={apTypeNew} {...otherProps} className={newClassName}/>}
+    </>
 }
 
