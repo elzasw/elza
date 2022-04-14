@@ -93,8 +93,22 @@ public class ApItemUriRefVO extends ApItemVO {
             description = data.getDescription();
             nodeId = data.getNodeId();
         }
-        return equalsBase(item)
-                && Objects.equals(value, this.value) && Objects.equals(schema, this.schema) 
-                && Objects.equals(description, this.description) && Objects.equals(nodeId, this.nodeId);
+        if(!equalsBase(item)) {
+        	return false;
+        }
+        if(!Objects.equals(value, this.value)||
+        		!Objects.equals(description, this.description)||
+        		!Objects.equals(nodeId, this.nodeId)
+        	) {
+        	return false;
+        }
+        // compare schema if not null
+        // if schema is null it will be calculated from URL
+        if(schema!=null&&this.schema!=null) {
+        	if(!Objects.equals(schema, this.schema)) {
+        		return false;
+        	}
+        }
+        return true;
     }
 }
