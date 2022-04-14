@@ -394,7 +394,11 @@ public class ExternalSystemService {
                 Objects.equals(user, oldbindingState.getExtUser()) &&
                 Objects.equals(extReplacedBy, oldbindingState.getExtReplacedBy()) &&
                 Objects.equals(syncState, oldbindingState.getSyncOk())) {
-            return oldbindingState;
+        	// we can use old state only if not synced
+        	if(syncState==SyncState.NOT_SYNCED) {        	
+        		return oldbindingState;
+        	}
+        	// if item is synced -> new sync state has to be created
         }
 
         oldbindingState.setDeleteChange(apChange);
