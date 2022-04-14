@@ -331,12 +331,7 @@ public class ApFactory {
 
             // prepare bindings
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(ap);
-            Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);
-            Map<Integer, List<ApBindingItem>> bindingItemsMap = new HashMap<>();
-            if (MapUtils.isNotEmpty(bindings)) {
-                bindingItemsMap = bindingItemRepository.findByBindings(bindings.keySet()).stream()
-                        .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
-            }
+            Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);            
 
             // prepare last change
             Integer lastChangeId = apRepository.getLastCreateChange(state.getAccessPointId());
@@ -345,13 +340,27 @@ public class ApFactory {
             }
             ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
-            List<ApBindingVO> bindingsVO = Collections.emptyList();
+            List<ApBindingVO> bindingsVO;
             if (bindingStates != null) {
-                bindingsVO = bindingStates.stream().map(s -> ApBindingVO.newInstance(s, lastChange)).collect(Collectors.toList()); 
-            }            
+            	Map<Integer, List<ApBindingItem>> bindingItemsMap = new HashMap<>();
+                if (MapUtils.isNotEmpty(bindings)) {
+                	List<ApBindingItem> bindingItems = bindingItemRepository.findByBindings(bindings.keySet());
+                    bindingItemsMap = bindingItems.stream().collect(Collectors.groupingBy(i -> i.getBindingId()));
+                }
+                
+            	bindingsVO = new ArrayList<>(bindingStates.size());
+            	for(ApBindingState bindingState: bindingStates) {
+            		// check existence of nonbinded items
+            		List<ApBindingItem> bindedItems = bindingItemsMap.get(bindingState.getBindingId());
+            		
+            		ApBindingVO bivo = ApBindingVO.newInstance(bindingState, bindedItems, parts, items, lastChange);
+            		bindingsVO.add(bivo);
+            	}
+            } else {
+            	bindingsVO = Collections.emptyList();
+            }
             apVO.setBindings(bindingsVO);
             fillBindingUrls(bindingsVO);
-            fillBindingItems(bindingsVO, bindings, bindingItemsMap);
 
             apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
@@ -492,21 +501,6 @@ public class ApFactory {
             }
         }
         return null;
-    }
-
-    private void fillBindingItems(final List<ApBindingVO> eidsVO,
-                                  final Map<ApBinding, ApBindingState> bindings,
-                                  final Map<Integer, List<ApBindingItem>> bindingItemsMap) {
-        if (CollectionUtils.isNotEmpty(eidsVO)) {
-            for (ApBindingVO apBindingVO : eidsVO) {
-                ApBinding apBinding = bindings.keySet().stream().filter(b -> b.getBindingId().equals(apBindingVO.getId())).findFirst().orElse(null);
-                ApBindingState state = apBinding == null ? null : bindings.get(apBinding);
-                List<ApBindingItem> bindingItems = bindingItemsMap.getOrDefault(apBindingVO.getId(), new ArrayList<>());
-                if (CollectionUtils.isNotEmpty(bindingItems)) {
-                    apBindingVO.setBindingItemList(FactoryUtils.transformList(bindingItems, i -> ApBindingItemVO.newInstance(state, i)));
-                }
-            }
-        }
     }
 
     private String getDescription(CachedAccessPoint cachedAccessPoint) {
