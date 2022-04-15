@@ -1700,17 +1700,6 @@ public class AccessPointService {
                     .set("oldScopeId", oldApScope.getScopeId())
                     .set("newScopeId", newApScope.getScopeId());
             }
-            // zvlastni reseni pro neverzovanou zmenu scope u schvalene entity
-            if(!update&&newStateApproval==StateApproval.APPROVED&&oldStateApproval==StateApproval.APPROVED) {
-            	// ma opravneni na zmenu schvalenych v cilove oblasti
-                if (userService.hasPermission(Permission.ADMIN)||
-                		userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) ||
-                		(userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
-                                && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
-                	// proved neverzovanou zmenu
-                	return updateScopeDirect(oldApState, newApScope);
-                }
-            }
             
             if (!hasPermissionToChangeScope(oldStateApproval, oldApScope, newApScope)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
@@ -1768,15 +1757,6 @@ public class AccessPointService {
 
         return newApState;
     }
-
-    private ApState updateScopeDirect(ApState apState, ApScope scope) {
-		apState.setScope(scope);
-		ApState savedState = stateRepository.save(apState);
-
-		publishAccessPointUpdateEvent(savedState.getAccessPoint());		
-		return savedState;
-	}
-
 
 	/**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
@@ -1989,7 +1969,7 @@ public class AccessPointService {
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || (userService.hasPermission(Permission.AP_SCOPE_WR, oldApScope.getScopeId())
                         && userService.hasPermission(Permission.AP_SCOPE_WR, newApScope.getScopeId()))) {
-
+        	// lze změnit jen entity ve stavu nová a k připomínkám
             if (stateApproval.equals(StateApproval.NEW) || stateApproval.equals(StateApproval.TO_AMEND)) {
                 return true;
             }
@@ -1998,8 +1978,12 @@ public class AccessPointService {
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
                         && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
-
+        	// lze změnit jen entity ve starších stavech
             if (stateApproval.equals(StateApproval.REV_NEW) || stateApproval.equals(StateApproval.REV_AMEND)) {
+                return true;
+            }
+            // zvláštní případ pro schválené entity - lze změnit oblast 
+            if (stateApproval.equals(StateApproval.APPROVED)) {
                 return true;
             }
         }
