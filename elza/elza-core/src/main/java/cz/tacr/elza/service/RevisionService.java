@@ -611,7 +611,7 @@ public class RevisionService {
         newState.setApType(revision.getType());
         stateRepository.save(newState);
 
-        accessPointService.generateSync(accessPoint.getAccessPointId());
+        accessPointService.updateAndValidate(accessPoint.getAccessPointId());
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         //smazání revize
