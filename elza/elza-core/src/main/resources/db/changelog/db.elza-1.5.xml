@@ -1857,4 +1857,24 @@ where no.level_id = l.level_id
         </addColumn>
     </changeSet>
 
+    <changeSet id="20220415150300" author="ppyt">
+        <addColumn tableName="ap_binding_state">
+            <column name="preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_state_preferred_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_state_ap_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ap_binding_state bs SET preferred_part_id = ap.preferred_part_id
+                FROM ap_access_point ap WHERE ap.access_point_id = bs.access_point_id</sql>
+        <sql dbms="postgresql">UPDATE ap_binding_state bs SET ap_type_id = s.ap_type_id
+                FROM ap_state s WHERE s.access_point_id = bs.access_point_id AND s.delete_change_id is NULL</sql>
+    </changeSet>
 </databaseChangeLog>

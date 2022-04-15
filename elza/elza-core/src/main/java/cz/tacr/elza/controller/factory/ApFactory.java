@@ -33,6 +33,7 @@ import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedBinding;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -334,7 +335,7 @@ public class ApFactory {
             Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);            
 
             // prepare last change
-            Integer lastChangeId = apRepository.getLastCreateChange(state.getAccessPointId());
+            Integer lastChangeId = apRepository.getLastChange(state.getAccessPointId());
             if (lastChangeId < state.getCreateChangeId()) {
                 lastChangeId = state.getCreateChangeId();
             }
@@ -382,17 +383,22 @@ public class ApFactory {
         String description = getDescription(cachedAccessPoint);
 
         // prepare last change
-        Integer lastChangeId = apRepository.getLastCreateChange(cachedAccessPoint.getAccessPointId());
+        Integer lastChangeId = apRepository.getLastChange(cachedAccessPoint.getAccessPointId());
         if (lastChangeId < cachedAccessPoint.getApState().getCreateChangeId()) {
             lastChangeId = cachedAccessPoint.getApState().getCreateChangeId();
         }
         ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
         // prepare bindings
-        List<ApBindingVO> bindingsVO = Collections.emptyList();
+        List<ApBindingVO> bindingsVO;
         if (cachedAccessPoint.getBindings() != null) {
-            bindingsVO = cachedAccessPoint.getBindings().stream()
-                    .map(s -> ApBindingVO.newInstance(s, cachedAccessPoint.getParts(), lastChange)).collect(Collectors.toList());
+            bindingsVO = new ArrayList<>(cachedAccessPoint.getBindings().size());
+			for(CachedBinding binding: cachedAccessPoint.getBindings()) {
+            	ApBindingVO bindingVo = ApBindingVO.newInstance(binding, cachedAccessPoint.getParts(), lastChange);
+            	bindingsVO.add(bindingVo);
+            }
+        } else {
+        	bindingsVO = Collections.emptyList();
         }
         apVO.setBindings(bindingsVO);
         fillBindingUrls(bindingsVO);
