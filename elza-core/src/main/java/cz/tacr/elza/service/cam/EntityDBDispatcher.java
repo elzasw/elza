@@ -14,10 +14,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
-import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -85,6 +81,8 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
 
 /**
  * Create or update entities
@@ -155,6 +153,9 @@ public class EntityDBDispatcher {
     final private AccessPointCacheService accessPointCacheService;
 
     private ProcessingContext procCtx;
+
+    // Newly created binding state for last processed entity
+    private ApBindingState bindingState;
 
     public EntityDBDispatcher(final ApAccessPointRepository accessPointRepository,
                               final ApStateRepository stateRepository,
@@ -332,7 +333,7 @@ public class EntityDBDispatcher {
      * 
      * @param procCtx
      * @param state
-     * @param bindingState
+     * @param prevBindingState
      * @param entity
      * @param syncQueue
      *            True if called from sync queue (without UI and direct user
@@ -340,10 +341,11 @@ public class EntityDBDispatcher {
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
-                                       ApBindingState bindingState,
+                                       final ApBindingState prevBindingState,
                                        EntityXml entity,
                                        boolean syncQueue) {
         Validate.notNull(procCtx.getApChange());
+        Validate.notNull(prevBindingState);
 
         this.procCtx = procCtx;
 
@@ -361,17 +363,19 @@ public class EntityDBDispatcher {
         }
 
         String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;
+
+        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, prevBindingState.getBinding(), accessPoint);
+        // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
+        accessPoint = syncRes.getAccessPoint();
         //vytvoření nového stavu propojení
-        bindingState = externalSystemService.createNewApBindingState(bindingState, procCtx.getApChange(),
+        this.bindingState = externalSystemService.createBindingState(prevBindingState, procCtx.getApChange(),
                                                                      entity.getEns().value(),
                                                                      entity.getRevi().getRid().getValue(),
                                                                      entity.getRevi().getUsr().getValue(),
                                                                      extReplacedBy,
-                                                                     SyncState.SYNC_OK);
-
-        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
-        // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
-        accessPoint = syncRes.getAccessPoint();
+                                                                     SyncState.SYNC_OK,
+                                                                     accessPoint.getPreferredPart(),
+                                                                     state.getApType());
 
         switch (entity.getEns()) {
         case ERS_REPLACED:
@@ -447,13 +451,6 @@ public class EntityDBDispatcher {
                                   boolean async) {
         Validate.notNull(binding);
 
-        externalSystemService.createApBindingState(binding, accessPoint, apChange,
-                                                   entity.getEns().value(),
-                                                   entity.getRevi().getRid() != null ? entity.getRevi().getRid()
-                                                           .getValue() : null,
-                                                   entity.getRevi().getUsr() != null ? entity.getRevi().getUsr()
-                                                           .getValue() : null,
-                                                   entity.getReid() != null ? entity.getReid().getValue() : null, SyncState.SYNC_OK);
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
 
@@ -471,10 +468,26 @@ public class EntityDBDispatcher {
 
         camService.createBindingForRel(dataRefList, procCtx);
 
-        accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
+        ApPart prefPart = accessPointService.findPreferredPart(partList);
+        accessPoint.setPreferredPart(prefPart);
+
+        this.bindingState = externalSystemService.createBindingState(binding, accessPoint, apChange,
+                                                 entity.getEns().value(),
+                                                 entity.getRevi().getRid() != null ? entity.getRevi().getRid()
+                                                         .getValue() : null,
+                                                 entity.getRevi().getUsr() != null ? entity.getRevi().getUsr()
+                                                         .getValue() : null,
+                                                 entity.getReid() != null ? entity.getReid().getValue() : null,
+                                                 SyncState.SYNC_OK,
+                                                 prefPart,
+                                                 apState.getApType());
 
         accessPointService.updateAndValidate(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+    }
+
+    public ApBindingState getBindingState() {
+        return bindingState;
     }
 
     /**
@@ -602,8 +615,8 @@ public class EntityDBDispatcher {
      *            context
      * @param entity
      *            entita z externího systému
-     * @param bindingState
-     *            stav propojení s externím systémem
+     * @param binding
+     *            propojení s externím systémem
      * @param apChange
      *            změna
      * @param accessPoint
@@ -615,7 +628,7 @@ public class EntityDBDispatcher {
      */
     private SynchronizationResult synchronizeParts(final ProcessingContext procCtx,
                                                    final EntityXml entity,
-                                                   final ApBindingState bindingState,
+                                                   final ApBinding binding,
                                                    ApAccessPoint accessPoint) {
         log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
@@ -637,7 +650,6 @@ public class EntityDBDispatcher {
         Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
-        ApBinding binding = bindingState.getBinding();
         readBindingItems(binding);
 
         /*        
