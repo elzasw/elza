@@ -484,7 +484,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState oldState = accessPointService.getStateInternal(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        accessPointService.generateSync(accessPointId);
+        accessPointService.updateAndValidate(accessPointId);
         accessPointCacheService.createApCachedAccessPoint(accessPointId);
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
         if (cachedAccessPoint != null) {
@@ -505,6 +505,11 @@ public class ApController {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
 
         ApState apState = accessPointService.getStateInternal(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(apState);
+        if(revision!=null) {
+        	// state cannot be changed if revision exists
+        	return Collections.emptyList();
+        }
         List<StateApproval> states = accessPointService.getNextStates(apState);
 
         return states.stream().map(p -> p.name()).collect(Collectors.toList());
@@ -787,7 +792,7 @@ public class ApController {
         }
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
-        accessPointService.generateSync(accessPointId);
+        accessPointService.updateAndValidate(accessPointId);
         accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
@@ -946,7 +951,7 @@ public class ApController {
             revisionService.deletePart(revision, partId);
         } else {
             partService.deletePart(apAccessPoint, partId);
-            accessPointService.generateSync(accessPointId);
+            accessPointService.updateAndValidate(accessPointId);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
         }
     }

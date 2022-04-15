@@ -445,7 +445,7 @@ public class AccessPointService {
             if (mergeAp) {
                 mergeParts(accessPoint, replacedBy, change);
                 // vygenerování indexů a aktualizace záznamů v cache
-                generateSync(replacedBy.getAccessPointId());        
+                updateAndValidate(replacedBy.getAccessPointId());        
                 accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
         }
@@ -1340,7 +1340,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         saveWithLock(accessPoint);
-        generateSync(accessPoint.getAccessPointId());
+        updateAndValidate(accessPoint.getAccessPointId());
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -1643,6 +1643,7 @@ public class AccessPointService {
 
         boolean update = false;
 
+        ApScope oldApScope = oldApState.getScope();
         StateApproval oldStateApproval = oldApState.getStateApproval();
         if (!newStateApproval.equals(oldStateApproval)) {
             update = true;
@@ -1651,49 +1652,7 @@ public class AccessPointService {
         if (!Objects.equals(newComment, oldApState.getComment())) {
             update = true;
         }
-
-        ApScope oldApScope = oldApState.getScope();
-        ApScope newApScope;
-
-        // má uživatel oprávnění používat tyto stavy v této oblasti?
-        if (!hasApPermission(oldApScope, oldStateApproval, newStateApproval)) {
-            throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("scopeId", oldApScope.getScopeId())
-                    .set("oldState", oldStateApproval)
-                    .set("newState", newStateApproval);
-        }
-
-        // má uživatel oprávnění na změnu oblasti přístupového bodu (archivní entity)?
-        if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
-            newApScope = getApScope(newScopeId);
-            if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
-                throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("oldScopeId", oldApScope.getScopeId())
-                    .set("newScopeId", newApScope.getScopeId());
-            }
-            if (!hasPermissionToChangeScope(oldStateApproval, oldApScope, newApScope)) {
-                throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("state", oldStateApproval)
-                    .set("oldScopeId", oldApScope.getScopeId())
-                    .set("newScopeId", newApScope.getScopeId());
-            }
-            update = true;
-        } else {
-            newApScope = null;
-        }
-
-        // má uživatel možnost nastavit požadovaný stav?
-        if (!getNextStates(oldApState).contains(newStateApproval)) {
-            throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-                .set("accessPointId", accessPoint.getAccessPointId())
-                .set("scopeId", newApScope.getScopeId())
-                .set("oldState", oldStateApproval)
-                .set("newState", newStateApproval);
-        }
-
+        
         ApType newApType;
 
         // má uživatel oprávnění změnit třídu archivní entity?
@@ -1720,6 +1679,60 @@ public class AccessPointService {
         } else {
             newApType = null;
         }
+        
+        ApScope newApScope;
+
+        // má uživatel oprávnění používat tyto stavy v této oblasti?
+        if (!hasApPermission(oldApScope, oldStateApproval, newStateApproval)) {
+            throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("scopeId", oldApScope.getScopeId())
+                    .set("oldState", oldStateApproval)
+                    .set("newState", newStateApproval);
+        }
+
+        // má uživatel oprávnění na změnu oblasti přístupového bodu (archivní entity)?
+        if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
+            newApScope = getApScope(newScopeId);
+            if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
+                throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("oldScopeId", oldApScope.getScopeId())
+                    .set("newScopeId", newApScope.getScopeId());
+            }
+            // zvlastni reseni pro neverzovanou zmenu scope u schvalene entity
+            if(!update&&newStateApproval==StateApproval.APPROVED&&oldStateApproval==StateApproval.APPROVED) {
+            	// ma opravneni na zmenu schvalenych v cilove oblasti
+                if (userService.hasPermission(Permission.ADMIN)||
+                		userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) ||
+                		(userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
+                                && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
+                	// proved neverzovanou zmenu
+                	return updateScopeDirect(oldApState, newApScope);
+                }
+            }
+            
+            if (!hasPermissionToChangeScope(oldStateApproval, oldApScope, newApScope)) {
+                throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("state", oldStateApproval)
+                    .set("oldScopeId", oldApScope.getScopeId())
+                    .set("newScopeId", newApScope.getScopeId());
+            }
+            update = true;
+        } else {
+            newApScope = null;
+        }
+
+        // má uživatel možnost nastavit požadovaný stav?
+        if (!getNextStates(oldApState).contains(newStateApproval)) {
+            throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                .set("accessPointId", accessPoint.getAccessPointId())
+                .set("scopeId", newApScope.getScopeId())
+                .set("oldState", oldStateApproval)
+                .set("newState", newStateApproval);
+        }
+
 
         if (!update) {
             // nothing to update
@@ -1756,7 +1769,16 @@ public class AccessPointService {
         return newApState;
     }
 
-    /**
+    private ApState updateScopeDirect(ApState apState, ApScope scope) {
+		apState.setScope(scope);
+		ApState savedState = stateRepository.save(apState);
+
+		publishAccessPointUpdateEvent(savedState.getAccessPoint());		
+		return savedState;
+	}
+
+
+	/**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
      * 
      * @param apState
@@ -1807,6 +1829,9 @@ public class AccessPointService {
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
                 result.add(StateApproval.REV_NEW);
+                // specialni stav z duvodu umozneni neverzovane zmeny 
+                // oblasti u schvalenych entit
+                result.add(StateApproval.APPROVED);
             }
             if (apState.getStateApproval().equals(StateApproval.REV_NEW)) {
                 result.add(StateApproval.REV_PREPARED);
@@ -2104,7 +2129,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         ApAccessPoint ret = saveWithLock(accessPoint);
-        generateSync(ret.getAccessPointId());
+        updateAndValidate(ret.getAccessPointId());
         return ret;
     }
 
@@ -2267,18 +2292,18 @@ public class AccessPointService {
     }
 
 
-    public void generateSync(final Integer accessPointId) {
+    public void updateAndValidate(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        generateSync(accessPoint, apState, partList, itemMap, false);
+        updateAndValidate(accessPoint, apState, partList, itemMap, false);
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final ApAccessPoint accessPoint,
+    public void updateAndValidate(final ApAccessPoint accessPoint,
                              final ApState apState,
                              final List<ApPart> partList,
                              final Map<Integer, List<ApItem>> itemMap,

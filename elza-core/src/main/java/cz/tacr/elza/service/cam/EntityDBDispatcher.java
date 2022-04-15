@@ -405,7 +405,7 @@ public class EntityDBDispatcher {
             break;
         }
 
-        accessPointService.generateSync(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
+        accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
@@ -473,7 +473,7 @@ public class EntityDBDispatcher {
 
         accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
 
-        accessPointService.generateSync(accessPoint, apState, partList, itemMap, async);
+        accessPointService.updateAndValidate(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
