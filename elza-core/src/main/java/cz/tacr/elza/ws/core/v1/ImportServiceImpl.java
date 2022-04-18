@@ -14,7 +14,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
@@ -50,6 +48,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import cz.tacr.elza.service.cam.CamHelper;
+import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.cam.SyncEntityRequest;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
@@ -251,17 +250,18 @@ public class ImportServiceImpl implements ImportService {
                     String v = idGetter.apply(entity);
                     ApBinding binding = bindingLookup.get(v);
                     if (binding == null) {
-                        binding = externalSystemService.createApBinding(v, externalSystem);
+                        binding = externalSystemService.createApBinding(v, externalSystem, true);
                     }
                     ApBindingState bindingState = externalSystemService
-                            .createApBindingState(binding,
-                                                  sr.getAccessPoint(),
-                                                  apChange,
-                                                  entity.getEns().name(),
-                                                  entity.getRevi().getRid().getValue(),
-                                                  entity.getRevi().getUsr().getValue(),
-                                                  null, 
-                                                  SyncState.NOT_SYNCED);
+                            .createBindingState(binding,
+                                                sr.getAccessPoint(),
+                                                apChange,
+                                                entity.getEns().name(),
+                                                entity.getRevi().getRid().getValue(),
+                                                entity.getRevi().getUsr().getValue(),
+                                                null,
+                                                SyncState.NOT_SYNCED,
+                                                null, null);
                     // create BindingState
                     sr.setBindingState(bindingState);
                 }
@@ -304,14 +304,15 @@ public class ImportServiceImpl implements ImportService {
 
                 EntityXml entity = syncEntity.getEntityXml();
                 String replacedBy = entity.getReid()!=null?Long.toString(entity.getReid().getValue()):null; 
-                externalSystemService.createNewApBindingState(bindingState,
-                		apChange,
-                		entity.getEns().name(),
-                		entity.getRevi().getRid().getValue(),
-                        entity.getRevi().getUsr().getValue(),
-                        replacedBy,
-                        SyncState.NOT_SYNCED
-                		);
+                externalSystemService.createBindingState(bindingState,
+                                                         apChange,
+                                                         entity.getEns().name(),
+                                                         entity.getRevi().getRid().getValue(),
+                                                         entity.getRevi().getUsr().getValue(),
+                                                         replacedBy,
+                                                         SyncState.NOT_SYNCED,
+                                                         null,
+                                                         null);
                 continue;
             }
 

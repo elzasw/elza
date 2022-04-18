@@ -1496,6 +1496,13 @@ public class ArrangementService {
         }
     }
 
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public void startNodeValidation(@NotNull final ArrFundVersion fundVersion) {
+        // zjištění uzlů, které nemají validaci
+        List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull(fundVersion.getFund());
+        asyncRequestService.enqueue(fundVersion, nodes);
+    }
+    
     /**
      * Provede přidání do front uzly, které nemají záznam v arr_node_conformity. Obvykle to jsou
      * uzly, které se validovaly během ukončení aplikačního serveru.
@@ -1503,14 +1510,12 @@ public class ArrangementService {
      * Metoda je pouštěna po startu aplikačního serveru.
      */
     @Transactional(value = Transactional.TxType.MANDATORY)
-    public void startNodeValidation(boolean onStart) {
-        // TransactionTemplate tmpl = new TransactionTemplate(txManager);
+    public void startNodeValidation() {
         Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
         Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
 
         // zjištění všech uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
-
 
         // roztřídění podle AF
         for (ArrNode node : nodes) {
@@ -1544,10 +1549,7 @@ public class ArrangementService {
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
-            if(onStart) {
-                asyncRequestService.enqueue(version, entry.getValue());
-            }
-
+            asyncRequestService.enqueue(version, entry.getValue());
         }
     }
 

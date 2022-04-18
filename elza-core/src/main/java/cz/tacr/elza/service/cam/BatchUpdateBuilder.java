@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.cam;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 	public Map<Integer, String> getBindingStates() {
 		return bingingStates;
 	}    
-	
+
     BatchUpdateBuilder(final StaticDataProvider sdp, 
     		final ApAccessPoint accessPoint, 
     		final GroovyService groovyService, 
@@ -52,11 +53,11 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     		final ApScope scope,
     		final ApExternalSystem apExternalSystem,
     		final ExternalSystemService externalSystemService) {
-		super(sdp, accessPoint, groovyService, apDataService, scope);
+		super(sdp, accessPoint, Collections.emptyList(), groovyService, apDataService, scope);
 		this.apExternalSystem = apExternalSystem;
 		this.externalSystemService = externalSystemService;
 	}
-    
+
     /**
      * Add change
      * @param batchEntityRef

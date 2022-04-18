@@ -6,15 +6,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -25,6 +26,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SyncState;
@@ -93,7 +95,6 @@ public class ExternalSystemService {
         return externalSystemRepository.findAll();
     }
 
-
     /**
      * Vyhledá všechny externí systémy.
      *
@@ -107,7 +108,8 @@ public class ExternalSystemService {
     /**
      * Vyhledání externího systému podle kódu.
      *
-     * @param code kód externího systému, který hledáme
+     * @param code
+     *            kód externího systému, který hledáme
      * @return nalezený externí systém
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
@@ -118,7 +120,8 @@ public class ExternalSystemService {
     /**
      * Vyhledání externího systému podle kódu.
      *
-     * @param code kód externího systému, který hledáme
+     * @param code
+     *            kód externího systému, který hledáme
      * @return nalezený externí systém
      */
     public ApExternalSystem findApExternalSystemByCode(final String code) {
@@ -133,7 +136,8 @@ public class ExternalSystemService {
     /**
      * Vyhledání externího systému podle id.
      *
-     * @param id identifikátor externího systému, který hledáme
+     * @param id
+     *            identifikátor externího systému, který hledáme
      * @return nalezený externí systém
      */
     public ApExternalSystem findApExternalSystemById(final Integer id) {
@@ -148,18 +152,21 @@ public class ExternalSystemService {
     /**
      * Vyhledání externího systému podle identifikátoru bez kontroly práv.
      *
-     * @param id identifikátor externího systému
+     * @param id
+     *            identifikátor externího systému
      * @return nalezený externí systém
      */
     public ApExternalSystem getExternalSystemInternal(final Integer id) {
         return apExternalSystemRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
+                .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST)
+                        .setId(id));
     }
 
     /**
      * Vyhledání externího systému podle identifikátoru.
      *
-     * @param id identifikátor externího systému
+     * @param id
+     *            identifikátor externího systému
      * @return nalezený externí systém
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
@@ -170,12 +177,13 @@ public class ExternalSystemService {
     /**
      * Vytvoření externího systému.
      *
-     * @param externalSystem vytvářený externí systém
+     * @param externalSystem
+     *            vytvářený externí systém
      * @return vytvořený externí systém
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem create(final SysExternalSystem externalSystem) {
-        
+
         validateExternalSystem(externalSystem, true);
         externalSystemRepository.save(externalSystem);
         sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
@@ -187,7 +195,8 @@ public class ExternalSystemService {
     /**
      * Smazání exteního systému.
      *
-     * @param id identifikátor mazaného externího systému
+     * @param id
+     *            identifikátor mazaného externího systému
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public void delete(final Integer id) {
@@ -206,7 +215,7 @@ public class ExternalSystemService {
     public void deleteQueueItem(final Integer extSyncItemId) {
         extSyncsQueueItemRepository.deleteById(extSyncItemId);
     }
-    
+
     /**
      * Externí systém typu - Digitalizační linka.
      *
@@ -227,7 +236,8 @@ public class ExternalSystemService {
     /**
      * Upravení externího systému.
      *
-     * @param externalSystem upravovaný externí systém
+     * @param externalSystem
+     *            upravovaný externí systém
      * @return upravený externí systém
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
@@ -242,17 +252,22 @@ public class ExternalSystemService {
     /**
      * Validace externího systému.
      *
-     * @param externalSystem validovaný externí systém
-     * @param create         příznak, zda-li se jedná o validaci při vytvářený externího systému
+     * @param externalSystem
+     *            validovaný externí systém
+     * @param create
+     *            příznak, zda-li se jedná o validaci při vytvářený externího
+     *            systému
      */
     private void validateExternalSystem(final SysExternalSystem externalSystem, final boolean create) {
         if (create) {
             if (externalSystem.getExternalSystemId() != null) {
-                throw new SystemException("Identifikátor externího systému musí být při vytváření prázdný", BaseCode.ID_EXIST).set("id", externalSystem.getExternalSystemId());
+                throw new SystemException("Identifikátor externího systému musí být při vytváření prázdný",
+                        BaseCode.ID_EXIST).set("id", externalSystem.getExternalSystemId());
             }
         } else {
             if (externalSystem.getExternalSystemId() == null) {
-                throw new SystemException("Identifikátor externího systému musí být při editaci vyplněň", BaseCode.ID_NOT_EXIST);
+                throw new SystemException("Identifikátor externího systému musí být při editaci vyplněň",
+                        BaseCode.ID_NOT_EXIST);
             }
         }
 
@@ -267,14 +282,18 @@ public class ExternalSystemService {
         // extra validace pro ArrDigitalRepository
         if (externalSystem instanceof ArrDigitalRepository) {
             if (((ArrDigitalRepository) externalSystem).getSendNotification() == null) {
-                throw new BusinessException("Nevyplněno pole: sendNotification", BaseCode.PROPERTY_NOT_EXIST).set("property", "sendNotification");
+                throw new BusinessException("Nevyplněno pole: sendNotification", BaseCode.PROPERTY_NOT_EXIST).set(
+                                                                                                                  "property",
+                                                                                                                  "sendNotification");
             }
         }
     }
 
     /**
      * Odešle notifikaci do klienta, že se změnil externí systém.
-     * @param externalSystemId id ex. systému
+     * 
+     * @param externalSystemId
+     *            id ex. systému
      */
     private void sendUpdateExternalSystemNotification(final Integer externalSystemId) {
         eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_UPDATE, externalSystemId));
@@ -282,7 +301,9 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se vytvořil externí systém.
-     * @param externalSystemId id ex. systému
+     * 
+     * @param externalSystemId
+     *            id ex. systému
      */
     private void sendCreateExternalSystemNotification(final Integer externalSystemId) {
         eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_CREATE, externalSystemId));
@@ -290,7 +311,9 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se smazal externí systém.
-     * @param externalSystemId id ex. systému
+     * 
+     * @param externalSystemId
+     *            id ex. systému
      */
     private void sendDeleteExternalSystemNotification(final Integer externalSystemId) {
         eventNotificationService.publishEvent(new EventId(EventType.EXTERNAL_SYSTEM_DELETE, externalSystemId));
@@ -329,38 +352,64 @@ public class ExternalSystemService {
                             .set("code", externalSystemCode);
         }
 
-        return createApBinding(value, apExternalSystem);
+        return createApBinding(value, apExternalSystem, true);
     }
 
     /**
      * Create AP Binding in DB (saveAndFlush)
-     *  
-     * Method will flush new binding immediately to the DB 
+     * 
+     * Method will flush new binding immediately to the DB
      * to prevent duplicated bindings.
-     *  
-     * @param value Binding value
-     * @param apExternalSystem Binded system
+     * 
+     * @param value
+     *            Binding value
+     * @param apExternalSystem
+     *            Binded system
+     * @param flush
+     *            Flag if binding should be immediately flushed to DB
      * @return saved binding
      */
     public ApBinding createApBinding(final String value,
-                                     final ApExternalSystem apExternalSystem) {
+                                     final ApExternalSystem apExternalSystem,
+                                     final boolean flush) {
         Validate.notNull(value);
         Validate.notNull(apExternalSystem);
 
         ApBinding apBinding = new ApBinding();
         apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
-        return bindingRepository.saveAndFlush(apBinding);
+        if (flush) {
+            return bindingRepository.saveAndFlush(apBinding);
+        } else {
+            return bindingRepository.save(apBinding);
+        }
     }
 
-    public ApBindingState createApBindingState(final ApBinding binding,
-                                               final ApAccessPoint accessPoint,
-                                               final ApChange apChange,
-                                               final String state,
-                                               final String revisionUuid,
-                                               final String userName,
-                                               final Long replacedById,
-                                               final SyncState syncState) {
+    /**
+     * Create new binding state
+     * 
+     * @param binding
+     * @param accessPoint
+     * @param apChange
+     * @param state
+     * @param revisionUuid
+     * @param userName
+     * @param replacedById
+     * @param syncState
+     * @param preferredPart
+     * @param apType
+     * @return
+     */
+    public ApBindingState createBindingState(final ApBinding binding,
+                                             final ApAccessPoint accessPoint,
+                                             final ApChange apChange,
+                                             final String state,
+                                             final String revisionUuid,
+                                             final String userName,
+                                             final Long replacedById,
+                                             final SyncState syncState,
+                                             @Nullable final ApPart preferredPart,
+                                             @Nullable final ApType apType) {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(binding);
         apBindingState.setAccessPoint(accessPoint);
@@ -372,23 +421,43 @@ public class ExternalSystemService {
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
         apBindingState.setSyncOk(syncState);
+        apBindingState.setPreferredPart(preferredPart);
+        apBindingState.setApType(apType);
         return bindingStateRepository.save(apBindingState);
     }
 
-    public ApBindingState createNewApBindingState(ApBindingState oldbindingState,
-                                                  ApChange apChange,
-                                                  String state,
-                                                  String revisionUuid,
-                                                  String user,
-                                                  String extReplacedBy,
-                                                  final SyncState syncState) {    	
+    /**
+     * Create new binding state based on current state
+     * 
+     * @param oldbindingState
+     * @param apChange
+     * @param state
+     * @param revisionUuid
+     * @param user
+     * @param extReplacedBy
+     * @param syncState
+     * @return
+     */
+    public ApBindingState createBindingState(ApBindingState oldbindingState,
+                                             ApChange apChange,
+                                             String state,
+                                             String revisionUuid,
+                                             String user,
+                                             String extReplacedBy,
+                                             final SyncState syncState,
+                                             @Nullable final ApPart preferredPart,
+                                             @Nullable final ApType apType) {
         // check if new state is needed
         if (Objects.equals(state, oldbindingState.getExtState()) &&
                 Objects.equals(revisionUuid, oldbindingState.getExtRevision()) &&
                 Objects.equals(user, oldbindingState.getExtUser()) &&
                 Objects.equals(extReplacedBy, oldbindingState.getExtReplacedBy()) &&
                 Objects.equals(syncState, oldbindingState.getSyncOk())) {
-            return oldbindingState;
+            // we can use old state only if not synced
+            if (syncState == SyncState.NOT_SYNCED) {
+                return oldbindingState;
+            }
+            // if item is synced -> new sync state has to be created
         }
 
         oldbindingState.setDeleteChange(apChange);
@@ -405,6 +474,8 @@ public class ExternalSystemService {
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
         apBindingState.setSyncOk(syncState);
+        apBindingState.setPreferredPart(preferredPart);
+        apBindingState.setApType(apType);
 
         return bindingStateRepository.saveAndFlush(apBindingState);
     }
@@ -428,12 +499,12 @@ public class ExternalSystemService {
     }
 
     public ApBinding findByValueAndExternalSystemCode(final String archiveEntityId,
-                                                            final String externalSystemCode) {
+                                                      final String externalSystemCode) {
         return bindingRepository.findByValueAndExternalSystemCode(archiveEntityId, externalSystemCode);
     }
 
     public ApBinding findByValueAndExternalSystem(final String archiveEntityId,
-                                                            final ApExternalSystem externalSystem) {
+                                                  final ApExternalSystem externalSystem) {
         return bindingRepository.findByValueAndExternalSystem(archiveEntityId, externalSystem);
     }
 
@@ -458,7 +529,8 @@ public class ExternalSystemService {
      * @param externalSystem
      * @return
      */
-    public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
+    public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint,
+                                                             final ApExternalSystem externalSystem) {
         return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
     }
 

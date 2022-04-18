@@ -111,9 +111,7 @@ public interface NodeRepositoryCustom {
      */
     Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
         throws InvalidQueryException;
-
-
-    List<ArrNode> findByNodeConformityIsNull();
+    
 
     /**
      * Najde id nodů v dané verzi odpovídající filtrům. Pokud nejsou filtry předány vrátí se id všech nodů ve verzi.

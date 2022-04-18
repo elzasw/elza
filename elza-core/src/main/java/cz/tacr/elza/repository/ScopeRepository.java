@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 

@@ -17,6 +17,7 @@ import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -35,10 +36,11 @@ public class EntityXmlBuilder extends CamXmlBuilder {
     public EntityXmlBuilder(StaticDataProvider sdp,
                             ApAccessPoint accessPoint,
                             ApState apState,
+                            Collection<ApBindingState> bindingStates,
                             GroovyService groovyService,
                             AccessPointDataService apDataService,
                             ApScope scope) {
-        super(sdp, accessPoint, groovyService, apDataService, scope);
+        super(sdp, accessPoint, bindingStates, groovyService, apDataService, scope);
         this.apState = apState;
     }
 

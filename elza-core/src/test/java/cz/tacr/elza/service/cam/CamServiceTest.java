@@ -138,8 +138,8 @@ public class CamServiceTest extends AbstractControllerTest {
         	
             ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(SYSTEM_CODE);
             
-            ApBinding binding1 = externalSystemService.createApBinding(EXT_ID_1.toString(), externalSystem);
-            ApBinding binding2 = externalSystemService.createApBinding(EXT_ID_2.toString(), externalSystem);
+            ApBinding binding1 = externalSystemService.createApBinding(EXT_ID_1.toString(), externalSystem, true);
+            ApBinding binding2 = externalSystemService.createApBinding(EXT_ID_2.toString(), externalSystem, true);
 
             Map<String, ApBinding> bindings = new HashMap<>();
             bindings.put(binding1.getValue(), binding1);

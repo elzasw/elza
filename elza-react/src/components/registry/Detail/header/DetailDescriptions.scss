@@ -1,11 +1,20 @@
 .detail-descriptions {
-    display: inline-block;
+    display: flex;
     font-size: 1.1em;
+    width: 100%;
 
     .detail-descriptions-item {
-        padding-right: 8px;
-        margin-right: 8px;
-        border-right: 1px solid #000000;
+        /* border-right: 1px solid #000000; */
+        display: inline-flex;
+        background-color: #eee;
+        border-radius: 5px;
+
+        .detail-descriptions-item-content {
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            /* display: inline-flex; */
+        }
 
         &:last-of-type {
             border-right: none;
@@ -13,6 +22,16 @@
 
         .detail-descriptions-item-label {
             margin-right: 6px;
+        }
+
+        &.with-button {
+            .detail-descriptions-item-content {
+                border-radius: 5px 0 0 5px;
+            }
+        }
+
+        .detail-descriptions-item-button {
+            display: flex;
         }
     }
 }

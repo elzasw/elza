@@ -47,32 +47,22 @@ public class ApBindingItemVO {
     public void setSync(Boolean sync) {
         this.sync = sync;
     }
-
+    
     /**
-     * Creates value object from AP external id.
+     * Create value object without sync state
+     * 
+     * Sync state has to be set in extra logic.
+     * 
+     * @param src
+     * @return
      */
-    public static ApBindingItemVO newInstance(@Nullable ApBindingState state, ApBindingItem src) {
-        ApBindingItemVO vo = new ApBindingItemVO();
-        vo.setValue(src.getValue());
-        ApItem item = src.getItem();
-        ApPart part = src.getPart();
-        vo.setItemId(item != null ? item.getItemId() : null);
-        vo.setPartId(part != null ? part.getPartId() : null);
-        Integer changeId;
-        if (item != null) {
-            changeId = item.getCreateChange().getChangeId();
-        } else if (part != null) {
-            changeId = part.getCreateChange().getChangeId();
-        } else {
-            throw new IllegalStateException();
-        }
-        if (state == null || state.getSyncChange() == null) {
-            vo.setSync(false);
-        } else {
-            Integer stateChangeId = state.getSyncChange().getChangeId();
-            vo.setSync(stateChangeId >= changeId);
-        }
-
-        return vo;
+    public static ApBindingItemVO newInstance(ApBindingItem src) {
+    	ApBindingItemVO bindingItemVO = new ApBindingItemVO();
+    	
+        bindingItemVO.setValue(src.getValue());
+        bindingItemVO.setPartId(src.getPartId());
+        bindingItemVO.setItemId(src.getItemId());
+    	
+        return bindingItemVO;
     }
 }

@@ -1,6 +1,16 @@
 package cz.tacr.elza.groovy;
 
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -28,8 +38,9 @@ public class GroovyUtils {
     @Nullable
     public static GroovyAe findFirstAeBy(final Collection<GroovyAe> aes, final String typeCode, final String specCode) {
         StaticDataProvider sdp = StaticDataProvider.getInstance();
-        sdp.getItemTypeByCode(typeCode);
-        sdp.getItemSpecByCode(specCode);
+        ItemType itemType = sdp.getItemTypeByCode(typeCode);
+        RulItemSpec itemSpec = sdp.getItemSpecByCode(specCode);
+        Validate.notNull(itemType);
 
         if (CollectionUtils.isEmpty(aes)) {
             return null;
@@ -39,7 +50,11 @@ public class GroovyUtils {
                 List<GroovyItem> items = part.getItems(typeCode);
                 if (items.size() > 0) {
                     GroovyItem groovyItem = items.get(0);
-                    if (Objects.equals(groovyItem.getSpecCode(), specCode)) {
+                    if (itemSpec == null) {
+                        Validate.isTrue(groovyItem.getSpecId() == null);
+                        return ae;
+                    }
+                    if (Objects.equals(groovyItem.getSpecId(), itemSpec.getItemSpecId())) {
                         return ae;
                     }
                 }
@@ -56,10 +71,10 @@ public class GroovyUtils {
                                                     final String itemType) {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        StaticDataProvider sdp = StaticDataProvider.getInstance();
-        sdp.getItemTypeByCode(containItemType);
-        sdp.getItemSpecByCode(containItemSpec);
-        sdp.getItemTypeByCode(itemType);
+        //StaticDataProvider sdp = StaticDataProvider.getInstance();
+        //sdp.getItemTypeByCode(containItemType);
+        //sdp.getItemSpecByCode(containItemSpec);
+        //sdp.getItemTypeByCode(itemType);  
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {
@@ -85,7 +100,6 @@ public class GroovyUtils {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
         Validate.notNull(filter, "Nebyl předán filter preferované části");
-        //StaticDataProvider.getInstance().getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
@@ -121,8 +135,69 @@ public class GroovyUtils {
                 }
             }
         }
-
         return groovyItems;
     }
+
+    @Nullable
+    public static String findStringByRulItemTypeCode(final GroovyItem groovyItem, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+        CachedAccessPoint accessPoint = groovyItem.getAccessPoint();
+        return findStringByRulItemTypeCode(accessPoint, filter, itemTypeCode);
+    }
+
+    @Nullable
+    public static String findStringByRulItemTypeCode(final CachedAccessPoint accessPoint, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+        for (CachedPart part : accessPoint.getParts()) {
+            if (filter == GroovyPart.PreferredFilter.ALL
+                    || filter == GroovyPart.PreferredFilter.NO && !part.getPartId().equals(accessPoint.getPreferredPartId())
+                    || filter == GroovyPart.PreferredFilter.YES && part.getPartId().equals(accessPoint.getPreferredPartId())
+            ) {
+                for (ApItem item : part.getItems()) {
+                    RulItemType rulItemType = item.getItemType();
+                    if (rulItemType.getCode().equals(itemTypeCode)) {
+                        if (item.getData() instanceof ArrDataString) {
+                            ArrDataString data = (ArrDataString) item.getData();
+                            return data.getStringValue();
+                        }
+                        if (item.getData() instanceof ArrDataRecordRef) {
+                            ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+                            return data.getRecordId().toString();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static String findItemSpecCodeByItemTypeCode(final CachedAccessPoint accessPoint, String itemTypeCode) {
+        for (CachedPart part : accessPoint.getParts()) {
+            for (ApItem item : part.getItems()) {
+                RulItemType rulItemType = item.getItemType();
+                if (rulItemType != null) {
+                    if (rulItemType.getCode().equals(itemTypeCode)) {
+                        if (item.getItemSpec() != null) {
+                            return item.getItemSpec().getCode();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean hasParent(Integer typeId, String parentCode) {
+        Validate.notNull(typeId, "Nebyla předán typ entity");
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ApType itemType = sdp.getApTypeById(typeId);
+
+        if (itemType != null) {
+            Integer parentItemTypeId = itemType.getParentApTypeId();
+            ApType parentItemType = sdp.getApTypeById(parentItemTypeId);
     
+            return Objects.equals(parentItemType.getCode(), parentCode);
+        }
+        return false;
+    }
+
 }
