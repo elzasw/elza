@@ -26,22 +26,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
-import cz.tacr.elza.controller.vo.SyncsFilterVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.domain.ExtSyncsQueueItem;
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.AccessPointPart;
-import cz.tacr.elza.domain.RevStateApproval;
-import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
-import cz.tacr.elza.repository.specification.ApStateSpecification;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -65,9 +48,14 @@ import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
@@ -83,6 +71,8 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
+import cz.tacr.elza.domain.AccessPointItem;
+import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -92,6 +82,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
 import cz.tacr.elza.domain.ApState;
@@ -105,7 +96,8 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -134,16 +126,21 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.merge.PartWithSubParts;
@@ -185,12 +182,6 @@ public class AccessPointService {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
-    private ArrangementService arrangementService;
     
     @Autowired
     private ArrangementInternalService arrangementInternalService;
@@ -278,11 +269,6 @@ public class AccessPointService {
     
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
-
-    /**
-     * Kody tříd rejstříků nastavené v konfiguraci elzy.
-     */
-    private List<String> scopeCodes;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
@@ -527,7 +513,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public ApScope saveScope(final ApScope scope) {
-        Assert.notNull(scope, "Scope musí být vyplněn");
+        Validate.notNull(scope, "Scope musí být vyplněn");
         checkScopeSave(scope);
         return scopeRepository.save(scope);
     }
@@ -539,8 +525,8 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public void deleteScope(final ApScope scope) {
-        Assert.notNull(scope, "Scope musí být vyplněn");
-        Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
+        Validate.notNull(scope, "Scope musí být vyplněn");
+        Validate.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
         List<ApState> apStates = apStateRepository.findByScope(scope);
         if (!deleteWithEntities) {
@@ -566,10 +552,10 @@ public class AccessPointService {
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public void connectScope(@NotNull final ApScope scope, @NotNull final ApScope connectedScope) {
-        Assert.notNull(scope, "Nebyla předána třída rejstříku");
-        Assert.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
-        Assert.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
-        Assert.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
+        Validate.notNull(scope, "Nebyla předána třída rejstříku");
+        Validate.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
+        Validate.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
+        Validate.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
 
         final List<ApScope> connectedByScope = scopeRepository.findConnectedByScope(scope);
         for (ApScope apScope : connectedByScope) {
@@ -592,10 +578,10 @@ public class AccessPointService {
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public void disconnectScope(@NotNull final ApScope scope, @NotNull final ApScope connectedScope) {
-        Assert.notNull(scope, "Nebyla předána třída rejstříku");
-        Assert.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
-        Assert.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
-        Assert.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
+        Validate.notNull(scope, "Nebyla předána třída rejstříku");
+        Validate.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
+        Validate.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
+        Validate.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
 
         final ApScopeRelation scopeRelation = scopeRelationRepository.findByScopeAndConnectedScope(scope, connectedScope);
         if (scopeRelation == null) {
@@ -610,9 +596,9 @@ public class AccessPointService {
      * @param scope ukládaná třída
      */
     private void checkScopeSave(final ApScope scope) {
-        Assert.notNull(scope, "Scope musí být vyplněn");
-        Assert.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
-        Assert.notNull(scope.getName(), "Třída musí mít vyplněný název");
+        Validate.notNull(scope, "Scope musí být vyplněn");
+        Validate.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
+        Validate.notNull(scope.getName(), "Třída musí mít vyplněný název");
 
         List<ApScope> scopes = scopeRepository.findByCodes(Collections.singletonList(scope.getCode()));
         if (scope.getScopeId() == null) {
@@ -682,18 +668,6 @@ public class AccessPointService {
         return scopeIdsToSearch;
     }
 
-    /**
-     * Uložení uzlu - optimistické zámky
-     *
-     * @param node uzel
-     * @return uložený uzel
-     */
-    private ArrNode saveNode(final ArrNode node, final ArrChange change) {
-        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
-        nodeRepository.save(node);
-        nodeRepository.flush();
-        return node;
-    }
 
     /**
      * Najde použití rejstříku/osoby.
@@ -935,8 +909,8 @@ public class AccessPointService {
                                      final ApType type,
                                      @Nullable final SysLanguage language,
                                      final ApPartFormVO apPartFormVO) {
-        Assert.notNull(scope, "Třída musí být vyplněna");
-        Assert.notNull(type, "Typ musí být vyplněn");
+        Validate.notNull(scope, "Třída musí být vyplněna");
+        Validate.notNull(type, "Typ musí být vyplněn");
         if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu.");
         }
@@ -1695,7 +1669,8 @@ public class AccessPointService {
         if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
             newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
-                throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu",
+                        BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("oldScopeId", oldApScope.getScopeId())
                     .set("newScopeId", newApScope.getScopeId());
@@ -1841,12 +1816,16 @@ public class AccessPointService {
     }
 
     /**
-     * Získání seznamu stavů do niž může být přístupový bod přepnut při promítnutí revize
+     * Získání seznamu stavů do niž může být přístupový bod přepnut při promítnutí
+     * revize
      *
      * @param apState
+     * @param revision
      * @return seznam stavů
      */
-    public List<StateApproval> getNextStatesRevision(@NotNull ApState apState) {
+    public List<StateApproval> getNextStatesRevision(@NotNull ApState apState,
+                                                     @NotNull ApRevision revision) {
+        
         ApScope apScope = apState.getScope();
         UserDetail user = userService.getLoggedUserDetail();
 
@@ -1862,6 +1841,7 @@ public class AccessPointService {
         // zakládání a změny nových
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+            // mame opravneni pro zapis
             if (apState.getStateApproval().equals(StateApproval.NEW)) {
                 result.add(StateApproval.NEW);
                 result.add(StateApproval.TO_AMEND);
@@ -1876,12 +1856,28 @@ public class AccessPointService {
             }
         }
 
+        Integer lastRevUserId = revision.getCreateChange().getUser().getUserId();
         // schvalování
-        if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
-                || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
-            result.add(StateApproval.APPROVED);
-        }
+        // jen jiny uzivatel nez tvurce revize muze schvalit
+        if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
+            if (!Objects.equals(user.getId(), lastRevUserId)) {
+                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                        || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+                    // predchozi stav musel byt neschvalen
+                    if (apState.getStateApproval() == StateApproval.NEW ||
+                            apState.getStateApproval() == StateApproval.TO_AMEND ||
+                            apState.getStateApproval() == StateApproval.TO_APPROVE) {
+                        result.add(StateApproval.APPROVED);
+                    }
+                }
 
+                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
+                    result.add(StateApproval.APPROVED);
+                }
+
+            }
+        }
         return new ArrayList<>(result);
     }
 
@@ -1898,8 +1894,8 @@ public class AccessPointService {
     public boolean hasApPermission(@NotNull ApScope apScope, StateApproval oldStateApproval, @NotNull StateApproval newStateApproval)
             throws BusinessException, SystemException {
 
-        Assert.notNull(apScope, "AP Scope is null");
-        Assert.notNull(newStateApproval, "New State Approval is null");
+        Validate.notNull(apScope, "AP Scope is null");
+        Validate.notNull(newStateApproval, "New State Approval is null");
 
         // admin může cokoliv
         if (userService.hasPermission(Permission.ADMIN)) {
@@ -1957,9 +1953,9 @@ public class AccessPointService {
      * @return
      */
     private boolean hasPermissionToChangeScope(StateApproval stateApproval, ApScope oldApScope, ApScope newApScope) {
-        Assert.notNull(stateApproval, "State Approval is null");
-        Assert.notNull(oldApScope, "Old ApScope is null");
-        Assert.notNull(newApScope, "New ApScope is null");
+        Validate.notNull(stateApproval, "State Approval is null");
+        Validate.notNull(oldApScope, "Old ApScope is null");
+        Validate.notNull(newApScope, "New ApScope is null");
 
         // admin může cokoliv
         if (userService.hasPermission(Permission.ADMIN)) {
@@ -1992,14 +1988,14 @@ public class AccessPointService {
     }
 
     /**
-     * Má uživatel možnost změnit třídu archivní entity?
+     * Má uživatel možnost změnit třídu archivní entValidateity?
      * 
      * @param stateApproval
      * @return
      */
     private boolean hasPermissionToChangeType(StateApproval stateApproval, ApScope apScope) {
-        Assert.notNull(stateApproval, "State Approval is null");
-        Assert.notNull(apScope, "ApScope is null");
+        Validate.notNull(stateApproval, "State Approval is null");
+        Validate.notNull(apScope, "ApScope is null");
 
         // admin může cokoliv
         if (userService.hasPermission(Permission.ADMIN)) {
