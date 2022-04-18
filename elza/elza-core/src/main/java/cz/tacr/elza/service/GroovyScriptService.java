@@ -12,6 +12,8 @@ import cz.tacr.elza.groovy.GroovyAe;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.service.cache.AccessPointCacheProvider;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
@@ -49,10 +51,13 @@ public class GroovyScriptService {
 
     private final NodeCacheService nodeCacheService;
 
+    private final AccessPointCacheService accessPointCacheService;
+    
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
+    private static final String AP_CACHE_PROVIDER = "AP_CACHE_PROVIDER";
 
     private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -69,9 +74,11 @@ public class GroovyScriptService {
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                NodeCacheService nodeCacheService,
                                StaticDataService staticDataService,
+                               AccessPointCacheService accessPointCacheService,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
+        this.accessPointCacheService = accessPointCacheService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
@@ -139,9 +146,11 @@ public class GroovyScriptService {
             return Collections.emptyList();
         }
         GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+        AccessPointCacheProvider apCacheProvider = new AccessPointCacheProvider(accessPointCacheService);
 
         Map<String, Object> input = new HashMap<>();
         input.put(ENTITA, groovyAe);
+        input.put(AP_CACHE_PROVIDER, apCacheProvider);
 
         return (List<GroovyItem>) groovyScriptFile.evaluate(input);
     }

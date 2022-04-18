@@ -8,26 +8,107 @@ import cz.tacr.elza.groovy.GroovyPart
 import cz.tacr.elza.groovy.GroovyItem
 import cz.tacr.elza.groovy.GroovyUtils
 
+import cz.tacr.elza.service.cache.AccessPointCacheProvider
+import cz.tacr.elza.service.cache.CachedAccessPoint
+
 import cz.tacr.elza.exception.codes.BaseCode
 import cz.tacr.elza.exception.ObjectNotFoundException
 
-return generate(AE)
+return generate(AE, AP_CACHE_PROVIDER)
 
-// převést řetězec jako: Kladno (Kladno, Česko) -> Kladno, Kladno, Česko
-static String convertGeoString(String str) {
-    return str.replaceAll(" \\(", ", ").replaceAll("\\)", "")
-}
+// Získání seznamu názvů míst do celé hloubky vnoření: Kladno, Kladno, Česko
+static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
+    String value = GroovyUtils.findStringByRulItemTypeCode(item, GroovyPart.PreferredFilter.YES, "NM_MAIN")
+    String recordId = GroovyUtils.findStringByRulItemTypeCode(item, GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
 
-// převést řetězec jako: Svoboda Karel (1900-1990) -> Karel Svoboda
-static String convertAuthString(String str) {
-    String[] parts = str.split(",? ")
-    if (parts.length > 1) {
-        return parts[1] + " " + parts[0]
+    // získání seznamu geografických objektů a názvu země
+    String country
+    int limitItems = 10
+    List<CachedAccessPoint> caps = new ArrayList<>()
+    while (recordId != null && limitItems > 0) {
+        CachedAccessPoint ap = apcp.get(Integer.valueOf(recordId))
+        caps.add(ap)
+        limitItems--
+
+        String geoType = GroovyUtils.findItemSpecCodeByItemTypeCode(ap, "GEO_TYPE")
+        if (Objects.equals(geoType, "GT_COUNTRY")) {
+            country = GroovyUtils.findStringByRulItemTypeCode(ap, GroovyPart.PreferredFilter.YES, "NM_MAIN")
+            break;
+        }
+
+        recordId = GroovyUtils.findStringByRulItemTypeCode(ap, GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
     }
-    return str
+
+    // převést seznam na řetězec
+    for (CachedAccessPoint ap : caps) {
+        String geoType = GroovyUtils.findItemSpecCodeByItemTypeCode(ap, "GEO_TYPE")
+        String nmMain = GroovyUtils.findStringByRulItemTypeCode(ap, GroovyPart.PreferredFilter.YES, "NM_MAIN")
+        // v České republice tento typ (GT_ADMREGION) nevykazujeme
+        if (isCesko(country) && Objects.equals(geoType, "GT_ADMREGION")) {
+            continue
+        }
+        //System.out.println(geoType)
+        value += ", " + nmMain
+    }
+
+    return value
 }
 
-static List<GroovyItem> generate(final GroovyAe ae) {
+static boolean isCesko(String country) {
+    if (country != null) {
+        return Objects.equals(country.toUpperCase(), "ČESKO")
+    }
+    return false
+}
+
+// konverze řetězců pro výstup
+static String convertAuthString(GroovyItem item) {
+    Integer typeId = item.getApTypeId()
+    if (typeId != null) {
+        String nmMain = GroovyUtils.findStringByRulItemTypeCode(item, GroovyPart.PreferredFilter.YES, "NM_MAIN")
+        String nmMinor = GroovyUtils.findStringByRulItemTypeCode(item, GroovyPart.PreferredFilter.YES, "NM_MINOR")
+        // konverze pro osoby: Svoboda Karel -> Karel Svoboda
+        if (GroovyUtils.hasParent(typeId, "PERSON")) {
+            return nmMinor + " " + nmMain
+        }
+        // konverze pro korporace : Hlavní část jména. Vedlejší část jména
+        if (GroovyUtils.hasParent(typeId, "PARTY_GROUP")) {
+            return nmMain + (nmMinor == null? "" : ". " + nmMinor)
+        }
+    }
+    return item.getValue()
+}
+
+// přidáme nový záznam do seznamu nebo přidání hodnoty k existující
+static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem) {
+    addGroovyItem(items, groovyItem, "; ")
+}
+
+// přidáme nový záznam nebo hodnoty se speciálním oddělovačem
+static void addGroovyItem(List<GroovyItem> items, GroovyItem groovyItem, String separator) {
+    for (GroovyItem item : items) {
+        if (item.getTypeCode().equals(groovyItem.getTypeCode())) {
+            item.addValue(groovyItem, separator)
+            return
+        }
+    }
+    items.add(groovyItem)
+}
+
+// získání zobrazení separátoru
+static String getSeperator(GroovyItem item) {
+    Integer typeId = item.getApTypeId()
+    if (typeId != null) {
+        // osoby jsou od sebe odděleny písmenem "a"
+        if (GroovyUtils.hasParent(typeId, "PERSON")) {
+            return " a "
+        }
+    }
+    // korporace a další jsou odděleny ";"
+    return "; "
+}
+
+static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvider apcp) {
     List<GroovyItem> items = new ArrayList<>()
 
     // dočasně, jen pro ladění
@@ -35,7 +116,6 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         //System.out.println(part.getPartType().getCode())
         for (GroovyItem item : part.getItems()) {
             //System.out.println(item)
-            //items.add(item)
         }
     }
 
@@ -124,23 +204,23 @@ static List<GroovyItem> generate(final GroovyAe ae) {
                 .build()
 
     // obecný doplněk
-    GroovyItem geoType = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
-    if (geoType != null) {
-        System.out.println(geoType)
-        if (!excludeTerritory.contains(geoType.getSpecCode())) {
-            GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, geoType.getValue())
+    GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
+    if (genItem != null) {
+        System.out.println(genItem)
+        if (!excludeTerritory.contains(genItem.getSpecCode())) {
+            GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, genItem.getValue())
             items.add(obecItem)
         }
     }
 
     // chronologický doplněk
-    GroovyItem itemChro = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
-    if (!itemChro.getValue().isEmpty()) {
+    GroovyItem chroItem = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
+    if (!chroItem.getValue().isEmpty()) {
         // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
-        if (to != null && geoType != null && disappearedTerritory.contains(geoType.getSpecCode())) {
+        if (to != null && genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
             items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
         } else {
-            items.add(itemChro)
+            items.add(chroItem)
         }
     }
 
@@ -149,7 +229,7 @@ static List<GroovyItem> generate(final GroovyAe ae) {
     if (geo != null) {
         if (geo.getValue() != null) {
             if (geo.getIntValue() > 0) {
-                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, convertGeoString(geo.getValue()))
+                GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, getGeoName(geo, apcp))
                 items.add(geoItem)
             } else {
                 throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
@@ -165,18 +245,18 @@ static List<GroovyItem> generate(final GroovyAe ae) {
         if (Arrays.asList("RT_RESIDENCE", "RT_VENUE", "RT_LOCATION").contains(rel.getSpecCode())) {
             if (rel.getValue() != null) {
                 if (rel.getIntValue() > 0) {
-                    GroovyItem itemGeo = new GroovyItem("NM_SUP_GEO", null, convertGeoString(rel.getValue()))
-                    items.add(itemGeo)
+                    GroovyItem relGeoItem = new GroovyItem("NM_SUP_GEO", null, getGeoName(rel, apcp))
+                    addGroovyItem(items, relGeoItem)
                 } else {
                     throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
                         .set("entityId", rel.getValue())
                 }
             }
         }
-        // autor/tvůrce
+        // autor změny/tvůrce změny
         if (rel.getSpecCode().equals("RT_AUTHOROFCHANGE")) {
-            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel.getValue()))
-            items.add(itemAuth)
+            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel))
+            addGroovyItem(items, itemAuth, getSeperator(rel))
         }
     }
 

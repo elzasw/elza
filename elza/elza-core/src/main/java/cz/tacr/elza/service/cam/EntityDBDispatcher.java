@@ -14,10 +14,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
-import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -85,6 +81,8 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
 
 /**
  * Create or update entities
@@ -155,6 +153,9 @@ public class EntityDBDispatcher {
     final private AccessPointCacheService accessPointCacheService;
 
     private ProcessingContext procCtx;
+
+    // Newly created binding state for last processed entity
+    private ApBindingState bindingState;
 
     public EntityDBDispatcher(final ApAccessPointRepository accessPointRepository,
                               final ApStateRepository stateRepository,
@@ -233,7 +234,7 @@ public class EntityDBDispatcher {
                     String srcUuid = CamHelper.getEntityUuid(entity);
                     binding = procCtx.getBindingByValue(srcUuid);
                     if (binding == null) {
-                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
                         procCtx.addBinding(binding);
                     }
                 }
@@ -252,7 +253,7 @@ public class EntityDBDispatcher {
                 String bindingValue = CamHelper.getEntityUuid(entity);
                 ApBinding binding = procCtx.getBindingByValue(bindingValue);
                 if (binding == null) {
-                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
                     procCtx.addBinding(binding);
                 }
                 return binding;
@@ -319,7 +320,7 @@ public class EntityDBDispatcher {
         }
 
         ApBinding binding = externalSystemService.createApBinding(Long.toString(entity.getEid().getValue()),
-                                                                  procCtx.getApExternalSystem());
+                                                                  procCtx.getApExternalSystem(), true);
 
         createPartsFromEntityXml(entity, accessPoint, apChange, state, binding, async);
 
@@ -332,7 +333,7 @@ public class EntityDBDispatcher {
      * 
      * @param procCtx
      * @param state
-     * @param bindingState
+     * @param prevBindingState
      * @param entity
      * @param syncQueue
      *            True if called from sync queue (without UI and direct user
@@ -340,10 +341,11 @@ public class EntityDBDispatcher {
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
-                                       ApBindingState bindingState,
+                                       final ApBindingState prevBindingState,
                                        EntityXml entity,
                                        boolean syncQueue) {
         Validate.notNull(procCtx.getApChange());
+        Validate.notNull(prevBindingState);
 
         this.procCtx = procCtx;
 
@@ -361,17 +363,19 @@ public class EntityDBDispatcher {
         }
 
         String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;
+
+        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, prevBindingState.getBinding(), accessPoint);
+        // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
+        accessPoint = syncRes.getAccessPoint();
         //vytvoření nového stavu propojení
-        bindingState = externalSystemService.createNewApBindingState(bindingState, procCtx.getApChange(),
+        this.bindingState = externalSystemService.createBindingState(prevBindingState, procCtx.getApChange(),
                                                                      entity.getEns().value(),
                                                                      entity.getRevi().getRid().getValue(),
                                                                      entity.getRevi().getUsr().getValue(),
                                                                      extReplacedBy,
-                                                                     SyncState.SYNC_OK);
-
-        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
-        // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
-        accessPoint = syncRes.getAccessPoint();
+                                                                     SyncState.SYNC_OK,
+                                                                     accessPoint.getPreferredPart(),
+                                                                     state.getApType());
 
         switch (entity.getEns()) {
         case ERS_REPLACED:
@@ -405,7 +409,7 @@ public class EntityDBDispatcher {
             break;
         }
 
-        accessPointService.generateSync(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
+        accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
@@ -447,13 +451,6 @@ public class EntityDBDispatcher {
                                   boolean async) {
         Validate.notNull(binding);
 
-        externalSystemService.createApBindingState(binding, accessPoint, apChange,
-                                                   entity.getEns().value(),
-                                                   entity.getRevi().getRid() != null ? entity.getRevi().getRid()
-                                                           .getValue() : null,
-                                                   entity.getRevi().getUsr() != null ? entity.getRevi().getUsr()
-                                                           .getValue() : null,
-                                                   entity.getReid() != null ? entity.getReid().getValue() : null, SyncState.SYNC_OK);
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
 
@@ -471,10 +468,26 @@ public class EntityDBDispatcher {
 
         camService.createBindingForRel(dataRefList, procCtx);
 
-        accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
+        ApPart prefPart = accessPointService.findPreferredPart(partList);
+        accessPoint.setPreferredPart(prefPart);
 
-        accessPointService.generateSync(accessPoint, apState, partList, itemMap, async);
+        this.bindingState = externalSystemService.createBindingState(binding, accessPoint, apChange,
+                                                 entity.getEns().value(),
+                                                 entity.getRevi().getRid() != null ? entity.getRevi().getRid()
+                                                         .getValue() : null,
+                                                 entity.getRevi().getUsr() != null ? entity.getRevi().getUsr()
+                                                         .getValue() : null,
+                                                 entity.getReid() != null ? entity.getReid().getValue() : null,
+                                                 SyncState.SYNC_OK,
+                                                 prefPart,
+                                                 apState.getApType());
+
+        accessPointService.updateAndValidate(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+    }
+
+    public ApBindingState getBindingState() {
+        return bindingState;
     }
 
     /**
@@ -602,8 +615,8 @@ public class EntityDBDispatcher {
      *            context
      * @param entity
      *            entita z externího systému
-     * @param bindingState
-     *            stav propojení s externím systémem
+     * @param binding
+     *            propojení s externím systémem
      * @param apChange
      *            změna
      * @param accessPoint
@@ -615,7 +628,7 @@ public class EntityDBDispatcher {
      */
     private SynchronizationResult synchronizeParts(final ProcessingContext procCtx,
                                                    final EntityXml entity,
-                                                   final ApBindingState bindingState,
+                                                   final ApBinding binding,
                                                    ApAccessPoint accessPoint) {
         log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
@@ -637,7 +650,6 @@ public class EntityDBDispatcher {
         Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
-        ApBinding binding = bindingState.getBinding();
         readBindingItems(binding);
 
         /*        
@@ -1127,49 +1139,11 @@ public class EntityDBDispatcher {
     	ItemUpdates result = new ItemUpdates();
         for (Object item : items) {
             if (item instanceof ItemBinaryXml) {
-                ItemBinaryXml itemBinary = (ItemBinaryXml) item;
-                ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
-
-                if (bindingItem == null) {
-                	result.addNewItem(itemBinary);
-                } else {
-                    ApItem is = bindingItem.getItem();
-                    boolean processed = false;
-                    if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
-                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
-                        Geometry value = dataCoordinates.getValue();
-                        Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
-                        // try to compare coordinates
-                        try {
-                            if (xmlValue.equals(value)) {
-                            	result.addNotChanged(bindingItem);
-                                processed = true;
-                            }
-                        } catch (Exception e) {
-                            log.error("Failed to compare received coordinates. Item will be updated as changed.", e);
-                        }
-                    }
-                    if (!processed) {
-                    	result.addChanged(bindingItem, itemBinary);
-                    }
-                }
+                ItemBinaryXml itemBinary = (ItemBinaryXml) item;                
+                prepareBinaryUpdate(itemBinary, result);                
             } else if (item instanceof ItemBooleanXml) {
                 ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
-                ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
-
-                if (bindingItem == null) {
-                	result.addNewItem(itemBoolean);
-                } else {
-                    ApItem ib = bindingItem.getItem();
-                    ArrDataBit dataBit = (ArrDataBit) ib.getData();
-                    if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
-                            compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
-                            dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
-                    	result.addChanged(bindingItem, itemBoolean);
-                    } else {
-                    	result.addNotChanged(bindingItem);
-                    }
-                }
+                prepareBooleanUpdate(itemBoolean, result);
             } else if (item instanceof ItemEntityRefXml) {
                 ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
                 prepareEntityRefUpdate(itemEntityRef, result);
@@ -1283,7 +1257,77 @@ public class EntityDBDispatcher {
         return result;
     }
 
-    private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
+	private void prepareBooleanUpdate(ItemBooleanXml itemBoolean, ItemUpdates result) {
+		ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
+        if (bindingItem == null) {
+        	result.addNewItem(itemBoolean);
+        } else {
+            ApItem ib = bindingItem.getItem();
+            ArrDataBit dataBit = (ArrDataBit) ib.getData();
+            if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
+                    compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
+                    dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
+            	result.addChanged(bindingItem, itemBoolean);
+            } else {
+            	result.addNotChanged(bindingItem);
+            }
+        }
+	}
+
+	private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
+        RulItemType itemType = this.procCtx.getStaticDataProvider().getItemType(t.getValue());
+        if (!Objects.equals(itemType.getItemTypeId(), is.getItemTypeId())) {
+            return false;
+        }
+        // check if we have any spec
+        if (is.getItemSpecId() == null && (s == null || s.getValue() == null)) {
+            return true;
+        }
+        // check if we have spec from CAM
+        if (s == null || s.getValue() == null) {
+            // spec is empty -> difference
+            return false;
+        }
+        RulItemSpec itemSpec = this.procCtx.getStaticDataProvider().getItemSpec(s.getValue());
+        if (itemSpec == null) {
+            // spec not found
+            return false;
+        }
+        if (!Objects.equals(itemSpec.getItemSpecId(), is.getItemSpecId())) {
+            return false;
+        }
+        return true;
+    }
+    
+    private void prepareBinaryUpdate(ItemBinaryXml itemBinary, ItemUpdates result) {
+    	ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
+        if (bindingItem == null) {
+        	result.addNewItem(itemBinary);
+        } else {
+            ApItem is = bindingItem.getItem();
+            boolean processed = false;
+            if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
+                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                Geometry value = dataCoordinates.getValue();
+                Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
+                // try to compare coordinates
+                try {
+                    if (xmlValue.equals(value)) {
+                    	result.addNotChanged(bindingItem);
+                        processed = true;
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to compare received coordinates. Item will be updated as changed.", e);
+                }
+            }
+            if (!processed) {
+            	result.addChanged(bindingItem, itemBinary);
+            }
+        }		
+
+	}
+
+	private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
         ApBindingItem bindingItem = bindingItemLookup.get(itemEntityRef.getUuid().getValue());
 
         if (bindingItem == null) {
@@ -1316,32 +1360,6 @@ public class EntityDBDispatcher {
         }		
 	}
 
-	private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
-        StaticDataProvider sdp = this.procCtx.getStaticDataProvider();
-        RulItemType itemType = sdp.getItemType(t.getValue());
-        if (!Objects.equals(itemType.getItemTypeId(), is.getItemTypeId())) {
-            return false;
-        }
-        // check if we have any spec
-        if (is.getItemSpecId() == null && (s == null || s.getValue() == null)) {
-            return true;
-        }
-        // check if we have spec from CAM
-        if (s == null || s.getValue() == null) {
-            // spec is empty -> difference
-            return false;
-        }
-        RulItemSpec itemSpec = sdp.getItemSpec(s.getValue());
-        if (itemSpec == null) {
-            // spec not found
-            return false;
-        }
-        if (!Objects.equals(itemSpec.getItemSpecId(), is.getItemSpecId())) {
-            return false;
-        }
-        return true;
-    }
-
 	private boolean compareUnitDate(ApItem iud, ArrDataUnitdate dataUnitdate, ItemUnitDateXml itemUnitDate) {
 	    // porovnání typu
 	    if (!iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) ||
@@ -1364,7 +1382,7 @@ public class EntityDBDispatcher {
 	    return true;
 	}
 
-    private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
+    static private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
         if (itemSpec == null) {
             return itemSpecCode == null;
         } else {

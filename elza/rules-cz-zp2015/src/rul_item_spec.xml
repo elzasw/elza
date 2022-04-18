@@ -157,8 +157,8 @@
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_OTD">
-        <name>samostatná pečeť, odlitek pečeti, otisk typáře</name>
-        <description>samostatná pečeť, odlitek pečeti, otisk typáře</description>
+        <name>pečeť, odlitek pečeti, otisk typáře</name>
+        <description>pečeť, odlitek pečeti, otisk typáře</description>
         <shortcut>otd</shortcut>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>

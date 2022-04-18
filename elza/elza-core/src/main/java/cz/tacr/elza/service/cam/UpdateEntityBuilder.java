@@ -241,12 +241,12 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         List<ApBindingItem> activeItems = bi.getActiveBindedItems();
         if (CollectionUtils.isNotEmpty(activeItems)) {
-            // filter bindined items
+            // filter binded items
             List<ApBindingItem> filteredList = activeItems.stream().filter(i -> i.getItem()
                     .getCreateChangeId() > bindingState.getSyncChangeId())
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
-                UpdateItemsXml updateItems = createUpdateItems(changedPart, activeItems);
+                UpdateItemsXml updateItems = createUpdateItems(changedPart, filteredList);
                 if (updateItems != null) {
                     addUpdate(updateItems);
                 }

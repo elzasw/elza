@@ -1,5 +1,36 @@
 package cz.tacr.elza.service.cache;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.ScrollableResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -23,7 +54,6 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
@@ -37,36 +67,6 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.search.SearchIndexSupport;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.ScrollableResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
@@ -165,7 +165,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             apIds.add((Integer) obj);
             count++;
             if (count % syncApBatchSize == 0) {
-                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1 + offset) + "-" + (count + offset));
+                logger.info("Sestavuji AP {}-{}", count - syncApBatchSize + 1 + offset, count + offset);
 
                 processNewAPs(apIds);
                 apIds.clear();
@@ -454,12 +454,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             state.setScope(scope);
         }
         
+        StaticDataProvider sdp = staticDataService.getData();
+
         Map<Integer, ApPart> partMap =  new HashMap<>();
         Map<Integer, ApItem> itemMap =  new HashMap<>();
         
         if (cap.getParts() != null) {
-        	// restore parts
-        	StaticDataProvider sdp = staticDataService.getData();
+            // restore parts        	
         	
             for (CachedPart part : cap.getParts()) {
                 ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
@@ -522,6 +523,16 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             }
             if (bs.getSyncChangeId() != null) {
                 bs.setSyncChange(entityManager.getReference(ApChange.class, bs.getSyncChangeId()));
+            }
+            if (bs.getApTypeId() != null) {
+                bs.setApType(sdp.getApTypeById(bs.getApTypeId()));
+            }
+            if (bs.getPreferredPartId() != null) {
+                ApPart prefPart = partMap.get(bs.getPreferredPartId());
+                if (prefPart == null) {
+                    prefPart = entityManager.getReference(ApPart.class, bs.getPreferredPartId());
+                }
+                bs.setPreferredPart(prefPart);
             }
 
             // set items
