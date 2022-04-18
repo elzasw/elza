@@ -1,10 +1,26 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
@@ -14,12 +30,17 @@ import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyResult;
@@ -29,19 +50,12 @@ import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class RevisionService {
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private AccessPointDataService accessPointDataService;
@@ -545,13 +559,38 @@ public class RevisionService {
         }
     }
 
-    @Transactional
-    public void mergeRevision(ApState apState, ApState.StateApproval state) {
+    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
+    @Transactional(TxType.MANDATORY)
+    public void mergeRevision(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+                              ApState.StateApproval newStateApproval) {
+        Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
+
         ApRevision revision = findRevisionByState(apState);
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
         ApAccessPoint accessPoint = apState.getAccessPoint();
+
+        // Check permissions in case of approved AP
+        if (!hasPermissionMerge(apState.getScope(), apState.getStateApproval(), newStateApproval, revision
+                .getStateApproval())) {
+            throw new SystemException("Uživatel nemá oprávnění sloučení změny přístupového bodu",
+                    BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("accessPointId", accessPoint.getAccessPointId())
+                            .set("scopeId", apState.getScopeId())
+                            .set("oldState", apState.getStateApproval())
+                            .set("newState", newStateApproval)
+                            .set("revisionState", revision.getStateApproval());
+        }
+
+        // má uživatel možnost nastavit požadovaný stav?
+        if (!accessPointService.getNextStatesRevision(apState, revision).contains(newStateApproval)) {
+            throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("scopeId", apState.getScopeId())
+                    .set("oldState", apState.getStateApproval())
+                    .set("newState", newStateApproval);
+        }
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
         List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
@@ -607,7 +646,7 @@ public class RevisionService {
         stateRepository.save(apState);
 
         ApState newState = accessPointService.copyState(apState, change);
-        newState.setStateApproval(state);
+        newState.setStateApproval(newStateApproval);
         newState.setApType(revision.getType());
         stateRepository.save(newState);
 
@@ -616,5 +655,67 @@ public class RevisionService {
 
         //smazání revize
         deleteRevision(revision, change, revParts, revItems, revIndices);
+    }
+
+    /**
+     * Vyhodnocuje oprávnění přihlášeného uživatele k úpravám na přístupovém bodu
+     * dle uvedené oblasti entit.
+     *
+     * @param apScope
+     *            oblast entit
+     * @param oldStateApproval
+     *            původní stav schvalování - při zakládání AP může být {@code null}
+     * @param newStateApproval
+     *            nový stav schvalování - pokud v rámci změny AP nedochází ke změně
+     *            stavu schvalovaní, musí být stejný jako {@code oldStateApproval}
+     * @return oprávění přihášeného uživatele ke změně AP
+     * @throws BusinessException
+     *             přechod mezi uvedenými stavy není povolen
+     * @throws SystemException
+     *             přechod mezi uvedenými stavy není povolen
+     */
+    private boolean hasPermissionMerge(ApScope scope, StateApproval oldStateApproval,
+                                  StateApproval newStateApproval,
+                                  RevStateApproval revState) {
+
+        Validate.notNull(scope, "AP Scope is null");
+        Validate.notNull(oldStateApproval, "Old State Approval is null");
+        Validate.notNull(newStateApproval, "New State Approval is null");
+        Validate.notNull(revState, "Rev State Approval is null");
+
+        // admin může cokoliv
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return true;
+        }
+
+        if(revState!=RevStateApproval.TO_APPROVE) {
+            // Jen změny ve stavu ke schválení mohou být přijaty
+            return false;
+        }
+        if (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+            // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
+            return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
+        }
+        // nová nebo k připomínkám s revizí
+        if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
+            if(newStateApproval.equals(StateApproval.APPROVED)) {
+                // "Schvalování přístupových bodů"
+                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                    || userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
+                    return true;
+                }
+            }
+            if (newStateApproval.equals(StateApproval.NEW) ||
+                    newStateApproval.equals(StateApproval.TO_AMEND) ||
+                    newStateApproval.equals(StateApproval.TO_APPROVE)) {
+                if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        || userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
+                    return true;
+                }
+            }
+        }
+        // jiný neznámý případ
+        return false;
     }
 }
