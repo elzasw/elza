@@ -1,10 +1,9 @@
 package cz.tacr.elza.controller.factory;
 
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
-import static cz.tacr.elza.repository.ExceptionThrow.scope;
-
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.groovy.GroovyResult.SORT_NAME;
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,22 +18,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApRevIndex;
-import cz.tacr.elza.domain.ApRevItem;
-import cz.tacr.elza.domain.ApRevPart;
-import cz.tacr.elza.domain.ApRevision;
-import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.ChangeType;
-import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.repository.ApRevIndexRepository;
-import cz.tacr.elza.repository.ApRevItemRepository;
-import cz.tacr.elza.repository.ApRevPartRepository;
-import cz.tacr.elza.service.RevisionItemService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedBinding;
-import cz.tacr.elza.service.cache.CachedPart;
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -43,12 +28,10 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApBindingItemVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApChangeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
@@ -83,20 +66,29 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevIndex;
+import cz.tacr.elza.domain.ApRevItem;
+import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
@@ -110,13 +102,18 @@ import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevIndexRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
-
-import javax.annotation.Nullable;
+import cz.tacr.elza.service.RevisionItemService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedBinding;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class ApFactory {
@@ -354,7 +351,8 @@ public class ApFactory {
             		// check existence of nonbinded items
             		List<ApBindingItem> bindedItems = bindingItemsMap.get(bindingState.getBindingId());
             		
-            		ApBindingVO bivo = ApBindingVO.newInstance(bindingState, bindedItems, parts, items, lastChange);
+                    ApBindingVO bivo = ApBindingVO.newInstance(bindingState, state, bindedItems, parts, items,
+                                                               lastChange);
             		bindingsVO.add(bivo);
             	}
             } else {
@@ -382,11 +380,8 @@ public class ApFactory {
         // description
         String description = getDescription(cachedAccessPoint);
 
-        // prepare last change
+        // prepare last change - include deleted items
         Integer lastChangeId = apRepository.getLastChange(cachedAccessPoint.getAccessPointId());
-        if (lastChangeId < cachedAccessPoint.getApState().getCreateChangeId()) {
-            lastChangeId = cachedAccessPoint.getApState().getCreateChangeId();
-        }
         ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
         // prepare bindings
@@ -394,7 +389,7 @@ public class ApFactory {
         if (cachedAccessPoint.getBindings() != null) {
             bindingsVO = new ArrayList<>(cachedAccessPoint.getBindings().size());
 			for(CachedBinding binding: cachedAccessPoint.getBindings()) {
-            	ApBindingVO bindingVo = ApBindingVO.newInstance(binding, cachedAccessPoint.getParts(), lastChange);
+                ApBindingVO bindingVo = ApBindingVO.newInstance(binding, cachedAccessPoint, lastChange);
             	bindingsVO.add(bindingVo);
             }
         } else {
