@@ -165,7 +165,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             apIds.add((Integer) obj);
             count++;
             if (count % syncApBatchSize == 0) {
-                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1 + offset) + "-" + (count + offset));
+                logger.info("Sestavuji AP {}-{}", count - syncApBatchSize + 1 + offset, count + offset);
 
                 processNewAPs(apIds);
                 apIds.clear();

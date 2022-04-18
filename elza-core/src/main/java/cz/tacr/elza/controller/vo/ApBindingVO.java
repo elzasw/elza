@@ -1,20 +1,23 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedBinding;
 import cz.tacr.elza.service.cache.CachedPart;
-
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ApBindingVO {
 
@@ -146,10 +149,12 @@ public class ApBindingVO {
      *
      * @param bindingState
      * @param lastChange
-     * @param nonBindedItems Flag if exists non binded items or parts, it means local change
+     * @param otherLocalChange
+     *            Flag if exists non binded items or parts, changed class or
+     *            preferred name; It means local change.
      * @return ApBindingVO
      */
-    public static ApBindingVO newInstance(ApBindingState bindingState, ApChange lastChange, boolean nonBindedItems) {
+    public static ApBindingVO newInstance(ApBindingState bindingState, ApChange lastChange, boolean otherLocalChange) {
         ApBindingVO vo = new ApBindingVO();
         vo.setId(bindingState.getBinding().getBindingId());
         vo.setExternalSystemId(bindingState.getBinding().getApExternalSystem().getExternalSystemId());
@@ -159,14 +164,15 @@ public class ApBindingVO {
         vo.setExtRevision(bindingState.getExtRevision());
         vo.setExtUser(bindingState.getExtUser());
         vo.setExtReplacedBy(bindingState.getExtReplacedBy());
-        vo.setSyncState(createSyncStateVO(bindingState, lastChange, nonBindedItems));
+        vo.setSyncState(createSyncStateVO(bindingState, lastChange, otherLocalChange));
         return vo;
     }
     
-    public static ApBindingVO newInstance(CachedBinding binding, List<CachedPart> parts, ApChange lastChange) {
+    public static ApBindingVO newInstance(CachedBinding binding, CachedAccessPoint cachedAccessPoint,
+                                          ApChange lastChange) {
     	List<ApBindingItem> bindingItemList = binding.getBindingItemList();
     	ApBindingState bindingState = binding.getBindingState();
-    	return newInstance(bindingState, bindingItemList, parts, lastChange);
+        return newInstance(bindingState, bindingItemList, cachedAccessPoint, lastChange);
     }
 
     /**
@@ -177,7 +183,9 @@ public class ApBindingVO {
      * @return ApBindingVO
      */
     public static ApBindingVO newInstance(ApBindingState bindingState, List<ApBindingItem> bindingItemList, 
-    		List<CachedPart> parts, ApChange lastChange) {
+                                          CachedAccessPoint cachedAccessPoint, ApChange lastChange) {
+
+        List<CachedPart> parts = cachedAccessPoint.getParts();
     	
         List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
         Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(), 
@@ -199,13 +207,13 @@ public class ApBindingVO {
         }
         
         // set sync state        
-        boolean nonBindedItems = false;
+        boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
         	Integer syncChangeId = bindingState.getSyncChangeId();
             for(CachedPart part: parts) {
             	ApBindingItemVO bindedPart = bindedParts.get(part.getPartId());
             	if(bindedPart==null) {
-            		nonBindedItems = true;
+            		otherLocalChange = true;
             	} else {
             		bindedPart.setSync(syncChangeId >= part.getCreateChangeId());
             	}
@@ -213,7 +221,7 @@ public class ApBindingVO {
                 	for(ApItem item : part.getItems()) {
                 		ApBindingItemVO bindedItem = bindedItems.get(item.getItemId());
                 		if(bindedItem==null) {
-                			nonBindedItems = true;
+                			otherLocalChange = true;
                     	} else {
                     		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
                     	}
@@ -221,16 +229,25 @@ public class ApBindingVO {
             	}
             }
         }
+
+        // compare pref. name and class
+        if (!Objects.equals(cachedAccessPoint.getPreferredPartId(), bindingState.getPreferredPartId())) {
+            otherLocalChange = true;
+        }
+        if (!Objects.equals(cachedAccessPoint.getApState().getApTypeId(), bindingState.getApTypeId())) {
+            otherLocalChange = true;
+        }
     	
-        ApBindingVO vo = newInstance(bindingState, lastChange, nonBindedItems);
+        ApBindingVO vo = newInstance(bindingState, lastChange, otherLocalChange);
         vo.setBindingItemList(bindingItemVOList);
         return vo;
     }
     
-	public static ApBindingVO newInstance(ApBindingState bindingState, 
-			List<ApBindingItem> bindingItemList,
-			List<ApPart> parts, 
-			Map<Integer, List<ApItem>> items, ApChange lastChange) {
+    public static ApBindingVO newInstance(ApBindingState bindingState,
+                                          ApState state,
+                                          List<ApBindingItem> bindingItemList,
+                                          List<ApPart> parts,
+                                          Map<Integer, List<ApItem>> items, ApChange lastChange) {
 		
         List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
         Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(), 
@@ -252,13 +269,13 @@ public class ApBindingVO {
         }
         
         // set sync state        
-        boolean nonBindedItems = false;
+        boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
         	Integer syncChangeId = bindingState.getSyncChangeId();
             for(ApPart part: parts) {
             	ApBindingItemVO bindedPart = bindedParts.get(part.getPartId());
             	if(bindedPart==null) {
-            		nonBindedItems = true;
+                    otherLocalChange = true;
             	} else {
             		bindedPart.setSync(syncChangeId >= part.getCreateChangeId());
             	}
@@ -267,7 +284,7 @@ public class ApBindingVO {
                 	for(ApItem item : itemList) {
                 		ApBindingItemVO bindedItem = bindedItems.get(item.getItemId());
                 		if(bindedItem==null) {
-                			nonBindedItems = true;
+                            otherLocalChange = true;
                     	} else {
                     		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
                     	}
@@ -275,20 +292,26 @@ public class ApBindingVO {
             	}
             }
         }
+        if (!Objects.equals(state.getApTypeId(), bindingState.getApTypeId())) {
+            otherLocalChange = true;
+        }
+        if (!Objects.equals(state.getAccessPoint().getPreferredPartId(), bindingState.getPreferredPartId())) {
+            otherLocalChange = true;
+        }
     	
-        ApBindingVO vo = newInstance(bindingState, lastChange, nonBindedItems);
+        ApBindingVO vo = newInstance(bindingState, lastChange, otherLocalChange);
         vo.setBindingItemList(bindingItemVOList);
         return vo;
 	}
 
 
-    private static SyncStateVO createSyncStateVO(ApBindingState bindingState, ApChange lastChange, boolean nonBindedItems) {
+    private static SyncStateVO createSyncStateVO(ApBindingState bindingState, ApChange lastChange, boolean otherLocalChange) {
     	SyncStateVO syncState;
     	
         if (bindingState.getSyncOk() != null) {            
             switch (bindingState.getSyncOk()) {
             case SYNC_OK:
-                if (lastChange.getChangeId() > bindingState.getSyncChangeId() || nonBindedItems) {
+                if (lastChange.getChangeId() > bindingState.getSyncChangeId() || otherLocalChange) {
                     syncState = SyncStateVO.LOCAL_CHANGE;
                 } else {
                     syncState = SyncStateVO.SYNC_OK;
@@ -301,7 +324,7 @@ public class ApBindingVO {
                 throw new SystemException("Chyba datových polí ApBindingState.SyncOk");
             }
         } else {
-        	if(nonBindedItems) {
+        	if(otherLocalChange) {
         		syncState = SyncStateVO.LOCAL_CHANGE;
         	} else {
         		syncState = null;

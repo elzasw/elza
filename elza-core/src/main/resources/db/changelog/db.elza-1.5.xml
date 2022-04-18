@@ -1876,5 +1876,6 @@ where no.level_id = l.level_id
                 FROM ap_access_point ap WHERE ap.access_point_id = bs.access_point_id</sql>
         <sql dbms="postgresql">UPDATE ap_binding_state bs SET ap_type_id = s.ap_type_id
                 FROM ap_state s WHERE s.access_point_id = bs.access_point_id AND s.delete_change_id is NULL</sql>
+		<delete tableName="ap_cached_access_point" />
     </changeSet>
 </databaseChangeLog>
