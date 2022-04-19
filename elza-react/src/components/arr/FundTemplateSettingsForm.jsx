@@ -67,7 +67,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
             if (item[JAVA_ATTR_CLASS] !== '.ArrItemEnumVO') {
                 csl += ' item-noenum';
             }
-            spec = <span className={csl}>{itemSpec.name}</span>;
+            spec = <span className={csl}>{itemSpec?.name || "unknown"}</span>;
         }
 
         let val;
@@ -137,7 +137,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                                     label={false}
                                                 />
                                         ) : (
-                                            fields.get(index).name.value
+                                            fields.get(index)?.name
                                         )}
                                     </div>
                                 );
