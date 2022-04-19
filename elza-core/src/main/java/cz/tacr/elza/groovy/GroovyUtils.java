@@ -4,8 +4,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -139,13 +138,13 @@ public class GroovyUtils {
     }
 
     @Nullable
-    public static String findStringByRulItemTypeCode(final GroovyItem groovyItem, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+    public static ArrData findDataByRulItemTypeCode(final GroovyItem groovyItem, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
         CachedAccessPoint accessPoint = groovyItem.getAccessPoint();
-        return findStringByRulItemTypeCode(accessPoint, filter, itemTypeCode);
+        return findDataByRulItemTypeCode(accessPoint, filter, itemTypeCode);
     }
 
     @Nullable
-    public static String findStringByRulItemTypeCode(final CachedAccessPoint accessPoint, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+    public static ArrData findDataByRulItemTypeCode(final CachedAccessPoint accessPoint, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
         for (CachedPart part : accessPoint.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
                     || filter == GroovyPart.PreferredFilter.NO && !part.getPartId().equals(accessPoint.getPreferredPartId())
@@ -154,14 +153,7 @@ public class GroovyUtils {
                 for (ApItem item : part.getItems()) {
                     RulItemType rulItemType = item.getItemType();
                     if (rulItemType.getCode().equals(itemTypeCode)) {
-                        if (item.getData() instanceof ArrDataString) {
-                            ArrDataString data = (ArrDataString) item.getData();
-                            return data.getStringValue();
-                        }
-                        if (item.getData() instanceof ArrDataRecordRef) {
-                            ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
-                            return data.getRecordId().toString();
-                        }
+                        return item.getData();
                     }
                 }
             }
