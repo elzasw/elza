@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -77,6 +79,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    @Qualifier("threadPoolTaskExecutorAP")
+    private ThreadPoolTaskExecutor executor;
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
@@ -150,6 +156,95 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     /**
      * Synchronizace záznamů v databázi.
+     *
+     * Synchronní metoda volaná z transakce.
+     */
+    public void syncCacheParallel() {
+        logger.info("Spuštění - synchronizace cache pro AP");
+
+        AtomicInteger atomCounter = new AtomicInteger(0);
+        AtomicInteger errorCounter = new AtomicInteger(0);
+
+        synchronized (this) {
+
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            Integer cnt = tt.execute(t -> {
+                ScrollableResults uncachedAPs = accessPointRepository.findUncachedAccessPoints();
+
+                int count = 0;
+                List<Integer> apIds = new ArrayList<>(syncApBatchSize);
+                while (uncachedAPs.next()) {
+                    Object obj = uncachedAPs.get(0);
+
+                    apIds.add((Integer) obj);
+                    count++;
+                    if (count % syncApBatchSize == 0) {
+                        atomCounter.incrementAndGet();
+                        addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
+                        apIds.clear();
+                    }
+                }
+                if (apIds.size() > 0) {
+                    atomCounter.incrementAndGet();
+                    addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
+                }
+                return count;
+            });
+
+            logger.info("Počet AP k synchronizaci: {}", cnt);
+        }
+
+        synchronized (atomCounter) {
+            while (atomCounter.get() > 0) {
+                try {
+                    atomCounter.wait(100);
+                } catch (InterruptedException e) {
+                    logger.error("AP synchronization interrupted");
+                    throw new SystemException("AP synchronization interrupted");
+                }
+            }
+        }
+
+        if (errorCounter.get() > 0) {
+            logger.error("AP synchronization failed");
+            throw new SystemException("AP synchronization failed");
+        }
+
+        logger.info("Všechny AP jsou synchronizovány");
+        logger.info("Ukončení synchronizace cache pro AP");
+    }
+
+    private void addParallelSync(final AtomicInteger atomCounter,
+                                 final AtomicInteger errorCounter,
+                                 final List<Integer> apIds,
+                                 final int offset) {
+        // IDS to own list
+        final List<Integer> ids = new ArrayList<>(apIds);
+        this.executor.execute(() -> parallelSync(atomCounter, errorCounter, ids, offset));
+    }
+
+    private void parallelSync(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> apIds, int offset) {
+        try {
+            logger.info("Sestavuji AP {}-{}", 1 + offset, apIds.size() + offset);
+
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            tt.executeWithoutResult(t -> {
+                processNewAPs(apIds);
+            });
+        } catch (Exception e) {
+            logger.error("Failed to create AP cache", e);
+            errorCounter.incrementAndGet();
+        }
+        synchronized (atomCounter) {
+            int v = atomCounter.decrementAndGet();
+            if (v == 0) {
+                atomCounter.notify();
+            }
+        }
+    }
+
+    /**
+     * Synchronizace záznamů v databázi.
      * 
      * @param offset
      * @return Number of processed items
@@ -193,12 +288,25 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     private List<ApCachedAccessPoint> createCachedAccessPoints(List<Integer> accessPointIds) {
-        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(accessPointIds);
-        Validate.isTrue(accessPointIds.size() == accessPointList.size(), "Found unexpected number of accesspoints");
-
-        // Add all aps
-        Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
+        Set<Integer> requestedIds = new HashSet<>(accessPointIds);
+        if(requestedIds.size()!=accessPointIds.size()) {
+            logger.error("Some ID is multiple times in the query");
+        }
+        
+        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);        
+        // Prepare map
+        final Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
                 .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, ap -> createCachedAccessPoint(ap)));
+        
+        // check result
+        if (requestedIds.size() != accessPointList.size()) {
+            List<Integer> missingIds = requestedIds.stream().filter((reqId) -> apMap.get(reqId)==null)
+                    .collect(Collectors.toList());
+            logger.error("Some access points not found: {}", missingIds);
+            throw new SystemException("Some access points not found", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("missingIds", missingIds);
+        }
+
 
         // set ap state
         List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
