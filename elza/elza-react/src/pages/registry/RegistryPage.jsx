@@ -434,7 +434,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: {id, typeId, revStateApproval},
+                data: {id, newTypeId, revStateApproval},
             },
             select = false,
         } = this.props;
@@ -442,7 +442,7 @@ class RegistryPage extends AbstractReactComponent {
             <RevStateChangeForm
                 initialValues={{
                     state: revStateApproval,
-                    typeId: typeId,
+                    typeId: newTypeId,
                 }}
                 onSubmit={data => {
                     const finalData = {
