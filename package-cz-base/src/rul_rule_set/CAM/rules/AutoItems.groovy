@@ -219,7 +219,6 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
     // obecný doplněk
     GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
     if (genItem != null) {
-        System.out.println(genItem)
         if (!excludeTerritory.contains(genItem.getSpecCode())) {
             GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, genItem.getValue())
             items.add(obecItem)
@@ -229,9 +228,17 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
     // chronologický doplněk
     GroovyItem chroItem = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
     if (!chroItem.getValue().isEmpty()) {
-        // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
-        if (to != null && genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
-            items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
+        // pokud se jedná o geo objekt
+        if (GroovyUtils.hasParent(ae.getAeType(), "GEO")) {
+            // pokud objekt je GEO_UNIT
+            if (ae.getAeType().equals("GEO_UNIT")) {
+                // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
+                if (to != null && genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
+                    items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
+                } else {
+                    items.add(chroItem)
+                }
+            }
         } else {
             items.add(chroItem)
         }
