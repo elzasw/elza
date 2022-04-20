@@ -178,15 +178,22 @@ public class GroovyUtils {
         return null;
     }
 
+    public static boolean hasParent(String typeCode, String parentCode) {
+        Validate.notNull(typeCode, "Nebyl předán typ entity");
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ApType itemType = sdp.getApTypeByCode(typeCode);
+        return hasParent(itemType.getApTypeId(), parentCode);
+    }
+
     public static boolean hasParent(Integer typeId, String parentCode) {
-        Validate.notNull(typeId, "Nebyla předán typ entity");
+        Validate.notNull(typeId, "Nebyl předán typ entity");
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ApType itemType = sdp.getApTypeById(typeId);
 
         if (itemType != null) {
             Integer parentItemTypeId = itemType.getParentApTypeId();
             ApType parentItemType = sdp.getApTypeById(parentItemTypeId);
-    
+
             return Objects.equals(parentItemType.getCode(), parentCode);
         }
         return false;
