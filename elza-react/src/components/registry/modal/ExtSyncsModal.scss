@@ -93,3 +93,12 @@ $max-height: 600px;
         text-overflow: ellipsis;
     }
 }
+
+.state-info {
+    margin-left: 5px;
+    cursor: help;
+}
+
+.state-info-tooltip {
+    max-width: 500px;
+}
