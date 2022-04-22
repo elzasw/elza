@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -161,10 +162,10 @@ public class RevisionService {
         }
     }
 
-    @Transactional
+    @Transactional(value = TxType.MANDATORY)
     public void changeStateRevision(ApState state, RevStateChange revStateChange) {
-        ApRevision revision = findRevisionByState(state);
-        if (revision == null) {
+        ApRevision prevRevision = findRevisionByState(state);
+        if (prevRevision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
@@ -174,11 +175,14 @@ public class RevisionService {
             if (countBinding > 0) {
                 throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", state.getAccessPointId())
-                    .set("revisionId", revision.getRevisionId());
+                        .set("revisionId", prevRevision.getRevisionId());
             }
         }
 
         StaticDataProvider sdp = staticDataService.createProvider();
+
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        ApRevision revision = createRevision(prevRevision, change);
 
         if (revStateChange.getState() != null) {
             RevStateApproval stateApproval = RevStateApproval.valueOf(revStateChange.getState().getValue());
@@ -190,7 +194,29 @@ public class RevisionService {
             revision.setType(type);
         }
 
-        revisionRepository.save(revision);
+        revisionRepository.saveAndFlush(revision);
+    }
+
+    /**
+     * Create new revision based on previous revision
+     * 
+     * @param prevRevision
+     * @param change
+     * @return
+     */
+    public ApRevision createRevision(@Nonnull ApRevision prevRevision, @Nonnull ApChange change) {
+        Validate.isTrue(prevRevision.getDeleteChange() == null);
+
+        prevRevision.setDeleteChange(change);
+        prevRevision = revisionRepository.saveAndFlush(prevRevision);
+
+        ApRevision revision = new ApRevision();
+        revision.setCreateChange(change);
+        revision.setState(prevRevision.getState());
+        revision.setType(prevRevision.getType());
+        revision.setStateApproval(prevRevision.getStateApproval());
+        revision.setPreferredPart(prevRevision.getPreferredPart());
+        return revision;
     }
 
     public ApRevision findRevisionByState(ApState state) {
