@@ -232,12 +232,16 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
         if (GroovyUtils.hasParent(ae.getAeType(), "GEO")) {
             // pokud objekt je GEO_UNIT
             if (ae.getAeType().equals("GEO_UNIT")) {
-                // pokud objekt zanikl a je zařazen do seznamu excludeTerritory
-                if (to != null && genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
-                    items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
-                } else {
-                    items.add(chroItem)
+                // pokud objekt zanikl
+                if (to != null) {
+                    // pokud objekt je zařazen do seznamu excludeTerritory
+                    if (genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
+                    	items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
+                	} else {
+	                    items.add(chroItem)
+                	}    
                 }
+                // pokud objekt nezanikl - nic neoznačujeme
             }
         } else {
             items.add(chroItem)
