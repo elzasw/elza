@@ -250,7 +250,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
-    const allRevisionParts = detail.data.revStateApproval ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
+    const allRevisionParts = detail.data.revStateApproval && revisionActive ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
     const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId );
 
     const getRelatedPartSections = (parentParts: RevisionPart[]) => {
