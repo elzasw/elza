@@ -132,7 +132,7 @@ const DetailHeader: FC<Props> = ({
                                 <DetailDescriptionsItemWithButton
                                     renderButton={onToggleRevision ? () => 
                                         <Button onClick={onToggleRevision}>
-                                            <Icon glyph={'fa-eye'}/>
+                                            <Icon glyph={'fa-pencil'}/>
                                         </Button> : undefined
                                 }
                                     className={revisionActive ? "revision" : undefined}
