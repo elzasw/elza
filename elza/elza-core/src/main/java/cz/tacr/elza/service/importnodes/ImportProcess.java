@@ -1,5 +1,29 @@
 package cz.tacr.elza.service.importnodes;
 
+import static cz.tacr.elza.repository.ExceptionThrow.file;
+import static cz.tacr.elza.repository.ExceptionThrow.structureData;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.locationtech.jts.geom.Geometry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -73,30 +97,6 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUriRef;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.castor.core.util.Assert;
-import org.locationtech.jts.geom.Geometry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.file;
-import static cz.tacr.elza.repository.ExceptionThrow.structureData;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -203,11 +203,6 @@ public class ImportProcess {
     private List<ArrDescItem> descItems = new ArrayList<>();
     private List<ArrData> dataList = new ArrayList<>();
     private List<Integer> nodeIds = new ArrayList<>();
-
-    /**
-     * Uzly, které je potřeba posunout.
-     */
-    private List<ArrLevel> levelsToShift;
 
     // konstanty pro uložení při překročení počtu
     private final int LEVEL_LIMIT = 300;
@@ -316,17 +311,6 @@ public class ImportProcess {
 
         flushData(true);
 
-        // posunutí potřebných levelů (pokud se zakládá před nebo za
-        if (levelsToShift != null && levelsToShift.size() > 0) {
-            DeepData data = null;
-            while (!stack.isEmpty()) {
-                data = stack.pop();
-            }
-            if (data != null) {
-                fundLevelService.shiftNodes(levelsToShift, change, data.position + 1);
-            }
-        }
-
         levelTreeCacheService.invalidateFundVersion(targetFundVersion);
 
         if (nodeIds.size() > 0) {
@@ -428,66 +412,49 @@ public class ImportProcess {
     private DeepCallback processDeepCallback(final Stack<DeepData> stack) {
         return (deep) -> {
             switch (deep) {
-                case UP:
-                    stack.pop();
-                    stack.peek().incPosition();
-                    break;
-                case DOWN:
-                    stack.push(new DeepData(1, stack.peek().getPrevNode()));
-                    break;
-                case NONE:
-                    stack.peek().incPosition();
-                    break;
-                case RESET: {
+            case UP:
+                stack.pop();
+                stack.peek().incPosition();
+                break;
+            case DOWN:
+                stack.push(new DeepData(1, stack.peek().getPrevNode()));
+                break;
+            case NONE:
+                stack.peek().incPosition();
+                break;
+            case RESET: {
 
-                    flushData(true);
+                flushData(true);
 
-                    if (levelsToShift != null && levelsToShift.size() > 0) {
-                        DeepData data = null;
-                        while (!stack.isEmpty()) {
-                            data = stack.pop();
-                        }
-                        if (data != null) {
-                            switch (selectedDirection) {
-                                case BEFORE: {
-                                    // není třeba měnit
-                                    break;
-                                }
-                                case AFTER:
-                                    targetNode = data.getPrevNode();
-                                    break;
-                                default: {
-                                    throw new SystemException("Neplatný směr založení levelu: " + selectedDirection, BaseCode.INVALID_STATE);
-                                }
-                            }
-                            fundLevelService.shiftNodes(levelsToShift, change, data.position + 1);
-                        }
+                switch (selectedDirection) {
+                case CHILD: {
+                    Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
+                    stack.push(new DeepData(position == null ? 1 : position + 1, targetNode));
+                    break;
+                }
+
+                case AFTER:
+                case BEFORE: {
+                    ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
+                    int position = selectedDirection.equals(FundLevelService.AddLevelDirection.AFTER) ? staticLevel
+                            .getPosition() + 1 : staticLevel.getPosition();
+                    List<ArrLevel> levelsToShift = fundLevelService.nodesToShift(staticLevel);
+                    if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
+                        levelsToShift.add(0, staticLevel);
                     }
+                    // posunutí potřebných levelů (pokud se zakládá před nebo za                            
+                    Validate.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");
+                    this.levels.addAll(fundLevelService.shiftNodes(levelsToShift, change, position + 1));
 
-                    switch (selectedDirection) {
-                        case CHILD: {
-                            Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
-                            stack.push(new DeepData(position == null ? 1 : position + 1, targetNode));
-                            break;
-                        }
+                    stack.push(new DeepData(position, targetParentNode));
+                    break;
+                }
 
-                        case AFTER:
-                        case BEFORE: {
-                            ArrLevel staticLevel = levelRepository.findByNode(targetNode, targetFundVersion.getLockChange());
-                            int position = selectedDirection.equals(FundLevelService.AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1 : staticLevel.getPosition();
-                            levelsToShift = fundLevelService.nodesToShift(staticLevel);
-                            if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
-                                levelsToShift.add(0, staticLevel);
-                            }
-                            Assert.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");
-                            stack.push(new DeepData(position, targetParentNode));
-                            break;
-                        }
-
-                        default: {
-                            throw new SystemException("Neplatný směr založení levelu: " + selectedDirection, BaseCode.INVALID_STATE);
-                        }
-                    }
+                default: {
+                    throw new SystemException("Neplatný směr založení levelu: " + selectedDirection,
+                            BaseCode.INVALID_STATE);
+                }
+                }
 
                     break;
                 }

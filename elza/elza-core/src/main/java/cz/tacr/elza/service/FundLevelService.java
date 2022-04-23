@@ -8,7 +8,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -17,7 +19,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang3.Validate;
@@ -26,9 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -41,8 +44,10 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -64,6 +69,9 @@ public class FundLevelService {
     private EntityManager entityManager;
     
     @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
     private LevelRepository levelRepository;
     
     @Autowired
@@ -75,6 +83,12 @@ public class FundLevelService {
     @Autowired
     private RuleService ruleService;
     
+    @Autowired
+    DaoRepository daoRepository;
+
+    @Autowired
+    DaoService daoService;
+
     @Autowired
     private DescItemRepository descItemRepository;
     
@@ -165,30 +179,38 @@ public class FundLevelService {
         nodesToShiftDown.add(0, staticLevel);
         nodesToShiftDown.removeAll(transportLevels);
 
-        Integer position;
+        List<ArrLevel> updatedLevels = new ArrayList<>();
+
+        int targetPosition = staticLevel.getPosition();
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.DISCONNECT_NODE_LOCAL,
                     null, null, null);
 
             if (transportLevels.get(0).getPosition() > staticLevel.getPosition()) {
-                position = placeLevels(transportLevels, staticLevel.getNodeParent(), change,
-                        staticLevel.getPosition());
-                // TODO Lebeda - tady spadne na: Violation of UNIQUE KEY constraint 'u_arr_level_ppd'. Cannot insert duplicate key in object 'dbo.arr_level'.
-                placeLevels(nodesToShiftDown, staticLevel.getNodeParent(), change, position);
+                updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(),
+                                                 change, targetPosition));
+                targetPosition += transportLevels.size();
+                updatedLevels.addAll(placeLevels(nodesToShiftDown, staticLevel.getNodeParent(),
+                                                 change, targetPosition));
             } else {
                 //posun up
-                shiftNodesWithCollection(nodesToShiftUp, transportLevels, transportLevels.get(0).getPosition(),
-                        staticLevel.getNodeParent(), change, staticLevel, null);
+                updatedLevels.addAll(shiftNodesWithCollection(nodesToShiftUp, transportLevels,
+                                                              transportLevels.get(0).getPosition(),
+                                                              staticLevel.getNodeParent(), change, staticLevel, null));
             }
         } else {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.DISCONNECT_NODE,
                     null, null, null);
 
-            shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition());
-            position = placeLevels(transportLevels, staticLevel.getNodeParent(), change, staticLevel.getPosition());
-            shiftNodes(nodesToShiftDown, change, position);
+            updatedLevels.addAll(shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition()));
+            updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(),
+                                             change, targetPosition));
+            targetPosition += transportLevels.size();
+            updatedLevels.addAll(shiftNodes(nodesToShiftDown, change, targetPosition));
         }
 
+        updatedLevels = levelRepository.saveAll(updatedLevels);
+        levelRepository.flush();
 
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
@@ -286,29 +308,38 @@ public class FundLevelService {
         List<ArrLevel> nodesToShiftDown = nodesToShift(staticLevel);
         nodesToShiftDown.removeAll(transportLevels);
 
-        Integer position;
+        List<ArrLevel> updatedLevels = new ArrayList<>();
+
+        int targetPositon = staticLevel.getPosition() + 1;
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.DISCONNECT_NODE_LOCAL,
                     null, null, null);
 
             if (transportLevels.get(0).getPosition() > staticLevel.getPosition()) {
-                position = placeLevels(transportLevels, staticLevel.getNodeParent(), change,
-                        staticLevel.getPosition() + 1);
-                placeLevels(nodesToShiftDown, staticLevel.getNodeParent(), change, position);
+                updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(), 
+                                                 change, targetPositon));
+                targetPositon += transportLevels.size();
+                updatedLevels.addAll(placeLevels(nodesToShiftDown, staticLevel.getNodeParent(),
+                                                 change, targetPositon));
             } else {
                 //posun up
-                shiftNodesWithCollection(nodesToShiftUp, transportLevels, transportLevels.get(0).getPosition(),
-                        staticLevel.getNodeParent(), change, null, staticLevel);
+                updatedLevels.addAll(shiftNodesWithCollection(nodesToShiftUp, transportLevels, transportLevels.get(0)
+                        .getPosition(),
+                                                              staticLevel.getNodeParent(), change, null, staticLevel));
             }
         } else {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.DISCONNECT_NODE,
                     null, null, null);
 
-            shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition());
-            position = placeLevels(transportLevels, staticLevel.getNodeParent(), change, staticLevel.getPosition() + 1);
-            shiftNodes(nodesToShiftDown, change, position);
+            updatedLevels.addAll(shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition()));
+            updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(),
+                                             change, targetPositon));
+            targetPositon += transportLevels.size();
+            updatedLevels.addAll(shiftNodes(nodesToShiftDown, change, targetPositon));
         }
 
+        updatedLevels = levelRepository.saveAll(updatedLevels);
+        levelRepository.flush();
 
         if (transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
             ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE_LOCAL,
@@ -382,18 +413,20 @@ public class FundLevelService {
         Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
-        Set<Integer> transportNodeIds = new HashSet<>();
-        transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
+        List<Integer> transportNodeIds = transportLevels.stream()
+                .map(l -> l.getNodeId()).collect(Collectors.toList());
 
         ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.DISCONNECT_NODE,
                 null, null, null);
+
+        List<ArrLevel> updatedLevels = new ArrayList<>();
 
 
         //zbydou pouze ty, které jsou pod přesouvanými
         List<ArrLevel> nodesToShiftUp = nodesToShift(transportLevels.get(0));
         nodesToShiftUp.removeAll(transportLevels);
 
-        shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition());
+        updatedLevels.addAll(shiftNodes(nodesToShiftUp, change, transportLevels.get(0).getPosition()));
 
 
         Integer maxPosition = levelRepository.findMaxPositionUnderParent(staticLevel.getNode());
@@ -401,8 +434,11 @@ public class FundLevelService {
             maxPosition = 0;
         }
 
-        placeLevels(transportLevels, staticLevel.getNode(), change, maxPosition + 1);
+        updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNode(), change, maxPosition + 1));
 
+
+        updatedLevels = levelRepository.saveAll(updatedLevels);
+        levelRepository.flush();
 
         ruleService.conformityInfo(versionId, transportNodeIds, NodeTypeOperation.CONNECT_NODE, null, null, null);
 
@@ -412,6 +448,80 @@ public class FundLevelService {
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_UNDER, staticLevel, transportLevels, version));
     }
 
+    /**
+     * Kaskádově smaže všechny levely od počátečního
+     * 
+     * @param fundVersion
+     *
+     * @param baselevel
+     *            počáteční level
+     * @param deleteChange
+     *            záznam o provedených změnách
+     * @param allDeletedLevels
+     *            list všech levelů, které se budou mazat
+     * @param deleteLevelsWithAttachedDao
+     *            povolit nebo zakázat mazání úrovně s objektem dao
+     * @return List of modified levels
+     */
+    public List<ArrLevel> deleteLevelCascade(final ArrFundVersion fundVersion,
+                                       final ArrLevel baselevel, final ArrChange deleteChange,
+                                       final List<ArrLevel> allDeletedLevels,
+                                       final boolean deleteLevelsWithAttachedDao) {
+        List<ArrLevel> deletedLevels = new ArrayList<>();
+        
+        List<ArrLevel> childLevels = levelRepository
+                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode());
+        for (ArrLevel childLevel : childLevels) {
+            deletedLevels.addAll(deleteLevelCascade(fundVersion, childLevel, deleteChange, allDeletedLevels, deleteLevelsWithAttachedDao));
+        }
+
+        ArrNode node = baselevel.getNode();
+        // check if node is part of fund
+        Validate.isTrue(node.getFundId().equals(fundVersion.getFundId()), "Node is not part of same fund");
+
+        // check if connected Dao(type=Level) exists
+        if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
+            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL")
+                    .set("nodeId", node.getNodeId());
+        }
+
+        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
+            descItem.setDeleteChange(deleteChange);
+            descItemRepository.save(descItem);
+        }
+
+        daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
+
+        // vyhledani node, ktere odkazuji na mazany
+        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+
+        arrDescItemList = arrDescItemList.stream().map(i -> {
+            entityManager.detach(i);
+            return (ArrDescItem) HibernateUtils.unproxy(i);
+        }).collect(Collectors.toList());
+
+        for (ArrDescItem arrDescItem : arrDescItemList) {
+            //pokud se item bude mazat, není potřeba u něj předělávat UriRef
+            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem
+                    .getNodeId()))) {
+                ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                arrDataUriRef.setDataId(null);
+                arrDataUriRef.setArrNode(null);
+                arrDataUriRef.setDeletingProcess(true);
+                arrDescItem.setData(arrDataUriRef);
+                descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
+            }
+        }
+
+        // mark as deleted
+        node.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime());
+        nodeRepository.save(node);
+
+        baselevel.setDeleteChange(deleteChange);
+        
+        deletedLevels.add(baselevel);
+        return deletedLevels;
+    }
 
     /**
      * Provede smazání levelu.
@@ -437,7 +547,7 @@ public class FundLevelService {
         if (deleteNodeParent != null) {
             arrangementService.lockNode(deleteNodeParent, version, change);
 
-            if(!ObjectUtils.equals(deleteLevel.getNodeParent(), deleteNodeParent)){
+            if (!Objects.equals(deleteLevel.getNodeIdParent(), deleteNodeParent.getNodeId())) {
                 throw new SystemException(
                         "Uzel " + deleteNode.getNodeId() + " nemá rodiče s id " + deleteNodeParent.getNodeId());
             }
@@ -446,18 +556,25 @@ public class FundLevelService {
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
-        shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
+        List<ArrLevel> updatedLevels = new ArrayList<>();
+        List<ArrLevel> shiftnodes = nodesToShift(deleteLevel);
+        // Prepare list of sublevels
+        List<ArrLevel> allSubLevels = levelRepository.findLevelsByDirection(deleteLevel, version,
+                                                                            RelatedNodeDirection.DESCENDANTS);
+        updatedLevels.addAll(deleteLevelCascade(version, deleteLevel, change,
+                                                allSubLevels, deleteLevelsWithAttachedDao));
+        updatedLevels.addAll(shiftNodes(shiftnodes, change, deleteLevel.getPosition()));
 
-        ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change,
-                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS),
-                deleteLevelsWithAttachedDao);
+        levelRepository.saveAll(updatedLevels);
+        levelRepository.flush();
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),
                 deleteNode.getNodeId(),
                 (deleteNodeParent != null) ? deleteNodeParent.getNodeId() : null));
 
-        return level;
+        // return final level state
+        return levelRepository.getOne(deleteLevel.getLevelId());
     }
 
     /**
@@ -472,7 +589,7 @@ public class FundLevelService {
      * @param beforeLevel        pokud přesouváme před uzel, je nastaven uzel, před který chceme přesunout
      * @param afterLevel         pokud přesouváme za uzel, je nastaven uzel, za který chceme přesunout
      */
-    private void shiftNodesWithCollection(final List<ArrLevel> shiftNodes,
+    private List<ArrLevel> shiftNodesWithCollection(final List<ArrLevel> shiftNodes,
                                          final List<ArrLevel> transferCollection,
                                          final int firstPosition,
                                          final ArrNode parentNode,
@@ -481,28 +598,33 @@ public class FundLevelService {
                                          @Nullable final ArrLevel afterLevel) {
         Assert.isTrue((beforeLevel == null && afterLevel != null) || (beforeLevel != null && afterLevel == null), "Musí být platné");
 
+        List<ArrLevel> updatedLevels = new ArrayList<>();
+
         boolean needInsert = true;
         int position = firstPosition;
         for (ArrLevel shiftNode : shiftNodes) {
             if (needInsert && beforeLevel != null && beforeLevel.equals(shiftNode)) {
                 needInsert = false;
-                position = placeLevels(transferCollection, parentNode, change, position);
+                updatedLevels.addAll(placeLevels(transferCollection, parentNode, change, position));
+                position += transferCollection.size();
             }
 
             ArrLevel newNode = createNewLevelVersion(shiftNode, change);
             newNode.setPosition(position++);
-            levelRepository.saveAndFlush(newNode);
+            updatedLevels.add(newNode);
 
 
             if (needInsert && afterLevel != null && afterLevel.equals(shiftNode)) {
                 needInsert = false;
-                position = placeLevels(transferCollection, parentNode, change, position);
+                updatedLevels.addAll(placeLevels(transferCollection, parentNode, change, position));
+                position += transferCollection.size();
             }
         }
 
         if (needInsert) {
-            placeLevels(transferCollection, parentNode, change, position);
+            updatedLevels.addAll(placeLevels(transferCollection, parentNode, change, position));
         }
+        return updatedLevels;
     }
 
     /**
@@ -513,18 +635,21 @@ public class FundLevelService {
      * @param change          změna uzamčení
      * @param firstPosition   pozice prvního posouvaného uzlu
      */
-    private int placeLevels(final List<ArrLevel> transportLevels, final ArrNode parentNode,
+    private List<ArrLevel> placeLevels(final List<ArrLevel> transportLevels, final ArrNode parentNode,
                            final ArrChange change, final int firstPosition) {
+        List<ArrLevel> ret = new ArrayList<>(transportLevels.size());
+
         int position = firstPosition;
 
         for (ArrLevel transportLevel : transportLevels) {
             ArrLevel newLevel = createNewLevelVersion(transportLevel, change);
             newLevel.setNodeParent(parentNode);
-            newLevel.setPosition(position++);
-            levelRepository.saveAndFlush(newLevel);
+            newLevel.setPosition(position);
+            ret.add(newLevel);
+            position++;
         }
 
-        return position;
+        return ret;
     }
 
 
@@ -687,7 +812,8 @@ public class FundLevelService {
         }
 
         List<ArrLevel> levels = new ArrayList<>(count);
-        shiftNodes(nodesToShift, change, newLevelPosition + count);
+        levelRepository.saveAll(shiftNodes(nodesToShift, change, newLevelPosition + count));
+        levelRepository.flush();
         for (int i = 0; i < count; i++) {
             levels.add(createLevel(change, staticLevelParent.getNode(),
             		newLevelPosition + i, null, version.getFund()));
@@ -801,20 +927,25 @@ public class FundLevelService {
 
     /**
      * Smaže uzel (uzamkne) a vytvoří jeho kopii.
+     * 
+     * Předchozí verze je ihned uložena do DB. Nová verze není uložena.
      *
-     * @param node   uzel
-     * @param change změna smazání
+     * @param prevLevel
+     *            platná verze
+     * @param change
+     *            změna smazání
      * @return nový level
      */
-    private ArrLevel createNewLevelVersion(ArrLevel node, ArrChange change) {
-        Assert.notNull(node, "JP musí být vyplněna");
-        Assert.notNull(change, "Změna musí být vyplněna");
+    private ArrLevel createNewLevelVersion(ArrLevel prevLevel, ArrChange change) {
+        Validate.notNull(prevLevel, "JP musí být vyplněna");
+        Validate.notNull(change, "Změna musí být vyplněna");
+        Validate.isTrue(prevLevel.getDeleteChange() == null, "Předchozí verze musí být platná");
 
-        ArrLevel newNode = copyLevelData(node);
+        ArrLevel newNode = copyLevelData(prevLevel);
         newNode.setCreateChange(change);
 
-        node.setDeleteChange(change);
-        levelRepository.saveAndFlush(node);
+        prevLevel.setDeleteChange(change);
+        levelRepository.saveAndFlush(prevLevel);
         return newNode;
     }
 
@@ -842,7 +973,7 @@ public class FundLevelService {
      * @param change        změna smazání uzlů
      * @param firstPosition pozice prvního přesouvaného uzlu
      */
-    public void shiftNodes(Collection<ArrLevel> nodesToShift, ArrChange change, final int firstPosition) {
+    public List<ArrLevel> shiftNodes(Collection<ArrLevel> nodesToShift, ArrChange change, final int firstPosition) {
         Assert.notNull(nodesToShift, "Level k posunu musí být vyplněny");
         Assert.notNull(change, "Změna musí být vyplněna");
 
@@ -853,11 +984,15 @@ public class FundLevelService {
                 .append(o2.getPosition(), o1.getPosition())
                 .toComparison());
 
+        List<ArrLevel> updatedLevels = new ArrayList<>();
+
         for (ArrLevel node : nodesToShiftList) {
             ArrLevel newNode = createNewLevelVersion(node, change);
             newNode.setPosition(position--);
-            levelRepository.saveAndFlush(newNode);
+            updatedLevels.add(newNode);
         }
+
+        return updatedLevels;
     }
 
 
@@ -886,13 +1021,16 @@ public class FundLevelService {
             return;
         }
 
+        List<ArrLevel> updatedLevels = new ArrayList<>(levels.size());
         for (int i = 1; i <= levels.size(); i++) {
             ArrLevel level = levels.get(i - 1);
 
             ArrLevel newLevel = createNewLevelVersion(level, change);
             newLevel.setPosition(i);
-            levelRepository.saveAndFlush(newLevel);
+            updatedLevels.add(newLevel);
         }
+        levelRepository.saveAll(updatedLevels);
+        levelRepository.flush();
     }
 
     /**
