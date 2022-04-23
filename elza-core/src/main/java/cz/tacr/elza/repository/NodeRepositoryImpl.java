@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toSet;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
@@ -86,17 +87,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     public List<ArrNode> findNodesByDirection(final ArrNode node,
                                               final ArrFundVersion version,
                                               final RelatedNodeDirection direction) {
-        Assert.notNull(node, "JP musí být vyplněna");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(direction, "Směr musí být vyplněn");
+        Validate.notNull(node, "JP musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(direction, "Směr musí být vyplněn");
 
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
         Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
 
-        List<ArrNode> nodes = new ArrayList<>(levels.size());
-        levels.forEach(l -> nodes.add(l.getNode()));
-        return nodes;
+        List<ArrNode> result = levels.stream().map(l -> l.getNode()).collect(Collectors.toList());
+        return result;
     }
 
     /*

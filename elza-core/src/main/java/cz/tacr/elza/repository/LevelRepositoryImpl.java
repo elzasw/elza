@@ -161,7 +161,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     // TODO: Rewrite this query with recursive query
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
-        Assert.notNull(node, "JP musí být vyplněna");
+        Validate.notNull(node, "JP musí být vyplněna");
         
         if(lockChange==null) {
             // call recursive query for current version
