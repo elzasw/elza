@@ -127,7 +127,7 @@
     <extension-rule filename="available_items/ARTWORK_CONSTR/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
-        <condition>AVAILABLE_ITEMS/AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE</condition>
+        <condition>AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE</condition>
     </extension-rule>
     <extension-rule filename="available_items/ARTWORK_CONSTR/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
@@ -217,12 +217,12 @@
     <extension-rule filename="available_items/EVENT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
-        <condition>AVAILABLE_ITEMS/AVAILABLE_ITEMS/EVENT/PT_BODY</condition>
+        <condition>AVAILABLE_ITEMS/EVENT/PT_BODY</condition>
     </extension-rule>
     <extension-rule filename="available_items/EVENT/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
-        <condition>AVAILABLE_ITEMS/AVAILABLE_ITEMS/EVENT/PT_CRE</condition>
+        <condition>AVAILABLE_ITEMS/EVENT/PT_CRE</condition>
     </extension-rule>
     <extension-rule filename="available_items/EVENT/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
@@ -387,7 +387,7 @@
     <extension-rule filename="available_items/GEO_SPACE/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SPACE/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
-        <condition>AVAILABLE_ITEMS/AVAILABLE_ITEMS/GEO_SPACE/PT_BODY</condition>
+        <condition>AVAILABLE_ITEMS/GEO_SPACE/PT_BODY</condition>
     </extension-rule>
     <extension-rule filename="available_items/GEO_UNIT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
