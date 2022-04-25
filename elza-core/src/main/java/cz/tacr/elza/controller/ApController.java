@@ -868,7 +868,7 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
+        accessPointService.checkPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
             revisionService.createPart(revision, apPartFormVO);
@@ -893,7 +893,7 @@ public class ApController {
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
+        accessPointService.checkPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
@@ -950,7 +950,7 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
+        accessPointService.checkPermissionForEditingConfirmed(state);
 
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
@@ -976,7 +976,7 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
+        accessPointService.checkPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
             revisionService.setPreferName(revision, partId);
