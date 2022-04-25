@@ -54,8 +54,8 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="LANG" data-type="ENUM">
-        <name>Jazyk díla</name>
-        <shortcut>Jazyk díla</shortcut>
+        <name>Jazyk originálu</name>
+        <shortcut>Jazyk originálu</shortcut>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="CORP_STRUCTURE" data-type="TEXT">
