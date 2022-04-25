@@ -145,7 +145,7 @@ when $ae: Ap( $aeParts : parts)
      not (Part(parentPartId == $part.id) from $aeParts)
 then 
     results.addError("U události neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
-end  
+end
 
 rule "R_BDG_003 nadřízená entita nesmí být zaniklá"
 when $ae: Ap( $aeParts : parts)
