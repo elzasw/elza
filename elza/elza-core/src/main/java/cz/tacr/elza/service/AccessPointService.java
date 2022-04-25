@@ -2079,7 +2079,7 @@ public class AccessPointService {
      *
      * @param state state entity
      */
-    public void hasPermissionForEditingConfirmed(final ApState state) {
+    public void checkPermissionForEditingConfirmed(final ApState state) {
         if (state.getStateApproval() == StateApproval.APPROVED) {
 
             if (!userService.hasPermission(Permission.ADMIN)

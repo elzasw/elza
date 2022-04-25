@@ -164,6 +164,8 @@ public class RevisionService {
 
     @Transactional(value = TxType.MANDATORY)
     public void changeStateRevision(ApState state, RevStateChange revStateChange) {
+        accessPointService.checkPermissionForEditingConfirmed(state);
+
         ApRevision prevRevision = findRevisionByState(state);
         if (prevRevision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
@@ -422,6 +424,8 @@ public class RevisionService {
 
     @Transactional
     public void setPreferName(ApState state, Integer partId) {
+        accessPointService.checkPermissionForEditingConfirmed(state);
+
         ApRevision revision = revisionRepository.findByState(state);
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
