@@ -1744,7 +1744,20 @@ public class AccessPointService {
         UserDetail user = userService.getLoggedUserDetail();
 
         if (user.hasPermission(Permission.ADMIN)) {
-            return Arrays.asList(StateApproval.values());
+            switch (apState.getStateApproval()) {
+            case NEW:
+            case TO_APPROVE:
+            case TO_AMEND:
+            case APPROVED:
+                return Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE, StateApproval.TO_AMEND,
+                                     StateApproval.APPROVED);
+            // starsi stavy - budou odstraneny
+            // z nich je mozne prepnuti do vsech
+            case REV_NEW:
+            case REV_AMEND:
+            case REV_PREPARED:
+                return Arrays.asList(StateApproval.values());
+            }
         }
 
         Set<StateApproval> result = new HashSet<>();
@@ -1783,7 +1796,6 @@ public class AccessPointService {
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                result.add(StateApproval.REV_NEW);
                 // specialni stav z duvodu umozneni neverzovane zmeny 
                 // oblasti u schvalenych entit
                 result.add(StateApproval.APPROVED);
