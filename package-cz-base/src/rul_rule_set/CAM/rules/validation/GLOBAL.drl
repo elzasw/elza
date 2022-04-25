@@ -15,6 +15,17 @@ import cz.tacr.elza.drools.model.DrlUtils;
 global ApValidationErrors results;
 
 
+
+rule "R_GEN_006 Prázdné části popisu archivní entity"
+when
+    $ae: Ap( $aeParts : parts )
+    $part: Part(items.isEmpty()) from $aeParts
+    not $childPart: Part(parentPartId == $part.id, type == PartType.PT_REL) from $ae.parts
+then
+    results.addError("Entita obsahuje prázdnou část popisu entity.");
+end
+
+
 rule "R_NAM_001 Povinnost vyplnění preferovaného označení"
 when $ae: Ap( $aeParts : parts)
      not (Part(type == PartType.PT_NAME) from $aeParts)
