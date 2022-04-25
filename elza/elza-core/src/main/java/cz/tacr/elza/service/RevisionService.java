@@ -714,18 +714,18 @@ public class RevisionService {
             return true;
         }
 
-        if(revState!=RevStateApproval.TO_APPROVE) {
-            // Jen změny ve stavu ke schválení mohou být přijaty
-            return false;
-        }
-        if (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+        // Je ve stavu ke schválení?
+        boolean revToApprove = revState == RevStateApproval.TO_APPROVE;
+
+        if (revToApprove && oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(
+                                                                                                       StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                     || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
         }
         // nová nebo k připomínkám s revizí
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
-            if(newStateApproval.equals(StateApproval.APPROVED)) {
+            if (revToApprove && newStateApproval.equals(StateApproval.APPROVED)) {
                 // "Schvalování přístupových bodů"
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
                     || userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {

@@ -1831,32 +1831,29 @@ public class AccessPointService {
 
         Set<StateApproval> result = new HashSet<>();
 
-        if (user.hasPermission(Permission.ADMIN)) {
+        if (user == null || user.hasPermission(Permission.ADMIN)) {
             result.add(StateApproval.NEW);
             result.add(StateApproval.TO_AMEND);
             result.add(StateApproval.TO_APPROVE);
             result.add(StateApproval.APPROVED);
+            return new ArrayList<>(result);
         }
 
         // zakládání a změny nových
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
             // mame opravneni pro zapis
-            if (apState.getStateApproval().equals(StateApproval.NEW)) {
+            if (apState.getStateApproval().equals(StateApproval.NEW) ||
+                    apState.getStateApproval().equals(StateApproval.TO_AMEND) ||
+                    apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
                 result.add(StateApproval.NEW);
                 result.add(StateApproval.TO_AMEND);
                 result.add(StateApproval.TO_APPROVE);
             }
-            if (apState.getStateApproval().equals(StateApproval.TO_AMEND)) {
-                result.add(StateApproval.TO_AMEND);
-                result.add(StateApproval.TO_APPROVE);
-            }
-            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
-                result.add(StateApproval.TO_APPROVE);
-            }
         }
 
-        Integer lastRevUserId = revision.getCreateChange().getUser().getUserId();
+        UsrUser createChangeUser = revision.getCreateChange().getUser();
+        Integer lastRevUserId = createChangeUser != null ? createChangeUser.getUserId() : null;
         // schvalování
         // jen jiny uzivatel nez tvurce revize muze schvalit
         if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
