@@ -74,7 +74,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query("SELECT d FROM arr_dao d WHERE d.code in :codes")
     List<ArrDao> findByCodes(@Param(value = "codes") Collection<String> codes);
 
-    @Query("SELECT d FROM arr_dao d join fetch d.daoPackage p WHERE d.code in :codes and p.digitalRepository = :repo")
+    @Query("SELECT d FROM arr_dao d JOIN FETCH d.daoPackage p WHERE d.code IN :codes AND p.digitalRepository = :repo")
     List<ArrDao> findByCodes(@Param(value = "repo") ArrDigitalRepository repository,
                              @Param(value = "codes") List<String> daoCodes);
 

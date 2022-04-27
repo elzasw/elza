@@ -240,39 +240,6 @@ public class ArrangementService {
     }
 
     /**
-     * Try to find fund by string
-     *
-     * @param fundIdentifier
-     * @return fund, throw exception if not found
-     */
-    public ArrFund getFundByString(String fundIdentifier) {
-        logger.debug("Looking for fund: {}", fundIdentifier);
-        // try to find by uuid
-        if (fundIdentifier.length() == 36) {
-            ArrFund fund = fundRepository.findByRootNodeUuid(fundIdentifier);
-            if (fund != null) {
-                logger.debug("Found by UUID as {}", fund.getFundId());
-                return fund;
-            }
-        }
-        // try to find by internal code
-        ArrFund fund = fundRepository.findByInternalCode(fundIdentifier);
-        if (fund != null) {
-            logger.debug("Found by internal code as {}", fund.getFundId());
-            return fund;
-        }
-
-        // try to find by id
-        try {
-            Integer id = Integer.valueOf(fundIdentifier);
-            return getFund(id);
-        } catch (NumberFormatException nfe) {
-            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundIdentifier, ArrangementCode.FUND_NOT_FOUND)
-                    .setId(fundIdentifier);
-        }
-    }
-
-    /**
      * Načtení uzlu na základě id.
      *
      * @param nodeId

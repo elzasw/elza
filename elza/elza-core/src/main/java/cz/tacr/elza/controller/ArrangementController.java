@@ -1313,8 +1313,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public TreeData getFundTree(final @RequestBody FaTreeParam input) {
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-        Assert.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(input, "Vstupní data musí být vyplněny");
+        Validate.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
 
         return levelTreeCacheService
                 .getFaTree(input.getVersionId(), input.getNodeId(), input.getExpandedIds(), input.getIncludeIds());

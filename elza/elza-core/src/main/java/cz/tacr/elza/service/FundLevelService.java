@@ -652,6 +652,36 @@ public class FundLevelService {
         return ret;
     }
 
+    @Transactional(value = TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_ARR_NODE })
+    public ArrLevel addLevelUnder(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+                                  @AuthParam(type = AuthParam.Type.NODE) final ArrNode staticNodeParent,
+                                  @Nullable final String scenarionName,
+                                  @Nullable final DesctItemProvider desctItemProvider,
+                                  @Nullable final String uuid,
+                                  @Nullable ArrChange change) {
+        Validate.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
+
+        ArrLevel baseLevel = levelRepository.findByNode(staticNodeParent, version.getLockChange());
+
+        if (change == null) {
+            change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
+        }
+
+        List<ArrLevel> levels = addLevelUnder(version, staticNodeParent, 1,
+                                              uuid != null ? Collections.singletonList(uuid) : null,
+                                              change);
+        Validate.notEmpty(levels, "Level musí být vyplněn");
+
+        ArrLevel newLevel = levels.get(0);
+
+        createItemsForNewLevel(version, AddLevelDirection.CHILD,
+                               baseLevel, newLevel, change, scenarionName,
+                               Collections.emptySet(), desctItemProvider);
+        return newLevel;
+    }
+
 
     /**
      * Vloží nový uzel do stromu. Podle směru zjistí pozici, posune případné sourozence a vloží uzel.
@@ -677,20 +707,24 @@ public class FundLevelService {
                                 @Nullable final Integer countNewLevel,
                                 @Nullable final List<String> uuids) {
 
-        Assert.notNull(baseNode, "Refereční JP musí být vyplněna");
-        Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
+        Validate.notNull(baseNode, "Refereční JP musí být vyplněna");
+        Validate.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
 
         ArrLevel baseLevel = levelRepository.findByNode(baseNode, version.getLockChange());
         int count = countNewLevel == null? 1 : countNewLevel;
 
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL,
+                                                                   direction == AddLevelDirection.CHILD ? baseNode
+                                                                           : staticNodeParent);
+
         List<ArrLevel> levels = new ArrayList<>(count);
         switch (direction){
             case CHILD:
-                levels = addLevelUnder(version, baseNode, count, uuids);
+                levels = addLevelUnder(version, baseNode, count, uuids, change);
                 break;
             case BEFORE:
             case AFTER:
-                levels = addLevelBeforeAfter(version, baseNode, staticNodeParent, direction, count);
+                levels = addLevelBeforeAfter(version, baseNode, staticNodeParent, direction, count, change);
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ směru přidání uzlu " + direction.name());
@@ -699,7 +733,6 @@ public class FundLevelService {
         Assert.notEmpty(levels, "Level musí být vyplněn");
 
         for (ArrLevel newLevel : levels) {
-            ArrChange change = newLevel.getCreateChange();
             
             createItemsForNewLevel(version, direction, baseLevel, newLevel, change, scenarionName, descItemCopyTypes, desctItemProvider);
 
@@ -789,15 +822,14 @@ public class FundLevelService {
                                          final ArrNode staticNode,
                                          final ArrNode staticNodeParent,
                                          final AddLevelDirection direction,
-                                         int count) {
+                                               int count,
+                                               final ArrChange change) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
         Validate.isTrue(count > 0, "Počet uzlů musí být větší než 0", count);
 
         arrangementService.isValidAndOpenVersion(version);
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent, "Rodič levelu musí být vyplněn");
@@ -861,16 +893,16 @@ public class FundLevelService {
     public List<ArrLevel> addLevelUnder(final ArrFundVersion version,
                                   final ArrNode staticNode, 
                                   int count,
-                                  List<String> uuids) {
+                                        List<String> uuids,
+                                        final ArrChange change) {
         Validate.notNull(version, "Verze AS musí být vyplněna");
         Validate.notNull(staticNode, "Refereční JP musí být vyplněna");
         Validate.isTrue(count>0, "Level count has to be greater then zero, %d", count);
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
-        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
+        Validate.notNull(staticLevel, "Referenční level musí být vyplněn");
 
         Integer maxPosition = levelRepository.findMaxPositionUnderParent(staticLevel.getNode());
         if (maxPosition == null) {
@@ -878,7 +910,7 @@ public class FundLevelService {
         }
 
         
-        Iterator<String> uuidsIter; 
+        Iterator<String> uuidsIter;
         if(uuids!=null) {
         	uuidsIter = uuids.iterator();
         } else {

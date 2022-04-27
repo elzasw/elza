@@ -22,16 +22,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -76,6 +72,8 @@ import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
@@ -87,6 +85,7 @@ import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -1709,9 +1708,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return převedený uzel stromu
      */
     protected ArrNodeVO convertTreeNode(final TreeNodeVO treeNodeClient) {
-        ArrNodeVO rootNode = new ArrNodeVO();
-        BeanUtils.copyProperties(treeNodeClient, rootNode);
-        return rootNode;
+        ArrNodeVO node = new ArrNodeVO();
+        node.setId(treeNodeClient.getId());
+        node.setVersion(treeNodeClient.getVersion());
+        return node;
     }
 
     /**
