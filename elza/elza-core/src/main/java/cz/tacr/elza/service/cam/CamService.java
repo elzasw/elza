@@ -289,7 +289,7 @@ public class CamService {
                               Map<Integer, String> itemUuidMap,
                               Map<Integer, String> partUuidMap, 
                               Map<Integer, String> stateMap) {
-        ApState state = accessPointService.getApState(extSyncsQueueItem.getAccessPointId());
+        ApState state = accessPointService.getStateInternal(extSyncsQueueItem.getAccessPointId());
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem.getExternalSystemId());
 

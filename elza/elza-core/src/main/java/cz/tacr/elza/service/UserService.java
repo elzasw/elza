@@ -1684,7 +1684,7 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
 		UserDetail userDetail = getLoggedUserDetail();
-		if (authRequest.matches(userDetail)) {
+        if (userDetail != null && authRequest.matches(userDetail)) {
 			// request match permissions
 			return;
 		}
