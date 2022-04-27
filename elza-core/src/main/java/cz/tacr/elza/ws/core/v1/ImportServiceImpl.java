@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
@@ -44,6 +45,7 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -92,6 +94,9 @@ public class ImportServiceImpl implements ImportService {
 
     @Autowired
     private SchemaManager schemaManager;
+
+    @Autowired
+    private RevisionService revisionService;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -212,6 +217,13 @@ public class ImportServiceImpl implements ImportService {
             if (apStates.size() != updateAps.size()) {
                 throw new IllegalStateException("Missing state for some synchronized access point");
             }
+
+            List<ApRevision> revState = revisionService.findAllRevisionByStateIn(apStates);
+            if (revState.size() > 0) {
+                throw new IllegalStateException("Entity with revision, cannot synchronize. first revisionId: "
+                        + revState.get(0).getRevisionId());
+            }
+
             for (ApState state : apStates) {
                 SyncEntityRequest syncRequest = updateEntitiesLookup.get(state.getAccessPointId());
                 syncRequest.setState(state);

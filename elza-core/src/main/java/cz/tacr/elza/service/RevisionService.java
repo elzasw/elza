@@ -129,6 +129,11 @@ public class RevisionService {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
+        deleteRevision(revision);
+    }
+
+    @Transactional
+    public void deleteRevision(ApRevision revision) {
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = null;
@@ -747,5 +752,9 @@ public class RevisionService {
         }
         // jiný neznámý případ
         return false;
+    }
+
+    public List<ApRevision> findAllRevisionByStateIn(List<ApState> apStates) {
+        return revisionRepository.findAllByStateIn(apStates);
     }
 }

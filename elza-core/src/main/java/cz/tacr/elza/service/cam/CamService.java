@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
@@ -67,6 +68,7 @@ import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -84,6 +86,7 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 
@@ -148,6 +151,9 @@ public class CamService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    private RevisionService revisionService;
 
     @Autowired
     private UserService userService;
@@ -678,6 +684,7 @@ public class CamService {
                                        ApBindingState bindingState,
                                        ApBinding binding,
                                        EntityXml entity, boolean syncQueue) {
+
         if (binding == null) {
             Validate.notNull(bindingState);
 
@@ -690,6 +697,15 @@ public class CamService {
                   binding.getBindingId(),
                   binding.getValue(), entity.getRevi().getRid().getValue(),
                   state, bindingState);
+
+        if (state != null) {
+            // Nelze změnit stav archivní entity, která má revizi
+            ApRevision revision = revisionService.findRevisionByState(state);
+            if (revision != null) {
+                throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                        RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+            }
+        }
 
         // Mozne stavy synchronizace
         // ApState | ApBindingState  | syncQueue 
@@ -926,6 +942,14 @@ public class CamService {
             ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
 
             state = accessPointService.getStateInternal(accessPoint);
+
+            // Nelze změnit stav archivní entity, která má revizi
+            ApRevision revision = revisionService.findRevisionByState(state);
+            if (revision != null) {
+                throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                        RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+            }
+
             bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
             if (bindingState == null) {
                 binding = bindingRepository.findById(queueItem.getBindingId()).get();

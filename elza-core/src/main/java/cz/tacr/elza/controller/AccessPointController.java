@@ -62,6 +62,11 @@ public class AccessPointController implements AccesspointsApi {
             copyAll = deleteAccessPointDetail.getReplaceType() != null 
                     && deleteAccessPointDetail.getReplaceType() == DeleteAccessPointDetail.ReplaceTypeEnum.COPY_ALL;
         }
+        ApRevision revision = revisionService.findRevisionByState(apState);
+        if (revision != null) {
+            revisionService.deleteRevision(revision);
+        }
+
         accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
         return ResponseEntity.ok().build();
     }
@@ -71,6 +76,11 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<Void> deleteAccessPoints(@Valid DeleteAccessPointsDetail deleteAccessPointsDetail) {
         List<ApAccessPoint> accessPoints = accessPointService.getAccessPointsByIdOrUuid(deleteAccessPointsDetail.getIds());
         List<ApState> apStates = accessPointService.getStatesInternal(accessPoints);
+        List<ApRevision> revisions = revisionService.findAllRevisionByStateIn(apStates);
+        // TODO: Reimplement as one query/delete
+        for (ApRevision revision : revisions) {
+            revisionService.deleteRevision(revision);
+        }
         accessPointService.deleteAccessPoints(apStates);
 
         return ResponseEntity.ok().build();
