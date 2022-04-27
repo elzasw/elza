@@ -1184,6 +1184,14 @@ public class ApController {
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+
+        // Nelze změnit stav archivní entity, která má revizi
+        if (revision != null) {
+            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                    RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
+
         ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
         
@@ -1226,6 +1234,13 @@ public class ApController {
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+
+        // Nelze změnit stav archivní entity, která má revizi
+        if (revision != null) {
+            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                    RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
 
         // kontrola přístupových práv a možností synchronizace 
         accessPointService.hasPermissionToSynchronizeFromExternaSystem(state);
