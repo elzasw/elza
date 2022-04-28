@@ -171,8 +171,8 @@ public class RevisionService {
     public void changeStateRevision(ApState state, RevStateChange revStateChange) {
         accessPointService.checkPermissionForEditingConfirmed(state);
 
-        ApRevision prevRevision = findRevisionByState(state);
-        if (prevRevision == null) {
+        ApRevision revision = findRevisionByState(state);
+        if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
@@ -182,14 +182,15 @@ public class RevisionService {
             if (countBinding > 0) {
                 throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", state.getAccessPointId())
-                        .set("revisionId", prevRevision.getRevisionId());
+                        .set("revisionId", revision.getRevisionId());
             }
         }
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
-        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
-        ApRevision revision = createRevision(prevRevision, change);
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize 
+        // ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        // ApRevision revision = createRevision(prevRevision, change);
 
         if (revStateChange.getState() != null) {
             RevStateApproval stateApproval = RevStateApproval.valueOf(revStateChange.getState().getValue());
