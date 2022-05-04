@@ -2122,20 +2122,6 @@ public class AccessPointService {
         return ret;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
-    public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-
-        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
-        dataRecordRefRepository.disconnectBinding(binding);
-        bindingItemRepository.deleteByBinding(binding);
-        bindingStateRepository.deleteByBinding(binding);
-        bindingRepository.delete(binding);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
-    }
-
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
         List<String> archiveEntityIds = new ArrayList<>();
         List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
