@@ -1276,7 +1276,9 @@ public class ApController {
     @RequestMapping(value = "/external/disconnect/{accessPointId}", method = RequestMethod.POST)
     public void disconnectAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                       @RequestParam final String externalSystemCode) {
-        accessPointService.disconnectAccessPoint(accessPointId, externalSystemCode);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+
+        camService.disconnectAccessPoint(accessPoint, externalSystemCode);
     }
 
     /**
