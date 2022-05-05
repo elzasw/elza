@@ -96,11 +96,15 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
+export const getArchiveEntityUrl = (id) => {
+    return `${URL_ENTITY}/${(id == null ? "" : id)}`
+}
+
 export function goToAe(history, id, force = false, redirect = true) {
     return dispatch => {
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
         if (redirect) {
-            history.push(`${URL_ENTITY}/${(id == null ? "" : id)}`);
+            history.push(getArchiveEntityUrl(id));
         }
         return result;
     };

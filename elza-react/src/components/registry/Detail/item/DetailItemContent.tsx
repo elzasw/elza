@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import {goToAe} from '../../../../actions/registry/registry';
+import {goToAe, getArchiveEntityUrl } from '../../../../actions/registry/registry';
 import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
@@ -98,14 +98,15 @@ const DetailItemContent: FC<Props> = ({
 
             if (recordRefItem.value) {
                 valueField = (
-                    <Button
-                        variant="link"
-                        onClick={() => {
+                    <a 
+                        href={getArchiveEntityUrl(recordRefItem.value)} 
+                        onClick={(e) => {
+                            e.preventDefault()
                             selectAp(recordRefItem.value);
                         }}
                     >
                         {displayValue}
-                    </Button>
+                    </a>
                 );
             } else if (recordRefItem.externalUrl) {
                 valueField = (
