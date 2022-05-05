@@ -21,6 +21,7 @@ type OwnProps = {
     submitting: boolean;
     name?: string;
     nameFormSection?: string; // název pro FormSection
+    scopeId?: number;
 }
 
 type Props = {
@@ -28,7 +29,15 @@ type Props = {
     relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
 } & OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const ExtendsFilterSection = ({submitting, dispatch, array, nameFormSection = "", name = 'ap.ext-search.section.extends', relEntityApi}: Props) => {
+const ExtendsFilterSection = ({
+    submitting, 
+    dispatch, 
+    array, 
+    nameFormSection = "", 
+    name = 'ap.ext-search.section.extends', 
+    relEntityApi,
+    scopeId,
+}: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
         <FieldArray
@@ -37,6 +46,7 @@ const ExtendsFilterSection = ({submitting, dispatch, array, nameFormSection = ""
             relEntityApi={relEntityApi}
             component={ExtFilters}
             disabled={submitting}
+            scopeId={scopeId}
         />
     </FormSection>
 };
@@ -70,9 +80,17 @@ interface ExtFilterFieldProps extends WrappedFieldArrayProps<string> {
     disabled: boolean;
     relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
+    scopeId?: number;
 }
 
-const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({fields, disabled = false, meta, dispatch, relEntityApi}) => {
+const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
+    fields,
+    disabled = false,
+    meta,
+    dispatch,
+    relEntityApi,
+    scopeId,
+}) => {
     return <>
         <Button size="small" className="fr" disabled={disabled} variant="outline-secondary" onClick={() => {
             dispatch(
@@ -83,6 +101,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({fields, disabled = fals
                         initialValues={{
                             onlyMainPart: true,
                             area: Area.ALLNAMES,
+                            scopeId,
                         }}
                         relEntityApi={relEntityApi}
                         onSubmit={(data) => {
