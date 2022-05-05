@@ -820,7 +820,7 @@ public class ApController {
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
                                                            @RequestParam(name = "itemTypeId") final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
-                                                           @RequestParam(name = "scopeId", required = true) final Integer scopeId,
+                                                           @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
@@ -844,7 +844,7 @@ public class ApController {
         if (CollectionUtils.isEmpty(records)) {
             data = Collections.emptyList();
         } else {
-            data = new ArrayList(records.size());
+            data = new ArrayList<>(records.size());
             for (ApCachedAccessPoint record : records) {
                 CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
@@ -1039,8 +1039,9 @@ public class ApController {
             return aeAttributesInfoVO;
         }
 
-        List<ApCreateTypeVO> result = new ArrayList<>();
         ModelAvailable modelAvailable = ruleService.executeAvailable(apAccessPointCreateVO);
+        // Transform to result
+        List<ApCreateTypeVO> result = new ArrayList<>();
         for (cz.tacr.elza.drools.model.ItemType itemType : modelAvailable.getItemTypes()) {
             if (itemType.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE) {
                 ApCreateTypeVO createTypeVO = new ApCreateTypeVO();
