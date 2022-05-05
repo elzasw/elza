@@ -318,6 +318,7 @@ class RegistryList extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-filter.title'),
                 <ExtFilterModal
+                    scopeId={registryList.filter.scopeId}
                     initialValues={{
                         area: Area.ALLNAMES,
                         onlyMainPart: 'false',
