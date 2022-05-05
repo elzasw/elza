@@ -26,6 +26,7 @@ import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';
 import {RouteComponentProps, withRouter} from "react-router";
+import {Link} from "react-router-dom";
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -98,15 +99,11 @@ const DetailItemContent: FC<Props> = ({
 
             if (recordRefItem.value) {
                 valueField = (
-                    <a 
-                        href={getArchiveEntityUrl(recordRefItem.value)} 
-                        onClick={(e) => {
-                            e.preventDefault()
-                            selectAp(recordRefItem.value);
-                        }}
+                    <Link 
+                        to={getArchiveEntityUrl(recordRefItem.value)} 
                     >
                         {displayValue}
-                    </a>
+                    </Link>
                 );
             } else if (recordRefItem.externalUrl) {
                 valueField = (
