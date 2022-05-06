@@ -37,7 +37,8 @@ import {Area} from '../../api/Area';
 import ExtFilterModal from './modal/ExtFilterModal';
 import {Button} from '../ui';
 import {withRouter} from "react-router";
-import {goToAe} from "../../actions/registry/registry";
+import {Link} from "react-router-dom";
+import {goToAe, getArchiveEntityUrl} from "../../actions/registry/registry";
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -209,12 +210,16 @@ class RegistryList extends AbstractReactComponent {
         const {eidTypes, apTypeIdMap} = this.props;
 
         return (
-            <RegistryListItem
-                {...item}
-                onClick={this.handleRegistryDetail.bind(this, item)}
-                eidTypes={eidTypes}
-                apTypeIdMap={apTypeIdMap}
-            />
+            <Link 
+                style={{textDecoration: "none"}} 
+                to={getArchiveEntityUrl(item.id)}
+            >
+                <RegistryListItem
+                    {...item}
+                    eidTypes={eidTypes}
+                    apTypeIdMap={apTypeIdMap}
+                    />
+            </Link>
         );
     };
 
