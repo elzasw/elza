@@ -234,7 +234,8 @@ public class RevisionService {
     @Transactional
     public void createPart(ApRevision revision, ApPartFormVO apPartFormVO) {
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : partService.getPart(apPartFormVO.getParentPartId());
-        ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null : revisionPartService.findById(apPartFormVO.getParentPartId());
+        ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null
+                : revisionPartService.findById(apPartFormVO.getRevParentPartId());
 
         if ((parentPart != null && parentPart.getParentPart() != null)
                 || (revParentPart != null && revParentPart.getParentPart() != null)) {
@@ -461,8 +462,10 @@ public class RevisionService {
         updatePartValues(revision);
     }
 
-    @Transactional
-    public void updatePart(ApRevision revision, Integer partId, ApPartFormVO apPartFormVO) {
+    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
+    @Transactional(TxType.MANDATORY)
+    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+                           ApRevision revision, Integer partId, ApPartFormVO apPartFormVO) {
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
@@ -546,11 +549,13 @@ public class RevisionService {
         }
     }
 
-    @Transactional
-    public void updatePart(ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
+    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
+    @Transactional(TxType.MANDATORY)
+    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+                           ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         if (revPart != null) {
-            updatePart(revision, revPart.getPartId(), apPartFormVO);
+            updatePart(apState, revision, revPart.getPartId(), apPartFormVO);
         } else {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
 
