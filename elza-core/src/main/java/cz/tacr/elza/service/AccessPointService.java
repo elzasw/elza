@@ -914,7 +914,7 @@ public class AccessPointService {
         if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu.");
         }
-        if (apPartFormVO.getParentPartId() != null) {
+        if (apPartFormVO.getParentPartId() != null || apPartFormVO.getRevParentPartId() != null) {
             throw new IllegalArgumentException("Část nesmí být podřízená.");
         }
         RulPartType partType = structObjInternalService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
