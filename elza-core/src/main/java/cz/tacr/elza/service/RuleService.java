@@ -1127,15 +1127,10 @@ public class RuleService {
         Part parentPart = null;
         if(partForm.getParentPartId() != null) {
             parentPart = apBuilder.getPart(partForm.getParentPartId());
-            if (parentPart == null) {
-                // lookup parts in revision
-                // just fallback due to incorrect client
-                parentPart = apBuilder.getPartByRevPartId(partForm.getParentPartId());
-            }
             Validate.notNull(parentPart, "Parent part not found, %s", partForm.getParentPartId());
-        }
+        } else
         if (partForm.getRevParentPartId() != null) {
-            parentPart = apBuilder.getPartByRevPartId(partForm.getParentPartId());
+            parentPart = apBuilder.getPartByRevPartId(partForm.getRevParentPartId());
             Validate.notNull(parentPart, "Parent part in revision not found, %s", partForm.getRevParentPartId());
         }
 
