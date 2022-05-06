@@ -43,6 +43,7 @@ export const showPartEditModal = (
             const partTypeId = modifiedPart.typeId; // objectById(refTables.partTypes.items, partType, 'code').id;
             // const partId = part ? part.id : updatedPart?.id as number;
             const parentPartId = modifiedPart.partParentId;
+            const revParentPartId = modifiedPart.revPartParentId;
 
             const handleSubmit = async (data: RevisionApPartForm) => {
                 const updatedItems = data.items.map(({updatedItem}) => updatedItem);
@@ -57,6 +58,7 @@ export const showPartEditModal = (
                 const submitData:ApPartFormVO = {
                     items,
                     parentPartId,
+                    revParentPartId,
                     partId: modifiedPart.id,
                     partTypeCode: partType,
                 } as ApPartFormVO;
@@ -99,7 +101,6 @@ export const showPartEditModal = (
                     apViewSettings.data!.rules[ruleSetId],
                 ),
             } as ApPartFormVO
-            console.log('show part edit modal revision', revision)
 
             return <PartEditModal
                 partTypeId={partTypeId}
@@ -108,6 +109,7 @@ export const showPartEditModal = (
                 scopeId={scopeId}
                 initialValues={formData}
                 parentPartId={modifiedPart.partParentId}
+                revParentPartId={revParentPartId}
                 apId={apId}
                 partId={modifiedPart.id}
                 onClose={() => onClose()}

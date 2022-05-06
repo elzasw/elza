@@ -124,6 +124,7 @@ export const getUpdatedForm = async (
     partId?: number, 
     parentPartId?: number, 
     accessPointId?: number,
+    revParentPartId?: number,
 ) => {
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
     const items = data.items.filter((item) => 
@@ -131,12 +132,13 @@ export const getUpdatedForm = async (
     ).map((item) => 
         item.updatedItem || item.item as any
     );
-    console.log("get updated form items", items, data);
+    // console.log("get updated form items", items, data, parentPartId, revParentPartId);
     const form: ApAccessPointCreateVO = {
         typeId,
         partForm: {
             ...data,
             parentPartId,
+            revParentPartId,
             items: [...items.filter(hasItemValue)],
             partId: partId,
         },
