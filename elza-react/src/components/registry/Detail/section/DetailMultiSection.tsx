@@ -25,7 +25,7 @@ interface Props {
     onDelete?: (part: RevisionPart) => void;
     onEdit?: (part: RevisionPart) => void;
     onAdd?: () => void;
-    onAddRelated?: (parentPartId: number) => void;
+    onAddRelated?: (parentPartId?: number, revParentPartId?: number) => void;
     onRevert?: (part: RevisionPart) => void;
     editMode?: boolean;
     globalEntity: boolean;
@@ -82,7 +82,13 @@ const DetailMultiSection: FC<Props> = ({
     const groupRelatedPartsByParent = (data: RevisionPart[]):Record<string, RevisionPart[]> =>
     data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
         const parentId = value.part?.partParentId || value.updatedPart?.partParentId;
-        if(parentId != undefined){
+        const revParentId = value.part?.revPartParentId || value.updatedPart?.revPartParentId;
+
+        if(revParentId != undefined){
+            const currentValue = accumulator[revParentId] || [];
+            accumulator[revParentId.toString()] = [...currentValue, value];
+        } 
+        else if(parentId != undefined){
             const currentValue = accumulator[parentId] || [];
             accumulator[parentId.toString()] = [...currentValue, value];
         }
@@ -163,6 +169,10 @@ const DetailMultiSection: FC<Props> = ({
         const isPreferred = isPartPreferred(part.part, part.updatedPart);
         const isDeleted = part.updatedPart?.changeType === "DELETED";
         const isModified = part.updatedPart?.changeType === "UPDATED";
+        const isNew = part.updatedPart?.changeType === "NEW";
+
+        const partId = isNew ? undefined : id;
+        const revPartId = isNew ? id : undefined;
 
         return <>
             {editMode &&
@@ -178,7 +188,10 @@ const DetailMultiSection: FC<Props> = ({
                         </SmallButton>
                     }
                     {!isDeleted && onAddRelated && (
-                        <SmallButton title={i18n("ap.detail.add.related")} onClick={() => onAddRelated(id)}>
+                        <SmallButton 
+                            title={i18n("ap.detail.add.related")} 
+                            onClick={() => onAddRelated(partId, revPartId)}
+                        >
                             <Icon glyph="fa-link"/>
                         </SmallButton>
                     )}
@@ -215,9 +228,11 @@ const DetailMultiSection: FC<Props> = ({
             {parts.length === 0 && <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span>}
             {parts.map(({part, updatedPart}, index) => {
                     const relatedParts = part?.id != null && relatedRevisionPartsMap[part.id] ? relatedRevisionPartsMap[part.id] : [];
+                    const revRelatedParts = updatedPart?.id != null && relatedRevisionPartsMap[updatedPart.id] ? relatedRevisionPartsMap[updatedPart.id] : [];
                     let isPreferred = isPartPreferred(part, updatedPart);
                     let isOldPreferred = isPartOldPreferred(part);
                     let isNewPreferred = isPartNewPreferred(part, updatedPart);
+                    console.log("related parts", relatedParts, revRelatedParts)
                     return (
                         <div key={index} className={`part ${isPreferred ? "preferred" : ""}`}>
                             {!singlePart && <div className="bracket"/>}
@@ -236,9 +251,9 @@ const DetailMultiSection: FC<Props> = ({
                                 renderActions={renderPartActions}
                                 select={select}
                                 />
-                            {relatedParts.length > 0 &&
+                            {[...relatedParts, ...revRelatedParts].length > 0 &&
                                 <div className="related-parts">
-                                    {relatedParts.map(({part, updatedPart}, index) => {
+                                    {[...relatedParts, ...revRelatedParts].map(({part, updatedPart}, index) => {
                                         return (
                                             <DetailRelatedPart
                                                 key={index}

@@ -17,6 +17,10 @@ export interface ApPartFormVO {
     parentPartId?: number;
 
     /**
+    * Identifikátor nadřízené části z revize
+    */
+    revParentPartId?: number;
+    /**
      * Identifikátor části
      */
     partId?: number;
