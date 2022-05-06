@@ -1,5 +1,22 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -14,21 +31,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.DataRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class RevisionItemService {
@@ -58,6 +60,9 @@ public class RevisionItemService {
 
 
     public List<ApRevItem> findByParts(List<ApRevPart> parts) {
+        if (CollectionUtils.isEmpty(parts)) {
+            return Collections.emptyList();
+        }
         return revItemRepository.findByParts(parts);
     }
 
