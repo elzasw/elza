@@ -68,10 +68,14 @@ public class ApBuilder {
         this.sdp = data;
     }
 
+    /**
+     * Create new AccessPoint for drools
+     * 
+     * Accesspoint might have all fields null.
+     * 
+     * @return
+     */
     public Ap build() {
-        Validate.notNull(id);
-        Validate.notNull(aeType);
-
         Ap ap = new Ap(id, aeType, parts);
         return ap;
     }
