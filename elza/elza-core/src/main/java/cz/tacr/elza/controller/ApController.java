@@ -897,7 +897,7 @@ public class ApController {
         ApPart apPart = partService.getPart(partId);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.updatePart(revision, apPart, apPartFormVO);
+            revisionService.updatePart(state, revision, apPart, apPartFormVO);
         } else {
             if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
                 accessPointCacheService.createApCachedAccessPoint(accessPointId);
@@ -919,7 +919,7 @@ public class ApController {
                               @RequestBody final ApPartFormVO apPartFormVO) {
         ApState state = accessPointService.getStateInternal(id);
         ApRevision revision = revisionService.findRevisionByState(state);
-        revisionService.updatePart(revision, partId, apPartFormVO);
+        revisionService.updatePart(state, revision, partId, apPartFormVO);
     }
 
     /**
