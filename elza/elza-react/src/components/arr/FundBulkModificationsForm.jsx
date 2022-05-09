@@ -566,7 +566,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 name="itemsArea"
                                 component={ReduxFormFieldErrorDecorator}
                                 renderComponent={Form.Check}
-                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', checkedItemsCount)}
+                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}
                                 type="radio"
                                 value={'unselected'}
                             />
