@@ -1,13 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.controller.vo.ap.ApStateVO;
-
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.domain.ApRevision;
+import javax.annotation.Nullable;
+
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RevStateApproval;
 
@@ -54,7 +53,15 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private String description;
 
+    /**
+     * Příznak neplatnostni / vymazání entity
+     */
     private boolean invalid;
+
+    /**
+     * ID nahrazující entity
+     */
+    private Integer replacedById;
 
     /**
      * Externí identifikátory rejstříkového hesla.
@@ -312,5 +319,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setRevParts(List<ApPartVO> revParts) {
         this.revParts = revParts;
+    }
+
+    public Integer getReplacedById() {
+        return replacedById;
+    }
+
+    public void setReplacedById(Integer replacedById) {
+        this.replacedById = replacedById;
     }
 }

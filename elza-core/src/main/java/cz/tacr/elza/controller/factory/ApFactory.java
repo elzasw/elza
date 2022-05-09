@@ -414,6 +414,9 @@ public class ApFactory {
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(ap.getAccessPointId());
         vo.setInvalid(apState.getDeleteChange() != null);
+        if (apState.getReplacedBy() != null) {
+            vo.setReplacedById(apState.getReplacedBy().getAccessPointId());
+        }
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
         vo.setComment(apState.getComment());
@@ -448,6 +451,9 @@ public class ApFactory {
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
         vo.setInvalid(apState.getDeleteChange() != null);
+        if (apState.getReplacedBy() != null) {
+            vo.setReplacedById(apState.getReplacedBy().getAccessPointId());
+        }
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
         vo.setComment(apState.getComment());
