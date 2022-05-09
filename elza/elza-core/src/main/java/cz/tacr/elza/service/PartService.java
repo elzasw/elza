@@ -140,6 +140,7 @@ public class PartService {
      */
     public ApPart createPart(final ApAccessPoint accessPoint,
                              final ApPartFormVO apPartFormVO) {
+
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : getPart(apPartFormVO.getParentPartId());
 
         if (parentPart != null && parentPart.getParentPart() != null) {

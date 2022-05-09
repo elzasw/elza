@@ -868,11 +868,14 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.checkPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
+
         if (revision != null) {
-            revisionService.createPart(revision, apPartFormVO);
+            // Permission check is part of revisionService
+            revisionService.createPart(state, revision, apPartFormVO);
         } else {
+            accessPointService.checkPermissionForEdit(state);
+
             ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
             accessPointService.generateSync(apAccessPoint, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
@@ -893,13 +896,12 @@ public class ApController {
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.checkPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
             revisionService.updatePart(state, revision, apPart, apPartFormVO);
         } else {
-            if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+            if (accessPointService.updatePart(apAccessPoint, state, apPart, apPartFormVO)) {
                 accessPointCacheService.createApCachedAccessPoint(accessPointId);
             }
         }
@@ -950,12 +952,12 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.checkPermissionForEditingConfirmed(state);
 
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.deletePart(revision, partId);
+            revisionService.deletePart(state, revision, partId);
         } else {
+            accessPointService.checkPermissionForEdit(state);
             partService.deletePart(apAccessPoint, partId);
             accessPointService.updateAndValidate(accessPointId);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
@@ -976,11 +978,11 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.checkPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.setPreferName(revision, partId);
+            revisionService.setPreferName(state, revision, partId);
         } else {
+            accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
             accessPointService.setPreferName(apAccessPoint, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
