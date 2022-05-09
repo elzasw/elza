@@ -7,8 +7,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -16,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -104,16 +105,19 @@ public class RevisionService {
             throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
         }
 
-        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
-
         revision = new ApRevision();
-        revision.setCreateChange(change);
         revision.setState(state);
         revision.setType(state.getApType());
         revision.setStateApproval(RevStateApproval.ACTIVE);
         revision.setPreferredPart(state.getAccessPoint().getPreferredPart());
 
-        revisionRepository.save(revision);
+        // Permission check - includes new revision state
+        accessPointService.checkPermissionForEdit(state, revision);
+
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+        revision.setCreateChange(change);
+
+        revision = revisionRepository.save(revision);
 
         List<ApBindingState> bindingStateList = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
         if (CollectionUtils.isNotEmpty(bindingStateList)) {
@@ -122,18 +126,21 @@ public class RevisionService {
         }
     }
 
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public void deleteRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
-        deleteRevision(revision);
+        deleteRevision(state, revision);
     }
 
-    @Transactional
-    public void deleteRevision(ApRevision revision) {
+    @Transactional(TxType.MANDATORY)
+    public void deleteRevision(ApState state, ApRevision revision) {
+        // revision might be deleted in any state
+        accessPointService.checkPermissionForEdit(state, RevStateApproval.ACTIVE);
+
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = null;
@@ -168,23 +175,18 @@ public class RevisionService {
     }
 
     @Transactional(value = TxType.MANDATORY)
-    public void changeStateRevision(ApState state, RevStateChange revStateChange) {
-        accessPointService.checkPermissionForEditingConfirmed(state);
+    public ApRevision changeStateRevision(@NotNull ApState state,
+                                          @NotNull Integer nextApTypeId,
+                                          @Nullable RevStateApproval revNextState) {
 
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
-
-        // nemůžeme změnit třídu revize, pokud je entita v CAM
-        if (!revStateChange.getTypeId().equals(state.getApTypeId())) {
-            int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
-            if (countBinding > 0) {
-                throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", state.getAccessPointId())
-                        .set("revisionId", revision.getRevisionId());
-            }
-        }
+        // check permission for other state then to_approve
+        accessPointService.checkPermissionForEdit(state,
+                                                  revision.getStateApproval() != RevStateApproval.TO_APPROVE ? revision
+                                                          .getStateApproval() : revNextState);
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
@@ -192,17 +194,24 @@ public class RevisionService {
         // ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
         // ApRevision revision = createRevision(prevRevision, change);
 
-        if (revStateChange.getState() != null) {
-            RevStateApproval stateApproval = RevStateApproval.valueOf(revStateChange.getState().getValue());
-            revision.setStateApproval(stateApproval);
-        }
+        // nemůžeme změnit třídu revize, pokud je entita v CAM
+        if (!nextApTypeId.equals(state.getApTypeId())) {
+            int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
+            if (countBinding > 0) {
+                throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", state.getAccessPointId())
+                        .set("revisionId", revision.getRevisionId());
+            }
 
-        if (revStateChange.getTypeId() != null) {
-            ApType type = sdp.getApTypeById(revStateChange.getTypeId());
+            ApType type = sdp.getApTypeById(nextApTypeId);
             revision.setType(type);
         }
 
-        revisionRepository.saveAndFlush(revision);
+        if (revNextState != null) {
+            revision.setStateApproval(revNextState);
+        }
+
+        return revisionRepository.saveAndFlush(revision);
     }
 
     /**
@@ -232,7 +241,9 @@ public class RevisionService {
     }
 
     @Transactional
-    public void createPart(ApRevision revision, ApPartFormVO apPartFormVO) {
+    public void createPart(ApState state, ApRevision revision, ApPartFormVO apPartFormVO) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : partService.getPart(apPartFormVO.getParentPartId());
         ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null
                 : revisionPartService.findById(apPartFormVO.getRevParentPartId());
@@ -352,7 +363,9 @@ public class RevisionService {
     }
 
     @Transactional
-    public void deletePart(ApRevision revision, Integer partId) {
+    public void deletePart(ApState state, ApRevision revision, Integer partId) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         if (revision.getPreferredPartId() != null && revision.getPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
@@ -386,6 +399,8 @@ public class RevisionService {
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        accessPointService.checkPermissionForEdit(state, revision);
+
         if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
@@ -401,7 +416,9 @@ public class RevisionService {
     }
 
     @Transactional
-    public void setPreferName(ApRevision revision, Integer partId) {
+    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -431,12 +448,13 @@ public class RevisionService {
 
     @Transactional
     public void setPreferName(ApState state, Integer partId) {
-        accessPointService.checkPermissionForEditingConfirmed(state);
 
         ApRevision revision = revisionRepository.findByState(state);
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        accessPointService.checkPermissionForEdit(state, revision);
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -469,6 +487,8 @@ public class RevisionService {
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        accessPointService.checkPermissionForEdit(apState, revision);
+
         ApRevPart revPart = revisionPartService.findById(partId);
 
         List<ApRevItem> deleteItems = revisionItemService.findByPart(revPart);
@@ -553,6 +573,8 @@ public class RevisionService {
     @Transactional(TxType.MANDATORY)
     public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
                            ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
+        accessPointService.checkPermissionForEdit(apState, revision);
+
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         if (revPart != null) {
             updatePart(apState, revision, revPart.getPartId(), apPartFormVO);

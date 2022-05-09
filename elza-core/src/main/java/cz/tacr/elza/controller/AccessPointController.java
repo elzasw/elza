@@ -24,6 +24,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.RegistryCode;
@@ -64,7 +65,7 @@ public class AccessPointController implements AccesspointsApi {
         }
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
-            revisionService.deleteRevision(revision);
+            revisionService.deleteRevision(apState, revision);
         }
 
         accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
@@ -79,7 +80,7 @@ public class AccessPointController implements AccesspointsApi {
         List<ApRevision> revisions = revisionService.findAllRevisionByStateIn(apStates);
         // TODO: Reimplement as one query/delete
         for (ApRevision revision : revisions) {
-            revisionService.deleteRevision(revision);
+            revisionService.deleteRevision(revision.getState(), revision);
         }
         accessPointService.deleteAccessPoints(apStates);
 
@@ -90,12 +91,12 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> createRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
-        accessPointService.checkPermissionForEditingConfirmed(state);
 
         // Nelze vytvořit revizi, pokud má archivní entita jiný stav než NEW, TO_AMEND nebo APPROVED
         if (!Arrays.asList(StateApproval.NEW, StateApproval.TO_AMEND, StateApproval.APPROVED).contains(state.getStateApproval())) {
-            throw new BusinessException("Nelze vytvořit revizi, protože archivní entita má nevhodný stav", RegistryCode.CANT_CREATE_REVISION)
-                .set("state", state.getStateApproval());
+            throw new BusinessException("Nelze vytvořit revizi, protože archivní entita má nevhodný stav",
+                    RegistryCode.CANT_CREATE_REVISION)
+                            .set("state", state.getStateApproval());
         }
 
         revisionService.createRevision(state);
@@ -106,7 +107,6 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
-        accessPointService.checkPermissionForEditingConfirmed(state);
 
         revisionService.deleteRevision(state);
         return ResponseEntity.ok().build();
@@ -116,7 +116,14 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> changeStateRevision(Integer id, RevStateChange revStateChange) {
         ApState state = accessPointService.getStateInternal(id);
-        revisionService.changeStateRevision(state, revStateChange);
+
+        RevStateApproval revNextState = RevStateApproval.valueOf(revStateChange.getState().getValue());
+        Integer nextTypeId = revStateChange.getTypeId();
+        if (nextTypeId == null) {
+            nextTypeId = state.getApTypeId();
+        }
+
+        revisionService.changeStateRevision(state, nextTypeId, revNextState);
         return ResponseEntity.ok().build();
     }
 
@@ -124,7 +131,6 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteRevisionPart(Integer id, Integer partId) {
         ApState state = accessPointService.getStateInternal(id);
-        accessPointService.checkPermissionForEditingConfirmed(state);
 
         revisionService.deletePart(state, partId);
         return ResponseEntity.ok().build();
