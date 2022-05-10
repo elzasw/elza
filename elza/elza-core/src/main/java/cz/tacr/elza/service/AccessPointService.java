@@ -475,11 +475,11 @@ public class AccessPointService {
      * @param accessPoint
      * @param change
      */
-    public void deleteAccessPoint(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    public void deleteAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         checkDeletion(accessPoint);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
-        apStateRepository.save(apState);
+        apState = apStateRepository.save(apState);
 
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
         if (CollectionUtils.isNotEmpty(eids)) {

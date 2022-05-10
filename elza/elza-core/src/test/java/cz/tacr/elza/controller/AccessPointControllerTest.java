@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -89,13 +88,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
-        Optional<ApState> state = stateRepository.findById(ap1.getAccessPointId());
-        assertNotNull(state);
-        assertNotNull(state.get().getReplacedBy());
-        assertEquals(state.get().getReplacedBy().getAccessPointId(), ap2.getAccessPointId());
+        ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
+        assertNotNull(apInfo);
+        assertTrue(apInfo.isInvalid());
+        assertEquals(apInfo.getReplacedById(), ap2.getAccessPointId());
 
-        parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 0);
+        assertTrue(CollectionUtils.isEmpty(apInfo.getParts()));
 
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
