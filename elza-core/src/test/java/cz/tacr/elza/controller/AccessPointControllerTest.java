@@ -91,7 +91,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         Optional<ApState> state = stateRepository.findById(ap1.getAccessPointId());
         assertNotNull(state);
-        assertTrue(state.get().getReplacedBy().getAccessPointId().equals(ap2.getAccessPointId()));
+        assertNotNull(state.get().getReplacedBy());
+        assertEquals(state.get().getReplacedBy().getAccessPointId(), ap2.getAccessPointId());
 
         parts = partService.findPartsByAccessPoint(ap1);
         assertTrue(parts.size() == 0);
