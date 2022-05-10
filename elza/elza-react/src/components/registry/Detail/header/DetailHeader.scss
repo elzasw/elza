@@ -18,6 +18,10 @@
                 background-color: #d7760d;
                 color: white;
             }
+            &.replaced, &.invalid {
+                background-color: #d7200d;
+                color: white;
+            }
             &.new {
                 background-color: #0092ff;
                 color: white;
