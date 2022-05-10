@@ -1,3 +1,4 @@
+import { TooltipTrigger } from 'components/shared';
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
@@ -8,14 +9,15 @@ import { Icon } from '../../../index';
 import { Button } from '../../../ui';
 import ValidationResultIcon from '../../../ValidationResultIcon';
 import { RevisionApTypeNames } from './ApTypeNames';
+import { DescriptionEntityRef } from "./DescriptionEntityRef";
 import DetailDescriptions from './DetailDescriptions';
-import DetailDescriptionsItem, {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
+import DetailDescriptionsItem, { DetailDescriptionsItemWithButton } from './DetailDescriptionsItem';
 import './DetailHeader.scss';
 import DetailRevState from "./DetailRevState";
 import DetailState from './DetailState';
 import { EntityBindings } from './EntityBindings';
-import { TooltipTrigger } from 'components/shared';
-import { Tooltip } from 'react-bootstrap';
+import i18n from "components/i18n";
+import { StateApproval } from 'api/StateApproval';
 
 interface Props {
     item: ApAccessPointVO;
@@ -30,6 +32,11 @@ interface Props {
 
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;
+const getItemState = (item: ApAccessPointVO) => {
+    if(item.replacedById != undefined) {return StateApproval.REPLACED}
+    if(item.invalid) {return StateApproval.INVALID}
+    return item.stateApproval
+}
 
 const DetailHeader: FC<Props> = ({
     onInvalidateDetail,
@@ -53,10 +60,13 @@ const DetailHeader: FC<Props> = ({
         }
     };
 
+
     let scope: FundScope | null = null;
     if (item.scopeId) {
         scope = objectById(scopes, item.scopeId);
     }
+
+    const itemState = getItemState(item);
 
     return (
         <div className={'detail-header-wrapper'}>
@@ -85,6 +95,11 @@ const DetailHeader: FC<Props> = ({
                                     <span className="text">{item.name}</span>
                                     {showValidationError()}
                                 </h1>
+                                {item.replacedById != undefined && 
+                                    <div style={{fontSize: "1rem"}}>
+                                        <DescriptionEntityRef entityId={item.replacedById}/>
+                                    </div>
+                                }
                             </div>
                             {item.description &&
                                 <div className="description">
@@ -107,9 +122,9 @@ const DetailHeader: FC<Props> = ({
                                     </TooltipTrigger>
                                 </DetailDescriptionsItem>
                             }
-                            {item.stateApproval && (
-                                <DetailDescriptionsItem className={item.stateApproval.toLowerCase()}>
-                                    <DetailState state={item.stateApproval} />
+                            {itemState && (
+                                <DetailDescriptionsItem className={itemState.toLowerCase()}>
+                                    <DetailState state={itemState} />
                                 </DetailDescriptionsItem>
                             )}
                             {scope && (
@@ -119,7 +134,7 @@ const DetailHeader: FC<Props> = ({
                                 </DetailDescriptionsItem>
                             )}
                             {item.lastChange && item.lastChange.user && (
-                                <DetailDescriptionsItem label="Upravil:">
+                                <DetailDescriptionsItem label={`${i18n("ap.detail.modifiedBy")}:`}>
                                     {item.lastChange.user.displayName}
                                     <span title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>
                                         ({formatDate(item.lastChange.change)})
