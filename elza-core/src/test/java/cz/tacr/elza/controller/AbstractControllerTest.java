@@ -137,6 +137,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -325,6 +326,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
@@ -2058,6 +2060,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
     }
 
+    protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
+        post(spec -> spec.pathParam("entityId", entityId)
+                .param("state", state),
+             MERGE_AP);
+    }
+
     /**
      * Nahrazení rejstříkového hesla.
      *
@@ -3172,6 +3180,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .as(RulPartTypeVO[].class));
     }
 
+    protected Map<String, RulPartTypeVO> findPartTypesMap() {
+        return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
+    }
+
     /**
      * Vyhledá dostupná a aktivovaná rozšíření k AS.
      *
@@ -3347,10 +3359,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      */
-    protected void createPart(final Integer accessPointId,
+    protected Integer createPart(final Integer accessPointId,
                               final ApPartFormVO apPartFormVO) {
-        post(spec -> spec.pathParam("accessPointId", accessPointId)
-                .body(apPartFormVO), CREATE_PART);
+        return post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .body(apPartFormVO), CREATE_PART)
+                        .as(Integer.class);
     }
 
     /**

@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -234,6 +235,26 @@ public class PartService {
                 deletePart(part, apChange);
             }
         }
+    }
+
+    /**
+     * Delete list of parts
+     * 
+     * Function checks that parts has no items before delete
+     * 
+     * @param parts
+     * @param change
+     */
+    public void deletePartsWithoutItems(List<ApPart> parts, ApChange change) {
+        if (CollectionUtils.isEmpty(parts)) {
+            return;
+        }
+
+        // check if parts has no items
+        List<ApItem> items = apItemService.findItemsByParts(parts);
+        Validate.isTrue(CollectionUtils.isEmpty(items), "All items have to be deleted before part is deleted");
+
+        deleteParts(parts, change);
     }
 
     /**

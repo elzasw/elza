@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -86,6 +87,7 @@ import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -305,13 +307,10 @@ public class ApController {
                 .map(ApState::getAccessPoint)
                 .collect(Collectors.toList());
 
-        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
-
         final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
 
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
-                        typeRuleSetMap,
                         apState.getAccessPoint(),
                         nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
@@ -350,8 +349,6 @@ public class ApController {
 
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
-        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
-
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
                 .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
                 state, from, count, sdp);
@@ -361,7 +358,7 @@ public class ApController {
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
             String name = apFactory.findAeCachedEntityName(entity);
-            accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
+            accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name));
         }
 
         return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
@@ -449,7 +446,12 @@ public class ApController {
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
-        ApState apState = accessPointService.getApState(accessPointId);
+        ApState apState;
+        try {
+            apState = accessPointService.getApState(accessPointId);
+        } catch (ObjectNotFoundException o) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found, id: " + accessPointId);
+        }
 
         ApAccessPointVO vo;
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
@@ -863,7 +865,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
-    public void createPart(@PathVariable final Integer accessPointId,
+    public Integer createPart(@PathVariable final Integer accessPointId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
@@ -872,13 +874,16 @@ public class ApController {
 
         if (revision != null) {
             // Permission check is part of revisionService
-            revisionService.createPart(state, revision, apPartFormVO);
+            ApRevPart revPart = revisionService.createPart(state, revision, apPartFormVO);
+            return revPart.getPartId();
         } else {
             accessPointService.checkPermissionForEdit(state);
 
             ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
             accessPointService.generateSync(apAccessPoint, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
+
+            return apPart.getPartId();
         }
     }
 

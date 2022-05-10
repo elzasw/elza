@@ -5,13 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.test.ApiException;
-import cz.tacr.elza.test.controller.vo.Fund;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,11 +27,15 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 
 
 /**
- * @author Petr Compel
- * @since 18.2.2016
+ * Test method na APController
+ * 
  */
 public class ApControllerTest extends AbstractControllerTest {
 
@@ -214,7 +211,8 @@ public class ApControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private ApPartFormVO createPartFormVO(final Integer partId, final String partTypeCode, final Integer parentPartId, final List<ApItemVO> items) {
+    static public ApPartFormVO createPartFormVO(final Integer partId, final String partTypeCode,
+                                                final Integer parentPartId, final List<ApItemVO> items) {
         ApPartFormVO apPartFormVO = new ApPartFormVO();
         apPartFormVO.setPartId(partId);
         apPartFormVO.setPartTypeCode(partTypeCode);
@@ -296,10 +294,6 @@ public class ApControllerTest extends AbstractControllerTest {
         accessPoint = getAccessPoint(accessPoint.getId());
         partVO = accessPoint.getParts().get(1);
         Assert.assertEquals(7, partVO.getItems().size());
-    }
-
-    private Map<String, RulPartTypeVO> findPartTypesMap() {
-        return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
     }
 
     /**

@@ -14,18 +14,80 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.*;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApKeyValueRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevIndexRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
+import cz.tacr.elza.repository.ApRevisionRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrAsyncRequestRepository;
+import cz.tacr.elza.repository.AuthenticationRepository;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoBatchInfoRepository;
+import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.InstitutionTypeRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.SobjVrequestRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.service.AsyncRequestService;
 
 
 /**
@@ -36,6 +98,14 @@ public class HelperTestService {
 
     private static final Logger logger = LoggerFactory.getLogger(HelperTestService.class);
 
+    @Autowired
+    protected ApRevIndexRepository revIndexRepository;
+    @Autowired
+    protected ApRevItemRepository revItemRepository;
+    @Autowired
+    protected ApRevPartRepository revPartRepository;
+    @Autowired
+    protected ApRevisionRepository revisionRepository;
     @Autowired
     protected BulkActionNodeRepository bulkActionNodeRepository;
     @Autowired
@@ -221,6 +291,11 @@ public class HelperTestService {
         daoFileRepository.deleteAll();
         daoLinkRepository.deleteAll();
         daoRepository.deleteAll();
+
+        revIndexRepository.deleteAll();
+        revItemRepository.deleteAll();
+        revPartRepository.deleteAll();
+        revisionRepository.deleteAll();
 
         apCachedAccessPointRepository.deleteAll();
         asyncRequestRepository.deleteAll();
