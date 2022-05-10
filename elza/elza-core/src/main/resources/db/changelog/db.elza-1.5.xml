@@ -1895,4 +1895,15 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
             ON arr_level(node_id_parent, "position")
 			WHERE delete_change_id IS NULL AND node_id_parent IS NOT NULL;</sql>
     </changeSet>
+
+    <changeSet id="20220509115500" author="ppyt">
+        <addColumn tableName="ap_rev_part">
+            <column name="deleted" type="boolean"/>
+        </addColumn>
+        <sql>UPDATE ap_rev_part SET deleted = 'false'</sql>
+        <addNotNullConstraint tableName="ap_rev_part" columnName="deleted"/>
+    </changeSet>
+    <changeSet id="20220510120900" author="ppyt">
+        <sql>UPDATE ap_rev_item SET object_id = NULL WHERE orig_object_id IS NOT NULL;</sql>
+    </changeSet>
 </databaseChangeLog>

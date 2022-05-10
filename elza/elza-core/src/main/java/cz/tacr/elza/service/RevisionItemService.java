@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -21,13 +22,17 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -45,6 +50,9 @@ public class RevisionItemService {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
     private ApRevItemRepository revItemRepository;
@@ -132,9 +140,16 @@ public class RevisionItemService {
 
     private ApRevItem createItem(final ApRevPart part,
                                 final ArrData data,
-                                final RulItemType it, final RulItemSpec is, final ApChange c,
-                                final int objectId, final int position, final Integer origObjectId,
+                                 final RulItemType it,
+                                 final RulItemSpec is,
+                                 final ApChange c,
+                                 @Nullable final Integer objectId,
+                                 final int position,
+                                 @Nullable Integer origObjectId,
                                  final boolean deleted) {
+        Validate.isTrue((origObjectId == null) ^ (objectId == null),
+                        "only originalObjectId or objectId has to be set (not both)");
+
         ApRevItem item = new ApRevItem();
         item.setData(data);
         item.setItemType(it);
@@ -168,6 +183,104 @@ public class RevisionItemService {
 
         dataRepository.saveAll(dataList);
         itemRepository.saveAll(createdItems);
+    }
+
+    /**
+     * Merge items to updated parts
+     * 
+     * @param accessPoint
+     * @param change
+     * @param revParts
+     * @param revPartMap
+     * @param revItems
+     */
+    public void mergeItems(ApAccessPoint accessPoint,
+                           ApChange change,
+                           List<ApRevPart> revParts,
+                           Map<Integer, ApPart> revPartMap,
+                           List<ApRevItem> revItems) {
+        List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        Map<Integer, ApItem> itemObjectIdMap = items.stream()
+                .collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
+
+        List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(items);
+
+        Map<Integer, List<ApRevItem>> revItemPartMap = revItems.stream()
+                .collect(Collectors.groupingBy(ApRevItem::getPartId));
+
+        List<ApItem> itemsList = new ArrayList<>();
+        List<ArrData> dataList = new ArrayList<>();
+        List<ApItem> deletedItems = new ArrayList<>();
+        // Map of updated items with new ones
+        Map<Integer, ApItem> updatedItems = new HashMap<>();
+
+        for (ApRevPart revPart : revParts) {
+            ApPart targetPart = revPartMap.get(revPart.getPartId());
+            Validate.notNull(targetPart, "Part not saved, revPartId: %s", revPart.getPartId());
+
+            List<ApRevItem> revPartItems = revItemPartMap.get(revPart.getPartId());
+
+            for (ApRevItem revItem : revPartItems) {
+                Validate.isTrue(revItem.getDeleteChange() == null);
+
+                ApItem currItem;
+                Integer origObjectId = revItem.getOrigObjectId();
+                Integer objectId;
+                if (origObjectId != null) {
+                    // get current ApItem
+                    currItem = itemObjectIdMap.get(origObjectId);
+                    Validate.notNull(currItem, "Source item not found, objectId: %s", origObjectId);
+                    Validate.isTrue(revItem.getObjectId() == null, "objectId has to be null for update");
+
+                    objectId = origObjectId;
+
+                    if (revItem.isDeleted()) {
+                        // delete item
+                        deletedItems.add(currItem);
+                        continue;
+                    }
+
+                } else {
+                    Validate.notNull(revItem.getObjectId());
+                    Validate.isTrue(!revItem.isDeleted());
+
+                    objectId = revItem.getObjectId();
+                    currItem = null;
+                }
+
+                ArrData newData = revItem.getData().makeCopy();
+                dataList.add(newData);
+                ApItem newItem = accessPointItemService.createItem(targetPart,
+                                                                   newData,
+                                                                   revItem.getItemType(),
+                                                                   revItem.getItemSpec(),
+                                                                   revItem.getCreateChange(),
+                                                                   objectId,
+                                                                   revItem.getPosition());
+                itemsList.add(newItem);
+
+                if (origObjectId != null) {
+                    // update item
+                    Validate.notNull(currItem, "Source item not found, objectId: %s", origObjectId);
+                    currItem.setDeleteChange(revItem.getCreateChange());
+                    itemsList.add(currItem);
+                    
+                    // Add to binding map
+                    updatedItems.put(currItem.getItemId(), newItem);
+                }
+            }
+
+        }
+
+        dataRepository.saveAll(dataList);
+        itemRepository.saveAll(itemsList);
+        
+        accessPointItemService.changeBindingItemsItems(updatedItems, bindingItemList);
+        
+        bindingItemRepository.flush();
+        accessPointItemService.deleteItems(deletedItems, change);
+        bindingItemRepository.flush();
+
     }
 
     private int nextPosition(final List<ApRevItem> existsItems) {
@@ -223,7 +336,7 @@ public class RevisionItemService {
             List<ApRevItem> revItems = new ArrayList<>();
             for (ApItem apItem : apItems) {
                 revItems.add(createItem(revPart, null, apItem.getItemType(), apItem.getItemSpec(), apChange,
-                        accessPointItemService.nextItemObjectId(), apItem.getPosition(), apItem.getObjectId(), true));
+                                        null, apItem.getPosition(), apItem.getObjectId(), true));
             }
             revItemRepository.saveAll(revItems);
         }
