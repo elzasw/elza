@@ -32,6 +32,8 @@ import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
@@ -83,6 +85,20 @@ public class RevisionItemService {
         }
     }
 
+    /**
+     * Create new items
+     * 
+     * Items are mapped to existing one using
+     * objectId and origObjectId.
+     * 
+     * @param part
+     * @param createItems
+     * @param change
+     * @param updateOrigItems
+     *            If true objectId is stored as originalObjectId
+     *            If false objectId is stored as obectId
+     * @return
+     */
     public List<ApRevItem> createItems(final ApRevPart part,
                                        final List<ApItemVO> createItems,
                                        final ApChange change,
@@ -92,7 +108,7 @@ public class RevisionItemService {
         }
 
         // Map for position counting
-        Map<Integer, List<ApRevItem>> typeIdItemsMap = new HashMap<>();
+        Map<Integer, List<ApRevItem>> itemsByType = new HashMap<>();
 
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
@@ -101,7 +117,7 @@ public class RevisionItemService {
         for (ApItemVO createItem : createItems) {
             ItemType itemType = sdp.getItemTypeById(createItem.getTypeId());
             RulItemSpec itemSpec = accessPointItemService.getItemSpecification(itemType, createItem);
-            List<ApRevItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
+            List<ApRevItem> existsItems = itemsByType.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
 
             Integer positionWant = createItem.getPosition();
             int position = nextPosition(existsItems);
@@ -123,9 +139,21 @@ public class RevisionItemService {
 
             itemService.checkItemLengthLimit(itemType.getEntity(), data);
 
-            Integer origObjectId = updateOrigItems ? createItem.getObjectId() : createItem.getOrigObjectId();
+            Integer origObjectId = createItem.getOrigObjectId();
+            Integer objectId = createItem.getObjectId();
+            if (origObjectId == null && objectId == null) {
+                objectId = accessPointItemService.nextItemObjectId();
+            } else
+            if (updateOrigItems) {
+                if (createItem.getObjectId() != null) {
+                    // objectId is stored as originalObjectId
+                    origObjectId = createItem.getObjectId();
+                    objectId = null;
+                }
+            }
 
-            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, accessPointItemService.nextItemObjectId(), position, origObjectId, false);
+            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change,
+                                               objectId, position, origObjectId, false);
             itemsCreated.add(itemCreated);
 
             existsItems.add(itemCreated);
@@ -147,8 +175,10 @@ public class RevisionItemService {
                                  final int position,
                                  @Nullable Integer origObjectId,
                                  final boolean deleted) {
-        Validate.isTrue((origObjectId == null) ^ (objectId == null),
-                        "only originalObjectId or objectId has to be set (not both)");
+        if (!((origObjectId == null) ^ (objectId == null))) {
+            throw new BusinessException("only originalObjectId or objectId has to be set (not both)",
+                    BaseCode.INVALID_STATE);
+        }
 
         ApRevItem item = new ApRevItem();
         item.setData(data);

@@ -38,7 +38,6 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
@@ -242,6 +241,17 @@ public class RevisionService {
         return revisionRepository.findByState(state);
     }
 
+    /**
+     * Create new revision part
+     * 
+     * Part is not based on standard part. All items will receive new
+     * objectId(s).
+     * 
+     * @param state
+     * @param revision
+     * @param apPartFormVO
+     * @return
+     */
     @Transactional
     public ApRevPart createPart(ApState state, ApRevision revision, ApPartFormVO apPartFormVO) {
         accessPointService.checkPermissionForEdit(state, revision);
@@ -257,6 +267,12 @@ public class RevisionService {
 
         if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu");
+        }
+        // validate items in part, has to be witout ids
+        for (ApItemVO item : apPartFormVO.getItems()) {
+            Validate.isTrue(item.getObjectId() == null);
+            Validate.isTrue(item.getOrigObjectId() == null);
+            Validate.isTrue(item.getId() == null);
         }
 
         RulPartType partType = partService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
@@ -485,95 +501,150 @@ public class RevisionService {
         updatePartValues(revision);
     }
 
+    /**
+     * Update revPart
+     * 
+     * @param apState
+     * @param revision
+     * @param revPart
+     * @param apPartFormVO
+     */
     @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
     public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
-                           ApRevision revision, Integer partId, ApPartFormVO apPartFormVO) {
-        if (revision == null) {
+                           @NotNull ApRevision revision,
+                           @NotNull ApRevPart revPart,
+                           ApPartFormVO apPartFormVO) {
+        if (revision == null || revPart == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
         accessPointService.checkPermissionForEdit(apState, revision);
 
-        ApRevPart revPart = revisionPartService.findById(partId);
+        List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
+        // Map by objectId -> ApRevItem
+        Map<Integer, ApRevItem> revItemObjectMap = new HashMap<>();
+        for (ApRevItem revItem : revItems) {
+            Validate.isTrue(revItem.getObjectId() != null ^ revItem.getOrigObjectId() != null);
 
-        List<ApRevItem> deleteItems = revisionItemService.findByPart(revPart);
+            if (revItem.getObjectId() != null) {
+                ApRevItem prevItem = revItemObjectMap.put(revItem.getObjectId(), revItem);
+                Validate.isTrue(prevItem == null);
+            } else if (revItem.getOrigObjectId() != null) {
+                ApRevItem prevItem = revItemObjectMap.put(revItem.getOrigObjectId(), revItem);
+                Validate.isTrue(prevItem == null);
+            }
+        }
 
-        Map<Integer, ApRevItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApRevItem::getItemId, i -> i));
-
-        List<ApItem> apItems = new ArrayList<>();
-        Map<Integer, ApItem> apItemMap = null;
+        List<ApItem> apItems;
+        Map<Integer, ApItem> apItemObjectMap;
 
         if (revPart.getOriginalPart() != null) {
             apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
-            apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+            apItemObjectMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
+        } else {
+            apItems = Collections.emptyList();
+            apItemObjectMap = Collections.emptyMap();
         }
 
-
-        List<ApItemVO> itemListVO = apPartFormVO.getItems();
+        // List of ApRevItem for new revisions
+        // objectId will be stored
         List<ApItemVO> createItems = new ArrayList<>();
-        List<ApItemVO> newRevisionCreateItems = new ArrayList<>();
+
+        // List of ApItems for which new ApRevItem will be created
+        // origObjectId will be stored
+        List<ApItemVO> revisionCreateItems = new ArrayList<>();
+
+        // List of revItems without change
+        List<ApRevItem> unchangedRevItems = new ArrayList<>();
+
+        // List of referenced ApItem (not deleted)
+        List<ApItem> notDeletedApItems = new ArrayList<>();
 
         // určujeme, které záznamy: přidat, odstranit, nebo ponechat
-        for (ApItemVO itemVO : itemListVO) {
-            if (itemVO.getId() == null) {
-                createItems.add(itemVO); // new -> add
+        for (ApItemVO itemVO : apPartFormVO.getItems()) {
+            // src items
+            Integer objectId = itemVO.getObjectId() != null ? itemVO.getObjectId() : itemVO.getOrigObjectId();
+            if (objectId == null) {
+                // new -> add
+                Validate.isTrue(itemVO.getId() == null);
+                createItems.add(itemVO);
             } else {
-                if (itemVO.getOrigObjectId() != null || itemVO.getChangeType() == ChangeType.NEW) {
-                    ApRevItem item = itemMap.get(itemVO.getId());
-                    if (item != null) {
-                        if (itemVO.equalsValue(item)) {
-                            deleteItems.remove(item); // no change -> don't delete
-                        } else {
-                            createItems.add(itemVO); // changed -> add + delete
-                        }
+                ApItem origItem = apItemObjectMap.get(objectId);
+                ApRevItem revItem = revItemObjectMap.get(objectId);
+                if (origItem == null && revItem == null) {
+                    // source item not found
+                    throw new BusinessException("ApItem nor ApRevItem was found, objectId: " + objectId,
+                            BaseCode.ID_NOT_EXIST).set("objectId", objectId);
+                }
+                if (origItem != null) {
+                    // Orig item is somehow transformed
+                    notDeletedApItems.add(origItem);
+                }
+                if(revItem!=null) {
+                    if(itemVO.getId()!=null) {
+                        // pokud je nastaveno ID, musi byt spravne
+                        Validate.isTrue(itemVO.getId().equals(revItem.getItemId()));
+                    }
+                    // modifying current item
+                    if (itemVO.equalsValue(revItem)) {
+                        // no change -> don't delete
+                        unchangedRevItems.add(revItem);
+                    } else {
+                        // value changed -> add + delete
+                        createItems.add(itemVO);
                     }
                 } else {
-                    if (apItemMap != null) {
-                        ApItem i = apItemMap.get(itemVO.getId());
-                        if (i != null && !itemVO.equalsValue(i)) {
-                            newRevisionCreateItems.add(itemVO);
-                        }
+                    // origItem exists but not revItem
+                    // -> new revItem has to be created
+                    // ID should match
+                    if (itemVO.getId() != null) {
+                        // pokud je nastaveno ID, musi byt spravne
+                        Validate.isTrue(itemVO.getId().equals(origItem.getItemId()));
                     }
+                    revisionCreateItems.add(itemVO);
                 }
             }
         }
 
-        // zjištění, které z původních itemů v partu zůstávají
-        List<ApItem> notDeletedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(apItems)) {
-            for (ApItemVO createItem : itemListVO) {
-                Integer objectId = createItem.getOrigObjectId();
-                if (objectId == null && createItem.getChangeType() != ChangeType.NEW) {
-                    objectId = createItem.getObjectId();
-                }
-                if (objectId != null) {
-                    for (ApItem apItem : apItems) {
-                        if (apItem.getObjectId().equals(objectId)) {
-                            notDeletedItems.add(apItem);
-                        }
-                    }
-                }
-            }
-            apItems.removeAll(notDeletedItems);
-        }
+        List<ApRevItem> deleteRevItems = new ArrayList<>(revItems);
+        deleteRevItems.removeAll(unchangedRevItems);
+
+        List<ApItem> deleteApItems = new ArrayList<>(apItems);
+        deleteApItems.removeAll(notDeletedApItems);
 
         // pokud nedojde ke změně
-        if (!createItems.isEmpty() || !deleteItems.isEmpty() || !apItems.isEmpty() || !newRevisionCreateItems.isEmpty()) {
+        if (!createItems.isEmpty() ||
+                !deleteRevItems.isEmpty() ||
+                !deleteApItems.isEmpty() ||
+                !revisionCreateItems.isEmpty()) {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+
+            // remove old revItems
+            revisionItemService.deleteRevisionItems(deleteRevItems, change);
 
             revisionItemService.createItems(revPart, createItems, change, false);
 
-            revisionItemService.createItems(revPart, newRevisionCreateItems, change, true);
-
-            revisionItemService.deleteRevisionItems(deleteItems, change);
+            revisionItemService.createItems(revPart, revisionCreateItems, change, true);
 
             //založení záznamů o smazaných původních itemech
-            revisionItemService.createDeletedItems(revPart, change, apItems);
+            revisionItemService.createDeletedItems(revPart, change, deleteApItems);
 
             updatePartValue(revPart, revision);
         }
     }
 
+    /**
+     * Update part revision
+     * 
+     * Method will update existing revision or will create new revision.
+     * 
+     * Items are mapped to original items using objectId
+     * 
+     * @param apState
+     * @param revision
+     * @param apPart
+     * @param apPartFormVO
+     */
     @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
     public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
@@ -582,41 +653,53 @@ public class RevisionService {
 
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         if (revPart != null) {
-            updatePart(apState, revision, revPart.getPartId(), apPartFormVO);
+            // update existing revision
+            updatePart(apState, revision, revPart, apPartFormVO);
         } else {
+            // create new revision part
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
 
             revPart = revisionPartService.createPart(revision, change, apPart, false);
 
             List<ApItem> apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
-            Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+            // Map objectId -> ApItem
+            Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
+
             List<ApItemVO> createItems = new ArrayList<>();
+            List<ApItem> notDeletedItems = new ArrayList<>();
 
             for (ApItemVO itemVO : apPartFormVO.getItems()) {
-                if (itemVO.getId() == null) {
-                    createItems.add(itemVO); // new -> add
+                Validate.isTrue(itemVO.getOrigObjectId() == null);
+
+                if (itemVO.getObjectId() == null) {
+                    // new -> add                    
+                    Validate.isTrue(itemVO.getId() == null);
+
+                    createItems.add(itemVO);
                 } else {
-                    ApItem i = apItemMap.get(itemVO.getId());
-                    if (i != null && !itemVO.equalsValue(i)) {
+                    // item is not new, has to have valid objectId or origObjectId
+                    ApItem i = apItemMap.get(itemVO.getObjectId());
+                    if (i == null) {
+                        throw new BusinessException("Source item not found", BaseCode.ID_NOT_EXIST)
+                                .set("objectId", itemVO.getObjectId());
+                    }
+
+                    if (itemVO.getId() != null) {
+                        // check ID
+                        // if ID is sent it have to match itemId
+                        Validate.isTrue(itemVO.getId().equals(i.getItemId()));
+                    }
+
+                    // zjištění, které z původních itemů v partu zůstávají
+                    notDeletedItems.add(i);
+
+                    if (!itemVO.equalsValue(i)) {
                         createItems.add(itemVO);
                     }
                 }
             }
 
-            // zjištění, které z původních itemů v partu zůstávají
-            List<ApItem> notDeletedItems = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(apItems)) {
-                for (ApItemVO itemVO : apPartFormVO.getItems()) {
-                    Integer id = itemVO.getId();
-                    if (id != null) {
-                        ApItem apItem = apItemMap.get(itemVO.getId());
-                        if (apItem != null) {
-                            notDeletedItems.add(apItem);
-                        }
-                    }
-                }
-                apItems.removeAll(notDeletedItems);
-            }
+            apItems.removeAll(notDeletedItems);
 
             revisionItemService.createItems(revPart, createItems, change, true);
 

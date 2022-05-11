@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +32,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
@@ -198,6 +203,115 @@ public class ApControllerTest extends AbstractControllerTest {
         deletePart(accessPoint.getId(), oldPrefName);
         accessPoint = getAccessPoint(accessPoint.getId());
         Assert.assertEquals(1, accessPoint.getParts().size());
+    }
+
+    @Test//(timeout = 60000)
+    public void testAccessPointRev() throws InterruptedException, ApiException {
+        ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        assertNotNull(type);
+
+        List<ApScopeVO> scopes = getAllScopes();
+        Integer scopeId = scopes.iterator().next().getId();
+        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+        RulPartTypeVO ptName = partTypes.get(PT_NAME);
+
+        List<ApItemVO> items = new ArrayList<>();
+        RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
+        RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
+
+        items.add(buildApItem(nmMainItemType.getCode(), null, "TEST", null, null));
+        items.add(buildApItem(nmSupGenItemType.getCode(), null, "AP", null, null));
+
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(type.getId());
+        ap.setScopeId(scopeId);
+        ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, items));
+
+        ApAccessPointVO accessPoint = createAccessPoint(ap);
+        assertNotNull(accessPoint);
+        List<ApPartVO> parts = accessPoint.getParts();
+        assertNotNull(parts);
+        ApPartVO preferredPart = findPreferredPart(accessPoint);
+        assertNotNull(preferredPart);
+
+        // AP created
+        // prepare revision
+        accesspointsApi.createRevision(accessPoint.getId());
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertEquals(accessPoint.getRevStateApproval(), RevStateApproval.ACTIVE);
+
+        // add new part Karel IV
+        items = new ArrayList<>();
+        items.add(buildApItem(nmMainItemType.getCode(), null, "Karel", null, null));
+        items.add(buildApItem(nmSupGenItemType.getCode(), null, "IV", null, null));
+
+        ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
+
+        Integer revPartId = createPart(accessPoint.getId(), partFormVO);
+        assertNotNull(revPartId);
+
+        // drop revision
+        accesspointsApi.deleteRevision(accessPoint.getId());
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertNull(accessPoint.getRevStateApproval());
+
+        // prepare revision 2
+        accesspointsApi.createRevision(accessPoint.getId());
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertEquals(accessPoint.getRevStateApproval(), RevStateApproval.ACTIVE);
+
+        revPartId = createPart(accessPoint.getId(), partFormVO);
+        assertNotNull(revPartId);
+        // check revPart
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertTrue(accessPoint.getRevParts().size() == 1);
+
+        // modify existing part
+        ApPartVO modPart = accessPoint.getParts().get(0);
+        List<ApItemVO> modItems = new ArrayList<>();
+        for (ApItemVO modItem : modPart.getItems()) {
+            if (modItem.getTypeId().equals(nmMainItemType.getItemTypeId())) {
+                // modify main name
+                assertNull(modItem.getSpecId());
+                ApItemStringVO stringVo = (ApItemStringVO) modItem;
+                stringVo.setValue("TEST2");
+                modItems.add(modItem);
+            } else if (modItem.getTypeId().equals(nmSupGenItemType.getItemTypeId())) {
+                // delete doplnek
+                assertNull(modItem.getSpecId());
+                ApItemStringVO stringVo = (ApItemStringVO) modItem;
+                assertEquals(stringVo.getValue(), "AP");
+            } else {
+                fail("Unexpected item");
+            }
+        }
+        ApPartFormVO modFormPartVO = ApControllerTest.createPartFormVO(modPart.getId(),
+                                                                       ptName.getCode(),
+                                                                       null, modItems);
+        updatePart(accessPoint.getId(), modPart.getId(), modFormPartVO);
+
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertTrue(accessPoint.getRevParts().size() == 2);
+
+        mergeRevision(accessPoint.getId(), null);
+
+        accessPoint = getAccessPoint(accessPoint.getId());
+        assertTrue(accessPoint.getRevParts().size() == 0);
+        assertTrue(accessPoint.getParts().size() == 2);
+        
+        // Kontrola obsahu partu
+        for (ApPartVO part : accessPoint.getParts()) {
+            if (part.getId().equals(preferredPart.getId())) {
+                // prvni part
+                assertEquals(part.getItems().size(), 1);
+                ApItemVO mainItem = part.getItems().get(0);
+                ApItemStringVO stringVo = (ApItemStringVO) mainItem;
+                assertEquals(stringVo.getValue(), "TEST2");
+            } else {
+                // druhy part
+                assertEquals(part.getItems().size(), 2);
+            }
+        }
     }
 
     private ApPartVO findPreferredPart(final ApAccessPointVO accessPoint) {
