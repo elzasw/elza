@@ -1,5 +1,28 @@
 package cz.tacr.elza.repository.specification;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.data.jpa.domain.Specification;
+
 import cz.tacr.cam.client.controller.vo.QueryComparator;
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
@@ -39,22 +62,6 @@ import cz.tacr.elza.repository.specification.search.StructuredComparator;
 import cz.tacr.elza.repository.specification.search.TextComparator;
 import cz.tacr.elza.repository.specification.search.UnitIdComparator;
 import cz.tacr.elza.repository.specification.search.UnitdateComparator;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.data.jpa.domain.Specification;
-
-import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 public class ApStateSpecification implements Specification<ApState> {
 
@@ -218,6 +225,9 @@ public class ApStateSpecification implements Specification<ApState> {
         Predicate and = cb.conjunction();
         ctx.resetApItemRoot();
 
+        // zajimaji nas jen platne apItem
+        and = cb.and(and, cb.isNull(ctx.getApItemRoot().get(ApItem.DELETE_CHANGE_ID)));
+
         String dataTypeCode;
         if (StringUtils.isNotEmpty(itemTypeCode)) {
             dataTypeCode = validateItemType(itemTypeCode);
@@ -238,6 +248,8 @@ public class ApStateSpecification implements Specification<ApState> {
                 and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
             } else {
                 and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+                // zajimaji nas jen nesmazane part
+                and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
             }
         }
 

@@ -37,7 +37,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.eventbus.Subscribe;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.config.ConfigView;
@@ -83,6 +82,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
+import cz.tacr.elza.repository.LevelRepositoryCustom.LevelInfo;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -488,9 +488,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         List<LevelRepositoryCustom.LevelInfo> levelInfos = levelRepository.readTree(change, rootNodeId);
 
 
-        //mapa všech základních dat uzlů
-        Map<Integer, LevelRepositoryCustom.LevelInfo> levelInfoMap = ElzaTools
-                .createEntityMap(levelInfos, (i) -> i.getNodeId());
+        // mapa všech základních dat uzlů
+        // toMap zajisti provedeni kontroly duplicit
+        Map<Integer, LevelRepositoryCustom.LevelInfo> levelInfoMap = levelInfos.stream()
+                .collect(Collectors.toMap(LevelRepositoryCustom.LevelInfo::getNodeId, Function.identity()));
         levelInfoMap.put(rootNodeId, rootInfo);
 
         //výsledná mapa
@@ -500,7 +501,18 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         }
 
         //seřazení dětí všech uzlů podle pozice
-        Comparator<TreeNode> comparator = (o1, o2) -> o1.getPosition().compareTo(o2.getPosition());
+        Comparator<TreeNode> comparator = (o1, o2) -> {
+            int ret = o1.getPosition().compareTo(o2.getPosition());
+            if (ret == 0) {
+                // check same position
+                logger.error("Two nodes on same position, nodeId: {}, nodeId: {}",
+                             o1.getId(), o2.getId());
+                throw new SystemException("Two nodes on same position.", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("nodeId", o1.getId())
+                        .set("otherNodeId", o2.getId());
+            }
+            return ret;
+        };
         for (TreeNode treeNode : allMap.values()) {
             treeNode.getChilds().sort(comparator);
         }
@@ -518,6 +530,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param allNodesMap  mapa všech vytvořených uzlů
      * @return vytvořený uzel
      */
+    // TODO: rework with recursive query
     private TreeNode createTreeNodeMap(final LevelRepositoryCustom.LevelInfo levelInfo,
                                        final Map<Integer, LevelRepositoryCustom.LevelInfo> levelInfoMap,
                                        final Map<Integer, TreeNode> allNodesMap) {
@@ -530,8 +543,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         allNodesMap.put(levelInfo.getNodeId(), result);
 
         if (levelInfo.getParentId() != null) {
-            TreeNode parentNode = createTreeNodeMap(levelInfoMap.get(levelInfo.getParentId()), levelInfoMap,
-                    allNodesMap);
+            LevelInfo parentInfo = levelInfoMap.get(levelInfo.getParentId());
+            Validate.notNull(parentInfo, "Missing node info, id: %s", levelInfo.getParentId());
+
+            TreeNode parentNode = createTreeNodeMap(parentInfo, levelInfoMap, allNodesMap);
             result.setParent(parentNode);
             parentNode.addChild(result);
         }

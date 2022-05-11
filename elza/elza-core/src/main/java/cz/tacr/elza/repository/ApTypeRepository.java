@@ -1,16 +1,16 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
-import java.util.Set;
 
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.repository.vo.TypeRuleSet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.repository.vo.TypeRuleSet;
 
 
 /**
@@ -42,6 +42,7 @@ public interface ApTypeRepository extends JpaRepository<ApType, Integer>, ApType
     @Query("UPDATE ap_type rr SET rr.parentApType = NULL WHERE rr.rulPackage = :rulPackage")
     void preDeleteByRulPackage(@Param("rulPackage") RulPackage rulPackage);
 
+    // TODO: co to dělá?
     @Query("SELECT new cz.tacr.elza.repository.vo.TypeRuleSet(t.apTypeId, r.ruleSetId) FROM ap_type t JOIN t.rulPackage p JOIN rul_rule_set r ON r.rulPackage = p")
     List<TypeRuleSet> findTypeRuleSets();
 }

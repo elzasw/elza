@@ -234,7 +234,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         refreshValidation(id);
     };
 
-    const handleAdd = (partType: RulPartTypeVO, parentPartId?: number) => {
+    const handleAdd = (partType: RulPartTypeVO, parentPartId?: number, revParentPartId?: number) => {
         if(detail.data){
             saveScrollPosition();
             showPartCreateModal(
@@ -243,15 +243,20 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 apTypeId, 
                 detail.data.scopeId, 
                 parentPartId,
-                () => restoreScrollPosition()
+                () => restoreScrollPosition(),
+                revParentPartId
             );
         }
         refreshValidation(id);
     };
 
     const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
-    const allRevisionParts = detail.data.revStateApproval ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
-    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId );
+    const allRevisionParts = detail.data.revStateApproval && revisionActive ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
+    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => 
+        !part?.partParentId 
+            && !updatedPart?.partParentId 
+            && !part?.revPartParentId 
+            && !updatedPart?.revPartParentId);
 
     const getRelatedPartSections = (parentParts: RevisionPart[]) => {
         if (parentParts.length === 0) { return []; }
@@ -263,12 +268,16 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             if(updatedPart){updatedParentIds.push(updatedPart.id)}
         })
 
+        console.log(allRevisionParts, parentParts, parentIds, updatedParentIds)
+
         return allRevisionParts
             .filter(value => 
                 value.part?.partParentId && parentIds.includes(value.part?.partParentId)
                 || value.part?.partParentId && updatedParentIds.includes(value.part?.partParentId)
+                || value.updatedPart?.revPartParentId && parentIds.includes(value.updatedPart?.revPartParentId)
                 || value.updatedPart?.partParentId && parentIds.includes(value.updatedPart?.partParentId)
                 || value.updatedPart?.partParentId && updatedParentIds.includes(value.updatedPart?.partParentId)
+                || value.updatedPart?.revPartParentId && updatedParentIds.includes(value.updatedPart?.revPartParentId)
         );
     };
 
@@ -330,14 +339,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                             const revisionParts = groupedRevisionParts[partType.id] || [];
 
                             const onAddRelated = partType.childPartId
-                            ? (parentPartId:number) => {
+                            ? (parentPartId?:number, revParentPartId?:number) => {
                                 const childPartType = partType.childPartId ? objectByProperty(
                                     refTables.partTypes.items,
                                     partType.childPartId,
                                     "id"
                                 ) : null;
                                 if (childPartType !== null) {
-                                    handleAdd(childPartType, parentPartId);
+                                    handleAdd(childPartType, parentPartId, revParentPartId);
                                 } else {
                                     console.error('childPartType ' + partType.childPartId + ' not found');
                                 }
@@ -422,7 +431,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish)),
+        revParentPartId?: number,
+    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
         return dispatch(goToAe(history, apId, true, !select));

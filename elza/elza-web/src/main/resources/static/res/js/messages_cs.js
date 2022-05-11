@@ -1134,6 +1134,12 @@ var messages = {
     "ap.detail.expandInfo": "zobrazit podrobnosti",
     "ap.detail.collapseInfo": "skrýt podrobnosti",
 
+    "ap.detail.modifiedBy": "Upravil",
+    "ap.detail.lastChange": "Poslední změna",
+    "ap.detail.lastChange.notAvailable": "Informace o poslední změně není dostupná",
+    "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
+    "ap.detail.replacedBy": "Nahrazující entita",
+
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 

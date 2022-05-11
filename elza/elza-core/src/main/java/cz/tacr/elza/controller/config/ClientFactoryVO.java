@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.config;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -19,12 +21,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.RulExportFilter;
-import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -73,6 +69,8 @@ import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
@@ -116,6 +114,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -145,10 +144,12 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -167,6 +168,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -193,8 +195,6 @@ import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.ws.types.v1.Items;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -1853,13 +1853,10 @@ public class ClientFactoryVO {
     private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail,
                                final ArrFundVersion version) {
         // read scenarios
-        String attrs = arrDao.getAttributes();
+        Items items = daoSyncService.unmarshalItemsFromAttributes(arrDao);
         List<String> scenarios = null;
-        if (attrs != null) {
-            Items items = daoSyncService.unmarshalItemsFromAttributes(attrs, arrDao.getDaoId());
-            if (items != null) {
-                scenarios = daoSyncService.getAllScenarioNames(items);
-            }
+        if (items != null) {
+            scenarios = daoSyncService.getAllScenarioNames(items);
         }
 
         ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);

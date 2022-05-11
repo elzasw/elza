@@ -23,13 +23,21 @@ type OwnProps = {
     name?: string;
     nameFormSection?: string; // název pro FormSection
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
+    scopeId?: number;
 }
 
 type Props = {
     formName: string;
 } & OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const RelationsFilterSection = ({submitting, dispatch, relApi, nameFormSection = "", name = 'ap.ext-search.section.relations'}: Props) => {
+const RelationsFilterSection = ({
+    submitting, 
+    dispatch, 
+    relApi, 
+    nameFormSection = "", 
+    name = 'ap.ext-search.section.relations',
+    scopeId,
+}: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
         <FieldArray
@@ -38,6 +46,7 @@ const RelationsFilterSection = ({submitting, dispatch, relApi, nameFormSection =
             component={RelFilters}
             relApi={relApi}
             disabled={submitting}
+            scopeId={scopeId}
         />
     </FormSection>
 };
@@ -64,35 +73,46 @@ const renderRelFilter = (index: number, disabled: boolean, item: RelFilterProps,
 interface RelFilterFieldProps extends WrappedFieldArrayProps<string> {
     disabled: boolean;
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
-    relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
+    relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
+    scopeId?: number;
 }
 
-const RelFilters: React.FC<RelFilterFieldProps> = memo(({fields, disabled = false, meta, relApi, dispatch, ...props}) => {
-    return <>
-        <Button size="small" className="fr" disabled={disabled} variant="outline-secondary" onClick={() => {
-            dispatch(
-                modalDialogShow(
-                    this,
-                    i18n('ap.ext-search.section.extends.title'),
-                    <RelationFilterModal initialValues={{
-                        area: Area.ALLNAMES,
-                        onlyMainPart: "false"
-                    }} relApi={relApi} onSubmit={(data) => {
-                        fields.push(data);
-                        dispatch(modalDialogHide());
-                    }} />,
-                ),
-            );
-        }}><Icon glyph="fa-plus"/></Button>
-        {fields.length > 0 && <div>
-        {fields.map((field, index) => {
-                const item: any = fields.get(index);
-                return renderRelFilter(index, disabled, item, () => {
-                    fields.remove(index);
-                });
-            }
-        )}
-    </div>}</>
+const RelFilters: React.FC<RelFilterFieldProps> = memo(({
+    fields, 
+    disabled = false, 
+    meta, 
+    relApi, 
+    dispatch, 
+    scopeId,
+    ...props
+}) => {
+        return <>
+            <Button size="small" className="fr" disabled={disabled} variant="outline-secondary" onClick={() => {
+                dispatch(
+                    modalDialogShow(
+                        this,
+                        i18n('ap.ext-search.section.extends.title'),
+                        <RelationFilterModal initialValues={{
+                            area: Area.ALLNAMES,
+                            onlyMainPart: false,
+                            scopeId,
+                        }} relApi={relApi} onSubmit={(data) => {
+                                fields.push(data);
+                                dispatch(modalDialogHide());
+                            }} />,
+                        ),
+                );
+            }}><Icon glyph="fa-plus"/></Button>
+            {fields.length > 0 && <div>
+                {fields.map((field, index) => {
+                    const item: any = fields.get(index);
+                    return renderRelFilter(index, disabled, item, () => {
+                        fields.remove(index);
+                    });
+                }
+                )}
+            </div>}
+            </>
 });
 
 const mapStateToProps = (state: any, props: any) => {

@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,13 +41,12 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
-
-import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -59,6 +59,8 @@ public class ArrangementWebsocketController {
 	@Autowired
 	ArrangementFormService arrangementFormService;
 
+    @Autowired
+    ArrangementService arrangementService;
     @Autowired
     private ClientFactoryDO factoryDO;
     @Autowired
@@ -200,10 +202,11 @@ public class ArrangementWebsocketController {
      */
     @Transactional
     @MessageMapping("/arrangement/levels/delete")
-    public void deleteLevel(@Payload final ArrangementController.NodeParam nodeParam, final StompHeaderAccessor requestHeaders) {
-        Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
-        Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
+    public void deleteLevel(@Payload final ArrangementController.NodeParam nodeParam,
+                            final StompHeaderAccessor requestHeaders) {
+        Validate.notNull(nodeParam, "Parametry JP musí být vyplněny");
+        Validate.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
 
         ArrNode deleteNode = factoryDO.createNode(nodeParam.getStaticNode());
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO

@@ -22,16 +22,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -76,6 +72,8 @@ import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
@@ -87,6 +85,7 @@ import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -138,6 +137,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -326,6 +326,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
@@ -1709,9 +1710,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return převedený uzel stromu
      */
     protected ArrNodeVO convertTreeNode(final TreeNodeVO treeNodeClient) {
-        ArrNodeVO rootNode = new ArrNodeVO();
-        BeanUtils.copyProperties(treeNodeClient, rootNode);
-        return rootNode;
+        ArrNodeVO node = new ArrNodeVO();
+        node.setId(treeNodeClient.getId());
+        node.setVersion(treeNodeClient.getVersion());
+        return node;
     }
 
     /**
@@ -2056,6 +2058,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected RecordUsageVO usagesRecord(final Integer recordId) {
         return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
+    }
+
+    protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
+        post(spec -> spec.pathParam("entityId", entityId)
+                .param("state", state),
+             MERGE_AP);
     }
 
     /**
@@ -3172,6 +3180,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .as(RulPartTypeVO[].class));
     }
 
+    protected Map<String, RulPartTypeVO> findPartTypesMap() {
+        return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
+    }
+
     /**
      * Vyhledá dostupná a aktivovaná rozšíření k AS.
      *
@@ -3347,10 +3359,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      */
-    protected void createPart(final Integer accessPointId,
+    protected Integer createPart(final Integer accessPointId,
                               final ApPartFormVO apPartFormVO) {
-        post(spec -> spec.pathParam("accessPointId", accessPointId)
-                .body(apPartFormVO), CREATE_PART);
+        return post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .body(apPartFormVO), CREATE_PART)
+                        .as(Integer.class);
     }
 
     /**

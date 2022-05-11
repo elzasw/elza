@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -38,10 +37,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 
@@ -342,6 +339,9 @@ public class AccessPointItemService {
      *            seznam odkazovaných entit
      * @return
      */
+    // TODO: method is used also to update existing items
+    //       in such case we should retain objectId and not issue new one
+    //       see nextItemObjectId()
     public List<ApItem> createItems(final ApPart part,
                                     final List<ApItemVO> createItems,
                                     final ApChange change,
@@ -490,7 +490,8 @@ public class AccessPointItemService {
      * @param itemsMap mapa zmen
      * @param bindingItemList
      */
-    private void changeBindingItemsItems(Map<Integer, ApItem> itemsMap, List<ApBindingItem> bindingItemList) {
+    public void changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
+                                        List<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return;
         }
@@ -505,21 +506,6 @@ public class AccessPointItemService {
         if (CollectionUtils.isNotEmpty(currentItemBindings)) {
             bindingItemRepository.saveAll(currentItemBindings);
         }
-    }
-
-    public ApItem copyItem(final ApItem oldItem,
-                             final ApChange change,
-                             final ApPart apPart) {
-        ApItem newItem = new ApItem();
-        newItem.setCreateChange(change);
-        newItem.setData(oldItem.getData());
-        newItem.setItemSpec(oldItem.getItemSpec());
-        newItem.setItemType(oldItem.getItemType());
-        newItem.setObjectId(oldItem.getObjectId());
-        newItem.setPosition(oldItem.getPosition());
-        newItem.setPart(apPart);
-
-        return newItem;
     }
 
     /**
@@ -541,7 +527,8 @@ public class AccessPointItemService {
      */
     public ApItem createItem(final ApPart part,
                              final ArrData data,
-                             final RulItemType it, final RulItemSpec is, final ApChange c,
+                             final RulItemType it,
+                             final RulItemSpec is, final ApChange c,
                              final int objectId, final int position) {
         ApItem item = new ApItem();
         item.setData(data);

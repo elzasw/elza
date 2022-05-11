@@ -1878,4 +1878,32 @@ where no.level_id = l.level_id
                 FROM ap_state s WHERE s.access_point_id = bs.access_point_id AND s.delete_change_id is NULL</sql>
 		<delete tableName="ap_cached_access_point" />
     </changeSet>
+
+    <changeSet id="20220419111100" author="ppyt">
+      <sql dbms="postgresql">with new_order as (select l.level_id, node_id_parent, ROW_NUMBER() OVER(PARTITION BY node_id_parent ORDER BY l."position" , l.level_id) AS row_num
+from arr_level l
+where l.node_id_parent in (select distinct l.node_id_parent from arr_level l
+join arr_level l2 on l.node_id_parent = l2.node_id_parent and l."position" = l2."position"
+where l.level_id &lt; l2.level_id and l.delete_change_id is null and l2.delete_change_id is null
+) and l.delete_change_id is null
+)
+update arr_level l
+set "position" = no.row_num from new_order no
+where no.level_id = l.level_id and "position" &lt;&gt; no.row_num 
+        </sql>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_level_parent_position_idx 
+            ON arr_level(node_id_parent, "position")
+			WHERE delete_change_id IS NULL AND node_id_parent IS NOT NULL;</sql>
+    </changeSet>
+
+    <changeSet id="20220509115500" author="ppyt">
+        <addColumn tableName="ap_rev_part">
+            <column name="deleted" type="boolean"/>
+        </addColumn>
+        <sql>UPDATE ap_rev_part SET deleted = 'false'</sql>
+        <addNotNullConstraint tableName="ap_rev_part" columnName="deleted"/>
+    </changeSet>
+    <changeSet id="20220510120900" author="ppyt">
+        <sql>UPDATE ap_rev_item SET object_id = NULL WHERE orig_object_id IS NOT NULL;</sql>
+    </changeSet>
 </databaseChangeLog>

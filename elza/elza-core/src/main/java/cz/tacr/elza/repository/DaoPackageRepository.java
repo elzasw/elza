@@ -1,12 +1,16 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFund;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
+
 /**
- * @author Martin Šlapa
+ * 
  * @since 1.9.2015
  */
 
@@ -17,4 +21,6 @@ public interface DaoPackageRepository extends ElzaJpaRepository<ArrDaoPackage, I
 
     @Modifying
     void deleteByFund(ArrFund fund);
+
+    List<ArrDaoPackage> findAllByDigitalRepositoryAndCodeIn(ArrDigitalRepository repository, List<String> packageIds);
 }

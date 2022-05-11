@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -9,12 +7,18 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+/**
+ * Item in the revision
+ * 
+ * New item has valid value in objectId.
+ * Updated item has valid value in origObjectId
+ */
 @Entity
 @Table(name = "ap_rev_item")
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
@@ -39,6 +43,9 @@ public class ApRevItem implements AccessPointItem {
     @Column(name = "delete_change_id", updatable = false, insertable = false)
     protected Integer deleteChangeId;
 
+    /**
+     * ID of new item
+     */
     @Column
     protected Integer objectId;
 
@@ -73,6 +80,9 @@ public class ApRevItem implements AccessPointItem {
     @Column(name = "part_id", nullable = false, updatable = false, insertable = false)
     private Integer partId;
 
+    /**
+     * ID of original object (@see ApItem)
+     */
     @Column
     private Integer origObjectId;
 

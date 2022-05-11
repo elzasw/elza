@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import {goToAe} from '../../../../actions/registry/registry';
+import {goToAe, getArchiveEntityUrl } from '../../../../actions/registry/registry';
 import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
@@ -26,6 +26,7 @@ import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';
 import {RouteComponentProps, withRouter} from "react-router";
+import {Link} from "react-router-dom";
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -98,14 +99,11 @@ const DetailItemContent: FC<Props> = ({
 
             if (recordRefItem.value) {
                 valueField = (
-                    <Button
-                        variant="link"
-                        onClick={() => {
-                            selectAp(recordRefItem.value);
-                        }}
+                    <Link 
+                        to={getArchiveEntityUrl(recordRefItem.value)} 
                     >
                         {displayValue}
-                    </Button>
+                    </Link>
                 );
             } else if (recordRefItem.externalUrl) {
                 valueField = (
