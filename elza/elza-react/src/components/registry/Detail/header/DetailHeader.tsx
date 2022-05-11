@@ -30,8 +30,7 @@ interface Props {
     revisionActive?: boolean;
 }
 
-const formatDate = (a: any, ...other) => a;
-const formatDateTime = (a: any, ...other) => a;
+const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
 const getItemState = (item: ApAccessPointVO) => {
     if(item.replacedById != undefined) {return StateApproval.REPLACED}
     if(item.invalid) {return StateApproval.INVALID}
@@ -124,21 +123,21 @@ const DetailHeader: FC<Props> = ({
                             }
                             {itemState && (
                                 <DetailDescriptionsItem className={itemState.toLowerCase()}>
-                                    <DetailState state={itemState} />
+                                    <TooltipTrigger content={ item.lastChange ?
+                                        <>
+                                            <div>{i18n("ap.detail.lastChange")}: {formatDateTime(item.lastChange.change)}</div>
+                                            <div>{i18n("ap.detail.modifiedBy")}: {item.lastChange.user?.displayName || i18n("ap.detail.lastChange.user.notAvailable")}</div>
+                                        </>
+                                        : <div>{i18n("ap.detail.lastChange.notAvailable")}</div>
+                                    }>
+                                        <DetailState state={itemState} />
+                                    </TooltipTrigger>
                                 </DetailDescriptionsItem>
                             )}
                             {scope && (
                                 <DetailDescriptionsItem>
                                     <Icon glyph={'fa-globe'} className={'mr-1'} />
                                     {scope.name}
-                                </DetailDescriptionsItem>
-                            )}
-                            {item.lastChange && item.lastChange.user && (
-                                <DetailDescriptionsItem label={`${i18n("ap.detail.modifiedBy")}:`}>
-                                    {item.lastChange.user.displayName}
-                                    <span title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>
-                                        ({formatDate(item.lastChange.change)})
-                                    </span>
                                 </DetailDescriptionsItem>
                             )}
                             <EntityBindings item={item} onInvalidateDetail={onInvalidateDetail}/>
