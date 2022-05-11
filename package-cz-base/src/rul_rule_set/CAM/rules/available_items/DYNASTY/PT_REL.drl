@@ -28,7 +28,7 @@ end
 rule "R_CRE_005 Použití vztahů u vzniku"
 when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_CRE) from $part.parent
-     $parentItem: Item(type == "CRE_CLASS", spec in ("CRC_BEGINSCOPE","CRC_RISE")) from $parent.items
+     $parentItem: Item(type == "CRE_CLASS", spec in ("CRC_FIRSTMBIRTH","CRC_RISE")) from $parent.items
      $it: ItemType(code == "REL_ENTITY")
      $is : ItemSpec(code in ("RT_FIRSTKMEMBER")) from $it.specs
 then

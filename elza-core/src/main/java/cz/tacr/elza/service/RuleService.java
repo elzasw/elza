@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
-import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
 import static cz.tacr.elza.repository.ExceptionThrow.itemType;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
@@ -29,7 +28,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -40,7 +39,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
@@ -59,7 +57,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSet;
-import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
@@ -69,18 +66,14 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevItem;
+import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
@@ -103,9 +96,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -114,6 +105,7 @@ import cz.tacr.elza.drools.DrlType;
 import cz.tacr.elza.drools.ModelValidationRules;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.ApBuilder;
 import cz.tacr.elza.drools.model.ApValidationErrors;
 import cz.tacr.elza.drools.model.GeoModel;
 import cz.tacr.elza.drools.model.Index;
@@ -133,7 +125,6 @@ import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
@@ -152,6 +143,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
@@ -227,6 +220,15 @@ public class RuleService {
     private PartService partService;
 
     @Autowired
+    private RevisionItemService revisionItemService;
+
+    @Autowired
+    private RevisionPartService revisionPartService;
+
+    @Autowired
+    private RevisionService revisionService;
+
+    @Autowired
     private AccessPointItemService accessPointItemService;
 
     @Autowired
@@ -244,11 +246,15 @@ public class RuleService {
     @Autowired
     private RuleSetRepository ruleSetRepository;
 
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
+    // why is it here?
+    private static final String REL_ENTITY = "REL_ENTITY";
     private static final String ISO3166_2 = "ISO3166_2";
     private static final String ISO3166_3 = "ISO3166_3";
-    private static final String REL_ENTITY = "REL_ENTITY";
     private static final String GEO_UNIT = "GEO_UNIT";
     private static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
     private static final String GEO_TYPE = "GEO_TYPE";
@@ -1060,20 +1066,28 @@ public class RuleService {
         ApScope scope = accessPointService.getApScope(form.getScopeId());
 
         Integer preferredPartId = null;
-        List<Part> parts = new ArrayList<>();
 
+        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
         if (accessPointId != null) {
-            ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
-            preferredPartId = apAccessPoint.getPreferredPartId();
-            List<ApPart> partList = partService.findPartsByAccessPoint(apAccessPoint);
-            List<ApItem> itemList = accessPointItemService.findItemsByParts(partList);
+            // ApState
+            ApState apState = this.accessPointService.getStateInternal(accessPointId);
 
-            for(ApPart part : partList) {
-                parts.add(createPart(part, preferredPartId, itemList));
+            CachedAccessPoint cachedAcessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
+            apBuilder.setAccessPoint(cachedAcessPoint);
+
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
+                List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+
+                // apply revision data
+                apBuilder.setRevision(revision, revParts, revItems);
             }
-
-            fillParentParts(parts);
+        } else {
+            apBuilder.setAeType(apTypeId);
         }
+
+        Ap ae = apBuilder.build();
 
         ApPartFormVO partForm = form.getPartForm();
         List<ApItemVO> items = partForm.getItems();
@@ -1108,12 +1122,16 @@ public class RuleService {
             modelItems.add(ai);
         }
 
-        Ap ae = new Ap(accessPointId, sdp.getApTypeById(apTypeId).getCode(), parts);
         List<ItemType> modelItemTypes = createModelItemTypes();
 
         Part parentPart = null;
         if(partForm.getParentPartId() != null) {
-            parentPart = findPartById(parts, partForm.getParentPartId());
+            parentPart = apBuilder.getPart(partForm.getParentPartId());
+            Validate.notNull(parentPart, "Parent part not found, %s", partForm.getParentPartId());
+        } else
+        if (partForm.getRevParentPartId() != null) {
+            parentPart = apBuilder.getPartByRevPartId(partForm.getRevParentPartId());
+            Validate.notNull(parentPart, "Parent part in revision not found, %s", partForm.getRevParentPartId());
         }
 
         boolean isPartPreferred = form.getAccessPointId() == null || (partForm.getPartId() != null && preferredPartId != null && preferredPartId.equals(partForm.getPartId()));
@@ -1126,36 +1144,46 @@ public class RuleService {
         return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
     }
 
+    /**
+     * Run access point validation
+     * 
+     * Method reads current AP state from DB.
+     * Method is not using cache.
+     * 
+     * @param accessPoint
+     * @return
+     */
     @Transactional(TxType.MANDATORY)
     public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+
+        // Flush all changes to DB before reading data for validation
+        this.entityManager.flush();
+
         ApState apState = accessPointService.getStateInternal(accessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         Integer preferredPartId = accessPoint.getPreferredPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId());
 
-        List<Part> partList = new ArrayList<>();
-        for (ApPart part : parts) {
-            partList.add(createPart(part, preferredPartId, itemList));
-        }
-        fillParentParts(partList);
+        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
+        apBuilder.setAccessPoint(apState, parts, itemList);
+        Ap ap = apBuilder.build();
 
-        Map<PartType, List<Index>> indexMap = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId())
-                        .stream()
-                        .map(index -> createIndex(index, findPartById(partList, index.getPart().getPartId())))
-                        .collect(Collectors.groupingBy(index -> index.getPart().getType()));
+        Map<PartType, List<Index>> indexMap = indexList.stream()
+                .map(index -> createIndex(index, apBuilder.getPart(index.getPartId())))
+                .collect(Collectors.groupingBy(index -> index.getPart().getType()));
 
-        Ap ap = new Ap(accessPoint.getAccessPointId(), apState.getApType().getCode(), partList);
         GeoModel geoModel = createGeoModel(ap);
 
         ApValidationErrorsVO apValidationErrorsVO = createAeValidationErrorsVO();
 
         // vytvoření mapy specifikací vztahů
-        Map<Integer, Map<String, Relation>> relationMap = createRelationMap(partList);
+        Map<Integer, Map<String, Relation>> relationMap = apBuilder.createRelationMap();
         // vytvoření mapy specifikací identifikátorů
-        Map<String, Integer> identMap = createIdentMap(partList);
+        Map<String, Integer> identMap = apBuilder.createIdentMap();
 
-        List<AbstractItem> items = createAbstractItemList(partList);
+        List<AbstractItem> items = apBuilder.createAbstractItemList();
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation, rulRuleSet);
         // validace opakovatelnosti partů
@@ -1193,18 +1221,6 @@ public class RuleService {
         return apValidationErrorsVO;
     }
 
-    private List<AbstractItem> createAbstractItemList(List<Part> partList) {
-        List<AbstractItem> items = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (Part part : partList) {
-                if (CollectionUtils.isNotEmpty(part.getItems())) {
-                    items.addAll(part.getItems());
-                }
-            }
-        }
-        return items;
-    }
-
     private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
         if (CollectionUtils.isNotEmpty(ap.getParts())) {
             for (Part part : ap.getParts()) {
@@ -1231,43 +1247,6 @@ public class RuleService {
                 }
             }
         }
-    }
-
-    private Map<Integer, Map<String, Relation>> createRelationMap(final List<Part> parts) {
-        Map<Integer, Map<String, Relation>> partRelationSpecMap = new HashMap<>();
-        for (Part part : parts) {
-            if (part.getType().equals(PartType.PT_REL)) {
-                Integer key = part.getParent() != null ? part.getParent().getId() : -1;
-                Map<String, Relation> relationSpecCount = partRelationSpecMap.computeIfAbsent(key, k -> new HashMap<>());
-                for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals(REL_ENTITY)) {
-                        Relation relation = relationSpecCount.get(abstractItem.getSpec());
-                        if (relation == null) {
-                            relation = new Relation(part);
-                            relationSpecCount.put(abstractItem.getSpec(), relation);
-                        } else {
-                            relation.addPart(part);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        return partRelationSpecMap;
-    }
-
-    private Map<String, Integer> createIdentMap(final List<Part> parts) {
-        Map<String, Integer> identMap = new HashMap<>();
-        for (Part part : parts) {
-            if (part.getType().equals(PartType.PT_IDENT)) {
-                for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals(IDN_TYPE)) {
-                        identMap.put(abstractItem.getSpec(), identMap.getOrDefault(abstractItem.getSpec(), 0) + 1);
-                    }
-                }
-            }
-        }
-        return identMap;
     }
 
     private void validatePartRepeatability(final ModelValidation validationResult) {
@@ -1605,30 +1584,6 @@ public class RuleService {
         return partValidationErrorsVO;
     }
 
-    private Part createPart(ApPart part, Integer preferredPartId, List<ApItem> itemList) {
-        List<AbstractItem> abstractItemList = new ArrayList<>();
-
-        for (ApItem item : itemList) {
-            if (item.getPartId().equals(part.getPartId())) {
-                abstractItemList.add(createItem(item));
-            }
-        }
-
-        Integer parentPartId = part.getParentPart() != null ? part.getParentPart().getPartId() : null;
-        boolean preferred = part.getPartId().equals(preferredPartId);
-        return new Part(part.getPartId(), parentPartId, PartType.fromValue(part.getPartType().getCode()),
-                abstractItemList, null, preferred);
-    }
-
-    private void fillParentParts(List<Part> partList) {
-        for (Part part : partList) {
-            if (part.getParentPartId() != null) {
-                Part parent = findPartById(partList, part.getParentPartId());
-                part.setParent(parent);
-            }
-        }
-    }
-
     @Nullable
     private Part findPartById(List<Part> partList, Integer partId) {
         if (CollectionUtils.isNotEmpty(partList)) {
@@ -1701,57 +1656,6 @@ public class RuleService {
             modelPartList.add(new ModelPart(partType, indices));
         }
         return modelPartList;
-    }
-
-    private AbstractItem createItem(ApItem item) {
-        StaticDataProvider sdp = staticDataService.getData();
-        AbstractItem abstractItem;
-        String itemTypeCode = item.getItemType().getCode();
-        String itemSpecCode = item.getItemSpec() != null ? item.getItemSpec().getCode() : null;
-        cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
-        DataType dataType = itemType.getDataType();
-
-        switch (dataType) {
-            case ENUM:
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), itemSpecCode);
-                break;
-            case BIT:
-                ArrDataBit aeDataBit = (ArrDataBit) item.getData();
-                abstractItem = new BoolItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataBit.getValueBoolean());
-                break;
-            case RECORD_REF:
-                ArrDataRecordRef aeDataRecordRef = (ArrDataRecordRef) item.getData();
-                abstractItem = new IntItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataRecordRef.getRecordId());
-                break;
-            case COORDINATES:
-                ArrDataCoordinates aeDataCoordinates = (ArrDataCoordinates) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), GeometryConvertor.convert(aeDataCoordinates.getValue()));
-                break;
-            case INT:
-                ArrDataInteger aeDataInteger = (ArrDataInteger) item.getData();
-                abstractItem = new IntItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataInteger.getValueInt());
-                break;
-            case STRING:
-                ArrDataString aeDataString = (ArrDataString) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataString.getStringValue());
-                break;
-            case TEXT:
-                ArrDataText aeDataText = (ArrDataText) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataText.getTextValue());
-                break;
-            case UNITDATE:
-                ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), UnitDateConvertor.convertToString(aeDataUnitdate));
-                break;
-            case URI_REF:
-                ArrDataUriRef arrDataUriRef = (ArrDataUriRef) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef.getUriRefValue());
-                break;
-            default:
-                throw new SystemException("Invalid data type (RulItemType.DataType) " + dataType.getCode() , INVALID_STATE);
-        }
-
-        return abstractItem;
     }
 
     private Index createIndex(ApIndex apIndex, Part part) {

@@ -255,9 +255,10 @@ public class ApFactory {
         ApPart preferredPart = accessPoint.getPreferredPart();
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
-        return createVO(apState, getTypeRuleSetMap(), accessPoint, name);
+        return createVO(apState, accessPoint, name);
     }
 
+    // TODO: odstranit
     public Map<Integer, Integer> getTypeRuleSetMap() {
         List<TypeRuleSet> typeRuleSets = apTypeRepository.findTypeRuleSets();
         Map<Integer, Integer> result = new HashMap<>(typeRuleSets.size());
@@ -306,7 +307,7 @@ public class ApFactory {
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
-        ApAccessPointVO apVO = createVO(state, getTypeRuleSetMap(), ap, name);
+        ApAccessPointVO apVO = createVO(state, ap, name);
         if (fillParts) {
 
             // prepare parts
@@ -375,7 +376,7 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(CachedAccessPoint cachedAccessPoint) {
         String name = findAeCachedEntityName(cachedAccessPoint);
-        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), getTypeRuleSetMap(), cachedAccessPoint, name);
+        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name);
 
         // description
         String description = getDescription(cachedAccessPoint);
@@ -407,13 +408,15 @@ public class ApFactory {
     }
 
     public ApAccessPointVO createVO(final ApState apState,
-                                    final Map<Integer, Integer> typeRuleSetMap,
                                     final ApAccessPoint ap,
                                     final String name) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(ap.getAccessPointId());
         vo.setInvalid(apState.getDeleteChange() != null);
+        if (apState.getReplacedBy() != null) {
+            vo.setReplacedById(apState.getReplacedBy().getAccessPointId());
+        }
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
         vo.setComment(apState.getComment());
@@ -421,9 +424,7 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
-        if (typeRuleSetMap != null) {
-            vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
-        }
+        vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(name);
@@ -431,14 +432,12 @@ public class ApFactory {
     }
 
     public ApAccessPointVO createVO(final ApState apState,
-                                    final Map<Integer, Integer> typeRuleSetMap,
                                     final CachedAccessPoint ap,
                                     final String name) {
-        return createVO(apState, typeRuleSetMap, ap.getAccessPointId(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
+        return createVO(apState, ap.getAccessPointId(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
     }
 
     public ApAccessPointVO createVO(final ApState apState,
-                                    final Map<Integer, Integer> typeRuleSetMap,
                                     final Integer accessPointId,
                                     final String uuid,
                                     final String errorDescription,
@@ -448,6 +447,9 @@ public class ApFactory {
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
         vo.setInvalid(apState.getDeleteChange() != null);
+        if (apState.getReplacedBy() != null) {
+            vo.setReplacedById(apState.getReplacedBy().getAccessPointId());
+        }
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
         vo.setComment(apState.getComment());
@@ -455,9 +457,7 @@ public class ApFactory {
         vo.setUuid(uuid);
         vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(errorDescription);
-        if (typeRuleSetMap != null) {
-            vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
-        }
+        vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
@@ -701,7 +701,7 @@ public class ApFactory {
             ApState apState = apStateMap.get(accessPointId);
             ApIndex indexName = nameMap.get(accessPointId);
             String name = indexName != null ? indexName.getValue() : null;
-            result.add(createVO(apState, getTypeRuleSetMap(), accessPoint, name));
+            result.add(createVO(apState, accessPoint, name));
         }
 
         return result;

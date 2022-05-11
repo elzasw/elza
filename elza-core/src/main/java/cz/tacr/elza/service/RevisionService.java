@@ -1,13 +1,18 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -15,14 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -34,10 +37,8 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
@@ -59,6 +60,9 @@ public class RevisionService {
 
     @Autowired
     private AccessPointDataService accessPointDataService;
+
+    @Autowired
+    private AccessPointItemService accessPointItemService;
 
     @Autowired
     private RevisionPartService revisionPartService;
@@ -103,56 +107,58 @@ public class RevisionService {
             throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
         }
 
-        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
-
         revision = new ApRevision();
-        revision.setCreateChange(change);
         revision.setState(state);
         revision.setType(state.getApType());
         revision.setStateApproval(RevStateApproval.ACTIVE);
         revision.setPreferredPart(state.getAccessPoint().getPreferredPart());
 
-        revisionRepository.save(revision);
+        // Permission check - includes new revision state
+        accessPointService.checkPermissionForEdit(state, revision);
 
-        List<ApBindingState> bindingStateList = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
-        if (CollectionUtils.isNotEmpty(bindingStateList)) {
-            bindingStateList.forEach(eid -> eid.setSyncOk(SyncState.NOT_SYNCED));
-            bindingStateRepository.saveAll(bindingStateList);
-        }
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+        revision.setCreateChange(change);
+
+        revision = revisionRepository.save(revision);
     }
 
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public void deleteRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
-        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
-        List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
-        List<ApRevItem> items = null;
-        List<ApRevIndex> indices = null;
-        if (CollectionUtils.isNotEmpty(parts)) {
-            items = revisionItemService.findByParts(parts);
-            indices = revIndexRepository.findByParts(parts);
-        }
-
-        deleteRevision(revision, change, parts, items, indices);
+        deleteRevision(state, revision);
     }
 
-    private void deleteRevision(ApRevision revision,
+    @Transactional(TxType.MANDATORY)
+    public void deleteRevision(ApState state, ApRevision revision) {
+        // revision might be deleted in any state
+        accessPointService.checkPermissionForEdit(state, RevStateApproval.ACTIVE);
+
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
+        List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
+        List<ApRevItem> items = revisionItemService.findByParts(parts);
+
+        deleteRevision(revision, change, parts, items);
+    }
+
+    private ApRevision deleteRevision(ApRevision revision,
                                 ApChange change,
                                 List<ApRevPart> parts,
-                                List<ApRevItem> items,
-                                List<ApRevIndex> indices) {
+                                List<ApRevItem> items) {
+
         if (CollectionUtils.isNotEmpty(parts)) {
-            deleteRevisionIndices(indices);
-            revisionItemService.deleteRevisionItems(items, change);
-            revisionPartService.deleteRevisionParts(parts, change);
+            List<ApRevIndex> revIndices = revIndexRepository.findByParts(parts);
+
+            deleteRevisionIndices(revIndices);
         }
+        revisionItemService.deleteRevisionItems(items, change);
+        revisionPartService.deleteRevisionParts(parts, change);
 
         revision.setDeleteChange(change);
-        revisionRepository.save(revision);
+        return revisionRepository.save(revision);
     }
 
     private void deleteRevisionIndices(List<ApRevIndex> indices) {
@@ -161,46 +167,90 @@ public class RevisionService {
         }
     }
 
-    @Transactional
-    public void changeStateRevision(ApState state, RevStateChange revStateChange) {
+    @Transactional(value = TxType.MANDATORY)
+    public ApRevision changeStateRevision(@NotNull ApState state,
+                                          @NotNull Integer nextApTypeId,
+                                          @Nullable RevStateApproval revNextState) {
+
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
+        // check permission for other state then to_approve
+        accessPointService.checkPermissionForEdit(state,
+                                                  revision.getStateApproval() != RevStateApproval.TO_APPROVE ? revision
+                                                          .getStateApproval() : revNextState);
+
+        StaticDataProvider sdp = staticDataService.createProvider();
+
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize 
+        // ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        // ApRevision revision = createRevision(prevRevision, change);
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
-        if (!revStateChange.getTypeId().equals(state.getApTypeId())) {
+        if (!nextApTypeId.equals(state.getApTypeId())) {
             int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
             if (countBinding > 0) {
                 throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", state.getAccessPointId())
-                    .set("revisionId", revision.getRevisionId());
+                        .set("revisionId", revision.getRevisionId());
             }
-        }
 
-        StaticDataProvider sdp = staticDataService.createProvider();
-
-        if (revStateChange.getState() != null) {
-            RevStateApproval stateApproval = RevStateApproval.valueOf(revStateChange.getState().getValue());
-            revision.setStateApproval(stateApproval);
-        }
-
-        if (revStateChange.getTypeId() != null) {
-            ApType type = sdp.getApTypeById(revStateChange.getTypeId());
+            ApType type = sdp.getApTypeById(nextApTypeId);
             revision.setType(type);
         }
 
-        revisionRepository.save(revision);
+        if (revNextState != null) {
+            revision.setStateApproval(revNextState);
+        }
+
+        return revisionRepository.saveAndFlush(revision);
+    }
+
+    /**
+     * Create new revision based on previous revision
+     * 
+     * @param prevRevision
+     * @param change
+     * @return
+     */
+    public ApRevision createRevision(@Nonnull ApRevision prevRevision, @Nonnull ApChange change) {
+        Validate.isTrue(prevRevision.getDeleteChange() == null);
+
+        prevRevision.setDeleteChange(change);
+        prevRevision = revisionRepository.saveAndFlush(prevRevision);
+
+        ApRevision revision = new ApRevision();
+        revision.setCreateChange(change);
+        revision.setState(prevRevision.getState());
+        revision.setType(prevRevision.getType());
+        revision.setStateApproval(prevRevision.getStateApproval());
+        revision.setPreferredPart(prevRevision.getPreferredPart());
+        return revision;
     }
 
     public ApRevision findRevisionByState(ApState state) {
         return revisionRepository.findByState(state);
     }
 
+    /**
+     * Create new revision part
+     * 
+     * Part is not based on standard part. All items will receive new
+     * objectId(s).
+     * 
+     * @param state
+     * @param revision
+     * @param apPartFormVO
+     * @return
+     */
     @Transactional
-    public void createPart(ApRevision revision, ApPartFormVO apPartFormVO) {
+    public ApRevPart createPart(ApState state, ApRevision revision, ApPartFormVO apPartFormVO) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : partService.getPart(apPartFormVO.getParentPartId());
-        ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null : revisionPartService.findById(apPartFormVO.getParentPartId());
+        ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null
+                : revisionPartService.findById(apPartFormVO.getRevParentPartId());
 
         if ((parentPart != null && parentPart.getParentPart() != null)
                 || (revParentPart != null && revParentPart.getParentPart() != null)) {
@@ -210,6 +260,12 @@ public class RevisionService {
         if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu");
         }
+        // validate items in part, has to be witout ids
+        for (ApItemVO item : apPartFormVO.getItems()) {
+            Validate.isTrue(item.getObjectId() == null);
+            Validate.isTrue(item.getOrigObjectId() == null);
+            Validate.isTrue(item.getId() == null);
+        }
 
         RulPartType partType = partService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
@@ -217,6 +273,7 @@ public class RevisionService {
         ApRevPart newPart = revisionPartService.createPart(partType, revision, apChange, revParentPart, parentPart);
         revisionItemService.createItems(newPart, apPartFormVO.getItems(), apChange, false);
         updatePartValue(newPart, revision);
+        return newPart;
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
@@ -317,7 +374,9 @@ public class RevisionService {
     }
 
     @Transactional
-    public void deletePart(ApRevision revision, Integer partId) {
+    public void deletePart(ApState state, ApRevision revision, Integer partId) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         if (revision.getPreferredPartId() != null && revision.getPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
@@ -337,9 +396,11 @@ public class RevisionService {
 
             deleteRevisionIndices(indices);
             revisionItemService.deleteRevisionItems(items, apChange);
+
+            revPart = this.revisionPartService.deletePart(apPart, revPart);
         } else {
             // vytvořit nový záznam
-            revPart = revisionPartService.createPart(revision, apChange, apPart);
+            revPart = revisionPartService.createPart(revision, apChange, apPart, true);
         }
 
         revisionItemService.createDeletedItems(revPart, apChange, apItems);
@@ -351,6 +412,8 @@ public class RevisionService {
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        accessPointService.checkPermissionForEdit(state, revision);
+
         if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
@@ -366,7 +429,9 @@ public class RevisionService {
     }
 
     @Transactional
-    public void setPreferName(ApRevision revision, Integer partId) {
+    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
+        accessPointService.checkPermissionForEdit(state, revision);
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -396,10 +461,13 @@ public class RevisionService {
 
     @Transactional
     public void setPreferName(ApState state, Integer partId) {
+
         ApRevision revision = revisionRepository.findByState(state);
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        accessPointService.checkPermissionForEdit(state, revision);
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -425,130 +493,205 @@ public class RevisionService {
         updatePartValues(revision);
     }
 
-    @Transactional
-    public void updatePart(ApRevision revision, Integer partId, ApPartFormVO apPartFormVO) {
-        if (revision == null) {
+    /**
+     * Update revPart
+     * 
+     * @param apState
+     * @param revision
+     * @param revPart
+     * @param apPartFormVO
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
+    @Transactional(TxType.MANDATORY)
+    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+                           @NotNull ApRevision revision,
+                           @NotNull ApRevPart revPart,
+                           ApPartFormVO apPartFormVO) {
+        if (revision == null || revPart == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
-        ApRevPart revPart = revisionPartService.findById(partId);
+        accessPointService.checkPermissionForEdit(apState, revision);
 
-        List<ApRevItem> deleteItems = revisionItemService.findByPart(revPart);
+        List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
+        // Map by objectId -> ApRevItem
+        Map<Integer, ApRevItem> revItemObjectMap = new HashMap<>();
+        for (ApRevItem revItem : revItems) {
+            Validate.isTrue(revItem.getObjectId() != null ^ revItem.getOrigObjectId() != null);
 
-        Map<Integer, ApRevItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApRevItem::getItemId, i -> i));
+            if (revItem.getObjectId() != null) {
+                ApRevItem prevItem = revItemObjectMap.put(revItem.getObjectId(), revItem);
+                Validate.isTrue(prevItem == null);
+            } else if (revItem.getOrigObjectId() != null) {
+                ApRevItem prevItem = revItemObjectMap.put(revItem.getOrigObjectId(), revItem);
+                Validate.isTrue(prevItem == null);
+            }
+        }
 
-        List<ApItem> apItems = new ArrayList<>();
-        Map<Integer, ApItem> apItemMap = null;
+        List<ApItem> apItems;
+        Map<Integer, ApItem> apItemObjectMap;
 
         if (revPart.getOriginalPart() != null) {
             apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
-            apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+            apItemObjectMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
+        } else {
+            apItems = Collections.emptyList();
+            apItemObjectMap = Collections.emptyMap();
         }
 
-
-        List<ApItemVO> itemListVO = apPartFormVO.getItems();
+        // List of ApRevItem for new revisions
+        // objectId will be stored
         List<ApItemVO> createItems = new ArrayList<>();
-        List<ApItemVO> newRevisionCreateItems = new ArrayList<>();
+
+        // List of ApItems for which new ApRevItem will be created
+        // origObjectId will be stored
+        List<ApItemVO> revisionCreateItems = new ArrayList<>();
+
+        // List of revItems without change
+        List<ApRevItem> unchangedRevItems = new ArrayList<>();
+
+        // List of referenced ApItem (not deleted)
+        List<ApItem> notDeletedApItems = new ArrayList<>();
 
         // určujeme, které záznamy: přidat, odstranit, nebo ponechat
-        for (ApItemVO itemVO : itemListVO) {
-            if (itemVO.getId() == null) {
-                createItems.add(itemVO); // new -> add
+        for (ApItemVO itemVO : apPartFormVO.getItems()) {
+            // src items
+            Integer objectId = itemVO.getObjectId() != null ? itemVO.getObjectId() : itemVO.getOrigObjectId();
+            if (objectId == null) {
+                // new -> add
+                Validate.isTrue(itemVO.getId() == null);
+                createItems.add(itemVO);
             } else {
-                if (itemVO.getOrigObjectId() != null || itemVO.getChangeType() == ChangeType.NEW) {
-                    ApRevItem item = itemMap.get(itemVO.getId());
-                    if (item != null) {
-                        if (itemVO.equalsValue(item)) {
-                            deleteItems.remove(item); // no change -> don't delete
-                        } else {
-                            createItems.add(itemVO); // changed -> add + delete
-                        }
+                ApItem origItem = apItemObjectMap.get(objectId);
+                ApRevItem revItem = revItemObjectMap.get(objectId);
+                if (origItem == null && revItem == null) {
+                    // source item not found
+                    throw new BusinessException("ApItem nor ApRevItem was found, objectId: " + objectId,
+                            BaseCode.ID_NOT_EXIST).set("objectId", objectId);
+                }
+                if (origItem != null) {
+                    // Orig item is somehow transformed
+                    notDeletedApItems.add(origItem);
+                }
+                if(revItem!=null) {
+                    if(itemVO.getId()!=null) {
+                        // pokud je nastaveno ID, musi byt spravne
+                        Validate.isTrue(itemVO.getId().equals(revItem.getItemId()));
+                    }
+                    // modifying current item
+                    if (itemVO.equalsValue(revItem)) {
+                        // no change -> don't delete
+                        unchangedRevItems.add(revItem);
+                    } else {
+                        // value changed -> add + delete
+                        createItems.add(itemVO);
                     }
                 } else {
-                    if (apItemMap != null) {
-                        ApItem i = apItemMap.get(itemVO.getId());
-                        if (i != null && !itemVO.equalsValue(i)) {
-                            newRevisionCreateItems.add(itemVO);
-                        }
+                    // origItem exists but not revItem
+                    // -> new revItem has to be created
+                    // ID should match
+                    if (itemVO.getId() != null) {
+                        // pokud je nastaveno ID, musi byt spravne
+                        Validate.isTrue(itemVO.getId().equals(origItem.getItemId()));
                     }
+                    revisionCreateItems.add(itemVO);
                 }
             }
         }
 
-        // zjištění, které z původních itemů v partu zůstávají
-        List<ApItem> notDeletedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(apItems)) {
-            for (ApItemVO createItem : itemListVO) {
-                Integer objectId = createItem.getOrigObjectId();
-                if (objectId == null && createItem.getChangeType() != ChangeType.NEW) {
-                    objectId = createItem.getObjectId();
-                }
-                if (objectId != null) {
-                    for (ApItem apItem : apItems) {
-                        if (apItem.getObjectId().equals(objectId)) {
-                            notDeletedItems.add(apItem);
-                        }
-                    }
-                }
-            }
-            apItems.removeAll(notDeletedItems);
-        }
+        List<ApRevItem> deleteRevItems = new ArrayList<>(revItems);
+        deleteRevItems.removeAll(unchangedRevItems);
+
+        List<ApItem> deleteApItems = new ArrayList<>(apItems);
+        deleteApItems.removeAll(notDeletedApItems);
 
         // pokud nedojde ke změně
-        if (!createItems.isEmpty() || !deleteItems.isEmpty() || !apItems.isEmpty() || !newRevisionCreateItems.isEmpty()) {
+        if (!createItems.isEmpty() ||
+                !deleteRevItems.isEmpty() ||
+                !deleteApItems.isEmpty() ||
+                !revisionCreateItems.isEmpty()) {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+
+            // remove old revItems
+            revisionItemService.deleteRevisionItems(deleteRevItems, change);
 
             revisionItemService.createItems(revPart, createItems, change, false);
 
-            revisionItemService.createItems(revPart, newRevisionCreateItems, change, true);
-
-            revisionItemService.deleteRevisionItems(deleteItems, change);
+            revisionItemService.createItems(revPart, revisionCreateItems, change, true);
 
             //založení záznamů o smazaných původních itemech
-            revisionItemService.createDeletedItems(revPart, change, apItems);
+            revisionItemService.createDeletedItems(revPart, change, deleteApItems);
 
             updatePartValue(revPart, revision);
         }
     }
 
-    @Transactional
-    public void updatePart(ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
+    /**
+     * Update part revision
+     * 
+     * Method will update existing revision or will create new revision.
+     * 
+     * Items are mapped to original items using objectId
+     * 
+     * @param apState
+     * @param revision
+     * @param apPart
+     * @param apPartFormVO
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
+    @Transactional(TxType.MANDATORY)
+    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+                           ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
+        accessPointService.checkPermissionForEdit(apState, revision);
+
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         if (revPart != null) {
-            updatePart(revision, revPart.getPartId(), apPartFormVO);
+            // update existing revision
+            updatePart(apState, revision, revPart, apPartFormVO);
         } else {
+            // create new revision part
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
 
-            revPart = revisionPartService.createPart(revision, change, apPart);
+            revPart = revisionPartService.createPart(revision, change, apPart, false);
 
             List<ApItem> apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
-            Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
+            // Map objectId -> ApItem
+            Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
+
             List<ApItemVO> createItems = new ArrayList<>();
+            List<ApItem> notDeletedItems = new ArrayList<>();
 
             for (ApItemVO itemVO : apPartFormVO.getItems()) {
-                if (itemVO.getId() == null) {
-                    createItems.add(itemVO); // new -> add
+                Validate.isTrue(itemVO.getOrigObjectId() == null);
+
+                if (itemVO.getObjectId() == null) {
+                    // new -> add                    
+                    Validate.isTrue(itemVO.getId() == null);
+
+                    createItems.add(itemVO);
                 } else {
-                    ApItem i = apItemMap.get(itemVO.getId());
-                    if (i != null && !itemVO.equalsValue(i)) {
+                    // item is not new, has to have valid objectId or origObjectId
+                    ApItem i = apItemMap.get(itemVO.getObjectId());
+                    if (i == null) {
+                        throw new BusinessException("Source item not found", BaseCode.ID_NOT_EXIST)
+                                .set("objectId", itemVO.getObjectId());
+                    }
+
+                    if (itemVO.getId() != null) {
+                        // check ID
+                        // if ID is sent it have to match itemId
+                        Validate.isTrue(itemVO.getId().equals(i.getItemId()));
+                    }
+
+                    // zjištění, které z původních itemů v partu zůstávají
+                    notDeletedItems.add(i);
+
+                    if (!itemVO.equalsValue(i)) {
                         createItems.add(itemVO);
                     }
                 }
             }
 
-            // zjištění, které z původních itemů v partu zůstávají
-            List<ApItem> notDeletedItems = new ArrayList<>();
-            if (CollectionUtils.isNotEmpty(apItems)) {
-                for (ApItemVO itemVO : apPartFormVO.getItems()) {
-                    Integer id = itemVO.getId();
-                    if (id != null) {
-                        ApItem apItem = apItemMap.get(itemVO.getId());
-                        if (apItem != null) {
-                            notDeletedItems.add(apItem);
-                        }
-                    }
-                }
-                apItems.removeAll(notDeletedItems);
-            }
+            apItems.removeAll(notDeletedItems);
 
             revisionItemService.createItems(revPart, createItems, change, true);
 
@@ -564,6 +707,10 @@ public class RevisionService {
     public void mergeRevision(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
                               ApState.StateApproval newStateApproval) {
         Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
+
+        if (newStateApproval == null) {
+            newStateApproval = apState.getStateApproval();
+        }
 
         ApRevision revision = findRevisionByState(apState);
         if (revision == null) {
@@ -594,67 +741,95 @@ public class RevisionService {
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
         List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
-        List<ApRevItem> revItems = null;
-        List<ApRevIndex> revIndices = null;
+        List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
 
-        //změna částí entity
-        if (CollectionUtils.isNotEmpty(revParts)) {
-            revItems = revisionItemService.findByParts(revParts);
-            revIndices = revIndexRepository.findByParts(revParts);
+        Map<Integer, ApPart> savedParts = mergeParts(accessPoint, revParts, revItems, change);
 
-            Map<Integer, List<ApRevItem>> revItemMap = revItems.stream()
-                    .collect(Collectors.groupingBy(ApRevItem::getPartId));
-
-            List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
-
-            Map<Integer, List<ApItem>> itemMap = items.stream()
-                    .collect(Collectors.groupingBy(ApItem::getPartId));
-
-            List<ApRevPart> createdParts = new ArrayList<>();
-            List<ApRevPart> updatedParts = new ArrayList<>();
-            List<ApRevPart> deletedParts = new ArrayList<>();
-
-            for (ApRevPart revPart : revParts) {
-                if (revPart.getOriginalPart() == null) {
-                    createdParts.add(revPart);
-                } else {
-                    List<ApRevItem> revPartItems = revItemMap.get(revPart.getPartId());
-                    List<ApItem> apItems = itemMap.get(revPart.getOriginalPartId());
-
-                    if (!revisionItemService.allItemsDeleted(revPartItems, apItems)) {
-                        updatedParts.add(revPart);
-                    } else {
-                        deletedParts.add(revPart);
-                    }
-                }
-            }
-
-            revisionPartService.createParts(createdParts, revItemMap, accessPoint, revision);
-            revisionPartService.updateParts(updatedParts, revItemMap, items, change);
-            revisionPartService.deleteParts(deletedParts, items, change);
-
-
+        ApPart newPrefferdPart = null;
+        if (revision.getPreferredPartId() != null) {
+            newPrefferdPart = partService.getPart(revision.getPreferredPartId());
+        } else
+        if (revision.getRevPreferredPartId() != null) {
+            newPrefferdPart = savedParts.get(revision.getRevPreferredPartId());
+            Validate.notNull(newPrefferdPart, "RevPart for preferred name not found, revPartId: %s", revision
+                    .getRevPreferredPartId());
         }
-
-        if (revision.getPreferredPart() != null) {
-            ApPart newPrefferdPart = partService.getPart(revision.getPreferredPart().getPartId());
-            accessPoint.setPreferredPart(newPrefferdPart);
+        if (newPrefferdPart != null) {
+            accessPoint = accessPointService.setPreferName(accessPoint, newPrefferdPart);
         }
 
         //změna stavu entity
         apState.setDeleteChange(change);
-        stateRepository.save(apState);
+        apState=stateRepository.save(apState);
 
         ApState newState = accessPointService.copyState(apState, change);
         newState.setStateApproval(newStateApproval);
         newState.setApType(revision.getType());
-        stateRepository.save(newState);
+        newState = stateRepository.save(newState);
+
+        //smazání revize
+        deleteRevision(revision, change, revParts, revItems);
 
         accessPointService.updateAndValidate(accessPoint.getAccessPointId());
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+    }
 
-        //smazání revize
-        deleteRevision(revision, change, revParts, revItems, revIndices);
+    private Map<Integer, ApPart> mergeParts(ApAccessPoint accessPoint,
+                                            List<ApRevPart> revParts,
+                                            List<ApRevItem> revItems,
+                                            ApChange change) {
+        if (CollectionUtils.isEmpty(revParts)) {
+            return Collections.emptyMap();
+        }
+
+        // Map of RevPartId to saved ApPart
+        Map<Integer, ApPart> revPartMap = new HashMap<>();
+
+        List<ApRevPart> createSubParts = new ArrayList<>();
+        List<ApPart> deletedParts = new ArrayList<>();
+
+        for (ApRevPart revPart : revParts) {
+            if (revPart.getOriginalPart() == null) {
+                Validate.isTrue(!revPart.isDeleted());
+                // create new part
+                if (revPart.getRevParentPart() != null) {
+                    Validate.isTrue(revPart.getParentPart() == null);
+                    createSubParts.add(revPart);
+                } else {
+                    ApPart part = partService.createPart(revPart.getPartType(), accessPoint, revPart.getCreateChange(),
+                                                         null);
+                    revPartMap.put(revPart.getPartId(), part);
+                }
+            } else {
+                // Cannot have rev as parent
+                Validate.isTrue(revPart.getRevParentPart() == null);
+
+                // only add id to map
+                revPartMap.put(revPart.getPartId(), revPart.getOriginalPart());
+
+                if (revPart.isDeleted()) {
+                    deletedParts.add(revPart.getOriginalPart());
+                }
+            }
+        }
+
+        // Create subparts
+        for (ApRevPart revPart : createSubParts) {
+            // find parent
+            ApPart parentPart = revPartMap.get(revPart.getRevParentPart());
+            Validate.notNull(parentPart);
+
+            ApPart part = partService.createPart(revPart.getPartType(), accessPoint, revPart.getCreateChange(),
+                                                 parentPart);
+            revPartMap.put(revPart.getPartId(), part);
+        }
+
+        revisionItemService.mergeItems(accessPoint, change, revParts, revPartMap, revItems);
+
+        partService.deletePartsWithoutItems(deletedParts, change);
+
+        return revPartMap;
+
     }
 
     /**
@@ -674,32 +849,36 @@ public class RevisionService {
      * @throws SystemException
      *             přechod mezi uvedenými stavy není povolen
      */
-    private boolean hasPermissionMerge(ApScope scope, StateApproval oldStateApproval,
-                                  StateApproval newStateApproval,
-                                  RevStateApproval revState) {
+    private boolean hasPermissionMerge(final ApScope scope,
+                                       final StateApproval oldStateApproval,
+                                       @Nullable StateApproval newStateApproval,
+                                       @Nullable final RevStateApproval revState) {
 
         Validate.notNull(scope, "AP Scope is null");
         Validate.notNull(oldStateApproval, "Old State Approval is null");
-        Validate.notNull(newStateApproval, "New State Approval is null");
         Validate.notNull(revState, "Rev State Approval is null");
+
+        if (newStateApproval == null) {
+            newStateApproval = oldStateApproval;
+        }
 
         // admin může cokoliv
         if (userService.hasPermission(Permission.ADMIN)) {
             return true;
         }
 
-        if(revState!=RevStateApproval.TO_APPROVE) {
-            // Jen změny ve stavu ke schválení mohou být přijaty
-            return false;
-        }
-        if (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+        // Je ve stavu ke schválení?
+        boolean revToApprove = revState == RevStateApproval.TO_APPROVE;
+
+        if (revToApprove && oldStateApproval.equals(StateApproval.APPROVED) &&
+                newStateApproval.equals(StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                     || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
         }
         // nová nebo k připomínkám s revizí
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
-            if(newStateApproval.equals(StateApproval.APPROVED)) {
+            if (revToApprove && newStateApproval.equals(StateApproval.APPROVED)) {
                 // "Schvalování přístupových bodů"
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
                     || userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
@@ -717,5 +896,9 @@ public class RevisionService {
         }
         // jiný neznámý případ
         return false;
+    }
+
+    public List<ApRevision> findAllRevisionByStateIn(List<ApState> apStates) {
+        return revisionRepository.findAllByStateIn(apStates);
     }
 }

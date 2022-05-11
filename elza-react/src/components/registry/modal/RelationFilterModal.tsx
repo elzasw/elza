@@ -40,23 +40,22 @@ const formConfig: ConfigProps<RelationFilterClientVO, ModalFormProps> = {
 
 type Props = {
     refTables?: any;
-    scopeId: number;
     onClose: () => void;
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const RelationFilterModal = ({
-                                 handleSubmit,
-                                 onClose,
-                                 refTables,
-                                 onlyMainPart,
-                                 area,
-                                 itemType,
-                                 itemSpec,
-                                 scopeId,
-                                 submitting,
-                                 relApi
-                             }: Props) => {
+    handleSubmit,
+    onClose,
+    refTables,
+    onlyMainPart,
+    area,
+    itemType,
+    itemSpec,
+    submitting,
+    relApi,
+    scopeId,
+}: Props) => {
     if (!refTables) {
         return <div/>;
     }
@@ -159,6 +158,7 @@ const mapStateToProps = (state: any) => {
         itemSpec: selector(state, "itemSpec"),
         onlyMainPart: selector(state, "onlyMainPart"),
         area: selector(state, "area"),
+        scopeId: selector(state, "scopeId"),
     }
 };
 

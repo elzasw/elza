@@ -388,9 +388,10 @@ public class AccessPointService {
     /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
+    public void deleteAccessPoint(final ApState apState,
                                   final ApAccessPoint replacedBy, boolean mergeAp) {
+
+        checkPermissionForEdit(apState);
 
         ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE; 
         ApChange change = apDataService.createChange(changeType);
@@ -474,11 +475,11 @@ public class AccessPointService {
      * @param accessPoint
      * @param change
      */
-    public void deleteAccessPoint(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    public void deleteAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         checkDeletion(accessPoint);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
-        apStateRepository.save(apState);
+        apState = apStateRepository.save(apState);
 
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
         if (CollectionUtils.isNotEmpty(eids)) {
@@ -914,7 +915,7 @@ public class AccessPointService {
         if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu.");
         }
-        if (apPartFormVO.getParentPartId() != null) {
+        if (apPartFormVO.getParentPartId() != null || apPartFormVO.getRevParentPartId() != null) {
             throw new IllegalArgumentException("Část nesmí být podřízená.");
         }
         RulPartType partType = structObjInternalService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
@@ -992,8 +993,11 @@ public class AccessPointService {
 
     @Transactional(TxType.MANDATORY)
     public boolean updatePart(final ApAccessPoint apAccessPoint,
-                           final ApPart apPart,
-                           final ApPartFormVO apPartFormVO) {
+                              final ApState state,
+                              final ApPart apPart,
+                              final ApPartFormVO apPartFormVO) {
+        checkPermissionForEdit(state);
+
         List<ApItem> deleteItems = itemRepository.findValidItemsByPart(apPart);
         List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
@@ -1744,7 +1748,20 @@ public class AccessPointService {
         UserDetail user = userService.getLoggedUserDetail();
 
         if (user.hasPermission(Permission.ADMIN)) {
-            return Arrays.asList(StateApproval.values());
+            switch (apState.getStateApproval()) {
+            case NEW:
+            case TO_APPROVE:
+            case TO_AMEND:
+            case APPROVED:
+                return Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE, StateApproval.TO_AMEND,
+                                     StateApproval.APPROVED);
+            // starsi stavy - budou odstraneny
+            // z nich je mozne prepnuti do vsech
+            case REV_NEW:
+            case REV_AMEND:
+            case REV_PREPARED:
+                return Arrays.asList(StateApproval.values());
+            }
         }
 
         Set<StateApproval> result = new HashSet<>();
@@ -1783,7 +1800,6 @@ public class AccessPointService {
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                result.add(StateApproval.REV_NEW);
                 // specialni stav z duvodu umozneni neverzovane zmeny 
                 // oblasti u schvalenych entit
                 result.add(StateApproval.APPROVED);
@@ -1831,32 +1847,29 @@ public class AccessPointService {
 
         Set<StateApproval> result = new HashSet<>();
 
-        if (user.hasPermission(Permission.ADMIN)) {
+        if (user == null || user.hasPermission(Permission.ADMIN)) {
             result.add(StateApproval.NEW);
             result.add(StateApproval.TO_AMEND);
             result.add(StateApproval.TO_APPROVE);
             result.add(StateApproval.APPROVED);
+            return new ArrayList<>(result);
         }
 
         // zakládání a změny nových
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
             // mame opravneni pro zapis
-            if (apState.getStateApproval().equals(StateApproval.NEW)) {
+            if (apState.getStateApproval().equals(StateApproval.NEW) ||
+                    apState.getStateApproval().equals(StateApproval.TO_AMEND) ||
+                    apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
                 result.add(StateApproval.NEW);
                 result.add(StateApproval.TO_AMEND);
                 result.add(StateApproval.TO_APPROVE);
             }
-            if (apState.getStateApproval().equals(StateApproval.TO_AMEND)) {
-                result.add(StateApproval.TO_AMEND);
-                result.add(StateApproval.TO_APPROVE);
-            }
-            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
-                result.add(StateApproval.TO_APPROVE);
-            }
         }
 
-        Integer lastRevUserId = revision.getCreateChange().getUser().getUserId();
+        UsrUser createChangeUser = revision.getCreateChange().getUser();
+        Integer lastRevUserId = createChangeUser != null ? createChangeUser.getUserId() : null;
         // schvalování
         // jen jiny uzivatel nez tvurce revize muze schvalit
         if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
@@ -2065,22 +2078,79 @@ public class AccessPointService {
         }
     }
 
-    /**
-     * Kontrola, zda přihlášený uživatel má právo upravovat schválenou entitu.
-     *
-     * @param state state entity
-     */
-    public void hasPermissionForEditingConfirmed(final ApState state) {
-        if (state.getStateApproval() == StateApproval.APPROVED) {
+    public void checkPermissionForEdit(final ApState state) {
+        checkPermissionForEdit(state, (RevStateApproval) null);
+    }
 
-            if (!userService.hasPermission(Permission.ADMIN)
-                    && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                    && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
-                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+    /**
+     * Kontrola, zda přihlášený uživatel má právo upravovat entitu.
+     *
+     * @param state
+     *            state entity
+     * @param revision
+     *            active revision (if exists)
+     */
+    public void checkPermissionForEdit(final ApState state,
+                                       @Nullable final ApRevision revision) {
+        if (revision != null) {
+            checkPermissionForEdit(state, revision.getStateApproval());
+        } else {
+            checkPermissionForEdit(state, (RevStateApproval) null);
+        }
+    }
+
+    public void checkPermissionForEdit(final ApState state,
+                                       @Nullable final RevStateApproval revState) {
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return;
+        }
+
+        if (RevStateApproval.TO_APPROVE == revState) {
+            throw new SystemException("Ve stavu ke schválení nelze entitu měnit",
+                    BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("accessPointId", state.getAccessPointId())
+                            .set("scopeId", state.getScopeId());
+        }
+
+        switch (state.getStateApproval()) {
+        case APPROVED:
+            if (revState != null) {
+                // approved with revision might be edited
+                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
+                    return;
+                }
+            }
+            break;
+        // old revisions
+        case REV_NEW:
+        case REV_AMEND:
+            if (revState == null) {
+                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
+                    return;
+                }
+            }
+        case NEW:
+        case TO_AMEND:
+            if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                    || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
+                return;
+            }
+        case REV_PREPARED:
+        case TO_APPROVE:
+            throw new SystemException("Ve stavu ke schválení nelze entitu měnit",
+                    BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("accessPointId", state.getAccessPointId())
+                            .set("scopeId", state.getScopeId());
+        default:
+            break;
+        }
+
+        throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
                         .set("scopeId", state.getScopeId());
-            }
-        }
     }
 
     /**
@@ -2111,20 +2181,6 @@ public class AccessPointService {
         ApAccessPoint ret = saveWithLock(accessPoint);
         updateAndValidate(ret.getAccessPointId());
         return ret;
-    }
-
-    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
-    public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-
-        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
-        dataRecordRefRepository.disconnectBinding(binding);
-        bindingItemRepository.deleteByBinding(binding);
-        bindingStateRepository.deleteByBinding(binding);
-        bindingRepository.delete(binding);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {

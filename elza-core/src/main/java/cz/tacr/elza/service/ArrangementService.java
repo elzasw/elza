@@ -32,8 +32,6 @@ import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -52,7 +50,6 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -63,6 +60,7 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -112,7 +110,7 @@ import cz.tacr.elza.repository.ArrRefTemplateMapSpecRepository;
 import cz.tacr.elza.repository.ArrRefTemplateMapTypeRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -123,9 +121,9 @@ import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -211,13 +209,7 @@ public class ArrangementService {
 
     @Autowired
     private StaticDataService staticDataService;
-
-    @Autowired
-    DaoRepository daoRepository;
     
-    @Autowired
-    DaoService daoService;
-
     @Autowired
     private DataCoordinatesRepository dataCoordinatesRepository;
 
@@ -245,39 +237,6 @@ public class ArrangementService {
     public ArrFund getFund(@NotNull Integer fundId) {
         return fundRepository.findById(fundId)
                 .orElseThrow(fund(fundId));
-    }
-
-    /**
-     * Try to find fund by string
-     *
-     * @param fundIdentifier
-     * @return fund, throw exception if not found
-     */
-    public ArrFund getFundByString(String fundIdentifier) {
-        logger.debug("Looking for fund: {}", fundIdentifier);
-        // try to find by uuid
-        if (fundIdentifier.length() == 36) {
-            ArrFund fund = fundRepository.findByRootNodeUuid(fundIdentifier);
-            if (fund != null) {
-                logger.debug("Found by UUID as {}", fund.getFundId());
-                return fund;
-            }
-        }
-        // try to find by internal code
-        ArrFund fund = fundRepository.findByInternalCode(fundIdentifier);
-        if (fund != null) {
-            logger.debug("Found by internal code as {}", fund.getFundId());
-            return fund;
-        }
-
-        // try to find by id
-        try {
-            Integer id = Integer.valueOf(fundIdentifier);
-            return getFund(id);
-        } catch (NumberFormatException nfe) {
-            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundIdentifier, ArrangementCode.FUND_NOT_FOUND)
-                    .setId(fundIdentifier);
-        }
     }
 
     /**
@@ -668,73 +627,6 @@ public class ArrangementService {
         return fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
     }
 
-    /**
-     * Kaskádově smaže všechny levely od počátečního
-     *
-     * @param baselevel počáteční level
-     * @param deleteChange záznam o provedených změnách
-     * @param allDeletedLevels list všech levelů, které se budou mazat
-     * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
-     * @return
-     */
-    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange,
-                                       List<ArrLevel> allDeletedLevels, final boolean deleteLevelsWithAttachedDao) {
-
-        for (ArrLevel childLevel : levelRepository
-                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode())) {
-            deleteLevelCascade(childLevel, deleteChange, allDeletedLevels, deleteLevelsWithAttachedDao);
-        }
-
-        ArrNode node = baselevel.getNode();
-        ArrFund fund = baselevel.getNode().getFund();
-        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
-
-        // check if connected Dao(type=Level) exists
-        if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
-            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL")
-                    .set("nodeId", node.getNodeId());
-        }
-
-        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
-            descItem.setDeleteChange(deleteChange);
-            descItemRepository.save(descItem);
-        }
-
-        daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
-
-        // vyhledani node, ktere odkazuji na mazany
-        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
-
-        arrDescItemList = arrDescItemList.stream().map(i -> {
-            em.detach(i);
-            return (ArrDescItem) HibernateUtils.unproxy(i);
-        }).collect(Collectors.toList());
-
-
-        for (ArrDescItem arrDescItem : arrDescItemList) {
-            //pokud se item bude mazat, není potřeba u něj předělávat UriRef
-            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
-                ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
-                arrDataUriRef.setDataId(null);
-                arrDataUriRef.setArrNode(null);
-                arrDataUriRef.setDeletingProcess(true);
-                arrDescItem.setData(arrDataUriRef);
-                descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
-            }
-        }
-        return deleteLevelInner(baselevel, deleteChange);
-    }
-
-    private ArrLevel deleteLevelInner(final ArrLevel level, final ArrChange deleteChange) {
-        Assert.notNull(level, "Musí být vyplněno");
-
-        ArrNode node = level.getNode();
-        node.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime());
-        nodeRepository.save(node);
-
-        level.setDeleteChange(deleteChange);
-        return levelRepository.saveAndFlush(level);
-    }
 
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
@@ -1032,7 +924,7 @@ public class ArrangementService {
      */
     public ArrLevel lockNode(final ArrNode lockNode, final ArrFundVersion version, final ArrChange change) {
         ArrLevel lockLevel = levelRepository.findByNode(lockNode, version.getLockChange());
-        Assert.notNull(lockLevel, "Musí být vyplněno");
+        Validate.notNull(lockLevel, "Musí být vyplněno");
         ArrNode staticNodeDb = lockLevel.getNode();
         lockNode(staticNodeDb, lockNode, change);
 
@@ -1048,8 +940,8 @@ public class ArrangementService {
      * @return level nodu
      */
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
-        Assert.notNull(dbNode, "Musí být vyplněno");
-        Assert.notNull(lockNode, "Musí být vyplněno");
+        Validate.notNull(dbNode, "Musí být vyplněno");
+        Validate.notNull(lockNode, "Musí být vyplněno");
 
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());

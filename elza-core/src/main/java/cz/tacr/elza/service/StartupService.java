@@ -1,22 +1,11 @@
 package cz.tacr.elza.service;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.search.MassIndexer;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +22,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApFulltextProviderImpl;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.search.IndexerProgressMonitor;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cam.CamScheduler;
 
@@ -302,7 +301,7 @@ public class StartupService implements SmartLifecycle {
      * Provede spuštění synchronizace cache pro AP.
      */
     private void syncApCacheService() {
-        accessPointCacheService.syncCache();
+        accessPointCacheService.syncCacheParallel();
     }
 
     /**

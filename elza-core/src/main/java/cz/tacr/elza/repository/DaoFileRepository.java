@@ -1,16 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrFund;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrFund;
 
 /**
  * @author Martin Šlapa
@@ -27,6 +28,14 @@ public interface DaoFileRepository extends ElzaJpaRepository<ArrDaoFile, Integer
     List<ArrDaoFile> findByDaoAndDaoFileGroup(ArrDao arrDao, ArrDaoFileGroup daoFileGroup);
 
     List<ArrDaoFile> findByDao(ArrDao arrDao);
+
+    /**
+     * Return list of files for list of daos
+     * 
+     * @param daos
+     * @return
+     */
+    List<ArrDaoFile> findByDaoIn(List<ArrDao> daos);
 
     @Modifying
     @Query("DELETE FROM arr_dao_file f WHERE f.daoId IN (SELECT d.daoId FROM arr_dao d WHERE d.daoPackageId IN (SELECT p.daoPackageId FROM arr_dao_package p WHERE p.fund = ?1))")

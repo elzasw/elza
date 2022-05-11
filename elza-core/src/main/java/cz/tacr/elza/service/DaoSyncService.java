@@ -169,7 +169,7 @@ public class DaoSyncService {
 
     static JAXBContext jaxItemsContext;
 
-    private ObjectFactory wsObjectFactory = new ObjectFactory();
+    static private ObjectFactory wsObjectFactory = new ObjectFactory();
 
     static {
         try {
@@ -320,7 +320,7 @@ public class DaoSyncService {
         
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
         
-        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
+        Items items = unmarshalItemsFromAttributes(dao);
 
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         // odstraneni puvodnich zaznamu
@@ -334,6 +334,17 @@ public class DaoSyncService {
         daoLink.setScenario(scenario);
         
         changeContext.flush();
+    }
+
+    public void setScenario(ArrFundVersion fundVersion, ArrChange change,
+                            MultipleItemChangeContext itemChangeContext,
+                            ArrDaoLink daoLink, String scenario) {
+        ArrDao dao = daoLink.getDao();
+        Items items = unmarshalItemsFromAttributes(dao);
+        ArrLevel level = fundLevelService.findLevelByNode(daoLink.getNode());
+
+        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        daoDesctItemProviderNew.provide(level, change, fundVersion, itemChangeContext);
     }
 
     /**
@@ -491,8 +502,7 @@ public class DaoSyncService {
         for (File file : fileList) {
             ArrDaoFile arrDaoFile = fileCache.get(file.getIdentifier());
             if (arrDaoFile != null) {
-                updateArrDaoFile(arrDaoFile, file);
-                daoFileRepository.save(arrDaoFile);
+                arrDaoFile = updateArrDaoFile(arrDaoFile, file);
             } else {
                 logger.warn("Neplatný DAO file [code=\"" + file.getIdentifier() + "]");
             }
@@ -567,7 +577,30 @@ public class DaoSyncService {
         requestService.sendRequest(daoRequest, fundVersion);
     }
 
-    public ArrDao createArrDao(ArrDaoPackage arrDaoPackage, Dao dao) {
+    // serialize attributes
+    static public String getDaoAttributes(Dao dao) {
+        if (dao.getItems() == null) {
+            return null;
+        }
+        JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(dao.getItems());
+
+        try (StringWriter sw = new StringWriter()) {
+            Marshaller mar = jaxItemsContext.createMarshaller();
+            mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            mar.marshal(elemAttrs, sw);
+
+            return sw.toString();
+        } catch (IOException | JAXBException e) {
+            logger.error("Failed to serialize attributes to XML: " + e.getMessage());
+            throw new SystemException("Failed to serialize attributes to XML", e,
+                    BaseCode.INVALID_STATE)
+                            .set("dao.identifier", dao.getIdentifier());
+        }
+
+    }
+
+    public ArrDao createDao(ArrDaoPackage arrDaoPackage, Dao dao) {
         if (StringUtils.isBlank(dao.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("dao.identifier", dao.getIdentifier());
@@ -577,37 +610,21 @@ public class DaoSyncService {
         arrDao.setLabel(dao.getLabel());
         arrDao.setValid(true);
 
-        // serialize attributes
-        Items items = dao.getItems();
-        if (items != null) {
+        String attrs = getDaoAttributes(dao);
+        arrDao.setAttributes(attrs);
 
-            JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(items);
-            
-            try (StringWriter sw = new StringWriter()) {
-                Marshaller mar = jaxItemsContext.createMarshaller();
-                mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            
-                mar.marshal(elemAttrs, sw);
-            
-                arrDao.setAttributes(sw.toString());
-            } catch (IOException | JAXBException e) {
-                logger.error("Failed to serialize attributes to XML: " + e.getMessage());
-                throw new SystemException("Failed to serialize attributes to XML", e,
-                        BaseCode.INVALID_STATE)
-                        .set("dao.identifier", dao.getIdentifier());
-            
-            }
-        }
-
-        DaoType daoType;
-        if (dao.getDaoType() != null) {
-            daoType = DaoType.valueOf(dao.getDaoType().name());
-        } else {
-            daoType = DaoType.ATTACHMENT;
-        }
+        DaoType daoType = getDaoType(dao.getDaoType());
         arrDao.setDaoType(daoType);
         arrDao.setDaoPackage(arrDaoPackage);
         return daoRepository.save(arrDao);
+    }
+
+    static public DaoType getDaoType(cz.tacr.elza.ws.types.v1.DaoType xmlDaoType) {
+        if (xmlDaoType != null) {
+            return DaoType.valueOf(xmlDaoType.name());
+        } else {
+            return DaoType.ATTACHMENT;
+        }
     }
 
     public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Folder relatedFileGroup) {
@@ -630,11 +647,10 @@ public class DaoSyncService {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         arrDaoFile.setCode(file.getIdentifier());
         arrDaoFile.setDaoFileGroup(arrDaoFileGroup);
-        updateArrDaoFile(arrDaoFile, file);
-        return daoFileRepository.save(arrDaoFile);
+        return updateArrDaoFile(arrDaoFile, file);
     }
 
-    public ArrDaoFile createArrDaoFile(ArrDao arrDao, File file) {
+    public ArrDaoFile createDaoFile(ArrDao arrDao, File file) {
         if (StringUtils.isBlank(file.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("file.identifier", file.getIdentifier());
@@ -642,11 +658,10 @@ public class DaoSyncService {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         arrDaoFile.setCode(file.getIdentifier());
         arrDaoFile.setDao(arrDao);
-        updateArrDaoFile(arrDaoFile, file);
-        return daoFileRepository.save(arrDaoFile);
+        return updateArrDaoFile(arrDaoFile, file);
     }
 
-    public void updateArrDaoFile(ArrDaoFile arrDaoFile, File file) {
+    public ArrDaoFile updateArrDaoFile(ArrDaoFile arrDaoFile, File file) {
         if (file.getChecksumType() != null) {
             arrDaoFile.setChecksumType(getChecksumType(file.getChecksumType()));
         }
@@ -678,6 +693,8 @@ public class DaoSyncService {
 
         arrDaoFile.setDescription(file.getDescription());
         arrDaoFile.setFileName(file.getName());
+
+        return daoFileRepository.save(arrDaoFile);
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(final UnitOfMeasure sourceDimensionUnit) {
@@ -723,7 +740,7 @@ public class DaoSyncService {
     }
 
     public DaoDesctItemProvider createDescItemProvider(ArrDao dao) {
-        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
+        Items items = unmarshalItemsFromAttributes(dao);
         if (items == null) {
             return null;
         }
@@ -737,7 +754,8 @@ public class DaoSyncService {
         return new DaoDesctItemProvider(items, scenario);
     }
 
-    public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
+    public Items unmarshalItemsFromAttributes(ArrDao dao) {
+        String attrs = dao.getAttributes();
         if (StringUtils.isBlank(attrs)) {
             return null;
         }
@@ -748,7 +766,7 @@ public class DaoSyncService {
         } catch (JAXBException e) {
             logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
             throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
-                    .set("attributes", attrs).set("daoId", daoId);
+                    .set("attributes", attrs).set("daoId", dao.getDaoId());
         }
     }
 

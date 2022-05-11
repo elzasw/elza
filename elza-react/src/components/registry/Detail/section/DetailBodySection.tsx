@@ -103,7 +103,7 @@ const DetailBodySection: FC<Props> = ({
             <div className="detail-section-header" style={{display: "flex"}}>
                 <span className="">{label}</span>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
-                    {part.part && renderPartActions(part)}
+                    {part && renderPartActions(part)}
                 </div>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
                     {showValidationError()}

@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -86,6 +87,7 @@ import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -117,6 +119,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -189,6 +192,9 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
+
+    @Autowired
+    private RevisionPartService revisionPartService;
 
     @Autowired
     private LayersConfig layersConfig;
@@ -305,13 +311,10 @@ public class ApController {
                 .map(ApState::getAccessPoint)
                 .collect(Collectors.toList());
 
-        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
-
         final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
 
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
-                        typeRuleSetMap,
                         apState.getAccessPoint(),
                         nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
@@ -350,8 +353,6 @@ public class ApController {
 
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
-        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
-
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
                 .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
                 state, from, count, sdp);
@@ -361,7 +362,7 @@ public class ApController {
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
             String name = apFactory.findAeCachedEntityName(entity);
-            accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
+            accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name));
         }
 
         return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
@@ -449,7 +450,12 @@ public class ApController {
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
-        ApState apState = accessPointService.getApState(accessPointId);
+        ApState apState;
+        try {
+            apState = accessPointService.getApState(accessPointId);
+        } catch (ObjectNotFoundException o) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found, id: " + accessPointId);
+        }
 
         ApAccessPointVO vo;
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
@@ -820,7 +826,7 @@ public class ApController {
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
                                                            @RequestParam(name = "itemTypeId") final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
-                                                           @RequestParam(name = "scopeId", required = true) final Integer scopeId,
+                                                           @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
@@ -844,7 +850,7 @@ public class ApController {
         if (CollectionUtils.isEmpty(records)) {
             data = Collections.emptyList();
         } else {
-            data = new ArrayList(records.size());
+            data = new ArrayList<>(records.size());
             for (ApCachedAccessPoint record : records) {
                 CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
@@ -863,28 +869,52 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
-    public void createPart(@PathVariable final Integer accessPointId,
+    public Integer createPart(@PathVariable final Integer accessPointId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
+
         if (revision != null) {
-            revisionService.createPart(revision, apPartFormVO);
+            // Permission check is part of revisionService
+            ApRevPart revPart = revisionService.createPart(state, revision, apPartFormVO);
+            return revPart.getPartId();
         } else {
+            accessPointService.checkPermissionForEdit(state);
+
             ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
             accessPointService.generateSync(apAccessPoint, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
+
+            return apPart.getPartId();
         }
     }
 
     /**
      * Úprava části přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor upravované části
-     * @param apPartFormVO data pro úpravu části
+     * 
+     * V případě revize:
+     * 
+     * <ul>
+     * <li>1. Zalozeni noveho itemu
+     * id = null
+     * objectId = null
+     * origObjectId = null
+     * <li>2. Zmena itemu
+     * id = itemId (z puvodniho part)
+     * objectId = objectId (z puvodniho part)
+     * origObjectId = null
+     * <li>3. Vymazani itemu
+     * item neprijde
+     * </ul>
+     * 
+     * @param accessPointId
+     *            identifikátor přístupového bodu (PK)
+     * @param partId
+     *            identifikátor upravované části
+     * @param apPartFormVO
+     *            data pro úpravu části
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
@@ -893,13 +923,12 @@ public class ApController {
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.updatePart(revision, apPart, apPartFormVO);
+            revisionService.updatePart(state, revision, apPart, apPartFormVO);
         } else {
-            if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+            if (accessPointService.updatePart(apAccessPoint, state, apPart, apPartFormVO)) {
                 accessPointCacheService.createApCachedAccessPoint(accessPointId);
             }
         }
@@ -919,7 +948,8 @@ public class ApController {
                               @RequestBody final ApPartFormVO apPartFormVO) {
         ApState state = accessPointService.getStateInternal(id);
         ApRevision revision = revisionService.findRevisionByState(state);
-        revisionService.updatePart(revision, partId, apPartFormVO);
+        ApRevPart revPart = revisionPartService.findById(partId);
+        revisionService.updatePart(state, revision, revPart, apPartFormVO);
     }
 
     /**
@@ -950,12 +980,12 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
 
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.deletePart(revision, partId);
+            revisionService.deletePart(state, revision, partId);
         } else {
+            accessPointService.checkPermissionForEdit(state);
             partService.deletePart(apAccessPoint, partId);
             accessPointService.updateAndValidate(accessPointId);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
@@ -976,11 +1006,11 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        accessPointService.hasPermissionForEditingConfirmed(state);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.setPreferName(revision, partId);
+            revisionService.setPreferName(state, revision, partId);
         } else {
+            accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
             accessPointService.setPreferName(apAccessPoint, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
@@ -1039,8 +1069,9 @@ public class ApController {
             return aeAttributesInfoVO;
         }
 
-        List<ApCreateTypeVO> result = new ArrayList<>();
         ModelAvailable modelAvailable = ruleService.executeAvailable(apAccessPointCreateVO);
+        // Transform to result
+        List<ApCreateTypeVO> result = new ArrayList<>();
         for (cz.tacr.elza.drools.model.ItemType itemType : modelAvailable.getItemTypes()) {
             if (itemType.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE) {
                 ApCreateTypeVO createTypeVO = new ApCreateTypeVO();
@@ -1184,6 +1215,14 @@ public class ApController {
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+
+        // Nelze změnit stav archivní entity, která má revizi
+        if (revision != null) {
+            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                    RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
+
         ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
         
@@ -1226,6 +1265,13 @@ public class ApController {
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+
+        // Nelze změnit stav archivní entity, která má revizi
+        if (revision != null) {
+            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                    RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
 
         // kontrola přístupových práv a možností synchronizace 
         accessPointService.hasPermissionToSynchronizeFromExternaSystem(state);
@@ -1261,7 +1307,9 @@ public class ApController {
     @RequestMapping(value = "/external/disconnect/{accessPointId}", method = RequestMethod.POST)
     public void disconnectAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                       @RequestParam final String externalSystemCode) {
-        accessPointService.disconnectAccessPoint(accessPointId, externalSystemCode);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+
+        camService.disconnectAccessPoint(accessPoint, externalSystemCode);
     }
 
     /**

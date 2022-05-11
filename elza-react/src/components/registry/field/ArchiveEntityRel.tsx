@@ -1,5 +1,8 @@
 import React, {useState} from 'react';
+import classnames from "classnames";
 import {Field} from 'redux-form';
+import { useSelector } from "react-redux";
+import { AppState } from "typings/store";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import FormInput from "../../shared/form/FormInput";
 import {Area} from "../../../api/Area";
@@ -9,6 +12,8 @@ import {debounce} from "../../../shared/utils";
 import {ArchiveEntityResultListVO} from "../../../api/ArchiveEntityResultListVO";
 import {FilteredResultVO} from "../../../api/FilteredResultVO";
 import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
+import { TooltipTrigger } from "components/shared";
+import RegistryListItem from "../RegistryListItem";
 
 type OwnProps = {}
 
@@ -28,6 +33,7 @@ type Props = {
 export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, scopeId, disabled, name, label, modifyFilterData, api}: Props) => {
 
     const [items, setItems] = useState<ArchiveEntityVO[] | ApAccessPointVO[]>([]);
+    const apTypeIdMap = useSelector((state:AppState) => state.refTables.apTypes.itemsMap)
 
     const fetchData = debounce(fulltext => {
 
@@ -55,6 +61,30 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
         })
     }, 1000);
 
+    const renderRecord = (props) => {
+        if(!props){return <></>}
+        const {item, highlighted, selected, ...otherProps} = props;
+
+        return (
+            <TooltipTrigger
+                key={item.id}
+                content={item.description}
+                holdOnHover
+                placement="horizontal"
+                className="tooltip-container"
+                {...otherProps}
+            >
+                <RegistryListItem
+                    {...item}
+                    typeId={item.aeTypeId}
+                    key={'reg-' + item.id}
+                    apTypeIdMap={apTypeIdMap}
+                    className={classnames('item', {focus: highlighted, active: selected})}
+                />
+            </TooltipTrigger>
+        );
+    };
+
     return <Field
         name={name}
         label={label}
@@ -63,6 +93,7 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
         getItemName={obj => obj && obj.name}
         component={ReduxFormFieldErrorDecorator}
         renderComponent={FormInput}
+        renderItem={renderRecord}
         onSearchChange={fetchData}
         itemFilter={(filterText, items, props) => items}
         type="autocomplete"
