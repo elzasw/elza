@@ -241,7 +241,7 @@ public class RevisionItemService {
         List<ApItem> itemsList = new ArrayList<>();
         List<ArrData> dataList = new ArrayList<>();
         List<ApItem> deletedItems = new ArrayList<>();
-        // Map of updated items with new ones
+        // List of IDS of updated items with new ones
         Map<Integer, ApItem> updatedItems = new HashMap<>();
 
         for (ApRevPart revPart : revParts) {
@@ -302,12 +302,22 @@ public class RevisionItemService {
 
         }
 
+        // Mark old items as deleted
+        // Due to DB constrain have to be done before new items are in place
+        for (ApItem deleteItem : deletedItems) {
+            deleteItem.setDeleteChange(change);
+        }
+        deletedItems = itemRepository.saveAll(deletedItems);
+        itemRepository.flush();
+
+        // Save new items
         dataRepository.saveAll(dataList);
         itemRepository.saveAll(itemsList);
         
         accessPointItemService.changeBindingItemsItems(updatedItems, bindingItemList);
         
         bindingItemRepository.flush();
+        // delete items 
         accessPointItemService.deleteItems(deletedItems, change);
         bindingItemRepository.flush();
 

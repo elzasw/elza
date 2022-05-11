@@ -26,7 +26,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -40,7 +39,6 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
@@ -122,12 +120,6 @@ public class RevisionService {
         revision.setCreateChange(change);
 
         revision = revisionRepository.save(revision);
-
-        List<ApBindingState> bindingStateList = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
-        if (CollectionUtils.isNotEmpty(bindingStateList)) {
-            bindingStateList.forEach(eid -> eid.setSyncOk(SyncState.NOT_SYNCED));
-            bindingStateRepository.saveAll(bindingStateList);
-        }
     }
 
     @Transactional(TxType.MANDATORY)
