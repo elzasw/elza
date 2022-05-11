@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -126,7 +127,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void sePreferNameRevisionTest() throws ApiException {
+    public void sePreferNameRevisionTest() throws ApiException, InterruptedException {
         ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());
@@ -154,7 +155,17 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         // merge
         mergeRevision(ap1.getAccessPointId(), null);
 
-        ApAccessPointVO apVo2 = this.getAccessPoint(ap1.getAccessPointId());
+        ApAccessPointVO apVo2;
+        do {
+            apVo2 = getAccessPoint(ap1.getAccessPointId());
+            assertNotNull(apVo2);
+            if (StringUtils.equals("Karel (IV)", apVo2.getName())) {
+                break;
+            }
+            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
+            Thread.sleep(100);
+        } while (true);
+
         // check preferred part
         ApPartVO prefPart = null;
         for (ApPartVO partVo : apVo2.getParts()) {

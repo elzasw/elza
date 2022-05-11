@@ -119,6 +119,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -191,6 +192,9 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
+
+    @Autowired
+    private RevisionPartService revisionPartService;
 
     @Autowired
     private LayersConfig layersConfig;
@@ -889,10 +893,28 @@ public class ApController {
 
     /**
      * Úprava části přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor upravované části
-     * @param apPartFormVO data pro úpravu části
+     * 
+     * V případě revize:
+     * 
+     * <ul>
+     * <li>1. Zalozeni noveho itemu
+     * id = null
+     * objectId = null
+     * origObjectId = null
+     * <li>2. Zmena itemu
+     * id = itemId (z puvodniho part)
+     * objectId = objectId (z puvodniho part)
+     * origObjectId = null
+     * <li>3. Vymazani itemu
+     * item neprijde
+     * </ul>
+     * 
+     * @param accessPointId
+     *            identifikátor přístupového bodu (PK)
+     * @param partId
+     *            identifikátor upravované části
+     * @param apPartFormVO
+     *            data pro úpravu části
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
@@ -926,7 +948,8 @@ public class ApController {
                               @RequestBody final ApPartFormVO apPartFormVO) {
         ApState state = accessPointService.getStateInternal(id);
         ApRevision revision = revisionService.findRevisionByState(state);
-        revisionService.updatePart(state, revision, partId, apPartFormVO);
+        ApRevPart revPart = revisionPartService.findById(partId);
+        revisionService.updatePart(state, revision, revPart, apPartFormVO);
     }
 
     /**
