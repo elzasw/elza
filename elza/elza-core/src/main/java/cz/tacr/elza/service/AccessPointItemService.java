@@ -490,7 +490,8 @@ public class AccessPointItemService {
      * @param itemsMap mapa zmen
      * @param bindingItemList
      */
-    public void changeBindingItemsItems(Map<Integer, ApItem> itemsMap, List<ApBindingItem> bindingItemList) {
+    public void changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
+                                        List<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return;
         }

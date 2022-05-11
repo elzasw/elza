@@ -722,15 +722,6 @@ public class CamService {
                   binding.getValue(), entity.getRevi().getRid().getValue(),
                   state, bindingState);
 
-        if (state != null) {
-            // Nelze změnit stav archivní entity, která má revizi
-            ApRevision revision = revisionService.findRevisionByState(state);
-            if (revision != null) {
-                throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
-                        RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
-            }
-        }
-
         // Mozne stavy synchronizace
         // ApState | ApBindingState  | syncQueue 
         // ---------------------------------------
@@ -792,11 +783,15 @@ public class CamService {
                 }
             }
 
+            // Nelze změnit stav archivní entity, která má revizi
+            ApRevision revision = revisionService.findRevisionByState(state);
             boolean localChanges = checkLocalChanges(state, bindingState);
 
             if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced
             // check if synced or not
-                    (syncQueue && (localChanges || SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
+                    (syncQueue &&
+                            (localChanges || revision != null ||
+                                    SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                     bindingState.setSyncOk(SyncState.NOT_SYNCED);
                     bindingStateRepository.save(bindingState);
@@ -814,6 +809,11 @@ public class CamService {
                     return;
                 }
 
+            }
+
+            if (revision != null) {
+                throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
+                        RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
             }
         }
 
@@ -845,7 +845,8 @@ public class CamService {
     }
 
     // PPy: Toto vyzaduje revizi
-    private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
+    private boolean checkLocalChanges(final ApState state,
+                                      final ApBindingState bindingState) {
         List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
             return true;
@@ -966,13 +967,6 @@ public class CamService {
             ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
 
             state = accessPointService.getStateInternal(accessPoint);
-
-            // Nelze změnit stav archivní entity, která má revizi
-            ApRevision revision = revisionService.findRevisionByState(state);
-            if (revision != null) {
-                throw new BusinessException("Nelze změnit stav archivní entity, která má revizi",
-                        RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
-            }
 
             bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
             if (bindingState == null) {
