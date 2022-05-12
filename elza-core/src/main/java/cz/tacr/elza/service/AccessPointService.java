@@ -2105,9 +2105,11 @@ public class AccessPointService {
             return;
         }
 
-        if (RevStateApproval.TO_APPROVE == revState) {
+        // Entita je v jednom ze stavů ke schválení
+        if (RevStateApproval.TO_APPROVE == revState ||
+                StateApproval.TO_APPROVE == state.getStateApproval()) {
             throw new SystemException("Ve stavu ke schválení nelze entitu měnit",
-                    BaseCode.INSUFFICIENT_PERMISSIONS)
+                    BaseCode.INVALID_STATE)
                             .set("accessPointId", state.getAccessPointId())
                             .set("scopeId", state.getScopeId());
         }
@@ -2138,8 +2140,7 @@ public class AccessPointService {
                 return;
             }
         case REV_PREPARED:
-        case TO_APPROVE:
-            throw new SystemException("Ve stavu ke schválení nelze entitu měnit",
+            throw new SystemException("Nedostatečné oprávnění na změnu přístupového bodu",
                     BaseCode.INSUFFICIENT_PERMISSIONS)
                             .set("accessPointId", state.getAccessPointId())
                             .set("scopeId", state.getScopeId());
@@ -2147,7 +2148,7 @@ public class AccessPointService {
             break;
         }
 
-        throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu",
+        throw new SystemException("Nedostatečné oprávnění na změnu přístupového bodu",
                 BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
                         .set("scopeId", state.getScopeId());
