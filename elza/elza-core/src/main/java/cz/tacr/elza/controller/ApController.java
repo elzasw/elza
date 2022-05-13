@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -79,6 +78,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -100,6 +100,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
@@ -450,12 +451,7 @@ public class ApController {
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
-        ApState apState;
-        try {
-            apState = accessPointService.getApState(accessPointId);
-        } catch (ObjectNotFoundException o) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity not found, id: " + accessPointId);
-        }
+        ApState apState = accessPointService.getApState(accessPointId);
 
         ApAccessPointVO vo;
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
@@ -759,6 +755,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/{accessPointId}/replace", method = RequestMethod.POST)
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     public void replace(@PathVariable final Integer accessPointId, @RequestBody final Integer replacedId) {
 
         final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
