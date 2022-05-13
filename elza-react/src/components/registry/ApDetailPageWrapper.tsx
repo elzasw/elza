@@ -144,22 +144,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }, [id, detail]);
 
-    // Show message when entity with specified id does not exist
-    if (id && (!detail.id || !detail.data)) {
-        return <div  className="detail-page-wrapper missing-entity">
-            <div className="message-container">
-                <div className="message">
-                    <div className="message-icon">
-                        <Icon glyph="fa-regular fa-times-circle-o"/>
-                    </div>
-                    <div className="message-text">
-                        {i18n("ap.detail.entityMissing")}
-                    </div>
-                </div>
-            </div>
-        </div>;
-    }
-
     const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) => 
         stores.some((store) => !store.fetched || store.isFetching)
 
@@ -178,6 +162,21 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         );
     }
 
+    // Show message when entity with specified id does not exist
+    if (id && (!detail.id || !detail.data)) {
+        return <div  className="detail-page-wrapper missing-entity">
+            <div className="message-container">
+                <div className="message">
+                    <div className="message-icon">
+                        <Icon glyph="fa-regular fa-times-circle-o"/>
+                    </div>
+                    <div className="message-text">
+                        {i18n("ap.detail.entityMissing")}
+                    </div>
+                </div>
+            </div>
+        </div>;
+    }
 
     const handleSetPreferred = async ({part, updatedPart}: RevisionPart) => {
         const nextPreferredPart = part ? part : updatedPart;
