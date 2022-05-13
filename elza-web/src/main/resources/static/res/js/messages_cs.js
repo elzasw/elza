@@ -1139,6 +1139,7 @@ var messages = {
     "ap.detail.lastChange.notAvailable": "Informace o poslední změně není dostupná",
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
+    "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
