@@ -20,6 +20,15 @@ import scrollIntoView from 'dom-scroll-into-view';
 const __emptyColWidth = 8000;
 const __minColWidth = 16;
 
+const getBooleanMapFromArray = (array) => {
+    if(!array) {return undefined;}
+    const map = {};
+    array.forEach(id => {
+        map[id] = true;
+    });
+    return map;
+}
+
 class DataGrid extends AbstractReactComponent {
     dataGridRef = null;
     static contextTypes = {shortcuts: PropTypes.object};
@@ -161,29 +170,16 @@ class DataGrid extends AbstractReactComponent {
         }
 
         // Selected ids a row indexes
-        let selectedIds;
-        let selectedRowIndexes;
+        let selectedIdsArray = currProps.selectedIds;
+        let selectedRowIndexesArray = currProps.selectedRowIndexes;
+
         if (props.selectedIds !== currProps.selectedIds || props.selectedRowIndexes !== currProps.selectedRowIndexes) {
-            selectedIds = {};
-            if (typeof props.selectedIds !== 'undefined') {
-                props.selectedIds.forEach(id => {
-                    selectedIds[id] = true;
-                });
-            } else {
-                selectedIds = currState.selectedIds;
-            }
-            selectedRowIndexes = {};
-            if (typeof props.selectedRowIndexes !== 'undefined') {
-                props.selectedRowIndexes.forEach(id => {
-                    selectedRowIndexes[id] = true;
-                });
-            } else {
-                selectedRowIndexes = currState.selectedRowIndexes;
-            }
-        } else {
-            selectedIds = currProps.selectedIds || {};
-            selectedRowIndexes = currProps.selectedRowIndexes || {};
+            selectedIdsArray = props.selectedIds;
+            selectedRowIndexesArray = props.selectedRowIndexes;
         }
+
+        const selectedIds = getBooleanMapFromArray(selectedIdsArray) || currState.selectedIds;
+        const selectedRowIndexes = getBooleanMapFromArray(selectedRowIndexesArray) || currState.selectedRowIndexes;
 
         // Focus
         let focus;
