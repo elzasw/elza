@@ -8,12 +8,14 @@ import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedBinding;
@@ -236,6 +238,24 @@ public class ApBindingVO {
         }
         if (!Objects.equals(cachedAccessPoint.getApState().getApTypeId(), bindingState.getApTypeId())) {
             otherLocalChange = true;
+        }
+        // změna stavu
+        if (bindingState.getExtState() != null) {
+            // 
+            if (bindingState.getExtState().equals(EntityRecordStateXml.ERS_NEW.toString())) {
+                // napojena je nova
+                if (cachedAccessPoint.getApState().getStateApproval() == StateApproval.APPROVED) {
+                    // lokalne je schvalena
+                    otherLocalChange = true;
+                }
+            } else if (bindingState.getExtState().equals(EntityRecordStateXml.ERS_APPROVED.toString())) {
+                // napojena neni schvalena
+                if (cachedAccessPoint.getApState().getStateApproval() != StateApproval.APPROVED) {
+                    // lokalne je schvalena
+                    otherLocalChange = true;
+                }
+            }
+
         }
     	
         ApBindingVO vo = newInstance(bindingState, lastChange, otherLocalChange);
