@@ -10,9 +10,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.service.AccessPointDataService;
-import cz.tacr.elza.service.ExternalSystemService;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -45,6 +42,8 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends BatchUpdateBuilder {
@@ -333,6 +332,11 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (apState.getStateApproval() == StateApproval.APPROVED &&
                 entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
             addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
+            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_APPROVED.toString());
+        } else if (apState.getStateApproval() == StateApproval.NEW &&
+                entityXml.getEns() == EntityRecordStateXml.ERS_APPROVED) {
+            addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_NEW, null));
+            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_NEW.toString());
         }
 
         // změna preferovaného partu
