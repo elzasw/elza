@@ -17,7 +17,7 @@ import DetailRevState from "./DetailRevState";
 import DetailState from './DetailState';
 import { EntityBindings } from './EntityBindings';
 import i18n from "components/i18n";
-import { StateApproval } from 'api/StateApproval';
+import { StateApprovalEx } from 'api/StateApproval';
 
 interface Props {
     item: ApAccessPointVO;
@@ -32,8 +32,8 @@ interface Props {
 
 const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
 const getItemState = (item: ApAccessPointVO) => {
-    if(item.replacedById != undefined) {return StateApproval.REPLACED}
-    if(item.invalid) {return StateApproval.INVALID}
+    if(item.replacedById != undefined) {return StateApprovalEx.REPLACED}
+    if(item.invalid) {return StateApprovalEx.INVALID}
     return item.stateApproval
 }
 
