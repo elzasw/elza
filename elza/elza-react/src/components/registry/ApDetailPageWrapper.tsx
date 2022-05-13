@@ -31,6 +31,7 @@ import { ApStateVO } from 'api/ApStateVO';
 import {Api} from '../../api';
 import {RouteComponentProps, withRouter} from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
+import Icon from 'components/shared/icon/FontIcon';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -138,8 +139,26 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     useEffect(() => {
         fetchViewSettings();
-        refreshValidation(id);
-    }, [id]);
+        if(detail.fetched && detail.data){
+            refreshValidation(id);
+        }
+    }, [id, detail]);
+
+    // Show message when entity with specified id does not exist
+    if (id && (!detail.id || !detail.data)) {
+        return <div  className="detail-page-wrapper missing-entity">
+            <div className="message-container">
+                <div className="message">
+                    <div className="message-icon">
+                        <Icon glyph="fa-regular fa-times-circle-o"/>
+                    </div>
+                    <div className="message-text">
+                        {i18n("ap.detail.entityMissing")}
+                    </div>
+                </div>
+            </div>
+        </div>;
+    }
 
     const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) => 
         stores.some((store) => !store.fetched || store.isFetching)
@@ -159,9 +178,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         );
     }
 
-    if (!detail.id || !detail.data) {
-        return <div className={'detail-page-wrapper'} />;
-    }
 
     const handleSetPreferred = async ({part, updatedPart}: RevisionPart) => {
         const nextPreferredPart = part ? part : updatedPart;
@@ -251,7 +267,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
-    const allRevisionParts = detail.data.revStateApproval && revisionActive ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
+    const allRevisionParts = detail.data?.revStateApproval && revisionActive ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
     const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => 
         !part?.partParentId 
             && !updatedPart?.partParentId 
