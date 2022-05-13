@@ -62,9 +62,6 @@ public class RevisionService {
     private AccessPointDataService accessPointDataService;
 
     @Autowired
-    private AccessPointItemService accessPointItemService;
-
-    @Autowired
     private RevisionPartService revisionPartService;
 
     @Autowired

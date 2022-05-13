@@ -116,11 +116,11 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -199,9 +199,6 @@ public class AccessPointService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApBindingRepository bindingRepository;
-
-    @Autowired
     private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
@@ -267,6 +264,9 @@ public class AccessPointService {
     @Autowired
     private AccessPointCacheService accessPointCacheService;
     
+    @Autowired
+    private ApRevisionRepository revisionRepository;
+
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
@@ -448,9 +448,19 @@ public class AccessPointService {
         if (state.getStateApproval() == StateApproval.TO_APPROVE
                 || state.getStateApproval() == StateApproval.APPROVED
                 || state.getStateApproval() == StateApproval.REV_PREPARED) {
-            throw new BusinessException("Cílová entita je schválená nebo čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
+            throw new BusinessException("Cílová entita je schválená nebo čeká na schválení a nelze ji měnit",
+                    RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
                 .set("stateApproval", state.getStateApproval());
+        }
+        // check revision 
+        ApRevision revision = revisionRepository.findByState(state);
+        if (revision != null) {
+            throw new BusinessException("Cílová entita má rozpracovanou revizi a nelze do ní slučovat.",
+                    RegistryCode.CANT_MERGE)
+                            .set("accessPointId", state.getAccessPointId())
+                            .set("stateApproval", state.getStateApproval());
+
         }
     }
 
