@@ -5606,3 +5606,27 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
+
+rule "Potlačení povinnosti pokud existuje role entity"
+salience -200
+no-loop
+when //$activeLevel: ActiveLevel( )
+    //$level : Level( this!=$activeLevel && $ownItems: ownDescItems )
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    // $itemSpec: RulItemSpecExt( type==RulItemSpec.Type.REQUIRED ) from $itemType.rulItemSpecList
+    $itemSpec: RulItemSpecExt( getType()==RulItemSpec.Type.REQUIRED ) from $itemType.rulItemSpecList
+    // $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
+    //DescItem(type=="ZP2015_ENTITY_ROLE" && specCode==$itemSpec.code ) from $ownItems
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Potlačení povinnosti prvku role entity pokud neexistuje povinná specifikace"
+salience -300
+no-loop
+when //$itemType: RulItemTypeExt( code == "ZP2015_ENTITY_ROLE" && type==RulItemType.Type.REQUIRED )
+    $itemType: RulItemTypeExt( code == "ZP2015_ENTITY_ROLE" && getType() in (RulItemType.Type.REQUIRED, RulItemType.Type.RECOMMENDED) )
+    not RulItemSpecExt( type==RulItemSpec.Type.REQUIRED ) from $itemType.rulItemSpecList
+then
+    $itemType.setType(RulItemType.Type.IMPOSSIBLE);
+end
