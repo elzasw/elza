@@ -1,4 +1,28 @@
 .detail-page-wrapper {
     height: 100%;
     overflow-x: auto;
+    
+    &.missing-entity {
+        color: #aaa;
+        display: flex;
+        justify-content: center;
+
+        & .message-container {
+            padding: 50px;
+
+            & .message {
+                display: flex;
+                font-size: 2rem;
+                align-items: center;
+
+                & .message-text {
+                    margin: 0 15px;
+                }
+                & .message-icon {
+                    font-size: 2.5rem;
+                }
+            }
+
+        }
+    }
 }

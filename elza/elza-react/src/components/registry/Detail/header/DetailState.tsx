@@ -1,9 +1,9 @@
 import React from 'react';
 import {Icon} from "../../../index";
-import {StateApproval, StateApprovalCaption, StateApprovalIcon} from "../../../../api/StateApproval";
+import {StateApproval, StateApprovalEx, StateApprovalCaption, StateApprovalIcon} from "../../../../api/StateApproval";
 
 interface Props {
-    state: StateApproval;
+    state: StateApproval | StateApprovalEx;
 }
 
 /**

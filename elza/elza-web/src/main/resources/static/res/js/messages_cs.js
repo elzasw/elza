@@ -1139,6 +1139,7 @@ var messages = {
     "ap.detail.lastChange.notAvailable": "Informace o poslední změně není dostupná",
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
+    "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
@@ -1222,7 +1223,7 @@ var messages = {
     "party.detail.name": "Jméno",
     "party.detail.name.new": "Nové jméno",
     "party.detail.name.update": "Úprava jména",
-    "party.detail.name.delete": "Opravdu chcete ostranit toto jméno?",
+    "party.detail.name.delete": "Opravdu chcete odstranit toto jméno?",
     "party.detail.name.setPrefferedNameAlert": "Opravdu chcete nastavit nové preferované jméno osoby?",
     "party.detail.note": "Poznámka",
     "party.detail.history": "Dějiny",
@@ -1320,7 +1321,7 @@ var messages = {
     "partyField.noItemsFound": "Záznamy nebyly nalezeny.",
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
-    "apField.searchType.create.RIGHT_LIKE": "pravostrané hledání",
+    "apField.searchType.create.RIGHT_LIKE": "pravostranné hledání",
     "apField.searchType.create.FULLTEXT": "fulltextové vyhledání",
     "apField.searchType.USERNAME": "vyhledání dle username",
     "apField.searchType.USERNAME_AND_PARTY": "vyhledání dle username i dle osoby",

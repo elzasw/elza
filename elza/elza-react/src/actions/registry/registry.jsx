@@ -123,11 +123,12 @@ export function registryDetailFetchIfNeeded(id, force = false) {
                                 dispatch(addToastrWarning(i18n('registry.invalid.warning')));
                             }
                             return data;
-                        })
-                        .catch(error => {
-                            dispatch(registryDetailClear());
+                        }).catch((error) => {
+                            if(error.status === 404){
+                                return null;
+                            }
                             throw error;
-                        });
+                        })
                 },
                 force,
             ),
