@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -465,8 +466,10 @@ public class AccessPointItemService {
                         && bindingItem.getItem().getItemId().equals(createItem.getId())) {
                     // prevzeti puvodniho odkazu
                     ApItem origItem = bindingItem.getItem();
-                    ArrDataRecordRef origData = (ArrDataRecordRef) origItem.getData();
-                    data.setBinding(origData.getBinding());
+                    ArrData origData = HibernateUtils.unproxy(origItem.getData());
+                    Validate.isTrue(origData instanceof ArrDataRecordRef);
+                    ArrDataRecordRef origDataRRef = (ArrDataRecordRef) origData;
+                    data.setBinding(origDataRRef.getBinding());
 
                     dataRefList.add(new ReferencedEntities(data, apItemAccessPointRefVO.getExternalName()));
                     break;
@@ -487,13 +490,15 @@ public class AccessPointItemService {
     /**
      * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
      * 
-     * @param itemsMap mapa zmen
+     * @param itemsMap
+     *            mapa zmen
      * @param bindingItemList
+     * @return list of changed bindings
      */
-    public void changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
+    public List<ApBindingItem> changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
                                         List<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
-            return;
+            return Collections.emptyList();
         }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();
         for (ApBindingItem bindingItem : bindingItemList) {
@@ -503,9 +508,10 @@ public class AccessPointItemService {
                 currentItemBindings.add(bindingItem);
             }
         }
-        if (CollectionUtils.isNotEmpty(currentItemBindings)) {
-            bindingItemRepository.saveAll(currentItemBindings);
+        if (CollectionUtils.isEmpty(currentItemBindings)) {
+            return Collections.emptyList();
         }
+        return bindingItemRepository.saveAll(currentItemBindings);
     }
 
     /**
@@ -584,20 +590,6 @@ public class AccessPointItemService {
         for (ApItem item : items) {
             if (item.getDeleteChange() == null) {
                 if (item.getPosition() >= position) {
-                    result.add(item);
-                }
-            }
-        }
-        return result;
-    }
-
-    private List<ApItem> findItemsBetween(final List<ApItem> items, final int aPosition, final int bPosition) {
-        int minPosition = Math.min(aPosition, bPosition);
-        int maxPosition = Math.max(aPosition, bPosition);
-        List<ApItem> result = new ArrayList<>();
-        for (ApItem item : items) {
-            if (item.getDeleteChange() == null) {
-                if (item.getPosition() >= minPosition && item.getPosition() <= maxPosition) {
                     result.add(item);
                 }
             }
@@ -684,6 +676,36 @@ public class AccessPointItemService {
             externalSystemService.createApBindingItem(binding, change, bindingValue, null, itemCreated);
         }
         return itemCreated;
+    }
+
+    /**
+     * Update existing item with new value
+     * 
+     * Updated item is flushed to the DB. It is up to caller
+     * to sync cache and revalidate AP
+     * 
+     * @param change
+     * @param apItem
+     * @param drr
+     * @return
+     */
+    public ApItem updateItem(ApChange change, ApItem apItem, ArrData data) {
+        Validate.isTrue(apItem.getDeleteChange() == null);
+
+        apItem.setDeleteChange(change);
+        apItem = itemRepository.saveAndFlush(apItem);
+
+        data = dataRepository.save(data);
+
+        // create new item
+        ApItem ret = createItem(apItem.getPart(), data,
+                                apItem.getItemType(),
+                                apItem.getItemSpec(), change,
+                                apItem.getObjectId(),
+                                apItem.getPosition());
+
+        ret = itemRepository.saveAndFlush(ret);
+        return ret;
     }
 
 }

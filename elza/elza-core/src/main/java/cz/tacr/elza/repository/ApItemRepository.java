@@ -64,4 +64,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
             " join ap_binding_item bi on bi.item_id = i.item_id and bi.delete_change_id is null" +
             " where i.delete_change_id is not null", nativeQuery = true)
     int countDeletedItemsWithUndeletedBindingItem();
+
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
 }

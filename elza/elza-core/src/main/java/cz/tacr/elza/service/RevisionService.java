@@ -98,7 +98,7 @@ public class RevisionService {
     private ApStateRepository stateRepository;
 
     @Transactional
-    public void createRevision(ApState state) {
+    public ApRevision createRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
         if (revision != null) {
             throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
@@ -116,7 +116,7 @@ public class RevisionService {
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
         revision.setCreateChange(change);
 
-        revision = revisionRepository.save(revision);
+        return revisionRepository.save(revision);
     }
 
     @Transactional(TxType.MANDATORY)

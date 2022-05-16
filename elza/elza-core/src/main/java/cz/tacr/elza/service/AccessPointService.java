@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -78,10 +79,13 @@ import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevItem;
+import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -120,6 +124,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -265,7 +270,19 @@ public class AccessPointService {
     private AccessPointCacheService accessPointCacheService;
     
     @Autowired
+    private ApRevItemRepository revItemRepository;
+
+    @Autowired
     private ApRevisionRepository revisionRepository;
+
+    @Autowired
+    private RevisionService revisionService;
+
+    @Autowired
+    private RevisionPartService revisionPartService;
+
+    @Autowired
+    private RevisionItemService revisionItemService;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -386,7 +403,8 @@ public class AccessPointService {
     }
 
     /**
-     * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
+     * Smaže rej. heslo a jeho variantní hesla. Předpokládá,
+     * že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      */
     public void deleteAccessPoint(final ApState apState,
                                   final ApAccessPoint replacedBy, boolean mergeAp) {
@@ -840,21 +858,34 @@ public class AccessPointService {
      */
     public void replace(final ApState replacedState, final ApState replacementState) {
 
+        // replace in access points (items)
+        replaceInAps(replacedState, replacementState);
+
+        // replace in arrangement
+        replaceInArrItems(replacedState, replacementState);
+
+    }
+
+    private void replaceInArrItems(ApState replacedState, ApState replacementState) {
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
+        // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
         // ArrItems
-        final Collection<Integer> fundsAll = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
+        final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream()
+                .collect(Collectors.groupingBy(ArrDescItem::getFundId));
 
+        Set<Integer> fundIds = itemsByFundId.keySet();
         // fund to scopes
-        Map<Integer, Set<Integer>> fundIdsToScopes = fundsAll.stream().collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
+        Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream()
+                .collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
 
         // Oprávnění
         boolean isFundAdmin = userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL);
         if (!isFundAdmin) {
-            fundsAll.forEach(i -> {
+            fundIds.forEach(i -> {
                 if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
                     throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
                 }
@@ -863,42 +894,216 @@ public class AccessPointService {
 
 
         final Map<Integer, ArrFundVersion> fundVersions;
-        if (fundsAll.isEmpty()) {
+        if (fundIds.isEmpty()) {
             fundVersions = Collections.emptyMap();
         } else {
-            fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundsAll).stream()
+            fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
                     .collect(toMap(ArrFundVersion::getFundId, Function.identity()));
         }
 
         final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REPLACE_REGISTER);
-        arrItems.forEach(i -> {
-            final ArrDataRecordRef data = new ArrDataRecordRef();
-            data.setRecord(replacement);
-            ArrDescItem im = new ArrDescItem();
-            im.setData(data);
-            im.setNode(i.getNode());
-            im.setCreateChange(i.getCreateChange());
-            im.setDeleteChange(i.getDeleteChange());
-            im.setDescItemObjectId(i.getDescItemObjectId());
-            im.setItemId(i.getDescItemObjectId());
-            im.setItemSpec(i.getItemSpec());
-            im.setItemType(i.getItemType());
-            im.setPosition(i.getPosition());
+        for (Integer fundId : fundIds) {
+            List<ArrDescItem> items = itemsByFundId.get(fundId);
+            items.forEach(i -> {
+                final ArrDataRecordRef data = new ArrDataRecordRef();
+                data.setRecord(replacement);
+                ArrDescItem im = new ArrDescItem();
+                im.setData(data);
+                im.setNode(i.getNode());
+                im.setCreateChange(i.getCreateChange());
+                im.setDeleteChange(i.getDeleteChange());
+                im.setDescItemObjectId(i.getDescItemObjectId());
+                im.setItemId(i.getDescItemObjectId());
+                im.setItemSpec(i.getItemSpec());
+                im.setItemType(i.getItemType());
+                im.setPosition(i.getPosition());
 
-            Integer fundId = i.getFundId();
-            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
-            if (fundScopes == null) {
-                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
-                        .set("fundId", fundId);
-            } else {
-                if (!fundScopes.contains(replacementState.getScopeId())) {
-                    throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
-                            .set("fundId", fundId)
-                            .set("scopeId", replacementState.getScopeId());
+                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+                if (fundScopes == null) {
+                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
+                            .set("fundId", fundId);
+                } else {
+                    if (!fundScopes.contains(replacementState.getScopeId())) {
+                        throw new BusinessException(
+                                "Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.",
+                                BaseCode.INVALID_STATE)
+                                        .set("fundId", fundId)
+                                        .set("scopeId", replacementState.getScopeId());
+                    }
+                }
+                descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
+            });
+        }
+    }
+
+    private void replaceInAps(ApState replacedState, ApState replacementState) {
+        final ApAccessPoint replaced = replacedState.getAccessPoint();
+        final ApAccessPoint replacement = replacementState.getAccessPoint();
+
+        // replace in APs
+        final List<ApItem> apItems = this.itemRepository.findItemByEntity(replaced);
+        if (CollectionUtils.isNotEmpty(apItems)) {
+            Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId())
+                    .collect(Collectors.toSet());
+            // check revisions
+            List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+            Map<Integer, ApState> stateByApId = apStates.stream()
+                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+            // get bindings
+            List<ApBindingItem> bindingItems = bindingItemRepository.findByItems(apItems);
+            Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
+
+            List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
+            Map<Integer, ApRevision> revisionByApId = revisions.stream()
+                    .collect(Collectors.toMap(r -> r.getState().getAccessPointId(), Function.identity()));
+
+            for (ApItem apItem : apItems) {
+                Integer apId = apItem.getPart().getAccessPointId();
+                ApState apState = stateByApId.get(apId);
+                
+                ApRevision revision = revisionByApId.get(apId);
+                if(revision==null && (apState.getStateApproval()==StateApproval.APPROVED||
+                        apState.getStateApproval()==StateApproval.TO_APPROVE ||
+                        apState.getStateApproval() == StateApproval.REV_PREPARED)) {
+                    // prepare revision
+                    revision = revisionService.createRevision(apState);
+                }
+                if (revision != null) {
+                    // create item in revision
+                    replaceInRevision(apItem, revision, replaced, replacement);
+                } else {
+                    // direct item update
+                    ApItem updatedItem = replaceInApItem(apItem, apState, replaced, replacement);
+                    itemUpdateMapping.put(apItem.getItemId(), updatedItem);
                 }
             }
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
-        });
+
+            List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping, bindingItems);
+            // refresh AP cache
+            for (ApBindingItem modBinding : modifiedBindings) {
+                accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()
+                        .getAccessPointId());
+            }
+        }
+
+        Set<Integer> resolvedByObjectId = new HashSet<>();
+        // replace in revision items
+        final List<ApRevItem> revItems = this.revItemRepository.findItemByEntity(replaced);
+        for (ApRevItem revItem : revItems) {
+            ApRevision revision = revItem.getPart().getRevision();
+            // item is deleting orig item -> origItem is resolved
+            if (revItem.getOrigObjectId() != null) {
+                resolvedByObjectId.add(revItem.getOrigObjectId());
+            }
+            // deleted items are already resolved by delete ops
+            if (!revItem.isDeleted()) {
+                replaceInRevision(revItem, revision, replaced, replacement);
+            }
+        }
+
+    }
+
+
+    /**
+     * 
+     * @param apItem
+     * @param apState
+     * @param bindingItems
+     *            Collection of binding items. Collection might contain also other
+     *            bindings for items.
+     * @param replaced
+     * @param replacement
+     * @return
+     */
+    private ApItem replaceInApItem(ApItem apItem, ApState apState,
+                                   ApAccessPoint replaced, ApAccessPoint replacement) {
+        Validate.isTrue(apItem.getDeleteChange() == null);
+        ArrData data = HibernateUtils.unproxy(apItem.getData());
+        Validate.isTrue(data instanceof ArrDataRecordRef);
+
+        checkPermissionForEdit(apState);
+        // Mark revItem as deleted
+        ArrDataRecordRef drr = new ArrDataRecordRef();
+        drr.setDataType(data.getDataType());
+        drr.setRecord(replacement);
+
+        ApChange change = apDataService.createChange(Type.AP_REPLACE);
+
+        ApItem updatedItem = apItemService.updateItem(change, apItem, drr);
+
+        generateSync(apItem.getPart().getAccessPoint(), apItem.getPart());
+        accessPointCacheService.createApCachedAccessPoint(apItem.getPart().getAccessPointId());
+
+        return updatedItem;
+    }
+
+    /**
+     * Replace apItem in revision - without existing mapping
+     * 
+     * @param apItem
+     * @param revision
+     * @param replaced
+     * @param replacement
+     */
+    private void replaceInRevision(ApItem apItem,
+                                   ApRevision revision, 
+                                   ApAccessPoint replaced,
+                                   ApAccessPoint replacement) {
+        Validate.isTrue(apItem.getDeleteChange() == null);
+        ArrData data = HibernateUtils.unproxy(apItem.getData());
+        Validate.isTrue(data instanceof ArrDataRecordRef);
+        
+        ApChange change = apDataService.createChange(Type.AP_REPLACE);
+        // locate part
+        ApRevPart revPart = revisionPartService.findByOriginalPart(apItem.getPart());
+        if (revPart == null) {
+            revPart = revisionPartService.createPart(revision, change, apItem.getPart(), false);
+        } else {
+            // Skip if whole part is deleted
+            if (revPart.isDeleted()) {
+                return;
+            }
+        }
+        // Mark revItem as deleted
+        ArrDataRecordRef drr = new ArrDataRecordRef();
+        drr.setDataType(data.getDataType());
+        drr.setRecord(replacement);
+
+        // create item
+        revisionItemService.createItem(change, revPart, apItem, drr);
+        
+    }
+
+    /**
+     * Replace access point in single revision item
+     * 
+     * @param revItem
+     * @param revision
+     * @param replaced
+     * @param replacement
+     * @return New revision item
+     */
+    private ApRevItem replaceInRevision(ApRevItem revItem, ApRevision revision, ApAccessPoint replaced,
+                                   ApAccessPoint replacement) {
+        Validate.isTrue(!revItem.isDeleted());
+        Validate.isTrue(revItem.getDeleteChange() == null);
+
+        ArrData data = HibernateUtils.unproxy(revItem.getData());
+        Validate.isTrue(data instanceof ArrDataRecordRef);
+
+        checkPermissionForEdit(revision.getState(), revision);
+       
+        // Mark revItem as deleted
+        ArrDataRecordRef drr = new ArrDataRecordRef();
+        drr.setDataType(data.getDataType());
+        drr.setRecord(replacement);
+
+        ApChange change = apDataService.createChange(Type.AP_REPLACE);
+        
+        ApRevItem updatedItem = revisionItemService.updateItem(change, revItem, drr);
+
+        return updatedItem;
     }
 
     public boolean canBeDeleted(ApAccessPoint record) {
@@ -2199,8 +2404,10 @@ public class AccessPointService {
         List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
-            if (item.getData() instanceof ArrDataRecordRef) {
-                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+
+            if (data instanceof ArrDataRecordRef) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
                 if (dataRecordRef.getRecord() == null) {
                     archiveEntityIds.add(dataRecordRef.getBinding().getValue());
                 }
