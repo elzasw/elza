@@ -412,4 +412,46 @@ public class RevisionItemService {
         }
         return null;
     }
+
+    /**
+     * Update revItem with new value
+     * 
+     * @param change
+     * @param revItem
+     * @param drr
+     * @return
+     */
+    public ApRevItem updateItem(ApChange change,
+                                ApRevItem revItem, ArrData data) {
+        Validate.isTrue(revItem.getDeleteChange() == null);
+
+        revItem.setDeleteChange(change);
+
+        revItem = revItemRepository.saveAndFlush(revItem);
+
+        data = dataRepository.save(data);
+
+        ApRevItem newItem = createItem(revItem.getPart(), data,
+                                       revItem.getItemType(), revItem.getItemSpec(),
+                                       change,
+                                       revItem.getObjectId(),
+                                       revItem.getPosition(),
+                                       revItem.getOrigObjectId(),
+                                       revItem.isDeleted());
+        return revItemRepository.saveAndFlush(newItem);
+    }
+
+    public ApRevItem createItem(ApChange change, ApRevPart revPart, ApItem apItem, ArrData data) {
+        data = dataRepository.save(data);
+
+        ApRevItem newItem = createItem(revPart, data,
+                                       apItem.getItemType(),
+                                       apItem.getItemSpec(),
+                                       change,
+                                       null,
+                                       apItem.getPosition(),
+                                       apItem.getObjectId(),
+                                       false);
+        return revItemRepository.saveAndFlush(newItem);
+    }
 }
