@@ -21,10 +21,13 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -32,6 +35,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.ApiException;
@@ -49,6 +53,7 @@ public class ApControllerTest extends AbstractControllerTest {
     public static final String PT_REL = "PT_REL";
     public static final String NM_MAIN = "NM_MAIN";
     public static final String NM_SUP_GEN = "NM_SUP_GEN";
+    public static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
 
     @Test
     public void getRecordTypesTest() {
@@ -483,6 +488,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
+        RulItemType geoAdminClsItemType = itemTypeRepository.findOneByCode(GEO_ADMIN_CLASS);
         Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
 
         RulPartTypeVO ptName = partTypes.get(PT_NAME);
@@ -513,6 +519,39 @@ public class ApControllerTest extends AbstractControllerTest {
         ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
         Assert.assertNotNull(replacementRecordCreated.getId());
 
+        // Vytvoření AP s vazbou na replaced
+        List<ApItemVO> itemsC = new ArrayList<>();
+        itemsC.add(buildApItem(nmMainItemType.getCode(), null, "ApRecordC name", null, null));
+        itemsC.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordC complement", null, null));
+        itemsC.add(buildApItem(geoAdminClsItemType.getCode(), null, replacedRecordCreated, null, null));
+
+        ApAccessPointCreateVO recordC = new ApAccessPointCreateVO();
+        recordC.setTypeId(getNonHierarchicalApType(types).getId());
+        recordC.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsC));
+        recordC.setScopeId(scopeId);
+
+        ApAccessPointVO recordCCreated = createAccessPoint(recordC);
+        Assert.assertNotNull(recordCCreated.getId());
+
+        // Vytvoření schváleného AP s vazbou na replaced
+        List<ApItemVO> itemsD = new ArrayList<>();
+        itemsD.add(buildApItem(nmMainItemType.getCode(), null, "ApRecordD name", null, null));
+        itemsD.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordD complement", null, null));
+        itemsD.add(buildApItem(geoAdminClsItemType.getCode(), null, replacedRecordCreated, null, null));
+
+        ApAccessPointCreateVO recordD = new ApAccessPointCreateVO();
+        recordD.setTypeId(getNonHierarchicalApType(types).getId());
+        recordD.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsD));
+        recordD.setScopeId(scopeId);
+
+        ApAccessPointVO recordDCreated = createAccessPoint(recordD);
+        Assert.assertNotNull(recordDCreated.getId());
+        // mark as approved
+        ApStateVO stateD = recordDCreated.getState();
+        ApStateChangeVO stateChangeD = new ApStateChangeVO();
+        stateChangeD.setState(StateApproval.APPROVED);
+        this.changeState(recordDCreated.getId(), stateChangeD);
+
         // Dohledání usages
         RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());
         Assert.assertNotNull(usage.getFunds());
@@ -521,6 +560,43 @@ public class ApControllerTest extends AbstractControllerTest {
         replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
         RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
         Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
+
+        // ověření změny v AP - C
+        recordCCreated = getAccessPoint(recordCCreated.getId());
+        assertNull(recordCCreated.getRevStateApproval()); // has no revision
+        assertEquals(recordCCreated.getParts().size(), 1); // has no revision
+        ApPartVO mainCPart = recordCCreated.getParts().get(0);
+        assertEquals(mainCPart.getItems().size(), 3); // 3 items as on the beginning
+        ApItemVO geoAdminItem = null;
+        for (ApItemVO item : mainCPart.getItems()) {
+            if (item.getTypeId().equals(geoAdminClsItemType.getItemTypeId())) {
+                assertNull(geoAdminItem);
+                geoAdminItem = item;
+            }
+        }
+        assertNotNull(geoAdminItem);
+        ApItemAccessPointRefVO geoAdminItemApRef = (ApItemAccessPointRefVO) geoAdminItem;
+        assertEquals(geoAdminItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
+
+        // ověření změny v AP - D
+        recordDCreated = getAccessPoint(recordDCreated.getId());
+        assertEquals(recordDCreated.getRevStateApproval(), RevStateApproval.ACTIVE); // has revision
+        assertEquals(recordDCreated.getParts().size(), 1);
+        assertEquals(recordDCreated.getRevParts().size(), 1);
+        ApPartVO mainDPart = recordDCreated.getRevParts().get(0);
+        assertEquals(mainDPart.getItems().size(), 1);
+        ApItemVO geoAdminDItem = null;
+        for (ApItemVO item : mainDPart.getItems()) {
+            if (item.getTypeId().equals(geoAdminClsItemType.getItemTypeId())) {
+                assertNull(geoAdminDItem);
+                geoAdminDItem = item;
+            }
+        }
+        assertNotNull(geoAdminDItem);
+        assertNull(geoAdminDItem.getObjectId());
+        assertNotNull(geoAdminDItem.getOrigObjectId());
+        ApItemAccessPointRefVO geoAdminDItemApRef = (ApItemAccessPointRefVO) geoAdminDItem;
+        assertEquals(geoAdminDItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
     }
 
     private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list) {

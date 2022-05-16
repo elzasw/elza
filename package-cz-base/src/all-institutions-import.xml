@@ -181,13 +181,13 @@
       <frgs>
         <frg fid="258a6459-922f-4da7-a9f5-f239b0635ad4" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>Státní oblastní archiv v Zámrsku</v>
+            <v>Státní oblastní archiv v Hradci Králové</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
         </frg>
         <frg fid="ea6c6366-f431-4555-b42d-3837d4435e43" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>SOA v Zámrsku</v>
+            <v>SOA v Hradci Králové</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
           <de t="NM_TYPE" s="NT_ACRONYM"/>
@@ -2592,13 +2592,13 @@
       <frgs>
         <frg fid="c7c78bab-ae16-4561-8866-9766bee24c20" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>Archiv Akademie věd České republiky</v>
+            <v>Masarykův ústav a Archiv Akademie věd ČR</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
         </frg>
         <frg fid="719c68f9-223b-4d44-b1da-749ca2408290" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>Archiv AV ČR</v>
+            <v>Masarykův ústav a Archiv AV ČR</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
           <de t="NM_TYPE" s="NT_ACRONYM"/>

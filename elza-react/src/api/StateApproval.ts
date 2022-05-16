@@ -10,11 +10,21 @@ export enum StateApproval {
     REV_NEW = 'REV_NEW',
     REV_PREPARED = 'REV_PREPARED',
     REV_AMEND = 'REV_AMEND',
+}
+
+export enum StateApprovalEx {
+    NEW = 'NEW',
+    TO_APPROVE = 'TO_APPROVE',
+    APPROVED = 'APPROVED',
+    TO_AMEND = 'TO_AMEND',
+    REV_NEW = 'REV_NEW',
+    REV_PREPARED = 'REV_PREPARED',
+    REV_AMEND = 'REV_AMEND',
     INVALID = 'INVALID',
     REPLACED = 'REPLACED'
 }
 
-export const StateApprovalCaption = (value: StateApproval): string => {
+export const StateApprovalCaption = (value: StateApproval | StateApprovalEx): string => {
     switch (value) {
         case StateApproval.NEW:
             return 'Nová';
@@ -30,9 +40,9 @@ export const StateApprovalCaption = (value: StateApproval): string => {
             return "Revize ke schválení";
         case StateApproval.REV_AMEND:
             return "Revize k doplnění";
-        case StateApproval.INVALID:
+        case StateApprovalEx.INVALID:
             return "Zneplatněná";
-        case StateApproval.REPLACED:
+        case StateApprovalEx.REPLACED:
             return "Nahrazená";
         default:
             console.warn('Nepřeložená hodnota', value);

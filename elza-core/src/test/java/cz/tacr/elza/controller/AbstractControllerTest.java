@@ -42,6 +42,7 @@ import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -328,6 +329,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
+    protected static final String CHANGE_STATE = AP_CONTROLLER_URL + "/{recordId}/state";
 
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
@@ -2074,6 +2076,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
         return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+    }
+
+    protected Response changeState(final Integer apId, ApStateChangeVO stateChange) {
+        return post(spec -> spec.pathParam("recordId", apId).body(stateChange), CHANGE_STATE);
     }
 
     /**

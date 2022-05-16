@@ -15,6 +15,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
@@ -23,6 +24,14 @@ import cz.tacr.elza.exception.codes.BaseCode;
  */
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler({ ObjectNotFoundException.class })
+    public ResponseEntity<ExceptionResponse> abstractException(final ObjectNotFoundException exception) {
+        ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(exception);
+        builder.logError(logger);
+
+        return new ResponseEntity<>(builder.build(), HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler({Exception.class})
     @ResponseBody
