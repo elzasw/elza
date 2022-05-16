@@ -963,9 +963,7 @@ public class AccessPointService {
                 ApState apState = stateByApId.get(apId);
                 
                 ApRevision revision = revisionByApId.get(apId);
-                if(revision==null && (apState.getStateApproval()==StateApproval.APPROVED||
-                        apState.getStateApproval()==StateApproval.TO_APPROVE ||
-                        apState.getStateApproval() == StateApproval.REV_PREPARED)) {
+                if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
                     // prepare revision
                     revision = revisionService.createRevision(apState);
                 }
