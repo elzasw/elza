@@ -37,6 +37,8 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission;
@@ -51,6 +53,8 @@ import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class RevisionService {
@@ -102,6 +106,23 @@ public class RevisionService {
         ApRevision revision = findRevisionByState(state);
         if (revision != null) {
             throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
+        }
+
+        // check if AP can be edited in revision
+        // no missing connected APs
+        CachedAccessPoint apCached = this.accessPointCacheService.findCachedAccessPoint(state.getAccessPointId());
+        for (CachedPart cachedPart : apCached.getParts()) {
+            for (ApItem item : cachedPart.getItems()) {
+                ArrData data = item.getData();
+                if (data != null) {
+                    if (data instanceof ArrDataRecordRef) {
+                        ArrDataRecordRef drr = (ArrDataRecordRef) data;
+                        if (drr.getRecordId() == null) {
+                            throw new IllegalStateException("Přístupový bod obsahuje odkazy na neexistující entity.");
+                        }
+                    }
+                }
+            }
         }
 
         revision = new ApRevision();
