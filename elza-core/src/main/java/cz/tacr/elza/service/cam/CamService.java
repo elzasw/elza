@@ -179,6 +179,7 @@ public class CamService {
                 asyncRequestService,
                 partService,
                 accessPointCacheService,
+                itemRepository,
                 this);
     }
 
@@ -833,10 +834,15 @@ public class CamService {
 
         EntityDBDispatcher ec = createEntityDBDispatcher();
         if (state == null) {
-            // Binding state is updated inside ec
-            ec.createAccessPoint(procCtx, entity, binding, syncQueue);
-            bindingState = ec.getBindingState();
-            Validate.notNull(bindingState, "Missing binding state");
+            // check received entity state, process NEW or ERS_APPROVED, skip INVALID and REPLACED
+            if (entity.getEns().equals(EntityRecordStateXml.ERS_NEW)
+                    || entity.getEns().equals(EntityRecordStateXml.ERS_APPROVED)) {
+
+                // binding state is updated inside ec
+                ec.createAccessPoint(procCtx, entity, binding, syncQueue);
+                bindingState = ec.getBindingState();
+                Validate.notNull(bindingState, "Missing binding state");
+            }
         } else {
             ec.synchronizeAccessPoint(procCtx, state, bindingState, entity, syncQueue);
         }
