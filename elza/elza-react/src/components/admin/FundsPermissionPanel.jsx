@@ -508,6 +508,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                     onRemove={this.handleRemove}
                     canDeleteItem={(item, index) => item.id !== FundsPermissionPanel.ALL_ID}
                     onFocus={this.selectItem}
+                    className="no-hover alternating-rows"
                 />
             );
         }
