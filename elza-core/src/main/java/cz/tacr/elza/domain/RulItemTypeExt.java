@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Rozšíření {@link RulItemType} o specifikace
@@ -57,5 +59,41 @@ public class RulItemTypeExt extends RulItemType {
      */
     public void setRulItemSpecList(final List<RulItemSpecExt> rulDescItemSpecList) {
         this.rulItemSpecList = rulDescItemSpecList;
+    }
+
+    /**
+     * Set maximum type according specifications
+     */
+    public void setTypeMaxFromSpecs() {
+        Validate.isTrue(this.getUseSpecification());
+
+        if (CollectionUtils.isEmpty(rulItemSpecList)) {
+            setType(Type.IMPOSSIBLE);
+        }
+
+        Type maxType = Type.IMPOSSIBLE;
+        for (RulItemSpecExt itemSpec : rulItemSpecList) {
+            switch (itemSpec.getType()) {
+            case IMPOSSIBLE:
+                break;
+            case POSSIBLE:
+                if (maxType == Type.IMPOSSIBLE) {
+                    maxType = Type.POSSIBLE;
+                }
+                break;
+            case RECOMMENDED:
+                if (maxType == Type.IMPOSSIBLE || maxType == Type.POSSIBLE) {
+                    maxType = Type.RECOMMENDED;
+                }
+                break;
+            case REQUIRED:
+                if (maxType != Type.REQUIRED) {
+                    maxType = Type.REQUIRED;
+                }
+                break;
+            }
+        }
+
+        setType(maxType);
     }
 }
