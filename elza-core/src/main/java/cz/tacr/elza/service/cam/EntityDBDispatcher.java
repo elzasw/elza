@@ -72,6 +72,7 @@ import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -146,6 +147,8 @@ public class EntityDBDispatcher {
 
     final private AsyncRequestService asyncRequestService;
 
+    final private ApItemRepository itemRepository;
+
     //final private AccessPointDataService accessPointDataService;
 
     final private CamService camService;
@@ -168,6 +171,7 @@ public class EntityDBDispatcher {
                               final AsyncRequestService asyncRequestService,
                               final PartService partService,
                               final AccessPointCacheService accessPointCacheService,
+                              final ApItemRepository itemRepository,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
         this.stateRepository = stateRepository;
@@ -181,6 +185,7 @@ public class EntityDBDispatcher {
         this.camService = camService;
         this.partService = partService;
         this.accessPointCacheService = accessPointCacheService;
+        this.itemRepository = itemRepository;
     }
 
     /**
@@ -557,9 +562,24 @@ public class EntityDBDispatcher {
         }
         StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, state, apChange, uuid);
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
+        ApAccessPoint accessPoint = apState.getAccessPoint();        
+        
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
+
+        // TODO kontrola a aktualizace odkazů arr_data_record_ref
+        List<ApItem> items = itemRepository.findUnbindedItemByBinding(binding);
+        for (ApItem item : items) {
+            ArrDataRecordRef dataRef = (ArrDataRecordRef) item.getData();
+            if (dataRef.getRecord() == null) {
+                dataRef.setRecord(accessPoint);
+                dataRecordRefRepository.save(dataRef);
+                accessPointService.updatePartValue(item.getPart());
+                if (item.getPart().getParentPart() != null) {
+                    accessPointService.updatePartValue(item.getPart().getParentPart());
+                }
+                accessPointCacheService.createApCachedAccessPoint(item.getPart().getAccessPointId());
+            }
+        }
 
         return apState;
     }
