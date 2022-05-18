@@ -5,15 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.utils.MapyCzUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +25,17 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -56,6 +50,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.utils.MapyCzUtils;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -326,17 +321,24 @@ public class ItemService {
 
         private final ArrFund fund;
 
+        private final ArrFundVersion fundVersion;
+
         private final StaticDataProvider sdp;
 
-        public FundContext(Set<Integer> scopes, ArrFund fund, StaticDataProvider sdp) {
+        public FundContext(final Set<Integer> scopes,
+                           final ArrFundVersion fundVersion,
+                           final StaticDataProvider sdp) {
             this.scopes = scopes;
-            this.fund = fund;
+            this.fundVersion = fundVersion;
+            this.fund = fundVersion.getFund();
             this.sdp = sdp;
         }
 
-        public static FundContext newInstance(ArrFund fund, ArrangementService service, StaticDataProvider sdp) {
-            Set<Integer> scopes = service.findAllConnectedScopeByFund(fund);
-            return new FundContext(scopes, fund, sdp);
+        public static FundContext newInstance(final ArrFundVersion fundVersion,
+                                              final ArrangementService service,
+                                              final StaticDataProvider sdp) {
+            Set<Integer> scopes = service.findAllConnectedScopeByFund(fundVersion.getFund());
+            return new FundContext(scopes, fundVersion, sdp);
         }
 
         public Set<Integer> getScopes() {
@@ -345,6 +347,10 @@ public class ItemService {
 
         public ArrFund getFund() {
             return fund;
+        }
+
+        public ArrFundVersion getFundVersion() {
+            return fundVersion;
         }
 
         public StaticDataProvider getSdp() {

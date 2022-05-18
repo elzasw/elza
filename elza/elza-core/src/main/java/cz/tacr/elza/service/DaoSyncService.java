@@ -194,7 +194,7 @@ public class DaoSyncService {
         }
 
         @Override
-        public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+        public List<ArrDescItem> provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultipleItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
             // zadaný scenar nebyl nalezen
@@ -203,12 +203,17 @@ public class DaoSyncService {
                 throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
             }
 
+            List<ArrDescItem> result = new ArrayList<>();
+
             for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
-                descriptionItemService.createDescriptionItemInBatch(descItem,
+                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem,
                                                                     level.getNode(), fundVersion, change,
                                                                     changeContext);
+                result.add(createdItem);
             }
+
+            return result;
         }
 
         public void remove(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,

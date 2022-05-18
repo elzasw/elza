@@ -237,6 +237,19 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
         this.itemTypeId = itemType == null ? null : itemType.getItemTypeId();
     }
 
+    public Integer getItemTypeId() {
+        if (itemTypeId == null) {
+            if (itemType != null) {
+                return itemType.getItemTypeId();
+            }
+        }
+        return itemTypeId;
+    }
+
+    public void setItemTypeId(final Integer itemTypeId) {
+        this.itemTypeId = itemTypeId;
+    }
+
     /**
      * @return Odkaz na podtyp atributu.
      */
@@ -252,6 +265,19 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
     public void setItemSpec(final RulItemSpec itemSpec) {
         this.itemSpec = itemSpec;
         this.itemSpecId = itemSpec == null ? null : itemSpec.getItemSpecId();
+    }
+
+    public Integer getItemSpecId() {
+        if (itemSpecId == null) {
+            if (itemSpec != null) {
+                return itemSpec.getItemSpecId();
+            }
+        }
+        return itemSpecId;
+    }
+
+    public void setItemSpecId(final Integer itemSpecId) {
+        this.itemSpecId = itemSpecId;
     }
 
     @Override
@@ -273,22 +299,6 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
 
     public void setDeleteChangeId(final Integer deleteChangeId) {
         this.deleteChangeId = deleteChangeId;
-    }
-
-    public Integer getItemTypeId() {
-        return itemTypeId;
-    }
-
-    public void setItemTypeId(final Integer itemTypeId) {
-        this.itemTypeId = itemTypeId;
-    }
-
-    public Integer getItemSpecId() {
-        return itemSpecId;
-    }
-
-    public void setItemSpecId(final Integer itemSpecId) {
-        this.itemSpecId = itemSpecId;
     }
 
     public ArrData getData() {
