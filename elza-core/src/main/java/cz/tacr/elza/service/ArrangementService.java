@@ -495,27 +495,33 @@ public class ArrangementService {
         return node;
     }
 
-    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+    /**
+     * Create node object
+     * 
+     * Object is not saved.
+     *
+     * @param fund
+     * @param uuid
+     * @param createChange
+     * @return
+     */
+    public ArrNode createNodeObject(final ArrFund fund,
+                                    @Nullable final String uuid,
+                                    final ArrChange createChange) {
+        Validate.notNull(fund);
+        Validate.notNull(createChange);
+
         ArrNode node = new ArrNode();
         node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(uuid == null ? generateUuid() : uuid);
         node.setFund(fund);
-        nodeRepository.save(node);
         return node;
     }
 
-    /**
-     * Dodatečné nastavení primární vazby u změny.
-     *
-     * @param change        změna u které primární uzel nastavujeme
-     * @param primaryNodeId identifikátor uzlu
-     * @return upravená změna
-     */
-    public ArrChange setPrimaryNodeId(final ArrChange change,
-                                      final Integer primaryNodeId) {
-        ArrNode primaryNode = new ArrNode();
-        primaryNode.setNodeId(primaryNodeId);
-        return setPrimaryNode(change, primaryNode);
+    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+        ArrNode node = createNodeObject(fund, uuid, createChange);
+
+        return nodeRepository.save(node);
     }
 
     /**

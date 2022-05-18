@@ -24,11 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -77,7 +75,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputRequestStatus;
-import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
 @Service
 public class OutputServiceInternal {
@@ -419,7 +416,7 @@ public class OutputServiceInternal {
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = this.staticDataService.getData();
-        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
+        FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
