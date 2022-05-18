@@ -948,6 +948,9 @@ public class ArrangementService {
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
         Validate.notNull(dbNode, "Musí být vyplněno");
         Validate.notNull(lockNode, "Musí být vyplněno");
+        if (change == null) {
+            Validate.notNull(change, "Musí být vyplněno");
+        }
 
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());

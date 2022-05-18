@@ -670,12 +670,11 @@ public class FundLevelService {
                                   @Nullable ArrChange change) {
         Validate.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
 
-        final ArrLevel baseLevel = arrangementService.lockNode(staticNodeParent, version, change);
-        Validate.notNull(baseLevel, "Referenční level musí být vyplněn");
-
         if (change == null) {
             change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
         }
+        final ArrLevel baseLevel = arrangementService.lockNode(staticNodeParent, version, change);
+        Validate.notNull(baseLevel, "Referenční level musí být vyplněn");
 
         List<ArrLevel> levels = addLevelUnder(version, baseLevel, 1,
                                               uuid != null ? Collections.singletonList(uuid) : null,
