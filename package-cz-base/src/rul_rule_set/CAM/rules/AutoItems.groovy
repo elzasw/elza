@@ -27,7 +27,7 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         "GT_LAND",       // země
         "GT_AREA",       // oblast
         "GT_VOJVODSTVI", // vojvodství
-        "GT_COUNTRY",    // župa
+        "GT_COUNTY",     // župa
         "GT_ADMREGION"   // kraj
         )
 
