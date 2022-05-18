@@ -22,6 +22,25 @@ return generate(AE, AP_CACHE_PROVIDER)
 // Získání seznamu názvů míst do celé hloubky vnoření: Kladno, Kladno, Česko
 static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
+    // seznam vyloučených typů území
+    List<String> excludeTerritory = Arrays.asList(
+        "GT_LAND",       // země
+        "GT_AREA",       // oblast
+        "GT_VOJVODSTVI", // vojvodství
+        "GT_COUNTRY",    // župa
+        "GT_ADMREGION"   // kraj
+        )
+
+    // seznam omezených zemí
+	List<String> excludeLands = Arrays.asList(
+        "slovensko",
+		"polsko",
+		"rakousko",
+		"německo",
+		"maďarsko",
+		"ukrajina"
+        )
+
     // získání seznamu geografických objektů a názvu země
     String country
     String value
@@ -52,6 +71,10 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         if (isCesko(country) && Objects.equals(geoType, "GT_ADMREGION")) {
             continue
         }
+        // nezobrazené typy území pro seznam zemí
+        if (excludeLands.contains(country.toLowerCase()) && excludeTerritory.contains(geoType)) {
+            continue
+        }
         if (Objects.equals(geoType, "GT_CONTINENT") || Objects.equals(geoType, "GT_PLANET")) {
             break;
         }
@@ -68,7 +91,7 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
 static boolean isCesko(String country) {
     if (country != null) {
-        return Objects.equals(country.toUpperCase(), "ČESKO")
+        return Objects.equals(country.toLowerCase(), "česko")
     }
     return false
 }
