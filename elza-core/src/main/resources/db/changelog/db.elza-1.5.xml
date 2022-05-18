@@ -1939,4 +1939,29 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 				WHERE dr.data_id = d.data_id</sql>
 	</changeSet>
 
+	<changeSet id="20220518122100" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity_error WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity_missing WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<addUniqueConstraint
+			tableName="arr_node_conformity"
+			columnNames="node_id,fund_version_id" />
+		<dropIndex
+            tableName="arr_node_conformity"
+            indexName="arr_node_conformity_node_fund_ver_idx" />
+		<createIndex indexName="arr_node_conformity_node_fund_ver_idx" tableName="arr_node_conformity" unique="true">
+			<column name="node_id" type="int"/>
+			<column name="fund_version_id" type="int"/>
+		</createIndex>
+	</changeSet>
+
 </databaseChangeLog>
