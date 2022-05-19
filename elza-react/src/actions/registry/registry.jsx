@@ -103,6 +103,9 @@ export const getArchiveEntityUrl = (id) => {
 export function goToAe(history, id, force = false, redirect = true) {
     return dispatch => {
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
+        // Zabraneni zmeny adresy v adresnim radku, pokud
+        // je RegistryPage v rezimu modalu ( vyber entity
+        // pomoci tlacitka v RegistryField )
         if (redirect) {
             history.push(getArchiveEntityUrl(id));
         }
