@@ -322,16 +322,15 @@ class Ribbon extends AbstractReactComponent {
         const partsWithSplit = [];
         parts.forEach((part, index) => {
             partsWithSplit.push(part);
-            if (index + 1 < parts.length) {
-                partsWithSplit.push(<RibbonSplit key={'ribbon-spliter-' + (index + 1)} />);
-            }
         });
 
         return (
-            <RibbonMenu>
-                {partsWithSplit}
+            <div className="ribbon-menu-container">
+                <RibbonMenu>
+                    {partsWithSplit}
+                </RibbonMenu>
                 {displayUserInfo && (
-                    <RibbonGroup className="small" right>
+                    <div className="user-menu-container">
                         <Dropdown className="user-menu" id={'user-menu'} alignRight>
                             <Dropdown.Toggle key="user-menu" id="user-menu">
                                 {userDetail.username} <Icon glyph="fa-user" />
@@ -361,9 +360,9 @@ class Ribbon extends AbstractReactComponent {
                                 </span>
                             </div>
                         )}
-                    </RibbonGroup>
+                        </div>
                 )}
-            </RibbonMenu>
+                </div>
         );
     }
 }
