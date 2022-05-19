@@ -270,6 +270,11 @@ public class ApController {
                 throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
                         .setId(itemTypeId);
             }
+            if (itemType.hasSpecifications()) {
+                throw new BusinessException("Item type requires specification", BaseCode.PROPERTY_NOT_EXIST)
+                        .set("itemTypeId", itemTypeId)
+                        .set("itemTypeCode", itemType.getCode());
+            }
             List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity());
             if (extraApTypeLimit.size() == 0) {
                 logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
