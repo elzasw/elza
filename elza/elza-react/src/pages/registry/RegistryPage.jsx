@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon, RibbonGroup, Utils} from '../../components/shared';
+import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils} from '../../components/shared';
 import {DetailActions} from '../../shared/detail';
 import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
@@ -597,6 +597,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
+        const revisionActions = [];
 
         if (id && data) {
             itemActions.push(
@@ -649,7 +650,7 @@ class RegistryPage extends AbstractReactComponent {
             }
 
             if (data.revStateApproval) {
-                itemActions.push(
+                revisionActions.push(
                     <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
                         <Icon glyph="fa-undo" />
                         <div>
@@ -657,7 +658,7 @@ class RegistryPage extends AbstractReactComponent {
                         </div>
                     </Button>,
                 );
-                itemActions.push(
+                revisionActions.push(
                     <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
                         <Icon glyph="fa-pencil" />
                         <div>
@@ -665,7 +666,7 @@ class RegistryPage extends AbstractReactComponent {
                         </div>
                     </Button>,
                 );
-                itemActions.push(
+                revisionActions.push(
                     <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
                         <Icon glyph="fa-check" />
                         <div>
@@ -674,7 +675,7 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>,
                 );
             } else {
-                itemActions.push(
+                revisionActions.push(
                     <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
                         <Icon glyph="fa-plus" />
                         <div>
@@ -685,24 +686,24 @@ class RegistryPage extends AbstractReactComponent {
             }
         }
 
-        let altSection;
-        if (altActions.length > 0) {
-            altSection = (
-                <RibbonGroup key="ribbon-alt-actions" className="small">
-                    {altActions}
-                </RibbonGroup>
-            );
-        }
-        let itemSection;
-        if (itemActions.length > 0) {
-            itemSection = (
-                <RibbonGroup key="ribbon-item-actions" className="small">
-                    {itemActions}
-                </RibbonGroup>
-            );
-        }
+        const altSection = altActions.length > 0 ? (
+            <>
+                {altActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {altActions}
+                    </RibbonGroup>}
+                {itemActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {itemActions}
+                    </RibbonGroup>}
+                {revisionActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {revisionActions}
+                    </RibbonGroup>}
+                </>
+        ) : undefined;
 
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} />;
     };
 
     getEditMode = () => {
