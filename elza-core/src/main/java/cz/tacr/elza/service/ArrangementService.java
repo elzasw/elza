@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -102,6 +103,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -249,8 +251,33 @@ public class ArrangementService {
      *             objekt nenalezen
      */
     public ArrNode getNode(@NotNull Integer nodeId) {
-        return nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeId));
+        return nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+    }
+
+    /**
+     * Načtení uzlu na základě id s kontrolou verzí.
+     * 
+     * @param nodeId
+     * @param version
+     * @return konkrétní uzel
+     * @throws ObjectNotFoundException || LockVersionChangeException
+     */
+    public ArrNode getNodeVersion(@NotNull Integer nodeId, @NotNull Integer version) {
+        ArrNode node = getNode(nodeId);
+        if(!Objects.equals(node.getVersion(), version)) {
+            throw new LockVersionChangeException("Invalid node version");
+        }
+        return node;
+    }
+
+    /**
+     * Načtení uzlů na základě seznamu id.
+     * 
+     * @param nodeIds
+     * @return seznam
+     */
+    public List<ArrNode> getNodes(List<Integer> nodeIds) {
+        return nodeRepository.findAllByNodeIdIn(nodeIds);
     }
 
     /**

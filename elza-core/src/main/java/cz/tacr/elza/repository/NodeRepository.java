@@ -53,6 +53,9 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
+    @Query("SELECT n FROM arr_node n JOIN arr_level l ON l.node = n WHERE n.nodeId IN :nodeIds AND l.deleteChange IS NULL ORDER BY l.position")
+    List<ArrNode> findAllByNodeIdIn(@Param(value= "nodeIds") Collection<Integer> nodeIds);
+
     @Modifying
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 

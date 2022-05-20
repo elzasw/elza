@@ -1453,14 +1453,19 @@ public class ArrangementController {
     public void moveLevelBefore(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
-
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
-        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
-        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
-        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNodeParent.getNodeId(), staticNodeParent.getVersion());
@@ -1469,8 +1474,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent, transportNodes, transportNodeParent);
     }
 
     /**
@@ -1483,14 +1487,19 @@ public class ArrangementController {
     public void moveLevelAfter(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
-
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
-        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
-        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
-        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNodeParent.getNodeId(), staticNodeParent.getVersion());
@@ -1499,8 +1508,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent, transportNodes, transportNodeParent);
     }
 
 
@@ -1521,11 +1529,14 @@ public class ArrangementController {
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = arrangementService.getNode(moveParam.getStaticNode().getId());
-        List<ArrNode> transportNodes = moveParam.getTransportNodes().stream()
-                .map(n -> arrangementService.getNode(n.getId()))
-                .collect(Collectors.toList());
-        ArrNode transportNodeParent = arrangementService.getNode(moveParam.getTransportNodeParent().getId());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNode.getNodeId(), staticNode.getVersion());
@@ -1533,8 +1544,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsUnder(fundVersion, staticNode,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsUnder(fundVersion, staticNode, transportNodes, transportNodeParent);
     }
 
     /**
