@@ -274,10 +274,19 @@ public class ArrangementService {
      * Načtení uzlů na základě seznamu id.
      * 
      * @param nodeIds
-     * @return seznam
+     * @return seřazený seznam
      */
-    public List<ArrNode> getNodes(List<Integer> nodeIds) {
-        return nodeRepository.findAllByNodeIdIn(nodeIds);
+    public List<ArrNode> getNodesOrderByTransportNodes(List<Integer> nodeIds) {
+        List<ArrNode> dbNodes = nodeRepository.findAllByNodeIdIn(nodeIds);
+        Validate.isTrue(nodeIds.size() == dbNodes.size(), "Ne všechny ArrNode byly nalezeny");
+        Map<Integer, ArrNode> nodesMap = nodeRepository.findAllByNodeIdIn(nodeIds).stream()
+                .collect(Collectors.toMap(n -> n.getNodeId(), n -> n));
+        // řazení podle původního seznamu id
+        List<ArrNode> nodes = new ArrayList<>(nodeIds.size());
+        for (Integer i : nodeIds) {
+            nodes.add(nodesMap.get(i));
+        }
+        return nodes;
     }
 
     /**

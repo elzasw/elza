@@ -1462,7 +1462,7 @@ public class ArrangementController {
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
         ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
-        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+        List<ArrNode> transportNodes = arrangementService.getNodesOrderByTransportNodes(moveParam.getTransportNodes().stream()
                                                                    .map(n -> n.getId())
                                                                    .collect(Collectors.toList()));
         ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
@@ -1496,7 +1496,7 @@ public class ArrangementController {
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
         ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
-        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+        List<ArrNode> transportNodes = arrangementService.getNodesOrderByTransportNodes(moveParam.getTransportNodes().stream()
                                                                    .map(n -> n.getId())
                                                                    .collect(Collectors.toList()));
         ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
@@ -1533,7 +1533,7 @@ public class ArrangementController {
         ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
-        List<ArrNode> transportNodes = arrangementService.getNodes(moveParam.getTransportNodes().stream()
+        List<ArrNode> transportNodes = arrangementService.getNodesOrderByTransportNodes(moveParam.getTransportNodes().stream()
                                                                    .map(n -> n.getId())
                                                                    .collect(Collectors.toList()));
         ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
