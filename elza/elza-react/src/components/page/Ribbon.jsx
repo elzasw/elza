@@ -25,6 +25,7 @@ const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUse
 
 class Ribbon extends AbstractReactComponent {
     static propTypes = {
+        showUser: PropTypes.bool,
         subMenu: PropTypes.bool,
         primarySection: PropTypes.object,
         admin: PropTypes.bool,
@@ -36,6 +37,7 @@ class Ribbon extends AbstractReactComponent {
 
     static defaultProps = {
         subMenu: false,
+        showUser: true,
     };
 
     ribbonDefaultFocusRef = null;
@@ -101,6 +103,7 @@ class Ribbon extends AbstractReactComponent {
             primarySection,
             fundId,
             status: {saveCounter},
+            showUser,
         } = this.props;
 
         let section = null;
@@ -323,13 +326,14 @@ class Ribbon extends AbstractReactComponent {
         parts.forEach((part, index) => {
             partsWithSplit.push(part);
         });
+        const _showUser = displayUserInfo && showUser;
 
         return (
             <div className="ribbon-menu-container">
                 <RibbonMenu>
                     {partsWithSplit}
                 </RibbonMenu>
-                {displayUserInfo && (
+                {_showUser && (
                     <div className="user-menu-container">
                         <Dropdown className="user-menu" id={'user-menu'} alignRight>
                             <Dropdown.Toggle key="user-menu" id="user-menu">
