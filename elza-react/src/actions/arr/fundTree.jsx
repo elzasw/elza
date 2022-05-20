@@ -30,6 +30,15 @@ export function isFundTreeAction(action) {
     }
 }
 
+// Znevalidneni vsech stromu v poradani
+export function fundTreeInvalidate(versionId) {
+    return {
+        area: types.FUND_TREE_AREA_ALL,
+        type: types.FUND_FUND_TREE_INVALIDATE,
+        versionId,
+    };
+}
+
 // jen vyber polozky, vyuzite jen v presunech JP
 export function fundTreeSelectNode(
     area,
