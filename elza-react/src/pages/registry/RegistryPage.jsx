@@ -44,6 +44,7 @@ import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm
 import {StateApproval} from '../../api/StateApproval';
 import {withRouter} from "react-router";
 import {RevStateApproval} from '../../api/RevStateApproval';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Stránka rejstříků.
@@ -204,14 +205,11 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handleDeleteRegistry = () => {
-        if (window.confirm(i18n('registry.deleteRegistryQuestion'))) {
-            const {
-                registryDetail: {
-                    data: {id},
-                },
-            } = this.props;
-            this.props.dispatch(registryDelete(id));
+    handleDeleteRegistry = async () => {
+        const { dispatch, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRegistryQuestion')));
+        if(result){
+            dispatch(registryDelete(id));
         }
     };
 
@@ -301,7 +299,7 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handlePushApToExt = () => {
+    handlePushApToExt = async () => {
         const {
             extSystems,
             registryDetail: {data},
@@ -315,29 +313,35 @@ class RegistryPage extends AbstractReactComponent {
             initialValues.extSystem = extSystems[0].code;
         }
 
-        const filteredExtSystems = extSystems.filter(extSystem => {
-            const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
-            return found === null;
-        });
+        const result = data.revStateApproval != null 
+            ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation'))) 
+            : true;
 
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('ap.push-to-ext.title'),
-                <ApPushToExt
-                    onSubmit={data => {
-                        return WebApi.saveAccessPoint(id, data.extSystem);
-                    }}
-                    onSubmitSuccess={() => {
-                        dispatch(modalDialogHide());
-                        dispatch(goToAe(history, id, true, !select));
-                    }}
-                    initialValues={initialValues}
-                    extSystems={filteredExtSystems}
-                />,
-                MODAL_DIALOG_SIZE.SM,
-            ),
-        );
+        if(result){
+            const filteredExtSystems = extSystems.filter(extSystem => {
+                const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
+                return found === null;
+            });
+
+            dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('ap.push-to-ext.title'),
+                    <ApPushToExt
+                        onSubmit={data => {
+                            return WebApi.saveAccessPoint(id, data.extSystem);
+                        }}
+                        onSubmitSuccess={() => {
+                            dispatch(modalDialogHide());
+                            dispatch(goToAe(history, id, true, !select));
+                        }}
+                        initialValues={initialValues}
+                        extSystems={filteredExtSystems}
+                        />,
+                    MODAL_DIALOG_SIZE.SM,
+                ),
+            );
+        }
     };
 
     handleScopeManagement = () => {
@@ -364,10 +368,18 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
     };
 
-    handleDeleteAccessPoint = data => {
-        this.props.dispatch(
-            modalDialogShow(this, i18n('accesspoint.removeDuplicity.title'), <AccessPointDeleteForm detail={data} />),
-        );
+    handleDeleteAccessPoint = async (accessPointDetail) => {
+        const { dispatch } = this.props;
+        const result = accessPointDetail.data.revStateApproval != null 
+            ? await dispatch(showConfirmDialog(i18n('accesspoint.removeDuplicity.confirmation'))) 
+            : true;
+        if(result){
+            dispatch(modalDialogShow(
+                this,
+                i18n('accesspoint.removeDuplicity.title'),
+                <AccessPointDeleteForm detail={accessPointDetail} />
+            ));
+        }
     };
 
     handleChangeApState = () => {
@@ -404,29 +416,19 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
     };
 
-    handleCreateRevision = () => {
-        if (window.confirm(i18n('registry.createRevisionQuestion'))) {
-            const {
-                history,
-                registryDetail: {
-                    data: {id},
-                },
-                select = false
-            } = this.props;
-            this.props.dispatch(registryCreateRevision(id, history, select));
+    handleCreateRevision = async () => {
+        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.createRevisionQuestion')));
+        if(result){
+            dispatch(registryCreateRevision(id, history, select));
         }
     };
 
-    handleDeleteRevision = () => {
-        if (window.confirm(i18n('registry.deleteRevisionQuestion'))) {
-            const {
-                history,
-                registryDetail: {
-                    data: {id},
-                },
-                select = false,
-            } = this.props;
-            this.props.dispatch(registryDeleteRevision(id, history, select));
+    handleDeleteRevision = async () => {
+        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRevisionQuestion')));
+        if(result){
+            dispatch(registryDeleteRevision(id, history, select));
         }
     };
 
