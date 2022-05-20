@@ -144,6 +144,11 @@ export default function fundTree(state = initialState, action = {}) {
 
             return state;
         }
+        case types.FUND_FUND_TREE_INVALIDATE:
+            return {
+                ...state, 
+                dirty: true
+            };
 
         case types.FUND_NODE_CHANGE:
             index = indexById(state.nodes, action.parentNode.id);

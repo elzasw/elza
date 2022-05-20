@@ -53,6 +53,7 @@ import URLParse from 'url-parse';
 
 import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from 'actions/arr/fundTree';
+import {fundTreeInvalidate} from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
 import {fundNodeSubNodeFulltextSearch} from 'actions/arr/node';
 import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from './constants.tsx';
@@ -457,7 +458,7 @@ function processPersistentSort(value) {
         const fund = getFund();
 
         if (fund) {
-            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
+            store.dispatch(fundTreeInvalidate(fund.versionId))
             //Přenačtení nodeForm
             store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
