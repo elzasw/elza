@@ -502,6 +502,7 @@ class RegistryPage extends AbstractReactComponent {
         } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
+        const hasRevision = data?.revStateApproval != null;
 
         const altActions = [...parts.altActions];
 
@@ -618,7 +619,7 @@ class RegistryPage extends AbstractReactComponent {
                     perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
                 )) {
                     itemActions.push(
-                        <Button key="change-state" onClick={this.handleChangeApState}>
+                        <Button key="change-state" onClick={this.handleChangeApState} disabled={hasRevision}>
                             <Icon glyph="fa-pencil" />
                             <div>
                                 <span className="btnText">{i18n('ap.changeState')}</span>
@@ -653,7 +654,7 @@ class RegistryPage extends AbstractReactComponent {
                     );
                 }
 
-                if (data.revStateApproval) {
+                if (hasRevision) {
                     revisionActions.push(
                         <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
                             <Icon glyph="fa-undo" />
