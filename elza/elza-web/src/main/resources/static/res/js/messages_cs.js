@@ -1115,6 +1115,7 @@ var messages = {
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
     "ap.binding.syncState.LOCAL_CHANGE": "Existuje lokální změna",
 
+    "ap.binding.extState.APPROVED": "schválená",
     "ap.binding.extState.ERS_APPROVED": "schválená",
     "ap.binding.extState.ERS_INVALID": "neplatná",
     "ap.binding.extState.ERS_NEW": "nová",
@@ -1144,6 +1145,7 @@ var messages = {
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
+    "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
 
@@ -1709,6 +1711,7 @@ var messages = {
 
     "accesspoint.create.titleMessage": "Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.",
 
+    "accesspoint.removeDuplicity.confirmation": "Opravdu chcete odstranit archivní entitu s rozpracovanou revizí?",
     "accesspoint.removeDuplicity": "Odstranit duplicitu",
     "accesspoint.removeDuplicity.title": "Odstranění duplicity",
     "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",
