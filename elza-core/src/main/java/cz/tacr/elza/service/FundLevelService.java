@@ -141,11 +141,6 @@ public class FundLevelService {
             ArrLevel transportLevel = transportNode.equals(staticParentNode)
                                       ? staticLevelParent : arrangementService.lockNode(transportNode, version, change);
 
-            if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
-            }
-
-
             if (transportLevel.equals(staticLevel)) {
                 throw new SystemException("Nelze vložit záznam na stejné místo ve stromu");
             }
@@ -270,11 +265,6 @@ public class FundLevelService {
             ArrLevel transportLevel = transportNode.equals(staticParentNode)
                                       ? staticLevelParent : arrangementService.lockNode(transportNode, version, change);
 
-            if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
-            }
-
-
             if (transportLevel.equals(staticLevel)) {
                 throw new SystemException("Nelze vložit záznam na stejné místo ve stromu");
             }
@@ -390,11 +380,6 @@ public class FundLevelService {
             }
 
             ArrLevel transportLevel = arrangementService.lockNode(transportNode, version, change);
-
-            if (!transportLevel.getNodeParent().equals(transportParentNode)) {
-                throw new SystemException("Všechny přesouvané uzly musejí mít stejného rodiče.");
-            }
-
             transportLevels.add(transportLevel);
 
         }
