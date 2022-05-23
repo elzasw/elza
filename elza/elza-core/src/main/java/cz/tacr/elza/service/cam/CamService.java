@@ -704,6 +704,9 @@ public class CamService {
      *            entita z externího systému
      * @param syncQueue
      *            zda-li se jedná o volání z fronty
+     *            při volání z fronty:
+     *            - lokálně smazaná entita není obnovena (změna stavu)
+     * 
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state,
                                        ApBindingState bindingState,
@@ -786,12 +789,13 @@ public class CamService {
 
             // Nelze změnit stav archivní entity, která má revizi
             ApRevision revision = revisionService.findRevisionByState(state);
-            boolean localChanges = checkLocalChanges(state, bindingState);
+            boolean modifiedPartOrItem = hasModifiedPartOrItem(state, bindingState);
 
-            if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced
+            // do not sync deleted aps, mark as not synced
+            if (state.getDeleteChangeId() != null ||
             // check if synced or not
                     (syncQueue &&
-                            (localChanges || revision != null ||
+                            (modifiedPartOrItem || revision != null ||
                                     SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                     bindingState.setSyncOk(SyncState.NOT_SYNCED);
@@ -800,7 +804,7 @@ public class CamService {
                 }
                 return;
             }
-            if (!localChanges) {
+            if (!modifiedPartOrItem) {
                 // check if any update is needed
                 if (SyncState.SYNC_OK.equals(bindingState.getSyncOk()) &&
                         origBindingState != null &&
@@ -850,8 +854,14 @@ public class CamService {
         procCtx.setApChange(null);
     }
 
-    // PPy: Toto vyzaduje revizi
-    private boolean checkLocalChanges(final ApState state,
+    /**
+     * Kontrola, zda existuje lokální změna v části nebo prvku popisu
+     * 
+     * @param state
+     * @param bindingState
+     * @return
+     */
+    private boolean hasModifiedPartOrItem(final ApState state,
                                       final ApBindingState bindingState) {
         List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
