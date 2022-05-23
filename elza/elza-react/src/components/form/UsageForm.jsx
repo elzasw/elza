@@ -262,7 +262,6 @@ class RegistryUsageForm extends React.Component {
                         <FundTreeUsage
                             handleOpenCloseNode={this.handleOpenCloseNode}
                             className="fund-tree-container-fixed"
-                            cutLongLabels={true}
                             ref={ref => (this.treeRef = ref)}
                             showCountStats={true}
                             onLinkClick={this.handleLinkClick}

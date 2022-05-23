@@ -796,7 +796,6 @@ class AddNodeForm extends AbstractReactComponent {
                         disabled={submitting}
                         className="fund-tree-container-fixed"
                         fund={fund}
-                        cutLongLabels={true}
                         versionId={fund.versions[0].id || 0}
                         {...fundTreeCopy}
                     />

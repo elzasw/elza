@@ -8,6 +8,7 @@ import {
     StoreHorizontalLoader,
     Utils,
     VirtualList,
+    TooltipTrigger,
 } from 'components/shared';
 import {Button} from '../ui';
 import classNames from 'classnames';
@@ -257,22 +258,35 @@ class FundTreeLazy extends AbstractReactComponent {
         const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
         return (
-            <div key={node.id} className={cls} {...clickProps}>
+            <TooltipTrigger 
+                key={node.id}
+                content={
+                    <div style={{
+                    maxWidth: "400px", 
+                    textAlign: "justify",
+                    padding: "5px",
+                }}>
+                        {title}
+                    </div>
+                } 
+                className={cls} 
+                placement={"horizontal"} 
+                {...clickProps} 
+            >
                 {levels}
                 {expCol}
                 <Icon className={iconClass} {...iconProps} />
                 <div
-                    title={title}
                     className="node-label"
                     onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}
                 >
                     {name}
                     {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
-                    {this.props.onLinkClick && node.link && (
-                        <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)} />
-                    )}
                 </div>
-            </div>
+                {this.props.onLinkClick && node.link && (
+                    <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)} />
+                )}
+            </TooltipTrigger>
         );
     };
 

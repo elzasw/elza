@@ -105,7 +105,6 @@ class FundTreeDaos extends AbstractReactComponent {
             <FundTreeLazy
                 {...this.props}
                 className="fund-tree-daos"
-                cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {
                     expand
                         ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node))
