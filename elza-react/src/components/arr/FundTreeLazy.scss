@@ -32,10 +32,6 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         padding-top: 5px;
         border-top:none;
 
-        .virtual-list{ // položka ve stromě na celou šířku
-            display:table;
-        }
-
         div {
             width: 100%;
             display: block;
@@ -46,7 +42,7 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         };
 
         .exp-col {
-            flex-grow: 1;
+            /* flex-grow: 1; */
             line-height: 16px;
             min-width: 26px;
             max-width: 26px;
@@ -56,12 +52,15 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         }
 
         .node-label {
-            display: flex;
-            flex-grow: 1;
+            /* flex-grow: 1; */
+            flex-shrink: 1;
             height: 16px;
             line-height: 16px;
             vertical-align: middle;
             cursor: pointer;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            width: auto;
         }
 
         .node-icon {
@@ -69,6 +68,7 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             line-height: 16px;
             vertical-align: middle;
             margin: 0 5px 0 3px;
+            flex-shrink: 0;
         }
 
         .node-icon-color {
@@ -84,23 +84,33 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
 
         .node {
             display: flex;
-            height: $rowHeight;
+            padding: 2px;
             white-space: nowrap;
             font-size: 0.9em;
             width: 100%;
+
+            &:nth-child(even) {
+                background: #f8f8f8;
+            }
             &:hover {
                 background: $tree-node-label-active-bg;
                 cursor: pointer;
+            }
+            &.active {
+                background: $tree-node-active-bg;
+                &:hover {
+                    background: $tree-node-active-hover-bg;
+                }
             }
         }
 
         .node-color {
             height: auto;
-            padding:1px;
             .exp-col{
                 width:20px;
                 min-width:auto;
                 max-width:auto;
+                flex-shrink: 0;
             }
         }
 
@@ -114,12 +124,6 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             }
         }
 
-        .active {
-            background: $tree-node-active-bg;
-            &:hover {
-                background: $tree-node-active-hover-bg;
-            }
-        }
 
         .focus {
             .node-label {
@@ -171,7 +175,8 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
     }
 
     .fa-sign-out {
-        margin-left: auto;
-        padding-right: 20px;
+        margin-left: 5px;
+        padding-right: 5px;
+        line-height: 1em;
     }
 }
