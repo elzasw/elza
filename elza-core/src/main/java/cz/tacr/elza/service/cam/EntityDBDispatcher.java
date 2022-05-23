@@ -335,6 +335,7 @@ public class EntityDBDispatcher {
     }
 
     /**
+     * Run existing AP sync
      * 
      * @param procCtx
      * @param state
@@ -353,16 +354,29 @@ public class EntityDBDispatcher {
         Validate.notNull(prevBindingState);
 
         this.procCtx = procCtx;
+        
+        // Flag if entity is deleted
+        // Deleted entity has to be retained as deleted if 
+        // synQueue is true.
+        boolean deletedEntity = (state.getDeleteChangeId()!=null);
+        ApState stateNew = null;
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
 
+        // check s AP class/subclass was cha
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             //změna třídy entity
-            state.setDeleteChange(procCtx.getApChange());
-            stateRepository.save(state);
-            ApState stateNew = accessPointService.copyState(state, procCtx.getApChange());
+            if(!deletedEntity) {
+                state.setDeleteChange(procCtx.getApChange());
+                state = stateRepository.save(state);
+            }
+            stateNew = accessPointService.copyState(state, procCtx.getApChange());
+            if(deletedEntity&&syncQueue) {
+                // retain deleted state
+                stateNew.setDeleteChange(state.getDeleteChange());
+            }
             stateNew.setApType(apType);
             state = stateRepository.save(stateNew);
         }
@@ -405,12 +419,25 @@ public class EntityDBDispatcher {
             break;
 
         default:
-            // synchronizace stavu entity
             StateApproval newStateApproval = camService.convertStateXmlToStateApproval(entity.getEns());
-            if (!newStateApproval.equals(state.getStateApproval())) {
-                state.setStateApproval(newStateApproval);
-                state = stateRepository.save(state);
+            // synchronizace stavu entit
+            // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
+            // musi entita zustat smazana
+            if (syncQueue && state.getDeleteChangeId() != null) {
+                break;
+            } else {
+                // kontrola shody stavu
+                if (!newStateApproval.equals(state.getStateApproval())) {
+                    if (stateNew == null) {
+                        state.setDeleteChange(procCtx.getApChange());
+                        state = stateRepository.save(state);
+                        stateNew = accessPointService.copyState(state, procCtx.getApChange());
+                    }
+                    stateNew.setStateApproval(newStateApproval);
+                    state = stateRepository.save(stateNew);
+                }
             }
+
             break;
         }
 
