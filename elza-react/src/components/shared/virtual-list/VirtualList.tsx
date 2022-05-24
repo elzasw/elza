@@ -118,8 +118,10 @@ class VirtualList extends React.Component<Props, State> {
 
         const listViewBox = VirtualList.getBox(viewBox, listBox);
 
-        const firstItemIndex = Math.max(0, Math.floor(listViewBox.top / itemHeight));
-        const lastItemIndex = Math.ceil(listViewBox.bottom / itemHeight) - 1;
+        // Selecting only even indexes because of interlacing 
+        // row colors (style with :nth-child(even) or :nth-child(odd))
+        const firstItemIndex = Math.max(0, Math.floor((listViewBox.top / itemHeight)/2)*2); 
+        const lastItemIndex = Math.ceil((listViewBox.bottom / itemHeight)/2)*2;
 
         const itemsInView = lastItemIndex - firstItemIndex + 1;
 
