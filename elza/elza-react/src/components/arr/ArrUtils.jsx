@@ -339,19 +339,19 @@ export function getParentNode(node, fundTreeNodes) {
  * Vytvoření referenčního označení.
  *
  * @param node {Object} jednotka popisu
- * @param elProps {Object} další properties pro přidání do renderovaných elementů
+ * @param levelProps {Object} další properties pro přidání do renderovaných elementů
  */
-export function createReferenceMark(node, elProps) {
-    return createReferenceMarkFromArray(node.referenceMark, elProps);
+export function createReferenceMark(node, levelProps, separatorProps) {
+    return createReferenceMarkFromArray(node.referenceMark, levelProps, separatorProps);
 }
 
 /**
  * Vytvoření referenčního označení.
  *
  * @param referenceMark {Array} reference mark array
- * @param elProps {Object} další properties pro přidání do renderovaných elementů
+ * @param levelProps {Object} další properties pro přidání do renderovaných elementů
  */
-export function createReferenceMarkFromArray(referenceMark, elProps) {
+export function createReferenceMarkFromArray(referenceMark, levelProps, separatorProps) {
     var levels = [];
 
     if (referenceMark) {
@@ -363,14 +363,14 @@ export function createReferenceMarkFromArray(referenceMark, elProps) {
                         cls = 'level small';
                     }
                     levels.push(
-                        <span {...elProps} key={'level' + index} className={cls}>
+                        <span {...levelProps} key={'level' + index} className={cls}>
                             {i}
                         </span>,
                     );
                 } else {
                     var iStr = i + '';
                     levels.push(
-                        <span {...elProps} key={'level' + index} title={i} className="level">
+                        <span {...levelProps} key={'level' + index} title={i} className="level">
                             _{iStr.substr(-2)}
                         </span>,
                     );
@@ -378,7 +378,7 @@ export function createReferenceMarkFromArray(referenceMark, elProps) {
             } else {
                 if (index + 1 < referenceMark.length) {
                     levels.push(
-                        <span {...elProps} key={'sep' + index} className="separator">
+                        <span {...separatorProps} key={'sep' + index} className="separator">
                             {i}
                         </span>,
                     );
