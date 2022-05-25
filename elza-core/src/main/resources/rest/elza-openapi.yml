@@ -9,6 +9,8 @@ tags:
     description: Přístupové body a archivní entity
   - name: search
     description: Vyhledávání
+  - name: admin
+    description: Administrativní funkce
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -404,6 +406,15 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden
+  /admin/arrangement/missing-cached-nodes:
+    get:
+      summary: Vytvoření chybějících záznamů v arr_cached_node
+      operationId: syncNodeCache
+      tags:
+        - admin
+      responses:
+        200:
+          description: Potvrzení o úspěšném stvoření
 components:
   schemas:
     CreateFund:
