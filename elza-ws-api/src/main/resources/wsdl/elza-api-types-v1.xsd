@@ -708,6 +708,9 @@ Source: EAD3</xs:documentation>
 This is fund identifier inside one institution/archive</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="scopes" type="eat:IdentifierList" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="adminUsers" type="eat:IdentifierList" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="adminGroups" type="eat:IdentifierList" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FundIdentifiers">
