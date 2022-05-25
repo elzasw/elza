@@ -507,6 +507,7 @@ var messages = {
     "arr.fundAction.emptyList.title": "Žádné funkce",
     "arr.fundAction.emptyList.message":
         "Zatím nebyly spuštěny žádné funkce. Pro vytvoření funkce je potřeba povolit úpravy.",
+    "arr.fundAction.error": "Chyba hromadné akce",
     "arr.fundAction.noFa": "Není vybrán žádný archivní soubor",
     "arr.fundAction.form.newAction": "Nová akce",
     "arr.fundAction.form.type": "Typ akce",
@@ -519,6 +520,7 @@ var messages = {
     "arr.fundAction.state.interrupted": "Přerušeno",
     "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
+    
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",

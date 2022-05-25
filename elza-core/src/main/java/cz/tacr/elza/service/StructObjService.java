@@ -229,6 +229,18 @@ public class StructObjService {
     }
 
     /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param structObj
+     *            hodnota struktovaného datového typu
+     *
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj, ArrChange change) {
+        structObjInternalService.deleteStructObj(structObj, change);
+    }
+
+    /**
      * Nastavení přiřaditelnosti.
      *
      * @param fund              archivní soubor
@@ -1347,6 +1359,18 @@ public class StructObjService {
                     nodeIds.toArray(new Integer[0])));
         }
 
+    }
+
+    public List<ArrStructuredObject> getUnusedStructObj(Collection<ArrStructuredObject> structObjsToDelete) {
+        List<ArrStructuredObject> unusedObjs = new ArrayList<>();
+        // identifikaci strukt. objektů, které se již nepoužívají
+        for (ArrStructuredObject obj : structObjsToDelete) {
+            Integer count = structureItemRepository.countItemsUsingStructObj(obj);
+            if (count == 0) {
+                unusedObjs.add(obj);
+            }
+        }
+        return unusedObjs;
     }
 
 }

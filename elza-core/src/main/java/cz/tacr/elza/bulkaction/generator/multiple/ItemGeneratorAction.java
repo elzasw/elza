@@ -66,8 +66,7 @@ public class ItemGeneratorAction extends Action {
         };
     }
 
-    private class DeleteAction
-            implements InnerAction {
+    private class DeleteAction implements InnerAction {
 
         final private DeleteItem deleteConfig;
 
@@ -122,9 +121,12 @@ public class ItemGeneratorAction extends Action {
 
         @Override
         public void done() {
-            // vymazani strukt. objektu jejichz prvky popisu byly odstraneny
-            for (ArrStructuredObject so : structObjsToDelete) {
-                structObjService.deleteStructObj(so);
+            // check if still used this Structured object
+            List<ArrStructuredObject> unusedStructObj = structObjService.getUnusedStructObj(structObjsToDelete);
+
+            // vymazani strukt objektu které se již nepoužívají
+            for (ArrStructuredObject so : unusedStructObj) {
+                structObjService.deleteStructObj(so, change);
             }
         }
     }

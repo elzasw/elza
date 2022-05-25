@@ -91,7 +91,7 @@ public class StructObjInternalService {
             // check usage
             Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
             if (count > 0) {
-                throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                throw new BusinessException("Existují návazné jednotky popisu, objekt nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
                         .level(Level.WARNING)
                         .set("count", count)
                         .set("id", structObj.getStructuredObjectId());
@@ -102,15 +102,15 @@ public class StructObjInternalService {
                     : changeOverride;
             structObj.setDeleteChange(change);
 
-            structObjRepository.save(structObj);
+            ArrStructuredObject savedStructObj = structObjRepository.save(structObj);
 
             // check duplicates for deleted item
             // find potentially duplicated items
             List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                    .findValidByStructureTypeAndFund(structObj.getStructuredType(),
-                            structObj.getFund(),
-                            structObj.getSortValue(),
-                            structObj);
+                    .findValidByStructureTypeAndFund(savedStructObj.getStructuredType(),
+                                                     savedStructObj.getFund(),
+                                                     savedStructObj.getSortValue(),
+                                                     savedStructObj);
             for (ArrStructuredObject pd : potentialDuplicates) {
                 if (pd.getState().equals(State.ERROR)) {
                     structObjService.addToValidate(pd);
