@@ -306,10 +306,12 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
                 }
             }
         }
-        // autor změny/tvůrce změny
-        if (rel.getSpecCode().equals("RT_AUTHOROFCHANGE")) {
-            GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel))
-            addGroovyItem(items, itemAuth, getSeperator(rel))
+        // autor/tvůrce pro podtřídu autorská a umělecká díla
+        if (ae.getAeType().equals("ARTWORK_ARTWORK")) {
+            if (rel.getSpecCode().equals("RT_AUTHOR")) {
+                GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel))
+                addGroovyItem(items, itemAuth, getSeperator(rel))
+            }
         }
     }
 
