@@ -276,7 +276,7 @@ public class ArrangementService {
      * @param nodeIds
      * @return seřazený seznam
      */
-    public List<ArrNode> getNodesOrderByTransportNodes(List<Integer> nodeIds) {
+    public List<ArrNode> getNodesWithSameOrder(List<Integer> nodeIds) {
         List<ArrNode> dbNodes = nodeRepository.findAllByNodeIdIn(nodeIds);
         Validate.isTrue(nodeIds.size() == dbNodes.size(), "Ne všechny ArrNode byly nalezeny");
         Map<Integer, ArrNode> nodesMap = nodeRepository.findAllByNodeIdIn(nodeIds).stream()
