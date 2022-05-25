@@ -861,7 +861,7 @@ public class CamService {
      * @param bindingState
      * @return
      */
-    private boolean hasModifiedPartOrItem(final ApState state,
+    public boolean hasModifiedPartOrItem(final ApState state,
                                       final ApBindingState bindingState) {
         List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {

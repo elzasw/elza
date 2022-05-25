@@ -47,8 +47,6 @@ import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
@@ -298,16 +296,11 @@ public class ImportServiceImpl implements ImportService {
                 continue;
             }
 
-            CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(syncEntity.getAccessPoint().getAccessPointId());
-            int lastChangeId = 0;
-            for (CachedPart part : cachedAccessPoint.getParts()) {
-                if (part.getLastChangeId() > lastChangeId) {
-                    lastChangeId = part.getLastChangeId();
-                }
-            }
+            ApState state = syncEntity.getState();
+            boolean hasLocalChange = camService.hasModifiedPartOrItem(state, bindingState);
 
             // check changes to not include in sync
-            if (lastChangeId > bindingState.getCreateChangeId()) {
+            if (hasLocalChange) {
                 ApChange apChange = procCtx.getApChange();
                 if (apChange == null) {
                     apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
