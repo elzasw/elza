@@ -407,7 +407,8 @@ public class AccessPointService {
      * že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      */
     public void deleteAccessPoint(final ApState apState,
-                                  final ApAccessPoint replacedBy, boolean mergeAp) {
+                                  final ApAccessPoint replacedBy,
+                                  final boolean mergeAp) {
 
         checkPermissionForEdit(apState);
 
@@ -1959,6 +1960,32 @@ public class AccessPointService {
             return oldApState;
         }
 
+        // pokud je entita schvalena, musi dojit 
+        // k overeni platnosti validace
+        if (newStateApproval == StateApproval.APPROVED) {
+            ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint);
+            if (CollectionUtils.isNotEmpty(validationErrors.getErrors()) ||
+                    CollectionUtils.isNotEmpty(validationErrors.getPartErrors())) {
+                final StringBuilder sb = new StringBuilder();
+                if (validationErrors.getErrors() != null) {
+                    validationErrors.getErrors().forEach(e -> sb.append(e).append("\n"));
+                }
+                if (validationErrors.getPartErrors() != null) {
+                    validationErrors.getPartErrors().forEach(e -> {
+                        sb.append("Část ID: ").append(e.getId()).append("\n");
+                        if (e.getErrors() != null) {
+                            e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));
+                        }
+                    });
+                }
+                throw new BusinessException("Přístupový bod obsahuje chyby a nelze nastavit stav schválený." +
+                        " " + sb.toString(),
+                        BaseCode.INVALID_STATE)
+                                .set("accessPointId", accessPoint.getAccessPointId())
+                                .set("error", sb.toString());
+            }
+        }
+
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
         apStateRepository.save(oldApState);
@@ -1972,7 +1999,7 @@ public class AccessPointService {
         }
         newApState.setStateApproval(newStateApproval);
         newApState.setComment(newComment);
-        apStateRepository.save(newApState);
+        newApState = apStateRepository.save(newApState);
 
         if (newApType != null) {
             saveWithLock(accessPoint);
@@ -2572,9 +2599,18 @@ public class AccessPointService {
         validate(accessPoint, successfulGeneration);
     }
 
-    private void validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
+    /**
+     * Spusteni validace AP
+     * 
+     * @param accessPoint
+     * @param successfulGeneration
+     * @return Upraveny AP.
+     *         Dochazi k zapisu aktualniho stavu validace.
+     * 
+     */
+    private ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
-        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+        return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
 
@@ -2604,10 +2640,13 @@ public class AccessPointService {
     /**
      * Zapsání validačních chyb přístupového bodu do databáze.
      *
-     * @param apValidationErrorsVO chyby přístupového bodu
-     * @param successfulGeneration úspěšné generování keyValue
+     * @param apValidationErrorsVO
+     *            chyby přístupového bodu
+     * @param successfulGeneration
+     *            úspěšné generování keyValue
+     * @return
      */
-    public void updateValidationErrors(final ApAccessPoint accessPoint,
+    public ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
                                        final ApValidationErrorsVO apValidationErrorsVO,
                                        final boolean successfulGeneration) {
 
@@ -2652,7 +2691,7 @@ public class AccessPointService {
             accessPoint.setState(ApStateEnum.OK);
         }
 
-        apAccessPointRepository.save(accessPoint);
+        return apAccessPointRepository.save(accessPoint);
     }
 
     @Nullable
