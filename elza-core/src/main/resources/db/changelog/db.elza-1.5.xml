@@ -1964,4 +1964,24 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 		</createIndex>
 	</changeSet>
 
+    <!-- Odstraneni nevymazanych casti revizi -->
+	<changeSet id="20220526103500" author="ppyt">
+		<sql dbms="postgresql">update ap_rev_item ri set delete_change_id = src.delete_change_id 
+          from ( 
+            select r.delete_change_id, ri.item_id from ap_revision r
+            join ap_rev_part rp on rp.revision_id = r.revision_id 
+            join ap_rev_item ri on ri.part_id = rp.part_id 
+            where r.delete_change_id is not null 
+                  and ri.delete_change_id is null
+            ) src 
+         where ri.item_id = src.item_id</sql>
+		<sql dbms="postgresql">update ap_rev_part rp set delete_change_id = src.delete_change_id
+           from ( 
+             select r.delete_change_id, rp.part_id from ap_revision r
+             join ap_rev_part rp on rp.revision_id = r.revision_id  
+             where r.delete_change_id is not null 
+                   and rp.delete_change_id is null
+             ) src 
+           where rp.part_id = src.part_id</sql>
+    </changeSet>
 </databaseChangeLog>
