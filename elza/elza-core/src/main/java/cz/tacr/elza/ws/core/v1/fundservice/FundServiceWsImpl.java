@@ -1,6 +1,8 @@
 package cz.tacr.elza.ws.core.v1.fundservice;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.core.v1.CreateFundException;
 import cz.tacr.elza.ws.core.v1.DeleteFundException;
@@ -42,6 +46,9 @@ public class FundServiceWsImpl {
 
     @Autowired
     StaticDataService staticDataService;
+
+    @Autowired
+    ScopeRepository scopeRepository;
 
     @Autowired
     WSHelper wsHelper;
@@ -78,6 +85,26 @@ public class FundServiceWsImpl {
         if (StringUtils.isNotBlank(fundInfo.getFundNumber())) {
             fundNumber = Integer.valueOf(fundInfo.getFundNumber().trim());
         }
+
+        List<ApScope> scopes = null;
+        if (fundInfo.getScopes() != null) {
+            scopes = scopeRepository.findByCodes(fundInfo.getScopes().getIdentifier());
+        }
+
+        List<Integer> userIds = null;
+        if (fundInfo.getAdminUsers() != null && fundInfo.getAdminUsers().getIdentifier() != null) {
+            userIds = fundInfo.getAdminUsers().getIdentifier().stream()
+                    .map(u -> Integer.valueOf(u))
+                    .collect(Collectors.toList());
+        }
+
+        List<Integer> groupIds = null;
+        if (fundInfo.getAdminGroups() != null && fundInfo.getAdminGroups().getIdentifier() != null) {
+            groupIds = fundInfo.getAdminGroups().getIdentifier().stream()
+                    .map(u -> Integer.valueOf(u))
+                    .collect(Collectors.toList());
+        }
+
         ArrFund fund = arrangementService.createFundWithScenario(fundInfo.getFundName(),
                                                                  ruleset.getEntity(),
                                                                  fundInfo.getInternalCode(),
@@ -85,7 +112,7 @@ public class FundServiceWsImpl {
                                                                  fundNumber,
                                                                  fundInfo.getDateRange(),
                                                                  fundInfo.getMark(),
-                                                                 uuid, null);
+                                                                 uuid, scopes, userIds, groupIds);
         FundIdentifiers fi = new FundIdentifiers();
         fi.setId(fund.getFundId().toString());
         fi.setUuid(uuid);
