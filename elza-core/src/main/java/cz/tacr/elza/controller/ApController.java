@@ -855,6 +855,12 @@ public class ApController {
             data = new ArrayList<>(records.size());
             for (ApCachedAccessPoint record : records) {
                 CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
+                if (entity == null) {
+                    // entity found in index but not found in cache
+                    // it should not happend - index is broken
+                    logger.error("Missing entity in AP Cache, accessPointId: {}", record.getData());
+                    continue;
+                }
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
                 data.add(ae);
             }
