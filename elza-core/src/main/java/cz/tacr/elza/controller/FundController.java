@@ -34,7 +34,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FilteredResult;
@@ -104,12 +106,12 @@ public class FundController implements FundsApi {
         Assert.isTrue(scopes.size() == createFund.getScopes().size(),
                       "Některá oblast archivních entit nebyla nalezena");
 
-        ArrFund newFund = arrangementService
+         ArrFund newFund = arrangementService
                 .createFundWithScenario(createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
                                         institution, createFund.getFundNumber(),
                                         createFund.getUnitdate(), createFund.getMark(),
                                         createFund.getUuid(),
-                                        scopes);
+                                        scopes, createFund.getAdminUsers(), createFund.getAdminGroups());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
         UserDetail userDetail = userService.getLoggedUserDetail();

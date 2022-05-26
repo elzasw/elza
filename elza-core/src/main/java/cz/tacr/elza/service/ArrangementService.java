@@ -94,7 +94,9 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -146,7 +148,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
-    
+
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
     @Autowired
@@ -199,6 +201,9 @@ public class ArrangementService {
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+    @Autowired
+    UserService userService;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -430,7 +435,9 @@ public class ArrangementService {
                                           final String unitdate,
                                           final String mark,
                                           String uuid,
-                                          List<ApScope> scopes) {
+                                          List<ApScope> scopes,
+                                          List<Integer> userIds,
+                                          List<Integer> groupIds) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         if (uuid == null || uuid.isEmpty()) {
@@ -444,6 +451,16 @@ public class ArrangementService {
             for (ApScope scope : scopes) {
                 addScopeToFund(fund, scope);
             }
+        }
+
+        // oprávnění na uživatele a skupiny
+        if (userIds != null && !userIds.isEmpty()) {
+            // add permissions to selectected users
+            userIds.forEach(id -> userService.addFundAdminPermissions(id, null, fund));
+        }
+        if (groupIds != null && !groupIds.isEmpty()) {
+            // add permissions to selectected groups
+            groupIds.forEach(id -> userService.addFundAdminPermissions(null, id, fund));
         }
 
         ArrFundVersion version = fundVersionRepository
