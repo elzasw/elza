@@ -1963,27 +1963,7 @@ public class AccessPointService {
         // pokud je entita schvalena, musi dojit 
         // k overeni platnosti validace
         if (newStateApproval == StateApproval.APPROVED) {
-            ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint);
-            if (CollectionUtils.isNotEmpty(validationErrors.getErrors()) ||
-                    CollectionUtils.isNotEmpty(validationErrors.getPartErrors())) {
-                final StringBuilder sb = new StringBuilder();
-                if (validationErrors.getErrors() != null) {
-                    validationErrors.getErrors().forEach(e -> sb.append(e).append("\n"));
-                }
-                if (validationErrors.getPartErrors() != null) {
-                    validationErrors.getPartErrors().forEach(e -> {
-                        sb.append("Část ID: ").append(e.getId()).append("\n");
-                        if (e.getErrors() != null) {
-                            e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));
-                        }
-                    });
-                }
-                throw new BusinessException("Přístupový bod obsahuje chyby a nelze nastavit stav schválený." +
-                        " " + sb.toString(),
-                        BaseCode.INVALID_STATE)
-                                .set("accessPointId", accessPoint.getAccessPointId())
-                                .set("error", sb.toString());
-            }
+            validateEntityAndFailOnError(accessPoint);
         }
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -2614,18 +2594,18 @@ public class AccessPointService {
     }
 
 
-    public void updateAndValidate(final Integer accessPointId) {
+    public ApAccessPoint updateAndValidate(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        updateAndValidate(accessPoint, apState, partList, itemMap, false);
+        return updateAndValidate(accessPoint, apState, partList, itemMap, false);
     }
 
     @Transactional(TxType.MANDATORY)
-    public void updateAndValidate(final ApAccessPoint accessPoint,
+    public ApAccessPoint updateAndValidate(final ApAccessPoint accessPoint,
                              final ApState apState,
                              final List<ApPart> partList,
                              final Map<Integer, List<ApItem>> itemMap,
@@ -2633,7 +2613,7 @@ public class AccessPointService {
 
         Integer prefPartId = accessPoint.getPreferredPartId();
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
-        validate(accessPoint, successfulGeneration);
+        return validate(accessPoint, successfulGeneration);
     }
 
 
@@ -3242,5 +3222,30 @@ public class AccessPointService {
             }
         }
         return false;
+    }
+
+    public void validateEntityAndFailOnError(ApAccessPoint accessPoint) {
+        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint);
+        if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
+                CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
+            return;
+        }
+        final StringBuilder sb = new StringBuilder();
+        if (validationErrors.getErrors() != null) {
+            validationErrors.getErrors().forEach(e -> sb.append(e).append("\n"));
+        }
+        if (validationErrors.getPartErrors() != null) {
+            validationErrors.getPartErrors().forEach(e -> {
+                sb.append("Část ID: ").append(e.getId()).append("\n");
+                if (e.getErrors() != null) {
+                    e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));
+                }
+            });
+        }
+        throw new BusinessException("Přístupový bod obsahuje chyby a nelze nastavit stav schválený." +
+                " " + sb.toString(),
+                BaseCode.INVALID_STATE)
+                        .set("accessPointId", accessPoint.getAccessPointId())
+                        .set("error", sb.toString());
     }
 }
