@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -593,7 +594,14 @@ public class RevisionService {
                 if(revItem!=null) {
                     if(itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
-                        Validate.isTrue(itemVO.getId().equals(revItem.getItemId()));
+                        if (!itemVO.getId().equals(revItem.getItemId())) {
+                            // source item not found
+                            throw new BusinessException("ApItem ID does not match ApRevItem ID, itemId:" + itemVO
+                                    .getId(),
+                                    BaseCode.INVALID_STATE)
+                                            .set("itemId", itemVO.getId())
+                                            .set("revItemId", revItem.getItemId());
+                        }
                     }
                     // modifying current item
                     if (itemVO.equalsValue(revItem)) {
@@ -788,7 +796,13 @@ public class RevisionService {
         //smazání revize
         deleteRevision(revision, change, revParts, revItems);
 
-        accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+        accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+        // Pokud je entita schvalena je nutne overit jeji bezchybnost
+        if (newStateApproval == StateApproval.APPROVED) {
+            if (accessPoint.getState() == ApStateEnum.ERROR) {
+                accessPointService.validateEntityAndFailOnError(accessPoint);
+            }
+        }
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
