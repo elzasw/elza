@@ -902,6 +902,15 @@ public class RevisionService {
         // Je ve stavu ke schválení?
         boolean revToApprove = revState == RevStateApproval.TO_APPROVE;
 
+        if (newStateApproval.equals(StateApproval.APPROVED)) {
+            // "Schvalování přístupových bodů"
+            if (!userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                    && !userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
+                // nemá oprávnění pro schvalování a nový stav je nastaven na schválená
+                return false;
+            }
+        }
+
         if (revToApprove && oldStateApproval.equals(StateApproval.APPROVED) &&
                 newStateApproval.equals(StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
@@ -910,13 +919,6 @@ public class RevisionService {
         }
         // nová nebo k připomínkám s revizí
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
-            if (revToApprove && newStateApproval.equals(StateApproval.APPROVED)) {
-                // "Schvalování přístupových bodů"
-                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
-                    || userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
-                    return true;
-                }
-            }
             if (newStateApproval.equals(StateApproval.NEW) ||
                     newStateApproval.equals(StateApproval.TO_AMEND) ||
                     newStateApproval.equals(StateApproval.TO_APPROVE)) {
