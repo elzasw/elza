@@ -1960,9 +1960,10 @@ public class AccessPointService {
             return oldApState;
         }
 
-        // pokud je entita schvalena, musi dojit 
+        // pokud je entita schvalena ci ke schvaleni, musi dojit 
         // k overeni platnosti validace
-        if (newStateApproval == StateApproval.APPROVED) {
+        if (newStateApproval == StateApproval.APPROVED ||
+                newStateApproval == StateApproval.TO_APPROVE) {
             validateEntityAndFailOnError(accessPoint);
         }
 
