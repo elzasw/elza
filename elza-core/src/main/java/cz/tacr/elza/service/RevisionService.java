@@ -666,7 +666,6 @@ public class RevisionService {
      * @param apPart
      * @param apPartFormVO
      */
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
     public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
                            ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
