@@ -5,6 +5,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
+import static java.util.stream.Collectors.toSet;
 
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
@@ -47,6 +48,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.google.common.collect.Iterables;
 
@@ -68,6 +70,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -94,9 +97,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -126,6 +127,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
@@ -337,7 +339,9 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
-                              final List<ApScope> scopes) {
+                              final List<ApScope> scopes,
+                              final List<Integer> userIds,
+                              final List<Integer> groupIds) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -370,6 +374,14 @@ public class ArrangementService {
                 }
             }
             synchApScopes(originalFund, scopes);
+        }
+
+        if (userIds != null) {
+            // TODO
+        }
+
+        if (groupIds != null) {
+            // TODO
         }
 
         eventNotificationService
@@ -424,6 +436,8 @@ public class ArrangementService {
      * @param uuid
      * @param scopes
      *            Seznam oblastí, může být null
+     * @param userIds
+     * @param groupIds 
      * @return nová archivní pomůcka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
@@ -438,6 +452,39 @@ public class ArrangementService {
                                           List<ApScope> scopes,
                                           List<Integer> userIds,
                                           List<Integer> groupIds) {
+
+        // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
+            if (ObjectUtils.isEmpty(userIds) && ObjectUtils.isEmpty(groupIds)) {
+                Assert.isTrue(false, "Nebyl vybrán správce");
+            }
+
+            // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
+            // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
+            if (userIds != null && !userIds.isEmpty()) {
+                // TODO: Remove stream and user more direct query
+                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
+                        .map(x -> x.getUserId())
+                        .collect(toSet());
+                userIds.forEach(u -> {
+                            if (!userFundCreateIds.contains(u)) {
+                                throw new BusinessException("Předaný správce (uživatel) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_USER_MISSING_FUND_CREATE_PERM).set("id", u);
+                            }
+                        });
+            }
+            if (groupIds != null && !groupIds.isEmpty()) {
+                final Set<Integer> groupFundCreateIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
+                        .map(x -> x.getGroupId())
+                        .collect(toSet());
+                groupIds.forEach(g -> {
+                            if (!groupFundCreateIds.contains(g)) {
+                                throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g);
+                            }
+                        });
+            }
+        }
+
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         if (uuid == null || uuid.isEmpty()) {
