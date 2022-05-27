@@ -560,6 +560,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
             ApScope scope = entityManager.getReference(ApScope.class, state.getScopeId());
             state.setScope(scope);
+
+            state.setCreateChange(entityManager.getReference(ApChange.class, state.getCreateChangeId()));
+            if (state.getDeleteChangeId() != null) {
+                state.setDeleteChange(entityManager.getReference(ApChange.class, state.getDeleteChangeId()));
+            }
+            if (state.getReplacedById() != null) {
+                state.setReplacedBy(entityManager.getReference(ApAccessPoint.class, state.getReplacedById()));
+            }
         }
         
         StaticDataProvider sdp = staticDataService.getData();
