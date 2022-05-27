@@ -113,53 +113,9 @@ public class FundController implements FundsApi {
                                         createFund.getUuid(),
                                         scopes, createFund.getAdminUsers(), createFund.getAdminGroups());
 
-        // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
-            if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
-                Assert.isTrue(false, "Nebyl vybrán správce");
-            }
+         UserDetail userDetail = userService.getLoggedUserDetail();
 
-            // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
-            // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
-            if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-                // TODO: Remove stream and user more direct query
-                final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
-                        .map(x -> x.getUserId())
-                        .collect(toSet());
-                createFund.getAdminUsers()
-                        .forEach(u -> {
-                            if (!userIds.contains(u)) {
-                                throw new BusinessException("Předaný správce (uživatel) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_USER_MISSING_FUND_CREATE_PERM).set("id", u);
-                            }
-                        });
-            }
-            if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-                final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
-                        .map(x -> x.getGroupId())
-                        .collect(toSet());
-                createFund.getAdminGroups()
-                        .forEach(g -> {
-                            if (!groupIds.contains(g)) {
-                                throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g);
-                            }
-                        });
-            }
-        }
-
-        // Oprávnění na uživatele a skupiny
-        if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
-            // add permissions to selectected users
-            createFund.getAdminUsers().forEach(
-                    u -> userService.addFundAdminPermissions(u, null, newFund));
-        }
-        if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
-            // add permissions to selectected groups
-            createFund.getAdminGroups().forEach(
-                    g -> userService.addFundAdminPermissions(null, g, newFund));
-        }
-
-        return ResponseEntity.ok(factoryVo.createFund(newFund, userDetail));
+         return ResponseEntity.ok(factoryVo.createFund(newFund, userDetail));
     }
 
     @Override
@@ -219,10 +175,12 @@ public class FundController implements FundsApi {
 
         List<ApScope> apScopes = FactoryUtils.transformList(updateFund.getScopes(), s -> accessPointService.getApScope(s));
 
+        // TODO may need fields adminUsers & adminGroups like in CreateFund?
+
         return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.updateFund(
                 factoryDO.createFund(updateFund, institution, id),
                 ruleSetRepository.findByCode(updateFund.getRuleSetCode()),
-                apScopes
+                apScopes, null, null
         ), userService.getLoggedUserDetail()));
     }
 }

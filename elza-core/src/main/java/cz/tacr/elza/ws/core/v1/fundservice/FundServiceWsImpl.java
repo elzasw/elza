@@ -162,7 +162,26 @@ public class FundServiceWsImpl {
             fund.setInstitution(institution);
         }
 
-        arrangementService.updateFund(fund, ruleSet.getEntity(), null);
+        List<ApScope> scopes = null;
+        if (fundUpdate.getScopes() != null) {
+            scopes = scopeRepository.findByCodes(fundUpdate.getScopes().getIdentifier());
+        }
+
+        List<Integer> userIds = null;
+        if (fundUpdate.getAdminUsers() != null && fundUpdate.getAdminUsers().getIdentifier() != null) {
+            userIds = fundUpdate.getAdminUsers().getIdentifier().stream()
+                    .map(u -> Integer.valueOf(u))
+                    .collect(Collectors.toList());
+        }
+
+        List<Integer> groupIds = null;
+        if (fundUpdate.getAdminGroups() != null && fundUpdate.getAdminGroups().getIdentifier() != null) {
+            groupIds = fundUpdate.getAdminGroups().getIdentifier().stream()
+                    .map(u -> Integer.valueOf(u))
+                    .collect(Collectors.toList());
+        }
+
+        arrangementService.updateFund(fund, ruleSet.getEntity(), scopes, userIds, groupIds);
     }
 
     private FundIdentifiers getFundInfo(Fund fund) {
