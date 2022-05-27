@@ -202,9 +202,12 @@ public class RevisionService {
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
-        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize 
-        // ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize  
         // ApRevision revision = createRevision(prevRevision, change);
+        // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
+        //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
+        revision.setCreateChange(change);
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
         if (!nextApTypeId.equals(state.getApTypeId())) {
@@ -757,7 +760,8 @@ public class RevisionService {
         }
 
         // má uživatel možnost nastavit požadovaný stav?
-        if (!accessPointService.getNextStatesRevision(apState, revision).contains(newStateApproval)) {
+        List<StateApproval> nextStates = accessPointService.getNextStatesRevision(apState, revision);
+        if (!nextStates.contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("scopeId", apState.getScopeId())
@@ -917,11 +921,14 @@ public class RevisionService {
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                     || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
         }
-        // nová nebo k připomínkám s revizí
+        // původně nová nebo k doplnění
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
+            // nově: nová, k doplnění, ke schválená, schválená
             if (newStateApproval.equals(StateApproval.NEW) ||
                     newStateApproval.equals(StateApproval.TO_AMEND) ||
-                    newStateApproval.equals(StateApproval.TO_APPROVE)) {
+                    newStateApproval.equals(StateApproval.TO_APPROVE) ||
+                    newStateApproval.equals(StateApproval.APPROVED)) {
+                // musí mít oprávnění zakládání a změny nových
                 if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                         || userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
                     return true;
