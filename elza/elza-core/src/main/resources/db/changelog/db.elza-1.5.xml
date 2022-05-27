@@ -1984,4 +1984,8 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
              ) src 
            where rp.part_id = src.part_id</sql>
     </changeSet>
+    <!-- V 2.4.3, pridani ulozeni smazanych ApState v cache -->
+    <changeSet id="20220527063700" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
 </databaseChangeLog>

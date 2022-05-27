@@ -2132,17 +2132,22 @@ public class AccessPointService {
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
                         || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
                     // predchozi stav musel byt neschvalen
-                    if (apState.getStateApproval() == StateApproval.NEW ||
-                            apState.getStateApproval() == StateApproval.TO_AMEND ||
-                            apState.getStateApproval() == StateApproval.TO_APPROVE) {
-                        result.add(StateApproval.APPROVED);
+                    if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                            || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+                        if (apState.getStateApproval() == StateApproval.NEW ||
+                                apState.getStateApproval() == StateApproval.TO_AMEND ||
+                                apState.getStateApproval() == StateApproval.TO_APPROVE) {
+                            result.add(StateApproval.APPROVED);
+                        }
+                    }
+                    if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                            || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
+                        if (apState.getStateApproval() == StateApproval.APPROVED) {
+                            result.add(StateApproval.APPROVED);
+                        }
                     }
                 }
 
-                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
-                    result.add(StateApproval.APPROVED);
-                }
 
             }
         }
