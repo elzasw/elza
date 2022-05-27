@@ -8,7 +8,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
 
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +51,6 @@ import org.springframework.util.ObjectUtils;
 
 import com.google.common.collect.Iterables;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -98,6 +96,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -127,6 +126,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -209,6 +209,9 @@ public class ArrangementService {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private EntityManager em;
@@ -366,22 +369,15 @@ public class ArrangementService {
         }
 
         if (scopes != null) {
-            for (ApScope scope : scopes) {
-                if (scope.getScopeId() == null) {
-                    scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils
-                            .replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
-                    scopeRepository.save(scope);
-                }
-            }
-            synchApScopes(originalFund, scopes);
+            syncApScopes(originalFund, scopes);
         }
 
         if (userIds != null) {
-            // TODO
+            syncUsers(originalFund, userIds);
         }
 
         if (groupIds != null) {
-            // TODO
+            syncGroups(originalFund, groupIds);
         }
 
         eventNotificationService
@@ -391,31 +387,80 @@ public class ArrangementService {
     }
 
     /**
-     * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
+     * Aktualizuje seznamu ApScope pro ArrFund
+     * 
+     * @param fund
+     * @param newApScopes
+     * @return
      */
-    private void synchApScopes(final ArrFund fund,
-                               final Collection<ApScope> newApScopes) {
-        Assert.notNull(fund, "AS musí být vyplněn");
+    private List<ArrFundRegisterScope> syncApScopes(final ArrFund fund, final Collection<ApScope> newApScopes) {
+        Validate.notNull(fund, "AS musí být vyplněn");
 
-        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-                .createEntityMap(fundRegisterScopeRepository.findByFund(fund), i -> i.getScope().getScopeId());
-        Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
+        // get db scopes
+        List<ArrFundRegisterScope> dbScopes = fundRegisterScopeRepository.findByFund(fund);
+        Map<Integer, ArrFundRegisterScope> scopesById = dbScopes
+                .stream().collect(Collectors.toMap(s -> s.getScope().getScopeId(), s -> s));
+
+        List<ArrFundRegisterScope> result = new ArrayList<>(newApScopes.size());
+        List<ArrFundRegisterScope> createdScopes = new ArrayList<>();        
 
         for (ApScope newScope : newApScopes) {
-            ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
+            ArrFundRegisterScope currScope = scopesById.remove(newScope.getScopeId());
 
-            if (oldScope == null) {
-                oldScope = new ArrFundRegisterScope();
-                oldScope.setFund(fund);
-                oldScope.setScope(newScope);
+            if (currScope == null) {
+                ArrFundRegisterScope createdScope = new ArrFundRegisterScope();
+                createdScope.setFund(fund);
+                createdScope.setScope(newScope);
+                createdScopes.add(createdScope);                
             } else {
-                removeScopes.remove(oldScope);
+                // scope exists
+                result.add(currScope);
             }
-
-            fundRegisterScopeRepository.save(oldScope);
         }
 
-        fundRegisterScopeRepository.deleteAll(removeScopes);
+        if (!scopesById.isEmpty()) {
+            // delete unused
+            fundRegisterScopeRepository.deleteAll(scopesById.values());
+        }
+        result.addAll(fundRegisterScopeRepository.saveAll(createdScopes));        
+        
+        return result; 
+    }
+
+    /**
+     * Aktualizuje seznamu User pro ArrFund
+     * 
+     * @param fund
+     * @param userIds
+     */
+    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds) {
+        Validate.notNull(fund, "AS musí být vyplněn");
+
+        List<UsrUser> users = userRepository.findByFund(fund);
+        Map<Integer, UsrUser> usersById = users
+                .stream().collect(Collectors.toMap(u -> u.getUserId(), u -> u));
+
+        for (Integer userId : userIds) {
+            UsrUser user = usersById.get(userId);
+            if (user == null) {
+                userService.addFundAdminPermissions(userId, null, fund);
+            } else {
+                usersById.remove(userId);
+            }
+        }
+
+        usersById.values().forEach(u -> userService.deleteUserFundAllPermissions(u));
+    }
+
+    /**
+     * 
+     * Aktualizuje seznamu Group pro ArrFund
+     * 
+     * @param fund
+     * @param groupIds
+     */
+    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
+        // TODO
     }
 
     /**
