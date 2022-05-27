@@ -2102,6 +2102,7 @@ public class AccessPointService {
 
         Set<StateApproval> result = new HashSet<>();
 
+        // pokud je admin - může vše
         if (user == null || user.hasPermission(Permission.ADMIN)) {
             result.add(StateApproval.NEW);
             result.add(StateApproval.TO_AMEND);
@@ -2128,6 +2129,7 @@ public class AccessPointService {
         // schvalování
         // jen jiny uzivatel nez tvurce revize muze schvalit
         if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
+            // Kontrola, zda je odlišný uživatel, který změnil revizi
             if (!Objects.equals(user.getId(), lastRevUserId)) {
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
                         || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
