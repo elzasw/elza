@@ -1,18 +1,15 @@
 package cz.tacr.elza.controller;
 
-import static java.util.stream.Collectors.toSet;
-
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,17 +25,13 @@ import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.core.data.RuleSet;
-import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -62,7 +55,7 @@ public class FundController implements FundsApi {
 
     @Autowired
     private AccessPointService accessPointService;
-    
+
     @Autowired
     private FundRepository fundRepository;
 
@@ -99,30 +92,31 @@ public class FundController implements FundsApi {
 
         // prepare institution
         ParInstitution institution = arrangementService.getInstitution(createFund.getInstitutionIdentifier());
-        Assert.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund.getInstitutionIdentifier());
+        Assert.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund
+                .getInstitutionIdentifier());
 
         // prepare collection of scopes
         List<ApScope> scopes = scopeRepository.findByCodes(createFund.getScopes());
         Assert.isTrue(scopes.size() == createFund.getScopes().size(),
                       "Některá oblast archivních entit nebyla nalezena");
 
-         ArrFund newFund = arrangementService
+        ArrFund newFund = arrangementService
                 .createFundWithScenario(createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
                                         institution, createFund.getFundNumber(),
                                         createFund.getUnitdate(), createFund.getMark(),
                                         createFund.getUuid(),
                                         scopes, createFund.getAdminUsers(), createFund.getAdminGroups());
 
-         UserDetail userDetail = userService.getLoggedUserDetail();
+        UserDetail userDetail = userService.getLoggedUserDetail();
 
-         return ResponseEntity.ok(factoryVo.createFund(newFund, userDetail));
+        return ResponseEntity.ok(factoryVo.createFund(newFund, userDetail));
     }
 
     @Override
     public ResponseEntity<FindFundsResult> findFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
                                                      @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
-                                                     @RequestParam(value = "max", required = false, defaultValue="200") Integer max,
-                                                     @RequestParam(value = "from", required = false, defaultValue="0") Integer from) {
+                                                     @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
+                                                     @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
         UserDetail userDetail = userService.getLoggedUserDetail();
         FilteredResult<ArrFund> funds;
         Integer institutionId = null;
@@ -130,8 +124,7 @@ public class FundController implements FundsApi {
             ParInstitution institution = arrangementService.getInstitution(institutionIdentifier);
             if (institution != null) {
                 institutionId = institution.getInstitutionId();
-            }
-            else {
+            } else {
                 FindFundsResult fundsResult = new FindFundsResult();
                 return ResponseEntity.ok(fundsResult);
             }
@@ -162,25 +155,25 @@ public class FundController implements FundsApi {
     public ResponseEntity<FundDetail> getFund(@PathVariable("id") String id) {
         Assert.notNull(id, "Musí být zadáno id AS");
         UserDetail userDetail = userService.getLoggedUserDetail();
-        return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.getFund(Integer.valueOf(id)), userDetail));
+        return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.getFund(Integer.valueOf(id)),
+                                                            userDetail));
     }
 
     @Override
     @Transactional
     public ResponseEntity<FundDetail> updateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
-        Assert.notNull(updateFund, "AS musí být vyplněn");
-        Assert.notNull(updateFund.getRuleSetCode(), "AS musí mít přiřazená pravidla");
+        Validate.notNull(updateFund, "AS musí být vyplněn");
+        Validate.notNull(updateFund.getRuleSetCode(), "AS musí mít přiřazená pravidla");
 
         ParInstitution institution = arrangementService.getInstitution(updateFund.getInstitutionIdentifier());
 
         List<ApScope> apScopes = FactoryUtils.transformList(updateFund.getScopes(), s -> accessPointService.getApScope(s));
 
-        // TODO may need fields adminUsers & adminGroups like in CreateFund?
+        ArrFund arrFund = factoryDO.createFund(updateFund, institution, id);
+        RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
+        Validate.notNull(ruleSet);
+        ArrFund updatedFund = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
 
-        return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.updateFund(
-                factoryDO.createFund(updateFund, institution, id),
-                ruleSetRepository.findByCode(updateFund.getRuleSetCode()),
-                apScopes, null, null
-        ), userService.getLoggedUserDetail()));
+        return ResponseEntity.ok(factoryVo.createFundDetail(updatedFund, userService.getLoggedUserDetail()));
     }
 }
