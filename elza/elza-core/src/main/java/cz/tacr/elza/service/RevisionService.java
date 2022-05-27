@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
@@ -42,7 +41,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -523,9 +521,8 @@ public class RevisionService {
      * @param revPart
      * @param apPartFormVO
      */
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
-    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+    public void updatePart(ApState apState,
                            @NotNull ApRevision revision,
                            @NotNull ApRevPart revPart,
                            ApPartFormVO apPartFormVO) {
@@ -730,9 +727,8 @@ public class RevisionService {
         }
     }
 
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
-    public void mergeRevision(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+    public void mergeRevision(ApState apState,
                               ApState.StateApproval newStateApproval) {
         Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
 
