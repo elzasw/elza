@@ -179,7 +179,6 @@ class FundNodesSelect extends AbstractReactComponent {
                 <FundTreeLazy
                     ref={ref => (this.refTree = ref)}
                     {...fundTreeNodes}
-                    cutLongLabels={true}
                     onOpenCloseNode={this.handleNodeExpandCollapse}
                     onNodeClick={this.handleNodeClick}
                     onFulltextChange={this.handleFulltextChange}

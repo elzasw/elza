@@ -5,23 +5,18 @@ import java.time.OffsetDateTime;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.security.UserDetail;
 
 /**
@@ -100,41 +95,6 @@ public class AccessPointDataService {
         change.setExternalSystem(externalSystem);
 
         return apChangeRepository.save(change);
-    }
-
-    /**
-     * Změna popisu přístupového bodu.
-     * Podle vstupních a aktuálních dat se rozhodne, zda-li se bude popis mazat, vytvářet nebo jen upravovat - verzovaně.
-     *
-     * @param apState     přístupový bod
-     * @param description popis přístupového bodu
-     * @param change      změna pod kterou se provádí změna (pokud null, volí se individuelně)
-     * @return přístupový bod
-     */
-    public ApAccessPoint changeDescription(final ApState apState,
-                                           @Nullable final String description,
-                                           @Nullable final ApChange change) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-        validationNotDeleted(apState);
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
-        //TODO : smazáno - změna popisu
-
-        return accessPoint;
-    }
-
-    /**
-     * Validace přístupového bodu, že není smazaný.
-     *
-     * @param state stav přístupového bodu
-     */
-    public void validationNotDeleted(final ApState state) {
-        if (state.getDeleteChange() != null) {
-            throw new BusinessException("Zneplatněnou archivní entitu nelze měnit", RegistryCode.CANT_CHANGE_DELETED_AP)
-                    .set("accessPointId", state.getAccessPointId())
-                    .set("uuid", state.getAccessPoint().getUuid());
-        }
     }
 
     public String convertCoordinatesFromKml(String coordinates) {

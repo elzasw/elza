@@ -534,7 +534,7 @@ public class DaoCoreServiceWsImpl {
         DesctItemProvider descProvider = new DesctItemProvider() {
 
             @Override
-            public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+            public List<ArrDescItem> provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                                 MultipleItemChangeContext changeContext) {
                 ArrDescItem descItem = new ArrDescItem();
                 ItemType itemType = sdp.getItemTypeByCode(lis.getDescItemType());
@@ -565,9 +565,11 @@ public class DaoCoreServiceWsImpl {
                 descItem.setItemType(itemType.getEntity());
                 descItem.setData(data);
 
-                descriptionItemService.createDescriptionItemInBatch(descItem,
+                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem,
                                                                     level.getNode(), fundVersion, change,
                                                                     changeContext);
+
+                return Collections.singletonList(createdItem);
             }
         };
 

@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
@@ -36,10 +35,12 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -51,6 +52,8 @@ import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class RevisionService {
@@ -102,6 +105,23 @@ public class RevisionService {
         ApRevision revision = findRevisionByState(state);
         if (revision != null) {
             throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
+        }
+
+        // check if AP can be edited in revision
+        // no missing connected APs
+        CachedAccessPoint apCached = this.accessPointCacheService.findCachedAccessPoint(state.getAccessPointId());
+        for (CachedPart cachedPart : apCached.getParts()) {
+            for (ApItem item : cachedPart.getItems()) {
+                ArrData data = item.getData();
+                if (data != null) {
+                    if (data instanceof ArrDataRecordRef) {
+                        ArrDataRecordRef drr = (ArrDataRecordRef) data;
+                        if (drr.getRecordId() == null) {
+                            throw new IllegalStateException("Přístupový bod obsahuje odkazy na neexistující entity.");
+                        }
+                    }
+                }
+            }
         }
 
         revision = new ApRevision();
@@ -180,9 +200,12 @@ public class RevisionService {
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
-        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize 
-        // ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize  
         // ApRevision revision = createRevision(prevRevision, change);
+        // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
+        //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
+        revision.setCreateChange(change);
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
         if (!nextApTypeId.equals(state.getApTypeId())) {
@@ -498,9 +521,8 @@ public class RevisionService {
      * @param revPart
      * @param apPartFormVO
      */
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
-    public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+    public void updatePart(ApState apState,
                            @NotNull ApRevision revision,
                            @NotNull ApRevPart revPart,
                            ApPartFormVO apPartFormVO) {
@@ -572,7 +594,14 @@ public class RevisionService {
                 if(revItem!=null) {
                     if(itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
-                        Validate.isTrue(itemVO.getId().equals(revItem.getItemId()));
+                        if (!itemVO.getId().equals(revItem.getItemId())) {
+                            // source item not found
+                            throw new BusinessException("ApItem ID does not match ApRevItem ID, itemId:" + itemVO
+                                    .getId(),
+                                    BaseCode.INVALID_STATE)
+                                            .set("itemId", itemVO.getId())
+                                            .set("revItemId", revItem.getItemId());
+                        }
                     }
                     // modifying current item
                     if (itemVO.equalsValue(revItem)) {
@@ -634,7 +663,6 @@ public class RevisionService {
      * @param apPart
      * @param apPartFormVO
      */
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
     public void updatePart(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
                            ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
@@ -699,9 +727,8 @@ public class RevisionService {
         }
     }
 
-    @AuthMethod(permission = { UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR })
     @Transactional(TxType.MANDATORY)
-    public void mergeRevision(@AuthParam(type = AuthParam.Type.AP_STATE) ApState apState,
+    public void mergeRevision(ApState apState,
                               ApState.StateApproval newStateApproval) {
         Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
 
@@ -728,7 +755,8 @@ public class RevisionService {
         }
 
         // má uživatel možnost nastavit požadovaný stav?
-        if (!accessPointService.getNextStatesRevision(apState, revision).contains(newStateApproval)) {
+        List<StateApproval> nextStates = accessPointService.getNextStatesRevision(apState, revision);
+        if (!nextStates.contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("scopeId", apState.getScopeId())
@@ -767,7 +795,13 @@ public class RevisionService {
         //smazání revize
         deleteRevision(revision, change, revParts, revItems);
 
-        accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+        accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+        // Pokud je entita schvalena je nutne overit jeji bezchybnost
+        if (newStateApproval == StateApproval.APPROVED) {
+            if (accessPoint.getState() == ApStateEnum.ERROR) {
+                accessPointService.validateEntityAndFailOnError(accessPoint);
+            }
+        }
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -867,24 +901,29 @@ public class RevisionService {
         // Je ve stavu ke schválení?
         boolean revToApprove = revState == RevStateApproval.TO_APPROVE;
 
+        if (newStateApproval.equals(StateApproval.APPROVED)) {
+            // "Schvalování přístupových bodů"
+            if (!userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                    && !userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
+                // nemá oprávnění pro schvalování a nový stav je nastaven na schválená
+                return false;
+            }
+        }
+
         if (revToApprove && oldStateApproval.equals(StateApproval.APPROVED) &&
                 newStateApproval.equals(StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                     || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
         }
-        // nová nebo k připomínkám s revizí
+        // původně nová nebo k doplnění
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {
-            if (revToApprove && newStateApproval.equals(StateApproval.APPROVED)) {
-                // "Schvalování přístupových bodů"
-                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
-                    || userService.hasPermission(Permission.AP_CONFIRM, scope.getScopeId())) {
-                    return true;
-                }
-            }
+            // nově: nová, k doplnění, ke schválená, schválená
             if (newStateApproval.equals(StateApproval.NEW) ||
                     newStateApproval.equals(StateApproval.TO_AMEND) ||
-                    newStateApproval.equals(StateApproval.TO_APPROVE)) {
+                    newStateApproval.equals(StateApproval.TO_APPROVE) ||
+                    newStateApproval.equals(StateApproval.APPROVED)) {
+                // musí mít oprávnění zakládání a změny nových
                 if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                         || userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
                     return true;

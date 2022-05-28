@@ -122,7 +122,6 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
         return (
             <FundTreeLazy
                 {...this.props}
-                cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {
                     expand
                         ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node))

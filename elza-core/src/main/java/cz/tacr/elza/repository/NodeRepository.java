@@ -53,6 +53,8 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
+    List<ArrNode> findAllByNodeIdIn(Collection<Integer> nodeIds);
+
     @Modifying
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 

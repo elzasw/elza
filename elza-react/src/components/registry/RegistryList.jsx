@@ -126,7 +126,6 @@ class RegistryList extends AbstractReactComponent {
             registryListFilter({
                 ...this.props.registryList.filter,
                 from: 0,
-                itemSpecId: null,
                 registryTypeId: item ? item.id : null,
             }),
         );
@@ -207,12 +206,22 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = props => {
         const {item} = props;
-        const {eidTypes, apTypeIdMap} = this.props;
+        const {eidTypes, apTypeIdMap, select} = this.props;
 
         return (
             <Link 
                 style={{textDecoration: "none"}} 
                 to={getArchiveEntityUrl(item.id)}
+                onClick={(e) => {
+                    // Zabraneni zmeny adresy v adresnim radku, pokud
+                    // je RegistryPage v rezimu modalu ( vyber entity
+                    // pomoci tlacitka v RegistryField )
+                    if(select){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.handleRegistryDetail(item);
+                    }
+                }}
             >
                 <RegistryListItem
                     {...item}

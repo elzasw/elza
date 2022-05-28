@@ -1024,7 +1024,6 @@ class ArrPage extends ArrParentPage {
                     focus={focus}
                     className="extended-tree"
                     fund={activeFund}
-                    cutLongLabels={false}
                     versionId={activeFund.versionId}
                     showEditPermissions={this.getHasEditPermissions()}
                     {...activeFund.fundTree}
@@ -1087,7 +1086,6 @@ class ArrPage extends ArrParentPage {
                 <FundTreeMain
                     className="fund-tree-container"
                     fund={activeFund}
-                    cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
                     showEditPermissions={this.getHasEditPermissions()}

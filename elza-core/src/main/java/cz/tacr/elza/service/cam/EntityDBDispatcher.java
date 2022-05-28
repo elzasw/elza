@@ -72,6 +72,7 @@ import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -146,6 +147,8 @@ public class EntityDBDispatcher {
 
     final private AsyncRequestService asyncRequestService;
 
+    final private ApItemRepository itemRepository;
+
     //final private AccessPointDataService accessPointDataService;
 
     final private CamService camService;
@@ -168,6 +171,7 @@ public class EntityDBDispatcher {
                               final AsyncRequestService asyncRequestService,
                               final PartService partService,
                               final AccessPointCacheService accessPointCacheService,
+                              final ApItemRepository itemRepository,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
         this.stateRepository = stateRepository;
@@ -181,6 +185,7 @@ public class EntityDBDispatcher {
         this.camService = camService;
         this.partService = partService;
         this.accessPointCacheService = accessPointCacheService;
+        this.itemRepository = itemRepository;
     }
 
     /**
@@ -330,6 +335,7 @@ public class EntityDBDispatcher {
     }
 
     /**
+     * Run existing AP sync
      * 
      * @param procCtx
      * @param state
@@ -348,16 +354,29 @@ public class EntityDBDispatcher {
         Validate.notNull(prevBindingState);
 
         this.procCtx = procCtx;
+        
+        // Flag if entity is deleted
+        // Deleted entity has to be retained as deleted if 
+        // synQueue is true.
+        boolean deletedEntity = (state.getDeleteChangeId()!=null);
+        ApState stateNew = null;
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
 
+        // check s AP class/subclass was cha
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             //změna třídy entity
-            state.setDeleteChange(procCtx.getApChange());
-            stateRepository.save(state);
-            ApState stateNew = accessPointService.copyState(state, procCtx.getApChange());
+            if(!deletedEntity) {
+                state.setDeleteChange(procCtx.getApChange());
+                state = stateRepository.save(state);
+            }
+            stateNew = accessPointService.copyState(state, procCtx.getApChange());
+            if(deletedEntity&&syncQueue) {
+                // retain deleted state
+                stateNew.setDeleteChange(state.getDeleteChange());
+            }
             stateNew.setApType(apType);
             state = stateRepository.save(stateNew);
         }
@@ -400,12 +419,25 @@ public class EntityDBDispatcher {
             break;
 
         default:
-            // synchronizace stavu entity
             StateApproval newStateApproval = camService.convertStateXmlToStateApproval(entity.getEns());
-            if (!newStateApproval.equals(state.getStateApproval())) {
-                state.setStateApproval(newStateApproval);
-                state = stateRepository.save(state);
+            // synchronizace stavu entit
+            // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
+            // musi entita zustat smazana
+            if (syncQueue && state.getDeleteChangeId() != null) {
+                break;
+            } else {
+                // kontrola shody stavu
+                if (!newStateApproval.equals(state.getStateApproval())) {
+                    if (stateNew == null) {
+                        state.setDeleteChange(procCtx.getApChange());
+                        state = stateRepository.save(state);
+                        stateNew = accessPointService.copyState(state, procCtx.getApChange());
+                    }
+                    stateNew.setStateApproval(newStateApproval);
+                    state = stateRepository.save(stateNew);
+                }
             }
+
             break;
         }
 
@@ -557,9 +589,24 @@ public class EntityDBDispatcher {
         }
         StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, state, apChange, uuid);
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
+        ApAccessPoint accessPoint = apState.getAccessPoint();        
+        
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
+
+        // TODO kontrola a aktualizace odkazů arr_data_record_ref
+        List<ApItem> items = itemRepository.findUnbindedItemByBinding(binding);
+        for (ApItem item : items) {
+            ArrDataRecordRef dataRef = (ArrDataRecordRef) item.getData();
+            if (dataRef.getRecord() == null) {
+                dataRef.setRecord(accessPoint);
+                dataRecordRefRepository.save(dataRef);
+                accessPointService.updatePartValue(item.getPart());
+                if (item.getPart().getParentPart() != null) {
+                    accessPointService.updatePartValue(item.getPart().getParentPart());
+                }
+                accessPointCacheService.createApCachedAccessPoint(item.getPart().getAccessPointId());
+            }
+        }
 
         return apState;
     }

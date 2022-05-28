@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-
 /**
  * Rozšíření {@link RulItemSpec}.
  * 
@@ -12,4 +11,32 @@ public class RulItemSpecExt extends RulItemSpec {
 		super(src);
 	}
 
+    /**
+     * Set maximum allowed type
+     * 
+     * Function will lower existing settings
+     * 
+     * @param type
+     */
+    public void setTypeMax(final Type type) {
+        switch (type) {
+        case REQUIRED:
+            break;
+        case RECOMMENDED:
+            if (getType() == Type.REQUIRED) {
+                setType(Type.RECOMMENDED);
+            }
+            break;
+        case POSSIBLE:
+            if (getType() == Type.RECOMMENDED || getType() == Type.REQUIRED) {
+                setType(Type.POSSIBLE);
+            }
+            break;
+        case IMPOSSIBLE:
+            if (getType() == Type.POSSIBLE || getType() == Type.RECOMMENDED || getType() == Type.REQUIRED) {
+                setType(Type.IMPOSSIBLE);
+            }
+            break;
+        }
+    }
 }

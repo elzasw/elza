@@ -5606,3 +5606,24 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
+// Pravidlo se vyhodnocuje jako posledni
+rule "Potlačení povinnosti pokud existuje role entity"
+no-loop
+salience -200
+when $activeLevel: ActiveLevel( )
+    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
+    $roleEntity: DescItem(type=="ZP2015_ENTITY_ROLE" ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code==$roleEntity.specCode ) from $itemType.rulItemSpecList    
+then
+    $itemSpec.setTypeMax(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "Potlačení povinnosti prvku role entity pokud neexistuje povinná specifikace"
+no-loop
+salience -300
+when 
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+then
+    $itemType.setTypeMaxFromSpecs();
+end

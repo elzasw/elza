@@ -136,7 +136,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
             <AddRemoveList
                 label={i18n('admin.perms.tabs.advanced.controller.entities.title')}
                 addInLabel
-                className={className}
+                className={`no-hover alternating-rows ${className}`}
                 items={permissions}
                 renderItem={this.renderItem}
                 onAdd={this.handleAdd}
