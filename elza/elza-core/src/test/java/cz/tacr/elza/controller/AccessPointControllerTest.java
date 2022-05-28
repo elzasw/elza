@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +45,6 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Test
     public void deleteAccessPointsTest() throws ApiException {
 
-        List<ApAccessPoint> aps = apRepository.findAll();
-
         ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
@@ -64,11 +61,13 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         accesspointsApi.deleteAccessPoints(deleteAccessPointsDetail);
 
-        parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 0);
+        ApAccessPointVO ap1Vo = getAccessPoint(ap1.getAccessPointId().toString());
+        assertTrue(ap1Vo.isInvalid());
+        assertTrue(ap1Vo.getParts().size() == 3);
 
-        parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 0);
+        ApAccessPointVO ap2Vo = getAccessPoint(ap1.getAccessPointId().toString());
+        assertTrue(ap2Vo.isInvalid());
+        assertTrue(ap2Vo.getParts().size() == 3);
     }
 
     @Test
@@ -94,7 +93,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertTrue(apInfo.isInvalid());
         assertEquals(apInfo.getReplacedById(), ap2.getAccessPointId());
 
-        assertTrue(CollectionUtils.isEmpty(apInfo.getParts()));
+        assertEquals(apInfo.getParts().size(), 3);
 
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
@@ -119,11 +118,14 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
-        parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 0);
+        ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
+        assertNotNull(apInfo);
+        assertTrue(apInfo.isInvalid());
+        assertEquals(apInfo.getReplacedById(), ap2.getAccessPointId());
+        assertEquals(apInfo.getParts().size(), 3);
 
-        parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 6);
+        ApAccessPointVO apInfo2 = this.getAccessPoint(ap2.getAccessPointId());
+        assertEquals(apInfo2.getParts().size(), 6);
     }
 
     @Test

@@ -74,8 +74,8 @@ public class ScriptModelFactory {
 	private Level createLevelModel(final ArrLevel level,
 	        final ArrFundVersion version,
 	        final DescItemReader descItemReader) {
-        Assert.notNull(level, "Level musí být vyplněn");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(level, "Level musí být vyplněn");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         List<ArrLevel> parents = levelRepository.findAllParentsByNodeId(level.getNodeId(), version.getLockChange(), false);
         Set<ArrNode> nodes = new HashSet<>();

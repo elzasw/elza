@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon, RibbonGroup, Utils} from '../../components/shared';
+import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils} from '../../components/shared';
 import {DetailActions} from '../../shared/detail';
 import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
@@ -44,6 +44,7 @@ import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm
 import {StateApproval} from '../../api/StateApproval';
 import {withRouter} from "react-router";
 import {RevStateApproval} from '../../api/RevStateApproval';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Stránka rejstříků.
@@ -204,14 +205,11 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handleDeleteRegistry = () => {
-        if (window.confirm(i18n('registry.deleteRegistryQuestion'))) {
-            const {
-                registryDetail: {
-                    data: {id},
-                },
-            } = this.props;
-            this.props.dispatch(registryDelete(id));
+    handleDeleteRegistry = async () => {
+        const { dispatch, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRegistryQuestion')));
+        if(result){
+            dispatch(registryDelete(id));
         }
     };
 
@@ -301,7 +299,7 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handlePushApToExt = () => {
+    handlePushApToExt = async () => {
         const {
             extSystems,
             registryDetail: {data},
@@ -315,29 +313,35 @@ class RegistryPage extends AbstractReactComponent {
             initialValues.extSystem = extSystems[0].code;
         }
 
-        const filteredExtSystems = extSystems.filter(extSystem => {
-            const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
-            return found === null;
-        });
+        const result = data.revStateApproval != null 
+            ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation'))) 
+            : true;
 
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('ap.push-to-ext.title'),
-                <ApPushToExt
-                    onSubmit={data => {
-                        return WebApi.saveAccessPoint(id, data.extSystem);
-                    }}
-                    onSubmitSuccess={() => {
-                        dispatch(modalDialogHide());
-                        dispatch(goToAe(history, id, true, !select));
-                    }}
-                    initialValues={initialValues}
-                    extSystems={filteredExtSystems}
-                />,
-                MODAL_DIALOG_SIZE.SM,
-            ),
-        );
+        if(result){
+            const filteredExtSystems = extSystems.filter(extSystem => {
+                const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
+                return found === null;
+            });
+
+            dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('ap.push-to-ext.title'),
+                    <ApPushToExt
+                        onSubmit={data => {
+                            return WebApi.saveAccessPoint(id, data.extSystem);
+                        }}
+                        onSubmitSuccess={() => {
+                            dispatch(modalDialogHide());
+                            dispatch(goToAe(history, id, true, !select));
+                        }}
+                        initialValues={initialValues}
+                        extSystems={filteredExtSystems}
+                        />,
+                    MODAL_DIALOG_SIZE.SM,
+                ),
+            );
+        }
     };
 
     handleScopeManagement = () => {
@@ -364,10 +368,18 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
     };
 
-    handleDeleteAccessPoint = data => {
-        this.props.dispatch(
-            modalDialogShow(this, i18n('accesspoint.removeDuplicity.title'), <AccessPointDeleteForm detail={data} />),
-        );
+    handleDeleteAccessPoint = async (accessPointDetail) => {
+        const { dispatch } = this.props;
+        const result = accessPointDetail.data.revStateApproval != null 
+            ? await dispatch(showConfirmDialog(i18n('accesspoint.removeDuplicity.confirmation'))) 
+            : true;
+        if(result){
+            dispatch(modalDialogShow(
+                this,
+                i18n('accesspoint.removeDuplicity.title'),
+                <AccessPointDeleteForm detail={accessPointDetail} />
+            ));
+        }
     };
 
     handleChangeApState = () => {
@@ -404,29 +416,19 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
     };
 
-    handleCreateRevision = () => {
-        if (window.confirm(i18n('registry.createRevisionQuestion'))) {
-            const {
-                history,
-                registryDetail: {
-                    data: {id},
-                },
-                select = false
-            } = this.props;
-            this.props.dispatch(registryCreateRevision(id, history, select));
+    handleCreateRevision = async () => {
+        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.createRevisionQuestion')));
+        if(result){
+            dispatch(registryCreateRevision(id, history, select));
         }
     };
 
-    handleDeleteRevision = () => {
-        if (window.confirm(i18n('registry.deleteRevisionQuestion'))) {
-            const {
-                history,
-                registryDetail: {
-                    data: {id},
-                },
-                select = false,
-            } = this.props;
-            this.props.dispatch(registryDeleteRevision(id, history, select));
+    handleDeleteRevision = async () => {
+        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRevisionQuestion')));
+        if(result){
+            dispatch(registryDeleteRevision(id, history, select));
         }
     };
 
@@ -498,9 +500,11 @@ class RegistryPage extends AbstractReactComponent {
             module,
             customRibbon,
             registryDetail,
+            select,
         } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
+        const hasRevision = data?.revStateApproval != null;
 
         const altActions = [...parts.altActions];
 
@@ -513,196 +517,201 @@ class RegistryPage extends AbstractReactComponent {
                     </div>
                 </Button>,
             );
-        }
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || userDetail.hasOne(perms.AP_SCOPE_WR)) {
-            altActions.push(
-                <Button key="registryImport" onClick={this.handleRegistryImport}>
-                    <Icon glyph="fa-file" />
-                    <div>
-                        <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
-                    </div>
-                </Button>,
-            );
+            if(!select){
+                altActions.push(
+                    <Button key="registryImport" onClick={this.handleRegistryImport}>
+                        <Icon glyph="fa-file" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
+                        </div>
+                    </Button>,
+                );
 
-            if (extSystems && extSystems.length > 0) {
-                altActions.push(
-                    <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
-                        <Icon glyph="fa-cloud-download" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
-                        </div>
-                    </Button>,
-                );
-                altActions.push(
-                    <Button key="ext-syncs" onClick={this.handleExtSyncs}>
-                        <Icon glyph="fa-gg" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
-                        </div>
-                    </Button>,
-                );
+                if (extSystems && extSystems.length > 0) {
+                    altActions.push(
+                        <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
+                            <Icon glyph="fa-cloud-download" />
+                            <div>
+                                <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
+                            </div>
+                        </Button>,
+                    );
+                    altActions.push(
+                        <Button key="ext-syncs" onClick={this.handleExtSyncs}>
+                            <Icon glyph="fa-gg" />
+                            <div>
+                                <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
             }
-        }
-        if (userDetail.hasOne(perms.ADMIN)) {
-            altActions.push(
-                <Button key="scopeManagement" onClick={this.handleScopeManagement}>
-                    <Icon glyph="fa-wrench" />
-                    <div>
-                        <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
-                    </div>
-                </Button>,
-            );
         }
 
         const itemActions = [...parts.itemActions];
-        if (this.canDeleteRegistry()) {
-            if (
-                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                    type: perms.AP_SCOPE_WR,
-                    scopeId: data ? data.scopeId : null,
-                })
-            ) {
-                itemActions.push(
-                    <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
-                        <Icon glyph="fa-trash" />
+        const revisionActions = [];
+
+        if(!select){
+            if (userDetail.hasOne(perms.ADMIN)) {
+                altActions.push(
+                    <Button key="scopeManagement" onClick={this.handleScopeManagement}>
+                        <Icon glyph="fa-wrench" />
                         <div>
-                            <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+                            <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
                         </div>
                     </Button>,
                 );
             }
 
-            itemActions.push(
-                <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
-                    <Icon glyph="fa-search" />
-                    <div>
-                        <span className="btnText">{i18n('registry.registryUsage')}</span>
-                    </div>
-                </Button>,
-            );
+            if (this.canDeleteRegistry()) {
+                if (
+                    userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                        type: perms.AP_SCOPE_WR,
+                        scopeId: data ? data.scopeId : null,
+                    })
+                ) {
+                    itemActions.push(
+                        <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
+                            <Icon glyph="fa-trash" />
+                            <div>
+                                <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
 
-            if (
-                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                    type: perms.AP_SCOPE_WR,
-                    scopeId: data ? data.scopeId : null,
-                })
-            ) {
                 itemActions.push(
-                    <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
-                        <Icon glyph="fa-ban" />
+                    <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+                        <Icon glyph="fa-search" />
                         <div>
-                            <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                            <span className="btnText">{i18n('registry.registryUsage')}</span>
                         </div>
                     </Button>,
                 );
+
+                if (
+                    userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                        type: perms.AP_SCOPE_WR,
+                        scopeId: data ? data.scopeId : null,
+                    })
+                ) {
+                    itemActions.push(
+                        <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+                            <Icon glyph="fa-ban" />
+                            <div>
+                                <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
             }
-        }
 
-        if (id && data) {
-            itemActions.push(
-                <Button key="show-state-history" onClick={this.handleShowApHistory}>
-                    <Icon glyph="fa-clock-o" />
-                    <div>
-                        <span className="btnText">{i18n('ap.stateHistory')}</span>
-                    </div>
-                </Button>,
-            );
+            if (id && data) {
+                itemActions.push(
+                    <Button key="show-state-history" onClick={this.handleShowApHistory}>
+                        <Icon glyph="fa-clock-o" />
+                        <div>
+                            <span className="btnText">{i18n('ap.stateHistory')}</span>
+                        </div>
+                    </Button>,
+                );
 
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR, 
-                perms.AP_CONFIRM_ALL, perms.AP_CONFIRM, 
-                perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
+                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR, 
+                    perms.AP_CONFIRM_ALL, perms.AP_CONFIRM, 
+                    perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
                 )) {
-                itemActions.push(
-                    <Button key="change-state" onClick={this.handleChangeApState}>
-                        <Icon glyph="fa-pencil" />
-                        <div>
-                            <span className="btnText">{i18n('ap.changeState')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
+                    itemActions.push(
+                        <Button key="change-state" onClick={this.handleChangeApState} disabled={hasRevision}>
+                            <Icon glyph="fa-pencil" />
+                            <div>
+                                <span className="btnText">{i18n('ap.changeState')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
 
-            // Vypnuti moznosti propojeni AP s AP v CAMu
-            // TODO: remove related code
-            /*
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
-              itemActions.push(
+                // Vypnuti moznosti propojeni AP s AP v CAMu
+                // TODO: remove related code
+                /*
+                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+                itemActions.push(
                 <Button key="connect-ap" onClick={this.handleConnectAp}>
-                    <Icon glyph="fa-link" />
-                    <div>
-                        <span className="btnText">{i18n('ap.connect')}</span>
-                    </div>
+                <Icon glyph="fa-link" />
+                <div>
+                <span className="btnText">{i18n('ap.connect')}</span>
+                </div>
                 </Button>,
-              );
-            }
-            */
+                );
+                }
+                */
 
-            if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
-                itemActions.push(
-                    <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
-                        <Icon glyph="fa-cloud-upload" />
-                        <div>
-                            <span className="btnText">{i18n('ap.push-to-ext')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
+                if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
+                    itemActions.push(
+                        <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
+                            <Icon glyph="fa-cloud-upload" />
+                            <div>
+                                <span className="btnText">{i18n('ap.push-to-ext')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
 
-            if (data.revStateApproval) {
-                itemActions.push(
-                    <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
-                        <Icon glyph="fa-undo" />
-                        <div>
-                            <span className="btnText">{i18n('registry.deleteRevision')}</span>
-                        </div>
-                    </Button>,
-                );
-                itemActions.push(
-                    <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
-                        <Icon glyph="fa-pencil" />
-                        <div>
-                            <span className="btnText">{i18n('registry.changeStateRevision')}</span>
-                        </div>
-                    </Button>,
-                );
-                itemActions.push(
-                    <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
-                        <Icon glyph="fa-check" />
-                        <div>
-                            <span className="btnText">{i18n('registry.mergeRevision')}</span>
-                        </div>
-                    </Button>,
-                );
-            } else {
-                itemActions.push(
-                    <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
-                        <Icon glyph="fa-plus" />
-                        <div>
-                            <span className="btnText">{i18n('registry.createRevision')}</span>
-                        </div>
-                    </Button>,
-                );
+                if (hasRevision) {
+                    revisionActions.push(
+                        <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
+                            <Icon glyph="fa-undo" />
+                            <div>
+                                <span className="btnText">{i18n('registry.deleteRevision')}</span>
+                            </div>
+                        </Button>,
+                    );
+                    revisionActions.push(
+                        <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
+                            <Icon glyph="fa-pencil" />
+                            <div>
+                                <span className="btnText">{i18n('registry.changeStateRevision')}</span>
+                            </div>
+                        </Button>,
+                    );
+                    revisionActions.push(
+                        <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
+                            <Icon glyph="fa-check" />
+                            <div>
+                                <span className="btnText">{i18n('registry.mergeRevision')}</span>
+                            </div>
+                        </Button>,
+                    );
+                } else {
+                    revisionActions.push(
+                        <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
+                            <Icon glyph="fa-plus" />
+                            <div>
+                                <span className="btnText">{i18n('registry.createRevision')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
             }
         }
 
-        let altSection;
-        if (altActions.length > 0) {
-            altSection = (
-                <RibbonGroup key="ribbon-alt-actions" className="small">
-                    {altActions}
-                </RibbonGroup>
-            );
-        }
-        let itemSection;
-        if (itemActions.length > 0) {
-            itemSection = (
-                <RibbonGroup key="ribbon-item-actions" className="small">
-                    {itemActions}
-                </RibbonGroup>
-            );
-        }
+        const altSection = altActions.length > 0 ? (
+            <>
+                {altActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {altActions}
+                    </RibbonGroup>}
+                {itemActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {itemActions}
+                    </RibbonGroup>}
+                {revisionActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {revisionActions}
+                    </RibbonGroup>}
+                </>
+        ) : undefined;
 
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} showUser={!select}/>;
     };
 
     getEditMode = () => {
@@ -728,7 +737,17 @@ class RegistryPage extends AbstractReactComponent {
                 revisionState === RevStateApproval.ACTIVE 
                     || revisionState === RevStateApproval.TO_AMEND
             ){
-                editMode = true;
+                if(apState === StateApproval.APPROVED){
+                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
+                        type: perms.AP_EDIT_CONFIRMED,
+                        scopeId: registryDetail.data.scopeId,
+                    });
+                } else {
+                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
+                        type: perms.AP_SCOPE_WR,
+                        scopeId: registryDetail.data.scopeId,
+                    });
+                }
             }
         }
         return editMode;

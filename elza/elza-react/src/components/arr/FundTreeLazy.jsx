@@ -8,6 +8,7 @@ import {
     StoreHorizontalLoader,
     Utils,
     VirtualList,
+    TooltipTrigger,
 } from 'components/shared';
 import {Button} from '../ui';
 import classNames from 'classnames';
@@ -164,6 +165,14 @@ class FundTreeLazy extends AbstractReactComponent {
         this.setState({treeContainer: this.treeContainerRef});
     }
 
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if(this.props.nodes != nextProps.nodes){
+            this.setState({ 
+                highestNodeLevelCount: this.getHighestNodeLevelCount(nextProps.nodes)
+            })
+        }
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
@@ -187,6 +196,16 @@ class FundTreeLazy extends AbstractReactComponent {
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
+    getHighestNodeLevelCount = (nodes) => {
+        let highestNodeLevelCount = 0;
+        nodes.forEach((node)=>{
+            if(node.referenceMark?.length > highestNodeLevelCount){
+                highestNodeLevelCount = node.referenceMark.length;
+            }
+        })
+        return Math.ceil(highestNodeLevelCount/2);
+    }
+
     focus = () => {
         ReactDOM.findDOMNode(this.refs.treeWrapper).focus();
     };
@@ -197,6 +216,7 @@ class FundTreeLazy extends AbstractReactComponent {
      */
     renderNode = node => {
         const {onNodeDoubleClick, onOpenCloseNode, onContextMenu, showEditPermissions} = this.props;
+        const { highestNodeLevelCount } = this.state;
 
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
         const hasPermission = node.arrPerm;
@@ -244,7 +264,15 @@ class FundTreeLazy extends AbstractReactComponent {
             'node-icon': true,
             'node-icon-color': this.props.colorCoded,
         });
-        const levels = createReferenceMark(node);
+
+        const levelWidth = 18;
+        const separatorWidth = 6;
+
+        const levels = createReferenceMark(
+            node, 
+            {style:{width: `${levelWidth}px`}}, 
+            {style:{width: `${separatorWidth}px`}}
+        );
 
         let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
         const title = name;
@@ -256,23 +284,52 @@ class FundTreeLazy extends AbstractReactComponent {
 
         const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
+        const nodeLevelCount = node.referenceMark ? Math.ceil(node.referenceMark.length/2) : 0;
+        const nodeLevelsWidth = (nodeLevelCount * levelWidth) + ((nodeLevelCount-1)*separatorWidth);
+
+        /* Spocitani sirky podle uzlu s nejdelsim referencnim oznacenim */
+        const highestNodeLevelsWidth = (highestNodeLevelCount * levelWidth) + ((highestNodeLevelCount-1)*separatorWidth);
+
         return (
-            <div key={node.id} className={cls} {...clickProps}>
-                {levels}
+            <TooltipTrigger 
+                key={node.id}
+                content={
+                    <div style={{
+                    maxWidth: "400px", 
+                    textAlign: "justify",
+                    padding: "5px",
+                }}>
+                        {title}
+                    </div>
+                } 
+                className={cls} 
+                placement={"horizontal"} 
+                style={{minWidth: `${highestNodeLevelsWidth + 100}px`}}
+                {...clickProps} 
+            >
+                <span 
+                    className="referenceMark" 
+                    style={{
+                        display: "flex",
+                        width: `${nodeLevelsWidth}px`,
+                        flexShrink: 0,
+                    }}
+                >
+                    {levels}
+                </span>
                 {expCol}
                 <Icon className={iconClass} {...iconProps} />
                 <div
-                    title={title}
                     className="node-label"
                     onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}
                 >
                     {name}
                     {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
-                    {this.props.onLinkClick && node.link && (
-                        <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)} />
-                    )}
                 </div>
-            </div>
+                {this.props.onLinkClick && node.link && (
+                    <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)} />
+                )}
+            </TooltipTrigger>
         );
     };
 
@@ -348,7 +405,7 @@ class FundTreeLazy extends AbstractReactComponent {
                         )}
                         {actionAddons}
                     </div>
-                    <div className="fa-tree-lazy-container referenceMark" ref={ref => this.treeContainerRef = ref}>
+                    <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
                         {this.state.treeContainer && (
                             <VirtualList
@@ -358,6 +415,7 @@ class FundTreeLazy extends AbstractReactComponent {
                                 container={this.state.treeContainer}
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
+                                itemBuffer={10}
                             />
                         )}
                     </div>

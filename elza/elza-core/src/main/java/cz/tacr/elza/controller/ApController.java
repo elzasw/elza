@@ -270,6 +270,11 @@ public class ApController {
                 throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
                         .setId(itemTypeId);
             }
+            if (itemType.hasSpecifications()) {
+                throw new BusinessException("Item type requires specification", BaseCode.PROPERTY_NOT_EXIST)
+                        .set("itemTypeId", itemTypeId)
+                        .set("itemTypeCode", itemType.getCode());
+            }
             List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity());
             if (extraApTypeLimit.size() == 0) {
                 logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
@@ -850,6 +855,12 @@ public class ApController {
             data = new ArrayList<>(records.size());
             for (ApCachedAccessPoint record : records) {
                 CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
+                if (entity == null) {
+                    // entity found in index but not found in cache
+                    // it should not happend - index is broken
+                    logger.error("Missing entity in AP Cache, accessPointId: {}", record.getData());
+                    continue;
+                }
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
                 data.add(ae);
             }

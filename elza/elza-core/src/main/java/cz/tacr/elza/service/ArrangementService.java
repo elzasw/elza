@@ -5,9 +5,9 @@ import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
+import static java.util.stream.Collectors.toSet;
 
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -46,10 +47,10 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import com.google.common.collect.Iterables;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -67,6 +68,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -94,6 +96,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -102,6 +105,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -122,6 +126,8 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
@@ -144,7 +150,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
-    
+
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
     @Autowired
@@ -199,7 +205,13 @@ public class ArrangementService {
     private NodeCacheService nodeCacheService;
 
     @Autowired
+    UserService userService;
+
+    @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private EntityManager em;
@@ -249,8 +261,42 @@ public class ArrangementService {
      *             objekt nenalezen
      */
     public ArrNode getNode(@NotNull Integer nodeId) {
-        return nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeId));
+        return nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+    }
+
+    /**
+     * Načtení uzlu na základě id s kontrolou verzí.
+     * 
+     * @param nodeId
+     * @param version
+     * @return konkrétní uzel
+     * @throws ObjectNotFoundException || LockVersionChangeException
+     */
+    public ArrNode getNodeVersion(@NotNull Integer nodeId, @NotNull Integer version) {
+        ArrNode node = getNode(nodeId);
+        if(!Objects.equals(node.getVersion(), version)) {
+            throw new LockVersionChangeException("Invalid node version");
+        }
+        return node;
+    }
+
+    /**
+     * Načtení uzlů na základě seznamu id.
+     * 
+     * @param nodeIds
+     * @return seřazený seznam
+     */
+    public List<ArrNode> getNodesWithSameOrder(List<Integer> nodeIds) {
+        List<ArrNode> dbNodes = nodeRepository.findAllByNodeIdIn(nodeIds);
+        Validate.isTrue(nodeIds.size() == dbNodes.size(), "Ne všechny ArrNode byly nalezeny");
+        Map<Integer, ArrNode> nodesMap = nodeRepository.findAllByNodeIdIn(nodeIds).stream()
+                .collect(Collectors.toMap(n -> n.getNodeId(), n -> n));
+        // řazení podle původního seznamu id
+        List<ArrNode> nodes = new ArrayList<>(nodeIds.size());
+        for (Integer i : nodeIds) {
+            nodes.add(nodesMap.get(i));
+        }
+        return nodes;
     }
 
     /**
@@ -296,7 +342,9 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                               final RulRuleSet ruleSet,
-                              final List<ApScope> scopes) {
+                              final List<ApScope> scopes,
+                              final List<Integer> userIds,
+                              final List<Integer> groupIds) {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -321,14 +369,15 @@ public class ArrangementService {
         }
 
         if (scopes != null) {
-            for (ApScope scope : scopes) {
-                if (scope.getScopeId() == null) {
-                    scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils
-                            .replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
-                    scopeRepository.save(scope);
-                }
-            }
-            synchApScopes(originalFund, scopes);
+            syncApScopes(originalFund, scopes);
+        }
+
+        if (userIds != null) {
+            syncUsers(originalFund, userIds);
+        }
+
+        if (groupIds != null) {
+            syncGroups(originalFund, groupIds);
         }
 
         eventNotificationService
@@ -338,31 +387,80 @@ public class ArrangementService {
     }
 
     /**
-     * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
+     * Aktualizuje seznamu ApScope pro ArrFund
+     * 
+     * @param fund
+     * @param newApScopes
+     * @return
      */
-    private void synchApScopes(final ArrFund fund,
-                               final Collection<ApScope> newApScopes) {
-        Assert.notNull(fund, "AS musí být vyplněn");
+    private List<ArrFundRegisterScope> syncApScopes(final ArrFund fund, final Collection<ApScope> newApScopes) {
+        Validate.notNull(fund, "AS musí být vyplněn");
 
-        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-                .createEntityMap(fundRegisterScopeRepository.findByFund(fund), i -> i.getScope().getScopeId());
-        Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
+        // get db scopes
+        List<ArrFundRegisterScope> dbScopes = fundRegisterScopeRepository.findByFund(fund);
+        Map<Integer, ArrFundRegisterScope> scopesById = dbScopes
+                .stream().collect(Collectors.toMap(s -> s.getScope().getScopeId(), s -> s));
+
+        List<ArrFundRegisterScope> result = new ArrayList<>(newApScopes.size());
+        List<ArrFundRegisterScope> createdScopes = new ArrayList<>();        
 
         for (ApScope newScope : newApScopes) {
-            ArrFundRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
+            ArrFundRegisterScope currScope = scopesById.remove(newScope.getScopeId());
 
-            if (oldScope == null) {
-                oldScope = new ArrFundRegisterScope();
-                oldScope.setFund(fund);
-                oldScope.setScope(newScope);
+            if (currScope == null) {
+                ArrFundRegisterScope createdScope = new ArrFundRegisterScope();
+                createdScope.setFund(fund);
+                createdScope.setScope(newScope);
+                createdScopes.add(createdScope);                
             } else {
-                removeScopes.remove(oldScope);
+                // scope exists
+                result.add(currScope);
             }
-
-            fundRegisterScopeRepository.save(oldScope);
         }
 
-        fundRegisterScopeRepository.deleteAll(removeScopes);
+        if (!scopesById.isEmpty()) {
+            // delete unused
+            fundRegisterScopeRepository.deleteAll(scopesById.values());
+        }
+        result.addAll(fundRegisterScopeRepository.saveAll(createdScopes));        
+        
+        return result; 
+    }
+
+    /**
+     * Aktualizuje seznamu User pro ArrFund
+     * 
+     * @param fund
+     * @param userIds
+     */
+    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds) {
+        Validate.notNull(fund, "AS musí být vyplněn");
+
+        List<UsrUser> users = userRepository.findByFund(fund);
+        Map<Integer, UsrUser> usersById = users
+                .stream().collect(Collectors.toMap(u -> u.getUserId(), u -> u));
+
+        for (Integer userId : userIds) {
+            UsrUser user = usersById.get(userId);
+            if (user == null) {
+                userService.addFundAdminPermissions(userId, null, fund);
+            } else {
+                usersById.remove(userId);
+            }
+        }
+
+        usersById.values().forEach(u -> userService.deleteUserFundAllPermissions(u));
+    }
+
+    /**
+     * 
+     * Aktualizuje seznamu Group pro ArrFund
+     * 
+     * @param fund
+     * @param groupIds
+     */
+    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
+        // TODO
     }
 
     /**
@@ -383,6 +481,8 @@ public class ArrangementService {
      * @param uuid
      * @param scopes
      *            Seznam oblastí, může být null
+     * @param userIds
+     * @param groupIds 
      * @return nová archivní pomůcka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
@@ -394,7 +494,42 @@ public class ArrangementService {
                                           final String unitdate,
                                           final String mark,
                                           String uuid,
-                                          List<ApScope> scopes) {
+                                          List<ApScope> scopes,
+                                          List<Integer> userIds,
+                                          List<Integer> groupIds) {
+
+        // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
+            if (ObjectUtils.isEmpty(userIds) && ObjectUtils.isEmpty(groupIds)) {
+                Assert.isTrue(false, "Nebyl vybrán správce");
+            }
+
+            // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
+            // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
+            if (userIds != null && !userIds.isEmpty()) {
+                // TODO: Remove stream and user more direct query
+                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
+                        .map(x -> x.getUserId())
+                        .collect(toSet());
+                userIds.forEach(u -> {
+                            if (!userFundCreateIds.contains(u)) {
+                                throw new BusinessException("Předaný správce (uživatel) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_USER_MISSING_FUND_CREATE_PERM).set("id", u);
+                            }
+                        });
+            }
+            if (groupIds != null && !groupIds.isEmpty()) {
+                final Set<Integer> groupFundCreateIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
+                        .map(x -> x.getGroupId())
+                        .collect(toSet());
+                groupIds.forEach(g -> {
+                            if (!groupFundCreateIds.contains(g)) {
+                                throw new BusinessException("Předaný správce (skupina) nemá oprávnení zakládat AS", ArrangementCode.ADMIN_GROUP_MISSING_FUND_CREATE_PERM).set("id", g);
+                            }
+                        });
+            }
+        }
+
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         if (uuid == null || uuid.isEmpty()) {
@@ -408,6 +543,16 @@ public class ArrangementService {
             for (ApScope scope : scopes) {
                 addScopeToFund(fund, scope);
             }
+        }
+
+        // oprávnění na uživatele a skupiny
+        if (userIds != null && !userIds.isEmpty()) {
+            // add permissions to selectected users
+            userIds.forEach(id -> userService.addFundAdminPermissions(id, null, fund));
+        }
+        if (groupIds != null && !groupIds.isEmpty()) {
+            // add permissions to selectected groups
+            groupIds.forEach(id -> userService.addFundAdminPermissions(null, id, fund));
         }
 
         ArrFundVersion version = fundVersionRepository
@@ -495,27 +640,33 @@ public class ArrangementService {
         return node;
     }
 
-    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+    /**
+     * Create node object
+     * 
+     * Object is not saved.
+     *
+     * @param fund
+     * @param uuid
+     * @param createChange
+     * @return
+     */
+    public ArrNode createNodeObject(final ArrFund fund,
+                                    @Nullable final String uuid,
+                                    final ArrChange createChange) {
+        Validate.notNull(fund);
+        Validate.notNull(createChange);
+
         ArrNode node = new ArrNode();
         node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(uuid == null ? generateUuid() : uuid);
         node.setFund(fund);
-        nodeRepository.save(node);
         return node;
     }
 
-    /**
-     * Dodatečné nastavení primární vazby u změny.
-     *
-     * @param change        změna u které primární uzel nastavujeme
-     * @param primaryNodeId identifikátor uzlu
-     * @return upravená změna
-     */
-    public ArrChange setPrimaryNodeId(final ArrChange change,
-                                      final Integer primaryNodeId) {
-        ArrNode primaryNode = new ArrNode();
-        primaryNode.setNodeId(primaryNodeId);
-        return setPrimaryNode(change, primaryNode);
+    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+        ArrNode node = createNodeObject(fund, uuid, createChange);
+
+        return nodeRepository.save(node);
     }
 
     /**
@@ -942,6 +1093,9 @@ public class ArrangementService {
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
         Validate.notNull(dbNode, "Musí být vyplněno");
         Validate.notNull(lockNode, "Musí být vyplněno");
+        if (change == null) {
+            Validate.notNull(change, "Musí být vyplněno");
+        }
 
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());

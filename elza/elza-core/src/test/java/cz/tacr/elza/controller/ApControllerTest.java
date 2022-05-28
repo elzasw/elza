@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
@@ -50,10 +51,34 @@ public class ApControllerTest extends AbstractControllerTest {
 
     public static final String STRUCT_AP_TYPE = "PERSON_BEING_STRUCT";
     public static final String PT_NAME = "PT_NAME";
+    public static final String PT_BODY = "PT_BODY";
     public static final String PT_REL = "PT_REL";
     public static final String NM_MAIN = "NM_MAIN";
     public static final String NM_SUP_GEN = "NM_SUP_GEN";
     public static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
+    public static final String BRIEF_DESC = "BRIEF_DESC";
+    public static final String REL_ENTITY = "REL_ENTITY";
+    public static final String RT_BROTHER = "RT_BROTHER";
+    private RulPartTypeVO ptName;
+    private RulPartTypeVO ptRel;
+    private RulPartTypeVO ptBody;
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        preparePartType();
+    }
+
+    private void preparePartType() {
+        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+
+        ptName = partTypes.get(PT_NAME);
+        assertNotNull(ptName);
+        ptRel = partTypes.get(PT_REL);
+        assertNotNull(ptRel);
+        ptBody = partTypes.get(PT_BODY);
+        assertNotNull(ptBody);
+    }
 
     @Test
     public void getRecordTypesTest() {
@@ -129,8 +154,6 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
-        RulPartTypeVO ptName = partTypes.get(PT_NAME);
 
         List<ApItemVO> items = new ArrayList<>();
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
@@ -217,8 +240,6 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
-        RulPartTypeVO ptName = partTypes.get(PT_NAME);
 
         List<ApItemVO> items = new ArrayList<>();
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
@@ -364,13 +385,6 @@ public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void testPart() {
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
-
-        RulPartTypeVO ptName = partTypes.get(PT_NAME);
-        Assert.assertNotNull(ptName);
-        RulPartTypeVO ptRel = partTypes.get(PT_REL);
-        Assert.assertNotNull(ptRel);
-
         List<ApTypeVO> types = getRecordTypes();
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
@@ -382,7 +396,7 @@ public class ApControllerTest extends AbstractControllerTest {
         apItems.add(buildApItem(nmSupGenItemType.getCode(), null, "1920-1986", null, null));
 
         ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
-        ap.setTypeId(getNonHierarchicalApType(types).getId());
+        ap.setTypeId(getApType(types, "PERSON_BEING").getId());
         ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, apItems));
         ap.setScopeId(scopeId);
         ApAccessPointVO accessPoint = createAccessPoint(ap);
@@ -488,64 +502,91 @@ public class ApControllerTest extends AbstractControllerTest {
 
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
-        RulItemType geoAdminClsItemType = itemTypeRepository.findOneByCode(GEO_ADMIN_CLASS);
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+        RulItemType briefDscType = itemTypeRepository.findOneByCode(BRIEF_DESC);
+        RulItemType relEntityType = itemTypeRepository.findOneByCode(REL_ENTITY);
 
-        RulPartTypeVO ptName = partTypes.get(PT_NAME);
-        Assert.assertNotNull(ptName);
-
-        // Vytvoření replace
+        // AP A: Vytvoření replace
         List<ApItemVO> itemReplace = new ArrayList<>();
-        itemReplace.add(buildApItem(nmMainItemType.getCode(), null,"ApRecordA name", null, null));
-        itemReplace.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordA complement", null, null));
+        itemReplace.add(buildApItem(NM_MAIN, null, "ApRecordA name", null, null));
+        itemReplace.add(buildApItem(NM_SUP_GEN, null, "ApRecordA complement", null, null));
 
         ApAccessPointCreateVO replacedRecord = new ApAccessPointCreateVO();
-        replacedRecord.setTypeId(getNonHierarchicalApType(types).getId());
+        replacedRecord.setTypeId(getApType(types, "PERSON_BEING").getId());
         replacedRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplace));
         replacedRecord.setScopeId(scopeId);
         ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
-        Assert.assertNotNull(replacedRecordCreated.getId());
+        assertNotNull(replacedRecordCreated.getId());
 
-        // Vytvoření replacement
+
+        // AP B: Vytvoření replacement
         List<ApItemVO> itemReplacement = new ArrayList<>();
-        itemReplacement.add(buildApItem(nmMainItemType.getCode(), null , "ApRecordB name", null, null));
-        itemReplacement.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordB complement", null, null));
+        itemReplacement.add(buildApItem(NM_MAIN, null, "ApRecordB name", null, null));
+        itemReplacement.add(buildApItem(NM_SUP_GEN, null, "ApRecordB complement", null, null));
 
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
-        replacementRecord.setTypeId(getNonHierarchicalApType(types).getId());
+        replacementRecord.setTypeId(getApType(types, "PERSON_BEING").getId());
         replacementRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplacement));
         replacementRecord.setScopeId(scopeId);
 
         ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
         Assert.assertNotNull(replacementRecordCreated.getId());
 
-        // Vytvoření AP s vazbou na replaced
-        List<ApItemVO> itemsC = new ArrayList<>();
-        itemsC.add(buildApItem(nmMainItemType.getCode(), null, "ApRecordC name", null, null));
-        itemsC.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordC complement", null, null));
-        itemsC.add(buildApItem(geoAdminClsItemType.getCode(), null, replacedRecordCreated, null, null));
+        List<ApItemVO> bodyItemsB = new ArrayList<>();
+        bodyItemsB.add(buildApItem(BRIEF_DESC, null, "ApRecordB desc", null, null));
+        Integer partBodyBId = createPart(replacementRecordCreated.getId(),
+                                         createPartFormVO(null, ptBody.getCode(), null, bodyItemsB));
+        assertNotNull(partBodyBId);
+
+        // AP C: Vytvoření AP s vazbou na replaced
+        List<ApItemVO> nameItemsC = new ArrayList<>();
+        nameItemsC.add(buildApItem(NM_MAIN, null, "ApRecordC name", null, null));
+        nameItemsC.add(buildApItem(NM_SUP_GEN, null, "ApRecordC complement", null, null));
 
         ApAccessPointCreateVO recordC = new ApAccessPointCreateVO();
-        recordC.setTypeId(getNonHierarchicalApType(types).getId());
-        recordC.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsC));
+        recordC.setTypeId(getApType(types, "PERSON_BEING").getId());
+        recordC.setPartForm(createPartFormVO(null, ptName.getCode(), null, nameItemsC));
         recordC.setScopeId(scopeId);
 
         ApAccessPointVO recordCCreated = createAccessPoint(recordC);
-        Assert.assertNotNull(recordCCreated.getId());
+        assertNotNull(recordCCreated.getId());
 
-        // Vytvoření schváleného AP s vazbou na replaced
+        List<ApItemVO> bodyItemsC = new ArrayList<>();
+        bodyItemsC.add(buildApItem(BRIEF_DESC, null, "ApRecordC desc", null, null));
+        Integer partBodyCId = createPart(recordCCreated.getId(), createPartFormVO(null, ptBody.getCode(), null,
+                                                                                  bodyItemsC));
+        assertNotNull(partBodyCId);
+
+        List<ApItemVO> relItemsC = new ArrayList<>();
+        relItemsC.add(buildApItem(REL_ENTITY, RT_BROTHER, replacedRecordCreated, null, null));
+        Integer partRelCId = createPart(recordCCreated.getId(), createPartFormVO(null, ptRel.getCode(), null,
+                                                                                 relItemsC));
+        assertNotNull(partRelCId);
+
+        // AP D: Vytvoření schváleného AP s vazbou na replaced
         List<ApItemVO> itemsD = new ArrayList<>();
-        itemsD.add(buildApItem(nmMainItemType.getCode(), null, "ApRecordD name", null, null));
-        itemsD.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordD complement", null, null));
-        itemsD.add(buildApItem(geoAdminClsItemType.getCode(), null, replacedRecordCreated, null, null));
+        itemsD.add(buildApItem(NM_MAIN, null, "ApRecordD name", null, null));
+        itemsD.add(buildApItem(NM_SUP_GEN, null, "ApRecordD complement", null, null));
 
         ApAccessPointCreateVO recordD = new ApAccessPointCreateVO();
-        recordD.setTypeId(getNonHierarchicalApType(types).getId());
+        recordD.setTypeId(getApType(types, "PERSON_BEING").getId());
         recordD.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsD));
         recordD.setScopeId(scopeId);
 
         ApAccessPointVO recordDCreated = createAccessPoint(recordD);
         Assert.assertNotNull(recordDCreated.getId());
+
+        List<ApItemVO> bodyItemsD = new ArrayList<>();
+        bodyItemsD.add(buildApItem(BRIEF_DESC, null, "ApRecordD desc", null, null));
+        Integer partBodyDId = createPart(recordDCreated.getId(), createPartFormVO(null, ptBody.getCode(), null,
+                                                                                  bodyItemsD));
+        assertNotNull(partBodyDId);
+
+        List<ApItemVO> relItemsD = new ArrayList<>();
+        relItemsD.add(buildApItem(REL_ENTITY, RT_BROTHER, replacedRecordCreated, null, null));
+        Integer partRelDId = createPart(recordDCreated.getId(), createPartFormVO(null, ptRel.getCode(), null,
+                                                                                 relItemsD));
+        assertNotNull(partRelDId);
+
         // mark as approved
         ApStateVO stateD = recordDCreated.getState();
         ApStateChangeVO stateChangeD = new ApStateChangeVO();
@@ -554,7 +595,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // Dohledání usages
         RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertNotNull(usage.getFunds());
+        assertNotNull(usage.getFunds());
 
         // Replace
         replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
@@ -564,53 +605,59 @@ public class ApControllerTest extends AbstractControllerTest {
         // ověření změny v AP - C
         recordCCreated = getAccessPoint(recordCCreated.getId());
         assertNull(recordCCreated.getRevStateApproval()); // has no revision
-        assertEquals(recordCCreated.getParts().size(), 1); // has no revision
-        ApPartVO mainCPart = recordCCreated.getParts().get(0);
-        assertEquals(mainCPart.getItems().size(), 3); // 3 items as on the beginning
-        ApItemVO geoAdminItem = null;
-        for (ApItemVO item : mainCPart.getItems()) {
-            if (item.getTypeId().equals(geoAdminClsItemType.getItemTypeId())) {
-                assertNull(geoAdminItem);
-                geoAdminItem = item;
-            }
-        }
-        assertNotNull(geoAdminItem);
-        ApItemAccessPointRefVO geoAdminItemApRef = (ApItemAccessPointRefVO) geoAdminItem;
-        assertEquals(geoAdminItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
+        assertEquals(3, recordCCreated.getParts().size()); // has no revision
+        ApPartVO relCPart = getFirstPart(recordCCreated.getParts(), ptRel);
+        assertEquals(1, relCPart.getItems().size()); // 1 item as on the beginning
+        ApItemVO relEntityItem = getFirstItem(relCPart, relEntityType);
+        assertNotNull(relEntityItem);
+        ApItemAccessPointRefVO relEntityItemApRef = (ApItemAccessPointRefVO) relEntityItem;
+        assertEquals(relEntityItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
 
         // ověření změny v AP - D
         recordDCreated = getAccessPoint(recordDCreated.getId());
         assertEquals(recordDCreated.getRevStateApproval(), RevStateApproval.ACTIVE); // has revision
-        assertEquals(recordDCreated.getParts().size(), 1);
-        assertEquals(recordDCreated.getRevParts().size(), 1);
+        assertEquals(3, recordDCreated.getParts().size());
+        assertEquals(1, recordDCreated.getRevParts().size());
         ApPartVO mainDPart = recordDCreated.getRevParts().get(0);
-        assertEquals(mainDPart.getItems().size(), 1);
-        ApItemVO geoAdminDItem = null;
-        for (ApItemVO item : mainDPart.getItems()) {
-            if (item.getTypeId().equals(geoAdminClsItemType.getItemTypeId())) {
-                assertNull(geoAdminDItem);
-                geoAdminDItem = item;
-            }
-        }
-        assertNotNull(geoAdminDItem);
-        assertNull(geoAdminDItem.getObjectId());
-        assertNotNull(geoAdminDItem.getOrigObjectId());
-        ApItemAccessPointRefVO geoAdminDItemApRef = (ApItemAccessPointRefVO) geoAdminDItem;
-        assertEquals(geoAdminDItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
+        assertEquals(1, mainDPart.getItems().size());
+        ApItemVO relEntityDItem = getFirstItem(mainDPart, relEntityType);
+        assertNotNull(relEntityDItem);
+        assertNull(relEntityDItem.getObjectId());
+        assertNotNull(relEntityDItem.getOrigObjectId());
+        ApItemAccessPointRefVO relEntityDItemApRef = (ApItemAccessPointRefVO) relEntityDItem;
+        assertEquals(relEntityDItemApRef.getAccessPoint().getId(), replacementRecordCreated.getId());
     }
 
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list) {
-        for (ApTypeVO type : list) {
-            if (type.getAddRecord()) {
-                return type;
+    private ApItemVO getFirstItem(ApPartVO part, RulItemType itemType) {
+        if (part.getItems() == null) {
+            return null;
+        }
+        for (ApItemVO item : part.getItems()) {
+            if (item.getTypeId().equals(itemType.getItemTypeId())) {
+                return item;
             }
         }
+        return null;
+    }
 
-        for (ApTypeVO type : list) {
-            if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren());
-                if (res != null) {
-                    return res;
+    private ApPartVO getFirstPart(List<ApPartVO> parts, RulPartTypeVO partType) {
+        for (ApPartVO p : parts) {
+            if (p.getTypeId().equals(partType.getId())) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private ApTypeVO getApType(final List<ApTypeVO> list, final String typeCode) {
+        for (ApTypeVO t : list) {
+            if (t.getCode().equals(typeCode)) {
+                return t;
+            }
+            if (t.getChildren() != null) {
+                ApTypeVO child = getApType(t.getChildren(), typeCode);
+                if (child != null) {
+                    return child;
                 }
             }
         }

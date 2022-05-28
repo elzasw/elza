@@ -123,7 +123,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         moveAndDeleteLevels(nodes, fundVersion);
 
-
         // atributy
         helperTestService.waitForWorkers();
         attributeValues(fundVersion);
@@ -235,7 +234,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 29);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 32);
         assertFalse(changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
@@ -262,7 +261,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 29);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 32);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -736,15 +735,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                                      final ArrFundVersionVO fundVersion) {
         ArrNodeVO rootNode = nodes.get(0);
         TreeNodeVO parentNode;
-        // přesun druhého uzlu před první
+
+        // 1. přesun druhého uzlu před první
         helperTestService.waitForWorkers();
         moveLevelBefore(fundVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
 
-        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(rootNode.getId());
-        TreeData treeData = getFundTree(input);
-        List<ArrNodeVO> newNodes = convertTreeNodes(treeData.getNodes());
+        List<ArrNodeVO> newNodes = getTreeNodes(fundVersion.getId(), rootNode.getId());
 
         // kontrola přesunu
         assertTrue(newNodes.size() == 4);
@@ -756,15 +752,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
-        // přesun druhého uzlu pod první
+        // 2. přesun druhého uzlu pod první
         helperTestService.waitForWorkers();
         moveLevelUnder(fundVersion, newNodes.get(0), rootNode, Arrays.asList(newNodes.get(1)), rootNode);
 
-        input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(newNodes.get(0).getId());
-        treeData = getFundTree(input);
-        List<ArrNodeVO> newNodes2 = convertTreeNodes(treeData.getNodes());
+        List<ArrNodeVO> newNodes2 = getTreeNodes(fundVersion.getId(), newNodes.get(0).getId());
 
         // kontrola přesunu
         assertTrue(newNodes2.size() == 1);
@@ -773,53 +765,139 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
-        // smazání druhého uzlu v první úrovni
+        // 3. smazání druhého uzlu v první úrovni
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent nodesWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
 
         assertTrue(nodesWithParent.getNode().getId().equals(newNodes.get(2).getId()));
         assertTrue(nodesWithParent.getParentNode().getId().equals(rootNode.getId()));
 
-        input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(rootNode.getId());
-        treeData = getFundTree(input);
-        List<ArrNodeVO> newNodes3 = convertTreeNodes(treeData.getNodes());
+        List<ArrNodeVO> newNodes3 = getTreeNodes(fundVersion.getId(), rootNode.getId());
 
+        // kontrola smazání
         assertTrue(newNodes3.size() == 2);
         assertTrue(newNodes3.get(0).getId().equals(newNodes.get(0).getId()));
         assertTrue(newNodes3.get(1).getId().equals(newNodes.get(3).getId()));
 
         helperTestService.waitForWorkers();
-        rootNode.setVersion(rootNode.getVersion() + 1);
+        rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
-        // přidání třetího levelu na první pozici pod root
+        // 4. přidání uzlu ve druhé úrovni
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                                                                  fundVersion, newNodes3.get(0), newNodes3.get(0), null);
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel4.getParentNode();
+        newNodes3.get(0).setId(parentNode.getId());
+        newNodes3.get(0).setVersion(parentNode.getVersion());
+
+        List<ArrNodeVO> newNodes4 = getTreeNodes(fundVersion.getId(), newNodes.get(0).getId());
+
+        // kontrola přidání
+        assertTrue(newNodes4.size() == 2);
+        assertTrue(newNodes4.get(0).getId().equals(newNodes.get(1).getId()));
+        assertTrue(newNodes4.get(1).getId().equals(newLevel4.getNode().getId()));
+
+        // 5. přidání uzlu na konec seznamu
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel5 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                fundVersion, rootNode, rootNode, null);
+                                                                  fundVersion, rootNode, rootNode, null);
 
         helperTestService.waitForWorkers();
         parentNode = newLevel5.getParentNode();
         rootNode.setId(parentNode.getId());
         rootNode.setVersion(parentNode.getVersion());
 
-        input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(rootNode.getId());
-        treeData = getFundTree(input);
-        List<ArrNodeVO> newNodes4 = convertTreeNodes(treeData.getNodes());
-
-        assertTrue(newNodes4.size() == 3);
-
-        // přesun posledního za první
+        // 6. přidání uzlu  na konec seznamu
         helperTestService.waitForWorkers();
-        moveLevelAfter(fundVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
+        ArrangementController.NodeWithParent newLevel6 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                                                                  fundVersion, rootNode, rootNode, null);
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel6.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        List<ArrNodeVO> newNodes56 = getTreeNodes(fundVersion.getId(), rootNode.getId());
+
+        // kontrola přidání
+        assertTrue(newNodes56.size() == 4);
+        assertTrue(newNodes56.get(0).getId().equals(newNodes.get(0).getId()));
+        assertTrue(newNodes56.get(1).getId().equals(newNodes.get(3).getId()));
+        assertTrue(newNodes56.get(2).getId().equals(newLevel5.getNode().getId()));
+        assertTrue(newNodes56.get(3).getId().equals(newLevel6.getNode().getId()));
+
+        // 7. přesun posledního za první
+        helperTestService.waitForWorkers();
+        moveLevelAfter(fundVersion, newNodes56.get(3), rootNode, Arrays.asList(newNodes56.get(2)), rootNode);
+
+        List<ArrNodeVO> newNodes7 = getTreeNodes(fundVersion.getId(), rootNode.getId());
+
+        // kontrola přesunu
+        assertTrue(newNodes7.size() == 4);
+        assertTrue(newNodes7.get(0).getId().equals(newNodes.get(0).getId()));
+        assertTrue(newNodes7.get(1).getId().equals(newNodes.get(3).getId()));
+        assertTrue(newNodes7.get(2).getId().equals(newNodes56.get(3).getId()));
+        assertTrue(newNodes7.get(3).getId().equals(newNodes56.get(2).getId()));
+
+        helperTestService.waitForWorkers();
+        rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
+
+        // 8. přesun seznamu uzlů z různých úrovní pod         
+        helperTestService.waitForWorkers();
+        moveLevelUnder(fundVersion, newNodes4.get(0), newNodes7.get(0), Arrays.asList(newNodes7.get(1), newNodes4.get(1), newNodes7.get(2)), rootNode);
+
+        // přenesené záznamy
+        List<ArrNodeVO> moveNodes = getTreeNodes(fundVersion.getId(), newNodes4.get(0).getId());
+
+        // kontrola přenášených záznamů
+        assertTrue(moveNodes.size() == 3);
+        assertTrue(moveNodes.get(0).getId().equals(newNodes7.get(1).getId()));
+        assertTrue(moveNodes.get(1).getId().equals(newNodes4.get(1).getId()));
+        assertTrue(moveNodes.get(2).getId().equals(newNodes7.get(2).getId()));
+
+        // výsledek všech akcí od root
+        List<ArrNodeVO> resultNodes = getTreeNodes(fundVersion.getId(), rootNode.getId(), Collections.singleton((newNodes.get(0).getId())));
+
+        // kontrola výsledku
+        assertTrue(resultNodes.size() == 3);
+        assertTrue(resultNodes.get(0).getId().equals(newNodes.get(0).getId()));
+        assertTrue(resultNodes.get(1).getId().equals(newNodes4.get(0).getId()));
+        assertTrue(resultNodes.get(2).getId().equals(newNodes7.get(3).getId()));
+    }
+
+    /**
+     * Získání seznamu uzlů
+     * 
+     * @param fundVersionId
+     * @param rootNodeId
+     * @return
+     */
+    private List<ArrNodeVO> getTreeNodes(Integer fundVersionId, Integer rootNodeId) {
+        return getTreeNodes(fundVersionId, rootNodeId, null);
+    }
+
+    /**
+     * Získání seznamu uzlů se seznamem nasazených uzlů
+     * 
+     * @param fundVersionId
+     * @param rootNodeId
+     * @param expandedIds
+     * @return
+     */
+    private List<ArrNodeVO> getTreeNodes(Integer fundVersionId, Integer rootNodeId, Set<Integer> expandedIds) {
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersionId);
+        input.setNodeId(rootNodeId);
+        input.setExpandedIds(expandedIds);
+        TreeData treeData = getFundTree(input);
+        return convertTreeNodes(treeData.getNodes());
     }
 
     /**
      * Získání informací o nodu a fundu
      */
-
     private void nodeInfo(List<ArrNodeVO> nodes, ArrFundVersionVO fundVersionVO) {
         assertNotNull(nodes);
         assertNotNull(fundVersionVO);
@@ -858,9 +936,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, "Série");
 
-        // Rodič nového uzlu musí být root
+        // rodič nového uzlu musí být root
         assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
-        // Verze root uzlu musí být povýšena
+        // verze root uzlu musí být povýšena
         assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         helperTestService.waitForWorkers();
@@ -873,9 +951,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
-        // Rodič nového uzlu musí být root
+        // rodič nového uzlu musí být root
         assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
-        // Verze root uzlu musí být povýšena
+        // verze root uzlu musí být povýšena
         assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         helperTestService.waitForWorkers();
@@ -888,9 +966,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
                 fundVersion, newLevel1.getNode(), rootNode, null);
 
-        // "Rodič nového uzlu musí být root"
+        // rodič nového uzlu musí být root
         assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
-        // "Verze root uzlu musí být povýšena"
+        // verze root uzlu musí být povýšena
         assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         helperTestService.waitForWorkers();
@@ -903,9 +981,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
                 fundVersion, newLevel3.getNode(), rootNode, null);
 
-        // "Rodič nového uzlu musí být root"
+        // rodič nového uzlu musí být root
         assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
-        // "Verze root uzlu musí být povýšena"
+        // verze root uzlu musí být povýšena
         assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
 
         helperTestService.waitForWorkers();

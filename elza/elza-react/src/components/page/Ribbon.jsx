@@ -25,6 +25,7 @@ const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUse
 
 class Ribbon extends AbstractReactComponent {
     static propTypes = {
+        showUser: PropTypes.bool,
         subMenu: PropTypes.bool,
         primarySection: PropTypes.object,
         admin: PropTypes.bool,
@@ -36,6 +37,7 @@ class Ribbon extends AbstractReactComponent {
 
     static defaultProps = {
         subMenu: false,
+        showUser: true,
     };
 
     ribbonDefaultFocusRef = null;
@@ -101,6 +103,7 @@ class Ribbon extends AbstractReactComponent {
             primarySection,
             fundId,
             status: {saveCounter},
+            showUser,
         } = this.props;
 
         let section = null;
@@ -322,16 +325,16 @@ class Ribbon extends AbstractReactComponent {
         const partsWithSplit = [];
         parts.forEach((part, index) => {
             partsWithSplit.push(part);
-            if (index + 1 < parts.length) {
-                partsWithSplit.push(<RibbonSplit key={'ribbon-spliter-' + (index + 1)} />);
-            }
         });
+        const _showUser = displayUserInfo && showUser;
 
         return (
-            <RibbonMenu>
-                {partsWithSplit}
-                {displayUserInfo && (
-                    <RibbonGroup className="small" right>
+            <div className="ribbon-menu-container">
+                <RibbonMenu>
+                    {partsWithSplit}
+                </RibbonMenu>
+                {_showUser && (
+                    <div className="user-menu-container">
                         <Dropdown className="user-menu" id={'user-menu'} alignRight>
                             <Dropdown.Toggle key="user-menu" id="user-menu">
                                 {userDetail.username} <Icon glyph="fa-user" />
@@ -361,9 +364,9 @@ class Ribbon extends AbstractReactComponent {
                                 </span>
                             </div>
                         )}
-                    </RibbonGroup>
+                        </div>
                 )}
-            </RibbonMenu>
+                </div>
         );
     }
 }

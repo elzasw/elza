@@ -32,6 +32,28 @@
         }
     }
 
+    &.no-hover {
+        .item-list-container {
+            .item-container {
+                &:hover {
+                    background: transparent;
+                }
+
+            }
+        }
+    }
+
+    &.alternating-rows {
+        .item-list-container {
+            .item-container {
+                &:nth-child(even){
+                    background-color: #f8f8f8; 
+                    background-color: #0000000b; 
+                }
+            }
+        }
+    }
+
     .item-list-container {
         overflow: hidden;
         overflow-y: auto;
@@ -41,7 +63,8 @@
             display: flex;
             flex-direction: row;
             line-height: 2em;
-            padding: 0 4px;
+            align-items: center;
+            padding: 0px 5px;
 
             &:hover {
                 background: $tree-node-label-active-bg
@@ -49,11 +72,14 @@
 
             .item {
                 flex-grow: 1;
+                line-height: 1.2em;
+                padding: 6px 4px;
                 width: 100%;
             }
 
             .item-actions-container {
                 flex-shrink: 0;
+                display: flex;
             }
         }
     }

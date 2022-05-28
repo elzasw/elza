@@ -50,8 +50,19 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
         //  Zjištění seznamu označených NODE na přesun
         const nodes = Object.keys(fund.fundTreeMovementsLeft.selectedIds).map(
-            id => fund.fundTreeMovementsLeft.nodes[indexById(fund.fundTreeMovementsLeft.nodes, parseInt(id))],
+            id => {
+                const index = indexById(fund.fundTreeMovementsLeft.nodes, parseInt(id));
+                return fund.fundTreeMovementsLeft.nodes[index];
+            }
         );
+
+        // Serazeni nodu jak byly v puvodnim seznamu
+        nodes.sort((nodeA, nodeB)=>{
+            const indexA = indexById(fund.fundTreeMovementsLeft.nodes, nodeA.id);
+            const indexB = indexById(fund.fundTreeMovementsLeft.nodes, nodeB.id);
+            return indexA - indexB;
+        })
+
         const nodesParent = getNodeParent(fund.fundTreeMovementsLeft.nodes, nodes[0].id);
 
         // Zjištění node kam přesouvat
