@@ -95,6 +95,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
@@ -119,6 +120,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -212,6 +214,9 @@ public class ArrangementService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @Autowired
     private EntityManager em;
@@ -428,7 +433,7 @@ public class ArrangementService {
     }
 
     /**
-     * Aktualizuje seznamu User pro ArrFund
+     * Aktualizace seznamu User pro ArrFund
      * 
      * @param fund
      * @param userIds
@@ -449,18 +454,33 @@ public class ArrangementService {
             }
         }
 
-        usersById.values().forEach(u -> userService.deleteUserFundAllPermissions(u));
+        usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
     }
 
     /**
      * 
-     * Aktualizuje seznamu Group pro ArrFund
+     * Aktualizace seznamu Group pro ArrFund
      * 
      * @param fund
      * @param groupIds
      */
     private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
-        // TODO
+        Validate.notNull(fund, "AS musí být vyplněn");
+
+        List<UsrGroup> groups = groupRepository.findByFund(fund);
+        Map<Integer, UsrGroup> groupsById = groups
+                .stream().collect(Collectors.toMap(g -> g.getGroupId(), g -> g));
+
+        for (Integer groupId : groupIds) {
+            UsrGroup group = groupsById.get(groupId);
+            if (group == null) {
+                userService.addFundAdminPermissions(null, groupId, fund);
+            } else {
+                groupsById.remove(groupId);
+            }
+        }
+
+        groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
     }
 
     /**
