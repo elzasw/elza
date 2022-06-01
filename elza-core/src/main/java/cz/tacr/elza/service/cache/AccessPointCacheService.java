@@ -762,7 +762,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             // check empty part
             if (CollectionUtils.isEmpty(cachedPart.getItems())) {
                 Validate.isTrue(false,
-                                "Empty part in cache, accessPointId=%s, partId=%s",
+                                "Část popisu entity nemůže být prázdná: Empty part in cache, accessPointId=%s, partId=%s",
                                 cachedAccessPoint.getAccessPointId(),
                                 cachedPart.getPartId());
             }
