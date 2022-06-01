@@ -947,7 +947,7 @@ public class AccessPointService {
                 } else {
                     if (!fundScopes.contains(replacementState.getScopeId())) {
                         throw new BusinessException(
-                                "Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.",
+                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity.",
                                 BaseCode.INVALID_STATE)
                                         .set("fundId", fundId)
                                         .set("scopeId", replacementState.getScopeId());
