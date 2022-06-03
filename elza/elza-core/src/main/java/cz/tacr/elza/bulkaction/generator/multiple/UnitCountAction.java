@@ -64,7 +64,7 @@ public class UnitCountAction extends Action {
 	 *
 	 * Map is order according type
 	 */
-	private Map<String, Integer> resultMap = new TreeMap<>();
+	private Map<String, ItemTypeSummary> resultMap = new TreeMap<>();
 
     /**
      * Již zapracované obaly
@@ -82,21 +82,26 @@ public class UnitCountAction extends Action {
 	private ArrFundVersion fundVersion;
 	private ArrChange change;
 
+    //DateRangeAction dateRangeAction;
+
 	@Autowired
     UnitCountAction(final UnitCountConfig config) {
 		Validate.notNull(config);
 
-		this.config = config;
+		this.config = config;		
     }
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
         Validate.notNull(structureItemRepository);
 
-		StaticDataProvider ruleSystem = getStaticDataProvider();
+        //dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
+        //dateRangeAction.init(bulkActionRun);
+
+		StaticDataProvider sdp = getStaticDataProvider();
 
 		String outputType = config.getOutputType();
-		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+		outputItemType = sdp.getItemTypeByCode(outputType);
 		fundVersion = bulkActionRun.getFundVersion();
 		change = bulkActionRun.getChange();
 		if (isLocal()) {
@@ -107,6 +112,7 @@ public class UnitCountAction extends Action {
 			// validate column names
 			Validate.notBlank(config.getOutputColumnUnitName());
 			Validate.notBlank(config.getOutputColumnUnitCount());
+			Validate.notBlank(config.getOutputColumnDateRange());
 
 			// validate column definitions
 			List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) outputItemType.getEntity().getViewDefinition();
@@ -115,11 +121,12 @@ public class UnitCountAction extends Action {
 
 			validateColumn(config.getOutputColumnUnitName(), ElzaColumn.DataType.TEXT, outputColumns);
 			validateColumn(config.getOutputColumnUnitCount(), ElzaColumn.DataType.INTEGER, outputColumns);
+            validateColumn(config.getOutputColumnDateRange(), ElzaColumn.DataType.TEXT, outputColumns);
 		}
 
 		// initialize counters
 		for (UnitCounterConfig counterCfg : config.getAggegators()) {
-            UnitCounter uc = new UnitCounter(counterCfg, structureItemRepository, ruleSystem);
+            UnitCounter uc = new UnitCounter(counterCfg, structureItemRepository, sdp);
 			counters.add(uc);
 		}
     }
@@ -173,7 +180,7 @@ public class UnitCountAction extends Action {
 
 	@Override
     public ActionResult getResult() {
-        UnitCountActionResult result = new UnitCountActionResult();
+	    UnitCountActionResult result = new UnitCountActionResult();
         if (isLocal()) {
         	return result;
 		}
@@ -181,12 +188,11 @@ public class UnitCountAction extends Action {
         result.setItemType(outputItemType.getCode());
         ElzaTable table = new ElzaTable();
 
-        for (Map.Entry<String, Integer> entry : resultMap.entrySet()) {
-			Map.Entry<String, String> key = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitName(),
-			        entry.getKey());
-			Map.Entry<String, String> value = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitCount(),
-			        entry.getValue().toString());
-            table.addRow(new ElzaRow(key, value));
+        for (Map.Entry<String, ItemTypeSummary> entry : resultMap.entrySet()) {
+			Map.Entry<String, String> name = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitName(), entry.getKey());
+			Map.Entry<String, String> count = new AbstractMap.SimpleEntry<>(config.getOutputColumnUnitCount(), entry.getValue().getCount().toString());
+			Map.Entry<String, String> datace = new AbstractMap.SimpleEntry<>(config.getOutputColumnDateRange(), entry.getValue().getTextResut());
+            table.addRow(new ElzaRow(name, count, datace));
         }
 
         result.setTable(table);
@@ -198,20 +204,29 @@ public class UnitCountAction extends Action {
 	}
 
 	/**
-	 * Add value to the result
+	 * Add integer value to the result
+	 * @param level 
 	 *
+	 * @param level
+	 * @param key
 	 * @param value
-	 * @param inc
 	 */
-	public void addValue(String value, int inc) {
-		Validate.isTrue(inc >= 0, "Číslo nemůže být záporné");
+	public void addValue(LevelWithItems level, String key, int value) {
+		Validate.isTrue(value >= 0, "Číslo nemůže být záporné");
 
-		Integer sum = resultMap.get(value);
-		if (sum == null) {
-			resultMap.put(value, inc);
+		ItemTypeSummary item = resultMap.get(key);
+		DateRangeAction dateRangeAction; 
+		if (item == null) {
+		    item = new ItemTypeSummary();		    
+	        dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
+	        dateRangeAction.init(null);	        
+		    item.setDateCounter(dateRangeAction);
+		    resultMap.put(key, item);
 		} else {
-			resultMap.put(value, sum + inc);
+		    dateRangeAction = item.getDateCounter();
 		}
+        item.addCount(value);
+        dateRangeAction.apply(level, TypeLevel.CHILD);
 	}
 
 	/**

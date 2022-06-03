@@ -129,6 +129,16 @@ actions:
         outputType: ZP2015_UNIT_COUNT_TABLE
         outputColumnUnitName: NAME
         outputColumnUnitCount: COUNT
+        outputColumnDateRange: DATE_RANGE
+        dateRangeCounter:
+          # Extra EJ - kdekoliv
+          excludeWhen:
+            someOf:
+              # Nesmí být nastaven jako pevné spojení s jinou
+              - itemType: ZP2015_ITEM_LINK    
+          inputType: ZP2015_UNIT_DATE
+          bulkRangeType: ZP2015_UNIT_DATE_BULK
+          outputType: ZP2015_DATE_RANGE
         aggegators:
            # Extra EJ - kdekoliv
            - excludeWhen:
