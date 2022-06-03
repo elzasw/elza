@@ -13,7 +13,8 @@ static GroovyResult generate(final GroovyPart part) {
         compl.addStr("větev rodu")
     }
     compl.add("NM_SUP_CHRO").withSeparator(" : ")
-
+    compl.add("NM_SUP_PRIV").withSeparator(" : ")
+    
     GroovyAppender base = GroovyUtils.createAppender(part)
     base.add("NM_MAIN")
     base.add("NM_MINOR").withSeparator(". ")
