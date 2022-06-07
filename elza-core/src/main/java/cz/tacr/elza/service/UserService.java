@@ -236,7 +236,14 @@ public class UserService {
 
         for (UsrPermission permission : permissions) {
             if (permission.getPermissionId() == null) {
-                if (changePermissionType == ChangePermissionType.DELETE) {  // pokud se jedná o akci delete, nesmí být předán záznam bez id
+                // pokud se jedná o pokus o přidělení práv superuživatele
+                if (changePermissionType == ChangePermissionType.ADD && permission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+                    if (!hasPermission(Permission.ADMIN)) {
+                        throw new BusinessException("Přístup superuživatele může udělit pouze superuživatel", BaseCode.INSUFFICIENT_PERMISSIONS);
+                    }
+                }
+                //pokud se jedná o akci delete, nesmí být předán záznam bez id
+                if (changePermissionType == ChangePermissionType.DELETE) {
                     throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id", UserCode.PERM_ILLEGAL_INPUT);
                 }
                 permission.setUser(user);
