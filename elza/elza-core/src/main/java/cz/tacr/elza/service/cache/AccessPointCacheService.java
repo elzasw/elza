@@ -819,8 +819,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         				// check existence of part or item
         				if(bi.getItemId()!=null) {
         					if(!itemIds.contains(bi.getItemId())) {
-        						Validate.isTrue(false, "BindigItem is referencing non existing item, accessPointId=%s",
-        								cachedAccessPoint.getAccessPointId());
+                                Validate.isTrue(false,
+                                                "BindigItem is referencing non existing item, accessPointId=%s, binding.itemId: %s",
+                                                bi.getItemId(),
+                                                cachedAccessPoint.getAccessPointId());
         					} 
         				} else {
         					if(bi.getItem()!=null) {

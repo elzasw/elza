@@ -428,7 +428,10 @@ public class AccessPointService {
             // in such case we have to solve deduplication in external system
             List<ApBindingState> srcBindings = bindingStateRepository.findByAccessPoint(accessPoint);
             List<ApBindingState> replacedByBindings = bindingStateRepository.findByAccessPoint(replacedBy);
-            for(ApBindingState srcBinding: srcBindings) {
+            ApExternalSystem extSystem = null;
+            for (ApBindingState srcBinding : srcBindings) {
+                extSystem = srcBinding.getApExternalSystem();
+
             	for(ApBindingState replacedByBinding: replacedByBindings) {
             		if(srcBinding.getExternalSystemId().equals(replacedByBinding.getExternalSystemId())) {
                         throw new BusinessException("Cannot replace entity with other entity from same external system", RegistryCode.EXT_SYSTEM_CONNECTED)
@@ -444,7 +447,7 @@ public class AccessPointService {
             if (mergeAp) {
                 validationMergePossibility(replacementState);
             }
-            replace(apState, replacementState);
+            replace(apState, replacementState, extSystem);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
@@ -876,12 +879,20 @@ public class AccessPointService {
     }
 
     /**
-     * Replace record replaced by record replacement in all usages in JP, NodeRegisters
+     * Replace record replaced by record replacement in all usages in JP,
+     * NodeRegisters
+     * 
+     * @param replacedState
+     * @param replacementState
+     * @param apExternalSystem
+     *            source of entity
      */
-    public void replace(final ApState replacedState, final ApState replacementState) {
+    public void replace(final ApState replacedState,
+                        final ApState replacementState,
+                        @Nullable final ApExternalSystem apExternalSystem) {
 
         // replace in access points (items)
-        replaceInAps(replacedState, replacementState);
+        replaceInAps(replacedState, replacementState, apExternalSystem);
 
         // replace in arrangement
         replaceInArrItems(replacedState, replacementState);
@@ -958,7 +969,9 @@ public class AccessPointService {
         }
     }
 
-    private void replaceInAps(ApState replacedState, ApState replacementState) {
+    private void replaceInAps(ApState replacedState, ApState replacementState,
+                              @Nullable ApExternalSystem apExternalSystem) {
+
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
@@ -972,9 +985,23 @@ public class AccessPointService {
             Map<Integer, ApState> stateByApId = apStates.stream()
                     .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
 
+            // check if entity is from external system
+            Set<Integer> apsFromSameExtSystem;
+            if (apExternalSystem != null) {
+                List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
+                                                                                                                  apExternalSystem);
+                apsFromSameExtSystem = bindingStates.stream().map(ApBindingState::getAccessPointId).collect(Collectors
+                        .toSet());
+            } else {
+                apsFromSameExtSystem = Collections.emptySet();
+            }
+
             // get bindings
             List<ApBindingItem> bindingItems = bindingItemRepository.findByItems(apItems);
+            Map<Integer, ApBindingItem> bindingItemsByItemId = bindingItems.stream()
+                    .collect(Collectors.toMap(ApBindingItem::getItemId, Function.identity()));
             Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
+            List<ApBindingItem> updateBindingItems = new ArrayList<>();
 
             List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
             Map<Integer, ApRevision> revisionByApId = revisions.stream()
@@ -984,6 +1011,14 @@ public class AccessPointService {
                 Integer apId = apItem.getPart().getAccessPointId();
                 ApState apState = stateByApId.get(apId);
                 
+                // check if binding to same system exists
+                ApBindingItem currBinding = bindingItemsByItemId.get(apItem.getItemId());
+                if (currBinding != null && apsFromSameExtSystem.contains(apId)) {
+                    // skip such item
+                    continue;
+                }
+                updateBindingItems.add(currBinding);
+
                 ApRevision revision = revisionByApId.get(apId);
                 if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
                     // prepare revision
@@ -999,7 +1034,8 @@ public class AccessPointService {
                 }
             }
 
-            List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping, bindingItems);
+            List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
+                                                                                         updateBindingItems);
             // refresh AP cache
             for (ApBindingItem modBinding : modifiedBindings) {
                 accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()

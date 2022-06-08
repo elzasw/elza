@@ -1,14 +1,19 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.projection.ApExternalIdInfo;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 
 public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingState, Integer> {
 
@@ -26,6 +31,10 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint IN :accessPoints AND bin.apExternalSystem = :externalSystem AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByAccessPointsAndExternalSystem(@Param("accessPoints") Collection<ApAccessPoint> accessPoints, @Param("externalSystem") ApExternalSystem externalSystem);
+
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPointId IN :accessPointIds AND bin.apExternalSystem = :externalSystem AND bis.deleteChangeId IS NULL")
+    List<ApBindingState> findByAccessPointIdsAndExternalSystem(@Param("accessPointIds") Collection<Integer> accessPointIds,
+                                                               @Param("externalSystem") ApExternalSystem externalSystem);
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :externalSystem")
     ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint, @Param("externalSystem") ApExternalSystem externalSystem);
