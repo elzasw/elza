@@ -500,6 +500,9 @@ public class AccessPointItemService {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return Collections.emptyList();
         }
+        if (itemsMap == null || itemsMap.size() == 0) {
+            return Collections.emptyList();
+        }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();
         for (ApBindingItem bindingItem : bindingItemList) {
             ApItem item = itemsMap.get(bindingItem.getItemId());
