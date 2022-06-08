@@ -23,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.cam.client.ApiException;
@@ -78,6 +81,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -970,6 +974,24 @@ public class CamService {
      */
     @Transactional
     public boolean synchronizeIntItem(ExtSyncsQueueItem queueItem) {
+        // set authorization
+        Integer userId = queueItem.getUserId();
+        SecurityContext secCtx;
+        if (userId != null) {
+            secCtx = userService.createSecurityContext(userId);
+        } else {
+            // TODO: find better solution for userId==null
+            //       use admin in such cases            
+            secCtx = SecurityContextHolder.createEmptyContext();
+
+            UserDetail userDetail = userService.createAdminUserDetail();
+
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(null, null, null);
+            auth.setDetails(userDetail);
+            secCtx.setAuthentication(auth);
+        }
+        SecurityContextHolder.setContext(secCtx);
+
         Integer externalSystemId = queueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 

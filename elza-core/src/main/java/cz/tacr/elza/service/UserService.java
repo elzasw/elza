@@ -54,7 +54,6 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -1252,6 +1251,10 @@ public class UserService {
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
+        if (userDetail == null) {
+            // user not authorized
+            return false;
+        }
         return userDetail.hasPermission(permission, entityId);
     }
 
@@ -1891,6 +1894,24 @@ public class UserService {
         }
 
         return createUserDetail(user);
+    }
+
+    /**
+     * Method to create admin detail
+     * 
+     * This is temporary method and will be removed in future
+     * 
+     * @return
+     */
+    public UserDetail createAdminUserDetail() {
+        UsrUser user = createDefaultUser();
+        Collection<UserPermission> perms = Collections.singletonList(new UserPermission(
+                UsrPermission.Permission.ADMIN));
+
+        List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
+        authTypes.add(UsrAuthentication.AuthType.PASSWORD);
+
+        return new UserDetail(user, perms, levelTreeCacheService, authTypes);
     }
 
     public boolean hasFullArrPerm(final Integer fundId) {
