@@ -81,6 +81,7 @@ import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
@@ -98,7 +99,6 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -612,8 +612,9 @@ public class RuleService {
 
 
         if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformity> deleteInfos = nodeConformityRepository
-                        .findByNodesAndFundVersion(deleteNodes, version);
+            List<ArrNodeConformity> deleteInfos = ObjectListIterator
+                    .findIterable(deleteNodes, page -> nodeConformityRepository
+                            .findByNodesAndFundVersion(page, version));
 
             deleteConformityInfo(deleteInfos);
             
@@ -629,24 +630,31 @@ public class RuleService {
      */
     private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
 
-        if (CollectionUtils.isNotEmpty(infos)) {
-            List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
-                    .findByNodeConformityInfos(infos);
-            if (CollectionUtils.isNotEmpty(missing)) {
-                nodeConformityMissingRepository.deleteAll(missing);
-            }
-
-            List<ArrNodeConformityError> errors = nodeConformityErrorRepository.findByNodeConformityInfos(infos);
-            if (CollectionUtils.isNotEmpty(errors)) {
-                nodeConformityErrorRepository.deleteAll(errors);
-            }
-
-            nodeConformityRepository.deleteAll(infos);
-            
-            // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
-            // jinak hrozi konflikt s validacnim vlaknem
-            nodeConformityRepository.flush();
+        if (CollectionUtils.isEmpty(infos)) {
+            return;
         }
+
+        List<ArrNodeConformityMissing> missing = ObjectListIterator
+                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(infos));
+
+        if (CollectionUtils.isNotEmpty(missing)) {
+            ObjectListIterator.forEachPage(missing,
+                                           page -> nodeConformityMissingRepository.deleteAll(page));
+        }
+
+        List<ArrNodeConformityError> errors = ObjectListIterator
+                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(infos));
+        if (CollectionUtils.isNotEmpty(errors)) {
+            ObjectListIterator.forEachPage(errors,
+                                           page -> nodeConformityErrorRepository.deleteAll(page));
+        }
+
+        ObjectListIterator.forEachPage(infos,
+                                       page -> nodeConformityRepository.deleteAll(page));
+
+        // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
+        // jinak hrozi konflikt s validacnim vlaknem
+        nodeConformityRepository.flush();
     }
 
     /**

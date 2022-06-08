@@ -23,7 +23,6 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import cz.tacr.elza.asynchactions.RequestQueue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +50,7 @@ import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.AsyncWorkerVO;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.NodePriorityComparator;
+import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ThreadLoadInfo;
 import cz.tacr.elza.asynchactions.TimeRequestInfo;
 import cz.tacr.elza.bulkaction.AsyncAccessPointWorker;
@@ -192,10 +192,15 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     public void enqueue(final ArrFundVersion fundVersion,
                         final List<ArrNode> nodeList,
                         final Integer priority) {
-        List<AsyncRequest> requests = new ArrayList<>(nodeList.size());
+        List<ArrAsyncRequest> dbReqList = new ArrayList<>(nodeList.size());
         for (ArrNode node : nodeList) {
             ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, priority == null ? 1 : priority);
-            asyncRequestRepository.save(request);
+            dbReqList.add(request);
+        }
+        Iterable<ArrAsyncRequest> saveReqList = asyncRequestRepository.saveAll(dbReqList);
+
+        List<AsyncRequest> requests = new ArrayList<>(nodeList.size());
+        for (ArrAsyncRequest request : saveReqList) {
             requests.add(new AsyncRequest(request));
         }
         getExecutor(AsyncTypeEnum.NODE).enqueue(requests);
