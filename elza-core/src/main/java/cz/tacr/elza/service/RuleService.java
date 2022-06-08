@@ -1529,12 +1529,16 @@ public class RuleService {
         StaticDataProvider sdp = staticDataService.getData();
         RulItemType itemType = sdp.getItemTypeByCode(GEO_ADMIN_CLASS).getEntity();
         List<ApItem> items = accessPointItemService.findItems(recordId, itemType, PartType.PT_BODY.value());
-        if (CollectionUtils.isNotEmpty(items)) {
-            ApItem aeItem = items.get(0);
-            ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
-            return recordRef.getRecordId();
+        if (CollectionUtils.isEmpty(items)) {
+            return null;
         }
-        return null;
+        if (items.size() > 1) {
+            logger.info("Entity with multiple parents, entityId: {}, parent count: {}", recordId, items.size());
+            return null;
+        }
+        ApItem aeItem = items.get(0);
+        ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
+        return recordRef.getRecordId();
     }
 
     // TODO: use cache
@@ -1576,17 +1580,37 @@ public class RuleService {
 
     @Nullable
     private String findEntityCountry(Integer recordId) {
-        String countryIso = findCountryIso(recordId);
-        if (countryIso != null) {
-            return countryIso;
-        } else {
-            Integer parentGeoId = findParentGeoId(recordId);
-            if (parentGeoId != null) {
-                return findEntityCountry(parentGeoId);
-            } else {
+
+        int recurentCounter = 1;
+        Integer nextRecordId = recordId;
+        Set<Integer> loopDetector = new HashSet<>();
+        // protection for infinite loop
+        while (recurentCounter < 20) {
+
+            String countryIso = findCountryIso(nextRecordId);
+            if (countryIso != null) {
+                return countryIso;
+            }
+
+            // add item
+            loopDetector.add(nextRecordId);
+
+            // find parent
+            nextRecordId = findParentGeoId(nextRecordId);
+            if (nextRecordId == null) {
                 return null;
             }
+            if (loopDetector.contains(nextRecordId)) {
+                logger.error("Loop detected in parent entities, recordId: {}, repeating entity: {}", recordId,
+                             nextRecordId);
+                return null;
+            }
+            recurentCounter++;
         }
+        if (recurentCounter >= 20) {
+            logger.error("Parent hierarchy is too deep, recordId: {}", recordId);
+        }
+        return null;
     }
 
     @Nullable
