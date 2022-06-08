@@ -123,9 +123,6 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.repository.UserRepository;
@@ -183,12 +180,6 @@ public class ArrangementService {
     private ArrRefTemplateMapTypeRepository refTemplateMapTypeRepository;
     @Autowired
     private ArrRefTemplateMapSpecRepository refTemplateMapSpecRepository;
-    @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
-    @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -1142,18 +1133,8 @@ public class ArrangementService {
         return levelRepository.findByNode(node, fundVersion.getLockChange());
     }
 
-    /**
-     * Načte počet chyb verze archivní pomůcky.
-     *
-     * @param fundVersion verze archivní pomůcky
-     * @return počet chyb
-     */
-    public Integer getVersionErrorCount(final ArrFundVersion fundVersion) {
-        return nodeConformityInfoRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
-    }
-
     public List<ArrNodeConformity> findConformityErrors(final ArrFundVersion fundVersion, final Boolean showAll) {
-        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
+        List<ArrNodeConformity> conformity = ruleService.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
 
         if (conformity.isEmpty()) {
             return new ArrayList<>();
@@ -1161,7 +1142,7 @@ public class ArrangementService {
 
         // TODO: bude se řešit v budoucnu úplně jinak
 
-        List<ArrNodeConformity> nodeConformities = nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
+        List<ArrNodeConformity> nodeConformities = ruleService.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
 
         if (!showAll) {
             Set<Integer> nodeIds = nodeConformities.stream().map(arrNodeConformity -> arrNodeConformity.getNode().getNodeId()).collect(Collectors.toSet());
@@ -1404,8 +1385,8 @@ public class ArrangementService {
             policyTypes.put(policyTypeId, visible);
         }
 
-        List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findErrorsByFundVersion(fundVersion);
-        List<ArrNodeConformityMissing> missings = nodeConformityMissingRepository.findMissingsByFundVersion(fundVersion);
+        List<ArrNodeConformityError> errors = ruleService.findErrorsByFundVersion(fundVersion);
+        List<ArrNodeConformityMissing> missings = ruleService.findMissingsByFundVersion(fundVersion);
 
         // nodeId / policyTypeIds
         Map<Integer, Set<Integer>> nodeProblemsMap = new HashMap<>();

@@ -1813,7 +1813,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
-        return arrangementService.getVersionErrorCount(fundVersion);
+        return ruleService.findCountByFundVersionAndStateErr(fundVersion);
     }
 
 
