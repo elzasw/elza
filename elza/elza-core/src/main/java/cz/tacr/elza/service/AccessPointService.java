@@ -1001,7 +1001,6 @@ public class AccessPointService {
             Map<Integer, ApBindingItem> bindingItemsByItemId = bindingItems.stream()
                     .collect(Collectors.toMap(ApBindingItem::getItemId, Function.identity()));
             Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
-            List<ApBindingItem> updateBindingItems = new ArrayList<>();
 
             List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
             Map<Integer, ApRevision> revisionByApId = revisions.stream()
@@ -1013,11 +1012,13 @@ public class AccessPointService {
                 
                 // check if binding to same system exists
                 ApBindingItem currBinding = bindingItemsByItemId.get(apItem.getItemId());
-                if (currBinding != null && apsFromSameExtSystem.contains(apId)) {
-                    // skip such item
-                    continue;
+                if (currBinding != null) {
+                    if (apsFromSameExtSystem.contains(apId)) {
+                        // skip such item
+                        bindingItemsByItemId.remove(apItem.getItemId());
+                        continue;
+                    }
                 }
-                updateBindingItems.add(currBinding);
 
                 ApRevision revision = revisionByApId.get(apId);
                 if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
@@ -1035,7 +1036,7 @@ public class AccessPointService {
             }
 
             List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
-                                                                                         updateBindingItems);
+                                                                                         bindingItemsByItemId.values());
             // refresh AP cache
             for (ApBindingItem modBinding : modifiedBindings) {
                 accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()

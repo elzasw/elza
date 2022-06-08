@@ -496,7 +496,7 @@ public class AccessPointItemService {
      * @return list of changed bindings
      */
     public List<ApBindingItem> changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
-                                        List<ApBindingItem> bindingItemList) {
+                                                       Collection<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return Collections.emptyList();
         }
