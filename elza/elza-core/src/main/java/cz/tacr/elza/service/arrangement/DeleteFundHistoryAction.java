@@ -40,9 +40,6 @@ import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -61,6 +58,7 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RevertingChangesService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -70,8 +68,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -100,12 +96,6 @@ public class DeleteFundHistoryAction {
     private UserService userService;
     @Autowired
     private IEventNotificationService eventNotificationService;
-    @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
-    @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorRepository;
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
@@ -178,13 +168,13 @@ public class DeleteFundHistoryAction {
     private NodeExtensionRepository nodeExtensionRepository;
 
     @Autowired
-    private NodeConformityRepository nodeConformityRepository;
-
-    @Autowired
     ArrangementService arrangementService;
     
     @Autowired
     private ArrangementInternalService arrangementInternalService;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private ItemRepository itemRepository;
@@ -315,10 +305,7 @@ public class DeleteFundHistoryAction {
         // verze AS budou vymazány všechny a založí se nová verze kopii poslední, aktuální
         RulRuleSet ruleSet = fundVersion.getRuleSet();
 
-        nodeConformityMissingRepository.deleteByNodeConformityNodeFund(fund);
-        nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
-        nodeConformityInfoRepository.deleteByNodeFund(fund);
-        nodeConformityRepository.deleteByNodeFund(fund);
+        ruleService.deleteByNodeFund(fund);
 
         faBulkActionNodeRepository.deleteByFund(fund);
         faBulkActionRepository.deleteByFund(fund);
@@ -408,9 +395,7 @@ public class DeleteFundHistoryAction {
         iterateAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
 
         // delete node conformity
-        iterateAction(nodeIds, nodeConformityErrorRepository::deleteByNodeConformityNodeIdIn);
-        iterateAction(nodeIds, nodeConformityMissingRepository::deleteByNodeConformityNodeIdIn);
-        iterateAction(nodeIds, nodeConformityInfoRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, ruleService::deleteByNodeIdIn);
 
         // delete attached extensions
         iterateAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);
