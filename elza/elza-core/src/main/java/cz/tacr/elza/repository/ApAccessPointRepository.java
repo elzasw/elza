@@ -26,7 +26,7 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
      *            UUID
      * @return rejstříkové heslo
      */
-    ApAccessPoint findApAccessPointByUuid(String uuid); // TODO přejmenovat
+    ApAccessPoint findAccessPointByUuid(String uuid);
 
     @Query("SELECT ap FROM ap_access_point ap WHERE ap.uuid IN :uuids")
     List<ApAccessPoint> findApAccessPointsByUuids(@Param("uuids") Collection<String> uuids);

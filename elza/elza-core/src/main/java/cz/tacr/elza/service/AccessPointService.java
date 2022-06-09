@@ -346,7 +346,7 @@ public class AccessPointService {
     public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
         if (!StringUtils.isNumeric(id)) {
-            accessPoint = apAccessPointRepository.findApAccessPointByUuid(id);
+            accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
         } else {
             accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
         }
@@ -1626,7 +1626,7 @@ public class AccessPointService {
      * @return přístupový bod
      */
     public ApAccessPoint getAccessPointByUuid(final String uuid) {
-        ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(uuid);
+        ApAccessPoint accessPoint = apAccessPointRepository.findAccessPointByUuid(uuid);
         if (accessPoint == null) {
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(uuid);
         }
