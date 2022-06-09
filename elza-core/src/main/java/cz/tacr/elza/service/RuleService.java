@@ -662,10 +662,11 @@ public class RuleService {
      * 
      * @param unusedNodes
      */
-    public void deleteByNodeIdIn(Collection<Integer> unusedNodes) {
-        nodeConformityErrorRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
-        nodeConformityMissingRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
-        nodeConformityRepository.deleteByNodeIdIn(unusedNodes);
+    public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
+        List<ArrNodeConformity> deleteInfos = ObjectListIterator
+                .findIterable(nodeIds, page -> nodeConformityRepository.findByNodeIds(page));
+
+        deleteConformityInfo(deleteInfos);
     }
 
     /**
