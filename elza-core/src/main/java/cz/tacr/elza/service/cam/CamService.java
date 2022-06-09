@@ -250,7 +250,7 @@ public class CamService {
     }
 
     /**
-     * Vytvoreni novych propojeni (binding) pro vztaht
+     * Vytvoreni novych propojeni (binding) pro vztahy
      *
      * @param dataRefList
      * @param binding
@@ -270,28 +270,44 @@ public class CamService {
      * @param procCtx
      */
     private void createBindingForRel(ArrDataRecordRef dataRecordRef, String value, ProcessingContext procCtx) {
+        log.debug("Creating binding for rel, dataId: {}, value: {}, extSystem: {}",
+                  dataRecordRef.getDataId(), value, procCtx.getApExternalSystem().getCode());
+
         ApBinding refBinding = externalSystemService.findByValueAndExternalSystem(value,
                                                                                  procCtx.getApExternalSystem());
                 
         ApAccessPoint referencedAp = null;
         if (refBinding == null) {
         	// check if item should be lookup also by UUID
-        	if(ApExternalSystemType.CAM_UUID.equals(procCtx.getApExternalSystem().getType())) {
-        		referencedAp = this.apAccessPointRepository.findApAccessPointByUuid(value);
+            if (ApExternalSystemType.CAM_UUID.equals(procCtx.getApExternalSystem().getType())) {
+        		referencedAp = this.apAccessPointRepository.findAccessPointByUuid(value);
+                // finding by UUID
+                log.debug("Finding connected AP by UUID, accessPointId: {}",
+                          referencedAp != null ? referencedAp.getAccessPointId() : null);
         	} else {
                 // check if not in the processing context
                 refBinding = procCtx.getBindingByValue(value);
+                // looking in procCtx
+                log.debug("Finding connected AP in processing context, bindingId: {}",
+                          refBinding != null ? refBinding.getBindingId() : null);
         	}
            	if (referencedAp == null && refBinding == null) {
            		// we can create new - last resort
-           		refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem(), true);
-           		procCtx.addBinding(refBinding);        		        	
+                refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem(), true);
+                procCtx.addBinding(refBinding);
+
+                log.debug("Prepared new binding, bindingId: {}", refBinding.getBindingId());
            	}
         } else {
+            log.debug("Found existing binding, bindingId: {}", refBinding.getBindingId());
             // try to find access point for binding
-            Optional<ApBindingState> bindingState = bindingStateRepository.findActiveByBinding(refBinding);
-            if(bindingState.isPresent()) {
-            	referencedAp = bindingState.get().getAccessPoint();
+            Optional<ApBindingState> bindingStateOpt = bindingStateRepository.findActiveByBinding(refBinding);
+            if(bindingStateOpt.isPresent()) {
+                ApBindingState bindingState = bindingStateOpt.get();
+                log.debug("Found existing bindingState, bindingStateId: {}, accessPointId: {}",
+                          bindingState.getBindingId(),
+                          bindingState.getAccessPointId());
+                referencedAp = bindingState.getAccessPoint();
             }
         }
         Validate.isTrue(referencedAp!=null||refBinding!=null, "Failed to prepare referenced record.");
@@ -634,7 +650,7 @@ public class CamService {
                 // entita mohla být smazána, hledáme ji jinak
                 if (ap == null) {
                     String uuid = xmlRecordInfo.getEuid().getValue();
-                    ap = apAccessPointRepository.findApAccessPointByUuid(uuid);
+                    ap = apAccessPointRepository.findAccessPointByUuid(uuid);
                 }
             }
             // update or add new items from CAM_COMPLETE
@@ -745,7 +761,7 @@ public class CamService {
         // Kontrola na zalozeni nove entity
         // overeni existence UUID
         if (bindingState == null && state == null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
+            ApAccessPoint accessPoint = apAccessPointRepository.findAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
                 // entity exists
                 apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
