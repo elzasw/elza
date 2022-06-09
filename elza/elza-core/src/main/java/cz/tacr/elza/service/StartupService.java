@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
@@ -90,6 +91,9 @@ public class StartupService implements SmartLifecycle {
      */
     @Value("${elza.startupService.autoStart:true}")
     private boolean autoStart = true;
+
+    @Value("${elza.data.batchSize:1500}")
+    private int maxBatchSize;
 
     @Autowired
     AdminService adminService;
@@ -176,6 +180,8 @@ public class StartupService implements SmartLifecycle {
         }
 
         tt.executeWithoutResult(r -> startInTransaction2());
+
+        ObjectListIterator.setMaxBatchSize(maxBatchSize);
 
         camScheduler.start();
 

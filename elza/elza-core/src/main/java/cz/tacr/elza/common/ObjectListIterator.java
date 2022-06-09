@@ -22,11 +22,10 @@ public class ObjectListIterator<T> {
     /**
      * Maximální velikost jedné vrácené kolekce.
      */
-    public static final int MAXIMAL_ITERATION_SIZE = 1500;
-
+    private static int maxIterationSize = 1500;
 
     private List<T> list;
-    private int maximalIterationSize = MAXIMAL_ITERATION_SIZE;
+    private int maximalIterationSize = maxIterationSize;
     private int index = 0;
 
     public ObjectListIterator(final Collection<T> list) {
@@ -36,6 +35,10 @@ public class ObjectListIterator<T> {
     public ObjectListIterator(final int maximalIterationSize, final Collection<T> list) {
         this.maximalIterationSize = maximalIterationSize;
         this.list = new ArrayList<>(list);
+    }
+
+    public static void setMaxBatchSize(int maxBatchSize) {
+        maxIterationSize = maxBatchSize;
     }
 
     public boolean hasNext() {
