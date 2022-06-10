@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
@@ -27,9 +28,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.search.DbQueueProcessor;
@@ -51,12 +49,6 @@ public class StartupService implements SmartLifecycle {
     private final NodeRepository nodeRepository;
 
     private final VisiblePolicyRepository visiblePolicyRepository;
-
-    private final NodeConformityErrorRepository nodeConformityErrorRepository;
-
-    private final NodeConformityMissingRepository nodeConformityMissingRepository;
-
-    private final NodeConformityRepository nodeConformityRepository;
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
@@ -84,6 +76,8 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointCacheService accessPointCacheService;
 
+    private final RuleService ruleService;
+
     private final CamScheduler camScheduler; 
 
     private boolean running;
@@ -97,6 +91,9 @@ public class StartupService implements SmartLifecycle {
      */
     @Value("${elza.startupService.autoStart:true}")
     private boolean autoStart = true;
+
+    @Value("${elza.data.batchSize:1500}")
+    private int maxBatchSize;
 
     @Autowired
     AdminService adminService;
@@ -116,13 +113,11 @@ public class StartupService implements SmartLifecycle {
                           final BulkActionConfigManager bulkActionConfigManager,
                           final EntityManager em,
                           final AccessPointService accessPointService,
-                          final NodeConformityErrorRepository nodeConformityErrorRepository,
-                          final NodeConformityMissingRepository nodeConformityMissingRepository,
-                          final NodeConformityRepository nodeConformityRepository,
                           final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
+                          final RuleService ruleService,
                           final ExtSyncsProcessor extSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler) {
@@ -136,13 +131,11 @@ public class StartupService implements SmartLifecycle {
         this.bulkActionConfigManager = bulkActionConfigManager;
         this.em = em;
         this.accessPointService = accessPointService;
-        this.nodeConformityErrorRepository = nodeConformityErrorRepository;
-        this.nodeConformityMissingRepository = nodeConformityMissingRepository;
-        this.nodeConformityRepository = nodeConformityRepository;
         this.visiblePolicyRepository = visiblePolicyRepository;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
+        this.ruleService = ruleService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
@@ -187,6 +180,8 @@ public class StartupService implements SmartLifecycle {
         }
 
         tt.executeWithoutResult(r -> startInTransaction2());
+
+        ObjectListIterator.setMaxBatchSize(maxBatchSize);
 
         camScheduler.start();
 
@@ -275,9 +270,7 @@ public class StartupService implements SmartLifecycle {
 
         // try to fix issue by dropping these nodes
         visiblePolicyRepository.deleteByNodeIdIn(unusedNodes);
-        nodeConformityErrorRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
-        nodeConformityMissingRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
-        nodeConformityRepository.deleteByNodeIdIn(unusedNodes);
+        ruleService.deleteByNodeIdIn(unusedNodes);
         nodeCacheService.deleteNodes(unusedNodes);
         nodeRepository.deleteByNodeIdIn(unusedNodes);
         logger.info("Orpahed nodes deleted.");

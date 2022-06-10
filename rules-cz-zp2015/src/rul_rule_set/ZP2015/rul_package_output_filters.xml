@@ -1,0 +1,3 @@
+﻿<package-output-filters>          
+    <package-output-filter code="ZP_ACCESS_RESTRICT" name="Omezení přístupnosti" filename="ACCESS_RESTRICT.yaml" />
+</package-output-filters>

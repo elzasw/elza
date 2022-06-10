@@ -45,12 +45,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Test
     public void deleteAccessPointsTest() throws ApiException {
 
-        ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
         assertTrue(parts.size() == 3);
 
-        ApAccessPoint ap2 = apRepository.findApAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
+        ApAccessPoint ap2 = apRepository.findAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
@@ -73,12 +73,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Test
     public void deleteAccessPointTest() throws ApiException {
 
-        ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
         assertTrue(parts.size() == 3);
 
-        ApAccessPoint ap2 = apRepository.findApAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
+        ApAccessPoint ap2 = apRepository.findAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
@@ -102,12 +102,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Test
     public void deleteAccessPointCopyAllTest() throws ApiException {
 
-        ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
         assertTrue(parts.size() == 3);
 
-        ApAccessPoint ap2 = apRepository.findApAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
+        ApAccessPoint ap2 = apRepository.findAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
@@ -130,7 +130,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
     @Test
     public void sePreferNameRevisionTest() throws ApiException, InterruptedException {
-        ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());
         // create revision

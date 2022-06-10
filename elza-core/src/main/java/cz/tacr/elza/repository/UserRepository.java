@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, UserRepositoryCustom {
 
     UsrUser findByUsername(String username);
+
+    @Query("select u.userId from usr_user u where u.username in :names")
+    List<Integer> findIdsByUsername(@Param("names") Collection<String> names);
 
     @Query("select ugu.user from usr_group_user ugu where ugu.group = :group")
     List<UsrUser> findByGroup(@Param("group") UsrGroup group);

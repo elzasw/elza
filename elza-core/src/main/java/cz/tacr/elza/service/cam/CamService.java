@@ -23,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.cam.client.ApiException;
@@ -78,6 +81,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -246,7 +250,7 @@ public class CamService {
     }
 
     /**
-     * Vytvoreni novych propojeni (binding) pro vztaht
+     * Vytvoreni novych propojeni (binding) pro vztahy
      *
      * @param dataRefList
      * @param binding
@@ -266,28 +270,44 @@ public class CamService {
      * @param procCtx
      */
     private void createBindingForRel(ArrDataRecordRef dataRecordRef, String value, ProcessingContext procCtx) {
+        log.debug("Creating binding for rel, dataId: {}, value: {}, extSystem: {}",
+                  dataRecordRef.getDataId(), value, procCtx.getApExternalSystem().getCode());
+
         ApBinding refBinding = externalSystemService.findByValueAndExternalSystem(value,
                                                                                  procCtx.getApExternalSystem());
                 
         ApAccessPoint referencedAp = null;
         if (refBinding == null) {
         	// check if item should be lookup also by UUID
-        	if(ApExternalSystemType.CAM_UUID.equals(procCtx.getApExternalSystem().getType())) {
-        		referencedAp = this.apAccessPointRepository.findApAccessPointByUuid(value);
+            if (ApExternalSystemType.CAM_UUID.equals(procCtx.getApExternalSystem().getType())) {
+        		referencedAp = this.apAccessPointRepository.findAccessPointByUuid(value);
+                // finding by UUID
+                log.debug("Finding connected AP by UUID, accessPointId: {}",
+                          referencedAp != null ? referencedAp.getAccessPointId() : null);
         	} else {
                 // check if not in the processing context
                 refBinding = procCtx.getBindingByValue(value);
+                // looking in procCtx
+                log.debug("Finding connected AP in processing context, bindingId: {}",
+                          refBinding != null ? refBinding.getBindingId() : null);
         	}
            	if (referencedAp == null && refBinding == null) {
            		// we can create new - last resort
-           		refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem(), true);
-           		procCtx.addBinding(refBinding);        		        	
+                refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem(), true);
+                procCtx.addBinding(refBinding);
+
+                log.debug("Prepared new binding, bindingId: {}", refBinding.getBindingId());
            	}
         } else {
+            log.debug("Found existing binding, bindingId: {}", refBinding.getBindingId());
             // try to find access point for binding
-            Optional<ApBindingState> bindingState = bindingStateRepository.findActiveByBinding(refBinding);
-            if(bindingState.isPresent()) {
-            	referencedAp = bindingState.get().getAccessPoint();
+            Optional<ApBindingState> bindingStateOpt = bindingStateRepository.findActiveByBinding(refBinding);
+            if(bindingStateOpt.isPresent()) {
+                ApBindingState bindingState = bindingStateOpt.get();
+                log.debug("Found existing bindingState, bindingStateId: {}, accessPointId: {}",
+                          bindingState.getBindingId(),
+                          bindingState.getAccessPointId());
+                referencedAp = bindingState.getAccessPoint();
             }
         }
         Validate.isTrue(referencedAp!=null||refBinding!=null, "Failed to prepare referenced record.");
@@ -630,7 +650,7 @@ public class CamService {
                 // entita mohla být smazána, hledáme ji jinak
                 if (ap == null) {
                     String uuid = xmlRecordInfo.getEuid().getValue();
-                    ap = apAccessPointRepository.findApAccessPointByUuid(uuid);
+                    ap = apAccessPointRepository.findAccessPointByUuid(uuid);
                 }
             }
             // update or add new items from CAM_COMPLETE
@@ -741,7 +761,7 @@ public class CamService {
         // Kontrola na zalozeni nove entity
         // overeni existence UUID
         if (bindingState == null && state == null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
+            ApAccessPoint accessPoint = apAccessPointRepository.findAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
                 // entity exists
                 apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
@@ -970,6 +990,24 @@ public class CamService {
      */
     @Transactional
     public boolean synchronizeIntItem(ExtSyncsQueueItem queueItem) {
+        // set authorization
+        Integer userId = queueItem.getUserId();
+        SecurityContext secCtx;
+        if (userId != null) {
+            secCtx = userService.createSecurityContext(userId);
+        } else {
+            // TODO: find better solution for userId==null
+            //       use admin in such cases            
+            secCtx = SecurityContextHolder.createEmptyContext();
+
+            UserDetail userDetail = userService.createAdminUserDetail();
+
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(null, null, null);
+            auth.setDetails(userDetail);
+            secCtx.setAuthentication(auth);
+        }
+        SecurityContextHolder.setContext(secCtx);
+
         Integer externalSystemId = queueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 
