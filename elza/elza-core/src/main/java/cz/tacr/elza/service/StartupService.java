@@ -22,11 +22,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -76,7 +78,11 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointCacheService accessPointCacheService;
 
+    private final ResourcePathResolver resourcePathResolver;
+
     private final RuleService ruleService;
+
+    private final PackageService packageService;
 
     private final CamScheduler camScheduler; 
 
@@ -117,7 +123,9 @@ public class StartupService implements SmartLifecycle {
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
+                          final ResourcePathResolver resourcePathResolver,
                           final RuleService ruleService,
+                          final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler) {
@@ -135,7 +143,9 @@ public class StartupService implements SmartLifecycle {
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
+        this.resourcePathResolver = resourcePathResolver;
         this.ruleService = ruleService;
+        this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
@@ -182,6 +192,8 @@ public class StartupService implements SmartLifecycle {
         tt.executeWithoutResult(r -> startInTransaction2());
 
         ObjectListIterator.setMaxBatchSize(maxBatchSize);
+
+        packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
         camScheduler.start();
 

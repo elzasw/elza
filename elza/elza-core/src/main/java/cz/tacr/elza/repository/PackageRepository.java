@@ -7,18 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 
-
-/**
- * Repository imporotvaných balíčků.
- *
- * @author Martin Šlapa
- * @since 14.12.2015
- */
 @Repository
 public interface PackageRepository extends JpaRepository<RulPackage, Integer> {
 
-
-    RulPackage findTopByCode(String code);
+    RulPackage findByCode(String code);
 
     List<RulPackage> findByCodeIn(Collection<String> codes);
 }
