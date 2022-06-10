@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
@@ -31,6 +32,9 @@ public abstract class Action {
 
 	@Autowired
 	protected StaticDataService staticDataService;
+
+    @Autowired
+    protected ApplicationContext appCtx;	
 
     /**
 	 * Inicializace akce.

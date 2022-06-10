@@ -16,9 +16,13 @@ public class UnitCountConfig implements ActionConfig {
 	 */
 	private String outputColumnUnitCount;
 
-	private boolean local;
+	private String outputColumnDateRange;
+
+    private DateRangeConfig dateRangeCounter;
 
 	private List<UnitCounterConfig> aggegators;
+
+    private boolean local;
 
 	public String getOutputType() {
 		return outputType;
@@ -52,7 +56,23 @@ public class UnitCountConfig implements ActionConfig {
 		this.outputColumnUnitCount = outputColumnUnitCount;
 	}
 
-	public boolean isLocal() {
+	public String getOutputColumnDateRange() {
+        return outputColumnDateRange;
+    }
+
+    public void setOutputColumnDateRange(String outputColumnDateRange) {
+        this.outputColumnDateRange = outputColumnDateRange;
+    }
+
+    public DateRangeConfig getDateRangeCounter() {
+        return dateRangeCounter;
+    }
+
+    public void setDateRangeCounter(DateRangeConfig dateRangeCounter) {
+        this.dateRangeCounter = dateRangeCounter;
+    }
+
+    public boolean isLocal() {
 		return local;
 	}
 

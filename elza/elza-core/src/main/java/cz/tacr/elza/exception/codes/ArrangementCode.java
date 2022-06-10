@@ -174,6 +174,11 @@ public enum ArrangementCode implements ErrorCode {
     ADMIN_GROUP_MISSING_FUND_CREATE_PERM,
 
     /**
+     * Při provádění změn AS uživatel nemá oprávnění měnit AS.
+     */
+    ADMIN_USER_MISSING_FUND_UPDATE_PERM,
+
+    /**
      * Neplatné pravidla.
      */
     INVALID_RULE,

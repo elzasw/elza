@@ -95,6 +95,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
@@ -119,11 +120,9 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.repository.UserRepository;
@@ -182,12 +181,6 @@ public class ArrangementService {
     @Autowired
     private ArrRefTemplateMapSpecRepository refTemplateMapSpecRepository;
     @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
-    @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
-    @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
@@ -212,6 +205,9 @@ public class ArrangementService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @Autowired
     private EntityManager em;
@@ -348,6 +344,12 @@ public class ArrangementService {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
+        // kontrola uživatelských práv k provádění změn AS
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN) && !userIds.isEmpty()) {
+            throw new BusinessException("Uživatel nemá oprávnení měnit AS", ArrangementCode.ADMIN_USER_MISSING_FUND_UPDATE_PERM);
+        }
+
         ArrFund originalFund = fundRepository.findById(fund.getFundId())
                 .orElseThrow(fund(fund.getFundId()));
 
@@ -428,7 +430,7 @@ public class ArrangementService {
     }
 
     /**
-     * Aktualizuje seznamu User pro ArrFund
+     * Aktualizace seznamu User pro ArrFund
      * 
      * @param fund
      * @param userIds
@@ -449,18 +451,33 @@ public class ArrangementService {
             }
         }
 
-        usersById.values().forEach(u -> userService.deleteUserFundAllPermissions(u));
+        usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
     }
 
     /**
      * 
-     * Aktualizuje seznamu Group pro ArrFund
+     * Aktualizace seznamu Group pro ArrFund
      * 
      * @param fund
      * @param groupIds
      */
     private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
-        // TODO
+        Validate.notNull(fund, "AS musí být vyplněn");
+
+        List<UsrGroup> groups = groupRepository.findByFund(fund);
+        Map<Integer, UsrGroup> groupsById = groups
+                .stream().collect(Collectors.toMap(g -> g.getGroupId(), g -> g));
+
+        for (Integer groupId : groupIds) {
+            UsrGroup group = groupsById.get(groupId);
+            if (group == null) {
+                userService.addFundAdminPermissions(null, groupId, fund);
+            } else {
+                groupsById.remove(groupId);
+            }
+        }
+
+        groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
     }
 
     /**
@@ -1116,18 +1133,8 @@ public class ArrangementService {
         return levelRepository.findByNode(node, fundVersion.getLockChange());
     }
 
-    /**
-     * Načte počet chyb verze archivní pomůcky.
-     *
-     * @param fundVersion verze archivní pomůcky
-     * @return počet chyb
-     */
-    public Integer getVersionErrorCount(final ArrFundVersion fundVersion) {
-        return nodeConformityInfoRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
-    }
-
     public List<ArrNodeConformity> findConformityErrors(final ArrFundVersion fundVersion, final Boolean showAll) {
-        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
+        List<ArrNodeConformity> conformity = ruleService.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, State.ERR);
 
         if (conformity.isEmpty()) {
             return new ArrayList<>();
@@ -1135,7 +1142,7 @@ public class ArrangementService {
 
         // TODO: bude se řešit v budoucnu úplně jinak
 
-        List<ArrNodeConformity> nodeConformities = nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
+        List<ArrNodeConformity> nodeConformities = ruleService.fetchErrorAndMissingConformity(conformity, fundVersion, State.ERR);
 
         if (!showAll) {
             Set<Integer> nodeIds = nodeConformities.stream().map(arrNodeConformity -> arrNodeConformity.getNode().getNodeId()).collect(Collectors.toSet());
@@ -1378,8 +1385,8 @@ public class ArrangementService {
             policyTypes.put(policyTypeId, visible);
         }
 
-        List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findErrorsByFundVersion(fundVersion);
-        List<ArrNodeConformityMissing> missings = nodeConformityMissingRepository.findMissingsByFundVersion(fundVersion);
+        List<ArrNodeConformityError> errors = ruleService.findErrorsByFundVersion(fundVersion);
+        List<ArrNodeConformityMissing> missings = ruleService.findMissingsByFundVersion(fundVersion);
 
         // nodeId / policyTypeIds
         Map<Integer, Set<Integer>> nodeProblemsMap = new HashMap<>();

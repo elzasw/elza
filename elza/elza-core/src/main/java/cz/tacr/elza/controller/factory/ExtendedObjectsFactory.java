@@ -12,8 +12,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -26,11 +25,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 public class ExtendedObjectsFactory {
 
     @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
-
+    private RuleService ruleService;
 
     /**
      * Vytvoří rozšířený objekt {@link cz.tacr.elza.api.ArrNodeConformityMissing}.
@@ -39,19 +34,16 @@ public class ExtendedObjectsFactory {
      * @param loadErrors     true pokud se mají načítat chybějící a špatně zadaný hodnoty
      * @return rozšířený objekt chyby
      */
-    public ArrNodeConformityExt createNodeConformityInfoExt(@Nullable final ArrNodeConformity conformityInfo,
-                                                            final boolean loadErrors) {
-        if (conformityInfo == null) {
+    public ArrNodeConformityExt createNodeConformityInfoExt(@Nullable final ArrNodeConformity nodeConformity, final boolean loadErrors) {
+        if (nodeConformity == null) {
             return null;
         }
 
         ArrNodeConformityExt result = new ArrNodeConformityExt();
-        BeanUtils.copyProperties(conformityInfo, result);
+        BeanUtils.copyProperties(nodeConformity, result);
         if (loadErrors) {
-            List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
-                    .findByNodeConformity(conformityInfo);
-            List<ArrNodeConformityError> errors = nodeConformityErrorsRepository
-                    .findByNodeConformity(conformityInfo);
+            List<ArrNodeConformityMissing> missing = ruleService.findMissingsByNodeConformity(nodeConformity);
+            List<ArrNodeConformityError> errors = ruleService.findErrorsByNodeConformity(nodeConformity);
 
             result.setMissingList(missing);
             result.setErrorList(errors);
@@ -59,6 +51,5 @@ public class ExtendedObjectsFactory {
 
         return result;
     }
-
 
 }

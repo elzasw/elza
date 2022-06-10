@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.core.v1.CreateFundException;
 import cz.tacr.elza.ws.core.v1.DeleteFundException;
@@ -27,6 +29,7 @@ import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.Fund;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
+import cz.tacr.elza.ws.types.v1.IdentifierList;
 
 /**
  * Skutečná implementace WSDL služeb
@@ -49,6 +52,9 @@ public class FundServiceWsImpl {
 
     @Autowired
     ScopeRepository scopeRepository;
+    
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     WSHelper wsHelper;
@@ -86,24 +92,9 @@ public class FundServiceWsImpl {
             fundNumber = Integer.valueOf(fundInfo.getFundNumber().trim());
         }
 
-        List<ApScope> scopes = null;
-        if (fundInfo.getScopes() != null) {
-            scopes = scopeRepository.findByCodes(fundInfo.getScopes().getIdentifier());
-        }
-
-        List<Integer> userIds = null;
-        if (fundInfo.getAdminUsers() != null && fundInfo.getAdminUsers().getIdentifier() != null) {
-            userIds = fundInfo.getAdminUsers().getIdentifier().stream()
-                    .map(u -> Integer.valueOf(u))
-                    .collect(Collectors.toList());
-        }
-
-        List<Integer> groupIds = null;
-        if (fundInfo.getAdminGroups() != null && fundInfo.getAdminGroups().getIdentifier() != null) {
-            groupIds = fundInfo.getAdminGroups().getIdentifier().stream()
-                    .map(u -> Integer.valueOf(u))
-                    .collect(Collectors.toList());
-        }
+        List<ApScope> scopes = getScopes(fundInfo.getScopes());
+        List<Integer> userIds = getUserIds(fundInfo.getAdminUsers());
+        List<Integer> groupIds = getGroupIds(fundInfo.getAdminGroups());
 
         ArrFund fund = arrangementService.createFundWithScenario(fundInfo.getFundName(),
                                                                  ruleset.getEntity(),
@@ -162,24 +153,9 @@ public class FundServiceWsImpl {
             fund.setInstitution(institution);
         }
 
-        List<ApScope> scopes = null;
-        if (fundUpdate.getScopes() != null) {
-            scopes = scopeRepository.findByCodes(fundUpdate.getScopes().getIdentifier());
-        }
-
-        List<Integer> userIds = null;
-        if (fundUpdate.getAdminUsers() != null && fundUpdate.getAdminUsers().getIdentifier() != null) {
-            userIds = fundUpdate.getAdminUsers().getIdentifier().stream()
-                    .map(u -> Integer.valueOf(u))
-                    .collect(Collectors.toList());
-        }
-
-        List<Integer> groupIds = null;
-        if (fundUpdate.getAdminGroups() != null && fundUpdate.getAdminGroups().getIdentifier() != null) {
-            groupIds = fundUpdate.getAdminGroups().getIdentifier().stream()
-                    .map(u -> Integer.valueOf(u))
-                    .collect(Collectors.toList());
-        }
+        List<ApScope> scopes = getScopes(fundUpdate.getScopes());
+        List<Integer> userIds = getUserIds(fundUpdate.getAdminUsers());
+        List<Integer> groupIds = getGroupIds(fundUpdate.getAdminGroups());
 
         arrangementService.updateFund(fund, ruleSet.getEntity(), scopes, userIds, groupIds);
     }
@@ -191,4 +167,69 @@ public class FundServiceWsImpl {
         return fundInfo;
     }
 
+    /**
+     * Získání seznamu ApScope
+     * 
+     * @param scopeIds nebo scope codes
+     * @return List<ApScope>
+     */
+    private List<ApScope> getScopes(IdentifierList scopeIds) {
+        if (scopeIds != null) {
+            List<String> strings = scopeIds.getIdentifier();
+            if (strings != null && !strings.isEmpty()) {
+                List<ApScope> scopes;
+                // pokud se jedná o seznamu id
+                if (StringUtils.isNumeric(strings.get(0))) {
+                    List<Integer> ids = strings.stream().map(i -> Integer.valueOf(i)).collect(Collectors.toList());
+                    scopes = scopeRepository.findAllById(ids);
+                } else {
+                    scopes = scopeRepository.findByCodes(strings);
+                }
+                Validate.isTrue(strings.size() == scopes.size(), "Nebyly nalezeny všechny ApScope");
+                return scopes;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Získání seznamu User ids
+     * 
+     * @param userIds nebo user names
+     * @return List<Integer>
+     */
+    private List<Integer> getUserIds(IdentifierList userIds) {
+        if (userIds != null) {
+            List<String> strings = userIds.getIdentifier();
+            if (strings != null && !strings.isEmpty()) {
+                List<Integer> ids;
+                // pokud se jedná o seznamu id
+                if (StringUtils.isNumeric(strings.get(0))) {
+                    ids = strings.stream().map(u -> Integer.valueOf(u)).collect(Collectors.toList());
+                } else {
+                    ids = userRepository.findIdsByUsername(strings);
+                    Validate.isTrue(strings.size() == ids.size(), "Nebyly nalezeny všechny UsrUser");
+                }
+                return ids;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Získání seznamu Group ids
+     * 
+     * @param groupIds
+     * @return List<Integer>
+     */
+    private List<Integer> getGroupIds(IdentifierList groupIds) {
+        if (groupIds != null) {
+            List<String> strings = groupIds.getIdentifier();
+            if (strings != null && !strings.isEmpty()) {
+                List<Integer> ids = strings.stream().map(g -> Integer.valueOf(g)).collect(Collectors.toList());
+                return ids;
+            }
+        }
+        return null;
+    }
 }

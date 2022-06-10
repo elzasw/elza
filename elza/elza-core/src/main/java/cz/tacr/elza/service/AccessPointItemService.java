@@ -496,8 +496,11 @@ public class AccessPointItemService {
      * @return list of changed bindings
      */
     public List<ApBindingItem> changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
-                                        List<ApBindingItem> bindingItemList) {
+                                                       Collection<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
+            return Collections.emptyList();
+        }
+        if (itemsMap == null || itemsMap.size() == 0) {
             return Collections.emptyList();
         }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();

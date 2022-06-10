@@ -383,7 +383,7 @@ public class EntityDBDispatcher {
 
         String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;
 
-        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, prevBindingState.getBinding(), accessPoint);
+        SynchronizationResult syncRes = synchronizeParts(procCtx, entity, prevBindingState.getBinding(), accessPoint, syncQueue);
         // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
         accessPoint = syncRes.getAccessPoint();
         //vytvoření nového stavu propojení
@@ -405,7 +405,7 @@ public class EntityDBDispatcher {
                 if (replacedBindingState.isPresent()) {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
-                    accessPointService.replace(state, replacementState);
+                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem());
                     state.setReplacedBy(replacedBy);
                     break;
                 }
@@ -664,19 +664,16 @@ public class EntityDBDispatcher {
      *            entita z externího systému
      * @param binding
      *            propojení s externím systémem
-     * @param apChange
-     *            změna
      * @param accessPoint
      *            přístupový bod
-     * @param partList
-     *            přidané nebo změněné části
-     * @param itemMap
-     *            prvky popisu přidaných nebo změněných částí
+     * @param syncQueue
+     *            True if called from sync queue (without UI and direct user
+     *            feedback)
      */
     private SynchronizationResult synchronizeParts(final ProcessingContext procCtx,
                                                    final EntityXml entity,
                                                    final ApBinding binding,
-                                                   ApAccessPoint accessPoint) {
+                                                   ApAccessPoint accessPoint, boolean syncQueue) {
         log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
         Integer accessPointId = accessPoint.getAccessPointId();
@@ -750,7 +747,7 @@ public class EntityDBDispatcher {
 
         // smazání partů dle externího systému
         // mažou se zbývající party
-        deletePartsInLookup(apChange, accessPoint);
+        deletePartsInLookup(apChange, accessPoint, syncQueue);
 
         // smazání zbývajících nezpracovaných item
         Collection<ApBindingItem> remainingBindingItems = bindingItemLookup.values();
@@ -796,7 +793,7 @@ public class EntityDBDispatcher {
         return syncResult;
     }
 
-    private void deletePartsInLookup(ApChange apChange, ApAccessPoint accessPoint) {
+    private void deletePartsInLookup(ApChange apChange, ApAccessPoint accessPoint, boolean syncQueue) {
         if (bindingPartLookup.isEmpty()) {
             return;
         }
@@ -824,13 +821,18 @@ public class EntityDBDispatcher {
             if (subPart.getParentPartId() != null
                     && deletedPartIds.contains(subPart.getParentPartId())
                     && !deletedPartIds.contains(subPart.getPartId())) {
-                log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}", 
-                          accessPoint.getAccessPointId(), 
-                          subPart.getParentPartId());
-                throw new BusinessException("Removed part has subordinate part(s), accessPointId: " + 
-                          accessPoint.getAccessPointId() + ", partId: " + subPart.getParentPartId(), BaseCode.EXPORT_FAILED)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("partId", subPart.getParentPartId());
+                if (syncQueue) {
+                    log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}", 
+                              accessPoint.getAccessPointId(), 
+                              subPart.getParentPartId());
+                    throw new BusinessException("Removed part has subordinate part(s), accessPointId: " + 
+                              accessPoint.getAccessPointId() + ", partId: " + subPart.getParentPartId(), BaseCode.EXPORT_FAILED)
+                        .set("accessPointId", accessPoint.getAccessPointId())
+                        .set("partId", subPart.getParentPartId());
+                } else {
+                    // pokud pochází z uživatelského rozhraní - musi odstranit i subPart
+                    partList.add(subPart);
+                }
             }
         }
 

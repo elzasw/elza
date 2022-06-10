@@ -53,7 +53,7 @@ public class UnitCounter {
      * Packet type mapping
      */
     Map<Integer, String> objectMapping = new HashMap<>();
-
+    
     UnitCounter(UnitCounterConfig counterCfg,
                 final StructuredItemRepository structureItemRepository,
                 StaticDataProvider sdp) {
@@ -140,6 +140,7 @@ public class UnitCounter {
                 return;
             }
         }
+
         // stop further processing if set
         if (config.isStopProcessing()) {
             unitCountAction.setSkipSubtree(level);
@@ -179,7 +180,7 @@ public class UnitCounter {
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level.getNodeId(), value, count);
                     } else {
-                        unitCountAction.addValue(value, count);
+                        unitCountAction.addValue(level, value, count);
                     }
                 }
             }
@@ -213,7 +214,6 @@ public class UnitCounter {
                 countStructObj(packetId, level, unitCountAction);
             }
         }
-
     }
 
     private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
@@ -229,7 +229,7 @@ public class UnitCounter {
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level.getNodeId(), value, 1);
                     } else {
-                        unitCountAction.addValue(value, 1);
+                        unitCountAction.addValue(level, value, 1);
                     }
 
                     // mark as counted

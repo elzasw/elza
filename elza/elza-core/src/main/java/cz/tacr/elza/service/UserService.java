@@ -54,7 +54,6 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -236,7 +235,14 @@ public class UserService {
 
         for (UsrPermission permission : permissions) {
             if (permission.getPermissionId() == null) {
-                if (changePermissionType == ChangePermissionType.DELETE) {  // pokud se jedná o akci delete, nesmí být předán záznam bez id
+                // pokud se jedná o pokus o přidělení práv superuživatele
+                if (changePermissionType == ChangePermissionType.ADD && permission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+                    if (!hasPermission(Permission.ADMIN)) {
+                        throw new BusinessException("Přístup superuživatele může udělit pouze superuživatel", BaseCode.INSUFFICIENT_PERMISSIONS);
+                    }
+                }
+                //pokud se jedná o akci delete, nesmí být předán záznam bez id
+                if (changePermissionType == ChangePermissionType.DELETE) {
                     throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id", UserCode.PERM_ILLEGAL_INPUT);
                 }
                 permission.setUser(user);
@@ -1245,6 +1251,10 @@ public class UserService {
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
+        if (userDetail == null) {
+            // user not authorized
+            return false;
+        }
         return userDetail.hasPermission(permission, entityId);
     }
 
@@ -1884,6 +1894,24 @@ public class UserService {
         }
 
         return createUserDetail(user);
+    }
+
+    /**
+     * Method to create admin detail
+     * 
+     * This is temporary method and will be removed in future
+     * 
+     * @return
+     */
+    public UserDetail createAdminUserDetail() {
+        UsrUser user = createDefaultUser();
+        Collection<UserPermission> perms = Collections.singletonList(new UserPermission(
+                UsrPermission.Permission.ADMIN));
+
+        List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
+        authTypes.add(UsrAuthentication.AuthType.PASSWORD);
+
+        return new UserDetail(user, perms, levelTreeCacheService, authTypes);
     }
 
     public boolean hasFullArrPerm(final Integer fundId) {

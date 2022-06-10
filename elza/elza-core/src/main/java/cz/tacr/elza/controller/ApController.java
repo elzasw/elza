@@ -112,6 +112,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -199,6 +200,9 @@ public class ApController {
 
     @Autowired
     private LayersConfig layersConfig;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -763,12 +767,22 @@ public class ApController {
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     public void replace(@PathVariable final Integer accessPointId, @RequestBody final Integer replacedId) {
 
+        // TODO: This method is probably obsolete, usage should be checked
+
         final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
         final ApAccessPoint replacement = accessPointService.getAccessPointInternal(replacedId);
 
         ApState replacedState = accessPointService.getStateInternal(replaced);
         ApState replacementState = accessPointService.getStateInternal(replacement);
-        accessPointService.replace(replacedState, replacementState);
+
+        // TODO: Improve check on external system
+        ApExternalSystem extSystem = null;
+        List<ApBindingState> srcBindings = bindingStateRepository.findByAccessPoint(replaced);
+        if (CollectionUtils.isNotEmpty(srcBindings)) {
+            extSystem = srcBindings.get(0).getApExternalSystem();
+        }
+
+        accessPointService.replace(replacedState, replacementState, extSystem);
     }
 
     /**

@@ -13,6 +13,8 @@ public class DEExportParams {
 
     private Collection<FundSections> fundsSections;
 
+    private Integer exportFilterId;
+
     public Collection<Integer> getApIds() {
         return apIds;
     }
@@ -27,6 +29,14 @@ public class DEExportParams {
 
     public void setFundsSections(Collection<FundSections> fundsSections) {
         this.fundsSections = fundsSections;
+    }
+
+    public Integer getExportFilterId() {
+        return exportFilterId;
+    }
+
+    public void setExportFilterId(Integer exportFilterId) {
+        this.exportFilterId = exportFilterId;
     }
 
     /**
