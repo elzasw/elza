@@ -1,9 +1,11 @@
 package cz.tacr.elza.packageimport;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,7 +23,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
@@ -43,6 +47,7 @@ import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -60,6 +65,7 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.FileSystemUtils;
+import org.terracotta.modules.ehcache.async.exceptions.ProcessingException;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
@@ -330,6 +336,11 @@ public class PackageService {
     private static final String AVAILABLE_ITEMS = "AVAILABLE_ITEMS";
     private static final String VALIDATION = "VALIDATION";
 
+    /**
+     *  soubor s názvem a verzí balíčku
+     */
+    private static final String PACKAGE_XML = "package.xml";
+    
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -719,6 +730,79 @@ public class PackageService {
 
         eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
+    }
+
+    /**
+     * Automatické načítání balíčků v adresáři /dpkg
+     * 
+     * @param path
+     */
+    public void autoImportPackages(Path dpkgPath) {
+        if (Files.exists(dpkgPath)) {
+            try (Stream<Path> stream = Files.list(dpkgPath)) {
+                List<Path> pathes = stream
+                        .filter(f -> !Files.isDirectory(f) && f.getFileName().toString().endsWith("zip"))
+                        .collect(Collectors.toList());
+                for (Path path : pathes) {
+                    boolean uploadPkg = false;
+                    PackageInfo pkgZip = getPackageInfo(path);
+                    if (pkgZip != null) {
+                        RulPackage pkgDb = packageRepository.findByCode(pkgZip.getCode());
+                        uploadPkg = true;
+                        if (pkgDb != null) {
+                            if (testing) {
+                                // pokud se jedná o testovací verzi - aktualizujeme, i když jsou verze balíčků stejné
+                                uploadPkg = pkgZip.getVersion() >= pkgDb.getVersion();
+                            } else {
+                                // pokud se jedná o vývojové verzi - aktualizujeme pouze v případě, že je verze balíčku vyšší
+                                uploadPkg = pkgZip.getVersion() > pkgDb.getVersion();
+                            }
+                        }
+                        if (uploadPkg) {
+                            autoImportPackage(path);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Error processing a package zip file.", e);
+                throw new SystemException("Error processing a package zip file.", e);
+            }
+        }
+    }
+
+    /**
+     * Získání objektu PackageInfo ze souboru PACKAGE_XML z archivu
+     * 
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    private PackageInfo getPackageInfo(Path path) throws IOException {
+        PackageInfo pkgZip = null;
+        try (ZipFile zipFile = new ZipFile(path.toFile())) {
+            ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
+            if (zipEntry != null) {
+                try (InputStream is = zipFile.getInputStream(zipEntry)) {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
+                    pkgZip = PackageUtils.convertXmlStreamToObject(PackageInfo.class, bais);
+                }
+            }
+        }
+        return pkgZip;
+    }
+
+    /**
+     * Aktualizace balíčku při spuštění aplikace
+     * 
+     * @param path
+     */
+    private void autoImportPackage(Path path) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
+        transactionTemplate.executeWithoutResult(ts -> {
+            preImportPackage();
+            importPackageInternal(path.toFile());
+            staticDataService.refreshForCurrentThread();
+        });
     }
 
     private void importApTypes(PackageContext pkgCtx) throws IOException {
@@ -2174,7 +2258,7 @@ public class PackageService {
 
         PackageInfo packageInfo = puc.getPackageInfo();
 
-        RulPackage rulPackage = packageRepository.findTopByCode(packageInfo.getCode());
+        RulPackage rulPackage = packageRepository.findByCode(packageInfo.getCode());
 
         if (rulPackage == null) {
             rulPackage = new RulPackage();
@@ -2295,7 +2379,7 @@ public class PackageService {
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     synchronized public void deletePackage(final String code) {
-        RulPackage rulPackage = packageRepository.findTopByCode(code);
+        RulPackage rulPackage = packageRepository.findByCode(code);
 
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", BaseCode.ID_NOT_EXIST);
@@ -2479,7 +2563,7 @@ public class PackageService {
      */
     @Transactional(readOnly = true)
     synchronized public Path exportPackage(final String code) throws IOException {
-        RulPackage rulPackage = packageRepository.findTopByCode(code);
+        RulPackage rulPackage = packageRepository.findByCode(code);
 
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", PackageCode.PACKAGE_NOT_EXIST).set("code", code);
