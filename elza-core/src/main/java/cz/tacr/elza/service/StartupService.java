@@ -24,6 +24,7 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -76,6 +77,8 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
+    private final HibernateConfiguration hibernateConfiguration;
+
     private final AccessPointCacheService accessPointCacheService;
 
     private final ResourcePathResolver resourcePathResolver;
@@ -98,9 +101,6 @@ public class StartupService implements SmartLifecycle {
     @Value("${elza.startupService.autoStart:true}")
     private boolean autoStart = true;
 
-    @Value("${elza.data.batchSize:1500}")
-    private int maxBatchSize;
-
     @Autowired
     AdminService adminService;
 
@@ -120,6 +120,7 @@ public class StartupService implements SmartLifecycle {
                           final EntityManager em,
                           final AccessPointService accessPointService,
                           final VisiblePolicyRepository visiblePolicyRepository,
+                          final HibernateConfiguration hibernateConfiguration,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
@@ -140,6 +141,7 @@ public class StartupService implements SmartLifecycle {
         this.em = em;
         this.accessPointService = accessPointService;
         this.visiblePolicyRepository = visiblePolicyRepository;
+        this.hibernateConfiguration = hibernateConfiguration;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
@@ -191,7 +193,7 @@ public class StartupService implements SmartLifecycle {
 
         tt.executeWithoutResult(r -> startInTransaction2());
 
-        ObjectListIterator.setMaxBatchSize(maxBatchSize);
+        ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
 
         packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
