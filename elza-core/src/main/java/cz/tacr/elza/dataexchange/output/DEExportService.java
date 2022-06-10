@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -39,9 +38,12 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
+import cz.tacr.elza.dataexchange.output.filters.AccessRestrictFilter;
+import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
@@ -51,6 +53,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -68,6 +71,8 @@ public class DEExportService {
 
     private final ScopeRepository scopeRepository;
 
+    private final RuleService ruleService;
+
     @Autowired
     public DEExportService(EntityManager em,
             StaticDataService staticDataService,
@@ -77,12 +82,14 @@ public class DEExportService {
             NodeCacheService nodeCacheService,
             ApAccessPointRepository apRepository,
             ResourcePathResolver resourcePathResolver,
-            ScopeRepository scopeRepository) {
+                           ScopeRepository scopeRepository,
+                           final RuleService ruleService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository,
                 resourcePathResolver);
         this.staticDataService = staticDataService;
         this.scopeRepository = scopeRepository;
+        this.ruleService = ruleService;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -118,13 +125,23 @@ public class DEExportService {
     }
 
     private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
-        log.debug("Exporting data, apIds(count)={}, sections(count)={}", params.getApIds(), params.getFundsSections());
+        log.debug("Exporting data, apIds={}, funds/sections={}", params.getApIds(), params.getFundsSections());
+
         // create export context
         ExportContext context = new ExportContext(builder, staticDataService.getData(),
                 HibernateConfiguration.MAX_IN_SIZE);
         context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addApId);
+        }
+
+        // prepare filter
+        if (params.getExportFilterId() != null) {
+            RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilterId());
+            // create bean for export filter
+            ExportFilter expFilter = new AccessRestrictFilter(this.initHelper.getEm(),
+                    this.staticDataService.getData());
+            context.setExportFilter(expFilter);
         }
 
         // call all readers

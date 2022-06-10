@@ -10,6 +10,7 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
+import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 
 public class ExportContext {
@@ -27,6 +28,8 @@ public class ExportContext {
     private final StaticDataProvider staticData;
 
     private final int batchSize;
+
+    private ExportFilter exportFilter;
 
     public ExportContext(ExportBuilder builder, StaticDataProvider staticData, int batchSize) {
         this.builder = Validate.notNull(builder);
@@ -61,5 +64,13 @@ public class ExportContext {
 
     public void setFundsSections(Collection<FundSections> fundsSections) {
         this.fundsSections = fundsSections;
+    }
+
+    public void setExportFilter(final ExportFilter expFilter) {
+        this.exportFilter = expFilter;
+    }
+
+    public ExportFilter getExportFilter() {
+        return exportFilter;
     }
 }

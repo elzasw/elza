@@ -90,6 +90,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -131,6 +132,7 @@ import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
+import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -250,6 +252,9 @@ public class RuleService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    private ExportFilterRepository exportFilterRepository;
 
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
@@ -1867,5 +1872,16 @@ public class RuleService {
         }
 
         return itemTypeCodes;
+    }
+
+    /**
+     * Return export filter
+     * 
+     * @param exportFilterId
+     * @return
+     */
+    @Transactional(TxType.MANDATORY)
+    public RulExportFilter getExportFilter(Integer exportFilterId) {
+        return exportFilterRepository.getOne(exportFilterId);
     }
 }

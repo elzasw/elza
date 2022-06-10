@@ -114,7 +114,7 @@ public class SectionContext {
             return; // object already processed
         }
 
-        StructObjectInfoDispatcher structObjDispatcher = new StructObjectInfoDispatcher(getOutputStream());
+        StructObjectInfoDispatcher structObjDispatcher = new StructObjectInfoDispatcher(context, getOutputStream());
         structObjLoader.addRequest(structObjId, structObjDispatcher);
     }
 
@@ -140,7 +140,8 @@ public class SectionContext {
 
         em.detach(level); // TODO: replace with stateless session
 
-        LevelInfoDispatcher levelInfoDispatcher = new LevelInfoDispatcher(getOutputStream(), levelInfoListener);
+        LevelInfoDispatcher levelInfoDispatcher = new LevelInfoDispatcher(context, getOutputStream(),
+                levelInfoListener);
         levelInfoLoader.addRequest(level, levelInfoDispatcher);
     }
 
