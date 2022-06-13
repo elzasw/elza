@@ -20,7 +20,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
 
-import cz.tacr.elza.core.db.HibernateConfiguration;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
@@ -219,8 +219,8 @@ public class ArrangementInternalService {
         if (structuredObjectIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<Integer, ArrNode> result = new HashMap<>(HibernateConfiguration.MAX_IN_SIZE);
-        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, HibernateConfiguration.MAX_IN_SIZE)) {
+        Map<Integer, ArrNode> result = new HashMap<>(ObjectListIterator.getMaxBatchSize());
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, ObjectListIterator.getMaxBatchSize())) {
             for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
                 result.put(node.getNodeId(), node);
             }
