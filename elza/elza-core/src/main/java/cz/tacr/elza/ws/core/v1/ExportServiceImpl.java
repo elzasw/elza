@@ -31,11 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.io.FilterInputStreamWithException;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
@@ -139,7 +139,7 @@ public class ExportServiceImpl implements ExportService {
         // map uuid to id
         if (CollectionUtils.isNotEmpty(uuidList))
         {
-            List<List<String>> lists = Lists.partition(uuidList, HibernateConfiguration.MAX_IN_SIZE);
+            List<List<String>> lists = Lists.partition(uuidList, ObjectListIterator.getMaxBatchSize());
             for (List<String> subList : lists) {
                 List<ApAccessPointInfo> infoList = accessPointRepository.findActiveInfoByUuids(subList);
                 // check if al items were found

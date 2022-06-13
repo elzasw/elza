@@ -47,9 +47,9 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
@@ -427,7 +427,7 @@ public class UserService {
 
         // naleznu všechny oprávnění
         List<List<Integer>> nodeIdsLists = Lists.partition(new ArrayList<>(nodeIds),
-                                                           HibernateConfiguration.MAX_IN_SIZE);
+                                                           ObjectListIterator.getMaxBatchSize());
         List<UsrPermission> permissions = new ArrayList<>();
         for (List<Integer> subNodeIds : nodeIdsLists) {
             permissions.addAll(permissionRepository.findByNodeIds(subNodeIds));
