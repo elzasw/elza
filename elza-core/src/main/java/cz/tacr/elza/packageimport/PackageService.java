@@ -737,35 +737,63 @@ public class PackageService {
      * @param path
      */
     public void autoImportPackages(Path dpkgPath) {
-        if (Files.exists(dpkgPath)) {
-            try (Stream<Path> stream = Files.list(dpkgPath)) {
-                List<Path> pathes = stream
-                        .filter(f -> !Files.isDirectory(f) && f.getFileName().toString().endsWith("zip"))
-                        .collect(Collectors.toList());
-                for (Path path : pathes) {
-                    boolean uploadPkg = false;
-                    PackageInfo pkgZip = getPackageInfo(path);
-                    if (pkgZip != null) {
-                        RulPackage pkgDb = packageRepository.findByCode(pkgZip.getCode());
-                        uploadPkg = true;
-                        if (pkgDb != null) {
-                            if (testing) {
-                                // pokud se jedná o testovací verzi - aktualizujeme, i když jsou verze balíčků stejné
-                                uploadPkg = pkgZip.getVersion() >= pkgDb.getVersion();
-                            } else {
-                                // pokud se jedná o vývojové verzi - aktualizujeme pouze v případě, že je verze balíčku vyšší
-                                uploadPkg = pkgZip.getVersion() > pkgDb.getVersion();
-                            }
-                        }
-                        if (uploadPkg) {
-                            autoImportPackage(path);
-                        }
+        if (!Files.exists(dpkgPath)) {
+            return;
+        }
+        logger.info("Checking folder {} for import package files...", dpkgPath.toString());
+
+        try (Stream<Path> stream = Files.list(dpkgPath)) {
+            List<Path> pathes = stream
+                    .filter(f -> !Files.isDirectory(f) && f.getFileName().toString().endsWith("zip"))
+                    .collect(Collectors.toList());
+
+            // vyhledani poslednich verzi balicku
+            Map<String, Path> latestVersionMap = new HashMap<>();
+            Map<String, PackageInfo> packagesMap = new HashMap<>();
+            for (Path path : pathes) {
+                PackageInfo pkg = getPackageInfo(path);
+                Path pathPkg = latestVersionMap.get(pkg.getCode());
+                PackageInfo mapPkg = null;
+                if (pathPkg != null) {
+                    mapPkg = getPackageInfo(pathPkg);
+                }
+                if (mapPkg == null || pkg.getVersion() > mapPkg.getVersion()) {
+                    latestVersionMap.put(pkg.getCode(), path);
+                    packagesMap.put(pkg.getCode(), pkg);
+                }
+            }
+
+            // řazení balíčků podle závislostí mezi sebou
+            PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
+            packagesMap.values().forEach(p -> {
+                if (p.getDependencies() != null) {
+                    p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
+                }
+            });
+            List<String> sortedPkg = g.topologicalSort();
+
+            // nahrání balíčku
+            for (String codePkg : sortedPkg) {
+                Path pathPkg = latestVersionMap.get(codePkg);
+                PackageInfo pkgZip = packagesMap.get(codePkg);
+                RulPackage pkgDb = packageRepository.findByCode(pkgZip.getCode());
+                boolean uploadPkg = true;
+                if (pkgDb != null) {
+                    if (testing) {
+                        // pokud se jedná o testovací verzi - aktualizujeme, i když jsou verze balíčků stejné
+                        uploadPkg = pkgZip.getVersion() >= pkgDb.getVersion();
+                    } else {
+                        // pokud se jedná o vývojové verzi - aktualizujeme pouze v případě, že je verze balíčku vyšší
+                        uploadPkg = pkgZip.getVersion() > pkgDb.getVersion();
                     }
                 }
-            } catch (IOException e) {
-                logger.error("Error processing a package zip file.", e);
-                throw new SystemException("Error processing a package zip file.", e);
+                if (uploadPkg) {
+                    autoImportPackage(pathPkg);
+                }
             }
+        } catch (IOException e) {
+            logger.error("Error processing a package zip file.", e);
+            throw new SystemException("Error processing a package zip file.", e);
         }
     }
 
