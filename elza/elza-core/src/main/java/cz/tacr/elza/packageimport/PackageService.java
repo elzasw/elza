@@ -761,13 +761,19 @@ public class PackageService {
                 PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
 
                 // žádné informace o balíčku nebo nižší verzi
-                if (mapPkg == null || pkg.getVersion() > mapPkg.getVersion()) {
+                if (mapPkg == null || mapPkg.getVersion() < pkg.getVersion()) {
                     latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
 
                     // kódy a verze všech požadovaných balíčků včetně závislostí
                     requiredPkg.put(pkg.getCode(), pkg.getVersion());
                     if (pkg.getDependencies() != null) {
-                        pkg.getDependencies().forEach(d -> requiredPkg.put(d.getCode(), d.getMinVersion()));
+                        pkg.getDependencies().forEach(d -> {
+                            Integer version = requiredPkg.get(d.getCode());
+                            // pokud neexistuje žádný záznam nebo je verze nižší
+                            if (version == null || version < d.getMinVersion()) {
+                                requiredPkg.put(d.getCode(), d.getMinVersion());
+                            }
+                        });
                     }
                 }
             }
@@ -784,10 +790,10 @@ public class PackageService {
             // import balíčku
             for (String codePkg : sortedPkg) {
                 PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
+                RulPackage pkgDb = packagesDbMap.get(codePkg);
 
                 // požadovaný balíček je k dispozici jako soubor
                 if (pkgZip != null) {
-                    RulPackage pkgDb = packagesDbMap.get(pkgZip.getCode());
                     boolean uploadPkg = true;
                     if (pkgDb != null) {
                         if (testing) {
@@ -806,7 +812,6 @@ public class PackageService {
 
                 // požadovaný balíček není k dispozici jako soubor
                 } else {
-                    RulPackage pkgDb = packagesDbMap.get(codePkg);
                     if (pkgDb == null) {
                         logger.error("The required package {} is missing.", codePkg);
                         throw new SystemException("The required package " + codePkg + " is missing.");
