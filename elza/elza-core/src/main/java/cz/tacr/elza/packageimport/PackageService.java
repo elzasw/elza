@@ -107,6 +107,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.RuleUpdateContext.RuleState;
+import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
 import cz.tacr.elza.packageimport.xml.APTypeXml;
 import cz.tacr.elza.packageimport.xml.APTypes;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
@@ -742,53 +743,80 @@ public class PackageService {
         }
         logger.info("Checking folder {} for import package files...", dpkgPath.toString());
 
-        try (Stream<Path> stream = Files.list(dpkgPath)) {
-            List<Path> pathes = stream
-                    .filter(f -> !Files.isDirectory(f) && f.getFileName().toString().endsWith("zip"))
-                    .collect(Collectors.toList());
+        try (Stream<Path> streamPaths = Files.list(dpkgPath)) {
+
+            // získat všechny již načtené balíčky
+            Map<String, RulPackage> packagesDbMap = getPackages().stream().collect(Collectors.toMap(p -> p.getCode(), p -> p));
 
             // vyhledani poslednich verzi balicku
-            Map<String, Path> latestVersionMap = new HashMap<>();
-            Map<String, PackageInfo> packagesMap = new HashMap<>();
-            for (Path path : pathes) {
-                PackageInfo pkg = getPackageInfo(path);
-                Path pathPkg = latestVersionMap.get(pkg.getCode());
-                PackageInfo mapPkg = null;
-                if (pathPkg != null) {
-                    mapPkg = getPackageInfo(pathPkg);
+            Map<String, Integer> requiredPkg = new HashMap<>();
+            Map<String, PackageInfoWrapper> latestVersionMap = new HashMap<>();
+            for (Path path : streamPaths.collect(Collectors.toList())) {
+                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+                    continue;
                 }
+                logger.info("Reading {} from file: {}...", PACKAGE_XML, path.toString());
+
+                PackageInfoWrapper pkg = getPackageInfo(path);
+                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
+
+                // žádné informace o balíčku nebo nižší verzi
                 if (mapPkg == null || pkg.getVersion() > mapPkg.getVersion()) {
-                    latestVersionMap.put(pkg.getCode(), path);
-                    packagesMap.put(pkg.getCode(), pkg);
+                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+
+                    // kódy a verze všech požadovaných balíčků včetně závislostí
+                    requiredPkg.put(pkg.getCode(), pkg.getVersion());
+                    if (pkg.getDependencies() != null) {
+                        pkg.getDependencies().forEach(d -> requiredPkg.put(d.getCode(), d.getMinVersion()));
+                    }
                 }
             }
 
             // řazení balíčků podle závislostí mezi sebou
-            PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
-            packagesMap.values().forEach(p -> {
+            PackageUtils.Graph<String> g = new PackageUtils.Graph<>(requiredPkg.size());
+            latestVersionMap.values().forEach(p -> {
                 if (p.getDependencies() != null) {
                     p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
                 }
             });
             List<String> sortedPkg = g.topologicalSort();
 
-            // nahrání balíčku
+            // import balíčku
             for (String codePkg : sortedPkg) {
-                Path pathPkg = latestVersionMap.get(codePkg);
-                PackageInfo pkgZip = packagesMap.get(codePkg);
-                RulPackage pkgDb = packageRepository.findByCode(pkgZip.getCode());
-                boolean uploadPkg = true;
-                if (pkgDb != null) {
-                    if (testing) {
-                        // pokud se jedná o testovací verzi - aktualizujeme, i když jsou verze balíčků stejné
-                        uploadPkg = pkgZip.getVersion() >= pkgDb.getVersion();
-                    } else {
-                        // pokud se jedná o vývojové verzi - aktualizujeme pouze v případě, že je verze balíčku vyšší
-                        uploadPkg = pkgZip.getVersion() > pkgDb.getVersion();
+                PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
+
+                // požadovaný balíček je k dispozici jako soubor
+                if (pkgZip != null) {
+                    RulPackage pkgDb = packagesDbMap.get(pkgZip.getCode());
+                    boolean uploadPkg = true;
+                    if (pkgDb != null) {
+                        if (testing) {
+                            // pokud se jedná o testovací verzi - aktualizujeme, i když jsou verze balíčků stejné
+                            uploadPkg = pkgZip.getVersion() >= pkgDb.getVersion();
+                        } else {
+                            // pokud se jedná o vývojové verzi - aktualizujeme pouze v případě, že je verze balíčku vyšší
+                            uploadPkg = pkgZip.getVersion() > pkgDb.getVersion();
+                        }
                     }
-                }
-                if (uploadPkg) {
-                    autoImportPackage(pathPkg);
+                    // nahrání balíčku
+                    if (uploadPkg) {
+                        logger.info("Reading package from file: {}", pkgZip.getPath().toString());
+                        autoImportPackage(pkgZip.getPath());
+                    }
+
+                // požadovaný balíček není k dispozici jako soubor
+                } else {
+                    RulPackage pkgDb = packagesDbMap.get(codePkg);
+                    if (pkgDb == null) {
+                        logger.error("The required package {} is missing.", codePkg);
+                        throw new SystemException("The required package " + codePkg + " is missing.");
+                    } else {
+                        Integer minVersion = requiredPkg.get(codePkg);
+                        if (minVersion > pkgDb.getVersion()) {
+                            logger.error("Requires a higher version (min:{}) of the package {}.", minVersion, codePkg);
+                            throw new SystemException("Requires a higher version (min:" + minVersion + ") of the package " + codePkg + ".");
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
@@ -798,13 +826,13 @@ public class PackageService {
     }
 
     /**
-     * Získání objektu PackageInfo ze souboru PACKAGE_XML z archivu
+     * Získání objektu PackageInfoWrapper ze souboru PACKAGE_XML z archivu
      * 
      * @param path
      * @return
      * @throws IOException
      */
-    private PackageInfo getPackageInfo(Path path) throws IOException {
+    private PackageInfoWrapper getPackageInfo(Path path) throws IOException {
         PackageInfo pkgZip = null;
         try (ZipFile zipFile = new ZipFile(path.toFile())) {
             ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
@@ -815,19 +843,19 @@ public class PackageService {
                 }
             }
         }
-        return pkgZip;
+        return new PackageInfoWrapper(pkgZip, path);
     }
 
     /**
      * Aktualizace balíčku při spuštění aplikace
      * 
-     * @param path
+     * @param pathZip
      */
-    private void autoImportPackage(Path path) {
+    private void autoImportPackage(Path pathZip) {
         TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
         transactionTemplate.executeWithoutResult(ts -> {
             preImportPackage();
-            importPackageInternal(path.toFile());
+            importPackageInternal(pathZip.toFile());
             staticDataService.refreshForCurrentThread();
         });
     }
