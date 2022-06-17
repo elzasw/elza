@@ -101,14 +101,6 @@ export function logout() {
             reset: true,
         });
 
-        const logoutUrl = window.logoutUrl;
-
-        //return WebApi.logout();
-        return WebApi.logout().then((response) => {
-            if (logoutUrl) { 
-                location.assign(logoutUrl);
-            }
-            return response;
-        });
+        return WebApi.logout();
     };
 }

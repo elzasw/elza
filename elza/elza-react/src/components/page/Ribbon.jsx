@@ -77,7 +77,12 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handleLogout = () => {
-        this.props.dispatch(logout());
+        this.props.dispatch(logout()).then(() => {
+            const logoutUrl = window.logoutUrl;
+            if (logoutUrl) {
+                location.assign(logoutUrl);
+            }
+        });
     };
 
     handlePasswordChangeForm = () => {
