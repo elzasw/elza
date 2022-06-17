@@ -80,12 +80,20 @@ public class ElzaWebController {
         return displayUserInfo;
     }
 
-    @Value("${version:0.0.0}")
+    @Value("${elza.version:0.0.0}")
     private String appVersion;
 
     @ModelAttribute("appVersion")
-    public String getAppVersion(){
+    public String getAppVersion() {
     	return appVersion;
+    }
+
+    @Value("${elza.security.logoutUrl:}")
+    private String logoutUrl;
+
+    @ModelAttribute("logoutUrl")
+    public String getLogoutUrl() {
+        return logoutUrl;
     }
 
     private void initDefaults(final HttpServletRequest request, final Model model) {
