@@ -810,32 +810,9 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
-          používá se nyní již jen u technických výkresů, asi by mohlo být 
-          přejmenováno na "autor výkresu" -->
-    <item-spec code="ZP2015_ENTITY_ROLE_1">
-        <name>autor</name>
-        <description>zastaralé, nově většinou autor textu</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_2">
         <name>autor dialogu</name>
         <description>5.13.2, 5.14.2 pro kinematografické filmy, zvukové archiválie</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- nahrazen fotografem, dále nepoužívat (ZP2015_ENTITY_ROLE_31) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_4">        <name>autor fotografií</name>
-        <description>nově viz též fotograf</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -926,28 +903,6 @@
     <item-spec code="ZP2015_ENTITY_ROLE_12">
         <name>autor triků a speciálních efektů</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_13">
-        <name>autor výtvarné a obrazové stránky</name>
-        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_14">
-        <name>autor výtvarné stránky</name>
-        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -1150,16 +1105,6 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nahrazeno rolí redaktor -->
-    <item-spec code="ZP2015_ENTITY_ROLE_35">
-        <name>editor / redaktor</name>
-        <description>zastaralé, nahrazeno rolí redaktor</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_36">
         <name>kreslič</name>
         <description>5.9.1, 5.10.1 - mapy (mapová díla, atlasy), technické výkresy</description>
@@ -1304,16 +1249,6 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nahrazeno rolí tiskárna/tiskař (nově ZP2015_ENTITY_ROLE_52)-->
-    <item-spec code="ZP2015_ENTITY_ROLE_51">
-        <name>tiskárna</name>
-        <description>zastaralé, nahrazeno rolí tiskárna/tiskař</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_52">
         <name>tiskárna/tiskař</name>
         <description>5.6.1, 5.9.1, 5.11.2, 5.15.1, 5.16.1, 5.17.1, , 5.19.1 - hudebniny, mapy (mapová díla, atlasy), grafické listy, tisky, pohlednice, plakáty, , cenné papíry</description>
@@ -1327,28 +1262,6 @@
     <item-spec code="ZP2015_ENTITY_ROLE_53">
         <name>výrobce</name>
         <description>5.4.1, 5.7.6, 5.10.1, 5.21.1, 5.22.1 - úřední knihy (registraturní pomůcky, kartotéky), typáře (otisky, kopie otisků), technické výkresy, faleristické předměty, numizmatické předměty</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_54">
-        <name>výrobce typářů</name>
-        <description>zastaralé, bude nahrazeno rolí výrobce</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_55">
-        <name>výrobce odlitků otisků / otisků typářů</name>
-        <description>zastaralé, bude nahrazeno rolí výrobce</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -1377,16 +1290,6 @@
     <item-spec code="ZP2015_ENTITY_ROLE_58">
         <name>místo vydání</name>
         <description>5.3.1, 5.7.6, 5.15.1, 5.17.1, 5.16.1, 5.19.1 - listiny (před i po roce 1850), typáře (otisky, kopie otisků), tisky, plakáty, pohlednice, cenné papíry</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, bude nahrazeno místem vydání -->
-    <item-spec code="ZP2015_ENTITY_ROLE_59">
-        <name>místo vydání dokumentů</name>
-        <description>zastaralé, bude nahrazeno místem vydání</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
