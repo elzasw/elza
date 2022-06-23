@@ -775,8 +775,8 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_77">
-        <name>osoba jmenovaná / ustanovená do funkce</name>
-        <description>osoba jmenovaná / ustanovená do funkce</description>
+        <name>osoba jmenovaná/ustanovená do funkce</name>
+        <description>osoba jmenovaná/ustanovená do funkce</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -831,7 +831,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_10">
-        <name>autor textové složky/textař</name>
+        <name>autor textové složky / textař</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -841,7 +841,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_6">
-        <name>autor hudby/skladatel</name>
+        <name>autor hudby / skladatel</name>
         <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -851,7 +851,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_7">
-        <name>autor choreografie/choreograf</name>
+        <name>autor choreografie / choreograf</name>
         <description>5.13.2, kinematografické filmy</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -941,7 +941,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_18">
-        <name>produkční společnost/producent</name>
+        <name>produkční společnost / producent</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -951,7 +951,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_19">
-        <name>objednatel / příjemce</name>
+        <name>objednatel/příjemce</name>
         <description>5.5.1, 5.6.1, 5.9.1, 5.13.2, 5.14.2 - rukopisy, hudebniny, mapy (mapová díla, atlasy), kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
