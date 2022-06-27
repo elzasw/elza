@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
 
@@ -116,10 +115,11 @@ public class ArrangementInternalService {
      * @return true pokud patří uzel do verze, jinak false
      */
     public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
-        Assert.notNull(level, "Musí být vyplněno");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Integer lockChange = version.getLockChange() == null
-                ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
+        Validate.notNull(level, "Musí být vyplněno");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Integer lockChange = version.getLockChangeId() == null
+                ? Integer.MAX_VALUE
+                : version.getLockChangeId();
 
         int levelDeleteChange = level.getDeleteChange() == null ?
                 Integer.MAX_VALUE : level.getDeleteChange().getChangeId();

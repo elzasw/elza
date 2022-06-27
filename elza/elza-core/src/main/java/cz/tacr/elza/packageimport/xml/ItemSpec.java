@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -118,9 +117,13 @@ public class ItemSpec {
     /**
      * Převod DAO na VO specifikace.
      *
-     * @param rulDescItemSpec DAO specifikace
+     * @param rulDescItemSpec
+     *            DAO specifikace
+     * @param assignedTypes
      */
-    public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec, ItemAptypeRepository itemAptypeRepository) {
+    public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec,
+                                      final List<String> assignedTypes,
+                                      ItemAptypeRepository itemAptypeRepository) {
 
         ItemSpec itemSpec = new ItemSpec();
         itemSpec.setCode(rulDescItemSpec.getCode());
@@ -141,9 +144,9 @@ public class ItemSpec {
             itemSpec.setCategories(categories);
         }
 
-        if (CollectionUtils.isNotEmpty(rulDescItemSpec.getItemTypeSpecAssigns())) {
+        if (CollectionUtils.isNotEmpty(assignedTypes)) {
             List<ItemTypeAssign> itemTypesAssigns = new ArrayList<>();
-            for (RulItemTypeSpecAssign itemTypeSpecAssign : rulDescItemSpec.getItemTypeSpecAssigns()) {
+            for (String itemTypeSpecAssign : assignedTypes) {
                 itemTypesAssigns.add(ItemTypeAssign.fromEntity(itemTypeSpecAssign));
             }
             itemSpec.setItemTypeAssigns(itemTypesAssigns);

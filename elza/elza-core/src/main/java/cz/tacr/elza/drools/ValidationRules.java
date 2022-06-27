@@ -1,5 +1,7 @@
 package cz.tacr.elza.drools;
 
+import static cz.tacr.elza.repository.ExceptionThrow.descItem;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -17,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementRule;
@@ -35,8 +37,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.service.RuleService;
 
-import static cz.tacr.elza.repository.ExceptionThrow.descItem;
-
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
  *
@@ -44,6 +44,8 @@ import static cz.tacr.elza.repository.ExceptionThrow.descItem;
 
 @Component
 public class ValidationRules extends Rules {
+
+    private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
 
 	@Autowired
 	private ScriptModelFactory scriptModelFactory;
@@ -58,11 +60,7 @@ public class ValidationRules extends Rules {
 	private PolicyTypeRepository policyTypeRepository;
 
 	@Autowired
-	private StaticDataService staticDataService;
-	@Autowired
-	private RuleService ruleService;
-
-	private static final Logger logger = LoggerFactory.getLogger(ValidationRules.class);
+    private RuleService ruleService;
 
 	/**
      * Spustí validaci atributů.
@@ -77,16 +75,16 @@ public class ValidationRules extends Rules {
     public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version)
             throws IOException {
 
-		LinkedList<Object> facts = new LinkedList<>();
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        List<RulArrangementRule> rulPackageRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.CONFORMITY_INFO);
 
-		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
+        LinkedList<Object> facts = new LinkedList<>();
 
+        ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
 		ModelFactory.addLevelWithParents(activeLevel, facts);
 
 		DataValidationResults validationResults = new DataValidationResults();
-
-		List<RulArrangementRule> rulPackageRules = arrangementRuleRepository
-				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulArrangementRule.RuleType.CONFORMITY_INFO);
 
         for (RulArrangementRule rulPackageRule : rulPackageRules) {
 			Path path = resourcePathResolver.getDroolFile(rulPackageRule);

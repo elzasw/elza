@@ -1903,7 +1903,7 @@ public class UserService {
      * 
      * @return
      */
-    public UserDetail createAdminUserDetail() {
+    private UserDetail createAdminUserDetail() {
         UsrUser user = createDefaultUser();
         Collection<UserPermission> perms = Collections.singletonList(new UserPermission(
                 UsrPermission.Permission.ADMIN));
@@ -1937,5 +1937,21 @@ public class UserService {
         ctx.setAuthentication(auth);
 
         return ctx;
+    }
+
+    /**
+     * Create securoty context for admin
+     * 
+     * @return
+     */
+    public SecurityContext createSecurityContextSystem() {
+        SecurityContext secCtx = SecurityContextHolder.createEmptyContext();
+
+        UserDetail userDetail = createAdminUserDetail();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(null, null, null);
+        auth.setDetails(userDetail);
+        secCtx.setAuthentication(auth);
+        return secCtx;
     }
 }

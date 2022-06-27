@@ -1,5 +1,7 @@
 package cz.tacr.elza.packageimport;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,8 +11,6 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.ApItemRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,17 +20,22 @@ import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.other.SimpleDevRules;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataDateRepository;
 import cz.tacr.elza.repository.DataDateRepository.OnlyValues;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
-
-import static org.junit.Assert.assertNotNull;
 
 public class TypeUpdateTest extends AbstractServiceTest {
 
@@ -61,6 +66,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
         // drop foreign keys
         itemTypeActionRepository.deleteAll();
         apItemRepository.deleteAll();
+        apItemRepository.flush();
 
         for (RulRuleSet rulRuleSet : rulesetRepos.findAll()) {
             RulPackage rulPackage = rulRuleSet.getPackage();
@@ -147,10 +153,12 @@ public class TypeUpdateTest extends AbstractServiceTest {
 
         ItemType itemType = ItemType.fromEntity(dbItemType, itemAptypeRepository);
         if (Boolean.TRUE.equals(dbItemType.getUseSpecification())) {
+
+            List<String> assignedTypes = Collections.singletonList(SimpleDevRules.SRD_LEVEL_TYPE);
             // Copy specifications
             List<RulItemTypeSpecAssign> dbSpecs = this.itemTypeSpecAssignRepository.findByItemTypeSorted(dbItemType);
             for (RulItemTypeSpecAssign dbSpec : dbSpecs) {
-                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec.getItemSpec(), itemAptypeRepository);
+                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec.getItemSpec(), assignedTypes, itemAptypeRepository);
                 itemSpecList.add(itemSpec);
             }
         }
