@@ -420,7 +420,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         if (replacedBy != null) {
-            ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+            ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
             validationNotDeleted(replacementState);
             
             // check binding states
