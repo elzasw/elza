@@ -1,9 +1,11 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -11,7 +13,9 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.UserService;
@@ -62,9 +66,13 @@ public class AccessPointsReader implements ExportReader {
                 @Override
                 protected void onCompleted() {
                     ApInfo apInfo = getApInfo();
-                    if(apInfo==null) {
+                    if (apInfo == null) {
                     	throw new SystemException("Entity not found.", BaseCode.ID_NOT_EXIST)
                     		.set("ID", apId);
+                    }
+                    if (apInfo.getApState().getDeleteChangeId() != null) {
+                        throw new SystemException("Entity has been deleted.", BaseCode.INVALID_STATE)
+                            .set("ID", apId);
                     }
 
                     ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {

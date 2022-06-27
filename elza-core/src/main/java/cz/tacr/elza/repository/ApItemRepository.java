@@ -69,6 +69,13 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
 
+    @Query("SELECT d.recordId FROM ApItem i "
+           + "JOIN i.part p "
+           + "JOIN i.data d "
+           + "RIGHT JOIN arr_data_record_ref ref ON ref.dataId = d.dataId "
+           + "WHERE p.accessPointId IN :apIds AND p.deleteChange IS NULL AND i.deleteChange IS NULL")
+    List<Integer> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("apIds") Collection<Integer> apIds);
+    
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.binding = :binding AND i.deleteChange IS NULL")
     List<ApItem> findUnbindedItemByBinding(@Param("binding") ApBinding binding);
 }
