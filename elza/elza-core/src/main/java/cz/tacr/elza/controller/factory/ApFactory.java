@@ -5,6 +5,7 @@ import static cz.tacr.elza.groovy.GroovyResult.SORT_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -404,6 +405,8 @@ public class ApFactory {
             apVO.setDescription(description);
         }
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
+        apVO.setLastChange(createVO(lastChange));
+
         return apVO;
     }
 
@@ -658,7 +661,7 @@ public class ApFactory {
     public ApChangeVO createVO(final ApChange change) {
         ApChangeVO apChangeVO = new ApChangeVO();
         apChangeVO.setId(change.getChangeId());
-        apChangeVO.setChange(change.getChangeDate().toLocalDateTime());
+        apChangeVO.setChange(change.getChangeDate().atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
         apChangeVO.setUser(createVO(change.getUser()));
         return apChangeVO;
     }
