@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -123,6 +125,8 @@ public class StaticDataProvider {
     private Map<String, ApExternalSystem> apExternalSystemCodeMap = new HashMap<>();
 
     private Map<Integer, ApExternalSystem> apExternalSystemIdMap = new HashMap<>();
+
+    private Map<String, RulPolicyType> policyTypeMap;
 
     private static StaticDataProvider self;
 
@@ -345,7 +349,17 @@ public class StaticDataProvider {
         initSysLanguages(service.sysLanguageRepository);
         initPartTypes(service.partTypeRepository);
         initApExternalSystems(service.apExternalSystemRepository);
+        initPolicyTypes(service.policyTypeRepository);
         self = this;
+    }
+
+    private void initPolicyTypes(PolicyTypeRepository policyTypeRepository) {
+        List<RulPolicyType> policyTypes = policyTypeRepository.findAll();
+        policyTypeMap = policyTypes.stream().collect(Collectors.toMap(RulPolicyType::getCode, Function.identity()));
+    }
+
+    public Map<String, RulPolicyType> getPolicyTypesMap() {
+        return policyTypeMap;
     }
 
     private void initRuleSets(RuleSetRepository ruleSetRepository,
