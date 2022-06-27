@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
@@ -34,7 +32,6 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.service.RuleService;
 
 /**
@@ -57,9 +54,6 @@ public class ValidationRules extends Rules {
 	private ResourcePathResolver resourcePathResolver;
 
 	@Autowired
-	private PolicyTypeRepository policyTypeRepository;
-
-	@Autowired
     private RuleService ruleService;
 
 	/**
@@ -75,6 +69,8 @@ public class ValidationRules extends Rules {
     public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFundVersion version)
             throws IOException {
 
+        long startTime = System.currentTimeMillis();
+
         StaticDataProvider sdp = staticDataService.getData();
         RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
         List<RulArrangementRule> rulPackageRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.CONFORMITY_INFO);
@@ -82,27 +78,63 @@ public class ValidationRules extends Rules {
         LinkedList<Object> facts = new LinkedList<>();
 
         ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
-		ModelFactory.addLevelWithParents(activeLevel, facts);
+        logger.debug("Model (workerId: {}) for active level created in {}ms from start",
+                     Thread.currentThread().getId(),
+                     System.currentTimeMillis() - startTime);
+
+        ModelFactory.addLevelWithParents(activeLevel, facts);
+        logger.debug("Added level for parents to model (workerId: {}) in {}ms from start",
+                     Thread.currentThread().getId(),
+                     System.currentTimeMillis() - startTime);
 
 		DataValidationResults validationResults = new DataValidationResults();
 
         for (RulArrangementRule rulPackageRule : rulPackageRules) {
-			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
-			KieSession session = createKieSession(path);
-			session.setGlobal("results", validationResults);
-            executeSession(session, facts);
+            try {
+                Path path = resourcePathResolver.getDroolFile(rulPackageRule);
+                logger.debug("Executing rule (workerId: {}), path: {} in {}ms from start",
+                             Thread.currentThread().getId(), path,
+                             System.currentTimeMillis() - startTime);
+
+                KieSession session = createKieSession(path);
+                session.setGlobal("results", validationResults);
+                executeSession(session, facts);
+
+                long endTime = System.currentTimeMillis();
+                logger.debug("Rule executed (workerId: {}) in {}ms",
+                             Thread.currentThread().getId(),
+                             endTime - startTime);
+            } catch (Exception e) {
+                logger.error("Failed to validate, exception: ", e);
+            }
 		}
 
 		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
-            Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
-			KieSession session = createKieSession(path);
-            executeSession(session, facts);
+            try {
+                Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
+
+                logger.debug("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
+
+                KieSession session = createKieSession(path);
+                executeSession(session, facts);
+
+                long endTime = System.currentTimeMillis();
+                logger.debug("Extension executed (workerId: {}) in {}ms",
+                             Thread.currentThread().getId(),
+                             endTime - startTime);
+            } catch (Exception e) {
+                logger.error("Failed to validate extension, exception: ", e);
+            }
 		}
 
 		List<DataValidationResult> results = validationResults.getResults();
 
 		finalizeValidationResults(results, version.getRuleSetId());
+
+        logger.debug("Finalized results (workerId: {}) in {}ms from start",
+                     Thread.currentThread().getId(),
+                     System.currentTimeMillis() - startTime);
 
 		return results;
 	}
@@ -116,14 +148,24 @@ public class ValidationRules extends Rules {
 	 */
 	public void finalizeValidationResults(final List<DataValidationResult> validationResults, Integer ruleSetId) {
 
+        long startTime = System.currentTimeMillis();
+        logger.debug("Started results finalization (workerId: {})",
+                     Thread.currentThread().getId());
+
 		StaticDataProvider sdp = staticDataService.getData();
 
-		Map<String, RulPolicyType> policyTypesMap = getPolicyTypesMap();
+        Map<String, RulPolicyType> policyTypesMap = sdp.getPolicyTypesMap();
 
 		Iterator<DataValidationResult> iterator = validationResults.iterator();
 
 		while (iterator.hasNext()) {
-			DataValidationResult validationResult = iterator.next();
+
+            DataValidationResult validationResult = iterator.next();
+
+            logger.debug("Storing DataValidationResult (workerId: {}, object: {}) in {}ms from start",
+                         Thread.currentThread().getId(),
+                         validationResult,
+                         System.currentTimeMillis() - startTime);
 
             // policy code has to be set
             String polCode = validationResult.getPolicyTypeCode();
@@ -171,16 +213,14 @@ public class ValidationRules extends Rules {
 				throw new IllegalArgumentException(
 				        "Neznamy typ vysledku validace " + validationResult.getResultType().name());
 			}
+            logger.debug("Stored DataValidationResult (workerId: {}, object: {}) in {}ms from start",
+                         Thread.currentThread().getId(),
+                         validationResult,
+                         System.currentTimeMillis() - startTime);
 		}
-	}
 
-	/**
-	 * Získání mapy typů kontrol.
-	 * @return mapa typů kontrol
-     */
-	private Map<String, RulPolicyType> getPolicyTypesMap() {
-		List<RulPolicyType> policyTypes = policyTypeRepository.findAll();
-		return policyTypes.stream().collect(Collectors.toMap(RulPolicyType::getCode, Function.identity()));
+        logger.debug("Stored all DataValidationResult (workerId: {}) in {}ms from start",
+                     Thread.currentThread().getId(),
+                     System.currentTimeMillis() - startTime);
 	}
-
 }

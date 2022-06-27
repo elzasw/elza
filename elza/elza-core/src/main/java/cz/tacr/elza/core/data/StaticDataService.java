@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -100,6 +101,8 @@ public class StaticDataService {
 
     final ComponentRepository componentRepository;
 
+    final PolicyTypeRepository policyTypeRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
@@ -120,7 +123,8 @@ public class StaticDataService {
                              final SysLanguageRepository sysLanguageRepository,
                              final PartTypeRepository partTypeRepository,
                              final ApExternalSystemRepository apExternalSystemRepository,
-                             final ComponentRepository componentRepository) {
+                             final ComponentRepository componentRepository,
+                             final PolicyTypeRepository policyTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.arrangementRuleRepository = arrangementRuleRepository;
@@ -141,6 +145,7 @@ public class StaticDataService {
         this.partTypeRepository = partTypeRepository;
         this.apExternalSystemRepository = apExternalSystemRepository;
         this.componentRepository = componentRepository;
+        this.policyTypeRepository = policyTypeRepository;
     }
 
     /**
