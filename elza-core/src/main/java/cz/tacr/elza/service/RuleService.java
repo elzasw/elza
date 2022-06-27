@@ -285,7 +285,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
-        Integer nodeId = level.getNode().getNodeId();
+        Integer nodeId = level.getNodeId();
 
         ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();

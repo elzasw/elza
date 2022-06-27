@@ -35,6 +35,7 @@ public class FilteredLevelElementHandler extends SectionLevelElementHandler {
 			return;
 		} else {
 			// check if filtered and update pid value
+            // TODO: check this construct !!!
 			pid = filter.getOrDefault(level.getPid(), level.getPid());
 			level.setPid(pid);
 		}

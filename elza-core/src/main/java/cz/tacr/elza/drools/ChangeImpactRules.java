@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.model.DescItem;
@@ -62,17 +64,19 @@ public class ChangeImpactRules extends Rules {
                                                           final List<ArrDescItem> updateDescItem,
                                                           final List<ArrDescItem> deleteDescItem,
                                                           final NodeTypeOperation nodeTypeOperation,
-                                                          final RulRuleSet rulRuleSet)
+                                                          final ArrFundVersion version)
             throws IOException
     {
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(
+                                                                              RulArrangementRule.RuleType.CONFORMITY_IMPACT);
+
         List<Object> facts = new LinkedList<>();
         facts.addAll( prepareDescItemList(createDescItem, updateDescItem, deleteDescItem) );
         facts.add(nodeTypeOperation);
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
-
-        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulArrangementRule.RuleType.CONFORMITY_IMPACT);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);

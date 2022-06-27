@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -87,7 +88,9 @@ public class StartupService implements SmartLifecycle {
 
     private final PackageService packageService;
 
-    private final CamScheduler camScheduler; 
+    private final CamScheduler camScheduler;
+
+    private final UserService userService;
 
     private boolean running;
 
@@ -129,7 +132,8 @@ public class StartupService implements SmartLifecycle {
                           final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
-                          final CamScheduler camScheduler) {
+                          final CamScheduler camScheduler,
+                          final UserService userService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -151,6 +155,7 @@ public class StartupService implements SmartLifecycle {
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
+        this.userService = userService;
     }
 
     @Autowired
@@ -177,14 +182,19 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
+        ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
+
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
 
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());
-
         syncApCacheService();
+
+        // Prepare system security context for import
+        SecurityContextHolder.setContext(userService.createSecurityContextSystem());
+        packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
@@ -192,10 +202,6 @@ public class StartupService implements SmartLifecycle {
         }
 
         tt.executeWithoutResult(r -> startInTransaction2());
-
-        ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
-
-        packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
         camScheduler.start();
 
@@ -250,6 +256,7 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         // kontrola datové struktury
         accessPointService.checkConsistency();
+        ;
     }
 
     private void startInTransaction2() {

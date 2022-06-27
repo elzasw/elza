@@ -19,6 +19,8 @@ import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -94,9 +96,14 @@ public class StaticDataService {
 
     final ExtensionRuleRepository extensionRuleRepository;
 
+    final ArrangementRuleRepository arrangementRuleRepository;
+
+    final ComponentRepository componentRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
+                             final ArrangementRuleRepository arrangementRuleRepository,
                              final ArrangementExtensionRepository ruleSetExtRepository,
                              final ExtensionRuleRepository extensionRuleRepository,
                              final ItemTypeRepository itemTypeRepository,
@@ -112,9 +119,11 @@ public class StaticDataService {
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
                              final PartTypeRepository partTypeRepository,
-                             final ApExternalSystemRepository apExternalSystemRepository) {
+                             final ApExternalSystemRepository apExternalSystemRepository,
+                             final ComponentRepository componentRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
+        this.arrangementRuleRepository = arrangementRuleRepository;
         this.ruleSetExtRepository = ruleSetExtRepository;
         this.extensionRuleRepository = extensionRuleRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -131,6 +140,7 @@ public class StaticDataService {
         this.sysLanguageRepository = sysLanguageRepository;
         this.partTypeRepository = partTypeRepository;
         this.apExternalSystemRepository = apExternalSystemRepository;
+        this.componentRepository = componentRepository;
     }
 
     /**

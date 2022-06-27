@@ -1,11 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageDependency;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
 
 /**
  * Repository pro {@link RulPackageDependency}
@@ -18,9 +21,11 @@ public interface PackageDependencyRepository extends JpaRepository<RulPackageDep
     /**
      * Vyhledá současné vazby podle zdrojového balíčku.
      *
-     * @param rulPackage zdrojový balíček
+     * @param rulPackage
+     *            zdrojový balíček
      */
-    List<RulPackageDependency> findByRulPackage(RulPackage rulPackage);
+    @Query("SELECT d FROM rul_package_dependency d JOIN FETCH d.dependsOnPackage WHERE d.rulPackage = :rulPackage")
+    List<RulPackageDependency> findByRulPackage(@Param("rulPackage") RulPackage rulPackage);
 
     /**
      * Odstraní současné vazby podle zdrojového balíčku.

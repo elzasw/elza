@@ -17,6 +17,8 @@ import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -35,6 +37,8 @@ import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -326,8 +330,10 @@ public class StaticDataProvider {
      */
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository,
+                     service.arrangementRuleRepository,
                      service.ruleSetExtRepository,
-                     service.extensionRuleRepository);
+                     service.extensionRuleRepository,
+                     service.componentRepository);
         initStructuredTypes(service.structuredTypeRepository,
                             service.structureDefinitionRepository,
                             service.structuredTypeExtensionRepository,
@@ -343,8 +349,14 @@ public class StaticDataProvider {
     }
 
     private void initRuleSets(RuleSetRepository ruleSetRepository,
+                              ArrangementRuleRepository arrangementRuleRepository,
                               ArrangementExtensionRepository extRepository,
-                              ExtensionRuleRepository extensionRuleRepository) {
+                              ExtensionRuleRepository extensionRuleRepository,
+                              ComponentRepository componentRepository) {
+        // find all components 
+        //  - this allows to initialize all rules using components
+        List<RulComponent> components = componentRepository.findAll();
+
         List<RulRuleSet> dbRuleSets = ruleSetRepository.findAll();
         // read extensions from db
         List<RulArrangementExtension> dbRuleSetExts = extRepository.findAll();
@@ -355,11 +367,17 @@ public class StaticDataProvider {
         Map<Integer, List<RulExtensionRule>> extRulesByExtId = dbExtRules.stream()
                 .collect(Collectors.groupingBy(RulExtensionRule::getArrangementExtensionId));
 
+        List<RulArrangementRule> dbRules = arrangementRuleRepository.findAll();
+        Map<Integer, List<RulArrangementRule>> dbRulesByRulesetId = dbRules.stream()
+                .collect(Collectors.groupingBy(RulArrangementRule::getRuleSetId));
+
         List<RuleSet> ruleSets = dbRuleSets.stream()
                 .map(rs -> {
+                    List<RulArrangementRule> dbRulesPerSet = dbRulesByRulesetId.getOrDefault(rs.getRuleSetId(),
+                                                                                             Collections.emptyList());
                     List<RulArrangementExtension> exts = ruleSetExtsById.getOrDefault(rs.getRuleSetId(), Collections
                             .emptyList());
-                    return new RuleSet(rs, exts, extRulesByExtId, dbExtRules);
+                    return new RuleSet(rs, dbRulesPerSet, exts, extRulesByExtId, dbExtRules);
                 })
                 .collect(Collectors.toList());
         this.ruleSets = Collections.unmodifiableList(ruleSets);

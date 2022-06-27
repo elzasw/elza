@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -42,9 +43,12 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
     RulItemType findOneByCode(String code);
 
-    List<RulItemType> findByCodeIn(List<String> codes);
+    List<RulItemType> findByCodeIn(Collection<String> codes);
 
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
+
+    @Query(value = "SELECT t FROM rul_item_type t ORDER BY t.viewOrder")
+    List<RulItemType> findAllOrderByViewOrderAsc();
 
     List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
 
