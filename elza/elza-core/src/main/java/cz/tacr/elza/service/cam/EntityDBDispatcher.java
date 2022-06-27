@@ -404,7 +404,7 @@ public class EntityDBDispatcher {
                 Optional<ApBindingState> replacedBindingState = externalSystemService.getBindingState(binding);
                 if (replacedBindingState.isPresent()) {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
-                    ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+                    ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
                     accessPointService.replace(state, replacementState, bindingState.getApExternalSystem());
                     state.setReplacedBy(replacedBy);
                     break;

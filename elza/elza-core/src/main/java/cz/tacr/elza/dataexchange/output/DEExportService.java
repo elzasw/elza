@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,9 +47,14 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
@@ -69,7 +75,13 @@ public class DEExportService {
 
     private final StaticDataService staticDataService;
 
+    private final ApStateRepository stateRepository;
+
+    private final ApItemRepository apItemRepository;
+
     private final ScopeRepository scopeRepository;
+
+    private final ItemRepository itemRepository;
 
     private final RuleService ruleService;
 
@@ -78,7 +90,10 @@ public class DEExportService {
             StaticDataService staticDataService,
             FundVersionRepository fundVersionRepository,
             UserService userService,
+            ItemRepository itemRepository,
             LevelRepository levelRepository,
+            ApStateRepository stateRepository,
+            ApItemRepository apItemRepository,
             NodeCacheService nodeCacheService,
             ApAccessPointRepository apRepository,
             ResourcePathResolver resourcePathResolver,
@@ -88,7 +103,10 @@ public class DEExportService {
                 fundVersionRepository,
                 resourcePathResolver);
         this.staticDataService = staticDataService;
+        this.apItemRepository = apItemRepository;
+        this.stateRepository = stateRepository; 
         this.scopeRepository = scopeRepository;
+        this.itemRepository = itemRepository;
         this.ruleService = ruleService;
     }
 
@@ -192,6 +210,32 @@ public class DEExportService {
                 for (FundSections fs : sections) {
                     checkExportPermission(fs, userDetail);
                 }
+            }
+        }
+
+        // check all access points
+        if (CollectionUtils.isNotEmpty(sections)) {
+
+            Collection<Integer> fundVersionIds = sections.stream().map(s -> s.getFundVersionId()).collect(Collectors.toList());
+
+            // find all arr_data_record_ref.record_id from arr_item from fund(s)
+            List<Integer> recordIds = itemRepository.findArrDataRecordRefRecordIdsByFundVersionIds(fundVersionIds);
+            Set<Integer> accessPointIds = new HashSet<>(recordIds);
+    
+            // find all children arr_data_record_ref.record_id from list of access point ids
+            if (CollectionUtils.isNotEmpty(recordIds)) {
+                ObjectListIterator.forEachPage(recordIds, page -> 
+                                               accessPointIds.addAll(apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page)));
+            }
+    
+            // check all access points
+            if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                ObjectListIterator.forEachPage(accessPointIds, page -> {
+                    if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
+                        throw new BusinessException("Entity(es) has been deleted.", BaseCode.INVALID_STATE)
+                            .set("IDs", page);
+                    }
+                });
             }
         }
 
