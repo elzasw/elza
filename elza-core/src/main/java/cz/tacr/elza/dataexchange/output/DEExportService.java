@@ -1,6 +1,8 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,6 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import com.google.common.net.HttpHeaders;
 
@@ -39,8 +44,9 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
-import cz.tacr.elza.dataexchange.output.filters.AccessRestrictFilter;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
+import cz.tacr.elza.dataexchange.output.filters.ExportFilterConfig;
+import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -157,8 +163,8 @@ public class DEExportService {
         if (params.getExportFilterId() != null) {
             RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilterId());
             // create bean for export filter
-            ExportFilter expFilter = new AccessRestrictFilter(this.initHelper.getEm(),
-                    this.staticDataService.getData());
+            ExportFilterConfig efc = loadConfig(expFilterDB);
+            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData());
             context.setExportFilter(expFilter);
         }
 
@@ -299,5 +305,31 @@ public class DEExportService {
                         deniedPermissions);
             }
         });
+    }
+
+    /**
+     * Read config from export filter file .yaml
+     * 
+     * @param expFilterDB file name
+     * @return ExportFilterConfig
+     */
+    private ExportFilterConfig loadConfig(RulExportFilter expFilterDB) {
+        ResourcePathResolver resourcePathResolver = initHelper.getResourcePathResolver();
+        Path rulesetExportFilter = resourcePathResolver.getExportFilterFile(expFilterDB);
+
+        // register type descriptors
+        Constructor yamlCtor = new Constructor();
+        yamlCtor.addTypeDescription(new TypeDescription(AccessRestrictConfig.class, "!ExportFilterConfig"));
+        Yaml yamlLoader = new Yaml(yamlCtor);
+
+        ExportFilterConfig efc;
+        try (InputStream inputStream = new FileInputStream(rulesetExportFilter.toFile())) {
+            efc = yamlLoader.load(inputStream);
+        } catch (IOException e) {
+            log.error("Failed to read yaml file {}", rulesetExportFilter, e);
+            throw new SystemException(e);
+        }
+
+        return efc;
     }
 }

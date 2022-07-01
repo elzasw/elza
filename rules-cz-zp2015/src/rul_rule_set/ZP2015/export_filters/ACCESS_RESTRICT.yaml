@@ -1,0 +1,14 @@
+!ExportFilterConfig
+defs:
+  - when:
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      structItemType: ZP2015_RESTRICTION_ACCESS_INLINE
+    result:
+      hiddenItem: true
+  - when:
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      structItemType: ZP2015_RESTRICTION_ACCESS_SHARED
+    result:
+      hiddenItem: true
