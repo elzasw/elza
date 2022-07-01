@@ -1,14 +1,34 @@
 !ExportFilterConfig
 defs:
   - when:
-      itemSpec: ZP2015_RESTRICTION_ARCHDESC
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       structItemType: ZP2015_RESTRICTION_ACCESS_INLINE
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC      
     result:
       hiddenItem: true
   - when:
-      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+      structItemType: ZP2015_RESTRICTION_ACCESS_INLINE
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      structItemType: ZP2015_RESTRICTION_ACCESS_SHARED
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC2
     result:
       hiddenItem: true
+  - when:
+      structItemType: ZP2015_RESTRICTION_ACCESS_SHARED
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+    result:
+      hiddenItem: true
+  - when:
+      structItemType: ZP2015_RESTRICTION_ACCESS_SHARED
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC2
+    result:
+      hiddenItem: true
+#  - when:
+#      itemSpec: ZP2015_RESTRICTION_ABSTRACT
+#      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+#      structItemType: ZP2015_RESTRICTION_ACCESS_INLINE
+#    result:
+#      hiddenItemTypes:
+#        - ZP2015_TITLE
+#        - ZP2015_TITLE_PUBLIC

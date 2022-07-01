@@ -53,46 +53,54 @@ public class AccessRestrictFilter implements ExportFilter {
             restrictedNodeIds.add(levelInfo.getNodeId());
             return null;
         }
+        // TODO: create item type Map<ItemType, List<ArrItem>>  
+        for (Def def : efc.getDefs()) {
+            levelInfo = processDef(def, levelInfo);
+            if (levelInfo == null) {
+                return null;
+            }
+        }
+
+        return levelInfo;
+    }
+
+    private LevelInfoImpl processDef(Def def, LevelInfoImpl levelInfo) {
+        ItemType structItemType = sdp.getItemTypeByCode(def.getWhen().getStructItemType());
+        
+        ItemType itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
+        RulItemSpec itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
+                
         // check if contains anon sobj
         for (ArrItem item : levelInfo.getItems()) {
             // skip items without data
             if (item.getData() == null) {
                 continue;
             }
-
-            for (Def def : efc.getDefs()) {
-                if (!processDef(def, item, levelInfo)) {
-                    return null;
-                }
-            }
-        }
-        return levelInfo;
-    }
-
-    private boolean processDef(Def def, ArrItem item, LevelInfoImpl levelInfo) {
-        if (def.getResult().getHiddenItem()) {
-            RulItemSpec itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
-            ItemType itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
-            ItemType structItemType = sdp.getItemTypeByCode(def.getWhen().getStructItemType());
-            
             if (item.getItemTypeId().equals(structItemType.getItemTypeId())) {
                 // found restr
                 ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
                 StructObjectInfo soi = readSoiFromDB(dsr.getStructuredObjectId());
-                
+
                 Optional<ArrItem> restrItem = getItem(soi.getItems(), itemType);
                 if (restrItem == null) {
                     // missing restriction type, maybe throw exception
-                    return true;
+                    break;
                 }
-                if (itemSpec != null && itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
+                if (itemSpec == null ||
+                        !itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
+                    break;
+                }
+
+                // apply result
+                if (def.getResult().getHiddenItem()) {
                     restrictedNodeIds.add(levelInfo.getNodeId());
                     filteredSois.add(soi.getId());
-                    return false;
+                    return null;
                 }
+                // TODO different result
             }
         }
-        return true;
+        return levelInfo;
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
