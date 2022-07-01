@@ -13,6 +13,7 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Def;
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
 import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
@@ -24,11 +25,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 public class AccessRestrictFilter implements ExportFilter {
 
     Set<Integer> restrictedNodeIds = new HashSet<>();
-    //private StaticDataProvider sdp;
-    private ItemType restrAccessShared;
-    private ItemType restrAccessInline;
-    //private StructType structTypeInline;
-    //private StructType structTypeShared;
+    private StaticDataProvider sdp;
 
     /**
      * Map of restriction definition objects
@@ -39,23 +36,14 @@ public class AccessRestrictFilter implements ExportFilter {
      * IDs of filtered Sois for export
      */
     private Set<Integer> filteredSois = new HashSet<>();
-    private ItemType restrType;
-    private RulItemSpec restArchDescSpec;
 
     private StructObjectInfoLoader soiLoader;
 
-    public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp) {
-        //this.sdp = sdp;
+    private AccessRestrictConfig efc;
 
-        this.restrAccessInline = sdp.getItemTypeByCode("ZP2015_RESTRICTION_ACCESS_INLINE");
-        //this.structTypeInline = sdp.getStructuredTypeByCode("ZP2015_ACCESS_COND");
-
-        this.restrAccessShared = sdp.getItemTypeByCode("ZP2015_RESTRICTION_ACCESS_SHARED");
-        //this.structTypeShared = sdp.getStructuredTypeByCode("ZP2015_ACCESS_COND_TYPE");
-
-        this.restrType = sdp.getItemTypeByCode("ZP2015_RESTRICTED_ACCESS_TYPE");
-        this.restArchDescSpec = sdp.getItemSpecByCode("ZP2015_RESTRICTION_ARCHDESC");
-
+    public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc) {
+        this.sdp = sdp;
+        this.efc = efc;
         this.soiLoader = new StructObjectInfoLoader(em, 1, sdp);
     }
 
@@ -72,42 +60,39 @@ public class AccessRestrictFilter implements ExportFilter {
                 continue;
             }
 
-            if (item.getItemTypeId().equals(restrAccessShared.getItemTypeId())) {
-                // found shared restr
-                ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
-                StructObjectInfo soi = readSoiFromDB(dsr.getStructuredObjectId());
-
-                Optional<ArrItem> restrItem = getItem(soi.getItems(), restrType);
-                if(restrItem==null) {
-                    // missing restriction type, maybe throw exception
-                    continue;
-                }
-                if (restArchDescSpec != null &&
-                        restArchDescSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
-                    restrictedNodeIds.add(levelInfo.getNodeId());
-                    filteredSois.add(soi.getId());
-                    return null;
-                }
-            }
-            if (item.getItemTypeId().equals(restrAccessInline.getItemTypeId())) {
-                // found inline restr
-                ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
-                StructObjectInfo soi = readSoiFromDB(dsr.getStructuredObjectId());
-
-                Optional<ArrItem> restrItem = getItem(soi.getItems(), restrType);
-                if(restrItem==null) {
-                    // missing restriction type, maybe throw exception
-                    continue;
-                }
-                if (restArchDescSpec != null &&
-                        restArchDescSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
-                    restrictedNodeIds.add(levelInfo.getNodeId());
-                    filteredSois.add(soi.getId());
+            for (Def def : efc.getDefs()) {
+                if (!processDef(def, item, levelInfo)) {
                     return null;
                 }
             }
         }
         return levelInfo;
+    }
+
+    private boolean processDef(Def def, ArrItem item, LevelInfoImpl levelInfo) {
+        if (def.getResult().getHiddenItem()) {
+            RulItemSpec itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
+            ItemType itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
+            ItemType structItemType = sdp.getItemTypeByCode(def.getWhen().getStructItemType());
+            
+            if (item.getItemTypeId().equals(structItemType.getItemTypeId())) {
+                // found restr
+                ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
+                StructObjectInfo soi = readSoiFromDB(dsr.getStructuredObjectId());
+                
+                Optional<ArrItem> restrItem = getItem(soi.getItems(), itemType);
+                if (restrItem == null) {
+                    // missing restriction type, maybe throw exception
+                    return true;
+                }
+                if (itemSpec != null && itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
+                    restrictedNodeIds.add(levelInfo.getNodeId());
+                    filteredSois.add(soi.getId());
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
@@ -134,8 +119,6 @@ public class AccessRestrictFilter implements ExportFilter {
         if (this.filteredSois.contains(structObjectInfo.getId())) {
             return null;
         }
-
         return structObjectInfo;
     }
-
 }
