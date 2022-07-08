@@ -911,6 +911,15 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_84">
+        <name>opisovač</name>
+        <description>5.6.1 - hudebniny - opisovač</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_15">
         <name>vydavatel</name>
         <description>5.3.1, 5.19.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), cenné papíry, faleristické předměty, numizmatické předměty</description>
@@ -978,6 +987,17 @@
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_85">
+        <name>vlastník</name>
+        <description>5.5.1,5.15.1 - vlastník</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
@@ -1154,6 +1174,16 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_87">
+        <name>odborná spolupráce</name>
+        <description>5.13.2 - odborná spolupráce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec> 
     <item-spec code="ZP2015_ENTITY_ROLE_41">
         <name>střih/střihač</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
@@ -1270,6 +1300,15 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_86">
+        <name>místo fotografování</name>
+        <description>5.12.1 - místo fotografování</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_56">
         <name>místo natáčení</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
@@ -1288,6 +1327,15 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_88">
+        <name>místo předání</name>
+        <description>5.22.1 - místo předání</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_58">
         <name>místo vydání</name>
         <description>5.3.1, 5.7.6, 5.15.1, 5.17.1, 5.16.1, 5.19.1 - listiny (před i po roce 1850), typáře (otisky, kopie otisků), tisky, plakáty, pohlednice, cenné papíry</description>
@@ -1455,7 +1503,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_83 -->    
+    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_88 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>
