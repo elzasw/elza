@@ -820,6 +820,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <!-- Nepoužívat, sloučeno s ZP2015_ENTITY_ROLE_6, bug7900 -->
     <item-spec code="ZP2015_ENTITY_ROLE_5">
         <name>skladatel</name>
         <description>5.6.1 - hudebniny (dříve i autor hudební složky)</description>
