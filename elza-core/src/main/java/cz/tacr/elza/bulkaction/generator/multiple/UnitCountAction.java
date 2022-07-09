@@ -2,10 +2,9 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -69,7 +68,7 @@ public class UnitCountAction extends Action {
     /**
      * Již zapracované obaly
      */
-    private Set<Integer> countedObjects = new HashSet<>();
+    private Map<Integer, Function<LevelWithItems, LevelWithItems>> countedObjects = new HashMap<>();
 
     @Autowired
     StructuredItemRepository structureItemRepository;
@@ -211,22 +210,26 @@ public class UnitCountAction extends Action {
 	 * @param key
 	 * @param value
 	 */
-	public void addValue(LevelWithItems level, String key, int value) {
+    public Function<LevelWithItems, LevelWithItems> addValue(LevelWithItems level, String key, int value) {
 		Validate.isTrue(value >= 0, "Číslo nemůže být záporné");
 
 		ItemTypeSummary item = resultMap.get(key);
 		DateRangeAction dateRangeAction; 
 		if (item == null) {
-		    item = new ItemTypeSummary();		    
+            item = new ItemTypeSummary();
 	        dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
-	        dateRangeAction.init(null);	        
+            dateRangeAction.init(null);
 		    item.setDateCounter(dateRangeAction);
 		    resultMap.put(key, item);
 		} else {
 		    dateRangeAction = item.getDateCounter();
 		}
         item.addCount(value);
-        dateRangeAction.apply(level, TypeLevel.CHILD);
+
+        return l -> {
+            dateRangeAction.apply(l, TypeLevel.CHILD);
+            return l;
+        };
 	}
 
 	/**
@@ -256,16 +259,20 @@ public class UnitCountAction extends Action {
 	}
 
     public boolean isCountedObject(Integer packetId) {
-        return countedObjects.contains(packetId);
+        return countedObjects.containsKey(packetId);
     }
 
-    public void addCountedObject(Integer packetId) {
-        if (countedObjects.contains(packetId)) {
+    public void addCountedObject(Integer packetId, Function<LevelWithItems, LevelWithItems> nextAction) {
+        if (countedObjects.containsKey(packetId)) {
 
             throw new BusinessException("Packet was already added", BaseCode.INVALID_STATE)
                     .set("packetId", packetId)
                     .set("countedObjects", countedObjects.size());
         }
-        countedObjects.add(packetId);
+        countedObjects.put(packetId, nextAction);
+    }
+
+    public Function<LevelWithItems, LevelWithItems> getCountedAction(Integer packetId) {
+        return countedObjects.get(packetId);
     }
 }
