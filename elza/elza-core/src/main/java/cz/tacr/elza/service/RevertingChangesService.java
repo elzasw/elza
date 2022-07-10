@@ -1,5 +1,48 @@
 package cz.tacr.elza.service;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.cfg.ImprovedNamingStrategy;
+import org.hibernate.cfg.NamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
+
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -44,49 +87,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.TitleItemsByType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.cfg.NamingStrategy;
-import org.jfree.util.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
-import org.springframework.util.StopWatch.TaskInfo;
-
-import javax.annotation.Nullable;
-import javax.persistence.ColumnResult;
-import javax.persistence.ConstructorResult;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -325,28 +325,30 @@ public class RevertingChangesService {
 
         sw.start("delete from arr_level");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
+            updateEntityQuery.executeUpdate();
         }
         sw.stop();
 
         sw.start("delete from arr_node_extension");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension",
+                                                                    toChange);
+            updateEntityQuery.executeUpdate();
         }
         sw.stop();
 
         sw.start("delete from arr_dao_link");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link",
+                                                                    toChange);
+            updateEntityQuery.executeUpdate();
         }
         sw.stop();
 

@@ -3,7 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -217,9 +217,9 @@ public class UnitCounter {
 
     private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
         if (unitCountAction.isCountedObject(packetId)) {
-            Function<LevelWithItems, LevelWithItems> nextAction = unitCountAction.getCountedAction(packetId);
+            Consumer<LevelWithItems> nextAction = unitCountAction.getCountedAction(packetId);
             if (nextAction != null) {
-                nextAction.apply(level);
+                nextAction.accept(level);
             }
             return;
         }
@@ -233,7 +233,7 @@ public class UnitCounter {
                 // find mapping
                 String value = objectMapping.get(structObjItem.getItemSpecId());
                 if (value != null) {
-                    Function<LevelWithItems, LevelWithItems> nextAction;
+                    Consumer<LevelWithItems> nextAction;
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level.getNodeId(), value, 1);
                         nextAction = null;
@@ -245,7 +245,7 @@ public class UnitCounter {
                     unitCountAction.addCountedObject(packetId, nextAction);
                     // run extra action
                     if (nextAction != null) {
-                        nextAction.apply(level);
+                        nextAction.accept(level);
                     }
                     // only first mapping is used and then return
                     // if there are multiple structObjItems matching
