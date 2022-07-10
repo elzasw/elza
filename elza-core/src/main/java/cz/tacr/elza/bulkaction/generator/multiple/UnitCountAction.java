@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,7 +69,7 @@ public class UnitCountAction extends Action {
     /**
      * Již zapracované obaly
      */
-    private Map<Integer, Function<LevelWithItems, LevelWithItems>> countedObjects = new HashMap<>();
+    private Map<Integer, Consumer<LevelWithItems>> countedObjects = new HashMap<>();
 
     @Autowired
     StructuredItemRepository structureItemRepository;
@@ -210,7 +211,7 @@ public class UnitCountAction extends Action {
 	 * @param key
 	 * @param value
 	 */
-    public Function<LevelWithItems, LevelWithItems> addValue(LevelWithItems level, String key, int value) {
+    public Consumer<LevelWithItems> addValue(LevelWithItems level, String key, int value) {
 		Validate.isTrue(value >= 0, "Číslo nemůže být záporné");
 
 		ItemTypeSummary item = resultMap.get(key);
@@ -226,10 +227,7 @@ public class UnitCountAction extends Action {
 		}
         item.addCount(value);
 
-        return l -> {
-            dateRangeAction.apply(l, TypeLevel.CHILD);
-            return l;
-        };
+        return (l) -> dateRangeAction.apply(l, TypeLevel.CHILD);
 	}
 
 	/**
@@ -262,7 +260,7 @@ public class UnitCountAction extends Action {
         return countedObjects.containsKey(packetId);
     }
 
-    public void addCountedObject(Integer packetId, Function<LevelWithItems, LevelWithItems> nextAction) {
+    public void addCountedObject(Integer packetId, Consumer<LevelWithItems> nextAction) {
         if (countedObjects.containsKey(packetId)) {
 
             throw new BusinessException("Packet was already added", BaseCode.INVALID_STATE)
@@ -272,7 +270,7 @@ public class UnitCountAction extends Action {
         countedObjects.put(packetId, nextAction);
     }
 
-    public Function<LevelWithItems, LevelWithItems> getCountedAction(Integer packetId) {
+    public Consumer<LevelWithItems> getCountedAction(Integer packetId) {
         return countedObjects.get(packetId);
     }
 }
