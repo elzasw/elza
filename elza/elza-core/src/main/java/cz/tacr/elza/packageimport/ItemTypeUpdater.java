@@ -908,6 +908,13 @@ public class ItemTypeUpdater {
     private void convertRulItemSpec(final RulPackage rulPackage,
                                     final ItemSpec itemSpec,
                                     final RulItemSpec rulItemSpec) {
+        // check length code and shortcut
+        if ((itemSpec.getCode() != null && itemSpec.getCode().length() > 50)
+            || (itemSpec.getShortcut() != null && itemSpec.getShortcut().length() > 50)) {
+            throw new SystemException("Item spec code or shortcut is too long", BaseCode.INVALID_LENGTH)
+                .set("iteSpec.code", itemSpec.getCode())
+                .set("iteSpec.shortcut", itemSpec.getShortcut());
+        }
 
         rulItemSpec.setName(itemSpec.getName());
         rulItemSpec.setCode(itemSpec.getCode());
