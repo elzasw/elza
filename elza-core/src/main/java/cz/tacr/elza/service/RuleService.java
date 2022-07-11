@@ -268,6 +268,13 @@ public class RuleService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
+    /**
+     * 
+     * @param faLevelId
+     * @param fundVersionId
+     * @param asyncRequestId
+     * @return Return null if result is empty (e.g. deletedNode)
+     */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         return setConformityInfo(faLevelId, fundVersionId);
     }
@@ -275,13 +282,16 @@ public class RuleService {
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
-     * @param faLevelId   id uzlu
-     * @param fundVersionId id verze
+     * @param faLevelId
+     *            id uzlu
+     * @param fundVersionId
+     *            id verze
      * @return stav validovaného uzlu
+     *         Return null if result is empty (e.g. deletedNode)
      */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
-        Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Validate.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
+        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
@@ -293,8 +303,16 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        if (!arrangementInternalService.validLevelInVersion(level, version)) {
-            throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
+        // check if level is deleted in the context of fundVersion
+        arrangementInternalService.checkLevelInVersion(level, version);
+        if (arrangementInternalService.isLevelDeletedInVersion(level, version)) {
+            // only delete conformity info and return
+            ArrNodeConformity conformityInfo = nodeConformityRepository
+                    .findByNodeAndFundVersion(level.getNode(), version);
+            if (conformityInfo != null) {
+                deleteConformityInfo(Arrays.asList(conformityInfo));
+            }
+            return null;
         }
 
         List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
@@ -333,7 +351,7 @@ public class RuleService {
             return templateRepository.findAll(Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
         }
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
-        Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
+        Validate.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
         return templateRepository.findNotDeletedByOutputType(outputType, Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
     }
@@ -351,6 +369,7 @@ public class RuleService {
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
+        // TODO: Update nodeConformity without DB changes if possible
         ArrNodeConformity conformityInfo = nodeConformityRepository
                 .findByNodeAndFundVersion(level.getNode(), version);
 
@@ -505,12 +524,9 @@ public class RuleService {
                                                     final List<ArrDescItem> updateDescItems,
                                                     final List<ArrDescItem> deleteDescItems) {
 
-        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
-                createDescItems, updateDescItems, deleteDescItems);
-
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo);
-
-        return impactOnConformityInfo;
+        return conformityInfo(fundVersionId, nodeIds, nodeTypeOperation,
+                              createDescItems, updateDescItems, deleteDescItems,
+                              null);
     }
 
     public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
@@ -524,7 +540,7 @@ public class RuleService {
         Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
 
         return impactOnConformityInfo;
     }
@@ -573,57 +589,45 @@ public class RuleService {
     }
 
     /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     * Pro vybrané nody s danou verzí přepočte validace
      *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     * @param fundVersionId
+     *            verze nodů
+     * @param nodeIds
+     *            seznam id nodů, od kterých se má prohledávat
+     * @param directions
+     *            směry prohledávání
+     * @param validationPriority
+     *            volitelná priorita revalidace
      */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections) {
-        deleteConformityInfo(fundVersionId,nodeIds,deleteDirections,null);
-    }
-
-    /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
-     *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
-     */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections,
-                                      final Integer validationPriority) {
+    @Transactional
+    public void revalidateNodes(final Integer fundVersionId,
+                                final Collection<Integer> nodeIds,
+                                @Nullable final Collection<RelatedNodeDirection> directions,
+                                @Nullable final Integer validationPriority) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        Validate.isTrue(nodes.size() == nodeIds.size(), "Some node not found");
+
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        Set<ArrNode> deleteNodes = new HashSet<>();
+        Set<ArrNode> updateNodes = new HashSet<>();
 
-        if (CollectionUtils.isEmpty(deleteDirections)) {
-            deleteNodes.addAll(nodes);
+        if (CollectionUtils.isEmpty(directions)) {
+            updateNodes.addAll(nodes);
         } else {
-            for (RelatedNodeDirection deleteDirection : deleteDirections) {
+            for (RelatedNodeDirection direction : directions) {
                 for (ArrNode node : nodes) {
-                    deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));
+                    updateNodes.addAll(nodeRepository.findNodesByDirection(node, version, direction));
                 }
             }
         }
 
-
-        if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformity> deleteInfos = ObjectListIterator
-                    .findIterable(deleteNodes, page -> nodeConformityRepository
-                            .findByNodesAndFundVersion(page, version));
-
-            deleteConformityInfo(deleteInfos);
-            
-            asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
+        if (!updateNodes.isEmpty()) {
+            asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
 
@@ -640,7 +644,7 @@ public class RuleService {
         }
 
         List<ArrNodeConformityMissing> missing = ObjectListIterator
-                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(infos));
+                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(page));
 
         if (CollectionUtils.isNotEmpty(missing)) {
             ObjectListIterator.forEachPage(missing,
@@ -648,7 +652,7 @@ public class RuleService {
         }
 
         List<ArrNodeConformityError> errors = ObjectListIterator
-                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(infos));
+                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(page));
         if (CollectionUtils.isNotEmpty(errors)) {
             ObjectListIterator.forEachPage(errors,
                                            page -> nodeConformityErrorRepository.deleteAll(page));
@@ -840,7 +844,9 @@ public class RuleService {
         nodeExtensionRepository.saveAndFlush(nodeExtension);
         arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtension;
     }
@@ -880,7 +886,9 @@ public class RuleService {
         nodeExtensionRepository.save(nodeExtensionDB);
         arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtensionDB;
     }
@@ -1072,7 +1080,9 @@ public class RuleService {
             toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
         }
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS),
+                        null);
     }
 
     /**

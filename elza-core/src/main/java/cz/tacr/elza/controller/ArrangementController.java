@@ -1781,17 +1781,18 @@ public class ArrangementController {
     }
 
     /**
-     * Validuje verzi archivní pomůcky a vrátí list chyb.
+     * Vrátí aktuální výsledek validace pro daný AS
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId verze, která se má validovat
+     * @param versionId
+     *            verze, která se má validovat
      * @return Objekt s listem (prvních 20) chyb
      */
     @RequestMapping(value = "/validateVersion/{versionId}/{showAll}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId,
                                                        @PathVariable("showAll") final Boolean showAll) {
-        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(showAll, "Parametr musí být vyplněn");
+        Validate.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(showAll, "Parametr musí být vyplněn");
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
