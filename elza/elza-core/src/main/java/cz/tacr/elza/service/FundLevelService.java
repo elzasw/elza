@@ -23,6 +23,8 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -455,7 +457,7 @@ public class FundLevelService {
      *            povolit nebo zakázat mazání úrovně s objektem dao
      * @return List of modified levels
      */
-    public List<ArrLevel> deleteLevelCascade(final ArrFundVersion fundVersion,
+    private List<ArrLevel> deleteLevelCascade(final ArrFundVersion fundVersion,
                                        final ArrLevel baselevel, final ArrChange deleteChange,
                                        final List<ArrLevel> allDeletedLevels,
                                        final boolean deleteLevelsWithAttachedDao) {
@@ -546,7 +548,7 @@ public class FundLevelService {
         }
 
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
-                NodeTypeOperation.DELETE_NODE, null, null, null);
+                                   NodeTypeOperation.DELETE_NODE, null, null, null);
 
         List<ArrLevel> updatedLevels = new ArrayList<>();
         List<ArrLevel> shiftnodes = nodesToShift(deleteLevel);
@@ -559,6 +561,17 @@ public class FundLevelService {
 
         levelRepository.saveAll(updatedLevels);
         levelRepository.flush();
+
+        // drop nodeInfo for deleted levels
+        Set<Integer> nodeIdsToRevalidate = new HashSet<>();
+        nodeIdsToRevalidate.add(deleteNode.getNodeId());
+        allSubLevels.forEach(l -> nodeIdsToRevalidate.add(l.getNodeId()));
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                ruleService.revalidateNodes(version.getFundVersionId(), nodeIdsToRevalidate, null, null);
+            }
+        });
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),

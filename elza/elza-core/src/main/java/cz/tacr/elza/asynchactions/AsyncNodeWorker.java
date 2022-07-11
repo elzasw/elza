@@ -1,5 +1,6 @@
 package cz.tacr.elza.asynchactions;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -147,7 +148,11 @@ public class AsyncNodeWorker implements IAsyncWorker {
         ArrLevel level = levelRepository.findByNodeId(nodeId, version.getLockChange());
 
         if (level == null) {
-            logger.debug("Level does not exists in DB, nodeId = {}", nodeId);
+            logger.debug("Valid level for nodeId={}, versionId={} does not exists in DB",
+                         nodeId, version.getFundVersionId());
+            // we can drop previous state
+            // TODO: refactor and use method for specific fundVersion
+            ruleService.deleteByNodeIdIn(Collections.singletonList(nodeId));
             return;
         }
 
@@ -170,18 +175,16 @@ public class AsyncNodeWorker implements IAsyncWorker {
         try {
             transactionStatus = transactionManager.getTransaction(def);
 
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCommit() {
-                    eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
-                }
-            });
             ArrNodeConformityExt arrNodeConformityExt = ruleService.setConformityInfo(levelId, request.getFundVersionId(), asyncRequestId);
             if (arrNodeConformityExt != null) {
-                transactionManager.commit(transactionStatus);
-            } else {
-                transactionManager.rollback(transactionStatus);
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
+                    }
+                });
             }
+            transactionManager.commit(transactionStatus);
         } catch (Exception e) {
             logger.debug("Node chyba validace", e);
             if (transactionStatus != null) {

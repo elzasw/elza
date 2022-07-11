@@ -53,7 +53,8 @@ public class DescItemTypesRules extends Rules {
     {
         StaticDataProvider sdp = staticDataService.getData();
         RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
-        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.ATTRIBUTE_TYPES);        
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(
+                                                                              RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
     	LinkedList<Object> facts = new LinkedList<>();
     	facts.addAll(rulDescItemTypeExtList);

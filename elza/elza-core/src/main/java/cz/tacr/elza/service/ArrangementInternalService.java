@@ -112,19 +112,27 @@ public class ArrangementInternalService {
      *
      * @param level   level
      * @param version verze
-     * @return true pokud patří uzel do verze, jinak false
      */
-    public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
+    public void checkLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
         Validate.notNull(level, "Musí být vyplněno");
         Validate.notNull(version, "Verze AS musí být vyplněna");
-        Integer lockChange = version.getLockChangeId() == null
-                ? Integer.MAX_VALUE
-                : version.getLockChangeId();
 
-        int levelDeleteChange = level.getDeleteChange() == null ?
-                Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
+        //
+        if (level.getDeleteChange() != null) {
+            // Kontrola, zda nedoslo k zaniku urovne pred vznikem verze
+            if (version.getCreateChange().getChangeDate().isAfter(level.getDeleteChange().getChangeDate())) {
+                throw new SystemException("Level s id " + level.getLevelId() + " nespadá do verze s id " + version
+                        .getFundVersionId());
+            }
+        }
 
-        return level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange;
+        if (version.getLockChange() != null) {
+            // kontrola, zda uzel nevznikl az po ukonceni verze
+            if (level.getCreateChange().getChangeDate().isAfter(version.getLockChange().getChangeDate())) {
+                throw new SystemException("Level s id " + level.getLevelId() + " nespadá do verze s id " + version
+                        .getFundVersionId());
+            }
+        }
     }
 
     /**
@@ -266,5 +274,25 @@ public class ArrangementInternalService {
      */
     public Integer countActiveItems(ArrFile file) {
         return descItemRepository.countItemsUsingFile(file);
+    }
+
+    /**
+     * Check if level is deleted in given version
+     * @param level
+     * @param version
+     * @return
+     */
+    public boolean isLevelDeletedInVersion(ArrLevel level, ArrFundVersion version) {
+        // if not deleted -> simply return as not deleted
+        if(level.getDeleteChange()==null) {
+            return false;
+        }
+        if(version.getLockChange()!=null) {
+            // closed version, check if not deleted later
+            if (level.getDeleteChange().getChangeDate().isAfter(version.getLockChange().getChangeDate())) {
+                return false;
+            }
+        }
+        return true;
     }
 }
