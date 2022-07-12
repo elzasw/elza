@@ -338,6 +338,9 @@ public class ApControllerTest extends AbstractControllerTest {
                 assertEquals(part.getItems().size(), 2);
             }
         }
+
+        // TODO: Extend test with subpart creation (add to extisting part)
+        // TODO: Extend test with part and subpart creation in a single revision
     }
 
     private ApPartVO findPreferredPart(final ApAccessPointVO accessPoint) {
