@@ -374,9 +374,15 @@ public class RuleService {
         List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
         List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
         if (conformityInfo != null) {
-            List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
-            confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
-            confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
+            // we can skip reading errors if prev state was ok            
+            if (State.OK != conformityInfo.getState()) {
+                List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
+                confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
+                confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
+            } else {
+                confPrevMissing = Collections.emptyList();
+                confPrevErrors = Collections.emptyList();
+            }
         } else {
             conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
