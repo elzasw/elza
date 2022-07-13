@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,6 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -184,8 +183,6 @@ public class RuleService {
     private NodeConformityErrorRepository nodeConformityErrorRepository;
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private ExtendedObjectsFactory extendedObjectsFactory;
     @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
@@ -369,60 +366,115 @@ public class RuleService {
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
-        // TODO: Update nodeConformity without DB changes if possible
         ArrNodeConformity conformityInfo = nodeConformityRepository
                 .findByNodeAndFundVersion(level.getNode(), version);
 
-        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformity.State.OK)) {
-            conformityInfo.setDate(new Date());
+        List<ArrNodeConformityMissing> confPrevMissing;
+        List<ArrNodeConformityError> confPrevErrors;
+        List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
+        List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
+        if (conformityInfo != null) {
+            List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
+            confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
+            confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
         } else {
-            if (conformityInfo != null) {
-                deleteConformityInfo(Arrays.asList(conformityInfo));
-            }
             conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
             conformityInfo.setFundVersion(version);
-            conformityInfo.setDate(new Date());
+
+            confPrevMissing = Collections.emptyList();
+            confPrevErrors = Collections.emptyList();
+        }
+        conformityInfo.setDate(new Date());
+        conformityInfo.setState(validationResults.isEmpty()?
+                ArrNodeConformity.State.OK:ArrNodeConformity.State.ERR);
+        conformityInfo = nodeConformityRepository.save(conformityInfo);
+        
+        // process errors
+        for (DataValidationResult validationResult : validationResults) {
+            // policy type has to be set
+            Validate.notNull(validationResult.getPolicyType());
+
+            switch (validationResult.getResultType()) {
+            case MISSING:
+                ArrNodeConformityMissing missing = extractOrCreate(confPrevMissing, validationResult, conformityInfo);
+                confNextMissing.add(missing);
+                break;
+            case ERROR:
+                ArrNodeConformityError error = extractOrCreateConfError(confPrevErrors, validationResult,
+                                                                        conformityInfo);
+                confNextErrors.add(error);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
+        // delete remaining prev
+        if (CollectionUtils.isNotEmpty(confPrevMissing)) {
+            this.nodeConformityMissingRepository.deleteAll(confPrevMissing);
+        }
+        if (CollectionUtils.isNotEmpty(confPrevErrors)) {
+            this.nodeConformityErrorRepository.deleteAll(confPrevErrors);
         }
 
+        ArrNodeConformityExt result = new ArrNodeConformityExt(conformityInfo, confNextMissing, confNextErrors);
 
-        if (validationResults.isEmpty()) {
-            conformityInfo.setState(ArrNodeConformity.State.OK);
-            nodeConformityRepository.save(conformityInfo);
-        } else {
-            conformityInfo.setState(ArrNodeConformity.State.ERR);
-            nodeConformityRepository.save(conformityInfo);
+        return result;
+    }
 
-            for (DataValidationResult validationResult : validationResults) {
-                // policy type has to be set
-                Validate.notNull(validationResult.getPolicyType());
-
-                switch (validationResult.getResultType()) {
-                    case MISSING:
-                        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
-                        missing.setNodeConformity(conformityInfo);
-                        missing.setItemType(validationResult.getType());
-                        missing.setItemSpec(validationResult.getSpec());
-                        missing.setDescription(validationResult.getMessage());
-                        missing.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityMissingRepository.save(missing);
-                        break;
-                    case ERROR:
-                        ArrNodeConformityError error = new ArrNodeConformityError();
-                        error.setNodeConformity(conformityInfo);
-                        error.setDescItem(validationResult.getDescItem());
-                        error.setDescription(validationResult.getMessage());
-                        error.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityErrorRepository.save(error);
-                        break;
-                default:
-                    throw new IllegalStateException();
-                }
+    private ArrNodeConformityError extractOrCreateConfError(List<ArrNodeConformityError> confPrevErrors,
+                                                   DataValidationResult validationResult,
+                                                   ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
+        
+        for (int i = 0; i < confPrevErrors.size(); i++) {
+            ArrNodeConformityError error = confPrevErrors.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, error.getPolicyTypeId()) &&
+                    Objects.equals(descItemId, error.getDescItemId()) &&
+                    Objects.equals(validationResult.getMessage(), error.getDescription())) {
+                confPrevErrors.remove(i);
+                return error;
             }
 
         }
 
-        return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
+        ArrNodeConformityError error = new ArrNodeConformityError();
+        error.setNodeConformity(conformityInfo);
+        error.setDescItem(validationResult.getDescItem());
+        error.setDescription(validationResult.getMessage());
+        error.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityErrorRepository.save(error);
+    }
+
+    private ArrNodeConformityMissing extractOrCreate(List<ArrNodeConformityMissing> confPrevMissing,
+                                                     DataValidationResult validationResult,
+                                                     ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
+        Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
+        
+        for(int i=0; i<confPrevMissing.size(); i++) {
+            ArrNodeConformityMissing missing = confPrevMissing.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, missing.getPolicyTypeId()) &&
+                    Objects.equals(itemTypeId, missing.getItemTypeId()) &&
+                    Objects.equals(itemSpecId, missing.getItemSpecId()) &&
+                    Objects.equals(validationResult.getMessage(), missing.getDescription())) {
+                confPrevMissing.remove(i);
+                return missing;
+            }
+
+        }
+        
+        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
+        missing.setNodeConformity(conformityInfo);
+        missing.setItemType(validationResult.getType());
+        missing.setItemSpec(validationResult.getSpec());
+        missing.setDescription(validationResult.getMessage());
+        missing.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityMissingRepository.save(missing);
     }
 
     /**
@@ -491,11 +543,10 @@ public class RuleService {
 
             for (ArrNodeConformity conformityInfo : conformityInfos) {
 
-                ArrNodeConformityExt conformity = new ArrNodeConformityExt();
-                BeanUtils.copyProperties(conformityInfo, conformity);
-
-                conformity.setErrorList(errors.get(conformity.getNodeConformityId()));
-                conformity.setMissingList(missings.get(conformity.getNodeConformityId()));
+                List<ArrNodeConformityMissing> missList = missings.get(conformityInfo.getNodeConformityId());
+                List<ArrNodeConformityError> errList = errors.get(conformityInfo.getNodeConformityId());
+                ArrNodeConformityExt conformity = new ArrNodeConformityExt(conformityInfo,
+                        missList, errList);
 
                 result.put(conformityInfo.getNode().getNodeId(), conformity);
             }
