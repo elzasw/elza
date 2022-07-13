@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * V případě sdílení jsou stavy uzlů uloženy pro každou verzi AP.
  * Při uzamčení pomůcky zůstane stav uzlu uložen a nemůže již být měněn.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity")
@@ -72,6 +71,20 @@ public class ArrNodeConformity {
     @RestResource(exported = false)
     @OneToMany(mappedBy = "nodeConformity", fetch = FetchType.LAZY)
     private Set<ArrNodeConformityMissing> missingConformity;
+
+    public ArrNodeConformity() {
+
+    }
+
+    public ArrNodeConformity(final ArrNodeConformity src) {
+        this.nodeConformityId = src.nodeConformityId;
+        this.node = src.node;
+        this.nodeId = src.nodeId;
+        this.fundVersion = src.fundVersion;
+        this.state = src.state;
+        this.description = src.description;
+        this.date = src.date;
+    }
 
     /**
      * @return id stavu

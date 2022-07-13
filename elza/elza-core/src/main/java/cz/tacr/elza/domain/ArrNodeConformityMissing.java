@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Textový popis chyby {@link ArrNodeConformity}
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity_missing")
@@ -41,20 +40,29 @@ public class ArrNodeConformityMissing {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
-    @JoinColumn(name = "itemTypeId", nullable = false)
+    @JoinColumn(name = "item_type_id", nullable = false)
     private RulItemType itemType;
+
+    @Column(name = "item_type_id", updatable = false, insertable = false)
+    private Integer itemTypeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
-    @JoinColumn(name = "itemSpecId", nullable = true)
-    private RulItemSpec descItemSpec;
+    @JoinColumn(name = "item_spec_id", nullable = true)
+    private RulItemSpec itemSpec;
+
+    @Column(name = "item_spec_id", updatable = false, insertable = false)
+    private Integer itemSpecId;
 
     @Column(length = 1000, nullable = true)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
-    @JoinColumn(name = "policyTypeId", nullable = true)
+    @JoinColumn(name = "policy_type_id", nullable = true)
     private RulPolicyType policyType;
+
+    @Column(name = "policy_type_id", updatable = false, insertable = false)
+    private Integer policyTypeId;
 
     /**
      * @return id textového popisu
@@ -96,20 +104,30 @@ public class ArrNodeConformityMissing {
      */
     public void setItemType(final RulItemType itemType) {
         this.itemType = itemType;
+        this.itemTypeId = itemType != null ? itemType.getItemTypeId() : null;
+    }
+
+    public Integer getItemTypeId() {
+        return itemTypeId != null ? itemTypeId : (itemType == null) ? null : itemType.getItemTypeId();
     }
 
     /**
      * @return specifikace typu atributu
      */
     public RulItemSpec getItemSpec() {
-        return descItemSpec;
+        return itemSpec;
     }
 
     /**
      * @param itemSpec specifikace typu atributu
      */
     public void setItemSpec(final RulItemSpec itemSpec) {
-        this.descItemSpec = itemSpec;
+        this.itemSpec = itemSpec;
+        this.itemSpecId = itemSpec == null ? null : itemSpec.getItemSpecId();
+    }
+
+    public Integer getItemSpecId() {
+        return itemSpecId != null ? itemSpecId : (itemSpec != null) ? itemSpec.getItemSpecId() : null;
     }
 
     /**
@@ -138,6 +156,11 @@ public class ArrNodeConformityMissing {
      */
     public void setPolicyType(final RulPolicyType policyType) {
         this.policyType = policyType;
+        this.policyTypeId = (policyType == null) ? null : policyType.getPolicyTypeId();
+    }
+
+    public Integer getPolicyTypeId() {
+        return policyTypeId != null ? policyTypeId : (policyType != null) ? policyType.getPolicyTypeId() : null;
     }
 
     @Override
