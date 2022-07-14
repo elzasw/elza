@@ -236,7 +236,7 @@ public class ItemTypeUpdater {
                 
                 // check if some shifts are needed
                 if(numReceivedTypes>es.getValue().size()) {
-                    shiftBy = es.getValue().size() - numReceivedTypes;
+                    shiftBy = numReceivedTypes - es.getValue().size();
                 }
                 result = currentPackageTypes;
             } else
