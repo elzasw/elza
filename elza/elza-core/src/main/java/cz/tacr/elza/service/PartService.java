@@ -554,4 +554,35 @@ public class PartService {
     	}    	
     	return part;
 	}
+
+    /**
+     * Delete constraints for parts
+     * 
+     * Method is used when accessPoint is marked as deleted
+     * 
+     * @param accessPoint
+     */
+    public void deleteConstraintsForParts(ApAccessPoint accessPoint) {
+        List<ApKeyValue> keyValuesToDelete = new ArrayList<>();
+        List<ApPart> modifiedParts = new ArrayList<>();
+
+        List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                if (part.getKeyValue() != null) {
+                    keyValuesToDelete.add(part.getKeyValue());
+                    part.setKeyValue(null);
+                    modifiedParts.add(part);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(modifiedParts)) {
+            modifiedParts = partRepository.saveAll(modifiedParts);
+            partRepository.flush();
+        }
+        if (CollectionUtils.isNotEmpty(keyValuesToDelete)) {
+            keyValueRepository.deleteAll(keyValuesToDelete);
+            keyValueRepository.flush();
+        }
+    }
 }
