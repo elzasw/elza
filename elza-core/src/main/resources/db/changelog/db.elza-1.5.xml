@@ -2053,5 +2053,17 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 				'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
 				'ZP2015_ENTITY_ROLE_59');</sql>
 	</changeSet>
-
+	<!-- Remove key values for deleted Aps -->
+	<changeSet id="20220714134700" author="ppyt">
+		<sql dbms="postgresql">UPDATE ap_part p SET key_value_id = null WHERE p.part_id in (
+		   SELECT p.part_id FROM ap_part p WHERE p.access_point_id IN (
+              SELECT ap.access_point_id FROM ap_access_point ap 
+              LEFT JOIN ap_state s ON s.access_point_id = ap.access_point_id AND s.delete_change_id IS NULL
+              WHERE s.state_id is null
+            ) AND p.key_value_id IS NOT null)</sql>
+		<sql dbms="postgresql">DELETE FROM ap_key_value where key_value_id IN (
+			SELECT akv.key_value_id FROM ap_key_value akv 
+			LEFT JOIN ap_part p ON p.key_value_id = akv.key_value_id 
+			WHERE p.part_id IS NULL)</sql>
+	</changeSet>
 </databaseChangeLog>
