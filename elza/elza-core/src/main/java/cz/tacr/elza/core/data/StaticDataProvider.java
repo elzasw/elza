@@ -558,8 +558,6 @@ public class StaticDataProvider {
         this.apTypeCodeMap = createLookup(result, ApType::getCode);
     }
 
-
-
     private void initApEidTypes(ApExternalIdTypeRepository apEidTypeRepository) {
         List<ApExternalIdType> eidTypes = apEidTypeRepository.findAll();
 

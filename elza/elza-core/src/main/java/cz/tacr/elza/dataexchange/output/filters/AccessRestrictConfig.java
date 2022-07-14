@@ -8,7 +8,17 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 
 public class AccessRestrictConfig implements ExportFilterConfig {
 
+    private List<String> restrictions;
+
     private List<Def> defs;
+
+    public List<String> getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(List<String> restrictions) {
+        this.restrictions = restrictions;
+    }
 
     public List<Def> getDefs() {
         return defs;
@@ -40,17 +50,8 @@ public class AccessRestrictConfig implements ExportFilterConfig {
     }
 
     public static class When {
-        private String structItemType;
         private String itemType;
         private String itemSpec;
-
-        public String getStructItemType() {
-            return structItemType;
-        }
-
-        public void setStructItemType(String structItemType) {
-            this.structItemType = structItemType;
-        }
 
         public String getItemType() {
             return itemType;
@@ -70,14 +71,95 @@ public class AccessRestrictConfig implements ExportFilterConfig {
     }
 
     public static class Result {
-        private Boolean hiddenItem;
+        private boolean hiddenLevel;
+        private List<ItemTypeCode> hiddenItems;
+        private List<ReplaceItemCode> replaceItems;
+        private List<AddItem> addItems;
 
-        public Boolean getHiddenItem() {
-            return hiddenItem;
+        public boolean getHiddenLevel() {
+            return hiddenLevel;
         }
 
-        public void setHiddenItem(Boolean hiddenItem) {
-            this.hiddenItem = hiddenItem;
+        public void setHiddenLevel(boolean hiddenLevel) {
+            this.hiddenLevel = hiddenLevel;
+        }
+
+        public List<ItemTypeCode> getHiddenItems() {
+            return hiddenItems;
+        }
+
+        public void setHiddenItems(List<ItemTypeCode> hiddenItems) {
+            this.hiddenItems = hiddenItems;
+        }
+
+        public List<ReplaceItemCode> getReplaceItems() {
+            return replaceItems;
+        }
+
+        public void setReplaceItems(List<ReplaceItemCode> replaceItems) {
+            this.replaceItems = replaceItems;
+        }
+
+        public List<AddItem> getAddItems() {
+            return addItems;
+        }
+
+        public void setAddItems(List<AddItem> addItems) {
+            this.addItems = addItems;
+        }
+    }
+
+    public static class ReplaceItemCode {
+        private ItemTypeCode source;
+        private ItemTypeCode target;
+
+        public ItemTypeCode getSource() {
+            return source;
+        }
+
+        public void setSource(ItemTypeCode source) {
+            this.source = source;
+        }
+
+        public ItemTypeCode getTarget() {
+            return target;
+        }
+
+        public void setTarget(ItemTypeCode target) {
+            this.target = target;
+        }
+    }
+
+    public static class AddItem {
+        private String itemType;
+        private String itemSpec;
+
+        public String getItemType() {
+            return itemType;
+        }
+
+        public void setItemType(String itemType) {
+            this.itemType = itemType;
+        }
+
+        public String getItemSpec() {
+            return itemSpec;
+        }
+
+        public void setItemSpec(String itemSpec) {
+            this.itemSpec = itemSpec;
+        }        
+    }
+
+    public static class ItemTypeCode {
+        private String itemType;
+
+        public String getItemType() {
+            return itemType;
+        }
+
+        public void setItemType(String itemType) {
+            this.itemType = itemType;
         }
     }
 

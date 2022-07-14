@@ -1,16 +1,20 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Def;
@@ -33,6 +37,11 @@ public class AccessRestrictFilter implements ExportFilter {
     private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
 
     /**
+     * Map of restriction levels <levelId, List<restrictionId>>
+     */
+    private Map<Integer, List<Integer>> levelRestrMap = new HashMap<>();
+
+    /**
      * IDs of filtered Sois for export
      */
     private Set<Integer> filteredSois = new HashSet<>();
@@ -40,11 +49,37 @@ public class AccessRestrictFilter implements ExportFilter {
     private StructObjectInfoLoader soiLoader;
 
     private AccessRestrictConfig efc;
+    
+    final private List<ItemType> restrictionTypes;
+    final private List<FilterRule> filterRules;
 
     public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc) {
         this.sdp = sdp;
         this.efc = efc;
         this.soiLoader = new StructObjectInfoLoader(em, 1, sdp);
+        this.restrictionTypes = initRestrictionTypes(efc);
+        this.filterRules = initFilterRules(efc);
+    }
+
+    private List<ItemType> initRestrictionTypes(final AccessRestrictConfig efc) {
+        List<ItemType> restrictionTypes = new ArrayList<>(efc.getRestrictions().size());
+        for (String structItemTypeCode : efc.getRestrictions()) {
+            ItemType structItemType = sdp.getItemTypeByCode(structItemTypeCode);
+            if (structItemType == null || structItemType.getDataType() != DataType.STRUCTURED) {
+                throw new IllegalStateException("Struct item type is undefined or not STRUCTURED");
+            }
+            restrictionTypes.add(structItemType);
+        }
+        return restrictionTypes;
+    }
+
+    private List<FilterRule> initFilterRules(final AccessRestrictConfig efc) {
+        List<FilterRule> rules = new ArrayList<>(efc.getDefs().size());
+        for (Def def : efc.getDefs()) {
+            FilterRule rule = new FilterRule(def, sdp);
+            rules.add(rule);
+        }
+        return rules;
     }
 
     @Override
@@ -53,54 +88,100 @@ public class AccessRestrictFilter implements ExportFilter {
             restrictedNodeIds.add(levelInfo.getNodeId());
             return null;
         }
-        // TODO: create item type Map<ItemType, List<ArrItem>>  
-        for (Def def : efc.getDefs()) {
-            levelInfo = processDef(def, levelInfo);
-            if (levelInfo == null) {
-                return null;
+        ApplyFilter filter = new ApplyFilter();
+
+        Map<ItemType, List<ArrItem>> arrItemsMap = levelInfo.getItems().stream()
+                .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemType().getItemTypeId())));
+
+        // to get list of restriction ids by restrictions item types
+        List<Integer> restrictionIds = new ArrayList<>();
+        for (ItemType structItemType : restrictionTypes) {
+            List<ArrItem> restrictionList = arrItemsMap.get(structItemType);
+            if (restrictionList != null) {
+                for (ArrItem item : restrictionList) {
+                    // skip items without data
+                    if (item.getData() == null) {
+                        continue;
+                    }
+                    // found restr
+                    ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
+                    restrictionIds.add(dsr.getStructuredObjectId());
+                }
             }
         }
 
-        return levelInfo;
+        // expand restriction list to include parent(s) restriction list
+        if (levelInfo.getParentNodeId() != null) {
+            List<Integer> restParentIds = levelRestrMap.get(levelInfo.getParentNodeId());
+            if (restParentIds != null) {
+                restrictionIds.addAll(restParentIds);
+            }
+        }
+        // if we have a list - we can to put to map and to filter
+        if (!restrictionIds.isEmpty()) {
+            levelRestrMap.put(levelInfo.getNodeId(), restrictionIds);
+
+            for (FilterRule rule : filterRules) {
+                processDef(rule, levelInfo, restrictionIds, filter);
+            }
+        }
+
+        return filter.apply(levelInfo);
     }
 
-    private LevelInfoImpl processDef(Def def, LevelInfoImpl levelInfo) {
-        ItemType structItemType = sdp.getItemTypeByCode(def.getWhen().getStructItemType());
-        
-        ItemType itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
-        RulItemSpec itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
-                
-        // check if contains anon sobj
-        for (ArrItem item : levelInfo.getItems()) {
-            // skip items without data
-            if (item.getData() == null) {
+    private void processDef(FilterRule rule, LevelInfoImpl levelInfo, 
+                                     List<Integer> restrictionIds,
+                                     ApplyFilter filter) {
+        ItemType itemType = rule.getItemType();
+        RulItemSpec itemSpec = rule.getItemSpec();
+        Validate.notNull(itemType);
+        Validate.notNull(itemSpec);
+
+        for (Integer restrictionId : restrictionIds) {
+            StructObjectInfo soi = readSoiFromDB(restrictionId);
+
+            Optional<ArrItem> restrItem = getItem(soi.getItems(), itemType);
+            if (restrItem == null) {
+                // missing restriction type, maybe throw exception
                 continue;
             }
-            if (item.getItemTypeId().equals(structItemType.getItemTypeId())) {
-                // found restr
-                ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
-                StructObjectInfo soi = readSoiFromDB(dsr.getStructuredObjectId());
+            if (!itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
+                continue;
+            }
 
-                Optional<ArrItem> restrItem = getItem(soi.getItems(), itemType);
-                if (restrItem == null) {
-                    // missing restriction type, maybe throw exception
-                    break;
-                }
-                if (itemSpec == null ||
-                        !itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
-                    break;
-                }
+            // apply result if we need to hide level
+            if (rule.isHiddenLevel()) {
+                restrictedNodeIds.add(levelInfo.getNodeId());
+                filteredSois.add(soi.getId());
+                filter.hideLevel();
+                break;
+            }
 
-                // apply result
-                if (def.getResult().getHiddenItem()) {
-                    restrictedNodeIds.add(levelInfo.getNodeId());
-                    filteredSois.add(soi.getId());
-                    return null;
+            // apply different result
+            for (ArrItem arrItem : levelInfo.getItems()) {
+                // hidden itemTypes
+                if (rule.getHiddenItemTypeIds() != null) {
+                    if (rule.getHiddenItemTypeIds().contains(arrItem.getItemType().getItemTypeId())) {
+                        filter.addHideItem(arrItem);
+                    }
                 }
-                // TODO different result
+                // replace itemType(s)
+                if (rule.getReplaceItems() != null) {
+                    for (ReplaceItem replaceItem : rule.getReplaceItems()) {
+                        if (arrItem.getItemTypeId().equals(replaceItem.getSource().getItemTypeId())) {
+                            // TODO add list of replaceItem to ApplyFilter
+                            filter.addReplaceItem(arrItem);
+                            filter.setReplaceItemType(replaceItem.getTarget().getEntity());
+                        }
+                    }
+                }
+            }
+
+            // if we need to add sign of change
+            if (rule.getAddedArrItem() != null) {
+                filter.setAddedArrItems(rule.getAddedArrItem());
             }
         }
-        return levelInfo;
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
