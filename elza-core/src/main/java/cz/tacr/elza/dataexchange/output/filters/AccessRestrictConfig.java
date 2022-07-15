@@ -75,6 +75,7 @@ public class AccessRestrictConfig implements ExportFilterConfig {
         private List<ItemTypeCode> hiddenItems;
         private List<ReplaceItemCode> replaceItems;
         private List<AddItem> addItems;
+        private List<AddItem> addItemsOnChange;
 
         public Boolean getHiddenLevel() {
             return hiddenLevel;
@@ -106,6 +107,14 @@ public class AccessRestrictConfig implements ExportFilterConfig {
 
         public void setAddItems(List<AddItem> addItems) {
             this.addItems = addItems;
+        }
+
+        public List<AddItem> getAddItemsOnChange() {
+            return addItemsOnChange;
+        }
+
+        public void setAddItemsOnChange(List<AddItem> addItemsOnChange) {
+            this.addItemsOnChange = addItemsOnChange;
         }
     }
 
