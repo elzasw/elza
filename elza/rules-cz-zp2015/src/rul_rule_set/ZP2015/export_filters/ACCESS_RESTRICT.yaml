@@ -26,7 +26,7 @@ defs:
             itemType: ZP2015_TITLE_PUBLIC
           target:
             itemType: ZP2015_TITLE
-      addItems:
+      addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_ABSTRACT
   - when:
@@ -40,7 +40,7 @@ defs:
             itemType: ZP2015_TITLE_PUBLIC
           target:
             itemType: ZP2015_TITLE
-      addItems:
+      addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_LIMITED
   - when:

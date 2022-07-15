@@ -131,7 +131,6 @@ public class AccessRestrictFilter implements ExportFilter {
                             Map<ItemType, List<ArrItem>> itemsByType,
                             List<Integer> restrictionIds,
                             ApplyFilter filter) {
-        boolean applied = false;
 
         for (Integer restrictionId : restrictionIds) {
             StructObjectInfo soi = readSoiFromDB(restrictionId);
@@ -141,29 +140,32 @@ public class AccessRestrictFilter implements ExportFilter {
                 continue;
             }
 
-            // apply result if we need to hide level
+            // if we need to hide level
             if (rule.isHiddenLevel()) {
                 restrictedNodeIds.add(levelInfo.getNodeId());
                 filteredSois.add(soi.getId());
                 filter.hideLevel();
                 break;
             }
-            
+
+            boolean changed = false;
+    
             // check hidden items
             if (rule.getHiddenTypes() != null) {
                 for (ItemType hiddenType : rule.getHiddenTypes()) {
                     List<ArrItem> hiddenItems = itemsByType.get(hiddenType);
                     if (CollectionUtils.isNotEmpty(hiddenItems)) {
                         hiddenItems.forEach(hi -> filter.addHideItem(hi));
-                        applied = true;
+                        changed = true;
                     }
                 }
             }
+    
             // replace itemType(s)
             if (rule.getReplaceItems() != null) {
                 for (ReplaceItem replaceDef : rule.getReplaceItems()) {
                     List<ArrItem> replaceItems = itemsByType.get(replaceDef.getSource());
-                    if(CollectionUtils.isNotEmpty(replaceItems)) {
+                    if (CollectionUtils.isNotEmpty(replaceItems)) {
                         for (ArrItem replaceItem : replaceItems) {
                             // source found -> store as new target
                             List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
@@ -175,6 +177,7 @@ public class AccessRestrictFilter implements ExportFilter {
                                     ArrItem copy = replaceItem.makeCopy();
                                     copy.setItemType(replaceDef.getTarget().getEntity());
                                     filter.addItem(copy);
+                                    changed = true;
                                 }
                             }
                         }
@@ -182,15 +185,12 @@ public class AccessRestrictFilter implements ExportFilter {
                 }
             }
 
-        }
-
-        // add items if applied
-        if (applied) {
-            // if we need to add sign of change
+            // add itemsOnChange if changed
+            if (rule.getAddItemsOnChange() != null && changed) {
+                rule.getAddItemsOnChange().forEach(i -> filter.addItem(i));
+            }
             if (rule.getAddItems() != null) {
-                for (ArrItem addItem : rule.getAddItems()) {
-                    filter.addItem(addItem);
-                }
+                rule.getAddItems().forEach(i -> filter.addItem(i));
             }
         }
     }
