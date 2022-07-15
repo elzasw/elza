@@ -1,12 +1,15 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Objects;
+
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.RulItemType;
 
 public class ApplyFilter {
 
@@ -14,11 +17,7 @@ public class ApplyFilter {
 
     private Set<ArrItem> hideItems = new HashSet<>();
 
-    private Set<ArrItem> replaceItems = new HashSet<>();
-
-    private RulItemType replaceItemType;
-
-    private List<ArrItem> addedArrItems;
+    private List<ArrItem> addItems = new ArrayList<>();
 
     public void hideLevel() {
         hideLevel = true;
@@ -28,16 +27,26 @@ public class ApplyFilter {
         hideItems.add(item);
     }
 
-    public void addReplaceItem(ArrItem item) {
-        replaceItems.add(item);
-    }
+    public void addItem(ArrItem item) {
+        // check if item not exists
+        for (ArrItem currItem : addItems) {
+            if (!Objects.equal(currItem.getItemTypeId(), item.getItemTypeId())) {
+                continue;
+            }
+            if (!Objects.equal(currItem.getItemSpecId(), item.getItemSpecId())) {
+                continue;
+            }
+            // check data 
+            if (Objects.equal(currItem.getData(), item.getData())) {
+                return;
+            }
 
-    public void setReplaceItemType(RulItemType itemType) {
-        replaceItemType = itemType;
-    }
-
-    public void setAddedArrItems(List<ArrItem> addedArrItems) {
-        this.addedArrItems = addedArrItems;
+            // if enum -> data are not used
+            if (currItem.getItemType().getDataTypeId().equals(DataType.ENUM.getEntity().getDataTypeId())) {
+                return;
+            }
+        }
+        addItems.add(item);
     }
 
     public LevelInfoImpl apply(LevelInfoImpl levelInfo) {
@@ -51,15 +60,7 @@ public class ApplyFilter {
             levelInfoCopy.removeItems(hideItems);
         }
 
-        if (!replaceItems.isEmpty()) {
-            for (ArrItem item : replaceItems) {
-                item.setItemType(replaceItemType);
-            }
-        }
-
-        if (addedArrItems != null) {
-            levelInfoCopy.addItems(addedArrItems);
-        }
+        addItems.forEach(item -> levelInfoCopy.addItem(item));
 
         return levelInfoCopy;
     }
