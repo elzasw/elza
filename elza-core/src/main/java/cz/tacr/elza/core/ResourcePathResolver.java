@@ -35,6 +35,7 @@ public class ResourcePathResolver {
     private static final String PACKAGES_DIR = "packages";
     private static final String GROOVY_DIR = "groovy";
     private static final String DMS_DIR = "dms";
+    private static final String DPKG_DIR = "dpkg";
 
     private static final String EXPORT_XML_DIR = "export-xml";
     private static final String IMPORT_XML_DIR = "import-xml";
@@ -68,7 +69,6 @@ public class ResourcePathResolver {
     /**
      * @return Path to data management system (DMS) directory (may not exist).
      */
-    @Transactional
     public Path getDmsDir() {
         Path path = Paths.get(workDir, DMS_DIR);
 
@@ -76,9 +76,17 @@ public class ResourcePathResolver {
     }
 
     /**
+     * @return Path to directory with packages for automatic download (may not exist).
+     */
+    public Path getDpkgDir() {
+        Path path = Paths.get(workDir, DPKG_DIR);
+
+        return path;
+    }
+
+    /**
      * @return Path to file in data management system (DMS) directory (may not exist).
      */
-    @Transactional
     public Path getDmsFile(String fileName) {
         Path path = Paths.get(workDir, DMS_DIR).resolve(fileName);
 
@@ -88,7 +96,6 @@ public class ResourcePathResolver {
     /**
      * @return Path to groovy script directory (may not exist).
      */
-    @Transactional
     public Path getGroovyDir() {
         Path path = Paths.get(workDir, GROOVY_DIR);
 
@@ -98,7 +105,6 @@ public class ResourcePathResolver {
     /**
      * @return Path to export XML transformations directory (may not exist).
      */
-    @Transactional
     public Path getExportXmlTrasnformDir() {
         Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_XML_DIR);
 
@@ -108,7 +114,6 @@ public class ResourcePathResolver {
     /**
      * @return Path to import XML transformations directory (may not exist).
      */
-    @Transactional
     public Path getImportXmlTrasnformDir() {
         Path path = Paths.get(workDir, TRANSFORMS_DIR, IMPORT_XML_DIR);
 

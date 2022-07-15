@@ -1735,11 +1735,15 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // pečetitelé
         "ZP2015_ENTITY_ROLE_17",
         // příjemci 
-        "ZP2015_ENTITY_ROLE_21", 
+        "ZP2015_ENTITY_ROLE_21",
+        // svědek
+        "ZP2015_ENTITY_ROLE_46",
         // písaři
         "ZP2015_ENTITY_ROLE_48",
         // mista vydani
-        "ZP2015_ENTITY_ROLE_58"
+        "ZP2015_ENTITY_ROLE_58",
+        // místa vzniku
+        "ZP2015_ENTITY_ROLE_61"
         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -2178,7 +2182,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // vydavatelé / nakladatelé
         "ZP2015_ENTITY_ROLE_16",
         // autoři hudební složky
-        "ZP2015_ENTITY_ROLE_5",
+        "ZP2015_ENTITY_ROLE_6",
         // autoři textové složky
         "ZP2015_ENTITY_ROLE_10",
         // autoři doprovodných textů
@@ -2211,7 +2215,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autoři hudební složky
-        "ZP2015_ENTITY_ROLE_5",
+        "ZP2015_ENTITY_ROLE_6",
         // autoři textové složky
         "ZP2015_ENTITY_ROLE_10",        
         // objednatelé / příjemci 
@@ -2255,7 +2259,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autoři hudební složky
-        "ZP2015_ENTITY_ROLE_5",
+        "ZP2015_ENTITY_ROLE_6",
         // autoři textové složky
         "ZP2015_ENTITY_ROLE_10",        
         // objednatelé / příjemci 
@@ -2284,7 +2288,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // vydavatelé / nakladatelé
         "ZP2015_ENTITY_ROLE_16",
         // autoři hudební složky
-        "ZP2015_ENTITY_ROLE_5",
+        "ZP2015_ENTITY_ROLE_6",
         // autoři textové složky
         "ZP2015_ENTITY_ROLE_10",        
         // autoři doprovodných textů

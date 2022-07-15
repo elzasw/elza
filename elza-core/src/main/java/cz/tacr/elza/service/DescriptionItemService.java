@@ -32,6 +32,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
@@ -39,7 +40,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -1559,7 +1559,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIds.add(rootNodeId);
             for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
-                                                           HibernateConfiguration.MAX_IN_SIZE)) {
+                                                           ObjectListIterator.getMaxBatchSize())) {
                 descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, descItemType, specifications, findText));
             }
         } else {
@@ -1877,7 +1877,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIds.add(rootNodeId);
             for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
-                    HibernateConfiguration.MAX_IN_SIZE)) {
+                                                           ObjectListIterator.getMaxBatchSize())) {
                 descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, itemType, null, valueIds));
             }
         } else {
@@ -2070,7 +2070,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
                     nodeIds.add(rootNodeId);
                     for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
-                            HibernateConfiguration.MAX_IN_SIZE)) {
+                                                                   ObjectListIterator.getMaxBatchSize())) {
                         descItems.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, descItemType, null, valueIds));
                     }
                 } else {

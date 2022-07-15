@@ -1,18 +1,27 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
-
-import java.util.List;
 
 
 /**
@@ -20,7 +29,6 @@ import java.util.List;
  * archivní pomůcky. Vazba výčtu specifikací na různá pravidla bude řešeno později. Podtyp atributu
  * (Role entit - Malíř, Role entit - Sochař, Role entit - Spisovatel).
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
 @Entity(name = "rul_item_spec")
@@ -58,9 +66,6 @@ public class RulItemSpec {
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
 	@JoinColumn(name = "packageId", nullable = false)
 	private RulPackage rulPackage;
-
-    @OneToMany(mappedBy = "itemSpec", fetch = FetchType.LAZY)
-    private List<RulItemTypeSpecAssign> itemTypeSpecAssigns;
 
 	// Consider to move transient fields to RulItemSpecExt
     @Transient
@@ -213,14 +218,6 @@ public class RulItemSpec {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
-    }
-
-    public List<RulItemTypeSpecAssign> getItemTypeSpecAssigns() {
-        return itemTypeSpecAssigns;
-    }
-
-    public void setItemTypeSpecAssigns(final List<RulItemTypeSpecAssign> itemTypeSpecAssigns) {
-        this.itemTypeSpecAssigns = itemTypeSpecAssigns;
     }
 
     public Integer getViewOrder() {

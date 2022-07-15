@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
@@ -210,13 +211,19 @@ public class UnitCounter {
             // fetch valid items from packet
             ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
             Integer packetId = dataStructObjRef.getStructuredObjectId();
-            if (!unitCountAction.isCountedObject(packetId)) {
-                countStructObj(packetId, level, unitCountAction);
-            }
+            countStructObj(packetId, level, unitCountAction);
         }
     }
 
     private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
+        if (unitCountAction.isCountedObject(packetId)) {
+            Consumer<LevelWithItems> nextAction = unitCountAction.getCountedAction(packetId);
+            if (nextAction != null) {
+                nextAction.accept(level);
+            }
+            return;
+        }
+
         // TODO: Do filtering in DB
         List<ArrStructuredItem> structObjItems = this.structureItemRepository
                 .findByStructObjIdAndDeleteChangeIsNullFetchData(packetId);
@@ -226,14 +233,20 @@ public class UnitCounter {
                 // find mapping
                 String value = objectMapping.get(structObjItem.getItemSpecId());
                 if (value != null) {
+                    Consumer<LevelWithItems> nextAction;
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level.getNodeId(), value, 1);
+                        nextAction = null;
                     } else {
-                        unitCountAction.addValue(level, value, 1);
+                        nextAction = unitCountAction.addValue(level, value, 1);
                     }
 
                     // mark as counted
-                    unitCountAction.addCountedObject(packetId);
+                    unitCountAction.addCountedObject(packetId, nextAction);
+                    // run extra action
+                    if (nextAction != null) {
+                        nextAction.accept(level);
+                    }
                     // only first mapping is used and then return
                     // if there are multiple structObjItems matching
                     // given itemType only first one is counted

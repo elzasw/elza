@@ -1022,4 +1022,12 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_APPLIED_RESTRICTION" data-type="ENUM">
+        <name>Uplatněné omezení přístupnosti</name>
+        <shortcut>Uplatněné omezení přístupnosti</shortcut>
+        <description>ZP4.4.1 Podmínky přístupu - uplatněné omezení přístupnosti</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
 </item-types>

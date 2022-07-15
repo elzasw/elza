@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Pro chybové stavy uzlu {@link ArrNodeConformity} se odkazuje na hodnoty atributů, které jsou ve špatném stavu.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
 @Entity(name = "arr_node_conformity_error")
@@ -41,15 +40,21 @@ public class ArrNodeConformityError {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
-    @JoinColumn(name = "descItemId", nullable = false)
+    @JoinColumn(name = "desc_item_id", nullable = false)
     private ArrDescItem descItem;
+
+    @Column(name = "desc_item_id", updatable = false, insertable = false)
+    private Integer descItemId;
 
     @Column(length = 1000, nullable = true)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
-    @JoinColumn(name = "policyTypeId", nullable = true)
+    @JoinColumn(name = "policy_type_id", nullable = true)
     private RulPolicyType policyType;
+
+    @Column(name = "policy_type_id", updatable = false, insertable = false)
+    private Integer policyTypeId;
 
     /**
      * @return id chyby
@@ -91,6 +96,11 @@ public class ArrNodeConformityError {
      */
     public void setDescItem(final ArrDescItem descItem) {
         this.descItem = descItem;
+        this.descItemId = (descItem == null) ? null : descItem.getItemId();
+    }
+
+    public Integer getDescItemId() {
+        return descItemId != null ? descItemId : (descItem != null) ? descItem.getItemId() : null;
     }
 
     /**
@@ -119,6 +129,11 @@ public class ArrNodeConformityError {
      */
     public void setPolicyType(final RulPolicyType policyType) {
         this.policyType = policyType;
+        this.policyTypeId = (policyType == null) ? null : policyType.getPolicyTypeId();
+    }
+
+    public Integer getPolicyTypeId() {
+        return policyTypeId != null ? policyTypeId : (policyType != null) ? policyType.getPolicyTypeId() : null;
     }
 
     @Override

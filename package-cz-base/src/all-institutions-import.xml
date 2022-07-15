@@ -452,50 +452,25 @@
       </frgs>
     </ap>
     <ap>
-      <ape id="2dab13a8-437d-49ed-9e04-37433790a8d3" uuid="2dab13a8-437d-49ed-9e04-37433790a8d3" t="PUBLIC_ADMINISTRATION"/>
+      <ape id="aa716e85-3464-4b5b-a484-610c934837e5" uuid="aa716e85-3464-4b5b-a484-610c934837e5" t="PUBLIC_ADMINISTRATION"/>
       <frgs>
-        <frg fid="535fdde6-cd27-41ba-9eb9-66ddfa98a2bf" t="PT_NAME">
+        <frg fid="06e40afa-e03e-4137-959d-7eab23e6287b" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</v>
+            <v>Státní okresní archiv Praha-venkov se sídlem v Dobřichovicích</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
         </frg>
-        <frg fid="fc7404a5-0012-465c-854a-01238eb4806a" t="PT_NAME">
+        <frg fid="32ddbd00-09f4-441f-aa5c-a3e3bbb53acd" t="PT_NAME">
           <ds t="NM_MAIN">
-            <v>SOkA Praha-východ</v>
+            <v>SOkA Praha-venkov</v>
           </ds>
           <de t="NM_LANG" s="LNG_cze"/>
           <de t="NM_TYPE" s="NT_ACRONYM"/>
         </frg>
-        <frg fid="ba026734-de1f-483e-934f-88d91fa90930" t="PT_IDENT">
+        <frg fid="020e7cda-1045-4f32-9fc5-cee2d2ee0fbd" t="PT_IDENT">
           <de t="IDN_TYPE" s="ARCHNUM"/>
           <ds t="IDN_VALUE">
-            <v>221209010</v>
-          </ds>
-          <db t="IDN_VERIFIED" v="true"/>
-        </frg>
-      </frgs>
-    </ap>
-    <ap>
-      <ape id="b1b0d00b-233e-497b-b7ea-66343a1600d6" uuid="b1b0d00b-233e-497b-b7ea-66343a1600d6" t="PUBLIC_ADMINISTRATION"/>
-      <frgs>
-        <frg fid="3a22ac28-6239-4a8a-a980-e16197bdd154" t="PT_NAME">
-          <ds t="NM_MAIN">
-            <v>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</v>
-          </ds>
-          <de t="NM_LANG" s="LNG_cze"/>
-        </frg>
-        <frg fid="a9ae6a40-6fda-475a-9c84-9af3378c4d08" t="PT_NAME">
-          <ds t="NM_MAIN">
-            <v>SOkA Praha-západ</v>
-          </ds>
-          <de t="NM_LANG" s="LNG_cze"/>
-          <de t="NM_TYPE" s="NT_ACRONYM"/>
-        </frg>
-        <frg fid="da6fcc73-2004-4d59-b9ca-56f96cb4db54" t="PT_IDENT">
-          <de t="IDN_TYPE" s="ARCHNUM"/>
-          <ds t="IDN_VALUE">
-            <v>221210010</v>
+            <v>221250010</v>
           </ds>
           <db t="IDN_VERIFIED" v="true"/>
         </frg>
@@ -3368,8 +3343,7 @@
     <inst c="221206010" paid="8f8c422f-deda-4445-b640-931c2d6b116a" t="DEFAULT"/>
     <inst c="221207010" paid="08b9e050-4821-41eb-98f8-160022099243" t="DEFAULT"/>
     <inst c="221208010" paid="21b0f0da-9113-4146-bc85-18bbd5df17c0" t="DEFAULT"/>
-    <inst c="221209010" paid="2dab13a8-437d-49ed-9e04-37433790a8d3" t="DEFAULT"/>
-    <inst c="221210010" paid="b1b0d00b-233e-497b-b7ea-66343a1600d6" t="DEFAULT"/>
+    <inst c="221250010" paid="aa716e85-3464-4b5b-a484-610c934837e5" t="DEFAULT"/>
     <inst c="221211010" paid="2d2ef1c1-f137-49a0-b9cf-a800b58c530d" t="DEFAULT"/>
     <inst c="221212010" paid="8b8ae293-2f56-426f-89d5-0c98ac2ba1ea" t="DEFAULT"/>
     <inst c="222101010" paid="9c9365db-435a-4b4b-a2d2-73862fd686d5" t="DEFAULT"/>

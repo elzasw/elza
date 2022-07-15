@@ -770,17 +770,17 @@ public class RevisionService {
 
         Map<Integer, ApPart> savedParts = mergeParts(accessPoint, revParts, revItems, change);
 
-        ApPart newPrefferdPart = null;
+        ApPart newPreferredPart = null;
         if (revision.getPreferredPartId() != null) {
-            newPrefferdPart = partService.getPart(revision.getPreferredPartId());
+            newPreferredPart = partService.getPart(revision.getPreferredPartId());
         } else
         if (revision.getRevPreferredPartId() != null) {
-            newPrefferdPart = savedParts.get(revision.getRevPreferredPartId());
-            Validate.notNull(newPrefferdPart, "RevPart for preferred name not found, revPartId: %s", revision
+            newPreferredPart = savedParts.get(revision.getRevPreferredPartId());
+            Validate.notNull(newPreferredPart, "RevPart for preferred name not found, revPartId: %s", revision
                     .getRevPreferredPartId());
         }
-        if (newPrefferdPart != null) {
-            accessPoint = accessPointService.setPreferName(accessPoint, newPrefferdPart);
+        if (newPreferredPart != null) {
+            accessPoint = accessPointService.setPreferName(accessPoint, newPreferredPart);
         }
 
         //změna stavu entity
@@ -805,6 +805,14 @@ public class RevisionService {
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
+    /**
+     * 
+     * @param accessPoint
+     * @param revParts
+     * @param revItems
+     * @param change
+     * @return Map of saved parts from RevParts
+     */
     private Map<Integer, ApPart> mergeParts(ApAccessPoint accessPoint,
                                             List<ApRevPart> revParts,
                                             List<ApRevItem> revItems,
@@ -813,7 +821,7 @@ public class RevisionService {
             return Collections.emptyMap();
         }
 
-        // Map of RevPartId to saved ApPart
+        // Map of RevPartId and saved ApPart
         Map<Integer, ApPart> revPartMap = new HashMap<>();
 
         List<ApRevPart> createSubParts = new ArrayList<>();
@@ -821,17 +829,21 @@ public class RevisionService {
 
         for (ApRevPart revPart : revParts) {
             if (revPart.getOriginalPart() == null) {
-                Validate.isTrue(!revPart.isDeleted());
-                // create new part
+                // New part
+                Validate.isTrue(!revPart.isDeleted()); // cannot be marked as deleted
+                // Check if linked to revision
                 if (revPart.getRevParentPart() != null) {
+                    // parent part has to be null
                     Validate.isTrue(revPart.getParentPart() == null);
                     createSubParts.add(revPart);
                 } else {
+                    // might be subpart to existing part or new part
                     ApPart part = partService.createPart(revPart.getPartType(), accessPoint, revPart.getCreateChange(),
-                                                         null);
+                                                         revPart.getParentPart());
                     revPartMap.put(revPart.getPartId(), part);
                 }
             } else {
+                // Existing part
                 // Cannot have rev as parent
                 Validate.isTrue(revPart.getRevParentPart() == null);
 
@@ -847,7 +859,7 @@ public class RevisionService {
         // Create subparts
         for (ApRevPart revPart : createSubParts) {
             // find parent
-            ApPart parentPart = revPartMap.get(revPart.getRevParentPart());
+            ApPart parentPart = revPartMap.get(revPart.getRevParentPart().getPartId());
             Validate.notNull(parentPart);
 
             ApPart part = partService.createPart(revPart.getPartType(), accessPoint, revPart.getCreateChange(),
