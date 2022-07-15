@@ -80,7 +80,7 @@ public class ElzaWebController {
         return displayUserInfo;
     }
 
-    @Value("${elza.version:0.0.0}")
+    @Value("${version:0.0.0}")
     private String appVersion;
 
     @ModelAttribute("appVersion")
