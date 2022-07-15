@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
@@ -22,11 +23,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -74,11 +78,19 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
+    private final HibernateConfiguration hibernateConfiguration;
+
     private final AccessPointCacheService accessPointCacheService;
+
+    private final ResourcePathResolver resourcePathResolver;
 
     private final RuleService ruleService;
 
-    private final CamScheduler camScheduler; 
+    private final PackageService packageService;
+
+    private final CamScheduler camScheduler;
+
+    private final UserService userService;
 
     private boolean running;
 
@@ -91,9 +103,6 @@ public class StartupService implements SmartLifecycle {
      */
     @Value("${elza.startupService.autoStart:true}")
     private boolean autoStart = true;
-
-    @Value("${elza.data.batchSize:1500}")
-    private int maxBatchSize;
 
     @Autowired
     AdminService adminService;
@@ -114,13 +123,17 @@ public class StartupService implements SmartLifecycle {
                           final EntityManager em,
                           final AccessPointService accessPointService,
                           final VisiblePolicyRepository visiblePolicyRepository,
+                          final HibernateConfiguration hibernateConfiguration,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
+                          final ResourcePathResolver resourcePathResolver,
                           final RuleService ruleService,
+                          final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
-                          final CamScheduler camScheduler) {
+                          final CamScheduler camScheduler,
+                          final UserService userService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -132,13 +145,17 @@ public class StartupService implements SmartLifecycle {
         this.em = em;
         this.accessPointService = accessPointService;
         this.visiblePolicyRepository = visiblePolicyRepository;
+        this.hibernateConfiguration = hibernateConfiguration;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
+        this.resourcePathResolver = resourcePathResolver;
         this.ruleService = ruleService;
+        this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
+        this.userService = userService;
     }
 
     @Autowired
@@ -165,14 +182,19 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
+        ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
+
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
 
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());
-
         syncApCacheService();
+
+        // Prepare system security context for import
+        SecurityContextHolder.setContext(userService.createSecurityContextSystem());
+        packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
@@ -180,8 +202,6 @@ public class StartupService implements SmartLifecycle {
         }
 
         tt.executeWithoutResult(r -> startInTransaction2());
-
-        ObjectListIterator.setMaxBatchSize(maxBatchSize);
 
         camScheduler.start();
 
@@ -236,6 +256,7 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         // kontrola datové struktury
         accessPointService.checkConsistency();
+        ;
     }
 
     private void startInTransaction2() {

@@ -1,7 +1,5 @@
 package cz.tacr.elza.packageimport.xml;
 
-import cz.tacr.elza.domain.RulItemTypeSpecAssign;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -25,13 +23,14 @@ public class ItemTypeAssign {
     }
 
     /**
-     * Převod DAO na VO typů atributu.
+     * Převod z DB na XML typ
      *
-     * @param rulItemTypeSpecAssign DAO
+     * @param itemTypeCode
+     *            Item type
      */
-    public static ItemTypeAssign fromEntity(RulItemTypeSpecAssign rulItemTypeSpecAssign) {
+    public static ItemTypeAssign fromEntity(String itemTypeCode) {
         ItemTypeAssign itemType = new ItemTypeAssign();
-        itemType.setCode(rulItemTypeSpecAssign.getItemType().getCode());
+        itemType.setCode(itemTypeCode);
         return itemType;
     }
 }

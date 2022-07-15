@@ -775,8 +775,8 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_77">
-        <name>osoba jmenovaná / ustanovená do funkce</name>
-        <description>osoba jmenovaná / ustanovená do funkce</description>
+        <name>osoba jmenovaná/ustanovená do funkce</name>
+        <description>osoba jmenovaná/ustanovená do funkce</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -810,19 +810,6 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
-          používá se nyní již jen u technických výkresů, asi by mohlo být 
-          přejmenováno na "autor výkresu" -->
-    <item-spec code="ZP2015_ENTITY_ROLE_1">
-        <name>autor</name>
-        <description>zastaralé, nově většinou autor textu</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_2">
         <name>autor dialogu</name>
         <description>5.13.2, 5.14.2 pro kinematografické filmy, zvukové archiválie</description>
@@ -833,16 +820,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- nahrazen fotografem, dále nepoužívat (ZP2015_ENTITY_ROLE_31) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_4">        <name>autor fotografií</name>
-        <description>nově viz též fotograf</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
+    <!-- Nepoužívat, sloučeno s ZP2015_ENTITY_ROLE_6, bug7900 -->
     <item-spec code="ZP2015_ENTITY_ROLE_5">
         <name>skladatel</name>
         <description>5.6.1 - hudebniny (dříve i autor hudební složky)</description>
@@ -854,7 +832,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_10">
-        <name>autor textové složky/textař</name>
+        <name>autor textové složky / textař</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -864,7 +842,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_6">
-        <name>autor hudby/skladatel</name>
+        <name>autor hudby / skladatel</name>
         <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -874,7 +852,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_7">
-        <name>autor choreografie/choreograf</name>
+        <name>autor choreografie / choreograf</name>
         <description>5.13.2, kinematografické filmy</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -933,28 +911,15 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_13">
-        <name>autor výtvarné a obrazové stránky</name>
-        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
+    <item-spec code="ZP2015_ENTITY_ROLE_84">
+        <name>opisovač</name>
+        <description>5.6.1 - hudebniny - opisovač</description>
         <shortcut></shortcut>
         <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_14">
-        <name>autor výtvarné stránky</name>
-        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_15">
         <name>vydavatel</name>
         <description>5.3.1, 5.19.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), cenné papíry, faleristické předměty, numizmatické předměty</description>
@@ -986,7 +951,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_18">
-        <name>produkční společnost/producent</name>
+        <name>produkční společnost / producent</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -996,7 +961,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_19">
-        <name>objednatel / příjemce</name>
+        <name>objednatel/příjemce</name>
         <description>5.5.1, 5.6.1, 5.9.1, 5.13.2, 5.14.2 - rukopisy, hudebniny, mapy (mapová díla, atlasy), kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -1025,6 +990,17 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_85">
+        <name>vlastník</name>
+        <description>5.5.1,5.15.1 - vlastník</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_22">
         <name>žadatel</name>
         <description>5.3.1 - listiny (před i po roce 1850)</description>
@@ -1036,7 +1012,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_23">
-        <name>držitel</name>
+        <name>držitel cenného papíru</name>
         <description>5.19.1 - cenné papíry</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -1150,16 +1126,6 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nahrazeno rolí redaktor -->
-    <item-spec code="ZP2015_ENTITY_ROLE_35">
-        <name>editor / redaktor</name>
-        <description>zastaralé, nahrazeno rolí redaktor</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_36">
         <name>kreslič</name>
         <description>5.9.1, 5.10.1 - mapy (mapová díla, atlasy), technické výkresy</description>
@@ -1170,7 +1136,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_37">
-        <name>majitel</name>
+        <name>majitel typáře</name>
         <description>5.7.6 - typáře (otisky, kopie otisků)</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -1208,6 +1174,16 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_87">
+        <name>odborná spolupráce</name>
+        <description>5.13.2 - odborná spolupráce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec> 
     <item-spec code="ZP2015_ENTITY_ROLE_41">
         <name>střih/střihač</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
@@ -1304,16 +1280,6 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, nahrazeno rolí tiskárna/tiskař (nově ZP2015_ENTITY_ROLE_52)-->
-    <item-spec code="ZP2015_ENTITY_ROLE_51">
-        <name>tiskárna</name>
-        <description>zastaralé, nahrazeno rolí tiskárna/tiskař</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_52">
         <name>tiskárna/tiskař</name>
         <description>5.6.1, 5.9.1, 5.11.2, 5.15.1, 5.16.1, 5.17.1, , 5.19.1 - hudebniny, mapy (mapová díla, atlasy), grafické listy, tisky, pohlednice, plakáty, , cenné papíry</description>
@@ -1334,28 +1300,15 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_54">
-        <name>výrobce typářů</name>
-        <description>zastaralé, bude nahrazeno rolí výrobce</description>
+    <item-spec code="ZP2015_ENTITY_ROLE_86">
+        <name>místo fotografování</name>
+        <description>5.12.1 - místo fotografování</description>
         <shortcut></shortcut>
         <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
-    <item-spec code="ZP2015_ENTITY_ROLE_55">
-        <name>výrobce odlitků otisků / otisků typářů</name>
-        <description>zastaralé, bude nahrazeno rolí výrobce</description>
-        <shortcut></shortcut>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_56">
         <name>místo natáčení</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
@@ -1374,19 +1327,18 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_58">
-        <name>místo vydání</name>
-        <description>5.3.1, 5.7.6, 5.15.1, 5.17.1, 5.16.1, 5.19.1 - listiny (před i po roce 1850), typáře (otisky, kopie otisků), tisky, plakáty, pohlednice, cenné papíry</description>
+    <item-spec code="ZP2015_ENTITY_ROLE_88">
+        <name>místo předání</name>
+        <description>5.22.1 - místo předání</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>
-    <!-- zastaralé, bude nahrazeno místem vydání -->
-    <item-spec code="ZP2015_ENTITY_ROLE_59">
-        <name>místo vydání dokumentů</name>
-        <description>zastaralé, bude nahrazeno místem vydání</description>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_58">
+        <name>místo vydání</name>
+        <description>5.3.1, 5.7.6, 5.15.1, 5.17.1, 5.16.1, 5.19.1 - listiny (před i po roce 1850), typáře (otisky, kopie otisků), tisky, plakáty, pohlednice, cenné papíry</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
@@ -1551,7 +1503,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_83 -->    
+    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_88 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>
@@ -2162,130 +2114,130 @@
     <item-spec code="ZP2015_ACCESS_STATUTORY_DEADLINE">
         <name>zákonná lhůta (archiválie mladší 30 let)</name>
         <description>mladší než 30 let, zákon č. 499/2004 Sb. § 37 odst. 1</description>
-        <shortcut>zákonná lhůta</shortcut>
+        <shortcut>zák. lhůta</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_AGREEMENT">
         <name>smlouva (o úschově, licenční aj.)</name>
         <description>omezení vyplývající ze smlouvy, zákon č. 499/2004 Sb. § 34 odst. 4: ustanovení ve smlouvě</description>
-        <shortcut>smluvní omezení</shortcut>
+        <shortcut>sml. omezení</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_COPY_EXISTANCE">
         <name>existující kopie archiválie</name>
         <description>existující kopie archiválie, zákon č. 499/2004 Sb. § 34 odst. 3: zhotovení kopie</description>
-        <shortcut>existující kopie archiválie</shortcut>
+        <shortcut>ex. kopie arch.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_CULT_HERITAGE">
         <name>národní kulturní památka</name>
         <description>národní kulturní památka, zákon č. 499/2004 Sb. § 34 odst. 5</description>
-        <shortcut>národní kulturní památka</shortcut>
+        <shortcut>nár. kult. pam.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_PHYS_STATE">
         <name>fyzický stav archiválie</name>
         <description>fyzický stav archiválie, zákon č. 499/2004 Sb. § 38 odst. 1 písm. a)</description>
-        <shortcut>fyzický stav archiválie</shortcut>
+        <shortcut>fyz. stav arch.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_PROC_STATE">
         <name>stav zpracování archiválie</name>
         <description>stav zpracování archiválie, zákon č. 499/2004 Sb. § 38 odst. 1 písm. b)</description>
-        <shortcut>stav zpracování archiválie</shortcut>
+        <shortcut>stav zprac. arch.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_SECRET">
         <name>ochrana utajovaných informací a bezpečnostní způsobilost</name>
         <description>ochrana utajovaných informací a bezpečnostní způsobilost, zákon č. 499/2004 Sb. § 38 odst. 1 písm. e), zákon č. 412/2005 Sb., o ochraně utajovaných informací a o bezpečnostní způsobilosti</description>
-        <shortcut>ochrana utajovaných informací</shortcut>
+        <shortcut>ochrana utaj. info.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_LAW">
         <name>ustanovení zvláštního právního předpisu</name>
         <description>ustanovení zvláštního právního předpisu, zákon č. 499/2004 Sb. § 38 odst. 1 písm. e)</description>
-        <shortcut>ustanovení zvláštního předpisu</shortcut>
+        <shortcut>ust. zvl. předpisu</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_PERSONAL_DATA">
         <name>osobní a citlivé údaje</name>
         <description>osobní a citlivé údaje, zákon č. 499/2004 Sb. § 37 odst. 2 a 3, § 38 odst. 1 písm. c) a d): úmrtí osoby, udělení souhlasu, odvolání námitky, 105? let od vzniku archiválie</description>
-        <shortcut>osobní a citlivé údaje</shortcut>
+        <shortcut>os. údaje</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_COPYRIGHT1">
         <name>autorská práva – majetková</name>
         <description>autorská práva – majetková, zákon č. 121/2000 Sb.</description>
-        <shortcut>autorská práva – majetková</shortcut>
+        <shortcut>aut. práva – majetková</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_COPYRIGHT2">
         <name>autorská práva – osobnostní</name>
         <description>autorská práva – osobnostní, zákon č. 121/2000 Sb. § 11</description>
-        <shortcut>autorská práva – osobnostní</shortcut>
+        <shortcut>aut. práva – osobnostní</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <!-- Druh omezení přístupnosti -->
     <item-spec code="ZP2015_RESTRICTION_DAO">
         <name>nepřístupný digitální archivní objekt</name>
         <description>nepřístupný digitální archivní objekt</description>
-        <shortcut>nepřístupný DAO</shortcut>
+        <shortcut>nepř. DAO</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_DAO_INPERS_ONLY">
         <name>digitální archivní objekt přístupný jen v badatelně</name>
         <description>digitální archivní objekt přístupný jen v badatelně</description>
-        <shortcut>DAO přístupný jen v badatelně</shortcut>
+        <shortcut>DAO jen v badatelně</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ARCHMAT">
         <name>nepřístupný originál analogové archiválie</name>
         <description>nepřístupný originál analogové archiválie</description>
-        <shortcut>nepřístupný originál analogové archiválie</shortcut>
+        <shortcut>nepř. orig. anal. arch.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ARCHMAT2">
-        <name>nepřístupná analogová archiválie a její kopie</name>
-        <description>nepřístupná analogová archiválie a její kopie</description>
-        <shortcut>nepřístupná analogová archiválie a její kopie</shortcut>
+        <name>nepřístupná analogová archiválie a její analogová kopie</name>
+        <description>nepřístupná analogová archiválie a její analogová kopie</description>
+        <shortcut>nepř. anal. arch. a kopie</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <!-- zastaralé, nepoužívat -->
     <item-spec code="ZP2015_RESTRICTION_ARCHMAT_INPERS_ONLY">
         <name>archiválie přístupná jen v badatelně</name>
         <description>archiválie přístupná jen v badatelně</description>
-        <shortcut>archiválie jen v badatelně</shortcut>
+        <shortcut>arch. jen v badatelně</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ARCHDESC">
         <name>nepřístupná jednotka popisu</name>
         <description>nepřístupná jednotka popisu</description>
-        <shortcut>nepřístupná jednotka popisu</shortcut>
+        <shortcut>nepř. jedn. pop.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ARCHDESC2">
         <name>skrytá jednotka popisu</name>
         <description>skrytá jednotka popisu</description>
-        <shortcut>skrytá jednotka popisu</shortcut>
+        <shortcut>skrytá jedn. pop.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ABSTRACT">
         <name>nepřístupný prvek obsah</name>
         <description>nepřístupný prvek obsah</description>
-        <shortcut>nepřístupný prvek obsah</shortcut>
+        <shortcut>nepř. prvek obsah</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_LIMITED">
         <name>použití prvků s omezením</name>
         <description>použití prvků s omezením</description>
-        <shortcut>použití prvků s omezením</shortcut>
+        <shortcut>použ. prvků s omez.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>   
     <!-- Neplatná specifikace, nepoužívat -->
     <item-spec code="ZP2015_RESTRICTION_ARCHENTITY">
         <name>nepřístupné napojené archivní entity</name>
         <description>nepřístupné napojené archivní entity</description>
-        <shortcut>nepřístupné archivní entity</shortcut>
+        <shortcut>nepř. arch. ent.</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <!-- Jiné spouštěcí události -->
@@ -2360,5 +2312,47 @@
         <description>datum prvního zveřejnění</description>
         <shortcut>datum prvního zveřejnění</shortcut>
         <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_DAO">
+        <name>nepřístupný digitální archivní objekt</name>
+        <description>Digitální archivní objekt není přístupný k nahlížení.</description>
+        <shortcut>nepřístupný DAO</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY">
+        <name>digitální archivní objekt přístupný jen v badatelně</name>
+        <description>Digitální archivní objekt je přístupný k nahlížení pouze v prostorách badatelny.</description>
+        <shortcut>DAO přístupný jen v badatelně</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_ARCHMAT">
+        <name>nepřístupný originál analogové archiválie</name>
+        <description>Originál archiválie není přístupný k nahlížení. K nahlížení je přístupná pouze kopie archiválie.</description>
+        <shortcut>nepřístupný originál analogové archiválie</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_ARCHMAT2">
+        <name>nepřístupná analogová archiválie a její analogová kopie</name>
+        <description>Archiválie a její kopie v analogové podobě nejsou přístupné k nahlížení.</description>
+        <shortcut>nepřístupná analogová archiválie a její kopie</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_ABSTRACT">
+        <name>nepřístupný prvek obsah</name>
+        <description>Obsah nezveřejněn z důvodu omezení přístupnosti.</description>
+        <shortcut>nepřístupný prvek obsah</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_LIMITED">
+        <name>použití prvků s omezením</name>
+        <description>Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný.</description>
+        <shortcut>použití prvků s omezením</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_ARCHENTITY">
+        <name>nepřístupné vztahy mezi jednotkou popisu a entitami</name>
+        <description>Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný.</description>
+        <shortcut>nepřístupné vztahy mezi JP a entitami</shortcut>
+        <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
 </item-specs>

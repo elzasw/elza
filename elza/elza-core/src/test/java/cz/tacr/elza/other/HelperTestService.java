@@ -243,7 +243,7 @@ public class HelperTestService {
         // stop services and prepare update
     	packageService.preImportPackage();
 
-        packageService.importPackageInternal(file);
+        packageService.importPackageInternal(file, true);
         // refresh static structures
         staticDataService.refreshForCurrentThread();
     }

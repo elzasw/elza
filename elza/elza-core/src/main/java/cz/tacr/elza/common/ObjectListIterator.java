@@ -41,6 +41,10 @@ public class ObjectListIterator<T> {
         maxIterationSize = maxBatchSize;
     }
 
+    public static int getMaxBatchSize() {
+        return maxIterationSize; 
+    }
+    
     public boolean hasNext() {
         return this.index < this.list.size();
     }

@@ -26,7 +26,7 @@ public class ItemTypeSummary {
     }
 
     public void setDateCounter(DateRangeAction dateRangeAction) {
-        this.dateRangeAction = dateRangeAction;        
+        this.dateRangeAction = dateRangeAction;
     }
 
     public DateRangeAction getDateCounter() {

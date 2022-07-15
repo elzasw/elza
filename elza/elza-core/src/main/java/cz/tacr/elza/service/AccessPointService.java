@@ -420,7 +420,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         if (replacedBy != null) {
-            ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+            ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
             validationNotDeleted(replacementState);
             
             // check binding states
@@ -458,7 +458,7 @@ public class AccessPointService {
                 accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
         }
-        deleteAccessPointPublichAndReindex(apState, accessPoint, change);
+        deleteAccessPointPublishAndReindex(apState, accessPoint, change);
     }
 
     /**
@@ -496,7 +496,7 @@ public class AccessPointService {
         for (ApState apState : apStates) {
             validationNotDeleted(apState);
             ApAccessPoint accessPoint = apState.getAccessPoint();
-            deleteAccessPointPublichAndReindex(apState, accessPoint, change);
+            deleteAccessPointPublishAndReindex(apState, accessPoint, change);
         }
     }
 
@@ -522,6 +522,7 @@ public class AccessPointService {
         ///
         // partService.deleteParts(accessPoint, change);
         //
+        partService.deleteConstraintsForParts(accessPoint);
         apState.setDeleteChange(change);
         apState = apStateRepository.save(apState);
 
@@ -551,7 +552,8 @@ public class AccessPointService {
      * @param accessPoint
      * @param change
      */
-    private void deleteAccessPointPublichAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    private void deleteAccessPointPublishAndReindex(final ApState apState, ApAccessPoint accessPoint,
+                                                    final ApChange change) {
         deleteAccessPoint(apState, accessPoint, change);
 
         accessPoint = saveWithLock(accessPoint);

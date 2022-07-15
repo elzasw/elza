@@ -10,9 +10,6 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.AccessPointPart;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,10 +17,13 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.data.StructTypeExtension;
+import cz.tacr.elza.domain.AccessPointItem;
+import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
@@ -46,7 +46,6 @@ import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -418,12 +417,10 @@ public class GroovyService {
 
     public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulRuleSet rulRuleSet = sdp.getRuleSetById(ruleSetId).getEntity();
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId);
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(ruleType);
 
         RulArrangementRule arrangementRule;
-
-        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, ruleType);
 
         if (rulArrangementRules.size() > 0) {
             arrangementRule = rulArrangementRules.get(0);

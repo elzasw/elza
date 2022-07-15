@@ -76,6 +76,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -747,8 +748,8 @@ private void processEvent(AbstractEventSimple event) {
      */
     public Map<Integer, TreeNodeVO> findParentsWithTitles(final Collection<Integer> nodeIds,
                                                           final ArrFundVersion version) {
-        Assert.notNull(nodeIds, "Nebyly vyplněny identifikátory JP");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(nodeIds, "Nebyly vyplněny identifikátory JP");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
         Map<Integer, TreeNode> nodeIdParentMap = new HashMap<>(nodeIds.size());
@@ -756,6 +757,11 @@ private void processEvent(AbstractEventSimple event) {
 
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
+            if (treeNode == null) {
+                logger.error("Node is not in active tree, nodeId: {}", nodeId);
+                throw new BusinessException("Node is not in active tree", BaseCode.INVALID_STATE)
+                        .set("nodeId", nodeId);
+            }
             TreeNode parent = treeNode.getParent();
             if (parent != null) {
                 parentIdParentMap.put(parent.getId(), parent);

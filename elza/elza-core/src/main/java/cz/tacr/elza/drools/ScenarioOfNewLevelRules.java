@@ -10,12 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
@@ -43,14 +44,14 @@ public class ScenarioOfNewLevelRules extends Rules {
                                                          final ArrFundVersion version)
             throws IOException
     {
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.NEW_LEVEL);
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
 
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(scriptModelFactory.createFactsForNewLevel(level, directionLevel, version));
-
-        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);

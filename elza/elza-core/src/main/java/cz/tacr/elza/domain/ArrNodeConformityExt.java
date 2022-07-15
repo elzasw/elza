@@ -6,7 +6,6 @@ import java.util.List;
 /**
  * Rozšíření {@link ArrNodeConformity} o seznam chybových zpráv.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.11.2015
  */
 public class ArrNodeConformityExt extends ArrNodeConformity {
@@ -21,6 +20,14 @@ public class ArrNodeConformityExt extends ArrNodeConformity {
      */
     private List<ArrNodeConformityError> errorList;
 
+
+    public ArrNodeConformityExt(final ArrNodeConformity conformityInfo,
+                                final List<ArrNodeConformityMissing> missingList,
+                                final List<ArrNodeConformityError> errorList) {
+        super(conformityInfo);
+        this.missingList = missingList;
+        this.errorList = errorList;
+    }
 
     /**
      * @return Seznam chybějících hodnot.

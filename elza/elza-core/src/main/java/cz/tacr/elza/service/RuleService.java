@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,6 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -185,8 +184,6 @@ public class RuleService {
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
     @Autowired
-    private ExtendedObjectsFactory extendedObjectsFactory;
-    @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
@@ -268,6 +265,13 @@ public class RuleService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
+    /**
+     * 
+     * @param faLevelId
+     * @param fundVersionId
+     * @param asyncRequestId
+     * @return Return null if result is empty (e.g. deletedNode)
+     */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         return setConformityInfo(faLevelId, fundVersionId);
     }
@@ -275,17 +279,20 @@ public class RuleService {
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
-     * @param faLevelId   id uzlu
-     * @param fundVersionId id verze
+     * @param faLevelId
+     *            id uzlu
+     * @param fundVersionId
+     *            id verze
      * @return stav validovaného uzlu
+     *         Return null if result is empty (e.g. deletedNode)
      */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
-        Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Validate.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
+        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
-        Integer nodeId = level.getNode().getNodeId();
+        Integer nodeId = level.getNodeId();
 
         ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
@@ -293,8 +300,16 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        if (!arrangementInternalService.validLevelInVersion(level, version)) {
-            throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
+        // check if level is deleted in the context of fundVersion
+        arrangementInternalService.checkLevelInVersion(level, version);
+        if (arrangementInternalService.isLevelDeletedInVersion(level, version)) {
+            // only delete conformity info and return
+            ArrNodeConformity conformityInfo = nodeConformityRepository
+                    .findByNodeAndFundVersion(level.getNode(), version);
+            if (conformityInfo != null) {
+                deleteConformityInfo(Arrays.asList(conformityInfo));
+            }
+            return null;
         }
 
         List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
@@ -333,7 +348,7 @@ public class RuleService {
             return templateRepository.findAll(Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
         }
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
-        Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
+        Validate.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
         return templateRepository.findNotDeletedByOutputType(outputType, Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
     }
@@ -354,56 +369,118 @@ public class RuleService {
         ArrNodeConformity conformityInfo = nodeConformityRepository
                 .findByNodeAndFundVersion(level.getNode(), version);
 
-        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformity.State.OK)) {
-            conformityInfo.setDate(new Date());
-        } else {
-            if (conformityInfo != null) {
-                deleteConformityInfo(Arrays.asList(conformityInfo));
+        List<ArrNodeConformityMissing> confPrevMissing;
+        List<ArrNodeConformityError> confPrevErrors;
+        List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
+        List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
+        if (conformityInfo != null) {
+            // we can skip reading errors if prev state was ok            
+            if (State.OK != conformityInfo.getState()) {
+                List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
+                confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
+                confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
+            } else {
+                confPrevMissing = Collections.emptyList();
+                confPrevErrors = Collections.emptyList();
             }
+        } else {
             conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
             conformityInfo.setFundVersion(version);
-            conformityInfo.setDate(new Date());
+
+            confPrevMissing = Collections.emptyList();
+            confPrevErrors = Collections.emptyList();
+        }
+        conformityInfo.setDate(new Date());
+        conformityInfo.setState(validationResults.isEmpty()?
+                ArrNodeConformity.State.OK:ArrNodeConformity.State.ERR);
+        conformityInfo = nodeConformityRepository.save(conformityInfo);
+        
+        // process errors
+        for (DataValidationResult validationResult : validationResults) {
+            // policy type has to be set
+            Validate.notNull(validationResult.getPolicyType());
+
+            switch (validationResult.getResultType()) {
+            case MISSING:
+                ArrNodeConformityMissing missing = extractOrCreate(confPrevMissing, validationResult, conformityInfo);
+                confNextMissing.add(missing);
+                break;
+            case ERROR:
+                ArrNodeConformityError error = extractOrCreateConfError(confPrevErrors, validationResult,
+                                                                        conformityInfo);
+                confNextErrors.add(error);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
+        // delete remaining prev
+        if (CollectionUtils.isNotEmpty(confPrevMissing)) {
+            this.nodeConformityMissingRepository.deleteAll(confPrevMissing);
+        }
+        if (CollectionUtils.isNotEmpty(confPrevErrors)) {
+            this.nodeConformityErrorRepository.deleteAll(confPrevErrors);
         }
 
+        ArrNodeConformityExt result = new ArrNodeConformityExt(conformityInfo, confNextMissing, confNextErrors);
 
-        if (validationResults.isEmpty()) {
-            conformityInfo.setState(ArrNodeConformity.State.OK);
-            nodeConformityRepository.save(conformityInfo);
-        } else {
-            conformityInfo.setState(ArrNodeConformity.State.ERR);
-            nodeConformityRepository.save(conformityInfo);
+        return result;
+    }
 
-            for (DataValidationResult validationResult : validationResults) {
-                // policy type has to be set
-                Validate.notNull(validationResult.getPolicyType());
-
-                switch (validationResult.getResultType()) {
-                    case MISSING:
-                        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
-                        missing.setNodeConformity(conformityInfo);
-                        missing.setItemType(validationResult.getType());
-                        missing.setItemSpec(validationResult.getSpec());
-                        missing.setDescription(validationResult.getMessage());
-                        missing.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityMissingRepository.save(missing);
-                        break;
-                    case ERROR:
-                        ArrNodeConformityError error = new ArrNodeConformityError();
-                        error.setNodeConformity(conformityInfo);
-                        error.setDescItem(validationResult.getDescItem());
-                        error.setDescription(validationResult.getMessage());
-                        error.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityErrorRepository.save(error);
-                        break;
-                default:
-                    throw new IllegalStateException();
-                }
+    private ArrNodeConformityError extractOrCreateConfError(List<ArrNodeConformityError> confPrevErrors,
+                                                   DataValidationResult validationResult,
+                                                   ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
+        
+        for (int i = 0; i < confPrevErrors.size(); i++) {
+            ArrNodeConformityError error = confPrevErrors.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, error.getPolicyTypeId()) &&
+                    Objects.equals(descItemId, error.getDescItemId()) &&
+                    Objects.equals(validationResult.getMessage(), error.getDescription())) {
+                confPrevErrors.remove(i);
+                return error;
             }
 
         }
 
-        return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
+        ArrNodeConformityError error = new ArrNodeConformityError();
+        error.setNodeConformity(conformityInfo);
+        error.setDescItem(validationResult.getDescItem());
+        error.setDescription(validationResult.getMessage());
+        error.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityErrorRepository.save(error);
+    }
+
+    private ArrNodeConformityMissing extractOrCreate(List<ArrNodeConformityMissing> confPrevMissing,
+                                                     DataValidationResult validationResult,
+                                                     ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
+        Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
+        
+        for(int i=0; i<confPrevMissing.size(); i++) {
+            ArrNodeConformityMissing missing = confPrevMissing.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, missing.getPolicyTypeId()) &&
+                    Objects.equals(itemTypeId, missing.getItemTypeId()) &&
+                    Objects.equals(itemSpecId, missing.getItemSpecId()) &&
+                    Objects.equals(validationResult.getMessage(), missing.getDescription())) {
+                confPrevMissing.remove(i);
+                return missing;
+            }
+
+        }
+        
+        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
+        missing.setNodeConformity(conformityInfo);
+        missing.setItemType(validationResult.getType());
+        missing.setItemSpec(validationResult.getSpec());
+        missing.setDescription(validationResult.getMessage());
+        missing.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityMissingRepository.save(missing);
     }
 
     /**
@@ -472,11 +549,10 @@ public class RuleService {
 
             for (ArrNodeConformity conformityInfo : conformityInfos) {
 
-                ArrNodeConformityExt conformity = new ArrNodeConformityExt();
-                BeanUtils.copyProperties(conformityInfo, conformity);
-
-                conformity.setErrorList(errors.get(conformity.getNodeConformityId()));
-                conformity.setMissingList(missings.get(conformity.getNodeConformityId()));
+                List<ArrNodeConformityMissing> missList = missings.get(conformityInfo.getNodeConformityId());
+                List<ArrNodeConformityError> errList = errors.get(conformityInfo.getNodeConformityId());
+                ArrNodeConformityExt conformity = new ArrNodeConformityExt(conformityInfo,
+                        missList, errList);
 
                 result.put(conformityInfo.getNode().getNodeId(), conformity);
             }
@@ -505,12 +581,9 @@ public class RuleService {
                                                     final List<ArrDescItem> updateDescItems,
                                                     final List<ArrDescItem> deleteDescItems) {
 
-        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
-                createDescItems, updateDescItems, deleteDescItems);
-
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo);
-
-        return impactOnConformityInfo;
+        return conformityInfo(fundVersionId, nodeIds, nodeTypeOperation,
+                              createDescItems, updateDescItems, deleteDescItems,
+                              null);
     }
 
     public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
@@ -524,7 +597,7 @@ public class RuleService {
         Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
 
         return impactOnConformityInfo;
     }
@@ -573,57 +646,45 @@ public class RuleService {
     }
 
     /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     * Pro vybrané nody s danou verzí přepočte validace
      *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     * @param fundVersionId
+     *            verze nodů
+     * @param nodeIds
+     *            seznam id nodů, od kterých se má prohledávat
+     * @param directions
+     *            směry prohledávání
+     * @param validationPriority
+     *            volitelná priorita revalidace
      */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections) {
-        deleteConformityInfo(fundVersionId,nodeIds,deleteDirections,null);
-    }
-
-    /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
-     *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
-     */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections,
-                                      final Integer validationPriority) {
+    @Transactional
+    public void revalidateNodes(final Integer fundVersionId,
+                                final Collection<Integer> nodeIds,
+                                @Nullable final Collection<RelatedNodeDirection> directions,
+                                @Nullable final Integer validationPriority) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        Validate.isTrue(nodes.size() == nodeIds.size(), "Some node not found");
+
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        Set<ArrNode> deleteNodes = new HashSet<>();
+        Set<ArrNode> updateNodes = new HashSet<>();
 
-        if (CollectionUtils.isEmpty(deleteDirections)) {
-            deleteNodes.addAll(nodes);
+        if (CollectionUtils.isEmpty(directions)) {
+            updateNodes.addAll(nodes);
         } else {
-            for (RelatedNodeDirection deleteDirection : deleteDirections) {
+            for (RelatedNodeDirection direction : directions) {
                 for (ArrNode node : nodes) {
-                    deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));
+                    updateNodes.addAll(nodeRepository.findNodesByDirection(node, version, direction));
                 }
             }
         }
 
-
-        if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformity> deleteInfos = ObjectListIterator
-                    .findIterable(deleteNodes, page -> nodeConformityRepository
-                            .findByNodesAndFundVersion(page, version));
-
-            deleteConformityInfo(deleteInfos);
-            
-            asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
+        if (!updateNodes.isEmpty()) {
+            asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
 
@@ -640,7 +701,7 @@ public class RuleService {
         }
 
         List<ArrNodeConformityMissing> missing = ObjectListIterator
-                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(infos));
+                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(page));
 
         if (CollectionUtils.isNotEmpty(missing)) {
             ObjectListIterator.forEachPage(missing,
@@ -648,7 +709,7 @@ public class RuleService {
         }
 
         List<ArrNodeConformityError> errors = ObjectListIterator
-                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(infos));
+                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(page));
         if (CollectionUtils.isNotEmpty(errors)) {
             ObjectListIterator.forEachPage(errors,
                                            page -> nodeConformityErrorRepository.deleteAll(page));
@@ -840,7 +901,9 @@ public class RuleService {
         nodeExtensionRepository.saveAndFlush(nodeExtension);
         arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtension;
     }
@@ -880,7 +943,9 @@ public class RuleService {
         nodeExtensionRepository.save(nodeExtensionDB);
         arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtensionDB;
     }
@@ -1072,7 +1137,9 @@ public class RuleService {
             toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
         }
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS),
+                        null);
     }
 
     /**

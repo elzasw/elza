@@ -9,12 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
@@ -50,6 +51,10 @@ public class DescItemTypesRules extends Rules {
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(
+                                                                              RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
     	LinkedList<Object> facts = new LinkedList<>();
     	facts.addAll(rulDescItemTypeExtList);
@@ -58,11 +63,6 @@ public class DescItemTypesRules extends Rules {
 		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
 
     	ModelFactory.addLevelWithParents(activeLevel, facts);
-
-    	final RulRuleSet rulRuleSet = version.getRuleSet();
-
-        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulArrangementRule.RuleType.ATTRIBUTE_TYPES);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);

@@ -14,8 +14,8 @@ import cz.tacr.elza.domain.table.ElzaTable;
  */
 public class ItemJsonTable extends AbstractItem {
 
-    private final static String ROW_SEPARATOR = ", ";
-    private final static String ITEM_SEPARATOR = " ";
+    private final static String ROW_SEPARATOR = "; ";
+    private final static String ITEM_SEPARATOR = ", ";
 
     private final ElzaTable value;
 

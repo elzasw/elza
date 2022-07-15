@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
@@ -28,7 +32,6 @@ import cz.tacr.elza.repository.PackageRepository;
 /**
  * Abstraktní třída pro Drools pravidla.
  *
- * @author Martin Šlapa
  * @since 26.11.2015
  */
 public abstract class Rules {
