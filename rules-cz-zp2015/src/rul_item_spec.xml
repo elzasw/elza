@@ -747,7 +747,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_74">
         <name>nositel vyznamenání/ceny</name>
         <description>nositel vyznamenání nebo ceny</description>
-        <shortcut>nositel vyznamenání/ceny</shortcut>
+        <shortcut>nositel</shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -834,7 +834,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_10">
         <name>autor textové složky / textař</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut>autor textové složky / textař</shortcut>
+        <shortcut>autor textu</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -844,7 +844,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_6">
         <name>autor hudby / skladatel</name>
         <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
-        <shortcut>autor hudby / skladatel</shortcut>
+        <shortcut>autor hudby</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -854,7 +854,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_7">
         <name>autor choreografie / choreograf</name>
         <description>5.13.2, kinematografické filmy</description>
-        <shortcut>autor choreografie / choreograf</shortcut>
+        <shortcut>choreografie</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -894,7 +894,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_3">
         <name>autor doprovodnéno textu</name>
         <description>5.6.1, hudebniny</description>
-        <shortcut>autor doprovodnéno textu</shortcut>
+        <shortcut>doprovodný text</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -904,7 +904,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_12">
         <name>autor triků a speciálních efektů</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut>autor triků a speciálních efektů</shortcut>
+        <shortcut>triky a speciální efekty</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -953,7 +953,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_18">
         <name>produkční společnost / producent</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut>produkční společnost / producent</shortcut>
+        <shortcut>produkce</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1014,7 +1014,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_23">
         <name>držitel cenného papíru</name>
         <description>5.19.1 - cenné papíry</description>
-        <shortcut>držitel cenného papíru</shortcut>
+        <shortcut>držitel</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1138,7 +1138,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_37">
         <name>majitel typáře</name>
         <description>5.7.6 - typáře (otisky, kopie otisků)</description>
-        <shortcut>majitel typáře</shortcut>
+        <shortcut>majitel</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1148,7 +1148,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_38">
         <name>tvůrce technického zpracování</name>
         <description>5.11.2 - grafické listy</description>
-        <shortcut>tvůrce technického zpracování</shortcut>
+        <shortcut>technické zpracování</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1158,7 +1158,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_39">
         <name>tvůrce výtvarné stránky</name>
         <description>5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.11.2, 5.13.2, , 5.14.2, 5.15.1, 5.16.1, 5.18.1, 5.19.1, 5.21.1, 5.22.1 - úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), grafické listy, kinematografické filmy, zvukové archiválie, tisky, pohlednice, štočky, cenné papíry, faleristické předměty, numizmatické předměty</description>
-        <shortcut>tvůrce výtvarné stránky</shortcut>
+        <shortcut>výtvarná stránka</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1263,7 +1263,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_49">
         <name>zpracovatel nosiče záznamu</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut>zpracovatel nosiče záznamu</shortcut>
+        <shortcut>zpracovatel nosiče</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1273,7 +1273,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_50">
         <name>výrobce nosiče záznamu</name>
         <description>5.12.1, 5.13.2, 5.9.1, 5.14.2, 5.15.1 - fotografické archiválie, kinematografické filmy, mapy (mapová díla, atlasy), zvukové archiválie, tisky</description>
-        <shortcut>výrobce nosiče záznamu</shortcut>
+        <shortcut>výrobce nosiče</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
@@ -1357,7 +1357,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_61">
         <name>místo vzniku jednotky popisu</name>
         <description>5.3.1, 5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.10.1, 5.11.2, 5.12.1, 5.18.1 - listiny (před i po roce 1850), úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), technické výkresy, grafické listy, fotografické archiválie, štočky</description>
-        <shortcut>místo vzniku jednotky popisu</shortcut>
+        <shortcut>místo vzniku</shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
@@ -1366,7 +1366,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_62">
         <name>místo vzniku předlohy popisované kopie</name>
         <description>5.3.1, 5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.10.1, 5.11.2, 5.15.1, 5.16.1, 5.17.1, 5.18.1, 5.19.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), technické výkresy, grafické listy, tisky, pohlednice, plakáty, štočky, cenné papíry, faleristické předměty, numizmatické předměty</description>
-        <shortcut>místo vzniku předlohy popisované kopie</shortcut>
+        <shortcut>vznik předlohy kopie</shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
@@ -1375,7 +1375,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_63">
         <name>typové označení a název výrobku a typové stavby</name>
         <description>5.10.1 - technické výkresy</description>
-        <shortcut>typové označení a název výrobku a typové stavby</shortcut>
+        <shortcut>typ výrobku/stavby</shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
@@ -1475,7 +1475,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_81">
         <name>katalogizační záznam</name>
         <description>záznam v katalogu</description>
-        <shortcut>katalogizační záznam</shortcut>
+        <shortcut>katalog. záznam</shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -1496,7 +1496,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_83">
         <name>sekundární klasifikace</name>
         <description>sekundární klasifikace pro dotazy na web</description>
-        <shortcut>sekundární klasifikace</shortcut>
+        <shortcut>sekund. klasifikace</shortcut>
         <item-aptypes>
             <item-aptype register-type="TERM_GENERAL"/>
             <item-aptype register-type="TERM_TAXONOMY"/>
