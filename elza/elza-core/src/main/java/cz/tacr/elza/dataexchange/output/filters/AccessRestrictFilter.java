@@ -1,17 +1,16 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
@@ -24,7 +23,6 @@ import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.RulItemSpec;
 
 public class AccessRestrictFilter implements ExportFilter {
 
@@ -90,13 +88,13 @@ public class AccessRestrictFilter implements ExportFilter {
         }
         ApplyFilter filter = new ApplyFilter();
 
-        Map<ItemType, List<ArrItem>> arrItemsMap = levelInfo.getItems().stream()
-                .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemType().getItemTypeId())));
+        Map<ItemType, List<ArrItem>> itemsByType = levelInfo.getItems().stream()
+                .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemTypeId())));
 
         // to get list of restriction ids by restrictions item types
         List<Integer> restrictionIds = new ArrayList<>();
         for (ItemType structItemType : restrictionTypes) {
-            List<ArrItem> restrictionList = arrItemsMap.get(structItemType);
+            List<ArrItem> restrictionList = itemsByType.get(structItemType);
             if (restrictionList != null) {
                 for (ArrItem item : restrictionList) {
                     // skip items without data
@@ -122,30 +120,24 @@ public class AccessRestrictFilter implements ExportFilter {
             levelRestrMap.put(levelInfo.getNodeId(), restrictionIds);
 
             for (FilterRule rule : filterRules) {
-                processDef(rule, levelInfo, restrictionIds, filter);
+                processDef(rule, levelInfo, itemsByType, restrictionIds, filter);
             }
         }
 
         return filter.apply(levelInfo);
     }
 
-    private void processDef(FilterRule rule, LevelInfoImpl levelInfo, 
-                                     List<Integer> restrictionIds,
-                                     ApplyFilter filter) {
-        ItemType itemType = rule.getItemType();
-        RulItemSpec itemSpec = rule.getItemSpec();
-        Validate.notNull(itemType);
-        Validate.notNull(itemSpec);
+    private void processDef(FilterRule rule, LevelInfoImpl levelInfo,
+                            Map<ItemType, List<ArrItem>> itemsByType,
+                            List<Integer> restrictionIds,
+                            ApplyFilter filter) {
+        boolean applied = false;
 
         for (Integer restrictionId : restrictionIds) {
             StructObjectInfo soi = readSoiFromDB(restrictionId);
 
-            Optional<ArrItem> restrItem = getItem(soi.getItems(), itemType);
-            if (restrItem == null) {
-                // missing restriction type, maybe throw exception
-                continue;
-            }
-            if (!itemSpec.getItemSpecId().equals(restrItem.get().getItemSpecId())) {
+            if (!rule.canApply(soi, levelInfo)) {
+                // rule does not apply for this soi
                 continue;
             }
 
@@ -156,30 +148,49 @@ public class AccessRestrictFilter implements ExportFilter {
                 filter.hideLevel();
                 break;
             }
-
-            // apply different result
-            for (ArrItem arrItem : levelInfo.getItems()) {
-                // hidden itemTypes
-                if (rule.getHiddenItemTypeIds() != null) {
-                    if (rule.getHiddenItemTypeIds().contains(arrItem.getItemType().getItemTypeId())) {
-                        filter.addHideItem(arrItem);
+            
+            // check hidden items
+            if (rule.getHiddenTypes() != null) {
+                for (ItemType hiddenType : rule.getHiddenTypes()) {
+                    List<ArrItem> hiddenItems = itemsByType.get(hiddenType);
+                    if (CollectionUtils.isNotEmpty(hiddenItems)) {
+                        hiddenItems.forEach(hi -> filter.addHideItem(hi));
+                        applied = true;
                     }
                 }
-                // replace itemType(s)
-                if (rule.getReplaceItems() != null) {
-                    for (ReplaceItem replaceItem : rule.getReplaceItems()) {
-                        if (arrItem.getItemTypeId().equals(replaceItem.getSource().getItemTypeId())) {
-                            // TODO add list of replaceItem to ApplyFilter
-                            filter.addReplaceItem(arrItem);
-                            filter.setReplaceItemType(replaceItem.getTarget().getEntity());
+            }
+            // replace itemType(s)
+            if (rule.getReplaceItems() != null) {
+                for (ReplaceItem replaceDef : rule.getReplaceItems()) {
+                    List<ArrItem> replaceItems = itemsByType.get(replaceDef.getSource());
+                    if(CollectionUtils.isNotEmpty(replaceItems)) {
+                        for (ArrItem replaceItem : replaceItems) {
+                            // source found -> store as new target
+                            List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
+                            if (CollectionUtils.isNotEmpty(replacedItems)) {
+                                for (ArrItem replacedItem : replacedItems) {
+                                    // hide target item
+                                    filter.addHideItem(replacedItem);
+                                    // copy from source item
+                                    ArrItem copy = replaceItem.makeCopy();
+                                    copy.setItemType(replaceDef.getTarget().getEntity());
+                                    filter.addItem(copy);
+                                }
+                            }
                         }
                     }
                 }
             }
 
+        }
+
+        // add items if applied
+        if (applied) {
             // if we need to add sign of change
-            if (rule.getAddedArrItem() != null) {
-                filter.setAddedArrItems(rule.getAddedArrItem());
+            if (rule.getAddItems() != null) {
+                for (ArrItem addItem : rule.getAddItems()) {
+                    filter.addItem(addItem);
+                }
             }
         }
     }
@@ -197,10 +208,6 @@ public class AccessRestrictFilter implements ExportFilter {
 
         structRestrDefsMap.put(structuredObjectId, soi);
         return soi;
-    }
-
-    private Optional<ArrItem> getItem(Collection<ArrItem> items, ItemType itemType) {
-        return items.stream().filter(i -> i.getItemTypeId().equals(itemType.getItemTypeId())).findFirst();
     }
 
     @Override

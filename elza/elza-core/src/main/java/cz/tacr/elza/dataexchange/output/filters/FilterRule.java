@@ -1,13 +1,18 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Def;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Result;
+import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
+import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -16,43 +21,50 @@ import cz.tacr.elza.domain.RulItemSpec;
 
 public class FilterRule {
 
-    final private ItemType itemType;
+    private ItemType itemType;
 
-    final private RulItemSpec itemSpec;
+    private RulItemSpec itemSpec;
 
-    final private boolean hiddenLevel;
+    private boolean hiddenLevel = false;
 
-    final private List<Integer> hiddenItemTypeIds;
+    private List<ItemType> hiddenItemTypes;
 
-    final private List<ReplaceItem> replaceItems;
+    private List<ReplaceItem> replaceItems;
 
-    final private List<ArrItem> addedArrItem;
+    private List<ArrItem> addItems;
     
     public FilterRule(final Def def, final StaticDataProvider sdp) {
         // while
-        itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
-        itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
+        if (def.getWhen() != null) {
+            if (def.getWhen().getItemType() != null) {
+                itemType = sdp.getItemTypeByCode(def.getWhen().getItemType());
+                Validate.notNull(itemType, "Item type not found: %s", def.getWhen().getItemType());
+            }
+            if (def.getWhen().getItemSpec() != null) {
+                itemSpec = sdp.getItemSpecByCode(def.getWhen().getItemSpec());
+                Validate.notNull(itemSpec, "Item spec not found: %s", def.getWhen().getItemSpec());
+            }
+        }
         // result
         Result result = def.getResult();
-        hiddenLevel = result.getHiddenLevel();
+        if(result.getHiddenLevel()!=null) {
+            hiddenLevel = result.getHiddenLevel();
+        };
         if (result.getHiddenItems() != null) {
-            hiddenItemTypeIds = result.getHiddenItems().stream().map(i -> sdp.getItemTypeByCode(i.getItemType()).getItemTypeId()).collect(Collectors.toList());
-        } else {
-            hiddenItemTypeIds = null;
+            hiddenItemTypes = result.getHiddenItems().stream().map(i -> sdp.getItemTypeByCode(i.getItemType()))
+                    .collect(Collectors.toList());
         }
+
         if (result.getReplaceItems() != null) {
             replaceItems = result.getReplaceItems().stream()
                     .map(i -> new ReplaceItem(sdp.getItemTypeByCode(i.getSource().getItemType()), sdp.getItemTypeByCode(i.getTarget().getItemType())))
                     .collect(Collectors.toList());
-        } else {
-            replaceItems = null;
         }
         if (result.getAddItems() != null) {
-            addedArrItem = result.getAddItems().stream()
-                    .map(i -> createArrDescItem(sdp.getItemTypeByCode(i.getItemType()), sdp.getItemSpecByCode(i.getItemSpec())))
+            addItems = result.getAddItems().stream()
+                    .map(i -> createDescItem(sdp.getItemTypeByCode(i.getItemType()),
+                                             sdp.getItemSpecByCode(i.getItemSpec())))
                     .collect(Collectors.toList());
-        } else {
-            addedArrItem = null;
         }
     }
 
@@ -68,28 +80,54 @@ public class FilterRule {
         return hiddenLevel;
     }
 
-    public List<Integer> getHiddenItemTypeIds() {
-        return hiddenItemTypeIds;
-    }
-
     public List<ReplaceItem> getReplaceItems() {
         return replaceItems;
     }
 
-    public List<ArrItem> getAddedArrItem() {
-        return addedArrItem;
+    public List<ArrItem> getAddItems() {
+        return addItems;
     }
 
-    private ArrItem createArrDescItem(ItemType itemType, RulItemSpec itemSpec) {
+    private ArrDescItem createDescItem(ItemType itemType, RulItemSpec itemSpec) {
+        Validate.isTrue(itemType.getDataType() == DataType.ENUM, "Only ENUMS are supported");
+
         ArrData arrData = new ArrDataNull();
         arrData.setDataType(DataType.ENUM.getEntity());
         arrData.setDataId(-1);
 
-        ArrDescItem addedArrItem = new ArrDescItem();
-        addedArrItem.setNode(null);
-        addedArrItem.setItemType(itemType.getEntity());
-        addedArrItem.setItemSpec(itemSpec);
-        addedArrItem.setData(arrData);
-        return addedArrItem;
+        ArrDescItem item = new ArrDescItem();
+        item.setNode(null);
+        item.setItemType(itemType.getEntity());
+        item.setItemSpec(itemSpec);
+        item.setData(arrData);
+        return item;
     }
+
+    public List<ItemType> getHiddenTypes() {
+        return hiddenItemTypes;
+    }
+
+    public boolean canApply(StructObjectInfo soi, LevelInfoImpl levelInfo) {
+        if (itemType != null) {
+            Collection<ArrItem> soiItems = soi.getItems();
+            if (soiItems == null) {
+                return false;
+            }
+            for (ArrItem soiItem : soiItems) {
+                if (itemType.getItemTypeId().equals(soiItem.getItemTypeId())) {
+                    // check spec
+                    if (itemSpec != null) {
+                        if (!itemSpec.getItemSpecId().equals(soiItem.getItemSpecId())) {
+                            // spec does not match
+                            continue;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
 }

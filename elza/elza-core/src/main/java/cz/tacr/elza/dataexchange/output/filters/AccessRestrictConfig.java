@@ -71,16 +71,16 @@ public class AccessRestrictConfig implements ExportFilterConfig {
     }
 
     public static class Result {
-        private boolean hiddenLevel;
+        private Boolean hiddenLevel;
         private List<ItemTypeCode> hiddenItems;
         private List<ReplaceItemCode> replaceItems;
         private List<AddItem> addItems;
 
-        public boolean getHiddenLevel() {
+        public Boolean getHiddenLevel() {
             return hiddenLevel;
         }
 
-        public void setHiddenLevel(boolean hiddenLevel) {
+        public void setHiddenLevel(Boolean hiddenLevel) {
             this.hiddenLevel = hiddenLevel;
         }
 
