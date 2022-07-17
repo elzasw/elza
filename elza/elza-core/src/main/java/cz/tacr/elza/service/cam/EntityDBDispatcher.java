@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -347,7 +349,7 @@ public class EntityDBDispatcher {
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
-                                       final ApBindingState prevBindingState,
+                                       @Nonnull final ApBindingState prevBindingState,
                                        EntityXml entity,
                                        boolean syncQueue) {
         Validate.notNull(procCtx.getApChange());
