@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.AddItem;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Def;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Result;
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
@@ -32,7 +33,9 @@ public class FilterRule {
     private List<ReplaceItem> replaceItems;
 
     private List<ArrItem> addItems;
-    
+
+    private List<ArrItem> addItemsOnChange;
+
     public FilterRule(final Def def, final StaticDataProvider sdp) {
         // while
         if (def.getWhen() != null) {
@@ -47,9 +50,11 @@ public class FilterRule {
         }
         // result
         Result result = def.getResult();
-        if(result.getHiddenLevel()!=null) {
+
+        if (result.getHiddenLevel() != null) {
             hiddenLevel = result.getHiddenLevel();
-        };
+        }
+
         if (result.getHiddenItems() != null) {
             hiddenItemTypes = result.getHiddenItems().stream().map(i -> sdp.getItemTypeByCode(i.getItemType()))
                     .collect(Collectors.toList());
@@ -60,8 +65,16 @@ public class FilterRule {
                     .map(i -> new ReplaceItem(sdp.getItemTypeByCode(i.getSource().getItemType()), sdp.getItemTypeByCode(i.getTarget().getItemType())))
                     .collect(Collectors.toList());
         }
+
         if (result.getAddItems() != null) {
             addItems = result.getAddItems().stream()
+                    .map(i -> createDescItem(sdp.getItemTypeByCode(i.getItemType()),
+                                             sdp.getItemSpecByCode(i.getItemSpec())))
+                    .collect(Collectors.toList());
+        }
+
+        if (result.getAddItemsOnChange() != null) {
+            addItemsOnChange = result.getAddItemsOnChange().stream()
                     .map(i -> createDescItem(sdp.getItemTypeByCode(i.getItemType()),
                                              sdp.getItemSpecByCode(i.getItemSpec())))
                     .collect(Collectors.toList());
@@ -86,6 +99,10 @@ public class FilterRule {
 
     public List<ArrItem> getAddItems() {
         return addItems;
+    }
+
+    public List<ArrItem> getAddItemsOnChange() {
+        return addItemsOnChange;
     }
 
     private ArrDescItem createDescItem(ItemType itemType, RulItemSpec itemSpec) {
@@ -115,14 +132,16 @@ public class FilterRule {
             }
             for (ArrItem soiItem : soiItems) {
                 if (itemType.getItemTypeId().equals(soiItem.getItemTypeId())) {
-                    // check spec
                     if (itemSpec != null) {
                         if (!itemSpec.getItemSpecId().equals(soiItem.getItemSpecId())) {
-                            // spec does not match
                             continue;
+                        } else {
+                            return true;
                         }
+                    } else {
+                        // item spec is null compare only by itemType
+                        return true;
                     }
-                    return true;
                 }
             }
             return false;

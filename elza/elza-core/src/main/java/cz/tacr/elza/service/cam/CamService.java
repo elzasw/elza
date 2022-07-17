@@ -736,14 +736,6 @@ public class CamService {
 
             binding = bindingState.getBinding();
         }
-        if (bindingState == null) {
-            Validate.isTrue(state == null || state.getDeleteChangeId() != null);
-        }
-        log.debug("Entity synchronization request, bindingId: {}, value: {}, revId: {}, apState: {}, bindingState: {}",
-                  binding.getBindingId(),
-                  binding.getValue(), entity.getRevi().getRid().getValue(),
-                  state, bindingState);
-
         // Mozne stavy synchronizace
         // ApState | ApBindingState  | syncQueue 
         // ---------------------------------------
@@ -753,41 +745,59 @@ public class CamService {
         // ex      | null            | true  -> vytvoreni bindingState
         // ex      | ex              | false
         // ex      | ex              | true
+        log.debug("Entity synchronization request, bindingId: {}, value: {}, revId: {}, apState: {}, bindingState: {}",
+                  binding.getBindingId(),
+                  binding.getValue(), entity.getRevi().getRid().getValue(),
+                  state, bindingState);
 
         ApChange apChange = null;
         ApBindingState origBindingState = bindingState;
-        // Kontrola na zalozeni nove entity
-        // overeni existence UUID
-        if (bindingState == null && state == null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findAccessPointByUuid(entity.getEuid().getValue());
-            if (accessPoint != null) {
-                // entity exists
-                apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
-                // we can assign ap to the binding
-                log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
-                        entity.getEuid().getValue(), accessPoint.getAccessPointId());
+        if (bindingState == null) {
+            apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
 
-                SyncState syncState = syncQueue?SyncState.NOT_SYNCED : SyncState.SYNC_OK;
+            ApAccessPoint accessPoint;
+            if (state == null) {
+                // Kontrola na zalozeni nove entity
+                // overeni existence UUID
+                accessPoint = apAccessPointRepository.findAccessPointByUuid(entity.getEuid().getValue());
+                if (accessPoint != null) {
+                    // we can assign ap to the binding
+                    log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
+                             entity.getEuid().getValue(), accessPoint.getAccessPointId());
+                }
+            } else {
+                // special case when bindingState is null, binding exists and state is valid
+                // new bindingState has to be created
+                accessPoint = state.getAccessPoint();
+                bindingState = bindingStateRepository.findLastByAccessPointAndExternalSystem(state.getAccessPoint(),
+                                                                                             procCtx.getApExternalSystem());
+                if (state.getDeleteChangeId() != null) {
+                    // pokud state smazan && bindingState == null mohlo by jít o obnovení neplatné entity
+                    state = accessPointService.copyState(state, apChange);
+                }
+            }
+
+            if (bindingState == null && accessPoint != null) {
+                SyncState syncState = syncQueue ? SyncState.NOT_SYNCED : SyncState.SYNC_OK;
                 bindingState = externalSystemService.createBindingState(binding,
-                                                                        accessPoint,
-                                                                        apChange,
-                                                                        entity.getEns().name(),
-                                                                        entity.getRevi().getRid().getValue(),
-                                                                        entity.getRevi().getUsr().getValue(),
-                                                                        null, syncState,
-                                                                        // We do not know yet prefPart and type
-                                                                        // It is Ok for not synced AP
-                                                                        null, null);
+                                                                    accessPoint,
+                                                                    apChange,
+                                                                    entity.getEns().name(),
+                                                                    entity.getRevi().getRid().getValue(),
+                                                                    entity.getRevi().getUsr().getValue(),
+                                                                    null, syncState,
+                                                                    // We do not know yet prefPart and type
+                                                                    // It is Ok for not synced AP
+                                                                    null, null);
                 // if async(syncQueue) -> has local changes -> mark as not synced
                 if (syncQueue) {
                     accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
                     return;
                 }
-                // TODO: consider what to do and how to resolve this situation
             }
         }
 
-        // TODO: Pokud je state!=null, tak musi byt vzdy bindingState!=null
+        // Pokud je state!=null, tak musi byt vzdy bindingState!=null
         if (state != null && bindingState != null) {
             if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
                     || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
@@ -842,17 +852,8 @@ public class CamService {
 
         if (apChange == null) {
             apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
-            //apChange = apDataService.createChange(bindingState != null? ApChange.Type.AP_UPDATE : ApChange.Type.AP_CREATE);
         }
         procCtx.setApChange(apChange);
-
-        // pokud state != null && bindingState == null mohlo by jít o obnovení neplatné entity
-        if (state != null && bindingState == null) {
-            if (state.getDeleteChangeId() != null) {
-                state = accessPointService.copyState(state, apChange);
-                bindingState = bindingStateRepository.findLastByAccessPointAndExternalSystem(state.getAccessPoint(), procCtx.getApExternalSystem());
-            }
-        }
 
         EntityDBDispatcher ec = createEntityDBDispatcher();
         if (state == null) {

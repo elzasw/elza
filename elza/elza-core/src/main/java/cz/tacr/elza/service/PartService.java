@@ -254,6 +254,17 @@ public class PartService {
         List<ApItem> items = apItemService.findItemsByParts(parts);
         Validate.isTrue(CollectionUtils.isEmpty(items), "All items have to be deleted before part is deleted");
 
+        // Delete bindings for parts
+        // Delete bindings
+        List<ApBindingItem> bindingParts = this.bindingItemRepository.findByParts(parts);
+        if (CollectionUtils.isNotEmpty(bindingParts)) {
+            for (ApBindingItem bindingItem : bindingParts) {
+                bindingItem.setDeleteChange(change);
+            }
+            bindingParts = bindingItemRepository.saveAll(bindingParts);
+            bindingItemRepository.flush();
+        }
+
         deleteParts(parts, change);
     }
 
