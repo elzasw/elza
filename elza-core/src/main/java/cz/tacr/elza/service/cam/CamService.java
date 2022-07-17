@@ -766,17 +766,14 @@ public class CamService {
                              entity.getEuid().getValue(), accessPoint.getAccessPointId());
                 }
             } else {
-                // pokud state != null && bindingState == null mohlo by jít o obnovení neplatné entity
+                // special case when bindingState is null, binding exists and state is valid
+                // new bindingState has to be created
+                accessPoint = state.getAccessPoint();
+                bindingState = bindingStateRepository.findLastByAccessPointAndExternalSystem(state.getAccessPoint(),
+                                                                                             procCtx.getApExternalSystem());
                 if (state.getDeleteChangeId() != null) {
-                    // special case when bindingState is null, binding exists and state is valid
-                    // new bindingState has to be created
+                    // pokud state smazan && bindingState == null mohlo by jít o obnovení neplatné entity
                     state = accessPointService.copyState(state, apChange);
-                    accessPoint = state.getAccessPoint();
-                    bindingState = bindingStateRepository.findLastByAccessPointAndExternalSystem(state.getAccessPoint(),
-                                                                                                 procCtx.getApExternalSystem());
-                } else {
-                    // TODO: consider this state
-                    accessPoint = null;
                 }
             }
 
