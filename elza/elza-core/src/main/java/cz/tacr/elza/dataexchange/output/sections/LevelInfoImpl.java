@@ -32,6 +32,7 @@ public class LevelInfoImpl implements LevelInfo {
         parentNodeId = source.getParentNodeId();
         nodeUuid = source.getNodeUuid();
         if (!source.getDaos().isEmpty()) {
+            daos = new ArrayList<>();
             daos.addAll(source.getDaos());
         }
     }
@@ -89,4 +90,8 @@ public class LevelInfoImpl implements LevelInfo {
         daos.add(dao);
     }
 
+    public void removeDao() {
+        daos = null;
+    }
+    
 }

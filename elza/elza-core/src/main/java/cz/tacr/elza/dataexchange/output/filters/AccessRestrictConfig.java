@@ -72,6 +72,7 @@ public class AccessRestrictConfig implements ExportFilterConfig {
 
     public static class Result {
         private Boolean hiddenLevel;
+        private Boolean hiddenDao;
         private List<ItemTypeCode> hiddenItems;
         private List<ReplaceItemCode> replaceItems;
         private List<AddItem> addItems;
@@ -83,6 +84,14 @@ public class AccessRestrictConfig implements ExportFilterConfig {
 
         public void setHiddenLevel(Boolean hiddenLevel) {
             this.hiddenLevel = hiddenLevel;
+        }
+
+        public Boolean getHiddenDao() {
+            return hiddenDao;
+        }
+
+        public void setHiddenDao(Boolean hiddenDao) {
+            this.hiddenDao = hiddenDao;
         }
 
         public List<ItemTypeCode> getHiddenItems() {

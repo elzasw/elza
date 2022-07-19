@@ -15,12 +15,18 @@ public class ApplyFilter {
 
     private boolean hideLevel = false;
 
+    private boolean hideDao = false;
+
     private Set<ArrItem> hideItems = new HashSet<>();
 
     private List<ArrItem> addItems = new ArrayList<>();
 
     public void hideLevel() {
         hideLevel = true;
+    }
+
+    public void hideDao() {
+        hideDao = true;
     }
 
     public void addHideItem(ArrItem item) {
@@ -55,6 +61,10 @@ public class ApplyFilter {
         }
 
         LevelInfoImpl levelInfoCopy = new LevelInfoImpl(levelInfo);
+
+        if (hideDao) {
+            levelInfoCopy.removeDao();
+        }
 
         if (!hideItems.isEmpty()) {
             levelInfoCopy.removeItems(hideItems);

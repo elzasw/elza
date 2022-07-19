@@ -149,7 +149,13 @@ public class AccessRestrictFilter implements ExportFilter {
             }
 
             boolean changed = false;
-    
+
+            // hidden Dao
+            if (rule.isHiddenDao()) {
+                filter.hideDao();
+                changed = true;
+            }
+
             // check hidden items
             if (rule.getHiddenTypes() != null) {
                 for (ItemType hiddenType : rule.getHiddenTypes()) {
@@ -160,7 +166,7 @@ public class AccessRestrictFilter implements ExportFilter {
                     }
                 }
             }
-    
+
             // replace itemType(s)
             if (rule.getReplaceItems() != null) {
                 for (ReplaceItem replaceDef : rule.getReplaceItems()) {
