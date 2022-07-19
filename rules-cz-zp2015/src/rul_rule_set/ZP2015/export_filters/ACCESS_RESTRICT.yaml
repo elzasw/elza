@@ -6,6 +6,28 @@ restrictions:
 defs:
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_DAO
+    result:
+      hiddenDao: true
+      hiddenItems:
+        - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_AIP_ID
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_DAO
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_DAO_INPERS_ONLY
+    result:
+      hiddenDao: true
+      hiddenItems:
+        - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_AIP_ID
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_ARCHDESC
     result:
       hiddenLevel: true
