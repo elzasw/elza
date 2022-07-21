@@ -526,7 +526,7 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDaoLink>> createNodeDaoLinkMap(final Collection<Integer> nodeIds) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
         for (ArrDaoLink daoLink : daoLinks) {
