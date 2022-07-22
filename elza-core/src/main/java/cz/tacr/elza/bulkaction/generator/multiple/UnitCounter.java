@@ -176,13 +176,18 @@ public class UnitCounter {
                     count = vCnt;
                 }
                 // get mapping
+                Consumer<LevelWithItems> nextAction = null;
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level.getNodeId(), value, count);
                     } else {
-                        unitCountAction.addValue(level, value, count);
+                        nextAction = unitCountAction.addValue(level, value, count);
                     }
+                }
+
+                if (nextAction != null) {
+                    nextAction.accept(level);
                 }
             }
         }
