@@ -463,6 +463,35 @@ public class AccessPointService {
     }
 
     /**
+     * Obnovení neplatné entity a návrat do původního stavu
+     * 
+     * @param apState
+     */
+    public void restoreAccessPoint(ApState apState) {
+
+        checkPermissionForEdit(apState);
+
+        // check if access point is deleted
+        validationDeleted(apState);
+
+        // create new version of ApState 
+        ApChange change = apDataService.createChange(ApChange.Type.AP_RESTORE);
+        ApState restoreState = copyState(apState, change);
+        stateRepository.save(restoreState);
+
+        // restore ApKeyValue(s)
+        updateAndValidate(restoreState.getAccessPointId());
+
+        // create cached AP
+        accessPointCacheService.createApCachedAccessPoint(restoreState.getAccessPointId());
+
+        // update access point, publish and reindex
+        ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
+        publishAccessPointRestoreEvent(accessPoint);
+        reindexDescItem(accessPoint);
+    }
+
+    /**
      * Validace možnosti sloučení podle stavu
      * 
      * @param state stav přístupového bodu
@@ -1547,6 +1576,20 @@ public class AccessPointService {
     }
 
     /**
+     * Validace přístupového bodu, že je smazaný.
+     *
+     * @param state
+     *            stav přístupového bodu
+     */
+    public void validationDeleted(final ApState state) {
+        if (state.getDeleteChange() == null) {
+            throw new BusinessException("Archivní entita není zneplatněna", RegistryCode.CANT_RESTORE_NOT_DELETED_AP)
+                    .set("accessPointId", state.getAccessPointId())
+                    .set("uuid", state.getAccessPoint().getUuid());
+        }
+    }
+
+    /**
      * Aktualizace přístupového bodu - není verzované!
      *
      * @param accessPointId ID přístupového bodu
@@ -1867,6 +1910,10 @@ public class AccessPointService {
 
     private void publishAccessPointDeleteEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_DELETE);
+    }
+
+    private void publishAccessPointRestoreEvent(final ApAccessPoint accessPoint) {
+        publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_RESTORE);
     }
 
     private void publishAccessPointEvent(final ApAccessPoint accessPoint, final EventType type) {
