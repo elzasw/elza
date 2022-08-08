@@ -167,6 +167,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
         OutputParams params = createOutputParams(output);
 
+        Path outputFilter = resourcePathResolver.getOutputFilter(output.getOutputFilter());
+        params.setOutputFilter(outputFilter);
+
         for (ArrOutputTemplate template : templates) {
         	setOutputParamsTemplate(params, template);
 	        Engine engine = template.getTemplate().getEngine();

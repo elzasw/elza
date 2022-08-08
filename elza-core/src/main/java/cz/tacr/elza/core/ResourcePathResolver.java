@@ -17,6 +17,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
@@ -162,6 +163,19 @@ public class ResourcePathResolver {
         Path path = ruleSetPath.resolve(RULESET_TEMPLATES_DIR);
 
         return path;
+    }
+
+    /**
+     * @return Path to output filter file (may not exist).
+     */
+    public Path getOutputFilter(RulOutputFilter outputFilter) {
+        if (outputFilter == null) {
+            return null;
+        }
+        Path outputFilterDir = getOutputFiltersDir(outputFilter.getPackageId(), outputFilter.getRuleSetId());
+        Path filter = outputFilterDir.resolve(outputFilter.getFilename());
+
+        return filter;
     }
 
     /**
