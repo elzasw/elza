@@ -9,7 +9,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulTemplate;
 
 public class OutputParams {
@@ -27,6 +26,8 @@ public class OutputParams {
     private RulTemplate template;
 
     private Path templateDir;
+
+    private Path outputFilter;
 
     public OutputParams(ArrOutput output,
                         ArrChange change,
@@ -94,5 +95,13 @@ public class OutputParams {
 
     public void setTemplateDir(Path templateDir) {
         this.templateDir = templateDir;
+    }
+
+    public Path getOutputFilter() {
+        return outputFilter;
+    }
+
+    public void setOutputFilter(Path outputFilter) {
+        this.outputFilter = outputFilter;
     }
 }

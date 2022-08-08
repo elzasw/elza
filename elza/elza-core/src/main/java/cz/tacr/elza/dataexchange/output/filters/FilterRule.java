@@ -9,9 +9,8 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Def;
-import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig.Result;
-import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
+import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Def;
+import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Result;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
@@ -126,6 +125,7 @@ public class FilterRule {
         item.setItemType(itemType.getEntity());
         item.setItemSpec(itemSpec);
         item.setData(arrData);
+        item.setPosition(0); // need for print
         return item;
     }
 
@@ -133,7 +133,7 @@ public class FilterRule {
         return hiddenItemTypes;
     }
 
-    public boolean canApply(StructObjectInfo soi, LevelInfoImpl levelInfo) {
+    public boolean canApply(StructObjectInfo soi) {
         if (itemType != null) {
             Collection<ArrItem> soiItems = soi.getItems();
             if (soiItems == null) {

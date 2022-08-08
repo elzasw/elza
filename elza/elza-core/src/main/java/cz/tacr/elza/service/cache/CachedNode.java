@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -22,27 +24,27 @@ public class CachedNode implements NodeCacheSerializable {
     /**
      * Identifikátor JP.
      */
-    private Integer nodeId;
+    protected Integer nodeId;
 
     /**
      * JP uuid.
      */
-    private String uuid;
+    protected String uuid;
 
     /**
      * Seznam hodnot atributů.
      */
-    private List<ArrDescItem> descItems;
+    protected List<ArrDescItem> descItems;
 
     /**
      * Seznam návazných entity z definic řídících pravidel.
      */
-    private List<ArrNodeExtension> nodeExtensions;
+    protected List<ArrNodeExtension> nodeExtensions;
 
     /**
      * Seznam navázaných entity z digitalizátů.
      */
-    private List<ArrDaoLink> daoLinks;
+    protected List<ArrDaoLink> daoLinks;
 
     public CachedNode() {
     }
@@ -104,19 +106,39 @@ public class CachedNode implements NodeCacheSerializable {
 	 *
 	 * @param newDescItems
 	 */
-	public void addDescItems(Collection<ArrDescItem> newDescItems) {
+	public void addDescItems(Collection<ArrDescItem> items) {
 		if (descItems == null) {
-			descItems = new ArrayList<>(newDescItems.size());
+			descItems = new ArrayList<>(items.size());
 		}
-		descItems.addAll(newDescItems);
+		descItems.addAll(items);
 	}
 
-	public void addDescItem(ArrDescItem descItem) {
+	public void addDescItem(ArrDescItem item) {
 		if (descItems == null) {
 			descItems = new ArrayList<>();
 		}
-		descItems.add(descItem);
+		descItems.add(item);
 	}
+
+	public void removeDescItems(Collection<? extends ArrItem> items) {
+        if (descItems != null) {
+            descItems.removeAll(items);
+        }
+	}
+
+	public void addNodeExtensions(Collection<ArrNodeExtension> nodeExtensions) {
+        if (this.nodeExtensions == null) {
+            this.nodeExtensions = new ArrayList<>(nodeExtensions.size());
+        }
+        this.nodeExtensions.addAll(nodeExtensions);
+	}
+
+    public void addDaoLinks(Collection<ArrDaoLink> daoLinks) {
+        if (this.daoLinks == null) {
+            this.daoLinks = new ArrayList<>(daoLinks.size()); 
+        }
+        this.daoLinks.addAll(daoLinks);
+    }
 
     /**
      * Validate node data
@@ -173,7 +195,7 @@ public class CachedNode implements NodeCacheSerializable {
         if (descItems == null) {
             return;
         }
-        for (ArrDescItem descItem : descItems) {
+        for (ArrItem descItem : descItems) {
             // changeId is not stored in CachedNode
             // consider to store it also
             if (descItem.getCreateChange() == null) {
