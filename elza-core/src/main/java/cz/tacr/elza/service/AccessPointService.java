@@ -1031,10 +1031,21 @@ public class AccessPointService {
 
     }
 
+    /**
+     * Replace AP in items
+     * 
+     * @param apItems List of items. Number of items has to be lower than batch size.
+     * @param replaced
+     * @param replacement
+     * @param apExternalSystem
+     */
     private void replaceInItems(List<ApItem> apItems,
                                 ApAccessPoint replaced,
                                 ApAccessPoint replacement,
                                 ApExternalSystem apExternalSystem) {
+        // number of items has to be lower than batch size
+        Validate.isTrue(apItems.size() <= ObjectListIterator.getMaxBatchSize());
+
         Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId())
                 .collect(Collectors.toSet());
         // check revisions
