@@ -14,15 +14,13 @@ public class SoiLoadDispatcher implements LoadDispatcher<StructObjectInfoImpl> {
     @Override
     public void onLoad(StructObjectInfoImpl result) {
         this.result = result;
-
     }
 
     @Override
     public void onLoadEnd() {
-
     }
 
-    StructObjectInfoImpl getResult() {
+    public StructObjectInfoImpl getResult() {
         return result;
     }
 
