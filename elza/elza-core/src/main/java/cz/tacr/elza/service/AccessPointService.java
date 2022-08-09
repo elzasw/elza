@@ -43,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
@@ -459,6 +460,35 @@ public class AccessPointService {
             }
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
+    }
+
+    /**
+     * Obnovení neplatné entity a návrat do původního stavu
+     * 
+     * @param apState
+     */
+    public void restoreAccessPoint(ApState apState) {
+
+        checkPermissionForEdit(apState);
+
+        // check if access point is deleted
+        validationDeleted(apState);
+
+        // create new version of ApState 
+        ApChange change = apDataService.createChange(ApChange.Type.AP_RESTORE);
+        ApState restoreState = copyState(apState, change);
+        stateRepository.save(restoreState);
+
+        // restore ApKeyValue(s)
+        updateAndValidate(restoreState.getAccessPointId());
+
+        // create cached AP
+        accessPointCacheService.createApCachedAccessPoint(restoreState.getAccessPointId());
+
+        // update access point, publish and reindex
+        ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
+        publishAccessPointRestoreEvent(accessPoint);
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -980,70 +1010,8 @@ public class AccessPointService {
         // replace in APs
         final List<ApItem> apItems = this.itemRepository.findItemByEntity(replaced);
         if (CollectionUtils.isNotEmpty(apItems)) {
-            Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId())
-                    .collect(Collectors.toSet());
-            // check revisions
-            List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
-            Map<Integer, ApState> stateByApId = apStates.stream()
-                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
-
-            // check if entity is from external system
-            Set<Integer> apsFromSameExtSystem;
-            if (apExternalSystem != null) {
-                List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
-                                                                                                                  apExternalSystem);
-                apsFromSameExtSystem = bindingStates.stream().map(ApBindingState::getAccessPointId).collect(Collectors
-                        .toSet());
-            } else {
-                apsFromSameExtSystem = Collections.emptySet();
-            }
-
-            // get bindings
-            List<ApBindingItem> bindingItems = bindingItemRepository.findByItems(apItems);
-            Map<Integer, ApBindingItem> bindingItemsByItemId = bindingItems.stream()
-                    .collect(Collectors.toMap(ApBindingItem::getItemId, Function.identity()));
-            Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
-
-            List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
-            Map<Integer, ApRevision> revisionByApId = revisions.stream()
-                    .collect(Collectors.toMap(r -> r.getState().getAccessPointId(), Function.identity()));
-
-            for (ApItem apItem : apItems) {
-                Integer apId = apItem.getPart().getAccessPointId();
-                ApState apState = stateByApId.get(apId);
-                
-                // check if binding to same system exists
-                ApBindingItem currBinding = bindingItemsByItemId.get(apItem.getItemId());
-                if (currBinding != null) {
-                    if (apsFromSameExtSystem.contains(apId)) {
-                        // skip such item
-                        bindingItemsByItemId.remove(apItem.getItemId());
-                        continue;
-                    }
-                }
-
-                ApRevision revision = revisionByApId.get(apId);
-                if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
-                    // prepare revision
-                    revision = revisionService.createRevision(apState);
-                }
-                if (revision != null) {
-                    // create item in revision
-                    replaceInRevision(apItem, revision, replaced, replacement);
-                } else {
-                    // direct item update
-                    ApItem updatedItem = replaceInApItem(apItem, apState, replaced, replacement);
-                    itemUpdateMapping.put(apItem.getItemId(), updatedItem);
-                }
-            }
-
-            List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
-                                                                                         bindingItemsByItemId.values());
-            // refresh AP cache
-            for (ApBindingItem modBinding : modifiedBindings) {
-                accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()
-                        .getAccessPointId());
-            }
+            ObjectListIterator.forEachPage(apItems, ais -> replaceInItems(apItems, replaced, replacement,
+                                                                          apExternalSystem));
         }
 
         Set<Integer> resolvedByObjectId = new HashSet<>();
@@ -1063,6 +1031,86 @@ public class AccessPointService {
 
     }
 
+    /**
+     * Replace AP in items
+     * 
+     * @param apItems List of items. Number of items has to be lower than batch size.
+     * @param replaced
+     * @param replacement
+     * @param apExternalSystem
+     */
+    private void replaceInItems(List<ApItem> apItems,
+                                ApAccessPoint replaced,
+                                ApAccessPoint replacement,
+                                ApExternalSystem apExternalSystem) {
+        // number of items has to be lower than batch size
+        Validate.isTrue(apItems.size() <= ObjectListIterator.getMaxBatchSize());
+
+        Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId())
+                .collect(Collectors.toSet());
+        // check revisions
+        List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+        Map<Integer, ApState> stateByApId = apStates.stream()
+                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+        // check if entity is from external system
+        Set<Integer> apsFromSameExtSystem;
+        if (apExternalSystem != null) {
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
+                                                                                                              apExternalSystem);
+            apsFromSameExtSystem = bindingStates.stream().map(ApBindingState::getAccessPointId).collect(Collectors
+                    .toSet());
+        } else {
+            apsFromSameExtSystem = Collections.emptySet();
+        }
+
+        // get bindings
+        List<ApBindingItem> bindingItems = bindingItemRepository.findByItems(apItems);
+        Map<Integer, ApBindingItem> bindingItemsByItemId = bindingItems.stream()
+                .collect(Collectors.toMap(ApBindingItem::getItemId, Function.identity()));
+        Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
+
+        List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
+        Map<Integer, ApRevision> revisionByApId = revisions.stream()
+                .collect(Collectors.toMap(r -> r.getState().getAccessPointId(), Function.identity()));
+
+        for (ApItem apItem : apItems) {
+            Integer apId = apItem.getPart().getAccessPointId();
+            ApState apState = stateByApId.get(apId);
+
+            // check if binding to same system exists
+            ApBindingItem currBinding = bindingItemsByItemId.get(apItem.getItemId());
+            if (currBinding != null) {
+                if (apsFromSameExtSystem.contains(apId)) {
+                    // skip such item
+                    bindingItemsByItemId.remove(apItem.getItemId());
+                    continue;
+                }
+            }
+
+            ApRevision revision = revisionByApId.get(apId);
+            if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
+                // prepare revision
+                revision = revisionService.createRevision(apState);
+            }
+            if (revision != null) {
+                // create item in revision
+                replaceInRevision(apItem, revision, replaced, replacement);
+            } else {
+                // direct item update
+                ApItem updatedItem = replaceInApItem(apItem, apState, replaced, replacement);
+                itemUpdateMapping.put(apItem.getItemId(), updatedItem);
+            }
+        }
+
+        List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
+                                                                                     bindingItemsByItemId.values());
+        // refresh AP cache
+        for (ApBindingItem modBinding : modifiedBindings) {
+            accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()
+                    .getAccessPointId());
+        }
+    }
 
     /**
      * 
@@ -1539,6 +1587,20 @@ public class AccessPointService {
     }
 
     /**
+     * Validace přístupového bodu, že je smazaný.
+     *
+     * @param state
+     *            stav přístupového bodu
+     */
+    public void validationDeleted(final ApState state) {
+        if (state.getDeleteChange() == null) {
+            throw new BusinessException("Archivní entita není zneplatněna", RegistryCode.CANT_RESTORE_NOT_DELETED_AP)
+                    .set("accessPointId", state.getAccessPointId())
+                    .set("uuid", state.getAccessPoint().getUuid());
+        }
+    }
+
+    /**
      * Aktualizace přístupového bodu - není verzované!
      *
      * @param accessPointId ID přístupového bodu
@@ -1859,6 +1921,10 @@ public class AccessPointService {
 
     private void publishAccessPointDeleteEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_DELETE);
+    }
+
+    private void publishAccessPointRestoreEvent(final ApAccessPoint accessPoint) {
+        publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_RESTORE);
     }
 
     private void publishAccessPointEvent(final ApAccessPoint accessPoint, final EventType type) {

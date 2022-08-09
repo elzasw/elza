@@ -70,7 +70,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, accessPointCacheService);
+                daoLinkRepository, accessPointCacheService, em);
     }
 
     @Override

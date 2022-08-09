@@ -812,7 +812,7 @@ private void processEvent(AbstractEventSimple event) {
             nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
             // read dao links
             if (displayDaoId) {
-                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIdsSublist);
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIdsSublist);
                 for (ArrDaoLink daoLink : daoLinks) {
                     if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
                         daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
@@ -1901,7 +1901,7 @@ private void processEvent(AbstractEventSimple event) {
 
             while (iteratorNodeIds.hasNext()) {
                 List<Integer> partNodeIds = iteratorNodeIds.next();
-                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(partNodeIds);
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(partNodeIds);
                 for (ArrDaoLink daoLink : daoLinks) {
                     if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
                         daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());

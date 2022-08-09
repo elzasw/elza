@@ -176,6 +176,24 @@ paths:
                 $ref: "#/components/schemas/ResultAutoItems"
         404:
           description: AP neexistuje
+  /accesspoints/{id}/restore:
+    put: 
+      summary: Obnovení neplatné entity a návrat do původního stavu
+      operationId: restoreAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Entita byla obnovena
+        404:
+          description: AP neexistuje
   /accesspoints:
     delete:
       summary: Zneplatnění přístupovych bodu

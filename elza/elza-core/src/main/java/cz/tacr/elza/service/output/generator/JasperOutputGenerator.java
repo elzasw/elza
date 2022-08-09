@@ -106,7 +106,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository,
-                indexRepository, daoLinkRepository, accessPointCacheService);
+                indexRepository, daoLinkRepository, accessPointCacheService, em);
         pdfAttProvider.setOutput(outputModel);
     }
 

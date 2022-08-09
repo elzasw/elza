@@ -342,14 +342,8 @@ public class ArrangementService {
                               final List<ApScope> scopes,
                               final List<Integer> userIds,
                               final List<Integer> groupIds) {
-        Assert.notNull(fund, "AS musí být vyplněn");
-        Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
-
-        // kontrola uživatelských práv k provádění změn AS
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN) && !userIds.isEmpty()) {
-            throw new BusinessException("Uživatel nemá oprávnení měnit AS", ArrangementCode.ADMIN_USER_MISSING_FUND_UPDATE_PERM);
-        }
+        Validate.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(ruleSet, "Pravidla musí být vyplněna");
 
         ArrFund originalFund = fundRepository.findById(fund.getFundId())
                 .orElseThrow(fund(fund.getFundId()));
