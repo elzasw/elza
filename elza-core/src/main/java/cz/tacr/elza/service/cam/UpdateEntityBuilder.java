@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -144,13 +146,17 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         List<ApBindingItem> deletedParts = new ArrayList<>();
         List<ApBindingItem> partsWithPossibleChange = new ArrayList<>();
         List<ApPart> newParts = new ArrayList<>();
+        // Mapping from partUUID to binding value
+        Set<String> existingParts = new HashSet<>();
 
         for (ApBindingItem bindingPart : bindingParts) {
             ApPart part = bindingPart.getPart();
             if (part.getDeleteChangeId() != null) {
                 deletedParts.add(bindingPart);
             } else {
+                partUuidMap.put(part.getPartId(), bindingPart.getValue());
                 partsWithPossibleChange.add(bindingPart);
+                existingParts.add(bindingPart.getValue());
             }
         }
         // detect new parts
@@ -161,7 +167,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             }
         }
 
-        List<PartXml> parts = createNewParts(newParts, itemMap);
+        List<PartXml> parts = createNewParts(existingParts, newParts, itemMap);
         for (PartXml part : parts) {
             addUpdate(part);
         }

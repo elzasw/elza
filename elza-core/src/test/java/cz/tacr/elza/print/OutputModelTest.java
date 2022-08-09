@@ -168,7 +168,7 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, accessPointCacheService);
+                daoLinkRepository, accessPointCacheService, em);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

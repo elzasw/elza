@@ -299,6 +299,9 @@ public class DaoCoreServiceWsImpl {
                 provider.remove(level, change, fundVersion, changeContext);
             }
             if (currScenario != null) {
+                // reset current scenario and set is as recommended
+                logger.debug("Current DAO scenarion (daoId={}): {}", daoLink.getDaoId(), currScenario);
+
                 impCtx.setRecommendedScenario(daoLink.getDao(), currScenario);
                 daoLink.setScenario(null);
             }
@@ -516,13 +519,22 @@ public class DaoCoreServiceWsImpl {
                 Items items = daoSyncService.unmarshalItemsFromAttributes(dao);
                 if (items != null) {
                     String scenario = impCtx.getRecommendedScenario(dao);
+                    logger.debug("Recommended scenario for DAO (daoId={}): {}", dao.getDaoId(), scenario);
                     List<String> scenarios = daoSyncService.getAllScenarioNames(items);
                     if (!scenarios.contains(scenario)) {
+                        logger.debug("Scenario was not found (daoId={}): {}, selecting first one",
+                                     dao.getDaoId(), scenario);
+                        // scenario not found -> select first one (if any)
                         scenario = CollectionUtils.isNotEmpty(scenarios) ? scenarios.get(0) : null;
+                    } else {
+                        // 
+                        logger.debug("Scenario was found (daoId={}): {}", dao.getDaoId(), scenario);
                     }
                     MultipleItemChangeContext itemChangeContext = impCtx.getItemsChangeContext(fundVersion);
 
                     daoSyncService.setScenario(fundVersion, change, itemChangeContext, daoLink, scenario);
+                } else {
+                    logger.debug("Received DAO without items (daoId={}).", dao.getDaoId());
                 }
             }
         }

@@ -274,7 +274,8 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, 
     		ArrChange deleteChange, final ArrNode node) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(Collections.singletonList(node.getNodeId()));
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(Collections.singletonList(node
+                .getNodeId()));
         for (ArrDaoLink daoLink : daoLinks) {
             ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, deleteChange, daoLink, true);
             if(deleteChange==null) {
@@ -531,7 +532,7 @@ public class DaoService {
 
     public void updateNodeCacheDaoLinks(Collection<Integer> nodeIds) {
         if (CollectionUtils.isNotEmpty(nodeIds)) {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
             arrangementCacheService.updateDaoLinks(nodeIds, daoLinks);
         }
     }

@@ -14,6 +14,11 @@ public enum RegistryCode implements ErrorCode {
     CANT_CHANGE_DELETED_AP,
 
     /**
+     * Nelze obnovit neodstraněný přístupový bod.
+     */
+    CANT_RESTORE_NOT_DELETED_AP,
+    
+    /**
      * Nelze upravit odstraněné jméno přístupového bodu.
      */
     CANT_CHANGE_DELETED_NAME,
