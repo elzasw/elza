@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Access;
