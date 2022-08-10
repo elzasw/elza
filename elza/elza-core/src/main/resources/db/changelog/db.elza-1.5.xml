@@ -2066,4 +2066,39 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 			LEFT JOIN ap_part p ON p.key_value_id = akv.key_value_id 
 			WHERE p.part_id IS NULL)</sql>
 	</changeSet>
+	<!-- Obnovení role_1 -->
+	<changeSet id="20220810173400" author="ppyt">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT count(*) FROM rul_package WHERE code = 'ZP2015'</sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql">INSERT INTO rul_item_spec(item_spec_id, code, name, shortcut, description, package_id) VALUES(
+          (SELECT next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_spec|item_spec_id'),
+          'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1',
+          (SELECT package_id FROM rul_package WHERE code = 'ZP2015')
+        )</sql>
+        <sql>UPDATE db_hibernate_sequences SET next_val = next_val + 21 WHERE sequence_name = 'rul_item_spec|item_spec_id'</sql>
+        <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (select distinct di.node_id from arr_item i 
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
+join arr_desc_item di on i.item_id = di.item_id 
+join arr_desc_item di2 on di.node_id = di2.node_id
+join arr_item i2 on di2.item_id = i2.item_id 
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+where ris.code = 'ZP2015_ENTITY_ROLE_11'
+ and i.delete_change_id is null
+ and i2.delete_change_id is null
+ and ris2.code = 'ZP2015_UNIT_TYPE_TVY'
+        )</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1')
+				WHERE item_id IN (select i.item_id from arr_item i 
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
+join arr_desc_item di on i.item_id = di.item_id 
+join arr_desc_item di2 on di.node_id = di2.node_id
+join arr_item i2 on di2.item_id = i2.item_id 
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+where ris.code = 'ZP2015_ENTITY_ROLE_11'
+ and i.delete_change_id is null
+ and i2.delete_change_id is null
+ and ris2.code = 'ZP2015_UNIT_TYPE_TVY')</sql>
+	</changeSet>
 </databaseChangeLog>
