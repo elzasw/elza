@@ -1428,7 +1428,7 @@ var messages = {
     "admin.perms.tabs.funds.perm.FUND_EXPORT": "Export",
     "admin.perms.tabs.funds.perm.FUND_BA": "Spouštění hromadných akcí",
     "admin.perms.tabs.funds.perm.FUND_CL_VER_WR": "Drobné úpravy uzavřeného AS",
-    "admin.perms.tabs.funds.perm.FUND_VER_WR": "Verzování a editace",
+    "admin.perms.tabs.funds.perm.FUND_VER_WR": "Verzování a úprava vlastností",
     "admin.perms.tabs.funds.perm.FUND_ISSUE_ADMIN": "Správa lektorování",
     "admin.perms.tabs.scopes": "Oblasti entit",
     "admin.perms.tabs.scopes.add.title": "Přidání oblasti entit",
