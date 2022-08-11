@@ -61,7 +61,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
     };
 
     scopeValue = (id) => {
-        const scope = this.state.defaultScopes.find(e => e.id === id);
+        const scope = this.state?.defaultScopes.find(e => e.id === id);
         if (scope != null) {
             return <>
                 <h4>{i18n('admin.extSystem.sysScope')}</h4>
