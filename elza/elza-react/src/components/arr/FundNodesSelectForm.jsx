@@ -17,6 +17,7 @@ class FundNodesSelectForm extends AbstractReactComponent {
     static propTypes = {
         multipleSelection: PropTypes.bool,
         multipleSelectionOneLevel: PropTypes.bool,
+        onSubmitForm: PropTypes.func,
     };
 
     static defaultProps = {

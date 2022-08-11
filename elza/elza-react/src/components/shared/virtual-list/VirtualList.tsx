@@ -126,9 +126,9 @@ class VirtualList extends React.Component<Props, State> {
         const itemsInView = lastItemIndex - firstItemIndex + 1;
 
         const result = {
-            firstItemIndex: firstItemIndex,
-            lastItemIndex: lastItemIndex,
-            itemsInView: itemsInView,
+            firstItemIndex: Math.min(firstItemIndex, itemCount - 1),
+            lastItemIndex: Math.min(lastItemIndex, itemCount - 1),
+            itemsInView: Math.min(itemsInView, itemCount),
         };
 
         return result;
