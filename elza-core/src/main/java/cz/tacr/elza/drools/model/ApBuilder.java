@@ -376,6 +376,10 @@ public class ApBuilder {
     }
 
     private void updatePart(Part part, List<ApRevItem> revItems) {
+        if (revItems == null) {
+            return;
+        }
+
         for (ApRevItem revItem : revItems) {
             Integer origObjectId = revItem.getOrigObjectId();
             //
