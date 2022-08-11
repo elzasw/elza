@@ -37,3 +37,15 @@
         }
     }
 }
+.confirmation {
+    .entity {
+        font-size: 1.3em; 
+        font-weight: bold; 
+        margin-left: 5px;
+        line-height: 2em;
+    }
+    .error {
+        color: #bd2f2f;
+        margin-top: 10px;
+    }
+}

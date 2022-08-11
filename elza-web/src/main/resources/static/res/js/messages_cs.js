@@ -1719,6 +1719,11 @@ var messages = {
     "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",
     "accesspoint.removeDuplicity.replacedAccesspoint": "K nahrazení",
     "accesspoint.removeDuplicity.resolve": "Vyřešit duplicitu",
+    "accesspoint.removeDuplicity.confirm.replace.a": "Opravdu si přejete nahradit entitu",
+    "accesspoint.removeDuplicity.confirm.replace.b": "entitou",
+    "accesspoint.removeDuplicity.confirm.merge.a": "Opravdu si přejete zneplatnit a sloučit entitu",
+    "accesspoint.removeDuplicity.confirm.merge.b": "s nahrazující entitou",
+    "accesspoint.removeDuplicity.confirm.nonEqualNames": "Entity mají ruzná označení",
 
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",
