@@ -102,7 +102,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                                 title={'Importovat'}
                                 onClick={handleImport}
                             >
-                                <Icon glyph={'fa-download'} />
+                                <Icon glyph={'fa-file'} />
                             </Button>
                         </div>
                     </RevisionFieldExample>
