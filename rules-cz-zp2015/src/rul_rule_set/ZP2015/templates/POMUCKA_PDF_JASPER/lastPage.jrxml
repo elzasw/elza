@@ -25,8 +25,8 @@
 		<band height="634">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<property name="com.jaspersoft.studio.layout"/>
-			<textField textAdjust="StretchHeight" evaluationTime="Master">
-				<reportElement positionType="Float" x="0" y="330" width="455" height="300" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
+			<textField textAdjust="StretchHeight" evaluationTime="Master" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="150" width="455" height="480" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Bottom" markup="html">
