@@ -196,7 +196,14 @@ class NodeSubNodeForm extends AbstractReactComponent {
         } = this.props;
         const node = nodes.nodes[nodes.activeIndex];
         const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
-        const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />;
+        const form = <ArrHistoryForm 
+            versionId={versionId} 
+            node={{
+                ...nodeObj, 
+                name: nodeObj.accordionLeft // ArrHistoryForm needs a 'name: string' property, which is missing in the 'SubNode' type 
+            }} 
+            onDeleteChanges={this.handleDeleteChanges} 
+            />;
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
     };
 

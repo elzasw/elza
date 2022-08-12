@@ -577,7 +577,7 @@ public class DaoService {
         switch (dao.getDaoType()) {
         case LEVEL:
             DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
-            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao, null);
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,

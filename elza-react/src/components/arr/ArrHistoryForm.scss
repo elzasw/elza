@@ -10,7 +10,7 @@ $arr-history-line-height: 24px; // definuje se i v JS!!!!!
                 margin: 0;
 
                 label {
-                    margin: 0 15px 0 0;
+                    margin: 0 0 0 0;
                     line-height: 1.8em;
                     height: 1.8em;
                 }
@@ -45,12 +45,47 @@ $arr-history-line-height: 24px; // definuje se i v JS!!!!!
             margin-right: 6px;
         }
     }
+    .selected-node-info-container {
+        display: flex;
+        border: 1px solid #ddd;
+        margin-left: 5px;
+        border-radius: 3px;
+        overflow: hidden;
+
+        .node-info {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            padding: 0 5px;
+            border-right: 1px solid #ddd;
+            flex-shrink: 0;
+
+            &.full {
+                max-width: none;
+                flex-grow: 1;
+                flex-shrink: 1;
+            }
+        }
+
+        button {
+            margin: 0;
+            border: none;
+            background-color:#eee;
+            &:hover {
+                background-color:#ddd;
+            }
+        }
+
+        input {
+            flex: 1;
+            margin-right: 6px;
+        }
+    }
 
     .selected-node-container {
         display: flex;
-        button {
-            margin-left: 6px;
-        }
     }
 
     .go-to-date-container {

@@ -43,6 +43,7 @@ import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -95,6 +96,8 @@ import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 public class DaoSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(DaoSyncService.class);
+
+    public final static String ELZA_SCENARIO = "_ELZA_SCENARIO";
 
     /**
      * Velikost dávky pro synchronizaci.
@@ -205,12 +208,17 @@ public class DaoSyncService {
 
             List<ArrDescItem> result = new ArrayList<>();
 
+            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+
             for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
-                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem,
-                                                                    level.getNode(), fundVersion, change,
-                                                                    changeContext);
-                result.add(createdItem);
+                if (getSimilarItem(descItem, dbItems) == null) {
+                    ArrDescItem createdItem = descriptionItemService
+                            .createDescriptionItemInBatch(descItem, level.getNode(), fundVersion,
+                                                          change,
+                                                          changeContext);
+                    result.add(createdItem);
+                }
             }
 
             return result;
@@ -241,12 +249,41 @@ public class DaoSyncService {
             }
         }
 
+        private ArrDescItem getSimilarItem(ArrDescItem scenarioItem, List<ArrDescItem> dbItems) {
+            for (ArrDescItem dbItem : dbItems) {
+                if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
+                        Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
+                    // check read-only status
+                    if (Boolean.TRUE.equals(dbItem.getReadOnly())) {
+                        // readonly has to match
+                        return null;
+                    }
+                    // if type is same -> item match
+                    return dbItem;
+                }
+            }
+            return null;
+        }
+
         private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
+            ArrData dbData = dbItem.getData();
+
             for (ArrDescItem scenarioItem : scenarioItems) {
                 if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
                         Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
-                    // TODO: check value of item
-                    return true;
+                    // check read-only status
+                    if (Boolean.TRUE.equals(dbItem.getReadOnly())) {
+                        // readonly has to match
+                        return true;
+                    }
+                    if (dbData == null) {
+                        // item without data might be removed
+                        return true;
+                    }
+                    ArrData data = scenarioItem.getData();
+                    if (data != null && data.isEqualValue(dbData)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -329,10 +366,10 @@ public class DaoSyncService {
 
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         // odstraneni puvodnich zaznamu
-        DaoDesctItemProvider daoDesctItemProviderOrig = new DaoDesctItemProvider(items, daoLink.getScenario());
+        DaoDesctItemProvider daoDesctItemProviderOrig = createDescItemProvider(items, daoLink.getScenario());
         daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
         
-        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        DaoDesctItemProvider daoDesctItemProviderNew = createDescItemProvider(items, scenario);
         daoDesctItemProviderNew.provide(level, change, fundVersion, changeContext);
         
         // store new scenario
@@ -345,11 +382,11 @@ public class DaoSyncService {
                             MultipleItemChangeContext itemChangeContext,
                             ArrDaoLink daoLink, String scenario) {
         ArrDao dao = daoLink.getDao();
-        Items items = unmarshalItemsFromAttributes(dao);
         ArrLevel level = fundLevelService.findLevelByNode(daoLink.getNode());
 
-        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        DaoDesctItemProvider daoDesctItemProviderNew = createDescItemProvider(dao, scenario);
         daoDesctItemProviderNew.provide(level, change, fundVersion, itemChangeContext);
+        daoLink.setScenario(scenario);
     }
 
     /**
@@ -744,18 +781,31 @@ public class DaoSyncService {
         return null;
     }
 
-    public DaoDesctItemProvider createDescItemProvider(ArrDao dao) {
+    public DaoDesctItemProvider createDescItemProvider(ArrDao dao, String scenario) {
         Items items = unmarshalItemsFromAttributes(dao);
         if (items == null) {
             return null;
         }
+        return createDescItemProvider(items, scenario);
+    }
+
+    public DaoDesctItemProvider createDescItemProvider(Items items, String scenario) {
         List<String> scenarios = this.getAllScenarioNames(items);
-        String scenario;
-        if (CollectionUtils.isNotEmpty(scenarios)) {
-            scenario = scenarios.get(0);
+        if (StringUtils.isNotEmpty(scenario)) {
+            if (!scenarios.contains(scenario)) {
+                logger.error("Scenario not found, name: {}", scenario);
+
+                throw new BusinessException("Scenario not found", BaseCode.INVALID_STATE)
+                        .set("scenario", scenario)
+                        .set("scenarios", scenarios);
+            }
         } else {
-            scenario = null;
+            if (CollectionUtils.isNotEmpty(scenarios)) {
+                // select default scenario
+                scenario = scenarios.get(0);
+            }
         }
+
         return new DaoDesctItemProvider(items, scenario);
     }
 
@@ -787,7 +837,7 @@ public class DaoSyncService {
 
     private boolean isScenario(Object item) {
         if (item instanceof ItemString) {
-            return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
+            return ((ItemString) item).getType().equals(ELZA_SCENARIO);
         }
         return false;
     }

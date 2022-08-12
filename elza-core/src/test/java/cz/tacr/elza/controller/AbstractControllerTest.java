@@ -147,6 +147,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
+import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.CreateFund;
@@ -445,6 +446,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected SearchApi searchApi;
 
+    protected DaosApi daosApi;
+
     protected static Map<String, String> cookies = null;
 
     @Override
@@ -462,6 +465,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         elzaApiClient.setWriteTimeout(5 * 60 * 1000);
 
         fundsApi = new cz.tacr.elza.test.controller.FundsApi(elzaApiClient);
+        daosApi = new cz.tacr.elza.test.controller.DaosApi(elzaApiClient);
         accesspointsApi = new cz.tacr.elza.test.controller.AccesspointsApi(elzaApiClient);
         searchApi = new cz.tacr.elza.test.controller.SearchApi(elzaApiClient);
 
@@ -2254,7 +2258,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void filterNodes(final Integer versionId,
                                final Filters filters) {
         put(spec -> spec
-                .pathParameter("versionId", versionId)
+                .pathParam("versionId", versionId)
                 .body(filters), FILTER_NODES);
     }
 
@@ -2272,9 +2276,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                 final Integer pageSize,
                                                 final Set<Integer> descItemTypeIds) {
         return Arrays.asList(put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .queryParameter("page", page)
-                .queryParameter("pageSize", pageSize)
+                .pathParam("versionId", versionId)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
                 .body(descItemTypeIds), FILTERED_NODES).as(FilterNode[].class));
     }
 
@@ -2295,7 +2299,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         param.setLuceneQuery(BooleanUtils.isTrue(luceneQuery));
 
         return Arrays.asList(post(spec -> spec
-                .pathParameter("versionId", versionId)
+                .pathParam("versionId", versionId)
                 .body(param), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
     }
 
@@ -2313,15 +2317,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                         final Integer nodeId,
                                                                         final Integer direction) {
         return get(spec -> spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("direction", direction)
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("nodeId", nodeId)
+                .pathParam("direction", direction)
                 , VALIDATION_ERROR).as(ArrangementController.ValidationItems.class);
     }
 
     protected List<NodeItemWithParent> getAllNodesVisiblePolicy(final Integer fundVersionId) {
         return Arrays.asList(get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
+                .pathParam("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
     }
 
     /**
@@ -2528,7 +2532,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void leaveGroup(final Integer groupId,
                               final Integer userId) {
-        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
+        post(spec -> spec.pathParam("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
     }
 
     /**
@@ -2538,7 +2542,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permissions seznam oprávnění
      */
     protected void addUserPermission(final Integer userId, final List<UsrPermissionVO> permissions) {
-        post(spec -> spec.pathParameter("userId", userId).body(permissions), ADD_USER_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId).body(permissions), ADD_USER_PERMISSION);
     }
 
     /**
@@ -2548,7 +2552,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permission seznam oprávnění
      */
     protected void deleteUserPermission(final Integer userId, final UsrPermissionVO permission) {
-        post(spec -> spec.pathParameter("userId", userId).body(permission), DELETE_USER_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId).body(permission), DELETE_USER_PERMISSION);
     }
 
     /**
@@ -2557,7 +2561,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param userId identifikátor uživatele
      */
     protected void deleteUserFundAllPermission(final Integer userId) {
-        post(spec -> spec.pathParameter("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
     }
 
     /**
@@ -2814,19 +2818,30 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vyhledání DAOs
      */
     protected List<ArrDaoVO> findDaos(final Integer fundVersionId) {
-        Response resp = get(spec -> spec.pathParameter("fundVersionId", fundVersionId),
+        Response resp = get(spec -> spec.pathParam("fundVersionId", fundVersionId),
                 FIND_DAOS);
+        return Arrays.asList(resp.as(ArrDaoVO[].class));
+    }
+
+    /**
+     * Vyhledání DAOs
+     */
+    protected List<ArrDaoVO> findDaos(final Integer fundVersionId, final Integer nodeId) {
+        Response resp = get(spec -> spec.pathParam("fundVersionId", fundVersionId).param("nodeId", nodeId),
+                            FIND_DAOS);
         return Arrays.asList(resp.as(ArrDaoVO[].class));
     }
 
     /**
      * Vrací typy oprávnění podle verze fondu.
      *
-     * @param fundVersionId identifikátor verze AS
+     * @param fundVersionId
+     *            identifikátor verze AS
      * @return seznam typů oprávnění
      */
     protected List<RulPolicyTypeVO> getPolicyTypes(final Integer fundVersionId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("fundVersionId", fundVersionId), POLICY_TYPES).as(RulPolicyTypeVO[].class));
+        return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId), POLICY_TYPES).as(
+                                                                                                          RulPolicyTypeVO[].class));
     }
 
     /**
@@ -2848,8 +2863,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void setVisiblePolicy(final Integer nodeId,
                                     final Integer fundVersionId,
                                     final RuleController.VisiblePolicyParams visiblePolicyParams) {
-        put(spec -> spec.pathParameter("nodeId", nodeId)
-                .pathParameter("fundVersionId", fundVersionId)
+        put(spec -> spec.pathParam("nodeId", nodeId)
+                .pathParam("fundVersionId", fundVersionId)
                 .body(visiblePolicyParams), POLICY_SET);
     }
 
@@ -2932,10 +2947,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                         final Integer changeId,
                                         final Integer nodeId) {
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                .queryParameter("maxSize", maxSize)
-                .queryParameter("offset", offset)
-                .queryParameter("changeId", changeId)
-                .queryParameter("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
+                .queryParam("maxSize", maxSize)
+                .queryParam("offset", offset)
+                .queryParam("changeId", changeId)
+                .queryParam("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
     }
 
     /**

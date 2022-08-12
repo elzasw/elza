@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,9 +18,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.base.Objects;
+
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
@@ -28,8 +32,10 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.ws.core.v1.DaoService;
@@ -40,6 +46,7 @@ import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.DaoPackages;
 import cz.tacr.elza.ws.types.v1.DaoType;
 import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import io.restassured.RestAssured;
@@ -202,11 +209,8 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        ArrItemVO descItem = descItems.get(0);
-        assertTrue(descItem.getReadOnly());
-        assertTrue(descItem instanceof ArrItemTextVO);
-        ArrItemTextVO descItemTextVO = (ArrItemTextVO) descItem;
-        assertEquals(TEXT_VALUE_XY, descItemTextVO.getValue());
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        assertTrue(descItemTextVO.getReadOnly());
 
         // opakovaný import dao/update
         Items daoItems2 = createDaoItems(TEXT_VALUE_YZ);
@@ -229,13 +233,145 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        descItem = descItems.get(0);
-        assertTrue(descItem.getReadOnly());
-        assertTrue(descItem instanceof ArrItemTextVO);
-        descItemTextVO = (ArrItemTextVO) descItem;
-        assertEquals(TEXT_VALUE_YZ, descItemTextVO.getValue());
+        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_YZ);
+        assertTrue(descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
+    }
+
+    @Test
+    public void importTestLevelWithScenarios() throws ApiException {
+
+        // import DAO
+        Items daoItems = createDaoScenarios(TEXT_VALUE_XY);
+        // prepare dao package
+        DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1,
+                                                 DaoType.LEVEL,
+                                                 "Testovaci DAO", daoItems);
+        DaoImport daoImport = createDaoImport(daoPackage);
+
+        daoServiceClient._import(daoImport);
+
+        helperTestService.waitForWorkers();
+
+        // Check not free DAOS exists
+        List<ArrDaoVO> daos = this.findDaos(fundVersion.getId());
+        Assert.assertEquals(0, daos.size());
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        // Musí existovat root node
+        assertNotNull(treeData.getNodes());
+        // Musí existovat root node + serie pro import
+        assertEquals(2, treeData.getNodes().size());
+        Iterator<TreeNodeVO> treeNodeIter = treeData.getNodes().iterator();
+        TreeNodeVO rootTreeNodeClient = treeNodeIter.next();
+        assertEquals(rootTreeNodeClient.getDepth(), Integer.valueOf(1));
+        //ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
+        TreeNodeVO serieTreeNodeClient = treeNodeIter.next();
+        assertEquals(serieTreeNodeClient.getDepth(), Integer.valueOf(2));
+        // druhe vyzadani vcetne rozbalene serie
+        Set<Integer> expandedIds = Stream.of(rootTreeNodeClient.getId(), serieTreeNodeClient.getId()).collect(Collectors
+                .toCollection(HashSet::new));
+        input.setExpandedIds(expandedIds);
+        treeData = getFundTree(input);
+        assertEquals(3, treeData.getNodes().size());
+
+        treeNodeIter = treeData.getNodes().iterator();
+        TreeNodeVO levelNode = null;
+        while (treeNodeIter.hasNext()) {
+            TreeNodeVO nv = treeNodeIter.next();
+            if (!expandedIds.contains(nv.getId())) {
+                levelNode = nv;
+                break;
+            }
+        }
+        assertNotNull(levelNode);
+        assertEquals(levelNode.getDepth(), Integer.valueOf(3));
+
+        // check form data - if extracted from dao
+        DescFormDataNewVO formData = getNodeFormData(levelNode.getId(), fundVersion.getId());
+        assertNotNull(formData);
+        List<ArrItemVO> descItems = formData.getDescItems();
+        assertEquals(2, descItems.size());
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
+
+        // prepnuti na sc2
+        List<ArrDaoVO> daoVos = this.findDaos(fundVersion.getId(), levelNode.getId());
+        assertTrue(daoVos.size() == 1);
+        ArrDaoVO daoVo = daoVos.get(0);
+        ArrDaoLinkVO daoLinkVO = daoVo.getDaoLink();
+        assertNotNull(daoLinkVO);
+        assertEquals(daoLinkVO.getScenario(), "sc1");
+
+        // aktualizace hodnoty
+        helperTestService.waitForWorkers();
+        descItemTextVO.setValue("update value");
+        ArrNodeVO nodeVO = convertTreeNode(levelNode);
+        DescItemResult descItemResult = updateDescItem(descItemTextVO, fundVersion, nodeVO, true);
+        helperTestService.waitForWorkers();
+
+        this.daosApi.changeLinkScenario(daoVo.getId(), "sc2");
+        daoVos = this.findDaos(fundVersion.getId(), levelNode.getId());
+        assertTrue(daoVos.size() == 1);
+        daoVo = daoVos.get(0);
+        daoLinkVO = daoVo.getDaoLink();
+        assertNotNull(daoLinkVO);
+        assertEquals("sc2", daoLinkVO.getScenario());
+
+        // opakovaný import dao/update
+        Items daoItems2 = createDaoScenarios(TEXT_VALUE_YZ);
+        // prepare dao package
+        DaoPackage daoPackage2 = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1,
+                                                  DaoType.LEVEL,
+                                                  "Testovaci DAO", daoItems2);
+        DaoImport daoImport2 = createDaoImport(daoPackage2);
+
+        daoServiceClient._import(daoImport2);
+
+        // refresh tree
+        treeData = getFundTree(input);
+        assertNotNull(treeData.getNodes());
+        // Musí existovat root node + serie pro import + uzel, tj. nevznikne dalsi serie
+        assertEquals(3, treeData.getNodes().size());
+
+        daoVos = this.findDaos(fundVersion.getId(), levelNode.getId());
+        assertTrue(daoVos.size() == 1);
+        daoVo = daoVos.get(0);
+        daoLinkVO = daoVo.getDaoLink();
+        assertNotNull(daoLinkVO);
+        assertEquals("sc2", daoLinkVO.getScenario());
+
+        // check form data - if extracted from dao
+        formData = getNodeFormData(levelNode.getId(), fundVersion.getId());
+        assertNotNull(formData);
+        descItems = formData.getDescItems();
+        assertEquals(2, descItems.size());
+        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", "update value");
+        assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
+
+        helperTestService.waitForWorkers();
+    }
+
+    private ArrItemTextVO checkExistsTextVO(List<ArrItemVO> descItems, String itemTypeCode, String textValue) {
+        RulDescItemTypeExtVO itemType = findDescItemTypeByCode(itemTypeCode);
+        assertNotNull("ItemType not found: " + itemTypeCode, itemType);
+
+        for (ArrItemVO descItem : descItems) {
+            Integer itemTypeId = descItem.getItemTypeId();
+            if (!Objects.equal(itemType.getId(), itemTypeId)) {
+                continue;
+            }
+            assertTrue(descItem instanceof ArrItemTextVO);
+            ArrItemTextVO textVo = (ArrItemTextVO) descItem;
+            if (Objects.equal(textValue, textVo.getValue())) {
+                return textVo;
+            }
+        }
+        fail("Item type not found: " + itemTypeCode);
+        return null;
     }
 
     private DaoImport createDaoImport(DaoPackage daoPackage) {
@@ -246,6 +382,43 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         daoPackages.getDaoPackage().add(daoPackage);
         daoImport.setDaoPackages(daoPackages);
         return daoImport;
+    }
+
+    private Items createDaoScenarios(String textValue) {
+        cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
+        cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
+        its.setType(DaoSyncService.ELZA_SCENARIO);
+        its.setValue("sc1");
+        items.getStrOrLongOrEnm().add(its);
+        // add level type as readonly
+        ItemEnum ite = objFactory.createItemEnum();
+        ite.setType("SRD_LEVEL_TYPE");
+        ite.setSpec("SRD_LEVEL_FOLDER");
+        ite.setReadOnly(true);
+        items.getStrOrLongOrEnm().add(ite);
+
+        its = objFactory.createItemString();
+        its.setType("SRD_TITLE");
+        its.setValue(textValue);
+        items.getStrOrLongOrEnm().add(its);
+
+        // scenario 2
+        its = objFactory.createItemString();
+        its.setType(DaoSyncService.ELZA_SCENARIO);
+        its.setValue("sc2");
+        items.getStrOrLongOrEnm().add(its);
+        // add level type as readonly
+        ite = objFactory.createItemEnum();
+        ite.setType("SRD_LEVEL_TYPE");
+        ite.setSpec("SRD_LEVEL_ITEM");
+        ite.setReadOnly(true);
+        items.getStrOrLongOrEnm().add(ite);
+
+        its = objFactory.createItemString();
+        its.setType("SRD_TITLE");
+        its.setValue(textValue);
+        items.getStrOrLongOrEnm().add(its);
+        return items;
     }
 
     private Items createDaoItems(String textValue) {
