@@ -867,7 +867,10 @@ public class RevisionService {
             revPartMap.put(revPart.getPartId(), part);
         }
 
-        revisionItemService.mergeItems(accessPoint, change, revParts, revPartMap, revItems);
+        // Merge items (if exists)
+        if (revItems != null) {
+            revisionItemService.mergeItems(accessPoint, change, revParts, revPartMap, revItems);
+        }
 
         partService.deletePartsWithoutItems(deletedParts, change);
 

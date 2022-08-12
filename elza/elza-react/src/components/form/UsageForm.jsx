@@ -1,27 +1,22 @@
+import * as types from 'actions/constants/ActionTypes';
+import { showConfirmDialog } from 'components/shared/dialog';
+import Icon from 'components/shared/icon/FontIcon';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Col, Modal, Row} from 'react-bootstrap';
-import {Button} from '../ui';
-import {WebApi} from '../../actions/WebApi';
-import {connect} from 'react-redux';
-import {usageFundTreeReceive} from '../../actions/arr/globalFundTree';
-import FundTreeUsage from '../arr/FundTreeUsage';
-import './UsageForm.scss';
-import RegistryField from '../registry/RegistryField';
-import * as types from 'actions/constants/ActionTypes';
-import ToggleContent from '../shared/toggle-content/ToggleContent';
-import {AREA_REGISTRY_LIST} from '../../actions/registry/registry';
-import {modalDialogHide} from '../../actions/global/modalDialog';
-import storeFromArea from '../../shared/utils/storeFromArea';
-import i18n from '../i18n';
+import { Modal } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
+import { usageFundTreeReceive } from '../../actions/arr/globalFundTree';
+import { modalDialogHide } from '../../actions/global/modalDialog';
+import { AREA_REGISTRY_LIST } from '../../actions/registry/registry';
 import * as perms from '../../actions/user/Permission';
-import {createFundRoot, getParentNode} from '../arr/ArrUtils';
-import {fundSelectSubNode} from '../../actions/arr/node';
-import {withRouter} from 'react-router';
-import {selectFundTab} from '../../actions/arr/fund';
-import {fundsSelectFund} from '../../actions/fund/fund';
-import {fundTreeFetch} from '../../actions/arr/fundTree';
-import {FUND_TREE_AREA_MAIN} from '../../actions/constants/ActionTypes';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import FundTreeUsage from '../arr/FundTreeUsage';
+import i18n from '../i18n';
+import RegistryField from '../registry/RegistryField';
+import ToggleContent from '../shared/toggle-content/ToggleContent';
+import { Button } from '../ui';
+import './UsageForm.scss';
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
@@ -211,7 +206,7 @@ class RegistryUsageForm extends React.Component {
     };
 
     renderReplaceField = () => {
-        const { type, replaceButtonText, mergeButtonText, onMerge, onReplace} = this.props;
+        const { type } = this.props;
         const {selectedReplacementNode} = this.state;
         return (
             <div className="field-container">
@@ -226,11 +221,41 @@ class RegistryUsageForm extends React.Component {
         )
     }
 
+    confirmReplaceOrMerge = async (action) => {
+        const { dispatch, detail } = this.props;
+        const { selectedReplacementNode } = this.state;
+        const response = await dispatch(showConfirmDialog(<div className="confirmation">
+            <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.a`)}</div>
+            <div className="entity">{detail?.data?.name}</div>
+            <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.b`)}</div>
+            <div className="entity">{selectedReplacementNode.name}</div>
+            {detail?.data?.name !== selectedReplacementNode.name && <div className="error">
+                <Icon glyph="fa-exclamation-circle"/>&nbsp;{i18n("accesspoint.removeDuplicity.confirm.nonEqualNames")}
+            </div>}
+        </div>));
+
+        return response;
+    }
+
+    handleReplace = async () => {
+        const { onReplace } = this.props;
+        const { selectedReplacementNode } = this.state;
+        const response = await this.confirmReplaceOrMerge("replace");
+
+        if(response){ onReplace(selectedReplacementNode); }
+    }
+
+    handleMerge = async () => {
+        const { onMerge } = this.props;
+        const { selectedReplacementNode } = this.state;
+        const response = await this.confirmReplaceOrMerge("merge");
+
+        if(response){ onMerge(selectedReplacementNode); }
+    }
 
     render() {
         const {detail, fundTreeUsage, replaceType, onReplace, onMerge, nameLabel} = this.props;
         const { replaceButtonText, mergeButtonText} = this.props;
-        const {selectedReplacementNode} = this.state;
 
         const canReplace = (replaceType === "replace" && this.state.usageCount > 0);
         const canDelete = replaceType === "delete";
@@ -273,14 +298,14 @@ class RegistryUsageForm extends React.Component {
                 {canDelete &&
                     <Modal.Footer>
                         <Button
-                            onClick={() => onReplace(selectedReplacementNode)}
+                            onClick={this.handleReplace}
                             disabled={!this.canReplace() || !onReplace}
                             variant="outline-secondary"
                         >
                             {replaceButtonText}
                         </Button>
                         <Button
-                            onClick={() => onMerge(selectedReplacementNode)}
+                            onClick={this.handleMerge}
                             disabled={!this.canReplace() || !onMerge}
                             variant="outline-secondary"
                         >
