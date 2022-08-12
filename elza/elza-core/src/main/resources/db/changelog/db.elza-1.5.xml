@@ -2101,4 +2101,24 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
  and i2.delete_change_id is null
  and ris2.code = 'ZP2015_UNIT_TYPE_TVY')</sql>
 	</changeSet>
+
+	<changeSet id="20220811133000" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN
+			(SELECT distinct node_id FROM arr_desc_item di
+			JOIN arr_item i ON i.item_id = di.item_id
+			JOIN arr_data_unitdate du ON du.data_id = i.data_id
+			WHERE du.format LIKE 'C%' AND du.value_from NOT SIMILAR TO '\d\d01-01-01%' AND value_from NOT LIKE '-%')</sql>
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN
+			(SELECT distinct node_id FROM arr_desc_item di
+			JOIN arr_item i ON i.item_id = di.item_id
+			JOIN arr_data_unitdate du ON du.data_id = i.data_id
+			WHERE du.format LIKE '%C' AND du.value_to NOT SIMILAR TO '\d\d00-12-31%' AND value_to NOT LIKE '-%')</sql>
+		<sql dbms="postgresql">UPDATE arr_data_unitdate
+			SET value_from = SUBSTRING(value_from, 1, 2) || '01-01-01T00:00:00'
+			WHERE format LIKE 'C%' AND value_from NOT SIMILAR TO '\d\d01-01-01%' AND value_from NOT LIKE '-%'</sql>
+		<sql dbms="postgresql">UPDATE arr_data_unitdate
+			SET value_to = SUBSTRING(value_to, 1, 2) || '00-12-31T23:59:59'
+            WHERE format LIKE '%C' AND value_to NOT SIMILAR TO '\d\d00-12-31%' AND value_to NOT LIKE '-%'</sql>
+	</changeSet>
+
 </databaseChangeLog>
