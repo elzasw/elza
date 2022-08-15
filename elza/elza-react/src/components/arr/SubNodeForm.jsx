@@ -27,6 +27,7 @@ import {Button} from '../ui';
 import FormDescItemGroup from './FormDescItemGroup';
 import {goToAe} from "../../actions/registry/registry";
 import {withRouter} from "react-router";
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -332,7 +333,7 @@ class SubNodeForm extends AbstractReactComponent {
         this.props.dispatch(setFocusFunc());
     }
 
-    handleSwitchCalculating(descItemGroupIndex, descItemTypeIndex) {
+    async handleSwitchCalculating(descItemGroupIndex, descItemTypeIndex) {
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -342,13 +343,15 @@ class SubNodeForm extends AbstractReactComponent {
             subNodeForm: {formData},
             versionId,
             routingKey,
+            dispatch,
         } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
 
         const msgI18n =
             descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
 
-        if (window.confirm(i18n(msgI18n))) {
+        const response = await dispatch(showConfirmDialog(i18n(msgI18n)));
+        if (response) {
             this.props.dispatch(
                 this.props.formActions.switchOutputCalculating(versionId, descItemType.id, routingKey, valueLocation),
             );
