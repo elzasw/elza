@@ -66,6 +66,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
 
     handleImportChangeData = value => {
         this.props.onChange(value);
+        setTimeout(() => this.focus(),0) // without setTimeout the field is focused with empty value
     };
 
     handleChangeSelect = e => {
