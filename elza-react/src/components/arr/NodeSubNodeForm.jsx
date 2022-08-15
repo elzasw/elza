@@ -46,6 +46,7 @@ import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems
 
 import {TextFragmentsWindow} from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -277,8 +278,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
         });
     };
 
-    handleDeleteNode() {
-        if (window.confirm(i18n('arr.fund.deleteNode.confirm'))) {
+    async handleDeleteNode() {
+        const { dispatch } = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.deleteNode.confirm')));
+        if (response) {
             this.props.dispatch(
                 deleteNode(
                     this.props.selectedSubNode,
