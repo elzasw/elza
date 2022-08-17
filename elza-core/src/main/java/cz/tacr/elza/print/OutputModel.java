@@ -435,12 +435,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 cachedNode = filterNode(cachedNode, restrictionIds);
             }
 
-            Node node = createNode(nodeId, cachedNode);
-            nodes.add(node);
-            // prepare map for daolinks
-            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
-                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
-                    daoLinkMap.put(daoLink.getDaoLinkId(), node);
+            if (cachedNode != null) {
+                Node node = createNode(nodeId, cachedNode);
+                nodes.add(node);
+                // prepare map for daolinks
+                if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
+                    for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+                        daoLinkMap.put(daoLink.getDaoLinkId(), node);
+                    }
                 }
             }
         }
@@ -590,6 +592,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
+        Validate.notNull(cachedNode);
         Integer fundId = cachedNode.getNode().getFundId();
         Fund fund = this.fundIdMap.computeIfAbsent(fundId, id -> {
             ArrFund arrFund = this.fundRepository.findById(id)
