@@ -433,16 +433,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 levelRestrMap.put(nodeId.getArrNodeId(), restrictionIds);
 
                 cachedNode = filterNode(cachedNode, restrictionIds);
+                if (cachedNode == null) {
+                    // if filter return null according to conditions
+                    continue;
+                }
             }
 
-            if (cachedNode != null) {
-                Node node = createNode(nodeId, cachedNode);
-                nodes.add(node);
-                // prepare map for daolinks
-                if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
-                    for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
-                        daoLinkMap.put(daoLink.getDaoLinkId(), node);
-                    }
+            Node node = createNode(nodeId, cachedNode);
+            nodes.add(node);
+            // prepare map for daolinks
+            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
+                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+                    daoLinkMap.put(daoLink.getDaoLinkId(), node);
                 }
             }
         }
