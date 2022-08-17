@@ -20,6 +20,7 @@ import classNames from 'classnames';
 
 import './ArrRequestPage.scss';
 import {FOCUS_KEYS} from '../../constants.tsx';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 class ArrRequestPage extends ArrParentPage {
     constructor(props) {
@@ -164,9 +165,11 @@ class ArrRequestPage extends ArrParentPage {
         this.props.dispatch(arrRequestActions.sendRequest(fund.versionId, id));
     };
 
-    handleDelete = id => {
+    handleDelete = async (id) => {
+        const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
-        if (window.confirm(i18n('ribbon.action.arr.fund.request.delete.confirm'))) {
+        const response = await dispatch(showConfirmDialog(i18n('ribbon.action.arr.fund.request.delete.confirm')))
+        if (response) {
             this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };

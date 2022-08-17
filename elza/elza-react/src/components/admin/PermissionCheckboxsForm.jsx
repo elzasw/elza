@@ -13,6 +13,7 @@ import FundNodesSelectForm from '../arr/FundNodesSelectForm';
 import {connect} from 'react-redux';
 import {WebApi} from '../../actions';
 import {FUND_ARR_NODE} from '../../actions/user/Permission';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Panel spravující oprávnění typu checkbox.
@@ -82,8 +83,10 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         );
     };
 
-    handleRemoveNode = node => {
-        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
+    handleRemoveNode = async (node) => {
+        const {dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')));
+        if (response) {
             this.props.onRemoveNodePermission(this.props.fundId, node);
         }
     };

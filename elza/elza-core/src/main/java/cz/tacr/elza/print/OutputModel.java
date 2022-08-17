@@ -433,6 +433,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 levelRestrMap.put(nodeId.getArrNodeId(), restrictionIds);
 
                 cachedNode = filterNode(cachedNode, restrictionIds);
+                if (cachedNode == null) {
+                    // if filter return null according to conditions
+                    continue;
+                }
             }
 
             Node node = createNode(nodeId, cachedNode);
@@ -590,6 +594,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
+        Validate.notNull(cachedNode);
         Integer fundId = cachedNode.getNode().getFundId();
         Fund fund = this.fundIdMap.computeIfAbsent(fundId, id -> {
             ArrFund arrFund = this.fundRepository.findById(id)

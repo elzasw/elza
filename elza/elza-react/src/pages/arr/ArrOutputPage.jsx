@@ -53,6 +53,7 @@ import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
 import * as outputFilters from "../../actions/refTables/outputFilters";
+import { showConfirmDialog } from 'components/shared/dialog';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -478,18 +479,22 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         );
     }
 
-    handleUsageEnd() {
+    async handleUsageEnd() {
+        const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        if (window.confirm(i18n('arr.output.usageEnd.confirm'))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.output.usageEnd.confirm')));
+        if (response) {
             this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id));
         }
     }
 
-    handleDelete() {
+    async handleDelete() {
+        const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        if (window.confirm(i18n('arr.output.delete.confirm'))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.output.delete.confirm')));
+        if (response) {
             this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id));
         }
     }

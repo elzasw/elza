@@ -249,6 +249,9 @@ public class RevisionItemService {
             Validate.notNull(targetPart, "Part not saved, revPartId: %s", revPart.getPartId());
 
             List<ApRevItem> revPartItems = revItemPartMap.get(revPart.getPartId());
+            if (CollectionUtils.isEmpty(revPartItems)) {
+                continue;
+            }
 
             for (ApRevItem revItem : revPartItems) {
                 Validate.isTrue(revItem.getDeleteChange() == null);
