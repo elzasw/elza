@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -33,6 +34,7 @@ import cz.tacr.cam.schema.cam.ItemIntegerXml;
 import cz.tacr.cam.schema.cam.ItemLinkXml;
 import cz.tacr.cam.schema.cam.ItemStringXml;
 import cz.tacr.cam.schema.cam.ItemUnitDateXml;
+import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.PartsXml;
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -128,6 +130,11 @@ public class EntityDBDispatcher {
      */
     Map<String, ApBindingItem> bindingPartLookup;
     Map<String, ApBindingItem> bindingItemLookup;
+
+    /**
+     * Parts without binding
+     */
+    List<ApPart> partsWithoutBinding;
 
     final private ApAccessPointRepository accessPointRepository;
 
@@ -490,11 +497,12 @@ public class EntityDBDispatcher {
 
         List<ReferencedEntities> dataRefList = new ArrayList<>();
 
-        for (PartXml part : entity.getPrts().getList()) {
-            ApBindingItem bindingPart = createPart(part, accessPoint, binding);
+        for (PartXml partXml : entity.getPrts().getList()) {
+            ApPart parentPart = findParentPart(partXml, accessPoint, binding);
+            ApBindingItem bindingPart = createPart(partXml, parentPart, accessPoint, binding);
             ApPart apPart = bindingPart.getPart();
 
-            List<ApItem> itemList = createItems(part.getItms().getItems(), apPart, apChange, binding, dataRefList);
+            List<ApItem> itemList = createItems(partXml, apPart, apChange, binding, dataRefList);
 
             itemMap.put(apPart.getPartId(), itemList);
             partList.add(apPart);
@@ -529,37 +537,47 @@ public class EntityDBDispatcher {
      * 
      * Part is without items
      * 
-     * @param accessPoint
-     * @param apChange
-     * @param binding
      * @param part
+     * @param parentPart
+     * @param accessPoint
+     * @param binding
      * @return
      */
-    ApBindingItem createPart(PartXml part,
-                             ApAccessPoint accessPoint,                              
-                             ApBinding binding) {
+    private ApBindingItem createPart(PartXml part,
+                                     ApPart parentPart,
+                                     ApAccessPoint accessPoint,                              
+                                     ApBinding binding) {
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
         ApChange apChange = procCtx.getApChange();
-        
-        ApPart parentPart;
-        if(part.getPrnt() != null) {
-            parentPart = accessPointService.findParentPart(binding, part.getPrnt().getValue());
-            if(parentPart==null) {
-                throw new SystemException("Missing parent part", BaseCode.DB_INTEGRITY_PROBLEM)
-                        .set("parentValue", part.getPrnt().getValue())
-                        .set("bindingId", binding.getBindingId())
-                        .set("accessPointId", accessPoint.getAccessPointId());
-            }
-        } else {
-            parentPart = null; 
-        }
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
         ApBindingItem bindingPart = externalSystemService.createApBindingItem(binding, apChange, part.getPid()
                 .getValue(), apPart, null);
 
         return bindingPart;
+    }
+
+    /**
+     * Find parent ApPart for PartXml
+     * 
+     * @param partXml
+     * @param accessPoint
+     * @param binding
+     * @return
+     */
+    private ApPart findParentPart(PartXml partXml, ApAccessPoint accessPoint, ApBinding binding) {
+        if (partXml.getPrnt() != null) {
+            ApPart parentPart = accessPointService.findParentPart(binding, partXml.getPrnt().getValue());
+            if (parentPart == null) {
+                throw new SystemException("Missing parent part", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("parentValue", partXml.getPrnt().getValue())
+                        .set("bindingId", binding.getBindingId())
+                        .set("accessPointId", accessPoint.getAccessPointId());
+            }
+            return parentPart;
+        }
+        return null;
     }
 
     /**
@@ -701,7 +719,7 @@ public class EntityDBDispatcher {
         Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
-        readBindingItems(binding);
+        readBindingItems(binding, accessPoint);
 
         /*        
         List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(binding);
@@ -720,7 +738,7 @@ public class EntityDBDispatcher {
                       accessPointId, partXml.getPid().getValue(),
                       partXml.getPrnt() != null ? partXml.getPrnt().getValue() : null,
                       partXml.getT());
-            
+
             ApBindingItem partBinding = bindingPartLookup.remove(partXml.getPid().getValue());
             ApPart part;
             List<ApItem> itemList;
@@ -734,13 +752,28 @@ public class EntityDBDispatcher {
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
 
-                // TODO: check if exists same other part without binding 
+                ApPart parentPart = findParentPart(partXml, accessPoint, binding);
 
-                partBinding = createPart(partXml, accessPoint, binding);
-                part = partBinding.getPart();
-                itemList = createItems(partXml.getItms().getItems(),
-                                       part, apChange, binding,
-                                       dataRefList);
+                // check if exists same other part without binding                
+                ReceivedPart receivedPart = findSamePartWithoutBinding(partXml, parentPart, itemsMap);
+
+                // if the same part not found -> create part
+                if (receivedPart == null) {
+                    partBinding = createPart(partXml, parentPart, accessPoint, binding);
+                    part = partBinding.getPart();
+                    itemList = createItems(partXml, part, apChange, binding, dataRefList);
+                } else {
+                    part = receivedPart.getPart();
+                    Map<Integer, ReceivedItem> itemMap = receivedPart.getItems().stream()
+                            .collect(Collectors.toMap(i -> i.getItemId(), i -> i));
+                    itemList = itemsMap.get(part.getPartId());
+                    // create bindings for item(s)
+                    for (ApItem item : itemList) {
+                        externalSystemService.createApBindingItem(binding, apChange, itemMap.get(item.getItemId()).getUuid(), null, item);
+                    }
+                    // create binding for found part
+                    externalSystemService.createApBindingItem(binding, apChange, partXml.getPid().getValue(), part, null);
+                }
             }
             syncResult.addPartItems(part, itemList);
             syncResult.addPart(part);
@@ -798,6 +831,86 @@ public class EntityDBDispatcher {
         bindingItemLookup = null;
 
         return syncResult;
+    }
+
+    /**
+     * Najít odpovídající ApPart v seznamu
+     * 
+     * @param partXml
+     * @param parentPart
+     * @param itemsMap
+     * @return
+     */
+    private ReceivedPart findSamePartWithoutBinding(PartXml partXml, ApPart parentPart, Map<Integer, List<ApItem>> itemsMap) {
+        List<ReferencedEntities> dataRefList = new ArrayList<>();
+        List<ReceivedItem> itemsFromXml;
+        ItemsXml itms = partXml.getItms();
+        if (itms != null) {
+            itemsFromXml = itms.getItems().stream().map(i -> createReveivedItem(i, dataRefList)).collect(Collectors.toList());
+        } else {
+            itemsFromXml  = Collections.emptyList();
+        }
+
+        for (ApPart part : partsWithoutBinding) {
+            if (comparePart(partXml, itemsFromXml, parentPart, part, itemsMap.get(part.getPartId()))) {
+                return new ReceivedPart(part, itemsFromXml);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Porovnání PartXml z ApPart včetně ApItem(s)
+     * 
+     * @param partXml
+     * @param itemsXml
+     * @param parentPart
+     * @param part
+     * @param items
+     * @return
+     */
+    private boolean comparePart(final PartXml partXml, final List<ReceivedItem> itemsXml, final ApPart parentPart, final ApPart part, final List<ApItem> items) {
+        StaticDataProvider sdp = procCtx.getStaticDataProvider();
+        RulPartType partType = sdp.getPartTypeByCode(partXml.getT().value());
+
+        // compare partType
+        if (!partType.getPartTypeId().equals(part.getPartTypeId())) {
+            return false;
+        }
+
+        // check on the parentPart
+        if (parentPart == null) {
+            if (part.getParentPart() != null) {
+                return false;
+            }
+        } else {
+            if (!parentPart.getPartId().equals(part.getParentPartId())) {
+                return false;
+            }
+        }
+
+        // compare items
+        return compareItems(itemsXml, items);
+    }
+
+    /**
+     * Porovnání seznamu items PartXml se sezmanen ApItem
+     * 
+     * @param itemsXml
+     * @param items
+     * @return
+     */
+    private boolean compareItems(final List<ReceivedItem> itemsXml, final List<ApItem> items) {
+        if (itemsXml.size() != items.size()) {
+            return false;
+        }
+
+        for (ReceivedItem item : itemsXml) {
+            if (!item.contains(items)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void deletePartsInLookup(ApChange apChange, ApAccessPoint accessPoint, boolean syncQueue) {
@@ -941,15 +1054,25 @@ public class EntityDBDispatcher {
         accessPointItemService.deleteBindnedItems(bindingItemsInPart, apChange);
     }
 
+    public List<ApItem> createItems(final PartXml partXml,
+                                    final ApPart apPart, final ApChange change,
+                                    final ApBinding binding,
+                                    final List<ReferencedEntities> dataRefList) {
+        
+        if (partXml.getItms() == null) {
+            return Collections.emptyList();
+        }
+        return createItems(partXml.getItms().getItems(), apPart, change, binding, dataRefList);
+    }
+
     public List<ApItem> createItems(final List<Object> createItems,
-                                    ApPart apPart, final ApChange change,
+                                    final ApPart apPart, final ApChange change,
                                     final ApBinding binding,
                                     final List<ReferencedEntities> dataRefList) {
         List<ApItem> itemsCreated = new ArrayList<>(createItems.size());
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 
         for (Object createItem : createItems) {
-
             ApItem itemCreated = createItem(apPart, createItem, change, typeIdItemsMap, binding, dataRefList);
             itemsCreated.add(itemCreated);
         }
@@ -962,6 +1085,22 @@ public class EntityDBDispatcher {
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
                               final ApBinding binding,
                               final List<ReferencedEntities> dataRefList) {
+        ReceivedItem receivedItem = createReveivedItem(createItem, dataRefList);  
+        RulItemType itemType = receivedItem.getItemType();
+        RulItemSpec itemSpec = receivedItem.getItemSpec();
+        String uuid = receivedItem.getUuid();
+        ArrData data = receivedItem.getData();
+
+        List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
+
+        ApItem itemCreated = accessPointItemService.createItemWithSave(part, data, itemType, itemSpec, change,
+                                                                       existsItems,
+                                                                       binding, uuid);
+        existsItems.add(itemCreated);
+        return itemCreated;
+    }
+
+    private ReceivedItem createReveivedItem(final Object createItem, final List<ReferencedEntities> dataRefList) {
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         RulItemType itemType;
         RulItemSpec itemSpec;
@@ -1138,27 +1277,22 @@ public class EntityDBDispatcher {
             }
         }
 
-        List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
-
-        ApItem itemCreated = accessPointItemService.createItemWithSave(part, data, itemType, itemSpec, change,
-                                                                       existsItems,
-                                                                       binding, uuid);
-
-        existsItems.add(itemCreated);
-        return itemCreated;
+        return new ReceivedItem(itemType, itemSpec, uuid, data);
     }
 
-    private void readBindingItems(ApBinding binding) {
+    private void readBindingItems(ApBinding binding, ApAccessPoint accessPoint) {
         List<ApBindingItem> bindingItems = this.externalSystemService.getBindingItems(binding);
 
         Map<Integer, ApBindingItem> partIdBindingMap = new HashMap<>();
         bindingPartLookup = new HashMap<>();
         bindingItemLookup = new HashMap<>();
-        
+        partsWithoutBinding = partService.findPartsByAccessPoint(accessPoint);
+
         for (ApBindingItem bindingItem : bindingItems) {
             if (bindingItem.getPart() != null) {
                 bindingPartLookup.put(bindingItem.getValue(), bindingItem);
                 partIdBindingMap.put(bindingItem.getPart().getPartId(), bindingItem);
+                partsWithoutBinding.remove(bindingItem.getPart());
             } else if (bindingItem.getItem() != null) {
                 bindingItemLookup.put(bindingItem.getValue(), bindingItem);
             } else {
