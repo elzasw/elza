@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -362,7 +361,9 @@ public class EntityDBDispatcher {
         Validate.notNull(procCtx.getApChange());
         Validate.notNull(prevBindingState);
 
+
         this.procCtx = procCtx;
+
         
         // Flag if entity is deleted
         // Deleted entity has to be retained as deleted if 
@@ -372,6 +373,28 @@ public class EntityDBDispatcher {
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
+
+        readBindingItems(prevBindingState.getBinding(), accessPoint);
+        // check if exists subparts without binding
+        // in such case we cannot run synchronization - subparts has to be resolve first
+        if (syncQueue && CollectionUtils.isNotEmpty(partsWithoutBinding)) {
+            for (ApPart partWithoutBinding : partsWithoutBinding) {
+                if (partWithoutBinding.getParentPart() != null) {
+                    // sub part without item and running in background
+                    // -> sync failed
+                    this.bindingState = externalSystemService.createBindingState(prevBindingState,
+                                                                                 procCtx.getApChange(),
+                                                                                 entity.getEns().value(),
+                                                                                 entity.getRevi().getRid().getValue(),
+                                                                                 entity.getRevi().getUsr().getValue(),
+                                                                                 null,
+                                                                                 SyncState.NOT_SYNCED,
+                                                                                 accessPoint.getPreferredPart(),
+                                                                                 state.getApType());
+                    this.procCtx = null;
+                }
+            }
+        }
 
         // check s AP class/subclass was cha
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
@@ -719,7 +742,6 @@ public class EntityDBDispatcher {
         Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
-        readBindingItems(binding, accessPoint);
 
         /*        
         List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(binding);
