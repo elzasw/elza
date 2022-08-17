@@ -19,6 +19,7 @@ import {
 } from 'components/arr/ArrUtils.jsx';
 import {dateTimeToString} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 class AdminRequestsQueuePage extends AbstractReactComponent {
     buildRibbon() {
@@ -33,8 +34,10 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
         this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
-    handleDelete = item => {
-        if (window.confirm(i18n('requestQueue.delete.confirm'))) {
+    handleDelete = async (item) => {
+        const {dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('requestQueue.delete.confirm')))
+        if (response) {
             WebApi.removeArrRequestQueueItem(item.request.id);
         }
     };

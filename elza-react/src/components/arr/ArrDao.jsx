@@ -10,6 +10,7 @@ import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
 
 import './ArrDao.scss';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 class ArrDao extends AbstractReactComponent {
     static propTypes = {
@@ -24,9 +25,10 @@ class ArrDao extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {}
 
-    handleUnlink = () => {
-        const {onUnlink} = this.props;
-        if (window.confirm(i18n('arr.daos.unlink.confirm'))) {
+    handleUnlink = async () => {
+        const {onUnlink, dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('arr.daos.unlink.confirm')));
+        if (response) {
             onUnlink();
         }
     };
