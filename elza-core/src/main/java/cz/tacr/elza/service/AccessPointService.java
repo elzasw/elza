@@ -793,8 +793,10 @@ public class AccessPointService {
         Map<Integer, ? extends ArrData> dataIdToArrDataMap = arrDataList.stream().collect(toMap(ArrData::getDataId, Function.identity()));
 
         Map<Integer, Set<Integer>> nodeIdToDataIdsMap = new HashMap<>();
-        if (!arrDataList.isEmpty()) {
-            List<Object[]> fundIdNodeIdDataIdList = descItemRepository.findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(arrDataList);
+
+        ObjectListIterator.forEachPage(arrDataList, dataList -> {
+            List<Object[]> fundIdNodeIdDataIdList = descItemRepository
+                    .findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(dataList);
 
             fundIdNodeIdDataIdList.forEach(row -> {
                 Integer fundId = (Integer) row[0];
@@ -819,7 +821,7 @@ public class AccessPointService {
                 }
                 dataIds.add(dataId);
             });
-        }
+        });
 
         if (fundIdToNodeIdsMap.keySet().isEmpty()) {
             return Collections.emptyList();
