@@ -392,6 +392,7 @@ public class EntityDBDispatcher {
                                                                                  accessPoint.getPreferredPart(),
                                                                                  state.getApType());
                     this.procCtx = null;
+                    return;
                 }
             }
         }
