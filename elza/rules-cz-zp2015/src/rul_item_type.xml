@@ -159,7 +159,7 @@
     </item-type>
     <item-type code="ZP2015_UNIT_DATE_BULK" data-type="UNITDATE">
         <name>Vlastní časový rozsah</name>
-        <shortcut>Vl. čas rozsah</shortcut>
+        <shortcut>Vl. čas. rozsah</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu (vlastní časový rozsah)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
