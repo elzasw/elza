@@ -1050,6 +1050,7 @@ var messages = {
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
+    "registry.restoreEntity": "Obnovit entitu",
 
     "registry.entity.notFound": "Archivní entita nenalezena",
 

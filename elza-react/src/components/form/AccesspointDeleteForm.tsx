@@ -38,8 +38,10 @@ const UsageForm = UsageFormUntyped as any;
 
 export const AccessPointDeleteForm:FC<{
     detail: ApAccessPointVO;
+    onSubmitSuccess?: () => void;
 }> = ({
-    detail
+    detail,
+    onSubmitSuccess = () => {}
 }) => {
     const [data, setData] = useState<RegistryUsage | null>(null)
     const dispatch = useDispatch();
@@ -51,6 +53,7 @@ export const AccessPointDeleteForm:FC<{
                 replacedBy: newNode.id.toString(),
                 replaceType,
             }).then(() => {
+                onSubmitSuccess();
                 dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
                 dispatch(modalDialogHide());
             }).catch(() => {
