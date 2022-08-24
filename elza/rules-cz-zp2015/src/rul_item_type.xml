@@ -792,6 +792,16 @@
         <use-specification>false</use-specification>
     </item-type>
 
+	<!-- Číslo archivní pomůcky -->
+    <item-type code="ZP2015_FINDING_AID_ID" data-type="INT">
+        <name>Číslo archivní pomůcky</name>
+        <shortcut>Č. arch. pom.</shortcut>
+        <description>Číslo archivní pomůcky</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+
     <!-- Inventární číslo pro starší pomůcky (dle pravidel 1958) -->
     <item-type code="ZP2015_INV_CISLO" data-type="STRING">
         <name>Inventární číslo</name>
