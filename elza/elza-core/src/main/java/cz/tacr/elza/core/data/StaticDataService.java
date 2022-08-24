@@ -12,6 +12,7 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -51,11 +52,13 @@ public class StaticDataService {
 
     /**
      * Set of transactions which should refresh StaticDataProvider after commit
-     *
      */
     private final Set<Transaction> modificationTransactions = new HashSet<>();
 
     private StaticDataProvider activeProvider;
+
+    @Value("${version:0.0.0}")
+    private String appVersion;
 
     /* managed components */
 
@@ -201,6 +204,10 @@ public class StaticDataService {
         return provider;
     }
 
+    public String getAppVersion() {
+        return appVersion;
+    }
+    
     /**
      * Called when new transaction if registered
      * @param tx
