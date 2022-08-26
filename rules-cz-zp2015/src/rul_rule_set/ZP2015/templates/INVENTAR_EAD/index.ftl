@@ -34,26 +34,47 @@
     <ead:agencyname>${output.fund.institution.record.preferredPart.value}</ead:agencyname>
   </ead:maintenanceagency>
 
-  <#-- 2.6. control/localcontrol -->
+  <#-- 2.6. Druh archivní pomůcky, control/localcontrol -->
   <#list output.items?filter(item -> item.type.code=="ZP2015_OUTPUT_TYPE") as item>
-  <@writeLocalCtrl item />
+    <#switch item.specification.name?lower_case>
+      <#case "prozatimní inventární seznam">
+        <#assign identifier="PROZ_INV_SEZNAM">
+        <#break>
+      <#case "manipulační seznam">
+        <#assign identifier="MANIP_SEZNAM">
+        <#break>
+      <#case "inventář">
+        <#assign identifier="INVENTAR">
+        <#break>
+      <#case "katalog">
+        <#assign identifier="KATALOG">
+        <#break>
+      <#default>
+        <#assign identifier="Undefined">
+        <#break>
+    </#switch>
+  <!-- Druh archivní pomůcky -->
+  <ead:localcontrol localtype="FINDING_AID_TYPE">
+    <ead:term identifier="${identifier}">${item.specification.name}</ead:term>
+  </ead:localcontrol>
   </#list>
 
   <#-- 2.6.1. Pravidla tvorby archivního popisu -->
   <#list output.createFlatNodeIterator()?filter(node -> node.depth==1) as node>
     <#switch node.getSingleItem("ZP2015_ARRANGEMENT_TYPE").specification.code>
     <#case "ZP2015_ARRANGEMENT_OTHER">
-      <#assign identifier="CZ_ZP1958">
-      <#assign value="základní pravidla z roku 1958">
+      <#assign rules="CZ_ZP1958">
+      <#assign description="základní pravidla z roku 1958">
       <#break>
     <#default>
-      <#assign identifier="CZ_ZP2013">
-      <#assign value="základní pravidla od roku 2013">
+      <#assign rules="CZ_ZP2013">
+      <#assign description="základní pravidla od roku 2013">
       <#break>
     </#switch>  
   </#list>
+  <!-- Pravidla tvorby archivního popisu -->
   <ead:localcontrol localtype="RULES">
-    <ead:term identifier="${identifier}">${value}</ead:term>
+    <ead:term identifier="${rules}">${description}</ead:term>
   </ead:localcontrol>
 
   <#-- TODO: odstranit nebo přesunout -->
@@ -65,8 +86,6 @@
     <ead:term>${item.serializedValue}</ead:term>
   </ead:localcontrol>
   </#list>
-  <!-- Počet EJ
-  <@writePocetEj output.items /> -->
 
   <#-- TODO: odstranit nebo přesunout -->
   <#-- Rozsah archiválií - ZP2015_UNITS_AMOUNT -->
@@ -96,6 +115,10 @@
     <ead:term>${item.specification.code}</ead:term>
   </ead:localcontrol>
   </#list> -->
+
+  <#-- TODO: odstranit nebo přesunout -->
+  <#-- <!-- Počet EJ
+  <@writePocetEj output.items /> -->
 
   <#-- 2.7. control/maintenancehistory -->
   <ead:maintenancehistory>
@@ -168,6 +191,7 @@
   <@writeTags 1 />
 </#macro>
 
+<#-- Zápis uzavíracího tagu nebo tagů -->
 <#macro writeTags levelindex>
   <#-- check to close previouse tag -->
   <#if (levelindex<=endtags?size)>
@@ -176,12 +200,109 @@
   </#if>
 </#macro>
 
-<#-- Zapis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
+<#-- Zápis jednoho uzlu -->
+<#macro writeNode node>
+  <@writeDid node />
+  <#if !node.nodeId.published>
+  <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
+  </#if>
+  <#-- Elements outside did -->
+  <#local relationsProcessed=0>
+  <#list node.items as item>
+    <#switch item.type.code>
+    <#case "ZP2015_ENTITY_ROLE">
+      <#if relationsProcessed==0>
+        <@writeRelations node.items />
+        <#local relationsProcessed=1>
+      </#if>
+      <#break>
+    <#case "ZP2015_UNIT_HIST">
+  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
+      <#break>
+    <#case "ZP2015_UNIT_ARR">
+  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
+      <#break>
+    <#case "ZP2015_UNIT_CONTENT">
+  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
+      <#break>
+    <#case "ZP2015_UNIT_SOURCE">
+  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
+      <#break>
+    <#case "ZP2015_FUTURE_UNITS">
+  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
+      <#break>
+    </#switch>
+  </#list>
+</#macro>
+
+<#-- Zápis did -->
+<#macro writeDid node>
+  <#local languagesProcessed=0>
+<ead:did>
+  <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
+    <#-- Počet evidenčních jednotek -->
+    <@writePocetEj output.items />
+  </#if>
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_UNIT_ID">
+        <#lt>  <ead:unitid localtype="ReferencniOznaceni">${item.serializedValue}</ead:unitid>
+        <#break>
+      <#case "ZP2015_TITLE">
+        <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
+        <#break>
+      <#case "ZP2015_UNIT_DATE">
+        <@writeUnitDate item />
+        <#break>
+      <#case "ZP2015_NOTE">
+      <ead:didnote>${item.serializedValue}</ead:didnote>
+        <#break>
+      <#case "ZP2015_ORIGINATOR">
+      <ead:origination localtype="ORIGINATOR">
+        <@writeAp item.record "ORIGINATOR" />
+      </ead:origination>        
+        <#break>
+      <#case "ZP2015_UNIT_CURRENT_STATUS">
+      <ead:physdesc>${item.serializedValue}</ead:physdesc>
+        <#break>
+      <#case "ZP2015_LANGUAGE">
+        <#if languagesProcessed==0>
+          <@writeLangMaterials node.items />
+          <#local languagesProcessed=1>
+        </#if>
+        <#break>
+      <#case "ZP2015_STORAGE_ID">
+      <!-- Ukladaci jednotka -->
+      <ead:container>${item.serializedValue}</ead:container>
+        <#break>
+    </#switch>
+  </#list>
+  <#-- zápis DAOs -->
+  <#if (node.daos?size==1)>
+    <@writeDao node node.daos?first /> 
+  </#if>
+  <#if (node.daos?size>1)>  
+  <ead:daoset>
+    <#list node.daos as dao>
+      <@writeDao node dao />
+    </#list>
+  </ead:daoset>
+  </#if>
+</ead:did>
+</#macro>
+
+<#-- Zápis single dao object -->
+<#macro writeDao node dao>
+<ead:dao daotype="unknown" identifier="${dao.code}">
+</ead:dao>
+</#macro>
+
+<#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
 <#macro writeLangMaterials items>
   <!-- Jazyky JP -->
   <ead:langmaterial>
   <#list items?filter(langItem -> langItem.type.code=="ZP2015_LANGUAGE") as langItem>
-  <ead:language langcode="${langItem.specification.code}">${langItem.specification.name}</ead:language>
+    <ead:language langcode="${langItem.specification.code}">${langItem.specification.name}</ead:language>
   </#list>
   </ead:langmaterial>
 </#macro>
@@ -206,7 +327,22 @@
         </ead:${tagname}>
 </#macro>
 
+<#-- 3.5. Počet evidenčních jednotek zpřístupněných archivní pomůckou -->
 <#macro writePocetEj items>
+  <!-- Evidencni jednotky -->
+  <#list items?filter(item -> item.type.code=="ZP2015_UNIT_COUNT_TABLE") as item>
+    <#list item.table.rows as row>
+  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype"
+                          otherphysdescstructuredtype="UNIT_TYPE"
+                          coverage="part">
+    <ead:quantity>${row.values["COUNT"]}</ead:quantity>
+    <ead:unittype>${row.values["NAME"]}</ead:unittype>
+  </ead:physdescstructured>
+    </#list>
+  </#list>
+</#macro>
+
+<#--#macro writePocetEj items>
 <#local ejTables=items?filter(item -> item.type.code=="ZP2015_UNIT_COUNT_TABLE")>
 <#list ejTables as ejTable>
   <#list ejTable.table.rows as row>    
@@ -225,7 +361,7 @@
   </#if>
   </#list>
 </#list>    
-</#macro>
+</#macro>-->
 
 <#macro writePublStmt items>
   <#-- Test if item type exists -->
@@ -343,47 +479,16 @@
     </ead:notestmt>
 </#macro>
 
-<#-- zobrazení druhu archivní pomůcky -->
-<#macro writeLocalCtrl item>
-  <#switch item.specification.name?lower_case>
-    <#case "prozatimní inventární seznam">
-      <#local identifier="PROZ_INV_SEZNAM">
-      <#break>
-    <#case "manipulační seznam">
-      <#local identifier="MANIP_SEZNAM">
-      <#break>
-    <#case "inventář">
-      <#local identifier="INVENTAR">
-      <#break>
-    <#case "katalog">
-      <#local identifier="KATALOG">
-      <#break>
-    <#default>
-      <#local identifier="Undefined">
-      <#break>
-  </#switch>
-  <!-- Druh archivní pomůcky -->
-  <ead:localcontrol localtype="FINDING_AID_TYPE">
-    <ead:term identifier="${identifier}">${item.specification.name}</ead:term>
-  </ead:localcontrol>
-</#macro>
-
-<#macro writeOriginator ap>
+<#-- <#macro writeOriginator ap>
   <ead:origination localtype="ORIGINATOR">
   <@writeAp ap "ORIGINATOR" />
   </ead:origination>
-</#macro>
+</#macro>-->
 
-<#-- Write single dao object -->
-<#macro writeDao node dao>
-<ead:dao daotype="unknown" identifier="${dao.code}">
-</ead:dao>
-</#macro>
-
-<#macro writeUklJednotka item>
-  <!-- Ukladaci jednotka -->
+<#-- <#macro writeUklJednotka item>
+  <!-- Ukladaci jednotka
   <ead:container>${item.serializedValue}</ead:container>
-</#macro>
+</#macro>-->
 
 <#-- Zapis datace -->
 <#macro writeUnitDate unitDate>
@@ -415,93 +520,3 @@
   </#list>
   </ead:relations>
 </#macro>
-
-<#-- Write did -->
-<#macro writeDid node>
-<#local languagesProcessed=0>
-<ead:did>
-<#list node.items as item>
-  <#switch item.type.code>
-    <#case "ZP2015_UNIT_ID">
-      <ead:unitid localtype="ReferencniOznaceni">${item.serializedValue}</ead:unitid>
-      <#break>
-    <#case "ZP2015_TITLE">
-      <ead:unittitle>${item.serializedValue}</ead:unittitle>
-      <#break>
-    <#case "ZP2015_UNIT_DATE">
-      <@writeUnitDate item />
-      <#break>
-    <#case "ZP2015_NOTE">
-      <ead:didnote>${item.serializedValue}</ead:didnote>
-      <#break>
-    <#case "ZP2015_ORIGINATOR">
-      <@writeOriginator item.record />
-      <#break>
-    <#case "ZP2015_UNIT_CURRENT_STATUS">
-      <ead:physdesc>${item.serializedValue}</ead:physdesc>
-      <#break>
-    <#case "ZP2015_LANGUAGE">
-      <#if languagesProcessed==0>
-        <@writeLangMaterials node.items />
-        <#local languagesProcessed=1>
-      </#if>
-      <#break>
-    <#case "ZP2015_STORAGE_ID">
-      <@writeUklJednotka item />
-      <#break>
-  </#switch>
-</#list>
-<#-- Write DAOs -->
-<#if (node.daos?size==1)>
-  <@writeDao node node.daos?first /> 
-</#if>
-<#if (node.daos?size>1)>  
-  <ead:daoset>
-  <#list node.daos as dao>
-    <@writeDao node dao />
-  </#list>
-  </ead:daoset>
-</#if>
-</ead:did>
-</#macro>
-
-<#-- Zápis jednoho uzlu -->
-<#macro writeNode node>
-<@writeDid node />
-<#if !node.nodeId.published>
-  <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
-</#if>
-<#-- Elements outside did -->
-<#local relationsProcessed=0>
-<#list node.items as item>
-<#switch item.type.code>
-<#case "ZP2015_ENTITY_ROLE">
-  <#if relationsProcessed==0>
-    <@writeRelations node.items />
-    <#local relationsProcessed=1>
-  </#if>
-  <#break>
-<#case "ZP2015_UNIT_HIST">
-  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
-  <#break>
-<#case "ZP2015_UNIT_ARR">
-  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
-  <#break>
-<#case "ZP2015_UNIT_CONTENT">
-  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
-  <#break>
-<#case "ZP2015_UNIT_SOURCE">
-  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
-  <#break>
-<#case "ZP2015_FUTURE_UNITS">
-  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
-  <#break>
-</#switch>
-</#list>
-</#macro>
-<#-- <ead:archdesc level="otherlevel" otherlevel="findingaidroot">
-  <@writeNode output />
-  <ead:dsc>
-  <@writeNodes output.createFlatNodeIterator() /> 
-  </ead:dsc>
-</ead:archdesc> -->
