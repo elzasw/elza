@@ -10,6 +10,8 @@ import {modalDialogHide} from '../../actions/global/modalDialog';
 
 import { Api, ApAccessPointVO } from "../../api";
 import { DeleteAccessPointDetailReplaceTypeEnum as ReplaceType} from "elza-api";
+import Icon from 'components/shared/icon/FontIcon';
+import './UsageForm.scss';
 
 // Docasne definice
 // bude nahrazeno typy z vygenerovaneho api
@@ -44,21 +46,25 @@ export const AccessPointDeleteForm:FC<{
     onSubmitSuccess = () => {}
 }) => {
     const [data, setData] = useState<RegistryUsage | null>(null)
+    const [inProgress, setInProgress] = useState(false);
     const dispatch = useDispatch();
 
 
     const deleteAccessPoint = (newNode: ApAccessPointVO, replaceType: ReplaceType) => {
         if (newNode) {
+            setInProgress(true);
             Api.accesspoints.deleteAccessPoint(detail.id.toString(), {
                 replacedBy: newNode.id.toString(),
                 replaceType,
             }).then(() => {
-                onSubmitSuccess();
-                dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
-                dispatch(modalDialogHide());
-            }).catch(() => {
-                dispatch(modalDialogHide());
-            });
+                    onSubmitSuccess();
+                    dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
+                    dispatch(modalDialogHide());
+                    setInProgress(false);
+                }).catch(() => {
+                    dispatch(modalDialogHide());
+                    setInProgress(false);
+                });
         }
     }
 
@@ -76,18 +82,23 @@ export const AccessPointDeleteForm:FC<{
         });
     }, [detail])
 
-    return data ? 
-        <UsageForm
-            detail={detail}
-            treeArea={types.FUND_TREE_AREA_USAGE}
-            onReplace={handleReplace}
-            onMerge={handleMerge}
-            type="registry"
-            //replaceButtonText={`${i18n('accesspoint.removeDuplicity.resolve')}`}
-            replaceText={`${i18n('accesspoint.removeDuplicity.replacingAccesspoint')}:`}
-            replaceType="delete"
-            nameLabel={`${i18n('accesspoint.removeDuplicity.replacedAccesspoint')}:`}
-            data={data}
-        /> : 
-            <HorizontalLoader />;
+    if(!data){ return <HorizontalLoader />}
+    if(inProgress){ return <div className="in-progress">
+        <Icon glyph="fa-refresh" className="fa-spin"/>
+        &nbsp;
+        {i18n('accesspoint.removeDuplicity.inProgress')}
+    </div>}
+
+    return <UsageForm
+        detail={detail}
+        treeArea={types.FUND_TREE_AREA_USAGE}
+        onReplace={handleReplace}
+        onMerge={handleMerge}
+        type="registry"
+        //replaceButtonText={`${i18n('accesspoint.removeDuplicity.resolve')}`}
+        replaceText={`${i18n('accesspoint.removeDuplicity.replacingAccesspoint')}:`}
+        replaceType="delete"
+        nameLabel={`${i18n('accesspoint.removeDuplicity.replacedAccesspoint')}:`}
+        data={data}
+        /> 
 }

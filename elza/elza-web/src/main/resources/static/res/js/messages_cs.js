@@ -1725,6 +1725,7 @@ var messages = {
     "accesspoint.removeDuplicity.confirm.merge.a": "Opravdu si přejete zneplatnit a sloučit entitu",
     "accesspoint.removeDuplicity.confirm.merge.b": "s nahrazující entitou",
     "accesspoint.removeDuplicity.confirm.nonEqualNames": "Entity mají ruzná označení",
+    "accesspoint.removeDuplicity.inProgress": "Probíhá odstranění duplicity...",
 
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",
