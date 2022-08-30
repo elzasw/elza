@@ -37,6 +37,13 @@
         }
     }
 }
+.in-progress {
+    height: 100px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 .confirmation {
     .entity {
         padding: 5px;
