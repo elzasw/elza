@@ -1758,6 +1758,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             newDescItem.setPosition(1);
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
+            changeContext.addCreatedItem(savedItem);
             arrangementCacheService.createDescItem(savedItem, changeContext);
 
             changeContext.flushIfNeeded();
