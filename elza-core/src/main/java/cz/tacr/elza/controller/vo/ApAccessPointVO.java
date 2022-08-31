@@ -135,6 +135,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private List<ApPartVO> revParts = new ArrayList<>();
 
+    /**
+     *  Seznam ID entit, které tato entita nahradila
+     */
+    private List<Integer> replacedIds;
+
     public Integer getId() {
         return id;
     }
@@ -327,5 +332,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setReplacedById(Integer replacedById) {
         this.replacedById = replacedById;
+    }
+
+    public List<Integer> getReplacedIds() {
+        return replacedIds;
+    }
+
+    public void setReplacedIds(List<Integer> replacedIds) {
+        this.replacedIds = replacedIds;
     }
 }
