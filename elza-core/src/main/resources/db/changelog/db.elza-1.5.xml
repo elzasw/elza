@@ -2121,4 +2121,11 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
             WHERE format LIKE '%C' AND value_to NOT SIMILAR TO '\d\d00-12-31%' AND value_to NOT LIKE '-%'</sql>
 	</changeSet>
 
+	<changeSet id="20220831133000" author="sergey.iryupin">
+        <createIndex indexName="ap_state_replaced_by_idx" tableName="ap_state" unique="false">
+            <column name="replaced_by" type="int" />
+        </createIndex>
+        <delete tableName="ap_cached_access_point" />
+	</changeSet>
+
 </databaseChangeLog>
