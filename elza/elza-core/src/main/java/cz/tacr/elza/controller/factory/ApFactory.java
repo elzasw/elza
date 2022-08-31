@@ -308,7 +308,13 @@ public class ApFactory {
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
+        List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
+        List<Integer> replacedIds = states.stream().map(s -> s.getAccessPointId()).collect(Collectors.toList());
+
         ApAccessPointVO apVO = createVO(state, ap, name);
+        if (!replacedIds.isEmpty()) {
+            apVO.setReplacedIds(replacedIds);
+        }
         if (fillParts) {
 
             // prepare parts
@@ -437,11 +443,12 @@ public class ApFactory {
     public ApAccessPointVO createVO(final ApState apState,
                                     final CachedAccessPoint ap,
                                     final String name) {
-        return createVO(apState, ap.getAccessPointId(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
+        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
     }
 
     public ApAccessPointVO createVO(final ApState apState,
                                     final Integer accessPointId,
+                                    final List<Integer> replacedIds,
                                     final String uuid,
                                     final String errorDescription,
                                     final ApStateEnum state,
@@ -453,6 +460,7 @@ public class ApFactory {
         if (apState.getReplacedBy() != null) {
             vo.setReplacedById(apState.getReplacedBy().getAccessPointId());
         }
+        vo.setReplacedIds(replacedIds);
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
         vo.setComment(apState.getComment());

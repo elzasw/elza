@@ -421,8 +421,8 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         if (replacedBy != null) {
-            ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
-            validationNotDeleted(replacementState);
+            ApState replacedByState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
+            validationNotDeleted(replacedByState);
             
             // check binding states
             // both APs cannot be binded to the same external system
@@ -443,21 +443,23 @@ public class AccessPointService {
             		}
             	}
             }
-            
+
             // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
             if (mergeAp) {
-                validationMergePossibility(replacementState);
+                validationMergePossibility(replacedByState);
             }
-            replace(apState, replacementState, extSystem);
+            replace(apState, replacedByState, extSystem);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
             if (mergeAp) {
                 mergeParts(accessPoint, replacedBy, change);
-                // vygenerování indexů a aktualizace záznamů v cache
+                // vygenerování indexů
                 updateAndValidate(replacedBy.getAccessPointId());        
-                accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
+
+            // aktualizace náhradní entity v cache
+            accessPointCacheService.createApCachedAccessPoint(replacedByState.getAccessPointId());
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
     }
@@ -489,6 +491,11 @@ public class AccessPointService {
         ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
         publishAccessPointRestoreEvent(accessPoint);
         reindexDescItem(accessPoint);
+
+        // if exists replacedById - regeneration cached AP by id
+        if (apState.getReplacedById() != null) {
+            accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
+        }
     }
 
     /**
@@ -1910,6 +1917,7 @@ public class AccessPointService {
         newState.setComment(oldState.getComment());
         newState.setCreateChange(change);
         newState.setDeleteChange(null);
+        newState.setReplacedBy(null);
         return newState;
     }
 

@@ -292,12 +292,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         if(requestedIds.size()!=accessPointIds.size()) {
             logger.error("Some ID is multiple times in the query");
         }
-        
+
         List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);        
         // Prepare map
         final Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
                 .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, ap -> createCachedAccessPoint(ap)));
-        
+
         // check result
         if (requestedIds.size() != accessPointList.size()) {
             List<Integer> missingIds = requestedIds.stream().filter((reqId) -> apMap.get(reqId)==null)
@@ -307,10 +307,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                     .set("missingIds", missingIds);
         }
 
-
         // set ap state
         List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
-        if(apStates.size() != accessPointIds.size()) {
+        if (apStates.size() != accessPointIds.size()) {
         	Map<Integer, ApState> apStatesMap = new HashMap<>();
         	for(ApState apState: apStates) {
         		ApState otherState = apStatesMap.put(apState.getAccessPointId(), apState);
@@ -327,12 +326,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         	Set<Integer> ids = new HashSet<>();
         	for(ApAccessPoint ap: accessPointList) {
         		ApState apState = apStatesMap.get(ap.getAccessPointId());
-        		if(apState==null) {
+        		if (apState == null) {
         			logger.error("Missing state for accesspoint, accessPointId: {}", ap.getAccessPointId());
         			throw new SystemException("Missing state for accesspoint.", BaseCode.DB_INTEGRITY_PROBLEM)
     					.set("accessPointId", ap.getAccessPointId());
         		}
-        		if(!ids.add(ap.getAccessPointId())) {
+        		if (!ids.add(ap.getAccessPointId())) {
         			logger.error("AccessPoint was already processed, accessPointId: {}", ap.getAccessPointId());
         			throw new SystemException("AccessPoint was already processed.", BaseCode.DB_INTEGRITY_PROBLEM)
     					.set("accessPointId", ap.getAccessPointId());
@@ -349,6 +348,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         createCachedPartMap(accessPointList, apMap);
         createCachedBindingMap(accessPointList, apMap);
+        createCachedReplacedMap(accessPointIds, apMap);
 
         List<ApCachedAccessPoint> apCachedAccessPoints = new ArrayList<>();
 
@@ -406,8 +406,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedPart;
     }
 
-    private void createCachedPartMap(List<ApAccessPoint> accessPointList,
-                                     Map<Integer, CachedAccessPoint> apMap) {
+    private void createCachedReplacedMap(List<Integer> accessPointIds, Map<Integer, CachedAccessPoint> apMap) {
+
+        List<ApState> states = stateRepository.findLastByReplacedByIds(accessPointIds);
+
+        states.forEach(s -> apMap.get(s.getReplacedById()).addReplacedId(s.getAccessPointId()));
+    }
+
+    private void createCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedAccessPoint> apMap) {
 
         Map<Integer, CachedPart> partMap = fillCachedPartMap(accessPointList, apMap);
 
