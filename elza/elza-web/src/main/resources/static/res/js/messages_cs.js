@@ -888,6 +888,7 @@ var messages = {
     "arr.history.action.deleteFrom.show": "Přejít",
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
+    "arr.history.delete.inProgress": "Probíhá odstranění změn...",
 
     "arr.lecturing.states_all": "Stav",
     "arr.lecturing.severity_all": "Závažnost",

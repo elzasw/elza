@@ -1,6 +1,14 @@
 $arr-history-line-height: 24px; // definuje se i v JS!!!!!
 @import "../../variables.scss";
 
+.in-progress {
+    height: 100px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .arr-history-form-container {
     .modal-body {
         .form-group {
