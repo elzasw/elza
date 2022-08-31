@@ -54,6 +54,7 @@ export interface ApAccessPointVO {
 
     invalid: boolean;
     replacedById?: number;
+    replacedIds?: number[];
 
     /**
      * Externí identifikátory rejstříkového hesla.
