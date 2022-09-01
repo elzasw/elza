@@ -2905,36 +2905,6 @@ public class AccessPointService {
         return false;
     }
 
-    /**
-     * Pomocná třída pro založení změny až při její první potřebě.
-     */
-    private class ApChangeNeed {
-
-        /**
-         * Zakládaný typ změny.
-         */
-        private final ApChange.Type type;
-
-        /**
-         * Založená změna.
-         */
-        private ApChange change;
-
-        ApChangeNeed(final ApChange.Type type) {
-            this.type = type;
-        }
-
-        /**
-         * @return získání/založení změny
-         */
-        public ApChange get() {
-            if (change == null) {
-                change = apDataService.createChange(type);
-            }
-            return change;
-        }
-    }
-
     public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
                                                                                                                      binding));
@@ -3280,19 +3250,58 @@ public class AccessPointService {
      * @param change
      */
     private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
+
         for (ApItem item : itemsFrom) {
-            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-
-            ApItem newItem = apItemService.createItem(partTo, newData, 
-                    item.getItemType(), 
-                    item.getItemSpec(), 
-                    change, 
-                    apItemService.nextItemObjectId(),
-                    item.getPosition());
-
-            dataRepository.save(newData);
-            itemRepository.save(newItem);
+            copyItem(item, partTo, change, item.getPosition());
         }
+    }
+
+    private ApItem copyItem(ApItem item, ApPart partTo, ApChange change, int position) {
+        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+
+        // zvláštní ošetření pro entity - kontrola deduplikace, 
+        // resp. kopie platné entity
+        if (newData instanceof ArrDataRecordRef) {
+            ArrDataRecordRef drr = (ArrDataRecordRef) newData;
+            if (drr.getRecordId() != null) {
+                ApState apState = getValidAccessPoint(drr.getRecordId());
+                if (!apState.getAccessPointId().equals(drr.getRecordId())) {
+                    drr.setRecord(apState.getAccessPoint());
+                }
+            }
+        }
+
+        ApItem newItem = apItemService.createItem(partTo, newData,
+                                                  item.getItemType(),
+                                                  item.getItemSpec(),
+                                                  change,
+                                                  apItemService.nextItemObjectId(),
+                                                  position);
+
+        dataRepository.save(newData);
+        return itemRepository.save(newItem);
+    }
+
+
+    /**
+     * Metoda vyhledá stav přístupového bodu a vrátí ho.
+     * 
+     * V případě nahrazeného přístupového bodu se vrací nahrazující.
+     */
+    private ApState getValidAccessPoint(Integer recordId) {
+        ApState apState = getApState(recordId);
+        if (apState.getReplacedById() == null) {
+            return apState;
+        }
+        // nalezení poslední nahrazující entity
+        // ochrana proti zacykleni
+        Set<Integer> replacesAps = new HashSet<>();
+        while (apState.getReplacedById() != null && !replacesAps.contains(apState.getReplacedById())) {
+            replacesAps.add(apState.getReplacedById());
+            apState = getApState(apState.getReplacedById());
+        }
+
+        return apState;
     }
 
     /**
@@ -3312,17 +3321,7 @@ public class AccessPointService {
 
         for (ApItem item : itemsFrom) {
             if (!existsItemInPart(item, itemsTo)) {
-                ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-
-                ApItem newItem = apItemService.createItem(partTo, newData, 
-                    item.getItemType(), 
-                    item.getItemSpec(), 
-                    change, 
-                    apItemService.nextItemObjectId(),
-                    ++position);
-
-                dataRepository.save(newData);
-                itemRepository.save(newItem);
+                copyItem(item, partTo, change, ++position);
             }
         }
     }
