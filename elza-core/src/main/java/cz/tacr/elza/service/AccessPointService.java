@@ -458,8 +458,6 @@ public class AccessPointService {
                 updateAndValidate(replacedBy.getAccessPointId());        
             }
 
-            // aktualizace náhradní entity v cache
-            accessPointCacheService.createApCachedAccessPoint(replacedByState.getAccessPointId());
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
     }
@@ -579,6 +577,11 @@ public class AccessPointService {
 
         accessPointCacheService.deleteCachedAccessPoint(accessPoint);
         
+        if (apState.getReplacedById() != null) {
+            // aktualizace náhradní entity v cache
+            accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
+        }
+
         return apState;
     }
 
