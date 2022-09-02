@@ -333,6 +333,12 @@ class FundTreeLazy extends AbstractReactComponent {
         );
     };
 
+    handleExpand = () => {
+        const {nodes, selectedId, onExpand} = this.props
+        const node = nodes.find((node) => node.id === selectedId);
+        onExpand && onExpand(node);
+    }
+
     render() {
         const {
             fetched,
@@ -352,6 +358,9 @@ class FundTreeLazy extends AbstractReactComponent {
             onClickExtendedSearch,
             extendedReadOnly,
             showCollapseAll,
+            nodes,
+            selectedId,
+            onExpand,
         } = this.props;
 
         let index;
@@ -369,6 +378,7 @@ class FundTreeLazy extends AbstractReactComponent {
         if (className) {
             cls += ' ' + className;
         }
+        const selectedNode = nodes.find((node) => node.id === selectedId);
 
         return (
             <div className={cls}>
@@ -386,7 +396,7 @@ class FundTreeLazy extends AbstractReactComponent {
                             extendedSearch={extendedSearch}
                             extendedReadOnly={extendedReadOnly}
                             onClickExtendedSearch={onClickExtendedSearch}
-                        />
+                            />
                     )}
                 </div>
                 <Shortcuts
@@ -397,12 +407,21 @@ class FundTreeLazy extends AbstractReactComponent {
                     ref="treeWrapper"
                 >
                     <div className="fa-tree-lazy-actions">
-                        {showCollapseAll && (
-                            <Button className="tree-collapse" onClick={this.props.onCollapse}>
-                                <Icon glyph="fa-compress" />
-                                Sbalit vše
-                            </Button>
+                        {onExpand && (
+                            <TooltipTrigger content={i18n('fundTree.expandLevel')} placement="top">
+                                <Button disabled={selectedNode && !selectedNode.hasChildren} className="tree-button" onClick={this.handleExpand}>
+                                    <Icon glyph="fa-plus-square" />
+                                </Button>
+                            </TooltipTrigger>
                         )}
+                        {showCollapseAll && (
+                            <TooltipTrigger content={i18n('fundTree.collapseAll')} placement="top">
+                                <Button className="tree-button" onClick={this.props.onCollapse}>
+                                    <Icon glyph="fa-minus-square" />
+                                </Button>
+                            </TooltipTrigger>
+                        )}
+                        <div style={{flexGrow:1}}/>
                         {actionAddons}
                     </div>
                     <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
@@ -416,7 +435,7 @@ class FundTreeLazy extends AbstractReactComponent {
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
                                 itemBuffer={10}
-                            />
+                                />
                         )}
                     </div>
                 </Shortcuts>

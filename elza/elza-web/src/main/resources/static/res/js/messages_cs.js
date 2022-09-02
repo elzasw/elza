@@ -401,6 +401,8 @@ var messages = {
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
+    "fundTree.expandLevel": "Rozbalit",
+    "fundTree.collapseAll": "Sbalit vše",
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
