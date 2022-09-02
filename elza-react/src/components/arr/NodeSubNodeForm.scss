@@ -56,7 +56,8 @@
                     margin: 0;
                     background: transparent;
                     height: 2em;
-                    font-size: 0.9em;
+                    min-width: 2em;
+                    font-size: 0.8rem;
 
                     &:disabled {
                         color: #666;
