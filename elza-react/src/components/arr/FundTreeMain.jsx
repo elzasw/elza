@@ -19,9 +19,10 @@ import {
     fundTreeFulltextSearch,
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
+    fundTreeNodesExpand,
 } from 'actions/arr/fundTree.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {createFundRoot, getParentNode} from './ArrUtils.jsx';
+import {createFundRoot, getParentNode, getNodeChildren} from './ArrUtils.jsx';
 import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -197,6 +198,24 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund));
     };
 
+    /**
+    * Rozbaleni urovne
+    */
+    handleExpand = (node) => {
+        const { nodes, dispatch } = this.props;
+        if(node && !node.hasChildren){ return; }
+
+        let expandedNodes = nodes;
+
+        if(node){
+            expandedNodes = [node, ...getNodeChildren(node, nodes)]
+        } 
+
+        expandedNodes = expandedNodes.filter((node) => node.hasChildren)
+
+        dispatch(fundTreeNodesExpand(types.FUND_TREE_AREA_MAIN, expandedNodes));
+    }
+
     handleExtendedSearch = () => {
         const {fund} = this.props;
         this.props.dispatch(
@@ -276,6 +295,7 @@ class FundTreeMain extends React.Component {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
+                onExpand={this.handleExpand}
                 extendedSearch
                 filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : searchText}
                 extendedReadOnly={fund.fundTree.luceneQuery}
