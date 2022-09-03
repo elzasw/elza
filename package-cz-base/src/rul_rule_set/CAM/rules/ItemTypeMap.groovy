@@ -4,33 +4,7 @@ import java.util.Collections
 import cz.tacr.elza.domain.ApItem
 import groovy.transform.Field
 
-Set<Integer> itemTypes = createItemTypes(DATA_PROVIDER);
-Set<Integer> itemSpecs = createItemSpecs(DATA_PROVIDER);
-
-// Filter to include only known types and specs
-List<ApItem> result = new ArrayList<>();
-ITEMS.each {
-    item ->
-    if(itemTypes.contains(item.getItemTypeId())) {
-        // check spec
-        if(item.getItemSpec()==null) {
-            result.add(item);
-        } else 
-        if(itemSpecs.contains(item.getItemSpecId())) {
-            result.add(item);
-        }
-    }
-}
-
-// Check if part includes key types and can be posted
-
-return result;
-
-//@Field static Set<Integer> itemTypes = createItemTypes()
-//@Field static Set<Integer> itemSpecs = createItemSpecs()
-
-Set<String> createItemTypes(dataProvider) {
-    String[] typesArray = [
+@Field static String[] typesArray = [
         "COORD_POINT", "COORD_BORDER", "COORD_NOTE",
         "GEO_TYPE", "GEO_ADMIN_CLASS", "NOTE", 
         "IDN_TYPE", "IDN_VALID_FROM", "IDN_VALID_TO", 
@@ -51,6 +25,59 @@ Set<String> createItemTypes(dataProvider) {
         "SOURCE_LINK", "HISTORY", "GENEALOGY", "BIOGRAPHY", 
         "DESCRIPTION"    
     ];
+
+Set<Integer> itemTypes = createItemTypes(DATA_PROVIDER);
+Set<Integer> itemSpecs = createItemSpecs(DATA_PROVIDER);
+Map<String, Integer> itemCodeMap = createItemCodeMap(DATA_PROVIDER);
+
+// Filter to include only known types and specs
+List<ApItem> result = new ArrayList<>();
+for(def item: ITEMS) {
+    if(itemTypes.contains(item.getItemTypeId())) {
+        // check spec
+        if(item.getItemSpec()==null) {
+            result.add(item);
+        } else 
+        if(itemSpecs.contains(item.getItemSpecId())) {
+            result.add(item);
+        } else {
+            // missing spec
+            // 
+            // well known type is used with other meaning
+            // -> part as whole cannot be sent
+            // e.g. PT_IDENT with some unsupported ident type
+            return Collections.emptyList(); 
+        }
+    } else {
+        // unknown item type
+        //
+        // if some unknown type is removed
+        // part still can be processed
+    }
+}
+
+// TODO: Check if part includes key types and can be posted
+
+return result;
+
+//@Field static Set<Integer> itemTypes = createItemTypes()
+//@Field static Set<Integer> itemSpecs = createItemSpecs()
+
+Map<String, Integer> createItemCodeMap(dataProvider) {
+    Map<String, Integer> codeMap = new HashMap<>();
+
+    typesArray.each {
+        {
+            t ->
+            def itemType = dataProvider.getItemType(t); 
+            codeMap.put(itemType.getCode(), itemType.getItemTypeId());
+        }
+    }
+
+    return codeMap;
+}
+
+Set<String> createItemTypes(dataProvider) {
     Set<Integer> itemTypes = new HashSet<>();
     
     typesArray.each {

@@ -209,9 +209,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
-        WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId).then(() => {
-            this.props.dispatch(modalDialogHide());
-        });
+        return WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId)
     };
     /**
      * Vybere sousední nebo nadřazenou JP po smazání

@@ -57,6 +57,12 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     List<ApState> findLastByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.replacedById IN :accessPointIds" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    List<ApState> findLastByReplacedByIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
     @Query("SELECT COUNT(state) FROM ap_state state" +
            " WHERE state.accessPointId IN :accessPointIds" +
            " AND state.deleteChange IS NULL")

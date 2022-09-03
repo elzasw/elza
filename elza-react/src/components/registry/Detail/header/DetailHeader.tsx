@@ -1,3 +1,5 @@
+import { StateApprovalEx } from 'api/StateApproval';
+import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
@@ -16,8 +18,7 @@ import './DetailHeader.scss';
 import DetailRevState from "./DetailRevState";
 import DetailState from './DetailState';
 import { EntityBindings } from './EntityBindings';
-import i18n from "components/i18n";
-import { StateApprovalEx } from 'api/StateApproval';
+import { ReplacedEntities } from './ReplacedEntities';
 
 interface Props {
     item: ApAccessPointVO;
@@ -52,6 +53,7 @@ const DetailHeader: FC<Props> = ({
     const apTypesMap = useSelector(({refTables}:AppState) => refTables.recordTypes.itemsMap);
     const apType = apTypesMap[item.typeId] as any;
     const apTypeNew = apTypesMap[item.newTypeId] as any;
+
 
     const showValidationError = () => {
         if (validationErrors && validationErrors.length > 0) {
@@ -108,31 +110,35 @@ const DetailHeader: FC<Props> = ({
                         </div>
                         <DetailDescriptions>
                             {id && 
-                                <DetailDescriptionsItem>
-                                    <TooltipTrigger 
-                                        content={
-                                            <>
-                                                <div>id: {id}</div>
-                                                <div>uuid: {item.uuid}</div>
-                                            </>
-                                        }
-                                    >
+                                <TooltipTrigger 
+                                    style={{width: "auto"}}
+                                    content={
+                                        <>
+                                            <div>id: {id}</div>
+                                            <div>uuid: {item.uuid}</div>
+                                        </>
+                                    }
+                                >
+                                    <DetailDescriptionsItem>
                                         {`id: ${id}`}
-                                    </TooltipTrigger>
-                                </DetailDescriptionsItem>
+                                    </DetailDescriptionsItem>
+                                </TooltipTrigger>
                             }
                             {itemState && (
-                                <DetailDescriptionsItem className={itemState.toLowerCase()}>
-                                    <TooltipTrigger content={ item.lastChange ?
+                                <TooltipTrigger 
+                                    style={{width: "auto"}}
+                                    content={ item.lastChange ?
                                         <>
                                             <div>{i18n("ap.detail.lastChange")}: {formatDateTime(item.lastChange.change)}</div>
                                             <div>{i18n("ap.detail.modifiedBy")}: {item.lastChange.user?.displayName || i18n("ap.detail.lastChange.user.notAvailable")}</div>
-                                        </>
+                                            </>
                                         : <div>{i18n("ap.detail.lastChange.notAvailable")}</div>
-                                    }>
+                                }
+                                >
+                                    <DetailDescriptionsItem className={itemState.toLowerCase()}>
                                         <DetailState state={itemState} />
-                                    </TooltipTrigger>
-                                </DetailDescriptionsItem>
+                                    </DetailDescriptionsItem>
+                                </TooltipTrigger>
                             )}
                             {scope && (
                                 <DetailDescriptionsItem>
@@ -141,6 +147,7 @@ const DetailHeader: FC<Props> = ({
                                 </DetailDescriptionsItem>
                             )}
                             <EntityBindings item={item} onInvalidateDetail={onInvalidateDetail}/>
+                            {item.replacedIds && <ReplacedEntities ids={item.replacedIds}/>}
                             <div style={{flex: 1}}/>
                             {item.revStateApproval && (
                                 <DetailDescriptionsItemWithButton

@@ -10,7 +10,6 @@ import {DEFAULT_LIST_SIZE, URL_ENTITY} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 import {AP_VALIDATION} from '../../constants';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
@@ -122,9 +121,6 @@ export function registryDetailFetchIfNeeded(id, force = false) {
                 () => {
                     return WebApi.getAccessPoint(id)
                         .then(data => {
-                            if (data && data.invalid) {
-                                dispatch(addToastrWarning(i18n('registry.invalid.warning')));
-                            }
                             return data;
                         }).catch((error) => {
                             if(error.status === 404){

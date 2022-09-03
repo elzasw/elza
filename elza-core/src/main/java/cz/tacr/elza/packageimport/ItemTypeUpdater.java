@@ -260,6 +260,7 @@ public class ItemTypeUpdater {
                 itemType = this.itemTypeRepository.saveAndFlush(itemType);
                 this.allItemTypesByCode.put(itemType.getCode(), itemType);
             }
+            lastUsedOrderPos += shiftBy;
         }
         return result;
     }

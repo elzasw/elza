@@ -546,3 +546,22 @@ export function hasDescItemTypeValue(dataType) {
             return false;
     }
 }
+
+/**
+* Get children for a node in a flat tree
+*/
+export const getNodeChildren = (node, nodes) => {
+    if(!node){return []};
+
+    let childNodes = [];
+    const nodeIndex = nodes.findIndex((_node) => _node.id === node.id);
+
+    if(nodeIndex >= 0){
+        for(let i = nodeIndex + 1; i < nodes.length; i++){
+            const _node = nodes[i];
+            if(_node.depth <= node.depth){ break; } 
+            childNodes.push(_node);
+        }
+    }
+    return childNodes;
+}

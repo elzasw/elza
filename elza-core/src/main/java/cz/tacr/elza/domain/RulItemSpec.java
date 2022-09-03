@@ -163,6 +163,39 @@ public class RulItemSpec {
     }
 
     /**
+     * Nastaví druh povinnosti vyplnění na minimálně danou hladinu
+     * 
+     * @param type
+     */
+    public void setMinType(final Type type) {
+        if (this.type != null) {
+            switch (type) {
+            case IMPOSSIBLE:
+                if (this.type != Type.IMPOSSIBLE) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case POSSIBLE:
+                if (this.type == Type.RECOMMENDED || this.type == Type.REQUIRED) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case RECOMMENDED:
+                if (this.type == Type.REQUIRED) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case REQUIRED:
+                break;
+            }
+        }
+        this.type = type;
+    }
+
+    /**
      * @return příznak udává, zda je atribut opakovatelný
      */
     public Boolean getRepeatable() {

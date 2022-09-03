@@ -159,7 +159,7 @@
     </item-type>
     <item-type code="ZP2015_UNIT_DATE_BULK" data-type="UNITDATE">
         <name>Vlastní časový rozsah</name>
-        <shortcut>Vl. čas rozsah</shortcut>
+        <shortcut>Vl. čas. rozsah</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu (vlastní časový rozsah)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
@@ -789,6 +789,16 @@
         <description>Postfix pro ukládací číslo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+
+	<!-- Číslo archivní pomůcky -->
+    <item-type code="ZP2015_FINDING_AID_ID" data-type="INT">
+        <name>Číslo archivní pomůcky</name>
+        <shortcut>Č. arch. pom.</shortcut>
+        <description>Číslo archivní pomůcky</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
 

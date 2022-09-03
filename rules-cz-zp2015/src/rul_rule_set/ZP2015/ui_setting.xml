@@ -85,6 +85,7 @@
             <group code="03_OUTPUT_ITEMS">
               <name>Prvky popisu výstupu</name>
               <type code="ZP2015_UNITS_AMOUNT" width="1"/>
+              <type code="ZP2015_FINDING_AID_ID" width="1"/>
               <type code="ZP2015_FINDING_AID_DATE" width="1"/>
               <type code="ZP2015_ARRANGER_TEXT" width="1"/>
               <type code="ZP2015_FINDING_AID_EDITOR" width="1"/>

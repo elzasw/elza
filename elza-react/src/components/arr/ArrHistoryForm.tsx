@@ -15,11 +15,12 @@ import { Button } from '../ui';
 import './ArrHistoryForm.scss';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import { showConfirmDialog } from 'components/shared/dialog';
+import Icon from 'components/shared/icon/FontIcon';
 
 interface ArrHistoryFormProps {
     versionId: number;
     locked: boolean;
-    onDeleteChanges: (nodeId: number | null, changeId: number, selectedChangeId: number) => void;
+    onDeleteChanges: (nodeId: number | null, changeId: number, selectedChangeId: number) => Promise<void>;
     onClose: () => void;
     node?: NodeBase;
 }
@@ -69,6 +70,7 @@ export const ArrHistoryFormFn = ({
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [fetching, setFetching] = useState(false);
     const [showHistoryForNode, setShowHistoryForNode] = useState(node ? true : false);
+    const [inProgress, setInProgress] = useState(false);
 
     const renderItemContent = (item:ChangeItem, _isActive: boolean, index: number) => {
         if (item == null) {
@@ -247,7 +249,10 @@ export const ArrHistoryFormFn = ({
         ){return;}
         const response = await dispatch(showConfirmDialog(i18n('arr.history.deleteQuestion', selectedIndex + 1)))
         if (response) {
-            onDeleteChanges(getNodeId(), changeId, selectedItem.changeId);
+            setInProgress(true);
+            await onDeleteChanges(getNodeId(), changeId, selectedItem.changeId);
+            setInProgress(false);
+            dispatch(modalDialogHide());
         }
     };
 
@@ -301,6 +306,12 @@ export const ArrHistoryFormFn = ({
                 />
         );
     }
+
+    if(inProgress){ return <div className="in-progress">
+        <Icon glyph="fa-refresh" className="fa-spin"/>
+        &nbsp;
+        {i18n('arr.history.delete.inProgress')}
+    </div>}
 
     return (
         <ErrorBoundary>
