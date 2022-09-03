@@ -40,9 +40,7 @@ class ArrPageRibbon extends AbstractReactComponent {
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         const { activeFund } = this.props;
         const versionId = activeFund?.versionId;
-        WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId).then(() => {
-            this.props.dispatch(modalDialogHide());
-        });
+        return WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId)
     };
 
     /**

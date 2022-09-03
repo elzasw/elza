@@ -401,6 +401,8 @@ var messages = {
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
+    "fundTree.expandLevel": "Rozbalit",
+    "fundTree.collapseAll": "Sbalit vše",
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
@@ -888,6 +890,7 @@ var messages = {
     "arr.history.action.deleteFrom.show": "Přejít",
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
+    "arr.history.delete.inProgress": "Probíhá odstranění změn...",
 
     "arr.lecturing.states_all": "Stav",
     "arr.lecturing.severity_all": "Závažnost",
@@ -1050,6 +1053,7 @@ var messages = {
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
+    "registry.restoreEntity": "Obnovit entitu",
 
     "registry.entity.notFound": "Archivní entita nenalezena",
 
@@ -1142,6 +1146,7 @@ var messages = {
     "ap.detail.lastChange.notAvailable": "Informace o poslední změně není dostupná",
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
+    "ap.detail.replacingEntities": "Nahrazuje entity",
     "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",
@@ -1724,6 +1729,7 @@ var messages = {
     "accesspoint.removeDuplicity.confirm.merge.a": "Opravdu si přejete zneplatnit a sloučit entitu",
     "accesspoint.removeDuplicity.confirm.merge.b": "s nahrazující entitou",
     "accesspoint.removeDuplicity.confirm.nonEqualNames": "Entity mají ruzná označení",
+    "accesspoint.removeDuplicity.inProgress": "Probíhá odstranění duplicity...",
 
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",

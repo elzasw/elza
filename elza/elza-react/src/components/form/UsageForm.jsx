@@ -1,4 +1,5 @@
 import * as types from 'actions/constants/ActionTypes';
+import { TooltipTrigger } from 'components/shared';
 import { showConfirmDialog } from 'components/shared/dialog';
 import Icon from 'components/shared/icon/FontIcon';
 import PropTypes from 'prop-types';
@@ -6,17 +7,43 @@ import React from 'react';
 import { Modal } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import { objectById, storeFromArea } from 'shared/utils';
 import { usageFundTreeReceive } from '../../actions/arr/globalFundTree';
 import { modalDialogHide } from '../../actions/global/modalDialog';
 import { AREA_REGISTRY_LIST } from '../../actions/registry/registry';
 import * as perms from '../../actions/user/Permission';
-import storeFromArea from '../../shared/utils/storeFromArea';
 import FundTreeUsage from '../arr/FundTreeUsage';
 import i18n from '../i18n';
 import RegistryField from '../registry/RegistryField';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
 import { Button } from '../ui';
 import './UsageForm.scss';
+
+const EntityDisplay = ({
+    scope, 
+    id, 
+    uuid, 
+    title
+}) => {
+    return <div className="entity">
+        <div className="title">{title}</div>
+        <div className="info">
+            <TooltipTrigger 
+                content={
+                <>
+                    <div>id: {id}</div>
+                    <div>uuid: {uuid}</div>
+                    </>
+            }
+            >
+                <div className="info-item">id: {id}</div>
+            </TooltipTrigger>
+            <div className="info-item">
+                <Icon glyph={'fa-globe'}/> {scope}
+            </div>
+        </div>
+    </div>
+}
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
@@ -221,14 +248,37 @@ class RegistryUsageForm extends React.Component {
         )
     }
 
+    getScope = (scopeId) => {
+        const { scopes } = this.props;
+        if (scopeId != undefined) {
+            return objectById(scopes, scopeId);
+        }
+        return undefined;
+    }
+
     confirmReplaceOrMerge = async (action) => {
         const { dispatch, detail } = this.props;
         const { selectedReplacementNode } = this.state;
+
+        const scope = this.getScope(detail?.data?.scopeId);
+        const replacementScope = this.getScope(selectedReplacementNode?.scopeId);
+
+        console.log(detail, selectedReplacementNode);
         const response = await dispatch(showConfirmDialog(<div className="confirmation">
             <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.a`)}</div>
-            <div className="entity">{detail?.data?.name}</div>
+            <EntityDisplay 
+                title={detail?.data?.name}
+                id={detail?.data?.id}
+                uuid={detail?.data?.uuid}
+                scope={scope.name}
+                />
             <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.b`)}</div>
-            <div className="entity">{selectedReplacementNode.name}</div>
+            <EntityDisplay 
+                title={selectedReplacementNode.name}
+                id={selectedReplacementNode.id}
+                uuid={selectedReplacementNode.uuid}
+                scope={replacementScope?.name}
+                />
             {detail?.data?.name !== selectedReplacementNode.name && <div className="error">
                 <Icon glyph="fa-exclamation-circle"/>&nbsp;{i18n("accesspoint.removeDuplicity.confirm.nonEqualNames")}
             </div>}
@@ -332,6 +382,7 @@ export default withRouter(
             fundTreeUsage: state.arrRegion.globalFundTree.fundTreeUsage,
             registryList,
             userDetail: state.userDetail,
+            scopes: state.refTables.scopesData.scopes.find((scope) => scope.versionId === -1)?.scopes || [],
         };
     })(RegistryUsageForm),
 );

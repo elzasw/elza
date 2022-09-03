@@ -164,6 +164,21 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
                 background: $node-form-actions-hover;
             }
         }
+        .tree-button {
+            width: 2em;
+            height: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &:focus, &:disabled {
+                color: inherit;
+            }
+
+            .icon {
+                padding: 0;
+            }
+
+        }
         .extended-view-toggle {
             padding-right: 0;
         }

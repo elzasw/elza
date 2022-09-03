@@ -668,10 +668,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
     }
 
-    getAccessPointName(accessPointId, objectId) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
-    }
-
 	getStateApproval(accessPointId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
 	}

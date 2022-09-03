@@ -663,8 +663,8 @@ class FundDataGrid extends AbstractReactComponent {
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
             specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
             let valuesIds = getValueIds(this.state.valueItems, data.values.type, data.values.ids);
-            const response = await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')))
-            if (selectionType !== 'FUND' || response) {
+            const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
+            if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(
                         versionId,

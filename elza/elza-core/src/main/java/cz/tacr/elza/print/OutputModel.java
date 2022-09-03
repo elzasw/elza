@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -111,6 +112,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private String typeCode;
 
     private Fund fund;
+
+    private UUID uuid;
+
+    private String appVersion;
 
     /* lookups */
 
@@ -267,6 +272,20 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public List<cz.tacr.elza.print.item.Item> getItems() {
         return outputItems;
+    }
+
+    public UUID getUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+        return uuid;
+    }
+
+    public String getAppVersion() {
+        if (appVersion == null) {
+            appVersion = staticDataService.getAppVersion();
+        }
+        return appVersion;
     }
 
     @Override
@@ -515,6 +534,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                              Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
                              StructObjectInfo soi, 
                              ApplyFilter filter) {
+
         if (!rule.canApply(soi)) {
             // rule does not apply for this soi
             return;

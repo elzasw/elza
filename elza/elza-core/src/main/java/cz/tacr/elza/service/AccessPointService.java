@@ -421,8 +421,8 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         if (replacedBy != null) {
-            ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
-            validationNotDeleted(replacementState);
+            ApState replacedByState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
+            validationNotDeleted(replacedByState);
             
             // check binding states
             // both APs cannot be binded to the same external system
@@ -443,21 +443,21 @@ public class AccessPointService {
             		}
             	}
             }
-            
+
             // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
             if (mergeAp) {
-                validationMergePossibility(replacementState);
+                validationMergePossibility(replacedByState);
             }
-            replace(apState, replacementState, extSystem);
+            replace(apState, replacedByState, extSystem);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
             if (mergeAp) {
                 mergeParts(accessPoint, replacedBy, change);
-                // vygenerování indexů a aktualizace záznamů v cache
+                // vygenerování indexů
                 updateAndValidate(replacedBy.getAccessPointId());        
-                accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
+
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
     }
@@ -489,6 +489,11 @@ public class AccessPointService {
         ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
         publishAccessPointRestoreEvent(accessPoint);
         reindexDescItem(accessPoint);
+
+        // if exists replacedById - regeneration cached AP by id
+        if (apState.getReplacedById() != null) {
+            accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
+        }
     }
 
     /**
@@ -572,6 +577,11 @@ public class AccessPointService {
 
         accessPointCacheService.deleteCachedAccessPoint(accessPoint);
         
+        if (apState.getReplacedById() != null) {
+            // aktualizace náhradní entity v cache
+            accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
+        }
+
         return apState;
     }
 
@@ -1910,6 +1920,7 @@ public class AccessPointService {
         newState.setComment(oldState.getComment());
         newState.setCreateChange(change);
         newState.setDeleteChange(null);
+        newState.setReplacedBy(null);
         return newState;
     }
 
@@ -2897,36 +2908,6 @@ public class AccessPointService {
         return false;
     }
 
-    /**
-     * Pomocná třída pro založení změny až při její první potřebě.
-     */
-    private class ApChangeNeed {
-
-        /**
-         * Zakládaný typ změny.
-         */
-        private final ApChange.Type type;
-
-        /**
-         * Založená změna.
-         */
-        private ApChange change;
-
-        ApChangeNeed(final ApChange.Type type) {
-            this.type = type;
-        }
-
-        /**
-         * @return získání/založení změny
-         */
-        public ApChange get() {
-            if (change == null) {
-                change = apDataService.createChange(type);
-            }
-            return change;
-        }
-    }
-
     public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
                                                                                                                      binding));
@@ -3272,19 +3253,58 @@ public class AccessPointService {
      * @param change
      */
     private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
+
         for (ApItem item : itemsFrom) {
-            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-
-            ApItem newItem = apItemService.createItem(partTo, newData, 
-                    item.getItemType(), 
-                    item.getItemSpec(), 
-                    change, 
-                    apItemService.nextItemObjectId(),
-                    item.getPosition());
-
-            dataRepository.save(newData);
-            itemRepository.save(newItem);
+            copyItem(item, partTo, change, item.getPosition());
         }
+    }
+
+    private ApItem copyItem(ApItem item, ApPart partTo, ApChange change, int position) {
+        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+
+        // zvláštní ošetření pro entity - kontrola deduplikace, 
+        // resp. kopie platné entity
+        if (newData instanceof ArrDataRecordRef) {
+            ArrDataRecordRef drr = (ArrDataRecordRef) newData;
+            if (drr.getRecordId() != null) {
+                ApState apState = getValidAccessPoint(drr.getRecordId());
+                if (!apState.getAccessPointId().equals(drr.getRecordId())) {
+                    drr.setRecord(apState.getAccessPoint());
+                }
+            }
+        }
+
+        ApItem newItem = apItemService.createItem(partTo, newData,
+                                                  item.getItemType(),
+                                                  item.getItemSpec(),
+                                                  change,
+                                                  apItemService.nextItemObjectId(),
+                                                  position);
+
+        dataRepository.save(newData);
+        return itemRepository.save(newItem);
+    }
+
+
+    /**
+     * Metoda vyhledá stav přístupového bodu a vrátí ho.
+     * 
+     * V případě nahrazeného přístupového bodu se vrací nahrazující.
+     */
+    private ApState getValidAccessPoint(Integer recordId) {
+        ApState apState = getApState(recordId);
+        if (apState.getReplacedById() == null) {
+            return apState;
+        }
+        // nalezení poslední nahrazující entity
+        // ochrana proti zacykleni
+        Set<Integer> replacesAps = new HashSet<>();
+        while (apState.getReplacedById() != null && !replacesAps.contains(apState.getReplacedById())) {
+            replacesAps.add(apState.getReplacedById());
+            apState = getApState(apState.getReplacedById());
+        }
+
+        return apState;
     }
 
     /**
@@ -3304,17 +3324,7 @@ public class AccessPointService {
 
         for (ApItem item : itemsFrom) {
             if (!existsItemInPart(item, itemsTo)) {
-                ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-
-                ApItem newItem = apItemService.createItem(partTo, newData, 
-                    item.getItemType(), 
-                    item.getItemSpec(), 
-                    change, 
-                    apItemService.nextItemObjectId(),
-                    ++position);
-
-                dataRepository.save(newData);
-                itemRepository.save(newItem);
+                copyItem(item, partTo, change, ++position);
             }
         }
     }

@@ -1,14 +1,8 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.cam.client.ApiException;
-import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
-import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
-import cz.tacr.cam.schema.cam.ErrorMessageXml;
-import cz.tacr.elza.domain.ExtSyncsQueueItem;
-import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
-import cz.tacr.elza.service.cam.CamService;
-import cz.tacr.elza.service.cam.UploadWorker;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +15,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
+import cz.tacr.cam.client.ApiException;
+import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
+import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
+import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
+import cz.tacr.cam.schema.cam.ErrorMessageXml;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.service.cam.CamService;
+import cz.tacr.elza.service.cam.UploadWorker;
 
 @Component
 public class ExtSyncsProcessor implements Runnable {
@@ -194,7 +194,7 @@ public class ExtSyncsProcessor implements Runnable {
             logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), body, e);
             return true;
         } catch (Exception e) {
-            logger.error("Failed to synchronize, body: {}", e.getMessage(), e);
+            logger.error("Failed to synchronize: {}", e.getMessage(), e);
             // other exception -> retry later
             camService.setQueueItemStateTA(Collections.singletonList(item),
                                            ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW,

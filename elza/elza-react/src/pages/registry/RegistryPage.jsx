@@ -35,16 +35,17 @@ import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes'
 import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
 import ApExtSearchModal, {TypeModal} from '../../components/registry/modal/ApExtSearchModal';
-import {Area} from '../../api/Area';
+import {Area} from 'api/Area';
 import ApPushToExt from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
 import {objectById} from '../../shared/utils';
 import RegistryUsageForm from '../../components/form/RegistryUsageForm';
 import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
-import {StateApproval} from '../../api/StateApproval';
+import {StateApproval} from 'api/StateApproval';
 import {withRouter} from "react-router";
-import {RevStateApproval} from '../../api/RevStateApproval';
+import {RevStateApproval} from 'api/RevStateApproval';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { Api } from 'api';
 
 /**
  * Stránka rejstříků.
@@ -377,7 +378,12 @@ class RegistryPage extends AbstractReactComponent {
             dispatch(modalDialogShow(
                 this,
                 i18n('accesspoint.removeDuplicity.title'),
-                <AccessPointDeleteForm detail={accessPointDetail} />
+                <AccessPointDeleteForm
+                    detail={accessPointDetail} 
+                    onSubmitSuccess={() => {
+                        dispatch(registryDetailInvalidate());
+                    }}
+                    />
             ));
         }
     };
@@ -492,6 +498,12 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('registry.mergeRevision'), form));
     };
 
+    handleRestoreEntity = async () => {
+        const { registryDetail: {id}} = this.props;
+        await Api.accesspoints.restoreAccessPoint(id);
+        this.props.dispatch(registryDetailInvalidate());
+    }
+
     buildRibbon = () => {
         const {
             registryDetail: {data, id},
@@ -550,6 +562,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const itemActions = [...parts.itemActions];
         const revisionActions = [];
+        const invalidItemActions = [];
 
         if(!select){
             if (userDetail.hasOne(perms.ADMIN)) {
@@ -681,12 +694,22 @@ class RegistryPage extends AbstractReactComponent {
                             </div>
                         </Button>,
                     );
-                } else {
+                } else if(!data.invalid) {
                     revisionActions.push(
                         <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
                             <Icon glyph="fa-plus" />
                             <div>
                                 <span className="btnText">{i18n('registry.createRevision')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
+                if(data.invalid){
+                    invalidItemActions.push(
+                        <Button key="restoreEntity" onClick={this.handleRestoreEntity}>
+                            <Icon glyph="fa-undo" />
+                            <div>
+                                <span className="btnText">{i18n('registry.restoreEntity')}</span>
                             </div>
                         </Button>,
                     );
@@ -707,6 +730,10 @@ class RegistryPage extends AbstractReactComponent {
                 {revisionActions.length > 0 && 
                     <RibbonGroup className="small" >
                         {revisionActions}
+                    </RibbonGroup>}
+                {invalidItemActions.length > 0 && 
+                    <RibbonGroup className="small" >
+                        {invalidItemActions}
                     </RibbonGroup>}
                 </>
         ) : undefined;

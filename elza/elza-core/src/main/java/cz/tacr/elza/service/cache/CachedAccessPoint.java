@@ -27,6 +27,8 @@ public class CachedAccessPoint {
 
     private List<CachedBinding> bindings;
 
+    private List<Integer> replacedAPIds;
+
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -112,5 +114,20 @@ public class CachedAccessPoint {
             bindings = new ArrayList<>();
         }
         bindings.add(cb);
+    }
+
+    public List<Integer> getReplacedAPIds() {
+        return replacedAPIds;
+    }
+
+    public void setReplacedAPIds(List<Integer> replacedAPIds) {
+        this.replacedAPIds = replacedAPIds;
+    }
+
+    public void addReplacedId(Integer id) {
+        if (replacedAPIds == null) {
+            replacedAPIds = new ArrayList<>();
+        }
+        replacedAPIds.add(id);        
     }
 }
