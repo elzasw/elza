@@ -1022,8 +1022,9 @@ public class AccessPointService {
         // replace in APs
         final List<ApItem> apItems = this.itemRepository.findItemByEntity(replaced);
         if (CollectionUtils.isNotEmpty(apItems)) {
-            ObjectListIterator.forEachPage(apItems, ais -> replaceInItems(apItems, replaced, replacement,
-                                                                          apExternalSystem));
+            ObjectListIterator.forEachPage(apItems,
+                                           apItemPage -> replaceInItems(apItemPage, replaced, replacement,
+                                                                        apExternalSystem));
         }
 
         Set<Integer> resolvedByObjectId = new HashSet<>();
@@ -1051,7 +1052,7 @@ public class AccessPointService {
      * @param replacement
      * @param apExternalSystem
      */
-    private void replaceInItems(List<ApItem> apItems,
+    private void replaceInItems(Collection<ApItem> apItems,
                                 ApAccessPoint replaced,
                                 ApAccessPoint replacement,
                                 ApExternalSystem apExternalSystem) {
