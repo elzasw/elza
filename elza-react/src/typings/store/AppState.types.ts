@@ -127,11 +127,11 @@ export interface Node extends NodeBase {
     isFetching?: boolean;
     isNodeInfoFetching?: boolean;
     lastUpdated?: number;
-    nodeCount?: number;
-    nodeIndex?: number;
+    nodeCount: number;
+    nodeIndex: number;
     nodeInfoDirty?: boolean;
     nodeInfoFetched?: boolean;
-    pageSize?: number;
+    pageSize: number;
     parentNodes?: unknown[];
     routingKey?: string;
     searchedIds?: unknown;
@@ -140,7 +140,7 @@ export interface Node extends NodeBase {
     subNodeForm?: unknown;
     subNodeFormCache?: unknown;
     subNodeInfo?: unknown;
-    viewStartIndex?: number;
+    viewStartIndex: number;
 }
 
 export interface NodesState {
