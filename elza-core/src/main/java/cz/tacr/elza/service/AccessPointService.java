@@ -1015,6 +1015,9 @@ public class AccessPointService {
 
     private void replaceInAps(ApState replacedState, ApState replacementState,
                               @Nullable ApExternalSystem apExternalSystem) {
+        logger.debug("Replacing in Aps ({}->{}), items: {}", replacedState.getAccessPointId(),
+                     replacementState.getAccessPointId());
+
 
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
@@ -1056,6 +1059,9 @@ public class AccessPointService {
                                 ApAccessPoint replaced,
                                 ApAccessPoint replacement,
                                 ApExternalSystem apExternalSystem) {
+        logger.debug("Replacing in items ({}->{}), items: {}", replaced.getAccessPointId(),
+                     replacement.getAccessPointId(),
+                     apItems.size());
         // number of items has to be lower than batch size
         Validate.isTrue(apItems.size() <= ObjectListIterator.getMaxBatchSize());
 
@@ -1071,8 +1077,8 @@ public class AccessPointService {
         if (apExternalSystem != null) {
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
                                                                                                               apExternalSystem);
-            apsFromSameExtSystem = bindingStates.stream().map(ApBindingState::getAccessPointId).collect(Collectors
-                    .toSet());
+            apsFromSameExtSystem = bindingStates.stream().map(ApBindingState::getAccessPointId)
+                    .collect(Collectors.toSet());
         } else {
             apsFromSameExtSystem = Collections.emptySet();
         }
