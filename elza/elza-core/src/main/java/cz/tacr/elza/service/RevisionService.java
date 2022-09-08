@@ -104,7 +104,10 @@ public class RevisionService {
     public ApRevision createRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
         if (revision != null) {
-            throw new IllegalStateException("Revize pro tento přístupový bod již existuje");
+            throw new BusinessException("Revize pro přístupový bod již existuje, apStateId: " + state.getStateId(),
+                    BaseCode.INVALID_STATE)
+                            .set("apStateId", state.getStateId())
+                            .set("accessPointId", state.getAccessPointId());
         }
 
         // check if AP can be edited in revision
