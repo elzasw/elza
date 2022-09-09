@@ -13,7 +13,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 
-import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
@@ -29,6 +28,7 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
 
@@ -145,6 +145,11 @@ public class CamExportBuilder implements ExportBuilder {
     @Override
     public void clear() {
         initBuilder();
+    }
+
+    @Override
+    public boolean canExportDeletedAPs() {
+        return true;
     }
 
 }
