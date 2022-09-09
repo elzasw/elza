@@ -141,15 +141,6 @@
                 <type code="ZP2015_UNIT_SOURCE" width="0"/>
                 <!-- 4.3.6 -->
                 <type code="ZP2015_FUTURE_UNITS" width="0"/>
-                <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
-                <type code="ZP2015_UNIT_ACCESS" width="0"/>
-                <type code="ZP2015_PUBLISHED"  width="2"/>
-                <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
-                <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>                
-                <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
-                <type code="ZP2015_UNIT_INFO_RIGHTS" width="1"/>
-                <!-- 4.4.3 Možnost zveřejnění reprodukce jednotky popisu -->
-                <type code="ZP2015_UNIT_COPY_RIGHTS" width="1"/>
                 <!-- 4.4.4 Fyzický stav jednotky popisu a technické požadavky -->
                 <type code="ZP2015_UNIT_CURRENT_STATUS" width="0"/>
                 <!-- 4.5.1 Identifikace předlohy kopie -->
@@ -164,6 +155,18 @@
                 <type code="ZP2015_ARRANGE_RULES" width="2"/>
                 <!-- 4.7.3 Datum (data) popisu -->
                 <type code="ZP2015_DESCRIPTION_DATE" width="1"/>
+            </group>
+            <group code="06a_GROUP4">
+                <name>Podmínky a omezení přístupu</name>
+                <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
+                <type code="ZP2015_UNIT_ACCESS" width="0"/>
+                <type code="ZP2015_PUBLISHED"  width="2"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>                
+                <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
+                <type code="ZP2015_UNIT_INFO_RIGHTS" width="1"/>
+                <!-- 4.4.3 Možnost zveřejnění reprodukce jednotky popisu -->
+                <type code="ZP2015_UNIT_COPY_RIGHTS" width="1"/>
             </group>
             <group code="07_ZP2015_CH5">
                 <name>Rozšířený popis archiválií</name>
