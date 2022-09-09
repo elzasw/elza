@@ -156,7 +156,7 @@
                 <!-- 4.7.3 Datum (data) popisu -->
                 <type code="ZP2015_DESCRIPTION_DATE" width="1"/>
             </group>
-            <group code="06a_GROUP4">
+            <group code="07_ZP2015_CH4_4">
                 <name>Podmínky a omezení přístupu</name>
                 <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
                 <type code="ZP2015_UNIT_ACCESS" width="0"/>
@@ -168,7 +168,7 @@
                 <!-- 4.4.3 Možnost zveřejnění reprodukce jednotky popisu -->
                 <type code="ZP2015_UNIT_COPY_RIGHTS" width="1"/>
             </group>
-            <group code="07_ZP2015_CH5">
+            <group code="08_ZP2015_CH5">
                 <name>Rozšířený popis archiválií</name>
                 <!-- 5.2.3 Způsob a forma dochování -->
                 <type code="ZP2015_STORAGE_COND" width="2"/>
@@ -210,7 +210,7 @@
                 <type code="ZP2015_LEGEND" width="2"/>
             </group>
             <!-- Other items -->
-            <group code="08_OTHERS">
+            <group code="09_OTHERS">
                 <name>Ostatní</name>
                 <type code="ZP2015_INTERNAL_NOTE" width="0"/>
                 <type code="ZP2015_NOTE" width="0"/>
@@ -220,7 +220,7 @@
                 <type code="ZP2015_UNIT_COUNT_TABLE" width="3"/>
             </group>
             <!-- Items from CAM -->
-            <group code="09_CAM">
+            <group code="10_CAM">
                 <name>CAM</name>
                 <type code="CORP_PURPOSE" width="0"/>
                 <type code="CORP_STRUCTURE" width="0"/>
