@@ -17,10 +17,6 @@ public class ExportContext {
 
     private final Set<Integer> apIds = new HashSet<>();
 
-    private final Set<Integer> partAPIds = new HashSet<>();
-
-    private final Set<Integer> partIds = new HashSet<>();
-
     private Collection<FundSections> fundsSections = new ArrayList<>();
 
     private final ExportBuilder builder;
@@ -72,5 +68,14 @@ public class ExportContext {
 
     public ExportFilter getExportFilter() {
         return exportFilter;
+    }
+
+    /**
+     * Return true if deleted/invalidated APs can be exported
+     * 
+     * @return
+     */
+    public boolean canExportDeletedAPs() {
+        return builder.canExportDeletedAPs();
     }
 }
