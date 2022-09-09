@@ -1111,6 +1111,7 @@ public class AccessPointService {
             if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
                 // prepare revision
                 revision = revisionService.createRevision(apState);
+                revisionByApId.put(apId, revision);
             }
             if (revision != null) {
                 // create item in revision
