@@ -10,7 +10,7 @@ const IFRAME_SIZE = 400;
 type PolygonTooltipProps = { polygon: string };
 
 class PolygonTooltip extends React.Component<PolygonTooltipProps> {
-    iframeRef;
+    iframeRef: React.RefObject<HTMLIFrameElement>;
 
     constructor(props) {
         super(props);
@@ -19,10 +19,23 @@ class PolygonTooltip extends React.Component<PolygonTooltipProps> {
     }
 
     componentDidMount() {
-        this.iframeRef.current.addEventListener('load', () => setTimeout(() => this.iframeRef.current.contentWindow.postMessage({
-            call: 'sendPolygon',
-            polygon: this.props.polygon,
-        }), 750));
+        window.addEventListener("message", this.receiveMessage);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("message", this.receiveMessage);
+    }
+
+    receiveMessage = (e: MessageEvent) => {
+        const { current: iframe } = this.iframeRef;
+        if(e.data?.event === "elza-map-iframe-load"){
+            if(iframe && iframe.contentWindow){
+                iframe?.contentWindow?.postMessage({
+                    call: 'sendPolygon',
+                    polygon: this.props.polygon,
+                }, "*")
+            }
+        }
     }
 
     render() {

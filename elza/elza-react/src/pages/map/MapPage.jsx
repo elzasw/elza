@@ -47,7 +47,7 @@ class MapPage extends AbstractReactComponent {
         this.mapRef = React.createRef();
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         const query = new URLSearchParams(this.props.location.search);
         this.iframe = query.get('iframe');
 
@@ -62,13 +62,11 @@ class MapPage extends AbstractReactComponent {
                 if (!data || (typeof data === 'object' && data.call !== 'sendPolygon')) {
                     return;
                 }
-                this.setState({polygon: data.polygon});
+                this.setState({polygon: data.polygon}, () => this.initMap());
             }, false);
-        }
-    }
 
-    componentDidMount() {
-        this.initMap();
+            window.parent.postMessage({event: "elza-map-iframe-load"},"*")
+        }
 
         if (!this.state.polygon && !this.iframe) {
             this.setState({polygon: this.props.polygon});
