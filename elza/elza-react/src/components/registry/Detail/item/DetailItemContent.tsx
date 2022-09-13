@@ -21,7 +21,7 @@ import i18n from '../../../i18n';
 import Icon from '../../../shared/icon/Icon';
 import { Button } from '../../../ui';
 import { formatDate } from '../../../validate';
-import DetailCoordinateItem from '../coordinate/DetailCoordinateItem';
+import { DetailCoordinateItem } from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';

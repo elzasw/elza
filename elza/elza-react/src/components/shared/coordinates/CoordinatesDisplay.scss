@@ -1,0 +1,33 @@
+@import "../../../variables.scss";
+
+.coordinates-display-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid $border-color;
+    border-radius: 3px;
+    overflow: hidden;
+    height: 1.8em;
+
+    .coordinates-input {
+        line-height: 1.8em;
+        text-align: center;
+        height: 1.8em;
+        cursor: pointer;
+
+        & > input {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            line-height: 1.2em;
+            height: 1.8em;
+        }
+    }
+
+    .side-container-button {
+        border: none;
+
+        &.right {
+            border-left: 1px solid $border-color;
+        }
+    }
+}
