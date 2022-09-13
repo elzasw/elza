@@ -1,21 +1,21 @@
+import { AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger } from 'components/shared';
+import { CoordinatesDisplay } from 'components/shared/coordinates/CoordinatesDisplay';
+import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
+import { objectFromWKT, wktFromTypeAndData } from 'components/Utils.jsx';
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton} from 'components/shared';
-import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
-import {decorateValue} from './DescItemUtils.jsx';
-import {Button} from '../../ui';
-import DescItemLabel from './DescItemLabel.jsx';
+import { connect } from "react-redux";
+import { Action, Dispatch } from "redux";
+import { modalDialogHide, modalDialogShow } from "../../../actions/global/modalDialog";
+import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../CrossTabHelper";
+import { PolygonShowInMap } from "../../PolygonShowInMap";
+import ExportCoordinateModal from "../../registry/Detail/coordinate/ExportCoordinateModal";
+import { Button } from '../../ui';
+import './DescItemCoordinates.scss';
+import { DescItemComponentProps } from './DescItemTypes';
+import { decorateValue } from './DescItemUtils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
-import './DescItemCoordinates.scss';
-import {DescItemComponentProps} from './DescItemTypes';
-import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
-import ExportCoordinateModal from "../../registry/Detail/coordinate/ExportCoordinateModal";
-import {Action, Dispatch} from "redux";
-import {connect} from "react-redux";
-import {CLS_ITEM_COORDINATES} from "../../../shared/factory/factoryConsts";
-import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../../CrossTabHelper";
-import {PolygonShowInMap} from "../../PolygonShowInMap";
 
 type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
 type State = {type: null | string; data: null | string};
@@ -84,13 +84,22 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         }
     }
 
+    getLabel = (value: string) => {
+        return value.split(' ')[0];
+    };
+
+
     render() {
-        const {descItem, locked, repeatable, onUpload, readMode, cal, coordinatesUpload} = this.props;
+        const {descItem, locked, repeatable, onUpload, readMode, cal, coordinatesUpload, copyValueToClipboard} = this.props;
         const {type, data} = this.state;
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
-            return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
+            return <CoordinatesDisplay 
+                value={value}
+                id={descItem.id}
+                arrangement={true}
+                />
         }
 
         if (coordinatesUpload) {
@@ -100,9 +109,11 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         return (
             <div className="desc-item-value-coordinates">
                 <div className="desc-item-value" key="cords">
-                    <Button variant="default" disabled>
-                        {wktType(type)}
-                    </Button>
+                    {!descItem.undefined && descItem.descItemObjectId && (
+                        <div className="desc-item-coordinates-action" key="download-action">
+                            <PolygonShowInMap polygon={value} />
+                        </div>
+                    )}
                     <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                         <input
                             {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
@@ -110,14 +121,35 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             disabled={locked || descItem.undefined}
                             onChange={this.handleChangeData}
                             value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
-                        />
+                            />
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (
-                        <div className="desc-item-coordinates-action" key="download-action">
-                            <NoFocusButton onClick={() => this.props.showExportDialog(descItem.id)}>
-                                <Icon glyph="fa-download" />
-                            </NoFocusButton>
-                        </div>
+                        <>
+                            <TooltipTrigger 
+                                className="desc-item-coordinates-action" 
+                                content={i18n('global.action.copyToClipboard')}
+                                style={{width: "auto"}}
+                                placement="vertical" 
+                            >
+                                <Button
+                                    variant={'action'}
+                                    size="sm"
+                                    onClick={() => copyValueToClipboard(value)}
+                                >
+                                    <Icon glyph="fa-clipboard" fixedWidth className="icon" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipTrigger 
+                                className="desc-item-coordinates-action" 
+                                content={i18n('global.action.export')}
+                                style={{width: "auto"}}
+                                placement="vertical" 
+                            >
+                                <NoFocusButton onClick={() => this.props.showExportDialog(descItem.id)}>
+                                    <Icon glyph="fa-download" />
+                                </NoFocusButton>
+                            </TooltipTrigger>
+                            </>
                     )}
                 </div>
                 {!repeatable && (
@@ -134,10 +166,9 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             type="file"
                             ref={this.uploadInput}
                             onChange={onUpload as any}
-                        />
+                            />
                     </div>
                 )}
-                {descItem?.['@class'] === CLS_ITEM_COORDINATES && <PolygonShowInMap className={'mx-1'} polygon={value} />}
             </div>
         );
     }
@@ -154,6 +185,10 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
                 <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} itemId={itemId} arrangement={true} />,
             ),
         ),
+    copyValueToClipboard: (value: string) => {
+        dispatch(addToastr(i18n('global.action.copyToClipboard.finished'), undefined, undefined, "md", 3000));
+        navigator.clipboard.writeText(value);
+    }
 });
 
 export default connect(null, mapDispatchToProps)(DescItemCoordinates as any);
