@@ -85,8 +85,8 @@ export const PolygonShowInMap = ({
             {...otherProps}
             content={<PolygonTooltip polygon={polygon} />}
             holdOnHover
-            placement={'auto'}
-            showDelay={200}
+            placement={'vertical'}
+            showDelay={300}
             hideDelay={0}
         >
             {
