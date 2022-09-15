@@ -76,7 +76,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
                     size="sm"
                     onClick={copyValueToClipboard}
                 >
-                    <Icon glyph="fa-clipboard" fixedWidth className="icon" />
+                    <Icon glyph="fa-clone" fixedWidth className="icon" />
                 </Button>
             </TooltipTrigger>
             <TooltipTrigger placement="vertical" content={i18n('global.action.export')}>
