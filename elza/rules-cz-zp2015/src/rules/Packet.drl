@@ -55,7 +55,15 @@ end
 rule "Doporučené"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_NUMBER"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_NUMBER"))
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Povinné"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
 end
