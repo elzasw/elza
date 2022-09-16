@@ -2103,8 +2103,8 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-// RE_009 Rukopisy bez hudebnin
-rule "RE_009 Rukopisy bez hudebnin - vždy možné role entit"
+// RE_011 Rukopisy bez hudebnin
+rule "RE_011 Rukopisy bez hudebnin - vždy možné role entit"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
@@ -2196,7 +2196,7 @@ then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
-rule "RE_009 Rukopisy bez hudebnin - povinné role entit v INV"
+rule "RE_011 Rukopisy bez hudebnin - povinné role entit v INV"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
@@ -2217,7 +2217,7 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "RE_009 Rukopisy bez hudebnin - povinné role v KAT"
+rule "RE_011 Rukopisy bez hudebnin - povinné role v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
@@ -2247,7 +2247,7 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "RE_009 Rukopisy bez hudebnin - doporučené role v KAT"
+rule "RE_011 Rukopisy bez hudebnin - doporučené role v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
