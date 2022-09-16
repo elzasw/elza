@@ -87,14 +87,6 @@ then
     $itemType.setRepeatable(false);
 end
 
-rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
-no-loop
-when
-    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-then
-    $itemType.setMinType(RulItemType.Type.REQUIRED);
-end
-
 rule "ReadOnly prvky popisu jsou možné (byly převzaty odjinud)"
 no-loop
 when
@@ -105,8 +97,19 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
+//
+// Hierarchie popisu
+//
+rule "HP_001 Každá jednotka popisu musí mít uvedenu úroveň popisu"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+then
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
+end
 
-rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_ROOT"
+
+rule "HP_002 Úroveň archivní soubor se vždy na kořeni"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -116,7 +119,8 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Serie - možná pokud je rodič root nebo dílčí list"
+// HP_003 Úroveň série se použije pod kořenem nebo jinou sérií
+rule "HP_003_01 Úroveň série se použije pod kořenem nebo dílčím listem"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -127,43 +131,56 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Rodic serie a nema sourozence - muze byt serie, slozka, jednotlivost
-rule "Rodic serie a nema sourozence - muze byt serie, slozka, jednotlivost"
+rule "HP_003_02 Pokud je rodic série a ma sourozence pred typu serie, tak je serie"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "HP_003_03 Pokud je rodic série a je první potomek a sourozenec za typu serie, tak je serie"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && 
+                                 siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "HP_003_04 Rodic serie a nema sourozence - muze byt serie"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
     $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
-then
-    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
-end
-
-rule "Pokud je rodic série a ma sourozence pred typu serie, tak je serie"
-no-loop
-when
-    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Pokud je rodic série a ma sourozence za typu serie, tak je serie"
+
+// HP_004 Složka nebo jednotlivost pod sérií
+rule "HP_004_01 Složka nebo jednotlivost pod sérií - rodic serie a nema sourozence"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Pokud je rodic série a ma sourozence pred typu slozka nebo jednotlivost, tak je slozka nebo jednotlivost"
+rule "HP_004_02 Složka nebo jednotlivost pod sérií - rodic série a ma sourozence pred typu slozka nebo jednotlivost"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -175,19 +192,21 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Pokud je rodic série a ma sourozence za typu slozka nebo jednotlivost, tak je slozka nebo jednotlivost"
+rule "HP_004_03 Složka nebo jednotlivost pod sérií - rodic série, je první potomek a ma sourozence za typu slozka nebo jednotlivost"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && 
+                                 siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $siblingDescItems
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Pokud je rodic série, ma sourozence za bez typu, tak je serie, slozka nebo jednotlivost"
+// HP_005 Chybějící typ úrovně sourozence pod sérií
+rule "HP_005_01 Chybějící typ úrovně sourozence pod sérií - sourozence za bez typu"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -196,10 +215,10 @@ when
     not(DescItem(type=="ZP2015_LEVEL_TYPE" ) from $siblingDescItems )
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Pokud je rodic série, ma sourozence pred bez typu, tak je serie, slozka nebo jednotlivost"
+rule "HP_005_02 Chybějící typ úrovně sourozence pod sérií - sourozence za bez typu"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -208,8 +227,68 @@ when
     not(DescItem(type=="ZP2015_LEVEL_TYPE" ) from $siblingDescItems )
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
+
+rule "HP_006 Složka musí mít uveden typ složky"
+no-loop
+when
+    $activeLevel : ActiveLevel( parent!=null  )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+    // pokud neni zneplatneny zaznam
+    not ( DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems )
+    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+then
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
+end
+
+rule "HP_007 Složka může být vždy typu logická"
+no-loop
+when
+    $activeLevel : ActiveLevel( parent!=null  )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+    $itemSpec : RulItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+// HP_008 Způsob pořádání lze nastavit do úrovně složka
+rule "HP_008_01 Způsob pořádání lze nastavit do úrovně složka - prvek popisu"
+no-loop
+when
+  $activeLevel : ActiveLevel( )
+  DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+  $itemType : RulItemTypeExt(code == "ZP2015_ARRANGEMENT_TYPE")
+then
+  $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "HP_008_02 Způsob pořádání lze nastavit do úrovně složka - specifikace"
+no-loop
+when
+  $activeLevel : ActiveLevel( )
+  DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+  $itemType : RulItemTypeExt(code == "ZP2015_ARRANGEMENT_TYPE")
+  $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+  $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+rule "HP_009 Způsob pořádání doporučený pokud není nastaven výše"
+no-loop
+when
+  $activeLevel : ActiveLevel( )  
+  DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+  not ( DescItem(type=="ZP2015_ARRANGEMENT_TYPE") from $activeLevel.descItems )
+  $itemType : RulItemTypeExt(code == "ZP2015_ARRANGEMENT_TYPE")
+then
+  $itemType.setMinType(RulItemType.Type.RECOMMENDED);
+end
+
+
 
 // Pokud je rodič složka a není složka jednotlivostí, tak může mít podsložku nebo jednotlivost
 rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER a není ZP2015_FOLDER_SINGLE_TYPE, tak může mít podsložku"
@@ -248,19 +327,6 @@ when
     $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
-end
-
-rule "Složka musí mít uveden typ"
-salience 100
-no-loop
-when
-    $activeLevel : ActiveLevel( parent!=null  )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
-    $itemSpec : RulItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
-then
-    $itemType.setType(RulItemType.Type.REQUIRED);
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 // Pokud je nadřazená složka s uvedenim EJ nebo hromadina, potom musí být logická
@@ -310,19 +376,6 @@ when
         )
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
-end
-
-// Typ pořádání - lze nastavit do úrovně složka
-rule "Typ pořádání"
-no-loop
-when
-  $activeLevel : ActiveLevel( )
-  DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
-  $itemType : RulItemTypeExt(code == "ZP2015_ARRANGEMENT_TYPE")
-  $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
-then
-  $itemType.setType(RulItemType.Type.POSSIBLE);
-  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 //
