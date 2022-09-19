@@ -30,6 +30,7 @@ import {modalDialogShow} from '../../actions/global/modalDialog';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import {renderUserItem} from '../../components/admin/adminRenderUtils';
 import PasswordForm from '../../components/admin/PasswordForm';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Stránka pro správu uživatelů.
@@ -145,9 +146,10 @@ class AdminUserPage extends AbstractReactComponent {
         }
     }
 
-    handleChangeUserActive() {
-        if (window.confirm(i18n('admin.user.changeActive.confirm'))) {
-            const {user} = this.props;
+    async handleChangeUserActive() {
+        const {dispatch, user} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('admin.user.changeActive.confirm')))
+        if (response) {
             this.props.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }
     }

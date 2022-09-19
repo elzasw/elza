@@ -1,7 +1,5 @@
 package cz.tacr.elza.common;
 
-import org.apache.commons.collections4.CollectionUtils;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,11 +8,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 
 /**
  * Iterátor kolekcí. Vrací podkolekci s danou velikostí.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 08.01.2016
  */
 public class ObjectListIterator<T> {
@@ -22,11 +21,10 @@ public class ObjectListIterator<T> {
     /**
      * Maximální velikost jedné vrácené kolekce.
      */
-    public static final int MAXIMAL_ITERATION_SIZE = 1500;
-
+    private static int maxIterationSize = 1500;
 
     private List<T> list;
-    private int maximalIterationSize = MAXIMAL_ITERATION_SIZE;
+    private int maximalIterationSize = maxIterationSize;
     private int index = 0;
 
     public ObjectListIterator(final Collection<T> list) {
@@ -38,6 +36,14 @@ public class ObjectListIterator<T> {
         this.list = new ArrayList<>(list);
     }
 
+    public static void setMaxBatchSize(int maxBatchSize) {
+        maxIterationSize = maxBatchSize;
+    }
+
+    public static int getMaxBatchSize() {
+        return maxIterationSize; 
+    }
+    
     public boolean hasNext() {
         return this.index < this.list.size();
     }

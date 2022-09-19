@@ -38,6 +38,7 @@ import ListPager from '../../components/shared/listPager/ListPager';
 import {Autocomplete} from '../../components/shared';
 import {refInstitutionsFetchIfNeeded} from '../../actions/refTables/institutions';
 import {objectById} from '../../shared/utils';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Stránka archivní soubory.
@@ -379,20 +380,22 @@ class FundPage extends AbstractReactComponent {
         return <Ribbon ref="ribbon" fund altSection={altSection} itemSection={itemSection} {...this.props} />;
     }
 
-    handleDeleteFund() {
-        const {fundRegion} = this.props;
+    async handleDeleteFund() {
+        const {fundRegion, dispatch} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        if (window.confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.delete.confirm', fundDetail.name)));
+        if (response) {
             this.props.dispatch(deleteFund(fundDetail.id));
         }
     }
 
-    handleDeleteFundHistory() {
-        const {fundRegion} = this.props;
+    async handleDeleteFundHistory() {
+        const {fundRegion, dispatch} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        if (window.confirm(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name)));
+        if (response) {
             this.props.dispatch(deleteFundHistory(fundDetail.id));
         }
     }

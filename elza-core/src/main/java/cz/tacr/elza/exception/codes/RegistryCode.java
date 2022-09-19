@@ -14,6 +14,11 @@ public enum RegistryCode implements ErrorCode {
     CANT_CHANGE_DELETED_AP,
 
     /**
+     * Nelze obnovit neodstraněný přístupový bod.
+     */
+    CANT_RESTORE_NOT_DELETED_AP,
+    
+    /**
      * Nelze upravit odstraněné jméno přístupového bodu.
      */
     CANT_CHANGE_DELETED_NAME,
@@ -137,4 +142,9 @@ public enum RegistryCode implements ErrorCode {
      * Nelze změnit stav archivní entity, která má revizi
      */
     CANT_CHANGE_STATE_ENTITY_WITH_REVISION,
+    
+    /**
+     * Nelze vytvořit revizi, protože archivní entita má nevhodný stav
+     */
+    CANT_CREATE_REVISION,
 }

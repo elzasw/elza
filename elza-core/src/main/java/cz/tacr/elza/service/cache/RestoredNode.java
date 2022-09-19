@@ -11,6 +11,24 @@ public class RestoredNode extends CachedNode {
 
 	protected ArrNode node;
 
+	public RestoredNode() {
+	}
+
+	public RestoredNode(RestoredNode source) {
+	    node = source.getNode();
+	    nodeId = source.getNodeId();
+	    uuid = source.getUuid();
+	    if (source.getDaoLinks() != null) {
+	        addDaoLinks(source.getDaoLinks());
+	    }
+	    if (source.getDescItems() != null) {
+	        addDescItems(source.getDescItems());
+	    }
+	    if (source.getNodeExtensions() != null) {
+	        addNodeExtensions(source.getNodeExtensions());
+	    }
+	}
+
 	public ArrNode getNode() {
 		return node;
 	}

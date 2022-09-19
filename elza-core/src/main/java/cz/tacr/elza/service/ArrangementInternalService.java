@@ -1,9 +1,35 @@
 package cz.tacr.elza.service;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Iterables;
-import cz.tacr.elza.core.db.HibernateConfiguration;
-import cz.tacr.elza.domain.*;
+
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -11,16 +37,6 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal arrangement service.
@@ -29,6 +45,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ArrangementInternalService {
 
     private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
+
+    final private static Logger logger = LoggerFactory.getLogger(ArrangementInternalService.class);
 
     @Autowired
     private ChangeRepository changeRepository;
@@ -94,18 +112,27 @@ public class ArrangementInternalService {
      *
      * @param level   level
      * @param version verze
-     * @return true pokud patří uzel do verze, jinak false
      */
-    public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
-        Assert.notNull(level, "Musí být vyplněno");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Integer lockChange = version.getLockChange() == null
-                ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
+    public void checkLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
+        Validate.notNull(level, "Musí být vyplněno");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
-        int levelDeleteChange = level.getDeleteChange() == null ?
-                Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
+        //
+        if (level.getDeleteChange() != null) {
+            // Kontrola, zda nedoslo k zaniku urovne pred vznikem verze
+            if (version.getCreateChange().getChangeDate().isAfter(level.getDeleteChange().getChangeDate())) {
+                throw new SystemException("Level s id " + level.getLevelId() + " nespadá do verze s id " + version
+                        .getFundVersionId());
+            }
+        }
 
-        return level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange;
+        if (version.getLockChange() != null) {
+            // kontrola, zda uzel nevznikl az po ukonceni verze
+            if (level.getCreateChange().getChangeDate().isAfter(version.getLockChange().getChangeDate())) {
+                throw new SystemException("Level s id " + level.getLevelId() + " nespadá do verze s id " + version
+                        .getFundVersionId());
+            }
+        }
     }
 
     /**
@@ -136,8 +163,11 @@ public class ArrangementInternalService {
     /**
      * Načte neuzavřenou verzi AS
      *
-     * @param fundId id AS
-     * @return verze
+     * Součástí je načtení i ArrFund
+     * 
+     * @param fundId
+     *            id AS
+     * @return Aktuální verze
      */
     public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
     	Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
@@ -147,6 +177,42 @@ public class ArrangementInternalService {
                         .set("fundId", fundId);
         }
         return fundVersion;
+    }
+
+    /**
+     * Try to find fund by string
+     *
+     * Method search fund by UUID, internalCode and fundId
+     * 
+     * @param fundIdentifier
+     * @return fund, throw exception if not found
+     */
+    public ArrFundVersion getOpenVersionByString(String fundIdentifier) {
+        logger.debug("Looking for fund: {}", fundIdentifier);
+        // try to find by uuid
+        if (fundIdentifier.length() == 36) {
+            ArrFundVersion fv = fundVersionRepository.findByRootNodeUuid(fundIdentifier);
+            if (fv != null) {
+                logger.debug("Found by UUID as {}", fv.getFundId());
+                return fv;
+            }
+        }
+        // try to find by internal code
+        ArrFundVersion fv = fundVersionRepository.findByInternalCode(fundIdentifier);
+        if (fv != null) {
+            logger.debug("Found by internal code as {}", fv.getFundId());
+            return fv;
+        }
+
+        // try to find by id
+        try {
+            Integer id = Integer.valueOf(fundIdentifier);
+            return getOpenVersionByFundId(id);
+        } catch (NumberFormatException nfe) {
+            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundIdentifier,
+                    ArrangementCode.FUND_NOT_FOUND)
+                    .setId(fundIdentifier);
+        }
     }
 
     public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
@@ -161,8 +227,8 @@ public class ArrangementInternalService {
         if (structuredObjectIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<Integer, ArrNode> result = new HashMap<>(HibernateConfiguration.MAX_IN_SIZE);
-        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, HibernateConfiguration.MAX_IN_SIZE)) {
+        Map<Integer, ArrNode> result = new HashMap<>(ObjectListIterator.getMaxBatchSize());
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, ObjectListIterator.getMaxBatchSize())) {
             for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
                 result.put(node.getNodeId(), node);
             }
@@ -208,5 +274,25 @@ public class ArrangementInternalService {
      */
     public Integer countActiveItems(ArrFile file) {
         return descItemRepository.countItemsUsingFile(file);
+    }
+
+    /**
+     * Check if level is deleted in given version
+     * @param level
+     * @param version
+     * @return
+     */
+    public boolean isLevelDeletedInVersion(ArrLevel level, ArrFundVersion version) {
+        // if not deleted -> simply return as not deleted
+        if(level.getDeleteChange()==null) {
+            return false;
+        }
+        if(version.getLockChange()!=null) {
+            // closed version, check if not deleted later
+            if (level.getDeleteChange().getChangeDate().isAfter(version.getLockChange().getChangeDate())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

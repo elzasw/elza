@@ -19,6 +19,7 @@ import './AdminPage.scss';
 import AbstractReactComponent from '../../components/AbstractReactComponent';
 import Ribbon from '../../components/page/Ribbon';
 import PageLayout from '../shared/layout/PageLayout';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 class AdminPage extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps = nextProps => {
@@ -51,14 +52,18 @@ class AdminPage extends AbstractReactComponent {
         this.props.dispatch(developerSet(!this.props.developer.enabled));
     };
 
-    handleResetLocalStorage = () => {
-        if (window.confirm(i18n('global.title.processAction'))) {
+    handleResetLocalStorage = async () => {
+        const {dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('global.title.processAction')))
+        if (response) {
             resetLocalStorage();
         }
     };
 
-    handleResetServerCache = () => {
-        if (window.confirm(i18n('global.title.processAction'))) {
+    handleResetServerCache = async () => {
+        const {dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('global.title.processAction')))
+        if (response) {
             WebApi.resetServerCache().then(() => {
                 this.props.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
             });

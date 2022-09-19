@@ -31,8 +31,6 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
 
     List<ArrDaoLink> findByDao(ArrDao arrDao);
 
-    List<ArrDaoLink> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
-
     @Query("SELECT dl" +
             " FROM arr_dao_link dl" +
             " JOIN FETCH dl.dao" +

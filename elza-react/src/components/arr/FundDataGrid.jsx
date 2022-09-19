@@ -71,6 +71,7 @@ import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';
 import {WebApi} from "../../actions/WebApi";
+import { showConfirmDialog } from 'components/shared/dialog';
 
 class FundDataGrid extends AbstractReactComponent {
     dataGridRef = null;
@@ -589,9 +590,9 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid, structureTypes} = this.props;
+        const {versionId, fundDataGrid, structureTypes, dispatch} = this.props;
 
-        const submit = data => {
+        const submit = async (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
             let nodes;
             let selectionType;
@@ -662,7 +663,8 @@ class FundDataGrid extends AbstractReactComponent {
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
             specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
             let valuesIds = getValueIds(this.state.valueItems, data.values.type, data.values.ids);
-            if (selectionType !== 'FUND' || window.confirm(i18n('arr.fund.bulkModifications.warn'))) {
+            const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
+            if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(
                         versionId,

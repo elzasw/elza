@@ -1,27 +1,26 @@
 //
+import { FILTER_NULL_VALUE } from 'actions/arr/fundDataGrid';
+import { WebApi } from 'actions/index';
+import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
+import { getSpecsIds, hasDescItemTypeValue } from 'components/arr/ArrUtils';
+import { submitForm } from 'components/form/FormUtils';
+import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
 import React from 'react';
-import {formValueSelector, Field, getFormMeta, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {connect} from 'react-redux';
-import {Col, Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils';
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
-import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils';
+import { Form, FormGroup, FormLabel, Modal } from 'react-bootstrap';
+import { Field, Form as FinalForm } from 'react-final-form';
+import { connect } from 'react-redux';
+import objectById from "../../shared/utils/objectById";
+import FormInputField from '../shared/form/FormInputField';
+import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
+import { Button } from '../ui';
+import { validateInt } from '../validate';
+import { getMapFromList } from './../../stores/app/utils';
+import DatationField from './../party/DatationField';
 import './FundBulkModificationsForm.scss';
+import DescItemRecordRef from './nodeForm/DescItemRecordRef';
+import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import SimpleCheckListBox from './SimpleCheckListBox';
 import ValueCheckListBox from './ValueCheckListBox';
-import {validateInt} from '../validate';
-import DescItemUnitdate from './nodeForm/DescItemUnitdate';
-import DescItemRecordRef from './nodeForm/DescItemRecordRef';
-import DatationField from './../party/DatationField';
-import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid';
-import {getMapFromList} from './../../stores/app/utils';
-import FormInputField from '../shared/form/FormInputField';
-import FF from '../shared/form/FF';
-import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
-import {WebApi} from 'actions/index';
-import objectById from "../../shared/utils/objectById";
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -232,8 +231,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return result;
     };
 
-    submitReduxForm = (values, dispatch) =>
-        submitForm(FundBulkModificationsForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    handleSubmitForm = (values) =>{
+        submitForm(FundBulkModificationsForm.validate, values, this.props, this.props.onSubmitForm, this.props.dispatch);
+    }
 
     /**
      * Vrací true v případě, že atribut tvoří hodnotu pouze specifikací - enum.
@@ -300,73 +300,45 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             allItemsCount,
             checkedItemsCount,
             refType,
-            handleSubmit,
             onClose,
             dataType,
-            meta,
-            replaceSpec,
-            replaceText,
-            operationType,
-            submitting,
             versionId,
         } = this.props;
-        const {allValueItems} = this.state;
-        const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
-        let operationInputs = [];
-        let submitButtonTitle;
+        const getSubmitButtonLabel = (operationType) => {
+            let submitButtonTitle;
 
-        switch (operationType) {
-            case 'setSpecification':
-                submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
-                operationInputs.push(
-                    <Field
-                        key={'replaceSpec'}
-                        name="replaceSpec"
-                        as={'select'}
-                        component={FormInputField}
-                        label={i18n(
-                            this.isEnumType()
-                                ? 'arr.fund.bulkModifications.replace.replaceEnum'
-                                : 'arr.fund.bulkModifications.replace.replaceSpec',
-                        )}
-                        disabled={submitting}
-                    >
-                        <option />
-                        {refType.descItemSpecs.map(i => (
-                            <option key={i.id} value={i.id}>
-                                {i.name}
-                            </option>
-                        ))}
-                    </Field>,
-                );
+            switch (operationType) {
+                case 'setSpecification':
+                    submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
+                    break;
+                case 'findAndReplace':
+                    submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace';
+                    break;
+                case 'replace':
+                    submitButtonTitle = 'arr.fund.bulkModifications.action.replace';
+                    break;
+                case 'setValue':
+                    submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
+                    break;
+                case 'delete':
+                    submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
+                    break;
+                default:
                 break;
-            case 'findAndReplace':
-                submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace';
-                operationInputs.push(
-                    <Field
-                        key={'findText'}
-                        name="findText"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
-                        disabled={submitting}
-                    />,
-                );
-                operationInputs.push(
-                    <Field
-                        key={'replaceText'}
-                        name="replaceText"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
-                        disabled={submitting}
-                    />,
-                );
-                break;
-            case 'replace':
-                submitButtonTitle = 'arr.fund.bulkModifications.action.replace';
-                if (refType.useSpecification) {
+            }
+            return submitButtonTitle;
+        }
+
+        const getOperationFields = (submitting, formState) => {
+            const {operationType, replaceText, replaceSpec} = formState.values;
+            const meta = formState.errors;
+            const {allValueItems} = this.state;
+
+            let operationInputs = [];
+
+            switch (operationType) {
+                case 'setSpecification':
                     operationInputs.push(
                         <Field
                             key={'replaceSpec'}
@@ -388,282 +360,324 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             ))}
                         </Field>,
                     );
-                }
-
-                // Pomocné props pro předávání na hodnoty typu desc item
-                const descItemProps = {
-                    hasSpecification: refType.useSpecification,
-                    locked: false,
-                    readMode: false,
-                    cal: false,
-                    readOnly: false,
-                };
-
-                switch (dataType.code) {
-                    case 'UNITDATE':
-                        {
-                            let data = {
-                                ...descItemProps,
-                                descItem: {
-                                    error: {
-                                        value: meta.replaceText ? meta.replaceText : null,
-                                    },
-                                    value: replaceText.value,
-                                },
-                            };
-                            operationInputs.push(
-                                <FF
-                                    name={'replaceText'}
-                                    field={DescItemUnitdate}
-                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    {...data}
-                                />,
-                            );
-                        }
-                        break;
-                    case 'RECORD_REF':
-                        {
-                            let specName = null;
-                            if (replaceSpec) {
-                                const map = getMapFromList(refType.descItemSpecs);
-                                specName = map[replaceSpec].name;
-                            }
-
-                            let data = {
-                                ...descItemProps,
-                                itemTypeId: refType.id,
-                                itemName: refType.shortcut,
-                                specName: specName,
-                                descItem: {
-                                    error: {
-                                        value: meta.replaceText ? meta.replaceText : null,
-                                    },
-                                    record: replaceText,
-                                    descItemSpecId: replaceSpec,
-                                },
-                            };
-                            operationInputs.push(
-                                <FF
-                                    name={'replaceText'}
-                                    field={DescItemRecordRef}
-                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    {...data}
-                                />,
-                            );
-                        }
-                        break;
-                    default:
+                    break;
+                case 'findAndReplace':
+                    operationInputs.push(
+                        <Field
+                            key={'findText'}
+                            name="findText"
+                            type="text"
+                            component={FormInputField}
+                            label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
+                            disabled={submitting}
+                            />,
+                    );
+                    operationInputs.push(
+                        <Field
+                            key={'replaceText'}
+                            name="replaceText"
+                            type="text"
+                            component={FormInputField}
+                            label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
+                            disabled={submitting}
+                            />,
+                    );
+                    break;
+                case 'replace':
+                    if (refType.useSpecification) {
                         operationInputs.push(
                             <Field
-                                key={'replaceText'}
+                                key="replaceSpec"
+                                name="replaceSpec"
+                                as={'select'}
+                                component={FormInputField}
+                                label={i18n(
+                                    this.isEnumType()
+                                        ? 'arr.fund.bulkModifications.replace.replaceEnum'
+                                        : 'arr.fund.bulkModifications.replace.replaceSpec',
+                                )}
+                                disabled={submitting}
+                            >
+                                <option />
+                                {refType.descItemSpecs.map(i => (
+                                    <option key={i.id} value={i.id}>
+                                        {i.name}
+                                    </option>
+                                ))}
+                            </Field>,
+                        );
+                    }
+
+                    // Pomocné props pro předávání na hodnoty typu desc item
+                    const descItemProps = {
+                        hasSpecification: refType.useSpecification,
+                        locked: false,
+                        readMode: false,
+                        cal: false,
+                        readOnly: false,
+                    };
+
+                    switch (dataType.code) {
+                        case 'UNITDATE':
+                        {
+                                operationInputs.push(
+                                    <Field
+                                        key="replaceText"
+                                        name="replaceText"
+                                        label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                    >{({input}) => {
+                                            let data = {
+                                                ...descItemProps,
+                                                descItem: {
+                                                    error: {
+                                                        value: meta.replaceText || null,
+                                                    },
+                                                    value: replaceText,
+                                                },
+                                            };
+                                            const handleChange = (unitdateValue) => {
+                                                input.onChange(unitdateValue.value);
+                                            }
+                                            return <DescItemUnitdate {...input} onChange={handleChange} {...data}/>
+                                        }}
+                                    </Field>,
+                                );
+                            }
+                            break;
+                        case 'RECORD_REF':
+                        {
+                                operationInputs.push(
+                                    <Field
+                                        key="replaceText"
+                                        name="replaceText"
+                                        label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                    >{({input}) => {
+                                            let specName = null;
+                                            if (replaceSpec) {
+                                                const map = getMapFromList(refType.descItemSpecs);
+                                                specName = map[replaceSpec].name;
+                                            }
+
+                                            let data = {
+                                                ...descItemProps,
+                                                itemTypeId: refType.id,
+                                                itemName: refType.shortcut,
+                                                specName: specName,
+                                                descItem: {
+                                                    error: {
+                                                        value: meta.replaceText || null,
+                                                    },
+                                                    record: replaceText,
+                                                    descItemSpecId: replaceSpec,
+                                                },
+                                            };
+                                            return <DescItemRecordRef {...input} {...data}/>
+                                        }}</Field>
+                                );
+                            }
+                            break;
+                        default:
+                        operationInputs.push(
+                            <Field
+                                key="replaceText"
                                 name="replaceText"
                                 type="text"
                                 component={FormInputField}
                                 label={i18n('arr.fund.bulkModifications.replace.replaceText')}
                                 disabled={submitting}
-                            />,
+                                />,
                         );
-                }
+                    }
 
+                    break;
+                case 'setValue':
+                    operationInputs.push(
+                        <Field
+                            key={'replaceValueId'}
+                            name="replaceValueId"
+                            as={'select'}
+                            component={FormInputField}
+                            label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
+                            disabled={submitting}
+                        >
+                            <option />
+                            {allValueItems.map(i => (
+                                <option key={i.id} value={i.id}>
+                                    {i.name}
+                                </option>
+                            ))}
+                        </Field>,
+                    );
+                    break;
+                default:
                 break;
-            case 'setValue':
-                submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
-                operationInputs.push(
-                    <Field
-                        key={'replaceValueId'}
-                        name="replaceValueId"
-                        as={'select'}
-                        component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
-                        disabled={submitting}
-                    >
-                        <option />
-                        {allValueItems.map(i => (
-                            <option key={i.id} value={i.id}>
-                                {i.name}
-                            </option>
-                        ))}
-                    </Field>,
-                );
-                break;
-            case 'delete':
-                submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
-                break;
-            default:
-                break;
+            }
+            return operationInputs;
         }
 
         return (
-            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-                <Modal.Body className="fund-bulk-modifications-container">
-                    <FormInput
-                        type="static"
-                        label={i18n('arr.fund.bulkModifications.descItemType')}
-                        wrapperClassName="form-items-group"
-                    >
-                        {refType.shortcut}
-                    </FormInput>
+            <FinalForm 
+                onSubmit={this.handleSubmitForm}
+                initialValues={this.props.initialValues || {
+                    findText: "",
+                    replaceText: "",
+                    itemsArea: getDefaultItemsArea(this.props),
+                    operationType: getDefaultOperationType(this.props),
+                    specs: {type: 'unselected'},
+                    values: {type: 'unselected'},
+                }}
+            >
+                {({handleSubmit, pristine, form, submitting})=>{
 
-                    {refType.useSpecification && (
-                        <FormGroup>
-                            <FormLabel>
-                                {i18n(
-                                    this.isEnumType()
-                                        ? 'arr.fund.bulkModifications.values'
-                                        : 'arr.fund.bulkModifications.specs',
+                    const formState = form.getState();
+                    const uncheckedItemsCount = allItemsCount - checkedItemsCount;
+                    const operationInputs = getOperationFields(submitting, formState);
+                    const submitButtonTitle = getSubmitButtonLabel(formState.values.operationType);
+
+                    return <Form onSubmit={handleSubmit}>
+                        <Modal.Body className="fund-bulk-modifications-container">
+                            <FormInput
+                                type="static"
+                                label={i18n('arr.fund.bulkModifications.descItemType')}
+                                wrapperClassName="form-items-group"
+                            >
+                                {refType.shortcut}
+                            </FormInput>
+
+                            {refType.useSpecification && (
+                                <FormGroup>
+                                    <FormLabel>
+                                        {i18n(
+                                            this.isEnumType()
+                                                ? 'arr.fund.bulkModifications.values'
+                                                : 'arr.fund.bulkModifications.specs',
+                                        )}
+                                    </FormLabel>
+                                    <Field
+                                        name={'specs'}
+                                    >{({input})=>{
+                                            return <SimpleCheckListBox 
+                                                {...input}
+                                                items={[
+                                                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
+                                                    ...refType.descItemSpecs,
+                                                ]}
+                                                />
+                                        }}</Field>
+                                </FormGroup>
+                            )}
+
+                            {dataType.code === "STRUCTURED" && (
+                                <FormGroup>
+                                    <FormLabel>
+                                        {i18n('arr.fund.bulkModifications.values')}
+                                    </FormLabel>
+                                    <Field
+                                        component={ValueCheckListBox}
+                                        refType={refType}
+                                        versionId={versionId}
+                                        name={'values'}
+                                        onStructValueChange={this.props.onStructValueChange}
+                                        />
+                                </FormGroup>
+                            )}
+
+                            <FormGroup>
+                                <FormLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</FormLabel>
+                                <Field
+                                    name="itemsArea"
+                                    component={ReduxFormFieldErrorDecorator}
+                                    renderComponent={Form.Check}
+                                    label={i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}
+                                    type="radio"
+                                    value={'page'}
+                                    />
+                                {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && (
+                                    <Field
+                                        name="itemsArea"
+                                        component={ReduxFormFieldErrorDecorator}
+                                        renderComponent={Form.Check}
+                                        label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}
+                                        type="radio"
+                                        value={'selected'}
+                                        />
                                 )}
-                            </FormLabel>
-                            <FF
-                                field={SimpleCheckListBox}
-                                ref="specsListBox"
-                                items={[
-                                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
-                                    ...refType.descItemSpecs,
-                                ]}
-                                name={'specs'}
-                            />
-                        </FormGroup>
-                    )}
-
-                    {dataType.code === "STRUCTURED" && (
-                        <FormGroup>
-                            <FormLabel>
-                                {i18n('arr.fund.bulkModifications.values')}
-                            </FormLabel>
-                            <FF
-                                field={ValueCheckListBox}
-                                ref="valuesListBox"
-                                refType={refType}
-                                versionId={versionId}
-                                name={'values'}
-                                onStructValueChange={this.props.onStructValueChange}
-                            />
-                        </FormGroup>
-                    )}
-
-                    <FormGroup>
-                        <FormLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</FormLabel>
-                        <Field
-                            name="itemsArea"
-                            component={ReduxFormFieldErrorDecorator}
-                            renderComponent={Form.Check}
-                            label={i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}
-                            type="radio"
-                            value={'page'}
-                        />
-                        {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && (
-                            <Field
-                                name="itemsArea"
-                                component={ReduxFormFieldErrorDecorator}
-                                renderComponent={Form.Check}
-                                label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}
-                                type="radio"
-                                value={'selected'}
-                            />
-                        )}
-                        {uncheckedItemsCount > 0 && checkedItemsCount > 0 && (
-                            <Field
-                                name="itemsArea"
-                                component={ReduxFormFieldErrorDecorator}
-                                renderComponent={Form.Check}
-                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', checkedItemsCount)}
-                                type="radio"
-                                value={'unselected'}
-                            />
-                        )}
-                        <Field
-                            name="itemsArea"
-                            component={ReduxFormFieldErrorDecorator}
-                            renderComponent={Form.Check}
-                            label={i18n('arr.fund.bulkModifications.itemsArea.all')}
-                            type="radio"
-                            value={'all'}
-                        />
-                    </FormGroup>
-
-                    <Field
-                        key={'operationType'}
-                        name="operationType"
-                        as={'select'}
-                        component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.operationType')}
-                        disabled={submitting}
-                    >
-                        {this.supportFindAndReplace() && (
-                            <option key="findAndReplace" value="findAndReplace">
-                                {i18n('arr.fund.bulkModifications.operationType.findAndReplace')}
-                            </option>
-                        )}
-                        {this.supportReplace() && (
-                            <option key="replace" value="replace">
-                                {i18n('arr.fund.bulkModifications.operationType.replace')}
-                            </option>
-                        )}
-                        {this.supportSetSpecification() && (
-                            <option key="setSpecification" value="setSpecification">
-                                {i18n(
-                                    this.isEnumType()
-                                        ? 'arr.fund.bulkModifications.operationType.setEnum'
-                                        : 'arr.fund.bulkModifications.operationType.setSpecification',
+                                {uncheckedItemsCount > 0 && checkedItemsCount > 0 && (
+                                    <Field
+                                        name="itemsArea"
+                                        component={ReduxFormFieldErrorDecorator}
+                                        renderComponent={Form.Check}
+                                        label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}
+                                        type="radio"
+                                        value={'unselected'}
+                                        />
                                 )}
-                            </option>
-                        )}
-                        {this.supportSetValue() && (
-                            <option key="setValue" value="setValue">
-                                {i18n('arr.fund.bulkModifications.operationType.setEnum')}
-                            </option>
-                        )}
-                        <option key="delete" value="delete">
-                            {i18n('arr.fund.bulkModifications.operationType.delete')}
-                        </option>
-                    </Field>
-                    {operationInputs}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary">
-                        {i18n(submitButtonTitle)}
-                    </Button>
-                    <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.close')}
-                    </Button>
-                </Modal.Footer>
-            </Form>
+                                <Field
+                                    name="itemsArea"
+                                    component={ReduxFormFieldErrorDecorator}
+                                    renderComponent={Form.Check}
+                                    label={i18n('arr.fund.bulkModifications.itemsArea.all')}
+                                    type="radio"
+                                    value={'all'}
+                                    />
+                            </FormGroup>
+
+                            <Field
+                                key={'operationType'}
+                                name="operationType"
+                                as={'select'}
+                                component={FormInputField}
+                                label={i18n('arr.fund.bulkModifications.operationType')}
+                                disabled={submitting}
+                            >
+                                {this.supportFindAndReplace() && (
+                                    <option key="findAndReplace" value="findAndReplace">
+                                        {i18n('arr.fund.bulkModifications.operationType.findAndReplace')}
+                                    </option>
+                                )}
+                                {this.supportReplace() && (
+                                    <option key="replace" value="replace">
+                                        {i18n('arr.fund.bulkModifications.operationType.replace')}
+                                    </option>
+                                )}
+                                {this.supportSetSpecification() && (
+                                    <option key="setSpecification" value="setSpecification">
+                                        {i18n(
+                                            this.isEnumType()
+                                                ? 'arr.fund.bulkModifications.operationType.setEnum'
+                                                : 'arr.fund.bulkModifications.operationType.setSpecification',
+                                        )}
+                                    </option>
+                                )}
+                                {this.supportSetValue() && (
+                                    <option key="setValue" value="setValue">
+                                        {i18n('arr.fund.bulkModifications.operationType.setEnum')}
+                                    </option>
+                                )}
+                                <option key="delete" value="delete">
+                                    {i18n('arr.fund.bulkModifications.operationType.delete')}
+                                </option>
+                            </Field>
+                            {operationInputs}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button type="submit" variant="outline-secondary">
+                                {i18n(submitButtonTitle)}
+                            </Button>
+                            <Button variant="link" onClick={onClose}>
+                                {i18n('global.action.close')}
+                            </Button>
+                        </Modal.Footer>
+                    </Form>
+                }}
+            </FinalForm>
         );
     }
 }
 
-const formName = 'fundBulkModificationsForm';
-
-const RF = reduxForm({
-    form: formName,
-})(FundBulkModificationsForm);
-
-const formSelector = formValueSelector(formName);
-
-export default connect((state, props) => {
-    let val = '';
-
-    if (props.dataType.code === 'UNITDATE') {
-        val = {
-            value: '',
-        };
-    }
-
+export default connect((state) => {
     return {
-        initialValues: props.initialValues || {
-            findText: '',
-            replaceText: val,
-            itemsArea: getDefaultItemsArea(props),
-            operationType: getDefaultOperationType(props),
-            specs: {type: 'unselected'},
-            values: {type: 'unselected'},
-        },
-        replaceText: formSelector(state, 'replaceText'),
-        replaceSpec: formSelector(state, 'replaceSpec'),
-        replaceValueId: formSelector(state, 'replaceValueId'),
-        operationType: formSelector(state, 'operationType'),
-        meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,
         structureTypes: state.refTables.structureTypes,
     };
-})(RF);
+})(FundBulkModificationsForm);

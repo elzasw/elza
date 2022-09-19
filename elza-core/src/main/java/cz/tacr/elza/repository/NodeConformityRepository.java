@@ -42,6 +42,9 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
             + "and c.fundVersion = ?2")
     List<ArrNodeConformity> findByNodesAndFundVersion(Collection<ArrNode> nodes, ArrFundVersion fundVersion);
 
+    @Query("SELECT c FROM arr_node_conformity c WHERE c.nodeId in (?1)")
+    List<ArrNodeConformity> findByNodeIds(Collection<Integer> nodeIds);
+
     List<ArrNodeConformity> findByNode(ArrNode node);
 
     List<ArrNodeConformity> findByFundVersion(ArrFundVersion fundVersion);

@@ -14,6 +14,7 @@ import './AdminExtSystemPage.scss';
 import AbstractReactComponent from '../../components/AbstractReactComponent';
 
 import {PropTypes} from 'prop-types';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 var keyModifier = Utils.getKeyModifier();
 var defaultKeymap = {
@@ -78,9 +79,11 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * *********************************************
      * Kliknutí na tlačítko pro smazání systému
      */
-    handleDeleteExtSystem = () => {
-        window.confirm(i18n('admin.extSystem.delete.confirm')) &&
-            this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
+    handleDeleteExtSystem = async () => {
+        const {dispatch} = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('admin.extSystem.delete.confirm')))
+        response 
+            && this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
 
     /**

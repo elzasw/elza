@@ -25,4 +25,12 @@ public interface ExportBuilder {
      * Release all resources.
      */
     void clear();
+
+    /**
+     * Return if deleted APs can be exported to the given
+     * output format.
+     * 
+     * @return
+     */
+    boolean canExportDeletedAPs();
 }

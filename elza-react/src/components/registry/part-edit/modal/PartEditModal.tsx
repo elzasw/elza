@@ -25,6 +25,7 @@ type Props = {
     apTypeId: number;
     scopeId: number;
     parentPartId?: number;
+    revParentPartId?: number;
     apId: number;
     partId?: number;
     onClose: () => void;
@@ -39,6 +40,7 @@ const PartEditModal:FC<Props> = ({
     scopeId,
     initialValues,
     parentPartId,
+    revParentPartId,
     apId,
     partId,
     onSubmit,
@@ -68,7 +70,8 @@ const PartEditModal:FC<Props> = ({
             partTypeId, 
             partId, 
             parentPartId, 
-            apId
+            apId,
+            revParentPartId,
         )
 
         setAvailableAttributes(attributes);
@@ -98,6 +101,7 @@ const PartEditModal:FC<Props> = ({
                 return <>
                     <Modal.Body>
                         <PartEditForm
+                            apId={apId}
                             partTypeId={partTypeId}
                             apTypeId={apTypeId}
                             scopeId={scopeId}

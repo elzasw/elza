@@ -17,7 +17,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.UsrPermission;
@@ -121,11 +120,11 @@ public class UserPermissionTest extends AbstractTest {
         addPermission(user3, UsrPermission.Permission.AP_EDIT_CONFIRMED_ALL);
         authorizeAsUser(user3);
 
-        // APPROVED -> REV_NEW
+        // APPROVED -> APPROVED 
         state.setStateApproval(StateApproval.APPROVED);
         states = accessPointService.getNextStates(state);
         Assert.assertTrue(states.size() == 1);
-        Assert.assertTrue(states.contains(StateApproval.REV_NEW));
+        Assert.assertTrue(states.contains(StateApproval.APPROVED));
 
         // REV_NEW -> REV_PREPARED
         state.setStateApproval(StateApproval.REV_NEW);

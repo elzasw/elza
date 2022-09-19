@@ -1,5 +1,38 @@
 package cz.tacr.elza.service.cache;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.ScrollableResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -23,7 +56,6 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
@@ -37,36 +69,6 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.search.SearchIndexSupport;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.ScrollableResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
@@ -77,6 +79,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    @Qualifier("threadPoolTaskExecutorAP")
+    private ThreadPoolTaskExecutor executor;
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
@@ -150,6 +156,95 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     /**
      * Synchronizace záznamů v databázi.
+     *
+     * Synchronní metoda volaná z transakce.
+     */
+    public void syncCacheParallel() {
+        logger.info("Spuštění - synchronizace cache pro AP");
+
+        AtomicInteger atomCounter = new AtomicInteger(0);
+        AtomicInteger errorCounter = new AtomicInteger(0);
+
+        synchronized (this) {
+
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            Integer cnt = tt.execute(t -> {
+                ScrollableResults uncachedAPs = accessPointRepository.findUncachedAccessPoints();
+
+                int count = 0;
+                List<Integer> apIds = new ArrayList<>(syncApBatchSize);
+                while (uncachedAPs.next()) {
+                    Object obj = uncachedAPs.get(0);
+
+                    apIds.add((Integer) obj);
+                    count++;
+                    if (count % syncApBatchSize == 0) {
+                        atomCounter.incrementAndGet();
+                        addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
+                        apIds.clear();
+                    }
+                }
+                if (apIds.size() > 0) {
+                    atomCounter.incrementAndGet();
+                    addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
+                }
+                return count;
+            });
+
+            logger.info("Počet AP k synchronizaci: {}", cnt);
+        }
+
+        synchronized (atomCounter) {
+            while (atomCounter.get() > 0) {
+                try {
+                    atomCounter.wait(100);
+                } catch (InterruptedException e) {
+                    logger.error("AP synchronization interrupted");
+                    throw new SystemException("AP synchronization interrupted");
+                }
+            }
+        }
+
+        if (errorCounter.get() > 0) {
+            logger.error("AP synchronization failed");
+            throw new SystemException("AP synchronization failed");
+        }
+
+        logger.info("Všechny AP jsou synchronizovány");
+        logger.info("Ukončení synchronizace cache pro AP");
+    }
+
+    private void addParallelSync(final AtomicInteger atomCounter,
+                                 final AtomicInteger errorCounter,
+                                 final List<Integer> apIds,
+                                 final int offset) {
+        // IDS to own list
+        final List<Integer> ids = new ArrayList<>(apIds);
+        this.executor.execute(() -> parallelSync(atomCounter, errorCounter, ids, offset));
+    }
+
+    private void parallelSync(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> apIds, int offset) {
+        try {
+            logger.info("Sestavuji AP {}-{}", 1 + offset, apIds.size() + offset);
+
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            tt.executeWithoutResult(t -> {
+                processNewAPs(apIds);
+            });
+        } catch (Exception e) {
+            logger.error("Failed to create AP cache", e);
+            errorCounter.incrementAndGet();
+        }
+        synchronized (atomCounter) {
+            int v = atomCounter.decrementAndGet();
+            if (v == 0) {
+                atomCounter.notify();
+            }
+        }
+    }
+
+    /**
+     * Synchronizace záznamů v databázi.
      * 
      * @param offset
      * @return Number of processed items
@@ -165,7 +260,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             apIds.add((Integer) obj);
             count++;
             if (count % syncApBatchSize == 0) {
-                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1 + offset) + "-" + (count + offset));
+                logger.info("Sestavuji AP {}-{}", count - syncApBatchSize + 1 + offset, count + offset);
 
                 processNewAPs(apIds);
                 apIds.clear();
@@ -193,16 +288,28 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     private List<ApCachedAccessPoint> createCachedAccessPoints(List<Integer> accessPointIds) {
-        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(accessPointIds);
-        Validate.isTrue(accessPointIds.size() == accessPointList.size(), "Found unexpected number of accesspoints");
+        Set<Integer> requestedIds = new HashSet<>(accessPointIds);
+        if(requestedIds.size()!=accessPointIds.size()) {
+            logger.error("Some ID is multiple times in the query");
+        }
 
-        // Add all aps
-        Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
+        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);        
+        // Prepare map
+        final Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
                 .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, ap -> createCachedAccessPoint(ap)));
+
+        // check result
+        if (requestedIds.size() != accessPointList.size()) {
+            List<Integer> missingIds = requestedIds.stream().filter((reqId) -> apMap.get(reqId)==null)
+                    .collect(Collectors.toList());
+            logger.error("Some access points not found: {}", missingIds);
+            throw new SystemException("Some access points not found", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("missingIds", missingIds);
+        }
 
         // set ap state
         List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
-        if(apStates.size() != accessPointIds.size()) {
+        if (apStates.size() != accessPointIds.size()) {
         	Map<Integer, ApState> apStatesMap = new HashMap<>();
         	for(ApState apState: apStates) {
         		ApState otherState = apStatesMap.put(apState.getAccessPointId(), apState);
@@ -219,12 +326,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         	Set<Integer> ids = new HashSet<>();
         	for(ApAccessPoint ap: accessPointList) {
         		ApState apState = apStatesMap.get(ap.getAccessPointId());
-        		if(apState==null) {
+        		if (apState == null) {
         			logger.error("Missing state for accesspoint, accessPointId: {}", ap.getAccessPointId());
         			throw new SystemException("Missing state for accesspoint.", BaseCode.DB_INTEGRITY_PROBLEM)
     					.set("accessPointId", ap.getAccessPointId());
         		}
-        		if(!ids.add(ap.getAccessPointId())) {
+        		if (!ids.add(ap.getAccessPointId())) {
         			logger.error("AccessPoint was already processed, accessPointId: {}", ap.getAccessPointId());
         			throw new SystemException("AccessPoint was already processed.", BaseCode.DB_INTEGRITY_PROBLEM)
     					.set("accessPointId", ap.getAccessPointId());
@@ -241,6 +348,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         createCachedPartMap(accessPointList, apMap);
         createCachedBindingMap(accessPointList, apMap);
+        createCachedReplacedMap(accessPointIds, apMap);
 
         List<ApCachedAccessPoint> apCachedAccessPoints = new ArrayList<>();
 
@@ -298,8 +406,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedPart;
     }
 
-    private void createCachedPartMap(List<ApAccessPoint> accessPointList,
-                                     Map<Integer, CachedAccessPoint> apMap) {
+    private void createCachedReplacedMap(List<Integer> accessPointIds, Map<Integer, CachedAccessPoint> apMap) {
+
+        List<ApState> states = stateRepository.findLastByReplacedByIds(accessPointIds);
+
+        states.forEach(s -> apMap.get(s.getReplacedById()).addReplacedId(s.getAccessPointId()));
+    }
+
+    private void createCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedAccessPoint> apMap) {
 
         Map<Integer, CachedPart> partMap = fillCachedPartMap(accessPointList, apMap);
 
@@ -452,14 +566,23 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
             ApScope scope = entityManager.getReference(ApScope.class, state.getScopeId());
             state.setScope(scope);
+
+            state.setCreateChange(entityManager.getReference(ApChange.class, state.getCreateChangeId()));
+            if (state.getDeleteChangeId() != null) {
+                state.setDeleteChange(entityManager.getReference(ApChange.class, state.getDeleteChangeId()));
+            }
+            if (state.getReplacedById() != null) {
+                state.setReplacedBy(entityManager.getReference(ApAccessPoint.class, state.getReplacedById()));
+            }
         }
         
+        StaticDataProvider sdp = staticDataService.getData();
+
         Map<Integer, ApPart> partMap =  new HashMap<>();
         Map<Integer, ApItem> itemMap =  new HashMap<>();
         
         if (cap.getParts() != null) {
-        	// restore parts
-        	StaticDataProvider sdp = staticDataService.getData();
+            // restore parts        	
         	
             for (CachedPart part : cap.getParts()) {
                 ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
@@ -522,6 +645,16 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             }
             if (bs.getSyncChangeId() != null) {
                 bs.setSyncChange(entityManager.getReference(ApChange.class, bs.getSyncChangeId()));
+            }
+            if (bs.getApTypeId() != null) {
+                bs.setApType(sdp.getApTypeById(bs.getApTypeId()));
+            }
+            if (bs.getPreferredPartId() != null) {
+                ApPart prefPart = partMap.get(bs.getPreferredPartId());
+                if (prefPart == null) {
+                    prefPart = entityManager.getReference(ApPart.class, bs.getPreferredPartId());
+                }
+                bs.setPreferredPart(prefPart);
             }
 
             // set items
@@ -635,7 +768,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             // check empty part
             if (CollectionUtils.isEmpty(cachedPart.getItems())) {
                 Validate.isTrue(false,
-                                "Empty part in cache, accessPointId=%s, partId=%s",
+                                "Část popisu entity nemůže být prázdná: Empty part in cache, accessPointId=%s, partId=%s",
                                 cachedAccessPoint.getAccessPointId(),
                                 cachedPart.getPartId());
             }
@@ -692,8 +825,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         				// check existence of part or item
         				if(bi.getItemId()!=null) {
         					if(!itemIds.contains(bi.getItemId())) {
-        						Validate.isTrue(false, "BindigItem is referencing non existing item, accessPointId=%s",
-        								cachedAccessPoint.getAccessPointId());
+                                Validate.isTrue(false,
+                                                "BindigItem is referencing non existing item, accessPointId=%s, binding.itemId: %s",
+                                                bi.getItemId(),
+                                                cachedAccessPoint.getAccessPointId());
         					} 
         				} else {
         					if(bi.getItem()!=null) {

@@ -35,9 +35,17 @@ type Props = {
     onClose: () => void;
     accessPointId?: number;
     onSubmit: any;
+    scopeId?: number;
 } & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const ExtFilterModal = ({handleSubmit, onClose, submitting, refTables, reset}: Props) => {
+const ExtFilterModal = ({
+    handleSubmit, 
+    onClose, 
+    submitting, 
+    refTables, 
+    reset,
+    scopeId,
+}: Props) => {
     const {apTypes} = refTables;
 
     return <ReduxForm className="ext-filter-modal" onSubmit={handleSubmit}>
@@ -49,8 +57,8 @@ const ExtFilterModal = ({handleSubmit, onClose, submitting, refTables, reset}: P
                 </Col>
                 <Col xs={6}>
                     <CreExtFilterSection submitting={submitting}/>
-                    <RelationsFilterSection formName={FORM_NAME} submitting={submitting}/>
-                    <ExtendsFilterSection formName={FORM_NAME} submitting={submitting}/>
+                    <RelationsFilterSection scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
+                    <ExtendsFilterSection scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
                 </Col>
             </Row>
         </Modal.Body>

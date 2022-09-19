@@ -22,16 +22,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -46,6 +42,7 @@ import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -76,6 +73,8 @@ import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
@@ -87,6 +86,7 @@ import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -138,6 +138,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -146,6 +147,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
+import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.CreateFund;
@@ -326,7 +328,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
+    protected static final String CHANGE_STATE = AP_CONTROLLER_URL + "/{recordId}/state";
 
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
@@ -442,6 +446,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected SearchApi searchApi;
 
+    protected DaosApi daosApi;
+
     protected static Map<String, String> cookies = null;
 
     @Override
@@ -459,6 +465,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         elzaApiClient.setWriteTimeout(5 * 60 * 1000);
 
         fundsApi = new cz.tacr.elza.test.controller.FundsApi(elzaApiClient);
+        daosApi = new cz.tacr.elza.test.controller.DaosApi(elzaApiClient);
         accesspointsApi = new cz.tacr.elza.test.controller.AccesspointsApi(elzaApiClient);
         searchApi = new cz.tacr.elza.test.controller.SearchApi(elzaApiClient);
 
@@ -1709,9 +1716,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return převedený uzel stromu
      */
     protected ArrNodeVO convertTreeNode(final TreeNodeVO treeNodeClient) {
-        ArrNodeVO rootNode = new ArrNodeVO();
-        BeanUtils.copyProperties(treeNodeClient, rootNode);
-        return rootNode;
+        ArrNodeVO node = new ArrNodeVO();
+        node.setId(treeNodeClient.getId());
+        node.setVersion(treeNodeClient.getVersion());
+        return node;
     }
 
     /**
@@ -2058,6 +2066,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
     }
 
+    protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
+        post(spec -> spec.pathParam("entityId", entityId)
+                .param("state", state),
+             MERGE_AP);
+    }
+
     /**
      * Nahrazení rejstříkového hesla.
      *
@@ -2066,6 +2080,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
         return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+    }
+
+    protected Response changeState(final Integer apId, ApStateChangeVO stateChange) {
+        return post(spec -> spec.pathParam("recordId", apId).body(stateChange), CHANGE_STATE);
     }
 
     /**
@@ -2240,7 +2258,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void filterNodes(final Integer versionId,
                                final Filters filters) {
         put(spec -> spec
-                .pathParameter("versionId", versionId)
+                .pathParam("versionId", versionId)
                 .body(filters), FILTER_NODES);
     }
 
@@ -2258,9 +2276,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                 final Integer pageSize,
                                                 final Set<Integer> descItemTypeIds) {
         return Arrays.asList(put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .queryParameter("page", page)
-                .queryParameter("pageSize", pageSize)
+                .pathParam("versionId", versionId)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
                 .body(descItemTypeIds), FILTERED_NODES).as(FilterNode[].class));
     }
 
@@ -2281,7 +2299,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         param.setLuceneQuery(BooleanUtils.isTrue(luceneQuery));
 
         return Arrays.asList(post(spec -> spec
-                .pathParameter("versionId", versionId)
+                .pathParam("versionId", versionId)
                 .body(param), FILTERED_FULLTEXT_NODES).as(FilterNodePosition[].class));
     }
 
@@ -2299,15 +2317,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                         final Integer nodeId,
                                                                         final Integer direction) {
         return get(spec -> spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("direction", direction)
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("nodeId", nodeId)
+                .pathParam("direction", direction)
                 , VALIDATION_ERROR).as(ArrangementController.ValidationItems.class);
     }
 
     protected List<NodeItemWithParent> getAllNodesVisiblePolicy(final Integer fundVersionId) {
         return Arrays.asList(get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
+                .pathParam("fundVersionId", fundVersionId), FUND_POLICY).as(NodeItemWithParent[].class));
     }
 
     /**
@@ -2514,7 +2532,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void leaveGroup(final Integer groupId,
                               final Integer userId) {
-        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
+        post(spec -> spec.pathParam("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
     }
 
     /**
@@ -2524,7 +2542,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permissions seznam oprávnění
      */
     protected void addUserPermission(final Integer userId, final List<UsrPermissionVO> permissions) {
-        post(spec -> spec.pathParameter("userId", userId).body(permissions), ADD_USER_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId).body(permissions), ADD_USER_PERMISSION);
     }
 
     /**
@@ -2534,7 +2552,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permission seznam oprávnění
      */
     protected void deleteUserPermission(final Integer userId, final UsrPermissionVO permission) {
-        post(spec -> spec.pathParameter("userId", userId).body(permission), DELETE_USER_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId).body(permission), DELETE_USER_PERMISSION);
     }
 
     /**
@@ -2543,7 +2561,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param userId identifikátor uživatele
      */
     protected void deleteUserFundAllPermission(final Integer userId) {
-        post(spec -> spec.pathParameter("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
     }
 
     /**
@@ -2800,19 +2818,30 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vyhledání DAOs
      */
     protected List<ArrDaoVO> findDaos(final Integer fundVersionId) {
-        Response resp = get(spec -> spec.pathParameter("fundVersionId", fundVersionId),
+        Response resp = get(spec -> spec.pathParam("fundVersionId", fundVersionId),
                 FIND_DAOS);
+        return Arrays.asList(resp.as(ArrDaoVO[].class));
+    }
+
+    /**
+     * Vyhledání DAOs
+     */
+    protected List<ArrDaoVO> findDaos(final Integer fundVersionId, final Integer nodeId) {
+        Response resp = get(spec -> spec.pathParam("fundVersionId", fundVersionId).param("nodeId", nodeId),
+                            FIND_DAOS);
         return Arrays.asList(resp.as(ArrDaoVO[].class));
     }
 
     /**
      * Vrací typy oprávnění podle verze fondu.
      *
-     * @param fundVersionId identifikátor verze AS
+     * @param fundVersionId
+     *            identifikátor verze AS
      * @return seznam typů oprávnění
      */
     protected List<RulPolicyTypeVO> getPolicyTypes(final Integer fundVersionId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("fundVersionId", fundVersionId), POLICY_TYPES).as(RulPolicyTypeVO[].class));
+        return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId), POLICY_TYPES).as(
+                                                                                                          RulPolicyTypeVO[].class));
     }
 
     /**
@@ -2834,8 +2863,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void setVisiblePolicy(final Integer nodeId,
                                     final Integer fundVersionId,
                                     final RuleController.VisiblePolicyParams visiblePolicyParams) {
-        put(spec -> spec.pathParameter("nodeId", nodeId)
-                .pathParameter("fundVersionId", fundVersionId)
+        put(spec -> spec.pathParam("nodeId", nodeId)
+                .pathParam("fundVersionId", fundVersionId)
                 .body(visiblePolicyParams), POLICY_SET);
     }
 
@@ -2918,10 +2947,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                         final Integer changeId,
                                         final Integer nodeId) {
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                .queryParameter("maxSize", maxSize)
-                .queryParameter("offset", offset)
-                .queryParameter("changeId", changeId)
-                .queryParameter("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
+                .queryParam("maxSize", maxSize)
+                .queryParam("offset", offset)
+                .queryParam("changeId", changeId)
+                .queryParam("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
     }
 
     /**
@@ -3172,6 +3201,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .as(RulPartTypeVO[].class));
     }
 
+    protected Map<String, RulPartTypeVO> findPartTypesMap() {
+        return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
+    }
+
     /**
      * Vyhledá dostupná a aktivovaná rozšíření k AS.
      *
@@ -3347,10 +3380,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      */
-    protected void createPart(final Integer accessPointId,
+    protected Integer createPart(final Integer accessPointId,
                               final ApPartFormVO apPartFormVO) {
-        post(spec -> spec.pathParam("accessPointId", accessPointId)
-                .body(apPartFormVO), CREATE_PART);
+        return post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .body(apPartFormVO), CREATE_PART)
+                        .as(Integer.class);
     }
 
     /**

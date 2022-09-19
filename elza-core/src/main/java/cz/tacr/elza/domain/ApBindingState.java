@@ -45,6 +45,20 @@ public class ApBindingState implements AccessPointCacheSerializable {
     @Column(updatable = false, insertable = false)
     private Integer accessPointId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
+    @JoinColumn(name = "preferredPartId")
+    private ApPart preferredPart;
+
+    @Column(updatable = false, insertable = false)
+    private Integer preferredPartId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
+    @JoinColumn(name = "apTypeId")
+    private ApType apType;
+
+    @Column(updatable = false, insertable = false)
+    private Integer apTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId", nullable = false)
     private ApExternalSystem apExternalSystem;
@@ -134,7 +148,45 @@ public class ApBindingState implements AccessPointCacheSerializable {
         }
     }
 
-    public ApExternalSystem getApExternalSystem() {
+    public ApPart getPreferredPart() {
+		return preferredPart;
+	}
+
+    public void setPreferredPart(ApPart preferredPart) {
+        this.preferredPart = preferredPart;
+        this.preferredPartId = preferredPart != null ? preferredPart.getPartId() : null;
+    }
+
+    public Integer getPreferredPartId() {
+        if (preferredPartId != null) {
+            return preferredPartId;
+        } else if (preferredPart != null) {
+            return preferredPart.getPartId();
+        } else {
+            return null;
+        }
+    }
+	
+	public ApType getApType() {
+		return apType;
+	}
+
+	public void setApType(ApType apType) {
+		this.apType = apType;
+		this.apTypeId = apType!=null?apType.getApTypeId():null;
+	}
+
+	public Integer getApTypeId() {
+        if (apTypeId != null) {
+            return apTypeId;
+        } else if (apType != null) {
+            return apType.getApTypeId();
+        } else {
+            return null;
+        }
+	}
+
+	public ApExternalSystem getApExternalSystem() {
         return apExternalSystem;
     }
 

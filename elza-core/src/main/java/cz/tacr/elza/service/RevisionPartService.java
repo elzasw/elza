@@ -1,21 +1,16 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApRevIndex;
-import cz.tacr.elza.domain.ApRevItem;
-import cz.tacr.elza.domain.ApRevPart;
-import cz.tacr.elza.domain.ApRevision;
-import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApRevIndexRepository;
-import cz.tacr.elza.repository.ApRevPartRepository;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.repository.ExceptionThrow.revPart;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -24,16 +19,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-import static cz.tacr.elza.repository.ExceptionThrow.revPart;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevIndex;
+import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevIndexRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
 
 @Service
 public class RevisionPartService {
@@ -73,12 +70,28 @@ public class RevisionPartService {
         }
     }
 
+    /**
+     * Delete revision part
+     * 
+     * Method is used to mark RevPart as non existent
+     * 
+     * @param revPart
+     * @param apChange
+     */
     @Transactional
     public void deleteRevisionPart(ApRevPart revPart, ApChange apChange) {
         revPart.setDeleteChange(apChange);
         revPartRepository.save(revPart);
     }
 
+    /**
+     * Create new RevPart
+     * 
+     * @param revision
+     * @param apChange
+     * @param origPart
+     * @return
+     */
     public ApRevPart createPart(final RulPartType partType,
                                 final ApRevision revision,
                                 final ApChange apChange,
@@ -92,22 +105,33 @@ public class RevisionPartService {
         revPart.setRevision(revision);
         revPart.setRevParentPart(revParentPart);
         revPart.setParentPart(parentPart);
+        revPart.setDeleted(false);
 
         return revPartRepository.save(revPart);
     }
 
+    /**
+     * Create RevPart based on ApPart
+     * 
+     * @param revision
+     * @param apChange
+     * @param origPart
+     * @param deleted
+     *            Flag if part is deleted
+     * @return
+     */
     public ApRevPart createPart(final ApRevision revision,
                                 final ApChange apChange,
-                                final ApPart apPart) {
-        ApRevPart revParentPart = apPart.getParentPart() != null ? findByOriginalPart(apPart.getParentPart()) : null;
+                                final ApPart origPart,
+                                boolean deleted) {
 
         ApRevPart revPart = new ApRevPart();
         revPart.setRevision(revision);
-        revPart.setPartType(apPart.getPartType());
-        revPart.setOriginalPart(apPart);
+        revPart.setPartType(origPart.getPartType());
+        revPart.setOriginalPart(origPart);
         revPart.setCreateChange(apChange);
-        revPart.setParentPart(apPart.getParentPart());
-        revPart.setRevParentPart(revParentPart);
+        revPart.setParentPart(origPart.getParentPart());
+        revPart.setDeleted(deleted);
 
         return revPartRepository.save(revPart);
     }
@@ -182,54 +206,6 @@ public class RevisionPartService {
                 .orElseThrow(revPart(partId));
     }
 
-    public void createParts(List<ApRevPart> createdParts, Map<Integer, List<ApRevItem>> revItemMap, ApAccessPoint accessPoint, ApRevision revision) {
-        if (CollectionUtils.isNotEmpty(createdParts)) {
-            createdParts.sort((o1, o2) -> {
-                if (o1.getParentPart() != null || o1.getRevParentPart() != null) {
-                    return -1;
-                } else if (o2.getParentPart() != null || o2.getRevParentPart() != null) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            List<ApPart> parts = new ArrayList<>();
-
-            for (ApRevPart revPart : createdParts) {
-                ApPart parentPart = revPart.getParentPart();
-                if (parentPart == null && revPart.getRevParentPart() != null) {
-                    parentPart = findParentPart(revPart.getRevParentPartId(), createdParts);
-                }
-
-                ApPart part = createPart(revPart, accessPoint, parentPart);
-                revPart.setOriginalPart(part);
-
-                if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(revPart.getPartId())) {
-                    revision.setPreferredPart(part);
-                }
-
-                parts.add(part);
-            }
-
-            partRepository.saveAll(parts);
-
-
-            revisionItemService.createItems(createdParts, revItemMap);
-        }
-    }
-
-    private ApPart createPart(ApRevPart revPart, ApAccessPoint accessPoint, ApPart parentPart) {
-        ApPart part = new ApPart();
-        part.setPartType(revPart.getPartType());
-        part.setState(ApStateEnum.OK);
-        part.setAccessPoint(accessPoint);
-        part.setCreateChange(revPart.getCreateChange());
-        part.setLastChange(revPart.getCreateChange());
-        part.setParentPart(parentPart);
-
-        return part;
-    }
-
     @Nullable
     private ApPart findParentPart(Integer revParentPartId, List<ApRevPart> createdParts) {
         for (ApRevPart revPart : createdParts) {
@@ -240,56 +216,22 @@ public class RevisionPartService {
         return null;
     }
 
-    public void updateParts(List<ApRevPart> updatedParts,
-                            Map<Integer, List<ApRevItem>> revItemMap,
-                            List<ApItem> items,
-                            ApChange change) {
-        if (CollectionUtils.isNotEmpty(updatedParts)) {
-            List<ApItem> deletedItems = new ArrayList<>();
+    /**
+     * Mark part as deleted
+     * 
+     * Method can be used only to RevPart based on real part
+     * 
+     * @param apPart
+     * @param revPart
+     * @return
+     */
+    public ApRevPart deletePart(ApPart apPart, ApRevPart revPart) {
+        Validate.notNull(apPart);
+        Validate.notNull(revPart);
+        Validate.isTrue(revPart.getOriginalPartId() != null);
+        Validate.isTrue(revPart.getOriginalPartId().equals(apPart.getPartId()));
 
-            for (ApRevPart revPart : updatedParts) {
-                List<ApItem> partItems = items.stream()
-                        .filter(i -> i.getPartId().equals(revPart.getOriginalPartId()))
-                        .collect(Collectors.toList());
-                List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
-                if (CollectionUtils.isNotEmpty(partItems)) {
-                    for (ApItem item : partItems) {
-                        boolean changed = false;
-                        for (ApRevItem revItem : revItems) {
-                            if (item.getObjectId().equals(revItem.getOrigObjectId())) {
-                                changed = true;
-                            }
-                        }
-
-                        if (changed) {
-                            deletedItems.add(item);
-                        }
-                    }
-                }
-            }
-
-            revisionItemService.createItems(updatedParts, revItemMap);
-            accessPointItemService.deleteItems(deletedItems, change);
-
-        }
-    }
-
-    public void deleteParts(List<ApRevPart> deletedParts, List<ApItem> items, ApChange change) {
-        if (CollectionUtils.isNotEmpty(deletedParts)) {
-            List<ApPart> parts = new ArrayList<>();
-            List<ApItem> deletedItems = new ArrayList<>();
-
-            for (ApRevPart revPart : deletedParts) {
-                parts.add(revPart.getOriginalPart());
-                List<ApItem> itemList = items.stream()
-                        .filter(i -> i.getPartId().equals(revPart.getOriginalPartId()))
-                        .collect(Collectors.toList());
-
-                deletedItems.addAll(itemList);
-            }
-
-            partService.deleteParts(parts, change);
-            accessPointItemService.deleteItems(deletedItems, change);
-        }
+        revPart.setDeleted(true);
+        return revPartRepository.save(revPart);
     }
 }

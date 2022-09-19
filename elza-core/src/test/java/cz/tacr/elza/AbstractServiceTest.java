@@ -145,7 +145,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
                                                                  fundCode,
                                                                  firstInstitution,
                                                                  null, null, null, null,
-                                                                 null);
+                                                                 null, null, null);
         Validate.notNull(fund);
         fi.setFund(fund);
 

@@ -37,7 +37,8 @@ import {Area} from '../../api/Area';
 import ExtFilterModal from './modal/ExtFilterModal';
 import {Button} from '../ui';
 import {withRouter} from "react-router";
-import {goToAe} from "../../actions/registry/registry";
+import {Link} from "react-router-dom";
+import {goToAe, getArchiveEntityUrl} from "../../actions/registry/registry";
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -125,7 +126,6 @@ class RegistryList extends AbstractReactComponent {
             registryListFilter({
                 ...this.props.registryList.filter,
                 from: 0,
-                itemSpecId: null,
                 registryTypeId: item ? item.id : null,
             }),
         );
@@ -206,15 +206,29 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = props => {
         const {item} = props;
-        const {eidTypes, apTypeIdMap} = this.props;
+        const {eidTypes, apTypeIdMap, select} = this.props;
 
         return (
-            <RegistryListItem
-                {...item}
-                onClick={this.handleRegistryDetail.bind(this, item)}
-                eidTypes={eidTypes}
-                apTypeIdMap={apTypeIdMap}
-            />
+            <Link 
+                style={{textDecoration: "none"}} 
+                to={getArchiveEntityUrl(item.id)}
+                onClick={(e) => {
+                    // Zabraneni zmeny adresy v adresnim radku, pokud
+                    // je RegistryPage v rezimu modalu ( vyber entity
+                    // pomoci tlacitka v RegistryField )
+                    if(select){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.handleRegistryDetail(item);
+                    }
+                }}
+            >
+                <RegistryListItem
+                    {...item}
+                    eidTypes={eidTypes}
+                    apTypeIdMap={apTypeIdMap}
+                    />
+            </Link>
         );
     };
 
@@ -260,7 +274,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getStateWithAll() {
-        const defaultValue = {name: i18n('party.apState')};
+        const defaultValue = {name: i18n('party.allApStates')};
         return [
             defaultValue,
             ...Object.values(StateApproval).map(item => {
@@ -318,6 +332,7 @@ class RegistryList extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-filter.title'),
                 <ExtFilterModal
+                    scopeId={registryList.filter.scopeId}
                     initialValues={{
                         area: Area.ALLNAMES,
                         onlyMainPart: 'false',
@@ -394,14 +409,14 @@ class RegistryList extends AbstractReactComponent {
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.allRevisionStates')}
+                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.revisionState')}
                         items={this.getRevStateWithAll()}
                         onChange={this.handleFilterRegistryRevState}
                         value={filter.revState}
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={!filter.registryTypeId ? this.registryTypeDefaultValue : ''}
+                        placeholder={!filter.registryTypeId ? i18n('registry.type') : ''}
                         items={apTypesWithAll}
                         disabled={
                             !registryTypes

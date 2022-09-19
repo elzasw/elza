@@ -26,11 +26,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
@@ -118,7 +118,7 @@ public class StructObjService {
      * @return hodnota strukt. datového typu -> nalezené položky
      */
     public Map<ArrStructuredObject, List<ArrStructuredItem>> findStructureItems(final List<ArrStructuredObject> structureDataList) {
-        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, HibernateConfiguration.MAX_IN_SIZE);
+        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, ObjectListIterator.getMaxBatchSize());
         List<ArrStructuredItem> structureItems = new ArrayList<>();
         for (List<ArrStructuredObject> part : parts) {
             structureItems.addAll(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
@@ -226,6 +226,18 @@ public class StructObjService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
         structObjInternalService.deleteStructObj(structObj, null);
+    }
+
+    /**
+     * Smazání hodnoty strukturovaného datového typu.
+     *
+     * @param structObj
+     *            hodnota struktovaného datového typu
+     *
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj, ArrChange change) {
+        structObjInternalService.deleteStructObj(structObj, change);
     }
 
     /**
@@ -637,7 +649,7 @@ public class StructObjService {
      * @return entity strukturované typy ve stejném pořadí jako byl požadavek
      */
     public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
-        List<List<Integer>> idsParts = Lists.partition(structureDataIds, HibernateConfiguration.MAX_IN_SIZE);
+        List<List<Integer>> idsParts = Lists.partition(structureDataIds, ObjectListIterator.getMaxBatchSize());
 
         final Map<Integer, ArrStructuredObject> soMap = new HashMap<>();
         for (List<Integer> idsPart : idsParts) {
@@ -1347,6 +1359,18 @@ public class StructObjService {
                     nodeIds.toArray(new Integer[0])));
         }
 
+    }
+
+    public List<ArrStructuredObject> getUnusedStructObj(Collection<ArrStructuredObject> structObjsToDelete) {
+        List<ArrStructuredObject> unusedObjs = new ArrayList<>();
+        // identifikaci strukt. objektů, které se již nepoužívají
+        for (ArrStructuredObject obj : structObjsToDelete) {
+            Integer count = structureItemRepository.countItemsUsingStructObj(obj);
+            if (count == 0) {
+                unusedObjs.add(obj);
+            }
+        }
+        return unusedObjs;
     }
 
 }

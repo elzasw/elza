@@ -137,7 +137,7 @@ public class RulesExecutor {
                                                                            final ArrFundVersion version) {
         try {
             return impactOfChangesLevelStateRules
-                    .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version.getRuleSet());
+                    .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version);
         } catch (IOException e) {
             throw wrapIOException(e);
         }

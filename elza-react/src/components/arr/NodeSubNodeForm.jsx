@@ -46,6 +46,7 @@ import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems
 
 import {TextFragmentsWindow} from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -196,14 +197,19 @@ class NodeSubNodeForm extends AbstractReactComponent {
         } = this.props;
         const node = nodes.nodes[nodes.activeIndex];
         const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
-        const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />;
+        const form = <ArrHistoryForm 
+            versionId={versionId} 
+            node={{
+                ...nodeObj, 
+                name: nodeObj.accordionLeft // ArrHistoryForm needs a 'name: string' property, which is missing in the 'SubNode' type 
+            }} 
+            onDeleteChanges={this.handleDeleteChanges} 
+            />;
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
-        WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId).then(() => {
-            this.props.dispatch(modalDialogHide());
-        });
+        return WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId)
     };
     /**
      * Vybere sousední nebo nadřazenou JP po smazání
@@ -270,8 +276,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
         });
     };
 
-    handleDeleteNode() {
-        if (window.confirm(i18n('arr.fund.deleteNode.confirm'))) {
+    async handleDeleteNode() {
+        const { dispatch } = this.props;
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.deleteNode.confirm')));
+        if (response) {
             this.props.dispatch(
                 deleteNode(
                     this.props.selectedSubNode,
@@ -902,7 +910,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     initFocus() {
-        this.refSubNodeForm.initFocus();
+        this.refSubNodeForm && this.refSubNodeForm.initFocus();
     }
 
     render() {

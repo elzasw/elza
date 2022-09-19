@@ -38,7 +38,12 @@ public class SearchControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void searchArchDescTest() throws ApiException {
+    public void searchArchDescTest() throws ApiException, InterruptedException {
+        // wait for ending lucene indexing
+        while (indexWorkService.isActive()) {
+            Thread.sleep(100);
+        }
+
         // filter is null
         ResultEntityRef result = searchApi.searchArchDesc(createSearchParamEmpty());
         assertNotNull(result);

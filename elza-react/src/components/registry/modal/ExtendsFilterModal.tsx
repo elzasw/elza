@@ -90,6 +90,7 @@ const ExtendsFilterModal = ({
     relEntityApi,
     area,
     onlyMainPart,
+    scopeId,
 }: Props) => {
     const parts = refTables.partTypes.items;
     const itemTypes = refTables.descItemTypes.items;
@@ -180,6 +181,7 @@ const ExtendsFilterModal = ({
                                         return data;
                                     }}
                                     disabled={submitting}
+                                    scopeId={scopeId}
                                 />
                             </Col>
                         )}
@@ -267,6 +269,7 @@ const mapStateToProps = (state: any) => {
     return {
         itemType: selector(state, 'itemType'),
         area: selector(state, 'area'),
+        scopeId: selector(state, 'scopeId'),
         onlyMainPart: selector(state, 'onlyMainPart'),
         refTables: state.refTables,
     };

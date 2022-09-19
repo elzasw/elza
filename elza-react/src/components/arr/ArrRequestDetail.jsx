@@ -18,6 +18,7 @@ import {FormLabel} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrRequestDetailKeymap.jsx';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 /**
  * Formulář detailu požadavku na digitalizaci.
@@ -104,10 +105,11 @@ class ArrRequestDetail extends AbstractReactComponent {
         );
     };
 
-    handleRemoveNode = node => {
-        const {versionId, requestDetail} = this.props;
+    handleRemoveNode = async (node) => {
+        const {versionId, requestDetail, dispatch} = this.props;
 
-        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')))
+        if (response) {
             this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id));
         }
     };

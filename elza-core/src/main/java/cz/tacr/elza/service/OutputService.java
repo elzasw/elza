@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
@@ -58,16 +57,13 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputRestrictionScope;
-import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
@@ -95,11 +91,10 @@ import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputFileRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -894,7 +889,7 @@ public class OutputService {
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
-        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
+        FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());

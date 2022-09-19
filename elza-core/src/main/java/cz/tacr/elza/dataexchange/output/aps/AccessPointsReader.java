@@ -62,9 +62,15 @@ public class AccessPointsReader implements ExportReader {
                 @Override
                 protected void onCompleted() {
                     ApInfo apInfo = getApInfo();
-                    if(apInfo==null) {
+                    if (apInfo == null) {
                     	throw new SystemException("Entity not found.", BaseCode.ID_NOT_EXIST)
                     		.set("ID", apId);
+                    }
+                    if (!context.canExportDeletedAPs()) {
+                        if (apInfo.getApState().getDeleteChangeId() != null) {
+                            throw new SystemException("Entity has been deleted.", BaseCode.INVALID_STATE)
+                                    .set("ID", apId);
+                        }
                     }
 
                     ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {

@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
-import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
 import static cz.tacr.elza.repository.ExceptionThrow.itemType;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
@@ -17,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,10 +29,9 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -40,9 +39,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
 
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -59,7 +56,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSet;
-import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
@@ -69,24 +65,22 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevItem;
+import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
@@ -95,6 +89,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -103,9 +98,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -114,6 +107,7 @@ import cz.tacr.elza.drools.DrlType;
 import cz.tacr.elza.drools.ModelValidationRules;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.ApBuilder;
 import cz.tacr.elza.drools.model.ApValidationErrors;
 import cz.tacr.elza.drools.model.GeoModel;
 import cz.tacr.elza.drools.model.Index;
@@ -133,11 +127,11 @@ import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
+import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -152,6 +146,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
@@ -182,13 +178,11 @@ public class RuleService {
     @Autowired
     private FundVersionRepository fundVersionRepository;
     @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
+    private NodeConformityRepository nodeConformityRepository;
+    @Autowired
+    private NodeConformityErrorRepository nodeConformityErrorRepository;
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorsRepository;
-    @Autowired
-    private ExtendedObjectsFactory extendedObjectsFactory;
     @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
@@ -227,6 +221,15 @@ public class RuleService {
     private PartService partService;
 
     @Autowired
+    private RevisionItemService revisionItemService;
+
+    @Autowired
+    private RevisionPartService revisionPartService;
+
+    @Autowired
+    private RevisionService revisionService;
+
+    @Autowired
     private AccessPointItemService accessPointItemService;
 
     @Autowired
@@ -244,17 +247,31 @@ public class RuleService {
     @Autowired
     private RuleSetRepository ruleSetRepository;
 
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    private ExportFilterRepository exportFilterRepository;
+
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
+    // why is it here?
+    private static final String REL_ENTITY = "REL_ENTITY";
     private static final String ISO3166_2 = "ISO3166_2";
     private static final String ISO3166_3 = "ISO3166_3";
-    private static final String REL_ENTITY = "REL_ENTITY";
     private static final String GEO_UNIT = "GEO_UNIT";
     private static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
     private static final String GEO_TYPE = "GEO_TYPE";
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
+    /**
+     * 
+     * @param faLevelId
+     * @param fundVersionId
+     * @param asyncRequestId
+     * @return Return null if result is empty (e.g. deletedNode)
+     */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         return setConformityInfo(faLevelId, fundVersionId);
     }
@@ -262,17 +279,20 @@ public class RuleService {
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
-     * @param faLevelId   id uzlu
-     * @param fundVersionId id verze
+     * @param faLevelId
+     *            id uzlu
+     * @param fundVersionId
+     *            id verze
      * @return stav validovaného uzlu
+     *         Return null if result is empty (e.g. deletedNode)
      */
     public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId) {
-        Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Validate.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
+        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
-        Integer nodeId = level.getNode().getNodeId();
+        Integer nodeId = level.getNodeId();
 
         ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
@@ -280,8 +300,16 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        if (!arrangementInternalService.validLevelInVersion(level, version)) {
-            throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
+        // check if level is deleted in the context of fundVersion
+        arrangementInternalService.checkLevelInVersion(level, version);
+        if (arrangementInternalService.isLevelDeletedInVersion(level, version)) {
+            // only delete conformity info and return
+            ArrNodeConformity conformityInfo = nodeConformityRepository
+                    .findByNodeAndFundVersion(level.getNode(), version);
+            if (conformityInfo != null) {
+                deleteConformityInfo(Arrays.asList(conformityInfo));
+            }
+            return null;
         }
 
         List<DataValidationResult> validationResults = rulesExecutor.executeDescItemValidationRules(level, version);
@@ -320,7 +348,7 @@ public class RuleService {
             return templateRepository.findAll(Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
         }
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
-        Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
+        Validate.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
         return templateRepository.findNotDeletedByOutputType(outputType, Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
     }
@@ -338,59 +366,121 @@ public class RuleService {
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
-        ArrNodeConformity conformityInfo = nodeConformityInfoRepository
+        ArrNodeConformity conformityInfo = nodeConformityRepository
                 .findByNodeAndFundVersion(level.getNode(), version);
 
-        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformity.State.OK)) {
-            conformityInfo.setDate(new Date());
-        } else {
-            if (conformityInfo != null) {
-                deleteConformityInfo(Arrays.asList(conformityInfo));
+        List<ArrNodeConformityMissing> confPrevMissing;
+        List<ArrNodeConformityError> confPrevErrors;
+        List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
+        List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
+        if (conformityInfo != null) {
+            // we can skip reading errors if prev state was ok            
+            if (State.OK != conformityInfo.getState()) {
+                List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
+                confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
+                confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
+            } else {
+                confPrevMissing = Collections.emptyList();
+                confPrevErrors = Collections.emptyList();
             }
+        } else {
             conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
             conformityInfo.setFundVersion(version);
-            conformityInfo.setDate(new Date());
+
+            confPrevMissing = Collections.emptyList();
+            confPrevErrors = Collections.emptyList();
+        }
+        conformityInfo.setDate(new Date());
+        conformityInfo.setState(validationResults.isEmpty()?
+                ArrNodeConformity.State.OK:ArrNodeConformity.State.ERR);
+        conformityInfo = nodeConformityRepository.save(conformityInfo);
+        
+        // process errors
+        for (DataValidationResult validationResult : validationResults) {
+            // policy type has to be set
+            Validate.notNull(validationResult.getPolicyType());
+
+            switch (validationResult.getResultType()) {
+            case MISSING:
+                ArrNodeConformityMissing missing = extractOrCreate(confPrevMissing, validationResult, conformityInfo);
+                confNextMissing.add(missing);
+                break;
+            case ERROR:
+                ArrNodeConformityError error = extractOrCreateConfError(confPrevErrors, validationResult,
+                                                                        conformityInfo);
+                confNextErrors.add(error);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
+        // delete remaining prev
+        if (CollectionUtils.isNotEmpty(confPrevMissing)) {
+            this.nodeConformityMissingRepository.deleteAll(confPrevMissing);
+        }
+        if (CollectionUtils.isNotEmpty(confPrevErrors)) {
+            this.nodeConformityErrorRepository.deleteAll(confPrevErrors);
         }
 
+        ArrNodeConformityExt result = new ArrNodeConformityExt(conformityInfo, confNextMissing, confNextErrors);
 
-        if (validationResults.isEmpty()) {
-            conformityInfo.setState(ArrNodeConformity.State.OK);
-            nodeConformityInfoRepository.save(conformityInfo);
-        } else {
-            conformityInfo.setState(ArrNodeConformity.State.ERR);
-            nodeConformityInfoRepository.save(conformityInfo);
+        return result;
+    }
 
-            for (DataValidationResult validationResult : validationResults) {
-                // policy type has to be set
-                Validate.notNull(validationResult.getPolicyType());
-
-                switch (validationResult.getResultType()) {
-                    case MISSING:
-                        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
-                        missing.setNodeConformity(conformityInfo);
-                        missing.setItemType(validationResult.getType());
-                        missing.setItemSpec(validationResult.getSpec());
-                        missing.setDescription(validationResult.getMessage());
-                        missing.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityMissingRepository.save(missing);
-                        break;
-                    case ERROR:
-                        ArrNodeConformityError error = new ArrNodeConformityError();
-                        error.setNodeConformity(conformityInfo);
-                        error.setDescItem(validationResult.getDescItem());
-                        error.setDescription(validationResult.getMessage());
-                        error.setPolicyType(validationResult.getPolicyType());
-                        nodeConformityErrorsRepository.save(error);
-                        break;
-                default:
-                    throw new IllegalStateException();
-                }
+    private ArrNodeConformityError extractOrCreateConfError(List<ArrNodeConformityError> confPrevErrors,
+                                                   DataValidationResult validationResult,
+                                                   ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
+        
+        for (int i = 0; i < confPrevErrors.size(); i++) {
+            ArrNodeConformityError error = confPrevErrors.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, error.getPolicyTypeId()) &&
+                    Objects.equals(descItemId, error.getDescItemId()) &&
+                    Objects.equals(validationResult.getMessage(), error.getDescription())) {
+                confPrevErrors.remove(i);
+                return error;
             }
 
         }
 
-        return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
+        ArrNodeConformityError error = new ArrNodeConformityError();
+        error.setNodeConformity(conformityInfo);
+        error.setDescItem(validationResult.getDescItem());
+        error.setDescription(validationResult.getMessage());
+        error.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityErrorRepository.save(error);
+    }
+
+    private ArrNodeConformityMissing extractOrCreate(List<ArrNodeConformityMissing> confPrevMissing,
+                                                     DataValidationResult validationResult,
+                                                     ArrNodeConformity conformityInfo) {
+        Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
+        Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
+        Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
+        
+        for(int i=0; i<confPrevMissing.size(); i++) {
+            ArrNodeConformityMissing missing = confPrevMissing.get(i);
+            // compare existing DB object
+            if (Objects.equals(policyTypeId, missing.getPolicyTypeId()) &&
+                    Objects.equals(itemTypeId, missing.getItemTypeId()) &&
+                    Objects.equals(itemSpecId, missing.getItemSpecId()) &&
+                    Objects.equals(validationResult.getMessage(), missing.getDescription())) {
+                confPrevMissing.remove(i);
+                return missing;
+            }
+
+        }
+        
+        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
+        missing.setNodeConformity(conformityInfo);
+        missing.setItemType(validationResult.getType());
+        missing.setItemSpec(validationResult.getSpec());
+        missing.setDescription(validationResult.getMessage());
+        missing.setPolicyType(validationResult.getPolicyType());
+        return nodeConformityMissingRepository.save(missing);
     }
 
     /**
@@ -413,7 +503,7 @@ public class RuleService {
         while (iteratorNodeIds.hasNext()) {
             List<Integer> partNodeIds = iteratorNodeIds.next();
 
-            List<ArrNodeConformity> conformityInfos = nodeConformityInfoRepository
+            List<ArrNodeConformity> conformityInfos = nodeConformityRepository
                     .findByNodeIdsAndFundVersion(partNodeIds, version);
 
             ArrayList<Integer> conformityInfoIds = conformityInfos.stream().map(ArrNodeConformity::getNodeConformityId)
@@ -442,7 +532,7 @@ public class RuleService {
                     missingList.add(partMissing);
                 }
 
-                List<ArrNodeConformityError> partErrors = nodeConformityErrorsRepository.findByConformityIds(partIds);
+                List<ArrNodeConformityError> partErrors = nodeConformityErrorRepository.findByConformityIds(partIds);
                 for (ArrNodeConformityError partError : partErrors) {
                     Integer conformityId = partError.getNodeConformity().getNodeConformityId();
 
@@ -459,11 +549,10 @@ public class RuleService {
 
             for (ArrNodeConformity conformityInfo : conformityInfos) {
 
-                ArrNodeConformityExt conformity = new ArrNodeConformityExt();
-                BeanUtils.copyProperties(conformityInfo, conformity);
-
-                conformity.setErrorList(errors.get(conformity.getNodeConformityId()));
-                conformity.setMissingList(missings.get(conformity.getNodeConformityId()));
+                List<ArrNodeConformityMissing> missList = missings.get(conformityInfo.getNodeConformityId());
+                List<ArrNodeConformityError> errList = errors.get(conformityInfo.getNodeConformityId());
+                ArrNodeConformityExt conformity = new ArrNodeConformityExt(conformityInfo,
+                        missList, errList);
 
                 result.put(conformityInfo.getNode().getNodeId(), conformity);
             }
@@ -492,12 +581,9 @@ public class RuleService {
                                                     final List<ArrDescItem> updateDescItems,
                                                     final List<ArrDescItem> deleteDescItems) {
 
-        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
-                createDescItems, updateDescItems, deleteDescItems);
-
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo);
-
-        return impactOnConformityInfo;
+        return conformityInfo(fundVersionId, nodeIds, nodeTypeOperation,
+                              createDescItems, updateDescItems, deleteDescItems,
+                              null);
     }
 
     public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
@@ -511,7 +597,7 @@ public class RuleService {
         Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
 
         return impactOnConformityInfo;
     }
@@ -560,56 +646,45 @@ public class RuleService {
     }
 
     /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     * Pro vybrané nody s danou verzí přepočte validace
      *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     * @param fundVersionId
+     *            verze nodů
+     * @param nodeIds
+     *            seznam id nodů, od kterých se má prohledávat
+     * @param directions
+     *            směry prohledávání
+     * @param validationPriority
+     *            volitelná priorita revalidace
      */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections) {
-        deleteConformityInfo(fundVersionId,nodeIds,deleteDirections,null);
-    }
-
-    /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
-     *
-     * @param fundVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
-     */
-    private void deleteConformityInfo(final Integer fundVersionId,
-                                      final Collection<Integer> nodeIds,
-                                      final Collection<RelatedNodeDirection> deleteDirections,
-                                      final Integer validationPriority) {
+    @Transactional
+    public void revalidateNodes(final Integer fundVersionId,
+                                final Collection<Integer> nodeIds,
+                                @Nullable final Collection<RelatedNodeDirection> directions,
+                                @Nullable final Integer validationPriority) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        Validate.isTrue(nodes.size() == nodeIds.size(), "Some node not found");
+
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        Set<ArrNode> deleteNodes = new HashSet<>();
+        Set<ArrNode> updateNodes = new HashSet<>();
 
-        if (CollectionUtils.isEmpty(deleteDirections)) {
-            deleteNodes.addAll(nodes);
+        if (CollectionUtils.isEmpty(directions)) {
+            updateNodes.addAll(nodes);
         } else {
-            for (RelatedNodeDirection deleteDirection : deleteDirections) {
+            for (RelatedNodeDirection direction : directions) {
                 for (ArrNode node : nodes) {
-                    deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));
+                    updateNodes.addAll(nodeRepository.findNodesByDirection(node, version, direction));
                 }
             }
         }
 
-
-        if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
-                        .findByNodesAndFundVersion(deleteNodes, version);
-
-            deleteConformityInfo(deleteInfos);
-            
-            asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
+        if (!updateNodes.isEmpty()) {
+            asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
 
@@ -621,24 +696,88 @@ public class RuleService {
      */
     private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
 
-        if (CollectionUtils.isNotEmpty(infos)) {
-            List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
-                    .findByNodeConformityInfos(infos);
-            if (CollectionUtils.isNotEmpty(missing)) {
-                nodeConformityMissingRepository.deleteAll(missing);
-            }
-
-            List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findByNodeConformityInfos(infos);
-            if (CollectionUtils.isNotEmpty(errors)) {
-                nodeConformityErrorsRepository.deleteAll(errors);
-            }
-
-            nodeConformityInfoRepository.deleteAll(infos);
-            
-            // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
-            // jinak hrozi konflikt s validacnim vlaknem
-            nodeConformityInfoRepository.flush();
+        if (CollectionUtils.isEmpty(infos)) {
+            return;
         }
+
+        List<ArrNodeConformityMissing> missing = ObjectListIterator
+                .findIterable(infos, page -> nodeConformityMissingRepository.findByNodeConformityInfos(page));
+
+        if (CollectionUtils.isNotEmpty(missing)) {
+            ObjectListIterator.forEachPage(missing,
+                                           page -> nodeConformityMissingRepository.deleteAll(page));
+        }
+
+        List<ArrNodeConformityError> errors = ObjectListIterator
+                .findIterable(infos, page -> nodeConformityErrorRepository.findByNodeConformityInfos(page));
+        if (CollectionUtils.isNotEmpty(errors)) {
+            ObjectListIterator.forEachPage(errors,
+                                           page -> nodeConformityErrorRepository.deleteAll(page));
+        }
+
+        ObjectListIterator.forEachPage(infos,
+                                       page -> nodeConformityRepository.deleteAll(page));
+
+        // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
+        // jinak hrozi konflikt s validacnim vlaknem
+        nodeConformityRepository.flush();
+    }
+
+    /**
+     * Mazání uzlů podle seznamu id.
+     * 
+     * @param unusedNodes
+     */
+    public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
+        List<ArrNodeConformity> deleteInfos = ObjectListIterator
+                .findIterable(nodeIds, page -> nodeConformityRepository.findByNodeIds(page));
+
+        deleteConformityInfo(deleteInfos);
+    }
+
+    /**
+     * Mazání uzlů podle fondu.
+     * 
+     * @param fund
+     */
+    public void deleteByNodeFund(ArrFund fund) {
+        nodeConformityMissingRepository.deleteByNodeConformityNodeFund(fund);
+        nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
+        nodeConformityRepository.deleteByNodeFund(fund);
+    }
+
+    public List<ArrNodeConformityError> findErrorsByFundVersion(ArrFundVersion fundVersion) {
+        return nodeConformityErrorRepository.findErrorsByFundVersion(fundVersion);
+    }
+
+    public List<ArrNodeConformityMissing> findMissingsByFundVersion(ArrFundVersion fundVersion) {
+        return nodeConformityMissingRepository.findMissingsByFundVersion(fundVersion);
+    }
+
+    public List<ArrNodeConformityError> findErrorsByNodeConformity(ArrNodeConformity nodeConformity) {
+        return nodeConformityErrorRepository.findByNodeConformity(nodeConformity);
+    }
+
+    public List<ArrNodeConformityMissing> findMissingsByNodeConformity(ArrNodeConformity nodeConformity) {
+        return nodeConformityMissingRepository.findByNodeConformity(nodeConformity);
+    }
+
+    /**
+     * Načte počet chyb verze archivní pomůcky.
+     *
+     * @param fundVersion verze archivní pomůcky
+     * @return počet chyb
+     */
+    public Integer findCountByFundVersionAndStateErr(ArrFundVersion fundVersion) {
+        return nodeConformityRepository.findCountByFundVersionAndState(fundVersion, State.ERR);
+    }
+
+    public List<ArrNodeConformity> findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(ArrFundVersion fundVersion, State state) {
+        return nodeConformityRepository.findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(fundVersion, state);
+    }
+
+    public List<ArrNodeConformity> fetchErrorAndMissingConformity(List<ArrNodeConformity> conformity, ArrFundVersion fundVersion, State state) {
+        return nodeConformityRepository.fetchErrorAndMissingConformity(conformity, fundVersion, state);
     }
 
     /**
@@ -762,7 +901,9 @@ public class RuleService {
         nodeExtensionRepository.saveAndFlush(nodeExtension);
         arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtension;
     }
@@ -802,7 +943,9 @@ public class RuleService {
         nodeExtensionRepository.save(nodeExtensionDB);
         arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Collections.singleton(RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
+                        null);
 
         return nodeExtensionDB;
     }
@@ -994,7 +1137,9 @@ public class RuleService {
             toAdd.forEach(i -> arrangementCacheService.createNodeExtension(nodeId, i));
         }
 
-        deleteConformityInfo(versionId, Collections.singleton(nodeId), Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS));
+        revalidateNodes(versionId, Collections.singleton(nodeId),
+                        Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS),
+                        null);
     }
 
     /**
@@ -1060,20 +1205,28 @@ public class RuleService {
         ApScope scope = accessPointService.getApScope(form.getScopeId());
 
         Integer preferredPartId = null;
-        List<Part> parts = new ArrayList<>();
 
+        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
         if (accessPointId != null) {
-            ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
-            preferredPartId = apAccessPoint.getPreferredPartId();
-            List<ApPart> partList = partService.findPartsByAccessPoint(apAccessPoint);
-            List<ApItem> itemList = accessPointItemService.findItemsByParts(partList);
+            // ApState
+            ApState apState = this.accessPointService.getStateInternal(accessPointId);
 
-            for(ApPart part : partList) {
-                parts.add(createPart(part, preferredPartId, itemList));
+            CachedAccessPoint cachedAcessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
+            apBuilder.setAccessPoint(cachedAcessPoint);
+
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
+                List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+
+                // apply revision data
+                apBuilder.setRevision(revision, revParts, revItems);
             }
-
-            fillParentParts(parts);
+        } else {
+            apBuilder.setAeType(apTypeId);
         }
+
+        Ap ae = apBuilder.build();
 
         ApPartFormVO partForm = form.getPartForm();
         List<ApItemVO> items = partForm.getItems();
@@ -1108,12 +1261,16 @@ public class RuleService {
             modelItems.add(ai);
         }
 
-        Ap ae = new Ap(accessPointId, sdp.getApTypeById(apTypeId).getCode(), parts);
         List<ItemType> modelItemTypes = createModelItemTypes();
 
         Part parentPart = null;
         if(partForm.getParentPartId() != null) {
-            parentPart = findPartById(parts, partForm.getParentPartId());
+            parentPart = apBuilder.getPart(partForm.getParentPartId());
+            Validate.notNull(parentPart, "Parent part not found, %s", partForm.getParentPartId());
+        } else
+        if (partForm.getRevParentPartId() != null) {
+            parentPart = apBuilder.getPartByRevPartId(partForm.getRevParentPartId());
+            Validate.notNull(parentPart, "Parent part in revision not found, %s", partForm.getRevParentPartId());
         }
 
         boolean isPartPreferred = form.getAccessPointId() == null || (partForm.getPartId() != null && preferredPartId != null && preferredPartId.equals(partForm.getPartId()));
@@ -1126,36 +1283,46 @@ public class RuleService {
         return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
     }
 
+    /**
+     * Run access point validation
+     * 
+     * Method reads current AP state from DB.
+     * Method is not using cache.
+     * 
+     * @param accessPoint
+     * @return
+     */
     @Transactional(TxType.MANDATORY)
     public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+
+        // Flush all changes to DB before reading data for validation
+        this.entityManager.flush();
+
         ApState apState = accessPointService.getStateInternal(accessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         Integer preferredPartId = accessPoint.getPreferredPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId());
 
-        List<Part> partList = new ArrayList<>();
-        for (ApPart part : parts) {
-            partList.add(createPart(part, preferredPartId, itemList));
-        }
-        fillParentParts(partList);
+        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
+        apBuilder.setAccessPoint(apState, parts, itemList);
+        Ap ap = apBuilder.build();
 
-        Map<PartType, List<Index>> indexMap = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId())
-                        .stream()
-                        .map(index -> createIndex(index, findPartById(partList, index.getPart().getPartId())))
-                        .collect(Collectors.groupingBy(index -> index.getPart().getType()));
+        Map<PartType, List<Index>> indexMap = indexList.stream()
+                .map(index -> createIndex(index, apBuilder.getPart(index.getPartId())))
+                .collect(Collectors.groupingBy(index -> index.getPart().getType()));
 
-        Ap ap = new Ap(accessPoint.getAccessPointId(), apState.getApType().getCode(), partList);
         GeoModel geoModel = createGeoModel(ap);
 
         ApValidationErrorsVO apValidationErrorsVO = createAeValidationErrorsVO();
 
         // vytvoření mapy specifikací vztahů
-        Map<Integer, Map<String, Relation>> relationMap = createRelationMap(partList);
+        Map<Integer, Map<String, Relation>> relationMap = apBuilder.createRelationMap();
         // vytvoření mapy specifikací identifikátorů
-        Map<String, Integer> identMap = createIdentMap(partList);
+        Map<String, Integer> identMap = apBuilder.createIdentMap();
 
-        List<AbstractItem> items = createAbstractItemList(partList);
+        List<AbstractItem> items = apBuilder.createAbstractItemList();
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation, rulRuleSet);
         // validace opakovatelnosti partů
@@ -1193,18 +1360,6 @@ public class RuleService {
         return apValidationErrorsVO;
     }
 
-    private List<AbstractItem> createAbstractItemList(List<Part> partList) {
-        List<AbstractItem> items = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (Part part : partList) {
-                if (CollectionUtils.isNotEmpty(part.getItems())) {
-                    items.addAll(part.getItems());
-                }
-            }
-        }
-        return items;
-    }
-
     private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
         if (CollectionUtils.isNotEmpty(ap.getParts())) {
             for (Part part : ap.getParts()) {
@@ -1231,43 +1386,6 @@ public class RuleService {
                 }
             }
         }
-    }
-
-    private Map<Integer, Map<String, Relation>> createRelationMap(final List<Part> parts) {
-        Map<Integer, Map<String, Relation>> partRelationSpecMap = new HashMap<>();
-        for (Part part : parts) {
-            if (part.getType().equals(PartType.PT_REL)) {
-                Integer key = part.getParent() != null ? part.getParent().getId() : -1;
-                Map<String, Relation> relationSpecCount = partRelationSpecMap.computeIfAbsent(key, k -> new HashMap<>());
-                for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals(REL_ENTITY)) {
-                        Relation relation = relationSpecCount.get(abstractItem.getSpec());
-                        if (relation == null) {
-                            relation = new Relation(part);
-                            relationSpecCount.put(abstractItem.getSpec(), relation);
-                        } else {
-                            relation.addPart(part);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        return partRelationSpecMap;
-    }
-
-    private Map<String, Integer> createIdentMap(final List<Part> parts) {
-        Map<String, Integer> identMap = new HashMap<>();
-        for (Part part : parts) {
-            if (part.getType().equals(PartType.PT_IDENT)) {
-                for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals(IDN_TYPE)) {
-                        identMap.put(abstractItem.getSpec(), identMap.getOrDefault(abstractItem.getSpec(), 0) + 1);
-                    }
-                }
-            }
-        }
-        return identMap;
     }
 
     private void validatePartRepeatability(final ModelValidation validationResult) {
@@ -1492,12 +1610,16 @@ public class RuleService {
         StaticDataProvider sdp = staticDataService.getData();
         RulItemType itemType = sdp.getItemTypeByCode(GEO_ADMIN_CLASS).getEntity();
         List<ApItem> items = accessPointItemService.findItems(recordId, itemType, PartType.PT_BODY.value());
-        if (CollectionUtils.isNotEmpty(items)) {
-            ApItem aeItem = items.get(0);
-            ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
-            return recordRef.getRecordId();
+        if (CollectionUtils.isEmpty(items)) {
+            return null;
         }
-        return null;
+        if (items.size() > 1) {
+            logger.info("Entity with multiple parents, entityId: {}, parent count: {}", recordId, items.size());
+            return null;
+        }
+        ApItem aeItem = items.get(0);
+        ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
+        return recordRef.getRecordId();
     }
 
     // TODO: use cache
@@ -1539,17 +1661,37 @@ public class RuleService {
 
     @Nullable
     private String findEntityCountry(Integer recordId) {
-        String countryIso = findCountryIso(recordId);
-        if (countryIso != null) {
-            return countryIso;
-        } else {
-            Integer parentGeoId = findParentGeoId(recordId);
-            if (parentGeoId != null) {
-                return findEntityCountry(parentGeoId);
-            } else {
+
+        int recurentCounter = 1;
+        Integer nextRecordId = recordId;
+        Set<Integer> loopDetector = new HashSet<>();
+        // protection for infinite loop
+        while (recurentCounter < 20) {
+
+            String countryIso = findCountryIso(nextRecordId);
+            if (countryIso != null) {
+                return countryIso;
+            }
+
+            // add item
+            loopDetector.add(nextRecordId);
+
+            // find parent
+            nextRecordId = findParentGeoId(nextRecordId);
+            if (nextRecordId == null) {
                 return null;
             }
+            if (loopDetector.contains(nextRecordId)) {
+                logger.error("Loop detected in parent entities, recordId: {}, repeating entity: {}", recordId,
+                             nextRecordId);
+                return null;
+            }
+            recurentCounter++;
         }
+        if (recurentCounter >= 20) {
+            logger.error("Parent hierarchy is too deep, recordId: {}", recordId);
+        }
+        return null;
     }
 
     @Nullable
@@ -1603,30 +1745,6 @@ public class RuleService {
         partValidationErrorsVO.setId(partId);
         partValidationErrorsVO.setErrors(new ArrayList<>());
         return partValidationErrorsVO;
-    }
-
-    private Part createPart(ApPart part, Integer preferredPartId, List<ApItem> itemList) {
-        List<AbstractItem> abstractItemList = new ArrayList<>();
-
-        for (ApItem item : itemList) {
-            if (item.getPartId().equals(part.getPartId())) {
-                abstractItemList.add(createItem(item));
-            }
-        }
-
-        Integer parentPartId = part.getParentPart() != null ? part.getParentPart().getPartId() : null;
-        boolean preferred = part.getPartId().equals(preferredPartId);
-        return new Part(part.getPartId(), parentPartId, PartType.fromValue(part.getPartType().getCode()),
-                abstractItemList, null, preferred);
-    }
-
-    private void fillParentParts(List<Part> partList) {
-        for (Part part : partList) {
-            if (part.getParentPartId() != null) {
-                Part parent = findPartById(partList, part.getParentPartId());
-                part.setParent(parent);
-            }
-        }
     }
 
     @Nullable
@@ -1701,57 +1819,6 @@ public class RuleService {
             modelPartList.add(new ModelPart(partType, indices));
         }
         return modelPartList;
-    }
-
-    private AbstractItem createItem(ApItem item) {
-        StaticDataProvider sdp = staticDataService.getData();
-        AbstractItem abstractItem;
-        String itemTypeCode = item.getItemType().getCode();
-        String itemSpecCode = item.getItemSpec() != null ? item.getItemSpec().getCode() : null;
-        cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
-        DataType dataType = itemType.getDataType();
-
-        switch (dataType) {
-            case ENUM:
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), itemSpecCode);
-                break;
-            case BIT:
-                ArrDataBit aeDataBit = (ArrDataBit) item.getData();
-                abstractItem = new BoolItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataBit.getValueBoolean());
-                break;
-            case RECORD_REF:
-                ArrDataRecordRef aeDataRecordRef = (ArrDataRecordRef) item.getData();
-                abstractItem = new IntItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataRecordRef.getRecordId());
-                break;
-            case COORDINATES:
-                ArrDataCoordinates aeDataCoordinates = (ArrDataCoordinates) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), GeometryConvertor.convert(aeDataCoordinates.getValue()));
-                break;
-            case INT:
-                ArrDataInteger aeDataInteger = (ArrDataInteger) item.getData();
-                abstractItem = new IntItem(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataInteger.getValueInt());
-                break;
-            case STRING:
-                ArrDataString aeDataString = (ArrDataString) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataString.getStringValue());
-                break;
-            case TEXT:
-                ArrDataText aeDataText = (ArrDataText) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataText.getTextValue());
-                break;
-            case UNITDATE:
-                ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), UnitDateConvertor.convertToString(aeDataUnitdate));
-                break;
-            case URI_REF:
-                ArrDataUriRef arrDataUriRef = (ArrDataUriRef) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef.getUriRefValue());
-                break;
-            default:
-                throw new SystemException("Invalid data type (RulItemType.DataType) " + dataType.getCode() , INVALID_STATE);
-        }
-
-        return abstractItem;
     }
 
     private Index createIndex(ApIndex apIndex, Part part) {
@@ -1872,5 +1939,16 @@ public class RuleService {
         }
 
         return itemTypeCodes;
+    }
+
+    /**
+     * Return export filter
+     * 
+     * @param exportFilterId
+     * @return
+     */
+    @Transactional(TxType.MANDATORY)
+    public RulExportFilter getExportFilter(Integer exportFilterId) {
+        return exportFilterRepository.getOne(exportFilterId);
     }
 }

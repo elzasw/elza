@@ -38,13 +38,6 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     ApState findLastByAccessPointId(@Param("accessPointId") Integer accessPointId);
 
-    @Query("SELECT s1" +
-            " FROM ap_state s1" +
-            " JOIN FETCH s1.accessPoint" +
-            " WHERE s1.accessPoint.accessPointId = :accessPointId" +
-            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
-    ApState findByAccessPointId(@Param("accessPointId") Integer accessPointId);
-
     /*
     @Query("SELECT s1" +
             " FROM ap_state s1" +
@@ -63,6 +56,17 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " WHERE s1.accessPoint.accessPointId IN :accessPointIds" +
             " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     List<ApState> findLastByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.replacedById IN :accessPointIds" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    List<ApState> findLastByReplacedByIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Query("SELECT COUNT(state) FROM ap_state state" +
+           " WHERE state.accessPointId IN :accessPointIds" +
+           " AND state.deleteChange IS NULL")
+    int countValidByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Modifying
     @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")

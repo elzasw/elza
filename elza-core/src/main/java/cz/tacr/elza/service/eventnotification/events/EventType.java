@@ -35,6 +35,7 @@ public enum EventType {
     ACCESS_POINT_CREATE(EventId.class),
     ACCESS_POINT_DELETE(EventId.class),
     ACCESS_POINT_UPDATE(EventId.class),
+    ACCESS_POINT_RESTORE(EventId.class),
 
     /**
      * Asi drive pouzivano pro notifikaci o zkopirovanem atributu

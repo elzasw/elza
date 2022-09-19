@@ -1,29 +1,42 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
-import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.dataexchange.output.aps.ApInfo;
-import cz.tacr.elza.dataexchange.output.context.ExportContext;
-import cz.tacr.elza.dataexchange.output.items.*;
-import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
-import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
-import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
-import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.schema.v2.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamWriter;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.tacr.elza.common.XmlUtils;
+import cz.tacr.elza.dataexchange.output.aps.ApInfo;
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
+import cz.tacr.elza.dataexchange.output.items.ItemApConvertor;
+import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
+import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
+import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
+import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
+import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.schema.v2.AccessPoint;
+import cz.tacr.elza.schema.v2.AccessPointEntry;
+import cz.tacr.elza.schema.v2.AccessPointState;
+import cz.tacr.elza.schema.v2.DescriptionItem;
+import cz.tacr.elza.schema.v2.ExternalId;
+import cz.tacr.elza.schema.v2.Fragment;
+import cz.tacr.elza.schema.v2.Fragments;
 
 /**
  * XML output stream for access points export.
@@ -62,48 +75,21 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         element.setApe(createEntry(apInfo.getApState(), apInfo.getExternalIds()));
 
         // prepare parts
-
         if (CollectionUtils.isNotEmpty(apInfo.getParts())) {
             Fragments frgs = new Fragments();
-            List<ApPart> parentParts = new ArrayList<>();
+            List<ApPart> subParts = new ArrayList<>();
+            // export main / parent parts
             for (ApPart part : apInfo.getParts()) {
-                Fragment frgElement = new Fragment();
-                frgElement.setFid(String.valueOf(part.getPartId()));
-                frgElement.setT(part.getPartType().getCode());
-                if(apInfo.getItems().get(part.getPartId()) != null) {
-                    List<ApItem> itemList = new ArrayList<>(apInfo.getItems().get(part.getPartId()));
-                    for (ApItem item : itemList) {
-                        DescriptionItem di = convertor.convert(item);
-                        frgElement.getDdOrDoOrDp().add(di);
-                    }
-                }
                 if(part.getParentPart() != null) {
-                    frgElement.setPid(String.valueOf(part.getParentPart().getPartId()));
-                    ApPart tempPart = part;
-                    while(tempPart.getParentPart() != null) {
-                        parentParts.add(tempPart.getParentPart());
-                        tempPart = tempPart.getParentPart();
-                    }
+                    subParts.add(part);
                 }
 
+                Fragment frgElement = createFragment(part, apInfo.getItems().get(part.getPartId()));
                 frgs.getFrg().add(frgElement);
             }
-            for (ApPart part : parentParts) {
-                Fragment frgElement = new Fragment();
-                frgElement.setFid(String.valueOf(part.getPartId()));
-                frgElement.setT(part.getPartType().getCode());
-                if(part.getParentPart() != null) {
-                    frgElement.setPid(String.valueOf(part.getParentPart().getPartId()));
-                    parentParts.add(part.getParentPart());
-                }
-                if(apInfo.getItems().get(part.getPartId()) != null) {
-                    List<ApItem> itemList = new ArrayList<>(apInfo.getItems().get(part.getPartId()));
-                    for (ApItem item : itemList) {
-                        DescriptionItem di = convertor.convert(item);
-                        frgElement.getDdOrDoOrDp().add(di);
-                    }
-                }
-
+            // export subparts
+            for (ApPart part : subParts) {
+                Fragment frgElement = createFragment(part, apInfo.getItems().get(part.getPartId()));
                 frgs.getFrg().add(frgElement);
             }
             element.setFrgs(frgs);
@@ -115,6 +101,30 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
             logger.error("Failed to write AP", e);
             throw new SystemException(e);
         }
+    }
+
+    /**
+     * Create element for one part
+     * 
+     * @param part
+     * @param items
+     * @return
+     */
+    private Fragment createFragment(ApPart part, Collection<ApItem> items) {
+        Fragment frgElement = new Fragment();
+        frgElement.setFid(String.valueOf(part.getPartId()));
+        frgElement.setT(part.getPartType().getCode());
+        if (part.getParentPart() != null) {
+            frgElement.setPid(String.valueOf(part.getParentPart().getPartId()));
+        }
+
+        if (CollectionUtils.isNotEmpty(items)) {
+            for (ApItem item : items) {
+                DescriptionItem di = convertor.convert(item);
+                frgElement.getDdOrDoOrDp().add(di);
+            }
+        }
+        return frgElement;
     }
 
     @Override

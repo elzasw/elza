@@ -82,6 +82,9 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     @JoinColumn(name = FIELD_REPLACED_BY, nullable = true)
     private ApAccessPoint replacedBy;
 
+    @Column(name = FIELD_REPLACED_BY, updatable = false, insertable = false)
+    private Integer replacedById;
+
     @Column(length = StringLength.LENGTH_2000)
     private String comment;
 
@@ -191,6 +194,18 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
 
     public void setReplacedBy(ApAccessPoint replacedBy) {
         this.replacedBy = replacedBy;
+        this.replacedById = replacedBy != null ? replacedBy.getAccessPointId() : null;
+    }
+
+    public Integer getReplacedById() {
+        if (replacedById == null && replacedBy != null) {
+            return replacedBy.getAccessPointId();
+        }
+        return replacedById;
+    }
+
+    public void setReplacedById(Integer replacedById) {
+        this.replacedById = replacedById;
     }
 
     public String getComment() {

@@ -14,8 +14,6 @@ import javax.persistence.Transient;
 
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -33,7 +31,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
 
@@ -104,8 +103,14 @@ public class ArrDescItem extends ArrItem {
 	 * @param src Source object
 	 */
 	public ArrDescItem(ArrDescItem src) {
-		super(src);
-		this.indexData = src.indexData;
+        super(src);
+        if (src.indexData != null && (src.indexData instanceof SimpleIndexData)) {
+            // set own instance of SimpleIndexData
+            // instance cannot be shared, each object needs its own
+            this.indexData = new SimpleIndexData();
+        } else {
+            this.indexData = src.indexData;
+        }
 		this.node = src.node;
 		this.nodeId = src.nodeId;
 	}
@@ -224,6 +229,9 @@ public class ArrDescItem extends ArrItem {
 
         @Override
         public Integer getFundId() {
+            if (node == null) {
+                throw new BusinessException("Valid node not set", BaseCode.SYSTEM_ERROR);
+            }
             return node.getFundId();
         }
 

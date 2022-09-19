@@ -22,6 +22,7 @@ export const showPartCreateModal = (
     select: boolean,
     parentPartId?: number,
     onUpdateFinish: () => void = () => { },
+    revParentPartId?: number,
 ) => (dispatch: any) => dispatch(
     modalDialogShow(
         this,
@@ -56,6 +57,7 @@ export const showPartCreateModal = (
                 const submitData = {
                     items,
                     parentPartId,
+                    revParentPartId,
                     partTypeCode: partType.code,
                 } as ApPartFormVO;
 
@@ -78,6 +80,7 @@ export const showPartCreateModal = (
                 scopeId={scopeId}
                 partTypeId={partType.id}
                 parentPartId={parentPartId}
+                revParentPartId={revParentPartId}
                 initialValues={formData}
                 onSubmit={handleSubmit}
                 onClose={handleClose}

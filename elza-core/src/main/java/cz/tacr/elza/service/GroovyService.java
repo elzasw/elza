@@ -10,9 +10,6 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.AccessPointPart;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,10 +17,13 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.data.StructTypeExtension;
+import cz.tacr.elza.domain.AccessPointItem;
+import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
@@ -46,7 +46,6 @@ import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -58,6 +57,8 @@ import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @Service
 public class GroovyService {
@@ -90,6 +91,9 @@ public class GroovyService {
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
+    
+    @Autowired
+    protected AccessPointCacheService accessPointCacheService;
 
     @PostConstruct
     public void setStatic() {
@@ -99,11 +103,12 @@ public class GroovyService {
     public GroovyAe convertAe(@NotNull final ApState state,
                               @NotNull final List<ApPart> parts,
                               @NotNull final List<ApItem> items) {
-        return convertAe(state, parts, items, Collections.emptyList());
+        return convertAe(state, parts, Collections.emptyList(), items, Collections.emptyList());
     }
 
     public GroovyAe convertAe(@NotNull final ApState state,
                               @NotNull final List<ApPart> parts,
+                              @NotNull final List<ApRevPart> revParts,
                               @NotNull final List<ApItem> items,
                               @NotNull final List<ApRevItem> revItems) {
         StaticDataProvider sdp = staticDataService.getData();
@@ -122,15 +127,30 @@ public class GroovyService {
             boolean preferred = Objects.equals(preferredPartId, part.getPartId());
             groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, revItems, preferred));
         }
+        // přidat Part(s), které byly přidány v revizi
+        for (ApRevPart part : revParts) {
+            if (part.getOriginalPartId() == null) {
+                groovyParts.add(convertRevPart(state.getApTypeId(), part, revItems));
+            }
+        }
         return new GroovyAe(apType.getCode(), groovyParts);
     }
 
     public GroovyResult processGroovy(@NotNull final Integer apTypeId,
                                       @NotNull final AccessPointPart part,
-                                      @Nullable final List<AccessPointPart> childrenParts,
-                                      @NotNull final List<AccessPointItem> items,
+                                      @Nullable final List<? extends AccessPointPart> childrenParts,
+                                      @NotNull final List<? extends AccessPointItem> items,
                                       final boolean preferred) {
-        GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, preferred);
+        return processGroovy(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
+    }
+
+    public GroovyResult processGroovy(@NotNull final Integer apTypeId,
+                                      @NotNull final AccessPointPart part,
+                                      @Nullable final List<? extends AccessPointPart> childrenParts,
+                                      @NotNull final List<? extends AccessPointItem> items,
+                                      @NotNull final List<ApRevItem> revItems,
+                                      final boolean preferred) {
+        GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, revItems, preferred);
         return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
@@ -150,7 +170,7 @@ public class GroovyService {
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
         List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> itemsByRevParts = revisionItemService.findByParts(revParts);
-        GroovyAe groovyAe = convertAe(revision.getState(), parts, itemsByParts, itemsByRevParts);
+        GroovyAe groovyAe = convertAe(revision.getState(), parts, revParts, itemsByParts, itemsByRevParts);
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
         return groovyScriptService.process(groovyAe, groovyFilePath);
@@ -158,16 +178,8 @@ public class GroovyService {
 
     public GroovyPart convertPart(@NotNull final Integer apTypeId,
                                   @NotNull final AccessPointPart part,
-                                  @Nullable final List<AccessPointPart> childrenParts,
-                                  @NotNull final List<AccessPointItem> items,
-                                  final boolean preferred) {
-        return convertPart(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
-    }
-
-    public GroovyPart convertPart(@NotNull final Integer apTypeId,
-                                  @NotNull final AccessPointPart part,
-                                  @Nullable final List<AccessPointPart> childrenParts,
-                                  @NotNull final List<AccessPointItem> items,
+                                  @Nullable final List<? extends AccessPointPart> childrenParts,
+                                  @NotNull final List<? extends AccessPointItem> items,
                                   @NotNull final List<ApRevItem> revItems,
                                   final boolean preferred) {
         StaticDataProvider sdp = staticDataService.getData();
@@ -226,6 +238,26 @@ public class GroovyService {
                 groovyParts);
     }
 
+    public GroovyPart convertRevPart(@NotNull final Integer apTypeId,
+                                     @NotNull final ApRevPart part,
+                                     @NotNull final List<ApRevItem> revItems) {
+        StaticDataProvider sdp = staticDataService.getData();
+
+        GroovyItems groovyItems = new GroovyItems();
+        for (ApRevItem revItem : revItems) {
+            groovyItems.addItem(convertItem(revItem, sdp));
+        }
+
+        ApType apType = sdp.getApTypeById(apTypeId);
+        RulPartType partType = sdp.getPartTypeById(part.getPartTypeId());
+
+        return new GroovyPart(apType.getCode(),
+                              false,
+                              partType,
+                              groovyItems,
+                              Collections.emptyList());
+    }
+
     public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
         ArrData data = item.getData();
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
@@ -269,9 +301,11 @@ public class GroovyService {
                 ArrDataRecordRef dataTmp = (ArrDataRecordRef) data;
                 String value;
                 Integer intValue;
+                CachedAccessPoint accessPoint = null;
                 if (dataTmp.getRecord() != null) {
                     value = dataTmp.getFulltextValue();
                     intValue = dataTmp.getRecordId();
+                    accessPoint = accessPointCacheService.findCachedAccessPoint(intValue);
                 } else if (dataTmp.getBinding() != null) {
                     value = dataTmp.getBinding().getValue();
                     // pokud se jedná o pouhý odkaz do externího systému (bez lokálního AP)
@@ -284,7 +318,7 @@ public class GroovyService {
                                     .set("dataId", dataTmp.getDataId());
                 }
 
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue);
+                groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue, accessPoint);
                 break;
             }
             case ENUM: {
@@ -383,12 +417,10 @@ public class GroovyService {
 
     public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulRuleSet rulRuleSet = sdp.getRuleSetById(ruleSetId).getEntity();
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId);
+        List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(ruleType);
 
         RulArrangementRule arrangementRule;
-
-        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, ruleType);
 
         if (rulArrangementRules.size() > 0) {
             arrangementRule = rulArrangementRules.get(0);

@@ -18,7 +18,7 @@ no-loop
 when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
-        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX"))
+        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX", "ZP2015_PACKET_METRAGE"))
 then
   $itemType.setRepeatable(false);
 end
@@ -26,7 +26,8 @@ end
 rule "Možné prvky popisu"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_PREFIX", "ZP2015_PACKET_POSTFIX"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_PREFIX", "ZP2015_PACKET_POSTFIX", 
+                                        "ZP2015_PACKET_METRAGE"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -54,7 +55,15 @@ end
 rule "Doporučené"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE", "ZP2015_PACKET_NUMBER"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_NUMBER"))
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Povinné"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_TYPE"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
 end

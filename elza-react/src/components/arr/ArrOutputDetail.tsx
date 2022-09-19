@@ -31,6 +31,7 @@ import storeFromArea from '../../shared/utils/storeFromArea';
 import {WebApi} from 'actions/index';
 import {ThunkDispatch} from 'redux-thunk';
 import {ScopeList} from './ScopeList';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -150,18 +151,20 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
         return this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
 
-    handleRemoveNode = node => {
-        const {fund, fundOutputDetail} = this.props;
+    handleRemoveNode = async (node) => {
+        const {fund, fundOutputDetail, dispatch} = this.props;
 
-        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode'))) as any;
+        if (response) {
             this.props.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]));
         }
     };
 
-    handleRemoveScope = (scope: ApScopeVO) => {
-        const {fundOutputDetail} = this.props;
+    handleRemoveScope = async (scope: ApScopeVO) => {
+        const {fundOutputDetail, dispatch} = this.props;
 
-        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode'))) as any;
+        if (response) {
             WebApi.deleteRestrictedScope(fundOutputDetail.id, scope.id);
         }
     };

@@ -1,9 +1,11 @@
 package cz.tacr.elza.packageimport;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,7 +23,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Nullable;
@@ -31,18 +35,8 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.RulExportFilter;
-import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.packageimport.xml.ExportFilterXml;
-import cz.tacr.elza.packageimport.xml.ExportFiltersXml;
-import cz.tacr.elza.packageimport.xml.OutputFilterXml;
-import cz.tacr.elza.packageimport.xml.OutputFiltersXml;
-import cz.tacr.elza.repository.ExportFilterRepository;
-import cz.tacr.elza.repository.OutputFilterRepository;
-import cz.tacr.elza.repository.ScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -63,12 +57,14 @@ import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
@@ -76,10 +72,13 @@ import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
@@ -102,6 +101,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.RuleUpdateContext.RuleState;
+import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
 import cz.tacr.elza.packageimport.xml.APTypeXml;
 import cz.tacr.elza.packageimport.xml.APTypes;
 import cz.tacr.elza.packageimport.xml.ActionItemType;
@@ -112,6 +112,8 @@ import cz.tacr.elza.packageimport.xml.ArrangementExtension;
 import cz.tacr.elza.packageimport.xml.ArrangementExtensions;
 import cz.tacr.elza.packageimport.xml.ArrangementRule;
 import cz.tacr.elza.packageimport.xml.ArrangementRules;
+import cz.tacr.elza.packageimport.xml.ExportFilterXml;
+import cz.tacr.elza.packageimport.xml.ExportFiltersXml;
 import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
@@ -124,6 +126,8 @@ import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.packageimport.xml.OutputFilterXml;
+import cz.tacr.elza.packageimport.xml.OutputFiltersXml;
 import cz.tacr.elza.packageimport.xml.OutputType;
 import cz.tacr.elza.packageimport.xml.OutputTypes;
 import cz.tacr.elza.packageimport.xml.PackageDependency;
@@ -152,12 +156,14 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
+import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
@@ -168,6 +174,7 @@ import cz.tacr.elza.repository.Packaging;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -330,6 +337,11 @@ public class PackageService {
     private static final String AVAILABLE_ITEMS = "AVAILABLE_ITEMS";
     private static final String VALIDATION = "VALIDATION";
 
+    /**
+     *  soubor s názvem a verzí balíčku
+     */
+    private static final String PACKAGE_XML = "package.xml";
+    
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -502,11 +514,11 @@ public class PackageService {
 
         TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
         transactionTemplate2.executeWithoutResult(ts -> {
-            importPackageInternal(file);        	
+            importPackageInternal(file, true);
         });
     }
 
-    public void importPackageInternal(final File file) {
+    public void importPackageInternal(final File file, boolean startTasks) {
         
         // read package and do basic checks
         PackageContext pkgCtx = new PackageContext(resourcePathResolver);
@@ -542,7 +554,7 @@ public class PackageService {
             if (pkgCtx != null) {
 
                 // start services after import
-                postImportPackage(pkgCtx);
+                postImportPackage(pkgCtx, startTasks);
 
                 pkgCtx.close();
                 pkgCtx = null;
@@ -593,7 +605,7 @@ public class PackageService {
         logger.info("All async threads stopped.");
     }
 
-    private void postImportPackage(PackageContext pkgCtx) {
+    private void postImportPackage(PackageContext pkgCtx, boolean startTasks) {
         if (pkgCtx.isSyncNodeCache()) {
             nodeCacheService.syncCache();
         }
@@ -615,7 +627,9 @@ public class PackageService {
 
 
         } finally {
-            startAsyncTasks();
+            if (startTasks) {
+                startAsyncTasks();
+            }
         }
 
         logger.info("Services were restarted after package update");
@@ -719,6 +733,113 @@ public class PackageService {
 
         eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
+    }
+
+    /**
+     * Automatické načítání balíčků v adresáři /dpkg
+     * 
+     * @param path
+     */
+    @Transactional
+    public void autoImportPackages(Path dpkgPath) {
+        if (!Files.exists(dpkgPath)) {
+            return;
+        }
+        logger.info("Checking folder {} for packages...", dpkgPath.toString());
+
+        // get current packages from DB
+        List<RulPackage> packagesDb = getPackages();
+        Map<String, PackageInfoWrapper> latestVersionMap = packagesDb.stream().map(p -> getPackageInfo(p))
+                .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
+
+        try (Stream<Path> streamPaths = Files.list(dpkgPath)) {
+
+            // vyhledani poslednich verzi balicku
+            for (Path path : streamPaths.collect(Collectors.toList())) {
+                // check if file is package
+                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+                    continue;
+                }
+                logger.info("Reading package info: {}", path.toString());
+
+                PackageInfoWrapper pkg = getPackageInfo(path);
+                if (pkg == null) {
+                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
+                    continue;
+                }
+
+                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
+                // žádné informace o balíčku nebo nižší verzi
+                if (mapPkg == null ||
+                        mapPkg.getVersion() < pkg.getVersion() ||
+                        (testing && mapPkg.getVersion() <= pkg.getVersion())) {
+                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+                }
+            }
+
+            // řazení balíčků podle závislostí mezi sebou
+            PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
+            latestVersionMap.values().forEach(p -> {
+                if (p.getDependencies() != null) {
+                    p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
+                }
+            });
+            List<String> sortedPkg = g.topologicalSort();
+            logger.debug("Sorted packages: {}", sortedPkg);
+
+            // import balíčku
+            for (String codePkg : sortedPkg) {
+                PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
+                // Nenalezen balicek na disku pro dany typ
+                if (pkgZip == null) {
+                    logger.debug("No package with code: {}", codePkg);
+                    continue;
+                }
+
+                Path packagePath = pkgZip.getPath();
+                // Kontrola, zda existuje soubor nebo je jiz v DB
+                if (packagePath == null) {
+                    continue;
+                }
+
+                logger.info("Reading package from file: {}", pkgZip.getPath().toString());
+
+                try {
+                    TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
+                    transactionTemplate2.executeWithoutResult(ts -> {
+                        importPackageInternal(pkgZip.getPath().toFile(), false);
+                    });
+                } catch (Exception e) {
+                    logger.error("Failed to import package file: {}", pkgZip, e);
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Error processing a package zip file.", e);
+            throw new SystemException("Error processing a package zip file.", e);
+        }
+    }
+
+    /**
+     * Získání objektu PackageInfoWrapper ze souboru PACKAGE_XML z archivu
+     * 
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    private PackageInfoWrapper getPackageInfo(Path path) throws IOException {
+        try (ZipFile zipFile = new ZipFile(path.toFile())) {
+            ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
+            if (zipEntry == null) {
+                // package info not found
+                return null;
+            }
+            try (InputStream is = zipFile.getInputStream(zipEntry)) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
+                PackageInfo pkgZip = PackageUtils.convertXmlStreamToObject(PackageInfo.class, bais);
+
+                return new PackageInfoWrapper(pkgZip, path);
+            }
+        }
     }
 
     private void importApTypes(PackageContext pkgCtx) throws IOException {
@@ -2174,7 +2295,7 @@ public class PackageService {
 
         PackageInfo packageInfo = puc.getPackageInfo();
 
-        RulPackage rulPackage = packageRepository.findTopByCode(packageInfo.getCode());
+        RulPackage rulPackage = packageRepository.findByCode(packageInfo.getCode());
 
         if (rulPackage == null) {
             rulPackage = new RulPackage();
@@ -2295,7 +2416,7 @@ public class PackageService {
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     synchronized public void deletePackage(final String code) {
-        RulPackage rulPackage = packageRepository.findTopByCode(code);
+        RulPackage rulPackage = packageRepository.findByCode(code);
 
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", BaseCode.ID_NOT_EXIST);
@@ -2479,7 +2600,7 @@ public class PackageService {
      */
     @Transactional(readOnly = true)
     synchronized public Path exportPackage(final String code) throws IOException {
-        RulPackage rulPackage = packageRepository.findTopByCode(code);
+        RulPackage rulPackage = packageRepository.findByCode(code);
 
         if (rulPackage == null) {
             throw new ObjectNotFoundException("Balíček s kódem " + code + " neexistuje", PackageCode.PACKAGE_NOT_EXIST).set("code", code);
@@ -2879,13 +3000,12 @@ public class PackageService {
     }
 
     /**
-     * Exportování informace o balíčku
-     *
-     * @param rulPackage balíček
-     * @param zos        stream zip souboru
+     * Create package info from DB object
+     * 
+     * @param rulPackage
+     * @return
      */
-    private void exportPackageInfo(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-
+    PackageInfo getPackageInfo(final RulPackage rulPackage) {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.setCode(rulPackage.getCode());
         packageInfo.setName(rulPackage.getName());
@@ -2900,6 +3020,20 @@ public class PackageService {
                     pd.setMinVersion(d.getMinVersion());
                     return pd;
                 }).collect(Collectors.toList()));
+
+        return packageInfo;
+    }
+
+    /**
+     * Exportování informace o balíčku
+     *
+     * @param rulPackage
+     *            balíček
+     * @param zos
+     *            stream zip souboru
+     */
+    private void exportPackageInfo(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        PackageInfo packageInfo = getPackageInfo(rulPackage);
 
         addObjectToZipFile(packageInfo, zos, PackageContext.PACKAGE_XML);
     }
@@ -3078,16 +3212,24 @@ public class PackageService {
      */
     private void exportItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageFetchItemType(rulPackage);
-        if (rulDescItemSpecs.size() == 0) {
+        if (CollectionUtils.isEmpty(rulDescItemSpecs)) {
             return;
         }
+
+        List<RulItemTypeSpecAssign> typeAssigned = itemTypeSpecAssignRepository.findByItemSpecIn(rulDescItemSpecs);
+        Map<Integer, List<String>> typeAssignedBySpecId = typeAssigned.stream()
+                .collect(Collectors.groupingBy(tsa -> tsa.getItemSpec().getItemSpecId(),
+                                               Collectors.mapping(tsa -> tsa.getItemType().getCode(),
+                                                                  Collectors.toList())));
 
         ItemSpecs itemSpecs = new ItemSpecs();
         List<ItemSpec> itemSpecList = new ArrayList<>(rulDescItemSpecs.size());
         itemSpecs.setItemSpecs(itemSpecList);
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, itemAptypeRepository);
+            List<String> assignedTypes = typeAssignedBySpecId.get(rulDescItemSpec.getItemSpecId());
+
+            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, assignedTypes, itemAptypeRepository);
             itemSpecList.add(itemSpec);
         }
 

@@ -2,11 +2,13 @@ package cz.tacr.elza.core.db;
 
 import cz.tacr.elza.core.data.StaticDataTransactionInterceptor;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Component
+@ConfigurationProperties(prefix = "elza.data")
 public class HibernateConfiguration implements HibernatePropertiesCustomizer {
 
     /**
@@ -14,7 +16,15 @@ public class HibernateConfiguration implements HibernatePropertiesCustomizer {
      * 
      * Maximal number of items inside IN clause
      */
-    final public static int MAX_IN_SIZE = 1000;
+    private int batchSize = 1000;
+
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
 
     @Override
     public void customize(final Map<String, Object> vendorProperties) {

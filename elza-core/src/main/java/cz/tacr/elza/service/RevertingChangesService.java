@@ -1,5 +1,48 @@
 package cz.tacr.elza.service;
 
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.cfg.ImprovedNamingStrategy;
+import org.hibernate.cfg.NamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
+
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -44,57 +87,15 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.TitleItemsByType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.cfg.NamingStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.persistence.ColumnResult;
-import javax.persistence.ConstructorResult;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
  *
- * @author Martin Šlapa
- * @since 03.11.2016
  */
 @Service
 public class RevertingChangesService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    static private final Logger logger = LoggerFactory.getLogger(RevertingChangesService.class);
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -266,40 +267,43 @@ public class RevertingChangesService {
     /**
      * Provede revertování dat ke zvolené změně.
      *
-     * @param fund       AS nad kterým provádím obnovu
+     * @param fundVersion verze AS nad kterým provádím obnovu
      * @param node       JP omezující obnovu
      * @param fromChange změna od které se provádí revert (pouze pro kontrolu, že se jedná o poslední)
      * @param toChange   změna ke které se provádí revert (včetně)
      */
-    public void revertChanges(@NotNull final ArrFund fund,
+    public void revertChanges(@NotNull final ArrFundVersion fundVersion,
                               @Nullable final ArrNode node,
                               @NotNull final ArrChange fromChange,
                               @NotNull final ArrChange toChange) {
-        Validate.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fundVersion, "verze AS musí být vyplněn");
+        Validate.isTrue(fundVersion.getLockChange() == null, "Nelze prováděn změny v uzavřené verzi");
         Validate.notNull(fromChange, "Změna od musí být vyplněna");
         Validate.notNull(toChange, "Změna do musí být vyplněna");
+        
+        StopWatch sw = new StopWatch("revertChanges");
 
-        Integer fundId = fund.getFundId();
+        ArrFund fund = fundVersion.getFund();
+        Integer fundId = fundVersion.getFundId();
         Integer nodeId = node == null ? null : node.getNodeId();
 
-        ArrFundVersion openFundVersion = null;
-        for (ArrFundVersion fundVersion : fund.getVersions()) {
-            if (fundVersion.getLockChange() == null) {
-                openFundVersion = fundVersion;
-                break;
-            }
-        }
-
+        sw.start("revertChangesValidateAction");
         // provede validaci prováděného revertování
-        revertChangesValidateAction(fromChange, toChange, fundId, nodeId);
+        revertChangesValidateAction(fromChange, toChange, fundId, nodeId);        
+        sw.stop();
 
+        sw.start("stopConformityInfFundVersions");
         // zastavení probíhajících výpočtů pro validaci uzlů u verzí
         stopConformityInfFundVersions(fund);
+        sw.stop();
 
         // zjisteni uzlu na nez maji zmeny primy dopad
+        sw.start("findChangeNodeIdsQuery");
         Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
         Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
-
+        sw.stop();
+        
+        sw.start("deleteConformityInfo");
         {
             Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
             deleteEntityQuery.executeUpdate();
@@ -312,31 +316,43 @@ public class RevertingChangesService {
             Query deleteEntityQuery = createConformityDeleteEntityQuery(fund, node/*, toChange*/);
             deleteEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from usedValueRepository");
         // drop used/fixed values
         usedValueRepository.deleteToChange(fund, toChange.getChangeId());
+        sw.stop();
 
+        sw.start("delete from arr_level");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
+            updateEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from arr_node_extension");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension",
+                                                                    toChange);
+            updateEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from arr_dao_link");
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
-            updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link",
+                                                                    toChange);
+            updateEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from arr_desc_item");
         {
             List<Integer> toReindex = new ArrayList<>(1024);
 
@@ -369,7 +385,9 @@ public class RevertingChangesService {
 
             descriptionItemService.reindexDescItem(toReindex);
         }
+        sw.stop();
 
+        sw.start("delete from struct objs");
         if (nodeId == null) {
 
             structuredItemDelete(fund, toChange);
@@ -388,19 +406,25 @@ public class RevertingChangesService {
             arrFileCreateChangeUndo(fund, toChange);
 
         }
+        sw.stop();
 
+        sw.start("delete from outputs");
         {
             Query updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
             updateEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from arr_node_output");
         {
             Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_output", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_output", toChange);
             updateEntityQuery.executeUpdate();
             deleteEntityQuery.executeUpdate();
         }
+        sw.stop();
 
+        sw.start("delete from arr_bulk_action_run");
         {
             Query updateEntityQuery = createUpdateActionQuery(fund, node, toChange);
             updateEntityQuery.executeUpdate();
@@ -413,13 +437,22 @@ public class RevertingChangesService {
             Query deleteEntityQuery = createDeleteActionRunQuery(fund, toChange);
             deleteEntityQuery.executeUpdate();
         }
+        sw.stop();
 
-        Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
-        deleteNotUseChangesQuery.executeUpdate();
+        // TODO: mazani ARR_CHANGE je velmi pomale
+        //  mazani zaznamu je docasne vypnuto
+        //  bude nutne najit vhodnejsi reseni
+        //sw.start("delete from arr_change");
+        //Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
+        //deleteNotUseChangesQuery.executeUpdate();
+        //sw.stop();
 
+        sw.start("flushing");
         entityManager.flush();
+        sw.stop();
 
         // strukt typy lze smazat az po vymazani vsech ref. na ne
+        sw.start("deleting struct objects");
         if (nodeId == null) {
 
             asyncRequestDelete(fund, toChange);
@@ -429,7 +462,9 @@ public class RevertingChangesService {
             structuredObjectDelete(fund, toChange);
 
         }
+        sw.stop();
 
+        sw.start("deleting unused nodes");
         // Drop unused node ids
         // Find nodes
         List<Integer> deleteNodeIds = nodeRepository.findUnusedNodeIdsByFund(fund);
@@ -448,27 +483,41 @@ public class RevertingChangesService {
 
             nodeRepository.deleteByNodeIdIn(deleteNodeIds);
         }
+        sw.stop();
 
+        sw.start("flushing 2");
         entityManager.flush();
+        sw.stop();
 
+        sw.start("syncing nodes");
         nodeCacheService.syncNodes(nodeIdsChange);
+        sw.stop();
 
-        if (CollectionUtils.isNotEmpty(deleteNodeIds) && openFundVersion != null) {
-            eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, openFundVersion.getFundVersionId(),
+        sw.start("publishing changes");
+        if (CollectionUtils.isNotEmpty(deleteNodeIds)) {
+            eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, fundVersion.getFundVersionId(),
                     deleteNodeIds.toArray(new Integer[deleteNodeIds.size()])));
-        }
+        }        
 
         if (node == null) {
-            Set<Integer> fundVersionIds = fund.getVersions().stream().map(ArrFundVersion::getFundVersionId).collect(Collectors.toSet());
-            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID, Collections.singleton(fundId), fundVersionIds));
+            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID, 
+            		Collections.singleton(fundId), Collections.singleton(fundVersion.getFundVersionId())));
         } else {
-            if (openFundVersion != null) {
-                eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, openFundVersion.getFundVersionId(), node.getNodeId()));
-            }
+        	eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
         }
+        sw.stop();
 
-        levelTreeCacheService.invalidateFundVersion(fund);
-        arrangementService.startNodeValidation(false);
+        sw.start("invalidateFundVersion");
+        levelTreeCacheService.invalidateFundVersion(fundVersion);
+        sw.stop();
+        sw.start("startNodeValidation");
+        arrangementService.startNodeValidation(fundVersion);
+        sw.stop();
+        
+        // log results
+        if(logger.isDebugEnabled()) {
+        	logger.debug("revertChanges - progress\n{}", sw.prettyPrint());
+        }
     }
 
     private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {

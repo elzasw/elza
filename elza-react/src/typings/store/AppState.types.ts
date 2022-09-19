@@ -39,7 +39,7 @@ export interface AdminRegionState {
     entityPermissions: unknown;
     fulltext: AdminFulltext;
     fund: AdminFund;
-    funds: AdminFunds;
+    funds: SimpleList<ArrFundBaseVO>;
     group: unknown;
     groupsPermissionsByFund: unknown;
     packages: unknown;
@@ -50,11 +50,27 @@ export interface AdminRegionState {
 interface FundData {
 }
 
-export interface AdminFundsFilter {
+export interface SimpleListFilter {
     from?: number;
     pageSize?: number;
     text?: string;
 }
+
+export interface SimpleList<T> {
+    count?: number;
+    currentDataKey?: string | number;
+    filter?: SimpleListFilter;
+    filterRows?: unknown;
+    getDataKey?: () => number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    filteredRows: T[];
+    rows: T[];
+    sourceRows: T[];
+}
+
+export interface AdminFundsFilter extends SimpleListFilter {}
 
 export interface AdminFunds {
     count?: number;
@@ -111,11 +127,11 @@ export interface Node extends NodeBase {
     isFetching?: boolean;
     isNodeInfoFetching?: boolean;
     lastUpdated?: number;
-    nodeCount?: number;
-    nodeIndex?: number;
+    nodeCount: number;
+    nodeIndex: number;
     nodeInfoDirty?: boolean;
     nodeInfoFetched?: boolean;
-    pageSize?: number;
+    pageSize: number;
     parentNodes?: unknown[];
     routingKey?: string;
     searchedIds?: unknown;
@@ -124,7 +140,7 @@ export interface Node extends NodeBase {
     subNodeForm?: unknown;
     subNodeFormCache?: unknown;
     subNodeInfo?: unknown;
-    viewStartIndex?: number;
+    viewStartIndex: number;
 }
 
 export interface NodesState {
@@ -216,12 +232,44 @@ export interface ArrRegion {
     visiblePolicy: VisiblePolicy;
 }
 
+export interface ApExternalSystemSimpleVO {
+    code?: string;
+    id?: number;
+    name?: string;
+    type?: string;
+}
+
+export interface App {
+    apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
+    apValidation: unknown;
+    apViewSettings: unknown;
+    arrStructure: unknown;
+    extSystemDetail: unknown;
+    extSystemList: unknown;
+    issueComments: unknown;
+    issueDetail: unknown;
+    issueList: unknown;
+    issueProtocol: unknown;
+    issueProtocols: unknown;
+    issueProtocolsConfig: unknown;
+    languageList: unknown;
+    mimeTypesList: unknown;
+    preparedRequestList: unknown;
+    registryDetail: unknown;
+    registryDetailHistory: unknown;
+    registryLayerList: unknown;
+    registryList: unknown;
+    requestInQueueList: unknown;
+    scopeDetail: unknown;
+    scopeList: unknown;
+    shared: unknown;
+}
 
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
     arrRegion: ArrRegion;
-    app: unknown;
+    app: App;
     contextMenu: ContextMenuState;
     developer: DeveloperState;
     focus: FocusState;

@@ -1,5 +1,9 @@
 package cz.tacr.elza.controller.config;
 
+import static cz.tacr.elza.repository.ExceptionThrow.institution;
+import static cz.tacr.elza.repository.ExceptionThrow.itemSpec;
+import static cz.tacr.elza.repository.ExceptionThrow.itemType;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -15,13 +19,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +33,11 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UpdateFund;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -39,7 +47,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -82,17 +89,11 @@ import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-
-import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
-import static cz.tacr.elza.repository.ExceptionThrow.institution;
-import static cz.tacr.elza.repository.ExceptionThrow.itemSpec;
-import static cz.tacr.elza.repository.ExceptionThrow.itemType;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
@@ -138,7 +139,7 @@ public class ClientFactoryDO {
      * @return DO seznam nodů
      */
     public List<ArrNode> createNodes(final Collection<ArrNodeVO> nodeVoList) {
-        Assert.notNull(nodeVoList, "Seznam JP musí být vyplněn");
+        Validate.notNull(nodeVoList, "Seznam JP musí být vyplněn");
 
         List<ArrNode> result = new ArrayList<>(nodeVoList.size());
         for (ArrNodeVO arrNodeVO : nodeVoList) {

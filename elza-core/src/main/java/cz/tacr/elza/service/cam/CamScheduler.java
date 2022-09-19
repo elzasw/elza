@@ -1,8 +1,8 @@
 package cz.tacr.elza.service.cam;
 
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.cam.SyncConfig.SynchronizationInfo;
+import java.util.List;
+
+import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -12,9 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
-import javax.transaction.Transactional;
+import cz.tacr.elza.service.cam.SyncConfig.SynchronizationInfo;
 
 /**
  * Časovač pro noční synchronizace přístupových bodů s CAM
@@ -27,9 +26,6 @@ public class CamScheduler
     private static final Logger log = LoggerFactory.getLogger(CamScheduler.class);
     @Autowired
     private CamService camService;
-
-    @Autowired
-    private ExternalSystemService externalSystemService;
     
     @Autowired
     private SyncConfig syncConfig;
@@ -58,13 +54,6 @@ public class CamScheduler
 
     private void configureTask(SynchronizationInfo syncConfig,
                                  ScheduledTaskRegistrar taskRegistrar) {
-    	// Switching to automaticly detected reset when transaction not found
-    	/*
-        if (StringUtils.isNotBlank(syncConfig.resetAt)) {
-            taskRegistrar.addCronTask(() -> camService.resetSynchronization(syncConfig.getCode()),
-                                      syncConfig.resetAt);
-        }
-        */
         if (StringUtils.isNotBlank(syncConfig.syncAt)) {
             taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()),
                                       syncConfig.resetAt);

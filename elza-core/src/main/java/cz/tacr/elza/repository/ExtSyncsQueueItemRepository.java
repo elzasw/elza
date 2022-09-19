@@ -1,13 +1,16 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
 
 @Repository
 public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQueueItem, Integer>, ExtSyncsQueueItemRepositoryCustom{
@@ -22,4 +25,10 @@ public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQ
 
     @Query("SELECT COUNT(i) FROM ext_syncs_queue_item i WHERE i.accessPoint = :accessPoint AND i.externalSystem = :extSystem AND i.state = :state")
     int countByAccesPointAndExternalSystemAndState(@Param("accessPoint") ApAccessPoint accessPoint, @Param("extSystem") ApExternalSystem extSystem, @Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
+
+    @Modifying
+    int deleteByAccessPoint(ApAccessPoint accessPoint);
+
+    @Modifying
+    int deleteByBinding(ApBinding binding);
 }

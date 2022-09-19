@@ -6,26 +6,26 @@ import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
 import {RulDataTypeVO} from 'api/RulDataTypeVO';
 import {RequiredType} from 'api/RequiredType';
 import * as ItemInfo from 'utils/ItemInfo';
-import { findItemPlacePosition, sortOwnItems } from 'utils/partEdit';
+import { findItemPlacePosition } from 'utils/partEdit';
 import {ApItemBitVO} from 'api/ApItemBitVO';
 import {WebApi} from 'actions/WebApi';
 import { RefTablesState } from 'typings/store'
-import {ApViewSettingRule, ApViewSettings} from 'api/ApViewSettings';
+import { ApViewSettings} from 'api/ApViewSettings';
 import {ApAccessPointCreateVO} from 'api/ApAccessPointCreateVO';
-import { ApPartFormVO } from "api/ApPartFormVO";
+// import { ApPartFormVO } from "api/ApPartFormVO";
 import { compareCreateTypes, hasItemValue } from 'utils/ItemInfo';
 import { DetailStoreState } from 'types';
 import { RevisionItem } from '../../revision';
 import { RevisionApPartForm } from '../form';
+import { AutoValue } from 'elza-api';
 
-export const addItems = (
+export const addEmptyItems = (
     attributes: Array<ApCreateTypeVO>,
     refTables: RefTablesState,
     formItems: RevisionItem[],
     partTypeId: number,
     arrayInsert: (index: number, value: RevisionItem) => void,
     userAction: boolean,
-    apViewSettings?: ApViewSettingRule,
 ) => {
     let newItems = getNewItems(attributes, refTables, userAction);
 
@@ -33,9 +33,50 @@ export const addItems = (
     // sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
 
     newItems.reverse().forEach(item => {
-        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, apViewSettings);
+        let index = findItemPlacePosition(item, formItems, partTypeId, refTables);
         arrayInsert(index, item);
     });
+}
+
+export const addItemsWithValues= (
+    attributes: Array<ApCreateTypeVO>,
+    values: AutoValue[],
+    refTables: RefTablesState,
+    formItems: RevisionItem[],
+    partTypeId: number,
+    arrayInsert: (index: number, value: RevisionItem) => void,
+) => {
+    const newItems = getItemsWithValues(attributes, values, refTables);
+
+    newItems.reverse().forEach((item) => {
+        const index = findItemPlacePosition(item, formItems, partTypeId, refTables);
+        arrayInsert(index, item);
+    });
+}
+
+const getItemsWithValues = (
+    attributes: Array<ApCreateTypeVO>,
+    values: AutoValue[],
+    refTables: RefTablesState,
+) => {
+    return attributes.map((attribute)=>{
+        const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
+        const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
+        const value = values.find((value) => value.itemTypeId === attribute.itemTypeId);
+        const item: any = {
+            typeId: attribute.itemTypeId,
+            '@class': ItemInfo.getItemClass(dataType.code),
+            position: 1, // TODO: dořešit pozici
+            value: value?.value,
+            specId: value?.itemSpecId,
+        }
+
+        return {
+            updatedItem: item,
+            typeId: attribute.itemTypeId,
+            '@class': ItemInfo.getItemClass(dataType.code),
+        };
+    })
 }
 
 const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: RefTablesState, userAction: boolean) => {
@@ -83,6 +124,7 @@ export const getUpdatedForm = async (
     partId?: number, 
     parentPartId?: number, 
     accessPointId?: number,
+    revParentPartId?: number,
 ) => {
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
     const items = data.items.filter((item) => 
@@ -90,12 +132,13 @@ export const getUpdatedForm = async (
     ).map((item) => 
         item.updatedItem || item.item as any
     );
-    // console.log("get updated form items", items, data);
+    // console.log("get updated form items", items, data, parentPartId, revParentPartId);
     const form: ApAccessPointCreateVO = {
         typeId,
         partForm: {
             ...data,
             parentPartId,
+            revParentPartId,
             items: [...items.filter(hasItemValue)],
             partId: partId,
         },
@@ -126,7 +169,7 @@ export const getItemsWithRequired = (
     refTables: RefTablesState,
 ) => {
     const newItems: RevisionItem[] = [];
-    addItems(
+    addEmptyItems(
         getRequiredAttributes(items, attributes), 
         refTables,
         items,

@@ -9,7 +9,6 @@ import cz.tacr.elza.domain.RulPolicyType;
 /**
  * Validační chyba při validaci atributu.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 28.11.2015
  */
 public class DataValidationResult {

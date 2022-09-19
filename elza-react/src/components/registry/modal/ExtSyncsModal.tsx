@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {FC, useState} from 'react';
 import {
     ConfigProps,
     Field,
@@ -18,7 +18,7 @@ import './ExtSyncsModal.scss';
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
 import {getMapFromList, indexById} from "../../../shared/utils";
 import InifiniteList from "../../../shared/list/InifiniteList";
-import {FormInputField, HorizontalLoader, Icon} from "../../shared";
+import {FormInputField, HorizontalLoader, Icon, TooltipTrigger} from "../../shared";
 import {ExtAsyncQueueState} from "../../../api/ExtAsyncQueueState";
 import {ExtStatesField} from "../field/ExtStatesField";
 import {ScopesField} from "../../admin/ScopesField";
@@ -63,7 +63,7 @@ type Data = {
     fetched: boolean;
     lastCount: number;
     externalSystemCode: string;
-    data: ArchiveEntityVO[];
+    data: ExtSyncsQueueItemVO[];
     total: number;
     filter: object;
 }
@@ -77,7 +77,34 @@ const createFilter = (values): SyncsFilterVO => {
     };
 }
 
-const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, scopesMap, reset, onNavigateAp}: Props) => {
+const StateInfoIcon:FC<{
+    stateMessage: string;
+}> = ({
+    stateMessage
+}) => {
+    const renderTooltip = () => {
+        return <div className="state-info-tooltip">
+            {stateMessage}
+        </div>
+    }
+
+    return <TooltipTrigger content={renderTooltip()}>
+    <span className="state-info">
+            <Icon glyph="fa-info-circle"/>
+    </span>
+        </TooltipTrigger>
+}
+
+const ExtSyncsModal:FC<Props> = ({
+    handleSubmit, 
+    onClose, 
+    submitting, 
+    extSystems, 
+    scopes, 
+    scopesMap, 
+    reset, 
+    onNavigateAp
+ }) => {
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -92,7 +119,7 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
         return WebApi.findExternalSyncs(0, count, externalSystemCode, filter);
     }
 
-    const fetchWithState = (tmpData, count, externalSystemCode, filter) => {
+    const fetchWithState = (tmpData:Data, count:number, externalSystemCode: string, filter) => {
         setData(tmpData);
         return fetchData(count, externalSystemCode, filter).then(result => {
             tmpData = {
@@ -121,7 +148,7 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
             lastCount: count,
             isFetching: true,
             filter,
-            data: [] as ArchiveEntityVO[],
+            data: [] as ExtSyncsQueueItemVO[],
         };
         return fetchWithState(tmpData, count, externalSystemCode, filter);
     };
@@ -139,16 +166,15 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
         return fetchWithState(tmpData, count, data.externalSystemCode, data.filter);
     }
 
-    const onDelete = (id: number) => {
-        return WebApi.deleteExtSyncsQueueItem(id).then(result => {
-            const count = data.lastCount;
-            let tmpData = {
-                ...data,
-                lastCount: count,
-                isFetching: true,
-            };
-            return fetchWithState(tmpData, count, data.externalSystemCode, data.filter);
-        });
+    const onDelete = async (id: number) => {
+        await WebApi.deleteExtSyncsQueueItem(id);
+
+        const tmpData = {
+            ...data,
+            isFetching: true,
+        };
+
+        return fetchWithState(tmpData, data.lastCount, data.externalSystemCode, data.filter);
     }
 
     const renderResultItem = (item: ExtSyncsQueueItemVO, index: number) => {
@@ -157,12 +183,34 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
         return <Row key={index} className="result-item">
             <Col>
                 <Row>
-                    <Col xs={12}><Button className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>{item.accessPointName}</Button></Col>
+                    <Col xs={12}>
+                        <Button className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>
+                            {item.accessPointName}
+                        </Button>
+                    </Col>
                 </Row>
                 <Row className={exception? "font-red" : "font-black"}>
-                    <Col xs={6}><span className="label">{i18n('ap.ext-syncs.date')}</span>{date ? dateToDateTimeString(date) : '-'}</Col>
-                    <Col xs={3}><span className="label">{i18n('ap.ext-syncs.scope')}</span>{scopesMap[item.scopeId].name}</Col>
-                    <Col xs={3} title={item.stateMessage}><span className="label">{i18n('ap.ext-syncs.state')}</span>{ExtStateInfo.getName(item.state)}</Col>
+                    <Col xs={4}>
+                        <span className="label">
+                            {i18n('ap.ext-syncs.date')}
+                        </span>
+                        {date ? dateToDateTimeString(date) : '-'}
+                    </Col>
+                    <Col xs={3}>
+                        <span className="label">
+                            {i18n('ap.ext-syncs.scope')}
+                        </span>
+                        {scopesMap[item.scopeId].name}
+                    </Col>
+                    <Col xs={5}>
+                        <span className="label">
+                            {i18n('ap.ext-syncs.state')}
+                        </span>
+                        {ExtStateInfo.getName(item.state)}
+                        {item.stateMessage && 
+                            <StateInfoIcon stateMessage={item.stateMessage}/>
+                        }
+                    </Col>
                 </Row>
             </Col>
             <Col xs lg="2">
@@ -173,7 +221,7 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
         </Row>
     };
 
-    const renderResults = (data) => {
+    const renderResults = (data:Data) => {
         return <InifiniteList scrollableTarget="ListScrollableLayout" fetchMore={fetchMore} list={data}>
             <div className="result-items">
                 {data.data.map((item, index) => renderResultItem(item, index))}

@@ -1,24 +1,55 @@
 package cz.tacr.elza.service.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrRefTemplate;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ArrRefTemplateRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DataUriRefRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 public class RestoreAction {
+
+    private static final Logger log = LoggerFactory.getLogger(RestoreAction.class);
 
     final StaticDataProvider sdp;
 
@@ -111,7 +142,12 @@ public class RestoreAction {
         // prepare specification
         if (itemSpecId != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(itemSpecId);
-            Validate.notNull(itemSpec);
+            if (itemSpec == null) {
+                log.error("Missing specification itemSpecId: {}, itemId: {}", itemSpecId, descItem.getItemId());
+                throw new SystemException("Item is using unknown specification", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("itemId", descItem.getItemId())
+                        .set("itemSpecId", itemSpecId);
+            }
             descItem.setItemSpec(itemSpec);
         }
 

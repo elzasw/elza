@@ -1857,4 +1857,275 @@ where no.level_id = l.level_id
         </addColumn>
     </changeSet>
 
+    <changeSet id="20220415150300" author="ppyt">
+        <addColumn tableName="ap_binding_state">
+            <column name="preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_state_preferred_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_state_ap_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ap_binding_state bs SET preferred_part_id = ap.preferred_part_id
+                FROM ap_access_point ap WHERE ap.access_point_id = bs.access_point_id</sql>
+        <sql dbms="postgresql">UPDATE ap_binding_state bs SET ap_type_id = s.ap_type_id
+                FROM ap_state s WHERE s.access_point_id = bs.access_point_id AND s.delete_change_id is NULL</sql>
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+
+    <changeSet id="20220419111100" author="ppyt">
+      <sql dbms="postgresql">with new_order as (select l.level_id, node_id_parent, ROW_NUMBER() OVER(PARTITION BY node_id_parent ORDER BY l."position" , l.level_id) AS row_num
+from arr_level l
+where l.node_id_parent in (select distinct l.node_id_parent from arr_level l
+join arr_level l2 on l.node_id_parent = l2.node_id_parent and l."position" = l2."position"
+where l.level_id &lt; l2.level_id and l.delete_change_id is null and l2.delete_change_id is null
+) and l.delete_change_id is null
+)
+update arr_level l
+set "position" = no.row_num from new_order no
+where no.level_id = l.level_id and "position" &lt;&gt; no.row_num 
+        </sql>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_level_parent_position_idx 
+            ON arr_level(node_id_parent, "position")
+			WHERE delete_change_id IS NULL AND node_id_parent IS NOT NULL;</sql>
+    </changeSet>
+
+    <changeSet id="20220509115500" author="ppyt">
+        <addColumn tableName="ap_rev_part">
+            <column name="deleted" type="boolean"/>
+        </addColumn>
+        <sql>UPDATE ap_rev_part SET deleted = 'false'</sql>
+        <addNotNullConstraint tableName="ap_rev_part" columnName="deleted"/>
+    </changeSet>
+
+    <changeSet id="20220510120900" author="ppyt">
+        <sql>UPDATE ap_rev_item SET object_id = NULL WHERE orig_object_id IS NOT NULL;</sql>
+    </changeSet>
+
+	<changeSet id="20220517133500" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id IN
+			(SELECT p.access_point_id FROM ap_item i
+				JOIN ap_part p ON i.part_id = p.part_id
+				JOIN arr_data_record_ref d ON i.data_id = d.data_id
+				JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+				WHERE i.delete_change_id IS NULL
+					AND d.binding_id IS NOT NULL AND d.record_id IS NULL
+					AND bs.delete_change_id IS NULL)</sql>
+		<sql dbms="postgresql">INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+			SELECT row_number() OVER (ORDER BY p.access_point_id) + (SELECT coalesce(
+				(SELECT max(async_request_id) FROM arr_async_request), 0)),
+				'AP', 1,
+				p.access_point_id
+			FROM ap_item i
+				JOIN ap_part p ON i.part_id = p.part_id
+				JOIN arr_data_record_ref d ON i.data_id = d.data_id
+				JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+				WHERE i.delete_change_id IS NULL
+					AND d.binding_id IS NOT NULL AND d.record_id IS NULL
+					AND bs.delete_change_id IS NULL</sql>
+		<sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(async_request_id), 0)+20) FROM arr_async_request)
+				WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
+		<sql dbms="postgresql">UPDATE arr_data_record_ref dr
+				SET record_id = d.access_point_id
+				FROM (SELECT d.data_id, bs.access_point_id FROM arr_data_record_ref d
+						JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+						WHERE d.binding_id IS NOT NULL AND d.record_id IS NULL) AS d
+				WHERE dr.data_id = d.data_id</sql>
+	</changeSet>
+
+	<changeSet id="20220518122100" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity_error WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity_missing WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<sql dbms="postgresql">DELETE FROM arr_node_conformity WHERE node_conformity_id IN (
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
+		<addUniqueConstraint
+			tableName="arr_node_conformity"
+			columnNames="node_id,fund_version_id" />
+		<dropIndex
+            tableName="arr_node_conformity"
+            indexName="arr_node_conformity_node_fund_ver_idx" />
+		<createIndex indexName="arr_node_conformity_node_fund_ver_idx" tableName="arr_node_conformity" unique="true">
+			<column name="node_id" type="int"/>
+			<column name="fund_version_id" type="int"/>
+		</createIndex>
+	</changeSet>
+
+    <!-- Odstraneni nevymazanych casti revizi -->
+	<changeSet id="20220526103500" author="ppyt">
+		<sql dbms="postgresql">update ap_rev_item ri set delete_change_id = src.delete_change_id 
+          from ( 
+            select r.delete_change_id, ri.item_id from ap_revision r
+            join ap_rev_part rp on rp.revision_id = r.revision_id 
+            join ap_rev_item ri on ri.part_id = rp.part_id 
+            where r.delete_change_id is not null 
+                  and ri.delete_change_id is null
+            ) src 
+         where ri.item_id = src.item_id</sql>
+		<sql dbms="postgresql">update ap_rev_part rp set delete_change_id = src.delete_change_id
+           from ( 
+             select r.delete_change_id, rp.part_id from ap_revision r
+             join ap_rev_part rp on rp.revision_id = r.revision_id  
+             where r.delete_change_id is not null 
+                   and rp.delete_change_id is null
+             ) src 
+           where rp.part_id = src.part_id</sql>
+    </changeSet>
+
+    <!-- V 2.4.3, pridani ulozeni smazanych ApState v cache -->
+    <changeSet id="20220527063700" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+
+	<changeSet id="20220620142300" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (
+    			SELECT node_id FROM arr_desc_item di
+    			JOIN arr_item i ON i.item_id = di.item_id
+    			JOIN rul_item_spec isp ON isp.item_spec_id = i.item_spec_id
+    			WHERE isp.code IN ('ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_4', 'ZP2015_ENTITY_ROLE_13', 'ZP2015_ENTITY_ROLE_14',
+				    'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
+				    'ZP2015_ENTITY_ROLE_59'));</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_11')
+				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1');</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_11')
+				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1');</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_31')
+				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_4');</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_31')
+				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_4');</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_39')
+				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_13','ZP2015_ENTITY_ROLE_14'));</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_39')
+				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_13','ZP2015_ENTITY_ROLE_14'));</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_32')
+				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_35');</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_32')
+				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_35');</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_58')
+				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_59');</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_58')
+				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_59');</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_52')
+				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_51');</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_52')
+				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_51');</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_53')
+				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_54','ZP2015_ENTITY_ROLE_55'));</sql>
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_53')
+				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_54','ZP2015_ENTITY_ROLE_55'));</sql>
+		<sql dbms="postgresql">DELETE from rul_item_aptype WHERE item_spec_id IN (
+				SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_4', 'ZP2015_ENTITY_ROLE_13', 'ZP2015_ENTITY_ROLE_14',
+				'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
+				'ZP2015_ENTITY_ROLE_59'));</sql>
+		<sql dbms="postgresql">DELETE from rul_item_type_spec_assign WHERE item_spec_id IN (
+				SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_4', 'ZP2015_ENTITY_ROLE_13', 'ZP2015_ENTITY_ROLE_14',
+				'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
+				'ZP2015_ENTITY_ROLE_59'));</sql>
+		<sql dbms="postgresql">DELETE from rul_item_spec WHERE code IN (
+				'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_4', 'ZP2015_ENTITY_ROLE_13', 'ZP2015_ENTITY_ROLE_14',
+				'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
+				'ZP2015_ENTITY_ROLE_59');</sql>
+	</changeSet>
+	<!-- Remove key values for deleted Aps -->
+	<changeSet id="20220714134700" author="ppyt">
+		<sql dbms="postgresql">UPDATE ap_part p SET key_value_id = null WHERE p.part_id in (
+		   SELECT p.part_id FROM ap_part p WHERE p.access_point_id IN (
+              SELECT ap.access_point_id FROM ap_access_point ap 
+              LEFT JOIN ap_state s ON s.access_point_id = ap.access_point_id AND s.delete_change_id IS NULL
+              WHERE s.state_id is null
+            ) AND p.key_value_id IS NOT null)</sql>
+		<sql dbms="postgresql">DELETE FROM ap_key_value where key_value_id IN (
+			SELECT akv.key_value_id FROM ap_key_value akv 
+			LEFT JOIN ap_part p ON p.key_value_id = akv.key_value_id 
+			WHERE p.part_id IS NULL)</sql>
+	</changeSet>
+	<!-- Obnovení role_1 -->
+	<changeSet id="20220810173400" author="ppyt">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">SELECT count(*) FROM rul_package WHERE code = 'ZP2015'</sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql">INSERT INTO rul_item_spec(item_spec_id, code, name, shortcut, description, package_id) VALUES(
+          (SELECT next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_spec|item_spec_id'),
+          'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_1',
+          (SELECT package_id FROM rul_package WHERE code = 'ZP2015')
+        )</sql>
+        <sql>UPDATE db_hibernate_sequences SET next_val = next_val + 21 WHERE sequence_name = 'rul_item_spec|item_spec_id'</sql>
+        <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (select distinct di.node_id from arr_item i 
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
+join arr_desc_item di on i.item_id = di.item_id 
+join arr_desc_item di2 on di.node_id = di2.node_id
+join arr_item i2 on di2.item_id = i2.item_id 
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+where ris.code = 'ZP2015_ENTITY_ROLE_11'
+ and i.delete_change_id is null
+ and i2.delete_change_id is null
+ and ris2.code = 'ZP2015_UNIT_TYPE_TVY'
+        )</sql>
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1')
+				WHERE item_id IN (select i.item_id from arr_item i 
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
+join arr_desc_item di on i.item_id = di.item_id 
+join arr_desc_item di2 on di.node_id = di2.node_id
+join arr_item i2 on di2.item_id = i2.item_id 
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+where ris.code = 'ZP2015_ENTITY_ROLE_11'
+ and i.delete_change_id is null
+ and i2.delete_change_id is null
+ and ris2.code = 'ZP2015_UNIT_TYPE_TVY')</sql>
+	</changeSet>
+
+	<changeSet id="20220811133000" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN
+			(SELECT distinct node_id FROM arr_desc_item di
+			JOIN arr_item i ON i.item_id = di.item_id
+			JOIN arr_data_unitdate du ON du.data_id = i.data_id
+			WHERE du.format LIKE 'C%' AND du.value_from NOT SIMILAR TO '\d\d01-01-01%' AND value_from NOT LIKE '-%')</sql>
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN
+			(SELECT distinct node_id FROM arr_desc_item di
+			JOIN arr_item i ON i.item_id = di.item_id
+			JOIN arr_data_unitdate du ON du.data_id = i.data_id
+			WHERE du.format LIKE '%C' AND du.value_to NOT SIMILAR TO '\d\d00-12-31%' AND value_to NOT LIKE '-%')</sql>
+		<sql dbms="postgresql">UPDATE arr_data_unitdate
+			SET value_from = SUBSTRING(value_from, 1, 2) || '01-01-01T00:00:00'
+			WHERE format LIKE 'C%' AND value_from NOT SIMILAR TO '\d\d01-01-01%' AND value_from NOT LIKE '-%'</sql>
+		<sql dbms="postgresql">UPDATE arr_data_unitdate
+			SET value_to = SUBSTRING(value_to, 1, 2) || '00-12-31T23:59:59'
+            WHERE format LIKE '%C' AND value_to NOT SIMILAR TO '\d\d00-12-31%' AND value_to NOT LIKE '-%'</sql>
+	</changeSet>
+
+	<changeSet id="20220831133000" author="sergey.iryupin">
+        <createIndex indexName="ap_state_replaced_by_idx" tableName="ap_state" unique="false">
+            <column name="replaced_by" type="int" />
+        </createIndex>
+        <delete tableName="ap_cached_access_point" />
+	</changeSet>
+
 </databaseChangeLog>

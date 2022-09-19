@@ -37,3 +37,37 @@
         }
     }
 }
+.in-progress {
+    height: 100px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.confirmation {
+    .entity {
+        padding: 5px;
+        border-radius: 5px;
+        line-height: 1em;
+        .info {
+            display: flex;
+            .info-item {
+                padding: 5px;
+                background:#eee;
+                border-radius: 5px;
+                margin: 2px;
+                line-height: 1em;
+            }
+        }
+
+        .title {
+            font-size: 1.3em; 
+            font-weight: bold; 
+            margin: 2px;
+        }
+    }
+    .error {
+        color: #bd2f2f;
+        margin-top: 10px;
+    }
+}
