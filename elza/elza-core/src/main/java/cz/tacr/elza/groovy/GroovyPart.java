@@ -68,12 +68,7 @@ public class GroovyPart {
     }
 
     public List<GroovyItem> getItems() {
-        List<GroovyItem> listItems = new ArrayList<>();
-        Map<String, List<GroovyItem>> mapItems = items.getItems();
-        for (String key : mapItems.keySet()) {
-            listItems.addAll(mapItems.get(key));
-        }
-        return listItems;
+        return items.getAllItems();
     }
 
     public List<GroovyPart> getChildren() {

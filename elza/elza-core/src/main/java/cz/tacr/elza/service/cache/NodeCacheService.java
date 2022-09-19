@@ -13,18 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataUriRef;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
@@ -41,18 +38,32 @@ import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ArrRefTemplateRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DataUriRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Service for caching node related entities.
@@ -515,7 +526,7 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDaoLink>> createNodeDaoLinkMap(final Collection<Integer> nodeIds) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
         for (ArrDaoLink daoLink : daoLinks) {
@@ -727,14 +738,7 @@ public class NodeCacheService {
 	 */
 	@Transactional(value = TxType.MANDATORY)
 	public void createEmptyNode(ArrNode node) {
-		readLock.lock();
-		try {
-			logger.debug(">createNodes({})", node.getNodeId());
-			createEmptyNodes(Collections.singletonList(node));
-			logger.debug("<createNodes({})", node.getNodeId());
-		} finally {
-			readLock.unlock();
-		}
+        createEmptyNodes(Collections.singletonList(node));
 	}
 
 	/**
@@ -742,20 +746,35 @@ public class NodeCacheService {
 	 *
 	 * @param nodes seznam zakládaných objektů
 	 */
-	private void createEmptyNodes(final Collection<ArrNode> nodes) {
-		List<ArrCachedNode> records = new ArrayList<>(nodes.size());
+    @Transactional(value = TxType.MANDATORY)
+    public List<ArrCachedNode> createEmptyNodes(final Collection<ArrNode> nodes) {
+        readLock.lock();
+        try {
+            List<ArrCachedNode> records = new ArrayList<>(nodes.size());
 
-		for (ArrNode node : nodes) {
-            CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());
-			String data = serialize(cachedNode);
+            for (ArrNode node : nodes) {
+                // Node has to have valid nodeId 
+                Validate.notNull(node.getNodeId());
 
-			ArrCachedNode record = new ArrCachedNode();
-			record.setNode(node);
-			record.setData(data);
-			records.add(record);
-		}
-		cachedNodeRepository.saveAll(records);
-	}
+                CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());
+                String data = serialize(cachedNode, false);
+
+                ArrCachedNode record = new ArrCachedNode();
+                record.setNode(node);
+                record.setData(data);
+                records.add(record);
+            }
+            List<ArrCachedNode> result = cachedNodeRepository.saveAll(records);
+
+            if (logger.isDebugEnabled()) {
+                List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
+                logger.debug("created nodes in cache - empty, ids: {}", nodeIds);
+            }
+            return result;
+        } finally {
+            readLock.unlock();
+        }
+    }
 
     /**
      * Flush repository

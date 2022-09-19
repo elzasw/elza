@@ -47,14 +47,13 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -236,7 +235,14 @@ public class UserService {
 
         for (UsrPermission permission : permissions) {
             if (permission.getPermissionId() == null) {
-                if (changePermissionType == ChangePermissionType.DELETE) {  // pokud se jedná o akci delete, nesmí být předán záznam bez id
+                // pokud se jedná o pokus o přidělení práv superuživatele
+                if (changePermissionType == ChangePermissionType.ADD && permission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+                    if (!hasPermission(Permission.ADMIN)) {
+                        throw new BusinessException("Přístup superuživatele může udělit pouze superuživatel", BaseCode.INSUFFICIENT_PERMISSIONS);
+                    }
+                }
+                //pokud se jedná o akci delete, nesmí být předán záznam bez id
+                if (changePermissionType == ChangePermissionType.DELETE) {
                     throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id", UserCode.PERM_ILLEGAL_INPUT);
                 }
                 permission.setUser(user);
@@ -421,7 +427,7 @@ public class UserService {
 
         // naleznu všechny oprávnění
         List<List<Integer>> nodeIdsLists = Lists.partition(new ArrayList<>(nodeIds),
-                                                           HibernateConfiguration.MAX_IN_SIZE);
+                                                           ObjectListIterator.getMaxBatchSize());
         List<UsrPermission> permissions = new ArrayList<>();
         for (List<Integer> subNodeIds : nodeIdsLists) {
             permissions.addAll(permissionRepository.findByNodeIds(subNodeIds));
@@ -1245,6 +1251,10 @@ public class UserService {
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
+        if (userDetail == null) {
+            // user not authorized
+            return false;
+        }
         return userDetail.hasPermission(permission, entityId);
     }
 
@@ -1684,7 +1694,7 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
 		UserDetail userDetail = getLoggedUserDetail();
-		if (authRequest.matches(userDetail)) {
+        if (userDetail != null && authRequest.matches(userDetail)) {
 			// request match permissions
 			return;
 		}
@@ -1886,6 +1896,24 @@ public class UserService {
         return createUserDetail(user);
     }
 
+    /**
+     * Method to create admin detail
+     * 
+     * This is temporary method and will be removed in future
+     * 
+     * @return
+     */
+    private UserDetail createAdminUserDetail() {
+        UsrUser user = createDefaultUser();
+        Collection<UserPermission> perms = Collections.singletonList(new UserPermission(
+                UsrPermission.Permission.ADMIN));
+
+        List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
+        authTypes.add(UsrAuthentication.AuthType.PASSWORD);
+
+        return new UserDetail(user, perms, levelTreeCacheService, authTypes);
+    }
+
     public boolean hasFullArrPerm(final Integer fundId) {
         UserDetail userDetail = getLoggedUserDetail();
         AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
@@ -1909,5 +1937,21 @@ public class UserService {
         ctx.setAuthentication(auth);
 
         return ctx;
+    }
+
+    /**
+     * Create securoty context for admin
+     * 
+     * @return
+     */
+    public SecurityContext createSecurityContextSystem() {
+        SecurityContext secCtx = SecurityContextHolder.createEmptyContext();
+
+        UserDetail userDetail = createAdminUserDetail();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(null, null, null);
+        auth.setDetails(userDetail);
+        secCtx.setAuthentication(auth);
+        return secCtx;
     }
 }

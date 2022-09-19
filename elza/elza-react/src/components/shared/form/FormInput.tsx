@@ -5,7 +5,7 @@ import {Autocomplete} from '../index';
 
 interface IFormInputProps {
     name?: string;
-    onChange?: (d: any) => void;
+    onChange?: (eventOrValue: React.ChangeEvent<HTMLInputElement> | string) => void;
     value?: any;
     as?: string;
     feedback?: boolean;
@@ -14,11 +14,11 @@ interface IFormInputProps {
     type?: string;
     error?: string;
     touched?: boolean;
-    placeholder?: boolean;
+    placeholder?: string;
     staticInput?: boolean;
     disabled?: boolean;
 }
-type Props = Partial<React.ComponentProps<typeof Form.Control>> & PropsWithChildren<IFormInputProps>;
+type Props = Partial<Omit<React.ComponentProps<typeof Form.Control>, "onChange">> & PropsWithChildren<IFormInputProps>;
 
 const FormInput: React.ForwardRefExoticComponent<Props> = memo(
     React.forwardRef((props, ref) => {

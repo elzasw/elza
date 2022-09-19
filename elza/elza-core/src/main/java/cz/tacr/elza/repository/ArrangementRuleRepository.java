@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 
 
 /**
@@ -22,8 +23,5 @@ public interface ArrangementRuleRepository extends JpaRepository<RulArrangementR
     List<RulArrangementRule> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 
     void deleteByRulPackage(RulPackage rulPackage);
-
-    List<RulArrangementRule> findByRuleSetAndRuleTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
-                                                                        RulArrangementRule.RuleType attributeTypes);
 
 }

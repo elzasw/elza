@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import cz.tacr.elza.service.AccessPointDataService;
-import cz.tacr.elza.service.ExternalSystemService;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
@@ -45,6 +44,8 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends BatchUpdateBuilder {
@@ -145,13 +146,17 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         List<ApBindingItem> deletedParts = new ArrayList<>();
         List<ApBindingItem> partsWithPossibleChange = new ArrayList<>();
         List<ApPart> newParts = new ArrayList<>();
+        // Mapping from partUUID to binding value
+        Set<String> existingParts = new HashSet<>();
 
         for (ApBindingItem bindingPart : bindingParts) {
             ApPart part = bindingPart.getPart();
             if (part.getDeleteChangeId() != null) {
                 deletedParts.add(bindingPart);
             } else {
+                partUuidMap.put(part.getPartId(), bindingPart.getValue());
                 partsWithPossibleChange.add(bindingPart);
+                existingParts.add(bindingPart.getValue());
             }
         }
         // detect new parts
@@ -162,7 +167,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             }
         }
 
-        List<PartXml> parts = createNewParts(newParts, itemMap);
+        List<PartXml> parts = createNewParts(existingParts, newParts, itemMap);
         for (PartXml part : parts) {
             addUpdate(part);
         }
@@ -241,12 +246,12 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         List<ApBindingItem> activeItems = bi.getActiveBindedItems();
         if (CollectionUtils.isNotEmpty(activeItems)) {
-            // filter bindined items
+            // filter binded items
             List<ApBindingItem> filteredList = activeItems.stream().filter(i -> i.getItem()
                     .getCreateChangeId() > bindingState.getSyncChangeId())
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
-                UpdateItemsXml updateItems = createUpdateItems(changedPart, activeItems);
+                UpdateItemsXml updateItems = createUpdateItems(changedPart, filteredList);
                 if (updateItems != null) {
                     addUpdate(updateItems);
                 }
@@ -333,6 +338,11 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (apState.getStateApproval() == StateApproval.APPROVED &&
                 entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
             addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
+            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_APPROVED.toString());
+        } else if (apState.getStateApproval() == StateApproval.NEW &&
+                entityXml.getEns() == EntityRecordStateXml.ERS_APPROVED) {
+            addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_NEW, null));
+            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_NEW.toString());
         }
 
         // změna preferovaného partu

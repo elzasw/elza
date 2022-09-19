@@ -144,6 +144,11 @@ export default function fundTree(state = initialState, action = {}) {
 
             return state;
         }
+        case types.FUND_FUND_TREE_INVALIDATE:
+            return {
+                ...state, 
+                dirty: true
+            };
 
         case types.FUND_NODE_CHANGE:
             index = indexById(state.nodes, action.parentNode.id);
@@ -367,13 +372,17 @@ export default function fundTree(state = initialState, action = {}) {
                 };
             }
         case types.FUND_FUND_TREE_COLLAPSE:
+            // show root (depth = 1) and first level (depth = 2) nodes
+            const _nodes = state.nodes.filter((node) => node.depth < 3); 
+            // set root as expanded when other nodes are visible 
+            const _expandedIds = state.nodes.length > 1 ? {[state.nodes[0].id]: true} : initialState.expandedIds
             return {
                 ...state,
                 isFetching: false,
                 fetched: true,
                 ensureItemVisible: false,
-                expandedIds: initialState.expandedIds,
-                nodes: [state.nodes[0]],
+                expandedIds: _expandedIds,
+                nodes: _nodes,
                 selectedId: initialState.selectedId,
                 selectedIds: initialState.selectedIds,
             };

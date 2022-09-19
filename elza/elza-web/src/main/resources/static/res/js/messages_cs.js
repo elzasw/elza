@@ -60,6 +60,8 @@ var messages = {
     "global.action.next": "Dále",
     "global.action.search": "Vyhledat",
     "global.action.filter.clean": "Zrušit filtr",
+    "global.action.copyToClipboard": "Zkopírovat do schránky",
+    "global.action.copyToClipboard.finished": "Zkopírováno do schránky",
 
     "confirmDialog.default.title": "Potvrzení",
     "confirmDialog.default.message": "Přejete si pokračovat?",
@@ -86,6 +88,8 @@ var messages = {
     "dataType.unitdate.format":
         '<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.</div>',
     "dataType.unitid.format": null,
+
+
 
     "exception.client": "Chyba v klientské aplikaci",
     "exception.arr.VERSION_ALREADY_CLOSED": "Verze AS je již uzavřena.",
@@ -144,6 +148,7 @@ var messages = {
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
+    "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
 
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
@@ -210,6 +215,7 @@ var messages = {
     "exception.reg.EXT_SYSTEM_CONNECTED": "Archivní entita má jíž existující propojení s externím systémem",
     "exception.reg.INVALID_ENTITY_SCOPE": "Archivní entita má nevhodné scope",
     "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION": "Nelze změnit stav archivní entity, která má revizi",
+    "exception.reg.CANT_CREATE_REVISION": "Nelze vytvořit revizi, protože archivní entita má nevhodný stav",
 
     "exception.sobj.NO_VALID_ITEMS":
         "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
@@ -399,6 +405,8 @@ var messages = {
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
+    "fundTree.expandLevel": "Rozbalit",
+    "fundTree.collapseAll": "Sbalit vše",
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
@@ -505,6 +513,7 @@ var messages = {
     "arr.fundAction.emptyList.title": "Žádné funkce",
     "arr.fundAction.emptyList.message":
         "Zatím nebyly spuštěny žádné funkce. Pro vytvoření funkce je potřeba povolit úpravy.",
+    "arr.fundAction.error": "Chyba hromadné akce",
     "arr.fundAction.noFa": "Není vybrán žádný archivní soubor",
     "arr.fundAction.form.newAction": "Nová akce",
     "arr.fundAction.form.type": "Typ akce",
@@ -517,6 +526,7 @@ var messages = {
     "arr.fundAction.state.interrupted": "Přerušeno",
     "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
+    
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
@@ -795,7 +805,7 @@ var messages = {
     "arr.fund.subNodes.next": "Skok o záznam vpřed",
     "arr.fund.subNodes.prevPage": "Skok o {0} záznamů vzad",
     "arr.fund.subNodes.nextPage": "Skok o {0} záznamů vpřed",
-    "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
+    "arr.fund.subNodes.findPosition": "Přejít na JP podle pozice záznamu",
     "arr.fund.subNodes.findPosition.filterActive": "Skok na jednotku popisu není možný, pokud je aktivní filtr",
     "arr.fund.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
     "arr.fund.subNodes.findPositionNumber.error.required": "Pozice JP musí být vyplněna",
@@ -816,30 +826,42 @@ var messages = {
 
     "arr.history.change.title.unknown": "neznámý",
     "arr.history.change.title.CREATE_AS": "vytvoření AS",
-    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
+    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",    
     "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
-    "arr.history.change.title.CREATE_DAO_LINK": "připojení DAO k JP",
-    "arr.history.change.title.DELETE_DAO_LINK": "odpojení DAO od JP",
     "arr.history.change.title.ADD_LEVEL": "založení JP",
     "arr.history.change.title.MOVE_LEVEL": "přesun JP",
     "arr.history.change.title.DELETE_LEVEL": "zrušení JP",
-    "arr.history.change.title.ADD_RECORD_NODE": "založení rejstříkového hesla k JP",
-    "arr.history.change.title.DELETE_RECORD_NODE": "zrušení rejstříkového hesla k JP",
-    "arr.history.change.title.UPDATE_RECORD_NODE": "změna rejstříkového hesla k JP",
+    "arr.history.change.title.ADD_NODE_EXTENSION": "přidání rozšíření k JP",
+    "arr.history.change.title.DELETE_NODE_EXTENSION": "zrušení rozšíření k JP",
+    "arr.history.change.title.SET_NODE_EXTENSION": "nastavení rozšíření k JP",
     "arr.history.change.title.UPDATE_DESC_ITEM": "změna atributu",
     "arr.history.change.title.ADD_DESC_ITEM": "založení atributu",
     "arr.history.change.title.DELETE_DESC_ITEM": "zrušení atributu",
-    "arr.history.change.title.BATCH_CHANGE_DESC_ITEM": "hromadná změna atributů",
-    "arr.history.change.title.BATCH_DELETE_DESC_ITEM": "hromadné vymazání atributů",
-    "arr.history.change.title.BULK_ACTION": "hromadná funkce",
-    "arr.history.change.title.IMPORT": "import AS",
+    "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
+    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",    
+    "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA": "založení strukturovaného typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": "hromadné založení strukt. typu",
     "arr.history.change.title.UPDATE_STRUCT_DATA_BATCH": "hromadná úprava strukt. typů",
     "arr.history.change.title.DELETE_STRUCTURE_DATA": "zrušení strukturovaného typu",
-    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
-    "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
-    "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
+    "arr.history.change.title.ADD_FUND_STRUCTURE_EXT": "přiřazení rozšíření k AS",
+    "arr.history.change.title.SET_FUND_STRUCTURE_EXT": "nastavení přiřazení k AS",
+    "arr.history.change.title.DELETE_FUND_STRUCTURE_EXT": "odebrání rozšíření u AS",
+    "arr.history.change.title.BATCH_CHANGE_DESC_ITEM": "hromadná změna atributů",
+    "arr.history.change.title.BATCH_DELETE_DESC_ITEM": "hromadné vymazání atributů",
+    "arr.history.change.title.BULK_ACTION": "hromadná funkce",
+    "arr.history.change.title.IMPORT": "import AS",
+    "arr.history.change.title.CREATE_DIGI_REQUEST": "požadavek na digitalizaci",
+    "arr.history.change.title.CREATE_DAO_REQUEST": "požadavek na delimitaci/skartaci",
+    "arr.history.change.title.CREATE_REQUEST_QUEUE": "vytvoření položky ve frontě",
+    "arr.history.change.title.CREATE_DAO_LINK": "připojení DAO k JP",
+    "arr.history.change.title.DELETE_DAO_LINK": "odpojení DAO od JP",
+    "arr.history.change.title.UPDATE_OUTPUT": "úprava dat výstupu",
+    "arr.history.change.title.REPLACE_REGISTER": "náhrada přístupového bodu",
+    "arr.history.change.title.REPLACE_PARTY": "party replace",
+    "arr.history.change.title.GENERATE_OUTPUT": "generování výstupu",
+    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",    
+    "arr.history.change.title.CHANGE_SCENARIO_ITEMS": "změna záznamu podle scénářů",
     "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
     "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
 
@@ -872,6 +894,7 @@ var messages = {
     "arr.history.action.deleteFrom.show": "Přejít",
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
+    "arr.history.delete.inProgress": "Probíhá odstranění změn...",
 
     "arr.lecturing.states_all": "Stav",
     "arr.lecturing.severity_all": "Závažnost",
@@ -1030,9 +1053,11 @@ var messages = {
     "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
     "registry.allRevisionStates": "Všechny stavy revize",
+    "registry.revisionState": "Stav revize",
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
     "registry.revision.state.toAmend": "Revize k doplnění",
+    "registry.restoreEntity": "Obnovit entitu",
 
     "registry.entity.notFound": "Archivní entita nenalezena",
 
@@ -1042,6 +1067,7 @@ var messages = {
     "registry.add.type": "Třída archivních entit",
     "registry.update.title": "Změna archivní entity",
     "registry.update.type": "Třída archivní entity",
+    "registry.type": "Třída / podtřída entity",
     "registry.scopeClass": "Oblast",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
@@ -1099,6 +1125,7 @@ var messages = {
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
     "ap.binding.syncState.LOCAL_CHANGE": "Existuje lokální změna",
 
+    "ap.binding.extState.APPROVED": "schválená",
     "ap.binding.extState.ERS_APPROVED": "schválená",
     "ap.binding.extState.ERS_INVALID": "neplatná",
     "ap.binding.extState.ERS_NEW": "nová",
@@ -1118,9 +1145,18 @@ var messages = {
     "ap.detail.expandInfo": "zobrazit podrobnosti",
     "ap.detail.collapseInfo": "skrýt podrobnosti",
 
+    "ap.detail.modifiedBy": "Upravil",
+    "ap.detail.lastChange": "Poslední změna",
+    "ap.detail.lastChange.notAvailable": "Informace o poslední změně není dostupná",
+    "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
+    "ap.detail.replacedBy": "Nahrazující entita",
+    "ap.detail.replacingEntities": "Nahrazuje entity",
+    "ap.detail.entityMissing": "Entita neexistuje",
+
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
+    "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
 
@@ -1183,6 +1219,12 @@ var messages = {
     "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
     "ap.coordinate.format": "Formát {0}",
 
+    "ap.part.complements.create": "Vytvořit doplňky",
+    "ap.part.complements.noChanges.title": "Existující hodnoty",
+    "ap.part.complements.noChanges.message": "Doplňky jsou již vytvořeny.",
+    "ap.part.complements.noItems.title": "Doplňky nevytvořeny",
+    "ap.part.complements.noItems.message": "Nebylo možné vytvořit doplňky.",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation": "Neznámý typ relace",
@@ -1194,7 +1236,7 @@ var messages = {
     "party.detail.name": "Jméno",
     "party.detail.name.new": "Nové jméno",
     "party.detail.name.update": "Úprava jména",
-    "party.detail.name.delete": "Opravdu chcete ostranit toto jméno?",
+    "party.detail.name.delete": "Opravdu chcete odstranit toto jméno?",
     "party.detail.name.setPrefferedNameAlert": "Opravdu chcete nastavit nové preferované jméno osoby?",
     "party.detail.note": "Poznámka",
     "party.detail.history": "Dějiny",
@@ -1209,7 +1251,8 @@ var messages = {
     "party.detail.formNames": "Formy jména",
     "party.detail.formNames.prefferedName": "(Preferovaná forma jména)",
     "party.detail.partyGroupIdentifiers": "Identifikátory korporace",
-    "party.apState": "Všechny stavy",
+    "party.allApStates": "Všechny stavy",
+    "party.apState": "Stav",
 
     "party.detail.errors.undefinedCreator": "Nebyl vybrán autor",
 
@@ -1291,7 +1334,7 @@ var messages = {
     "partyField.noItemsFound": "Záznamy nebyly nalezeny.",
     "partyField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
-    "apField.searchType.create.RIGHT_LIKE": "pravostrané hledání",
+    "apField.searchType.create.RIGHT_LIKE": "pravostranné hledání",
     "apField.searchType.create.FULLTEXT": "fulltextové vyhledání",
     "apField.searchType.USERNAME": "vyhledání dle username",
     "apField.searchType.USERNAME_AND_PARTY": "vyhledání dle username i dle osoby",
@@ -1394,7 +1437,7 @@ var messages = {
     "admin.perms.tabs.funds.perm.FUND_EXPORT": "Export",
     "admin.perms.tabs.funds.perm.FUND_BA": "Spouštění hromadných akcí",
     "admin.perms.tabs.funds.perm.FUND_CL_VER_WR": "Drobné úpravy uzavřeného AS",
-    "admin.perms.tabs.funds.perm.FUND_VER_WR": "Verzování a editace",
+    "admin.perms.tabs.funds.perm.FUND_VER_WR": "Verzování a úprava vlastností",
     "admin.perms.tabs.funds.perm.FUND_ISSUE_ADMIN": "Správa lektorování",
     "admin.perms.tabs.scopes": "Oblasti entit",
     "admin.perms.tabs.scopes.add.title": "Přidání oblasti entit",
@@ -1679,11 +1722,18 @@ var messages = {
 
     "accesspoint.create.titleMessage": "Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.",
 
+    "accesspoint.removeDuplicity.confirmation": "Opravdu chcete odstranit archivní entitu s rozpracovanou revizí?",
     "accesspoint.removeDuplicity": "Odstranit duplicitu",
     "accesspoint.removeDuplicity.title": "Odstranění duplicity",
     "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",
     "accesspoint.removeDuplicity.replacedAccesspoint": "K nahrazení",
     "accesspoint.removeDuplicity.resolve": "Vyřešit duplicitu",
+    "accesspoint.removeDuplicity.confirm.replace.a": "Opravdu si přejete nahradit entitu",
+    "accesspoint.removeDuplicity.confirm.replace.b": "entitou",
+    "accesspoint.removeDuplicity.confirm.merge.a": "Opravdu si přejete zneplatnit a sloučit entitu",
+    "accesspoint.removeDuplicity.confirm.merge.b": "s nahrazující entitou",
+    "accesspoint.removeDuplicity.confirm.nonEqualNames": "Entity mají ruzná označení",
+    "accesspoint.removeDuplicity.inProgress": "Probíhá odstranění duplicity...",
 
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",

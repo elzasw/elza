@@ -30,6 +30,15 @@ export function isFundTreeAction(action) {
     }
 }
 
+// Znevalidneni vsech stromu v poradani
+export function fundTreeInvalidate(versionId) {
+    return {
+        area: types.FUND_TREE_AREA_ALL,
+        type: types.FUND_FUND_TREE_INVALIDATE,
+        versionId,
+    };
+}
+
 // jen vyber polozky, vyuzite jen v presunech JP
 export function fundTreeSelectNode(
     area,
@@ -388,6 +397,42 @@ export function fundTreeNodeExpand(area, node) {
         return WebApi.getFundTree(versionId, nodeId, expandedIds).then(json =>
             dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)),
         );
+    };
+}
+export function fundTreeNodesExpand(area, nodes) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var fundTree;
+        var versionId;
+        let activeFund, activeNode;
+        if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
+            // fundRegion
+            versionId = state.fundRegion.fundDetail.versionId;
+            fundTree = state.fundRegion.fundDetail.fundTree;
+        } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+            versionId = state.arrRegion.customFund.versionId;
+            fundTree = state.arrRegion.customFund.fundTreeNodes;
+        } else if (area === types.FUND_TREE_AREA_COPY) {
+            versionId = state.arrRegion.globalFundTree.versionId;
+            fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
+        } else {
+            // arrRegion
+            activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+            versionId = activeFund.versionId;
+            fundTree = getFundTree(activeFund, area);
+        }
+        if(nodes.length === 1){
+            dispatch(_fundTreeNodeExpand(area, versionId, nodes[0], true));
+        }
+
+        var expandedIds = {...fundTree.expandedIds};
+
+        nodes.forEach((node) => {
+            expandedIds[node.id] = true;
+        })
+
+        return dispatch(fundTreeFetch(area, versionId, null, expandedIds))
     };
 }
 

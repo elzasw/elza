@@ -50,7 +50,6 @@ export {SubNodeDao} from 'components/arr/sub-node-dao';
 export {default as FundForm} from 'components/arr/FundForm';
 export {default as FundSettingsForm} from 'components/arr/FundSettingsForm';
 export {NodeSettingsForm} from 'components/arr/node-settings-form';
-export {default as GoToPositionForm} from 'components/arr/GoToPositionForm';
 export {default as AddNodeForm} from 'components/arr/nodeForm/AddNodeForm';
 export {default as FundBulkModificationsForm} from 'components/arr/FundBulkModificationsForm';
 export {default as ArrPanel} from 'components/arr/ArrPanel';

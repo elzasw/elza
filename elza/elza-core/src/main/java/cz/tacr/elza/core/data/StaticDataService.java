@@ -12,6 +12,7 @@ import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -19,6 +20,8 @@ import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -26,6 +29,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -48,11 +52,13 @@ public class StaticDataService {
 
     /**
      * Set of transactions which should refresh StaticDataProvider after commit
-     *
      */
     private final Set<Transaction> modificationTransactions = new HashSet<>();
 
     private StaticDataProvider activeProvider;
+
+    @Value("${version:0.0.0}")
+    private String appVersion;
 
     /* managed components */
 
@@ -94,9 +100,16 @@ public class StaticDataService {
 
     final ExtensionRuleRepository extensionRuleRepository;
 
+    final ArrangementRuleRepository arrangementRuleRepository;
+
+    final ComponentRepository componentRepository;
+
+    final PolicyTypeRepository policyTypeRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
+                             final ArrangementRuleRepository arrangementRuleRepository,
                              final ArrangementExtensionRepository ruleSetExtRepository,
                              final ExtensionRuleRepository extensionRuleRepository,
                              final ItemTypeRepository itemTypeRepository,
@@ -112,9 +125,12 @@ public class StaticDataService {
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
                              final PartTypeRepository partTypeRepository,
-                             final ApExternalSystemRepository apExternalSystemRepository) {
+                             final ApExternalSystemRepository apExternalSystemRepository,
+                             final ComponentRepository componentRepository,
+                             final PolicyTypeRepository policyTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
+        this.arrangementRuleRepository = arrangementRuleRepository;
         this.ruleSetExtRepository = ruleSetExtRepository;
         this.extensionRuleRepository = extensionRuleRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -131,6 +147,8 @@ public class StaticDataService {
         this.sysLanguageRepository = sysLanguageRepository;
         this.partTypeRepository = partTypeRepository;
         this.apExternalSystemRepository = apExternalSystemRepository;
+        this.componentRepository = componentRepository;
+        this.policyTypeRepository = policyTypeRepository;
     }
 
     /**
@@ -186,6 +204,10 @@ public class StaticDataService {
         return provider;
     }
 
+    public String getAppVersion() {
+        return appVersion;
+    }
+    
     /**
      * Called when new transaction if registered
      * @param tx

@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toSet;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
@@ -38,9 +39,6 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.engine.spi.FacetManager;
-import org.hibernate.search.query.facet.Facet;
-import org.hibernate.search.query.facet.FacetSortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -60,7 +58,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -90,17 +87,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     public List<ArrNode> findNodesByDirection(final ArrNode node,
                                               final ArrFundVersion version,
                                               final RelatedNodeDirection direction) {
-        Assert.notNull(node, "JP musí být vyplněna");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(direction, "Směr musí být vyplněn");
+        Validate.notNull(node, "JP musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(direction, "Směr musí být vyplněn");
 
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
         Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
 
-        List<ArrNode> nodes = new ArrayList<>(levels.size());
-        levels.forEach(l -> nodes.add(l.getNode()));
-        return nodes;
+        List<ArrNode> result = levels.stream().map(l -> l.getNode()).collect(Collectors.toList());
+        return result;
     }
 
     /*
@@ -351,7 +347,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         for (UnitdateSearchParam searchParam : searchParams) {
             String value = searchParam.getValue();
             if (StringUtils.isNotBlank(value)) {
-                Query dateQuery = createDateQuery(value, searchParam.getCalendarId(), searchParam.getCondition(), queryBuilder);
+                Query dateQuery = createDateQuery(value, searchParam.getCondition(), queryBuilder);
                 dateBool.must(dateQuery);
             }
         }
@@ -368,16 +364,13 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * Vytvoří lucene dotaz na hledání arr_data podle datace.
      *
      * @param value datace
-     * @param calendarId id typu kalendáře
      * @param condition typ podmínky
      * @param queryBuilder query builder
      *
      * @return dotaz
      */
-    private Query createDateQuery(final String value, final Integer calendarId, final UnitdateCondition condition,
-            final QueryBuilder queryBuilder) {
+    private Query createDateQuery(final String value, final UnitdateCondition condition, final QueryBuilder queryBuilder) {
         Assert.notNull(value, "Hodnota musí být vyplněna");
-        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
         Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
@@ -440,18 +433,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
         return queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
-    }
-
-    /**
-     * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
-     */
-    @Override
-    public List<ArrNode> findByNodeConformityIsNull() {
-        String hql = "SELECT n FROM arr_node n JOIN arr_level l ON l.node = n LEFT JOIN arr_node_conformity nc ON nc.node = n WHERE l.deleteChange IS NULL AND nc IS NULL";
-
-        javax.persistence.Query query = entityManager.createQuery(hql);
-
-        return query.getResultList();
     }
 
     /**

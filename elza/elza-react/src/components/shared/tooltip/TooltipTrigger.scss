@@ -1,17 +1,22 @@
 .tooltip {
     z-index: 30000;
+
     .tooltip-inner {
+        box-shadow: 4px 4px 10px 0 #0004;
         //max-width: inherit;
         max-width: none;
         max-height: none;
         //max-width: 100px;
+        border-radius: 5px;
+        overflow: hidden;
+        padding: 10px;
 
-        padding: 4px;
         .tooltip-inner-content {
             overflow: auto;
+            text-align: left;
         }
     }
 }
-.tooltip-trigger{
+.tooltip-trigger {
     width: inherit;
 }

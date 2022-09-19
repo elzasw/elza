@@ -103,6 +103,14 @@ function updateFundTree(state, action) {
         case types.FUND_TREE_AREA_DAOS_RIGHT:
             state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
             break;
+        case types.FUND_TREE_AREA_ALL:
+            state.fundTree = fundTree(state.fundTree, action);
+            state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action);
+            state.fundTreeMovementsRight = fundTree(state.fundTreeMovementsRight, action);
+            state.fundTreeNodes = fundTree(state.fundTreeNodes, action);
+            state.fundTreeDaosLeft = fundTree(state.fundTreeDaosLeft, action);
+            state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
+            break;
         default:
             break;
     }

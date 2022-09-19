@@ -84,8 +84,16 @@ public class ElzaWebController {
     private String appVersion;
 
     @ModelAttribute("appVersion")
-    public String getAppVersion(){
+    public String getAppVersion() {
     	return appVersion;
+    }
+
+    @Value("${elza.security.logoutUrl:}")
+    private String logoutUrl;
+
+    @ModelAttribute("logoutUrl")
+    public String getLogoutUrl() {
+        return logoutUrl;
     }
 
     private void initDefaults(final HttpServletRequest request, final Model model) {

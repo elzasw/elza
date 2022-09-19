@@ -1,54 +1,49 @@
 package cz.tacr.elza.bulkaction;
 
 
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.service.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange.Type;
-import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -59,12 +54,10 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-
-import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
-import static cz.tacr.elza.repository.ExceptionThrow.node;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
+import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
 
 /**
  * Serviska pro obsluhu hromadných akcí.

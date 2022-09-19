@@ -29,6 +29,7 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -58,7 +59,6 @@ import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
@@ -206,7 +206,7 @@ public class DaoService {
         return resultDaoLink;
     }
 
-    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion,
+    public ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion,
     									@Nullable ArrChange createChange,
     								    ArrDao dao,
                                         ArrNode node, String scenario) {
@@ -274,7 +274,8 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, 
     		ArrChange deleteChange, final ArrNode node) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(Collections.singletonList(node.getNodeId()));
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(Collections.singletonList(node
+                .getNodeId()));
         for (ArrDaoLink daoLink : daoLinks) {
             ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, deleteChange, daoLink, true);
             if(deleteChange==null) {
@@ -359,6 +360,16 @@ public class DaoService {
         deleteDaos(fundVersion, arrDaos, true);
     }
 
+    /**
+     * Delete dao files from DB
+     * 
+     * @param daoFiles
+     */
+    public void deleteDaoFiles(Collection<ArrDaoFile> daoFiles) {
+        daoFileRepository.deleteAll(daoFiles);
+
+    }
+
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
     		UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.ADMIN})
     public void deleteDaoPackageWithCascade(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, 
@@ -391,7 +402,7 @@ public class DaoService {
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
-            daoFileRepository.deleteAll(daoFileList);
+            deleteDaoFiles(daoFileList);
 
             // smazat arr_dao_file_group
             final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
@@ -521,7 +532,7 @@ public class DaoService {
 
     public void updateNodeCacheDaoLinks(Collection<Integer> nodeIds) {
         if (CollectionUtils.isNotEmpty(nodeIds)) {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
             arrangementCacheService.updateDaoLinks(nodeIds, daoLinks);
         }
     }
@@ -566,7 +577,7 @@ public class DaoService {
         switch (dao.getDaoType()) {
         case LEVEL:
             DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
-            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao, null);
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
@@ -585,6 +596,13 @@ public class DaoService {
         return createOrFindDaoLink(fundVersion, change, dao, linkNode, scenario);
     }
 
+    /**
+     * Vraci seznam DAO vcetne DaoPackage
+     * 
+     * @param repository
+     * @param daoCodes
+     * @return
+     */
     public List<ArrDao> findDaosByRepository(ArrDigitalRepository repository, List<String> daoCodes) {
         List<ArrDao> daos = daoRepository.findByCodes(repository, daoCodes);
         if (daos.size() != daoCodes.size()) {
@@ -595,5 +613,28 @@ public class DaoService {
                     .set("missing", missingCodes);
         }
         return daos;
+    }
+
+    /**
+     * Return list of files for list of daos
+     * 
+     * @param daos
+     * @return
+     */
+    public List<ArrDaoFile> findDaoFiles(List<ArrDao> daos) {
+        return daoFileRepository.findByDaoIn(daos);
+    }
+
+    public ArrDaoPackage createDaoPackage(ArrFund fund,
+                                          ArrDigitalRepository repository,
+                                          String identifier,
+                                          ArrDaoBatchInfo batchInfo) {
+        ArrDaoPackage arrDaoPackage = new ArrDaoPackage();
+        arrDaoPackage.setFund(fund);
+        arrDaoPackage.setDigitalRepository(repository);
+        arrDaoPackage.setDaoBatchInfo(batchInfo);
+        arrDaoPackage.setCode(identifier);
+
+        return daoPackageRepository.save(arrDaoPackage);
     }
 }

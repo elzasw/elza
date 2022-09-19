@@ -1,5 +1,9 @@
 package cz.tacr.elza.print;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,8 +16,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -25,6 +31,9 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ElzaLocale;
@@ -34,9 +43,17 @@ import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
+import cz.tacr.elza.dataexchange.output.filters.ApplyFilter;
+import cz.tacr.elza.dataexchange.output.filters.FilterRule;
+import cz.tacr.elza.dataexchange.output.filters.FilterRules;
+import cz.tacr.elza.dataexchange.output.filters.ReplaceItem;
+import cz.tacr.elza.dataexchange.output.filters.SoiLoadDispatcher;
+import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
+import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -80,7 +97,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private ArrFundVersion fundVersion;
 
-    private StaticDataProvider staticData;
+    private StaticDataProvider sdp;
 
     /* general description */
 
@@ -95,6 +112,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private String typeCode;
 
     private Fund fund;
+
+    private UUID uuid;
+
+    private String appVersion;
 
     /* lookups */
 
@@ -168,6 +189,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private OutputItemConvertor itemConvertor = new OutputItemConvertor(this);
 
+    private OutputFilterConfig outputFilterConfig;
+
+    private FilterRules filterRules;
+
+    private StructObjectInfoLoader soiLoader;
+
+    private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
+
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
                        final FundRepository fundRepository,
@@ -184,7 +213,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository,
-                       final AccessPointCacheService accessPointCacheService) {
+                       final AccessPointCacheService accessPointCacheService,
+                       final EntityManager em) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundRepository = fundRepository;
@@ -202,6 +232,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
         this.accessPointCacheService = accessPointCacheService;
+        this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
     }
 
     public boolean isInitialized() {
@@ -241,6 +272,20 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public List<cz.tacr.elza.print.item.Item> getItems() {
         return outputItems;
+    }
+
+    public UUID getUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+        return uuid;
+    }
+
+    public String getAppVersion() {
+        if (appVersion == null) {
+            appVersion = staticDataService.getAppVersion();
+        }
+        return appVersion;
     }
 
     @Override
@@ -384,10 +429,34 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
 
+        Map<Integer, List<Integer>> levelRestrMap = new HashMap<>();
+
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Validate.notNull(cachedNode);
+
+            // get list of restriction id relevant filter conditions
+            List<Integer> restrictionIds = getRestrictionIds(cachedNode);
+
+            // expand restriction list to include parent(s) restriction list
+            if (nodeId.getParent() != null) {
+                List<Integer> restParentIds = levelRestrMap.get(nodeId.getParent().getArrNodeId());
+                if (restParentIds != null) {
+                    restrictionIds.addAll(restParentIds);
+                }
+            }
+
+            // if we have a list - we have to filter
+            if (!restrictionIds.isEmpty()) {
+                levelRestrMap.put(nodeId.getArrNodeId(), restrictionIds);
+
+                cachedNode = filterNode(cachedNode, restrictionIds);
+                if (cachedNode == null) {
+                    // if filter return null according to conditions
+                    continue;
+                }
+            }
 
             Node node = createNode(nodeId, cachedNode);
             nodes.add(node);
@@ -415,7 +484,137 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
+    /**
+     * Return list of IDs of structured objects with restriction definitions
+     * 
+     * @param node
+     * @return List<Integer>
+     */
+    private List<Integer> getRestrictionIds(RestoredNode node) {
+        List<Integer> restrictionIds = new ArrayList<>();
+        if (filterRules != null) {
+            for (ArrItem item : node.getDescItems()) {
+                RulItemType itemType = item.getItemType();
+                for (cz.tacr.elza.core.data.ItemType i : filterRules.getRestrictionTypes()) {
+                    if (item.getData() == null) {
+                        continue;
+                    }
+                    if (i.getEntity().equals(itemType)) {
+                        ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
+                        restrictionIds.add(dsr.getStructuredObjectId());
+                    }
+                }
+            }
+        }
+        return restrictionIds;
+    }
+
+    private RestoredNode filterNode(RestoredNode node, List<Integer> restrictionIds) {
+        if (filterRules == null || restrictionIds.isEmpty()) {
+            return node;
+        }
+
+        Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType = node.getDescItems().stream()
+                .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemTypeId())));
+
+        ApplyFilter filter = new ApplyFilter();
+
+        for (Integer restrictionId : restrictionIds) {
+            StructObjectInfo soi = readSoiFromDB(restrictionId);
+
+            for (FilterRule rule : filterRules.getFilterRules()) {
+                processRule(rule, itemsByType, soi, filter);
+            }
+        }
+
+        return filter.apply(node);
+    }
+
+    private void processRule(FilterRule rule, 
+                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
+                             StructObjectInfo soi, 
+                             ApplyFilter filter) {
+
+        if (!rule.canApply(soi)) {
+            // rule does not apply for this soi
+            return;
+        }
+
+        // if we need to hide level
+        if (rule.isHiddenLevel()) {
+            filter.hideLevel();
+            return;
+        }
+
+        boolean changed = false;
+
+        // hidden Dao
+        if (rule.isHiddenDao()) {
+            filter.hideDao();
+            changed = true;
+        }
+
+        // check hidden items
+        if (rule.getHiddenTypes() != null) {
+            for (cz.tacr.elza.core.data.ItemType hiddenType : rule.getHiddenTypes()) {
+                List<ArrItem> hiddenItems = itemsByType.get(hiddenType);
+                if (CollectionUtils.isNotEmpty(hiddenItems)) {
+                    hiddenItems.forEach(hi -> filter.addHideItem(hi));
+                    changed = true;
+                }
+            }
+        }
+
+        // replace itemType(s)
+        if (rule.getReplaceItems() != null) {
+            for (ReplaceItem replaceDef : rule.getReplaceItems()) {
+                List<ArrItem> replaceItems = itemsByType.get(replaceDef.getSource());
+                if (CollectionUtils.isNotEmpty(replaceItems)) {
+                    // source found -> store as new target
+                    for (ArrItem replaceItem : replaceItems) {
+                        List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
+                        // if exists ArrItem(s) with Target type
+                        if (CollectionUtils.isNotEmpty(replacedItems)) {
+                            // hide Source item
+                            filter.addHideItem(replaceItem);
+                            // copy from Source item
+                            ArrItem copy = replaceItem.makeCopy();
+                            // set Target type to copy of Source item
+                            copy.setItemType(replaceDef.getTarget().getEntity());
+                            filter.addItem(copy);
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // add itemsOnChange if changed
+        if (rule.getAddItemsOnChange() != null && changed) {
+            rule.getAddItemsOnChange().forEach(i -> filter.addItem(i));
+        }
+        if (rule.getAddItems() != null) {
+            rule.getAddItems().forEach(i -> filter.addItem(i));
+        }
+    }
+
+    private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
+        StructObjectInfo soi = structRestrDefsMap.get(structuredObjectId);
+        if (soi != null) {
+            return soi;
+        }
+        // read from DB
+        SoiLoadDispatcher soiLoadDisp = new SoiLoadDispatcher();
+        soiLoader.addRequest(structuredObjectId, soiLoadDisp);
+        soi = soiLoadDisp.getResult();
+        Validate.notNull(soi);
+
+        structRestrDefsMap.put(structuredObjectId, soi);
+        return soi;
+    }
+
     private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
+        Validate.notNull(cachedNode);
         Integer fundId = cachedNode.getNode().getFundId();
         Fund fund = this.fundIdMap.computeIfAbsent(fundId, id -> {
             ArrFund arrFund = this.fundRepository.findById(id)
@@ -444,7 +643,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         // prepare internal fields
         this.fundVersion = params.getFundVersion();
-        this.staticData = staticDataService.getData();
+        this.sdp = staticDataService.getData();
 
         // init general description
         ArrOutput output = params.getOutput();
@@ -473,7 +672,35 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        // init output filters config
+        this.outputFilterConfig = loadOutputFilterConfig(params.getOutputFilter());
+
+        // init filter rules
+        if (outputFilterConfig != null) {
+            this.filterRules = new FilterRules(outputFilterConfig, staticDataService.getData());
+        }
+
         logger.info("Output model initialization ended, outputId:{}", params.getOutputId());
+    }
+
+    private OutputFilterConfig loadOutputFilterConfig(Path outputFilterConfig) {
+        if (outputFilterConfig == null) {
+            return null;
+        }
+        // register type descriptors
+        Constructor yamlCtor = new Constructor();
+        yamlCtor.addTypeDescription(new TypeDescription(OutputFilterConfig.class, "!OutputFilterConfig"));
+        Yaml yamlLoader = new Yaml(yamlCtor);
+
+        OutputFilterConfig ofc;
+        try (InputStream inputStream = new FileInputStream(outputFilterConfig.toFile())) {
+            ofc = yamlLoader.load(inputStream);
+        } catch (IOException e) {
+            logger.error("Failed to read yaml file {}", outputFilterConfig, e);
+            throw new SystemException(e);
+        }
+
+        return ofc;
     }
 
     private Institution createInstitution(ArrFund arrFund) {
@@ -576,7 +803,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPointId(accessPointId);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(apState.getAccessPoint(), type, staticData, apStateRepository,
+        record = new Record(apState.getAccessPoint(), type, sdp, apStateRepository,
                 bindingRepository, partRepository, itemRepository,
                 bindingStateRepository, indexRepository,
                 itemConvertor, accessPointCacheService, elzaLocale);
@@ -614,7 +841,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return type;
         }
 
-        ApType apType = staticData.getApTypeById(apTypeId);
+        ApType apType = sdp.getApTypeById(apTypeId);
 
         // add to lookup
         RecordType parentType = null;
@@ -637,7 +864,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemType;
         }
 
-        RulItemType rulItemType = staticData.getItemTypeById(id).getEntity();
+        RulItemType rulItemType = sdp.getItemTypeById(id).getEntity();
         itemType = new ItemType(rulItemType);
 
         // add to lookup
@@ -653,7 +880,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return itemSpec;
         }
 
-        RulItemSpec rulItemSpec = staticData.getItemSpecById(id);
+        RulItemSpec rulItemSpec = sdp.getItemSpecById(id);
         itemSpec = new ItemSpec(rulItemSpec);
 
         // add to lookup
@@ -712,7 +939,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public List<Structured> createStructObjList(String structTypeCode) {
         // get struct item
-        StructType structType = staticData.getStructuredTypeByCode(structTypeCode);
+        StructType structType = sdp.getStructuredTypeByCode(structTypeCode);
         List<ArrStructuredObject> sobs = structObjRepos
                 .findStructureDataBySubtreeNodeIds(this.startNodes,
                         structType.getStructuredTypeId(),

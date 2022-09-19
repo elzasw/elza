@@ -33,6 +33,11 @@ export interface ApPartVO {
     partParentId?: number;
 
     /**
+     * Identifikátor nadřazeného partu z revize.
+     */
+    revPartParentId?: number;
+
+    /**
      * Seznam hodnot atributů
      */
     items: ApItemVO[] | null;

@@ -2,22 +2,22 @@
     .level {
         height: 16px;
         line-height: 16px;
-        max-width: 18px;
-        min-width: 18px;
         color: $tree-node-reference-mark;
         font-size: 0.8em;
         text-align: center;
         vertical-align: middle;
         overflow: hidden;
         padding: 0 2px;
+        flex-shrink: 1;
+        flex-grow: 1;
     }
     .level.small {
         font-size: 0.5em;
     }
     .separator {
         color: $tree-node-separator-border;
-        min-width: 6px;
-        max-width: 6px;
+        flex-shrink: 1;
+        flex-grow: 1;
         text-align: center;
     }
 }

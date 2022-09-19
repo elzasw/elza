@@ -43,6 +43,7 @@ import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -95,6 +96,8 @@ import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 public class DaoSyncService {
 
     private static final Logger logger = LoggerFactory.getLogger(DaoSyncService.class);
+
+    public final static String ELZA_SCENARIO = "_ELZA_SCENARIO";
 
     /**
      * Velikost dávky pro synchronizaci.
@@ -169,7 +172,7 @@ public class DaoSyncService {
 
     static JAXBContext jaxItemsContext;
 
-    private ObjectFactory wsObjectFactory = new ObjectFactory();
+    static private ObjectFactory wsObjectFactory = new ObjectFactory();
 
     static {
         try {
@@ -194,7 +197,7 @@ public class DaoSyncService {
         }
 
         @Override
-        public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+        public List<ArrDescItem> provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultipleItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
             // zadaný scenar nebyl nalezen
@@ -203,12 +206,22 @@ public class DaoSyncService {
                 throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
             }
 
+            List<ArrDescItem> result = new ArrayList<>();
+
+            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+
             for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
-                descriptionItemService.createDescriptionItemInBatch(descItem,
-                                                                    level.getNode(), fundVersion, change,
-                                                                    changeContext);
+                if (getSimilarItem(descItem, dbItems) == null) {
+                    ArrDescItem createdItem = descriptionItemService
+                            .createDescriptionItemInBatch(descItem, level.getNode(), fundVersion,
+                                                          change,
+                                                          changeContext);
+                    result.add(createdItem);
+                }
             }
+
+            return result;
         }
 
         public void remove(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
@@ -236,12 +249,41 @@ public class DaoSyncService {
             }
         }
 
+        private ArrDescItem getSimilarItem(ArrDescItem scenarioItem, List<ArrDescItem> dbItems) {
+            for (ArrDescItem dbItem : dbItems) {
+                if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
+                        Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
+                    // check read-only status
+                    if (Boolean.TRUE.equals(dbItem.getReadOnly())) {
+                        // readonly has to match
+                        return null;
+                    }
+                    // if type is same -> item match
+                    return dbItem;
+                }
+            }
+            return null;
+        }
+
         private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
+            ArrData dbData = dbItem.getData();
+
             for (ArrDescItem scenarioItem : scenarioItems) {
                 if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
                         Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
-                    // TODO: check value of item
-                    return true;
+                    // check read-only status
+                    if (Boolean.TRUE.equals(dbItem.getReadOnly())) {
+                        // readonly has to match
+                        return true;
+                    }
+                    if (dbData == null) {
+                        // item without data might be removed
+                        return true;
+                    }
+                    ArrData data = scenarioItem.getData();
+                    if (data != null && data.isEqualValue(dbData)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -320,20 +362,31 @@ public class DaoSyncService {
         
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
         
-        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
+        Items items = unmarshalItemsFromAttributes(dao);
 
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         // odstraneni puvodnich zaznamu
-        DaoDesctItemProvider daoDesctItemProviderOrig = new DaoDesctItemProvider(items, daoLink.getScenario());
+        DaoDesctItemProvider daoDesctItemProviderOrig = createDescItemProvider(items, daoLink.getScenario());
         daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
         
-        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        DaoDesctItemProvider daoDesctItemProviderNew = createDescItemProvider(items, scenario);
         daoDesctItemProviderNew.provide(level, change, fundVersion, changeContext);
         
         // store new scenario
         daoLink.setScenario(scenario);
         
         changeContext.flush();
+    }
+
+    public void setScenario(ArrFundVersion fundVersion, ArrChange change,
+                            MultipleItemChangeContext itemChangeContext,
+                            ArrDaoLink daoLink, String scenario) {
+        ArrDao dao = daoLink.getDao();
+        ArrLevel level = fundLevelService.findLevelByNode(daoLink.getNode());
+
+        DaoDesctItemProvider daoDesctItemProviderNew = createDescItemProvider(dao, scenario);
+        daoDesctItemProviderNew.provide(level, change, fundVersion, itemChangeContext);
+        daoLink.setScenario(scenario);
     }
 
     /**
@@ -491,8 +544,7 @@ public class DaoSyncService {
         for (File file : fileList) {
             ArrDaoFile arrDaoFile = fileCache.get(file.getIdentifier());
             if (arrDaoFile != null) {
-                updateArrDaoFile(arrDaoFile, file);
-                daoFileRepository.save(arrDaoFile);
+                arrDaoFile = updateArrDaoFile(arrDaoFile, file);
             } else {
                 logger.warn("Neplatný DAO file [code=\"" + file.getIdentifier() + "]");
             }
@@ -567,7 +619,30 @@ public class DaoSyncService {
         requestService.sendRequest(daoRequest, fundVersion);
     }
 
-    public ArrDao createArrDao(ArrDaoPackage arrDaoPackage, Dao dao) {
+    // serialize attributes
+    static public String getDaoAttributes(Dao dao) {
+        if (dao.getItems() == null) {
+            return null;
+        }
+        JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(dao.getItems());
+
+        try (StringWriter sw = new StringWriter()) {
+            Marshaller mar = jaxItemsContext.createMarshaller();
+            mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            mar.marshal(elemAttrs, sw);
+
+            return sw.toString();
+        } catch (IOException | JAXBException e) {
+            logger.error("Failed to serialize attributes to XML: " + e.getMessage());
+            throw new SystemException("Failed to serialize attributes to XML", e,
+                    BaseCode.INVALID_STATE)
+                            .set("dao.identifier", dao.getIdentifier());
+        }
+
+    }
+
+    public ArrDao createDao(ArrDaoPackage arrDaoPackage, Dao dao) {
         if (StringUtils.isBlank(dao.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("dao.identifier", dao.getIdentifier());
@@ -577,37 +652,21 @@ public class DaoSyncService {
         arrDao.setLabel(dao.getLabel());
         arrDao.setValid(true);
 
-        // serialize attributes
-        Items items = dao.getItems();
-        if (items != null) {
+        String attrs = getDaoAttributes(dao);
+        arrDao.setAttributes(attrs);
 
-            JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(items);
-            
-            try (StringWriter sw = new StringWriter()) {
-                Marshaller mar = jaxItemsContext.createMarshaller();
-                mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            
-                mar.marshal(elemAttrs, sw);
-            
-                arrDao.setAttributes(sw.toString());
-            } catch (IOException | JAXBException e) {
-                logger.error("Failed to serialize attributes to XML: " + e.getMessage());
-                throw new SystemException("Failed to serialize attributes to XML", e,
-                        BaseCode.INVALID_STATE)
-                        .set("dao.identifier", dao.getIdentifier());
-            
-            }
-        }
-
-        DaoType daoType;
-        if (dao.getDaoType() != null) {
-            daoType = DaoType.valueOf(dao.getDaoType().name());
-        } else {
-            daoType = DaoType.ATTACHMENT;
-        }
+        DaoType daoType = getDaoType(dao.getDaoType());
         arrDao.setDaoType(daoType);
         arrDao.setDaoPackage(arrDaoPackage);
         return daoRepository.save(arrDao);
+    }
+
+    static public DaoType getDaoType(cz.tacr.elza.ws.types.v1.DaoType xmlDaoType) {
+        if (xmlDaoType != null) {
+            return DaoType.valueOf(xmlDaoType.name());
+        } else {
+            return DaoType.ATTACHMENT;
+        }
     }
 
     public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Folder relatedFileGroup) {
@@ -630,11 +689,10 @@ public class DaoSyncService {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         arrDaoFile.setCode(file.getIdentifier());
         arrDaoFile.setDaoFileGroup(arrDaoFileGroup);
-        updateArrDaoFile(arrDaoFile, file);
-        return daoFileRepository.save(arrDaoFile);
+        return updateArrDaoFile(arrDaoFile, file);
     }
 
-    public ArrDaoFile createArrDaoFile(ArrDao arrDao, File file) {
+    public ArrDaoFile createDaoFile(ArrDao arrDao, File file) {
         if (StringUtils.isBlank(file.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("file.identifier", file.getIdentifier());
@@ -642,11 +700,10 @@ public class DaoSyncService {
         ArrDaoFile arrDaoFile = new ArrDaoFile();
         arrDaoFile.setCode(file.getIdentifier());
         arrDaoFile.setDao(arrDao);
-        updateArrDaoFile(arrDaoFile, file);
-        return daoFileRepository.save(arrDaoFile);
+        return updateArrDaoFile(arrDaoFile, file);
     }
 
-    public void updateArrDaoFile(ArrDaoFile arrDaoFile, File file) {
+    public ArrDaoFile updateArrDaoFile(ArrDaoFile arrDaoFile, File file) {
         if (file.getChecksumType() != null) {
             arrDaoFile.setChecksumType(getChecksumType(file.getChecksumType()));
         }
@@ -678,6 +735,8 @@ public class DaoSyncService {
 
         arrDaoFile.setDescription(file.getDescription());
         arrDaoFile.setFileName(file.getName());
+
+        return daoFileRepository.save(arrDaoFile);
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(final UnitOfMeasure sourceDimensionUnit) {
@@ -722,22 +781,36 @@ public class DaoSyncService {
         return null;
     }
 
-    public DaoDesctItemProvider createDescItemProvider(ArrDao dao) {
-        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
+    public DaoDesctItemProvider createDescItemProvider(ArrDao dao, String scenario) {
+        Items items = unmarshalItemsFromAttributes(dao);
         if (items == null) {
             return null;
         }
+        return createDescItemProvider(items, scenario);
+    }
+
+    public DaoDesctItemProvider createDescItemProvider(Items items, String scenario) {
         List<String> scenarios = this.getAllScenarioNames(items);
-        String scenario;
-        if (CollectionUtils.isNotEmpty(scenarios)) {
-            scenario = scenarios.get(0);
+        if (StringUtils.isNotEmpty(scenario)) {
+            if (!scenarios.contains(scenario)) {
+                logger.error("Scenario not found, name: {}", scenario);
+
+                throw new BusinessException("Scenario not found", BaseCode.INVALID_STATE)
+                        .set("scenario", scenario)
+                        .set("scenarios", scenarios);
+            }
         } else {
-            scenario = null;
+            if (CollectionUtils.isNotEmpty(scenarios)) {
+                // select default scenario
+                scenario = scenarios.get(0);
+            }
         }
+
         return new DaoDesctItemProvider(items, scenario);
     }
 
-    public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
+    public Items unmarshalItemsFromAttributes(ArrDao dao) {
+        String attrs = dao.getAttributes();
         if (StringUtils.isBlank(attrs)) {
             return null;
         }
@@ -748,7 +821,7 @@ public class DaoSyncService {
         } catch (JAXBException e) {
             logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
             throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
-                    .set("attributes", attrs).set("daoId", daoId);
+                    .set("attributes", attrs).set("daoId", dao.getDaoId());
         }
     }
 
@@ -764,7 +837,7 @@ public class DaoSyncService {
 
     private boolean isScenario(Object item) {
         if (item instanceof ItemString) {
-            return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
+            return ((ItemString) item).getType().equals(ELZA_SCENARIO);
         }
         return false;
     }

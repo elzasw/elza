@@ -47,7 +47,7 @@ export interface RefTablesState {
     issueTypes: unknown;
     outputTypes: unknown;
     partTypes: BaseRefTableStore<RulPartTypeVO>;
-    recordTypes: unknown;
+    recordTypes: BaseRefTableStore<unknown>;
     rulDataTypes: BaseRefTableStore<unknown>;
     ruleSet: unknown;
     scopesData: ScopesData;

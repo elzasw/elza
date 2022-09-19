@@ -18,12 +18,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -72,6 +71,7 @@ import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.DataGridExportType;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
@@ -84,6 +84,7 @@ import cz.tacr.elza.controller.vo.SelectNodeResult;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
@@ -93,7 +94,6 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -110,7 +110,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -120,6 +119,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -1313,8 +1313,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public TreeData getFundTree(final @RequestBody FaTreeParam input) {
-        Assert.notNull(input, "Vstupní data musí být vyplněny");
-        Assert.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(input, "Vstupní data musí být vyplněny");
+        Validate.notNull(input.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
 
         return levelTreeCacheService
                 .getFaTree(input.getVersionId(), input.getNodeId(), input.getExpandedIds(), input.getIncludeIds());
@@ -1453,14 +1453,19 @@ public class ArrangementController {
     public void moveLevelBefore(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
-
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
-        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
-        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
-        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodesWithSameOrder(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNodeParent.getNodeId(), staticNodeParent.getVersion());
@@ -1469,8 +1474,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent, transportNodes, transportNodeParent);
     }
 
     /**
@@ -1483,14 +1487,19 @@ public class ArrangementController {
     public void moveLevelAfter(@RequestBody final LevelMoveParam moveParam) {
         Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
-
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
-        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
-        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
-        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        ArrNode staticNodeParent = arrangementService.getNodeVersion(staticNodeParentVO.getId(), staticNodeParentVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodesWithSameOrder(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNodeParent.getNodeId(), staticNodeParent.getVersion());
@@ -1499,8 +1508,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent, transportNodes, transportNodeParent);
     }
 
 
@@ -1512,14 +1520,23 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
     public void moveLevelUnder(@RequestBody final LevelMoveParam moveParam) {
-        Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
+        Validate.notNull(moveParam, "Parametry přesunu musí být vyplněny");
+        Validate.notNull(moveParam.getStaticNode(), "Parametry přesunu musí být vyplněny");
+        Validate.notNull(moveParam.getStaticNode().getId(), "Parametry přesunu musí být vyplněny");
+        Validate.notNull(moveParam.getTransportNodeParent(), "Parametry přesunu musí být vyplněny");
+        Validate.notNull(moveParam.getTransportNodeParent().getId(), "Parametry přesunu musí být vyplněny");
 
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
-        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
-        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
+
+        ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
+        List<ArrNode> transportNodes = arrangementService.getNodesWithSameOrder(moveParam.getTransportNodes().stream()
+                                                                   .map(n -> n.getId())
+                                                                   .collect(Collectors.toList()));
+        ArrNode transportNodeParent = arrangementService.getNodeVersion(transportNodeParentVO.getId(), transportNodeParentVO.getVersion());
 
         /*
         descriptionItemService.checkNodeWritePermission(fundVersionId, staticNode.getNodeId(), staticNode.getVersion());
@@ -1527,8 +1544,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        fundLevelService.moveLevelsUnder(fundVersion, staticNode,
-                transportNodes, transportNodeParent);
+        fundLevelService.moveLevelsUnder(fundVersion, staticNode, transportNodes, transportNodeParent);
     }
 
     /**
@@ -1765,17 +1781,18 @@ public class ArrangementController {
     }
 
     /**
-     * Validuje verzi archivní pomůcky a vrátí list chyb.
+     * Vrátí aktuální výsledek validace pro daný AS
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId verze, která se má validovat
+     * @param versionId
+     *            verze, která se má validovat
      * @return Objekt s listem (prvních 20) chyb
      */
     @RequestMapping(value = "/validateVersion/{versionId}/{showAll}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId,
                                                        @PathVariable("showAll") final Boolean showAll) {
-        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(showAll, "Parametr musí být vyplněn");
+        Validate.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(showAll, "Parametr musí být vyplněn");
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
@@ -1797,7 +1814,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
-        return arrangementService.getVersionErrorCount(fundVersion);
+        return ruleService.findCountByFundVersionAndStateErr(fundVersion);
     }
 
 
@@ -2446,7 +2463,7 @@ public class ArrangementController {
         if (nodeId != null) {
             node = nodeRepository.getOneCheckExist(nodeId);
         }
-        revertingChangesService.revertChanges(fundVersion.getFund(), node, fromChange, toChange);
+        revertingChangesService.revertChanges(fundVersion, node, fromChange, toChange);
     }
 
     /**

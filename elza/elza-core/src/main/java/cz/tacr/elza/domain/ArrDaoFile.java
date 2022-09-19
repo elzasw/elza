@@ -110,6 +110,13 @@ public class ArrDaoFile {
         this.daoId = dao == null ? null : dao.getDaoId();
     }
 
+    public Integer getDaoId() {
+        if (daoId == null && dao != null) {
+            return dao.getDaoId();
+        }
+        return daoId;
+    }
+
     public ArrDaoFileGroup getDaoFileGroup() {
         return daoFileGroup;
     }
@@ -244,9 +251,5 @@ public class ArrDaoFile {
         SHA256,
         SHA384,
         SHA512,
-    }
-
-    public Integer getDaoId() {
-        return daoId;
     }
 }

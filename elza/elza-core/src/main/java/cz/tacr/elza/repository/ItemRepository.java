@@ -52,6 +52,16 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
             + "WHERE (i.deleteChange IS NOT NULL OR oio.deleteChange IS NOT NULL OR sis.deleteChange IS NOT NULL) AND (dif = :fund OR oif = :fund OR sif = :fund)")
     List<ArrItem> findHistoricalByFund(@Param("fund") ArrFund fund);
 
+    @Query("SELECT data.recordId FROM arr_fund_version fv "
+           + "LEFT JOIN arr_node n ON n.fund = fv.fund "
+           + "LEFT JOIN arr_level l ON l.node = n "
+           + "LEFT JOIN arr_desc_item d ON d.node = l.node "
+           + "LEFT JOIN arr_item i ON i.itemId = d.itemId "
+           + "LEFT JOIN i.data data "
+           + "RIGHT JOIN arr_data_record_ref ref ON ref.dataId = data.dataId "
+           + "WHERE fv.fundVersionId IN :fundVersionIds AND l.deleteChange IS NULL AND i.deleteChange IS NULL")
+    List<Integer> findArrDataRecordRefRecordIdsByFundVersionIds(@Param("fundVersionIds") Collection<Integer> fundVersionIds);
+
     @Override
     @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(i.itemId, i.createChange.changeId) FROM arr_item i "
             + "LEFT JOIN arr_desc_item di ON di.itemId = i.itemId "

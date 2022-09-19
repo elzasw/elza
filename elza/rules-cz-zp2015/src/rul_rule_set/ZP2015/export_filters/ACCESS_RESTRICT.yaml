@@ -1,0 +1,82 @@
+!ExportFilterConfig
+restrictions:
+  - ZP2015_RESTRICTION_ACCESS_INLINE
+  - ZP2015_RESTRICTION_ACCESS_SHARED
+
+defs:
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_DAO
+    result:
+      hiddenDao: true
+      hiddenItems:
+        - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_AIP_ID
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_DAO
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_DAO_INPERS_ONLY
+    result:
+      hiddenDao: true
+      hiddenItems:
+        - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_AIP_ID
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+    result:
+      hiddenLevel: true
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHDESC2
+    result:
+      hiddenLevel: true
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ABSTRACT
+    result:
+      hiddenItems:
+        - itemType: ZP2015_TITLE
+        - itemType: ZP2015_TITLE_PUBLIC
+      replaceItems:
+        - source:
+            itemType: ZP2015_TITLE_PUBLIC
+          target:
+            itemType: ZP2015_TITLE
+      addItemsOnChange:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_ABSTRACT
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_LIMITED
+    result:
+      hiddenItems:
+        - itemType: ZP2015_TITLE
+        - itemType: ZP2015_TITLE_PUBLIC
+      replaceItems:
+        - source: 
+            itemType: ZP2015_TITLE_PUBLIC
+          target:
+            itemType: ZP2015_TITLE
+      addItemsOnChange:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_LIMITED
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHMAT
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_ARCHMAT
+  - when:
+      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+      itemSpec: ZP2015_RESTRICTION_ARCHMAT2
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION
+          itemSpec: ZP2015_APPLIED_RESTRICTION_ARCHMAT2

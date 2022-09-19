@@ -11,6 +11,7 @@ import {isFundOutputFunctionsAction} from './fundOutputFunctions';
 import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {savingApiWrapper} from '../../actions/global/status';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
@@ -252,7 +253,7 @@ export function fundOutputDetailClear(versionId) {
 
 export function fundOutputGenerate(outputId) {
     return (dispatch, getState) => {
-        WebApi.outputGenerate(outputId).then(data => {
+        WebApi.outputGenerate(outputId).then(async (data) => {
             if (data && data.status !== 'OK') {
                 let message = null;
                 switch (data.status) {
@@ -267,7 +268,8 @@ export function fundOutputGenerate(outputId) {
                     default:
                         break;
                 }
-                if (window.confirm(i18n('ribbon.action.arr.output.generate.continue', i18n(message)))) {
+                const response = await dispatch(showConfirmDialog(i18n('ribbon.action.arr.output.generate.continue', i18n(message))));
+                if (response) {
                     WebApi.outputGenerate(outputId, true);
                 }
             }
@@ -276,8 +278,9 @@ export function fundOutputGenerate(outputId) {
 }
 
 export function fundOutputSend(outputId) {
-    return (dispatch) => {
-        if (window.confirm(i18n('ribbon.action.arr.output.send.confirm'))) {
+    return async (dispatch) => {
+        const response = await dispatch(showConfirmDialog(i18n('ribbon.action.arr.output.send.confirm')));
+        if (response) {
             WebApi.outputSend(outputId).then(() => {
                 dispatch(addToastrSuccess(i18n('ribbon.action.arr.output.send.success')));
             });

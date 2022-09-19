@@ -1,14 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 
 
 /**
@@ -21,8 +22,14 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query(value = "select v from arr_fund_version v join v.createChange ch join v.fund fa where fa.fundId = :fundId order by ch.changeDate desc")
     List<ArrFundVersion> findVersionsByFundIdOrderByCreateDateDesc(@Param(value = "fundId") Integer fundId);
 
-    @Query(value = "select v from arr_fund_version v join v.fund fa where fa.fundId = :fundId and v.lockChange is null")
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund fa WHERE fa.fundId = :fundId AND v.lockChange is NULL")
     ArrFundVersion findByFundIdAndLockChangeIsNull(@Param(value = "fundId") Integer fundId);
+
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund fa JOIN v.rootNode n where n.uuid = ?1 and v.lockChange is null")
+    ArrFundVersion findByRootNodeUuid(String uuid);
+
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund fa WHERE fa.internalCode = :code AND v.lockChange is NULL")
+    ArrFundVersion findByInternalCode(@Param(value = "code") String code);
 
     @Query(value = "SELECT v FROM arr_fund_version v join fetch v.fund fa join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
     List<ArrFundVersion> findAllFetchFunds();
@@ -57,4 +64,5 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
 
     @Query("SELECT fv FROM arr_fund_version fv JOIN FETCH fv.fund f WHERE fv.lockChange IS NULL AND f IN (SELECT n.fund FROM arr_node n WHERE n.nodeId IN :nodeIds)")
     List<ArrFundVersion> findVersionsByNodeIds(@Param("nodeIds") Collection<Integer> nodeIds);
+
 }

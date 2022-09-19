@@ -40,6 +40,12 @@ elza:
 #      batch_size: 100
 #      thread_max: 4
 
+# swagger-ui custom path
+springdoc:
+  swagger-ui:
+    #path: /swagger-ui.html
+    path: /swagger
+
 spring:
   application:
      name: elza

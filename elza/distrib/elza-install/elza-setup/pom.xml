@@ -3,7 +3,7 @@
     <parent>
         <artifactId>elza-install</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>2.0.0-SNAPSHOT</version>
+        <version>2.5.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -222,20 +222,50 @@
                                 </goals>
                                 <configuration>
                                   <target>
-                                    <property name="project.build.directory" value="${project.build.directory}"/>
-                                    <property name="project.version" value="${project.version}"/>
-                                    <property name="tomcat.path" value="${tomcat.path}"/>
-                                    <property name="signtool.params" value="${signtool.params}"/>
-                                    <property name="signtool.path" value="${signtool.path}"/>
-                                    <property name="signtool.enabled" value="${signtool.enabled}"/>
-                                    <property name="innosetup.path" value="${innosetup.path}"/>
-                                    <ant antfile="build.xml"/>
+                                    <property name="project.build.directory" value="${project.build.directory}" />
+                                    <property name="project.version" value="${project.version}" />
+                                    <property name="tomcat.path" value="${tomcat.path}" />
+                                    <property name="signtool.params" value="${signtool.params}" />
+                                    <property name="signtool.path" value="${signtool.path}" />
+                                    <property name="signtool.enabled" value="${signtool.enabled}" />
+                                    <property name="innosetup.path" value="${innosetup.path}" />
+                                    <ant antfile="build.xml" />
                                   </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>dist</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-file</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
 
+                                <configuration>
+                                    <skip>false</skip>
+                                    <url>${project.distributionManagement.repository.url}</url>
+                                    <repositoryId>LightCompReleaseRepository</repositoryId>
+                                    <file>${project.build.directory}/ElzaSetup-${project.version}.exe</file>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <packaging>exe</packaging>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>

@@ -35,12 +35,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.input.DEImportParams.ImportPositionParams;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
@@ -59,13 +59,11 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
-import static cz.tacr.elza.core.db.HibernateConfiguration.MAX_IN_SIZE;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -233,7 +231,7 @@ public class DEImportService {
         Set<Integer> nodeIds = dataUriRefRepository.findReferralNodeIds();
         Map<String, ArrNode> uuidNodeMap = new HashMap<>();
         do {
-            dataPage = dataUriRefRepository.findByUnresolvedNodeRefs(PageRequest.of(page, MAX_IN_SIZE));
+            dataPage = dataUriRefRepository.findByUnresolvedNodeRefs(PageRequest.of(page, ObjectListIterator.getMaxBatchSize()));
             List<ArrDataUriRef> uriRefs = dataPage.getContent();
             if (uriRefs.size() == 0) {
                 break;

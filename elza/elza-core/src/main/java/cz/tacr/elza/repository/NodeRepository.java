@@ -53,6 +53,8 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
+    List<ArrNode> findAllByNodeIdIn(Collection<Integer> nodeIds);
+
     @Modifying
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
@@ -76,4 +78,18 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "JOIN ur.arrNode n " +
             "WHERE de.deleteChange IS NULL AND n.nodeId = :nodeId")
     Set<Integer> findLinkedNodes(@Param("nodeId") Integer nodeId);
+    
+    /**
+     * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
+     */
+    @Query("SELECT n FROM arr_node n JOIN arr_level l ON l.node = n LEFT JOIN arr_node_conformity nc ON nc.node = n WHERE l.deleteChange IS NULL AND nc IS NULL")
+    List<ArrNode> findByNodeConformityIsNull();
+
+    /**
+     * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
+     */
+    @Query("SELECT n FROM arr_node n JOIN arr_level l ON l.node = n " +
+     "LEFT JOIN arr_node_conformity nc ON nc.node = n " +
+    		"WHERE n.fund = :fund AND l.deleteChange IS NULL AND nc IS NULL")
+    List<ArrNode> findByNodeConformityIsNull(@Param(value= "fund") ArrFund fund);
 }

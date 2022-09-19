@@ -26,6 +26,17 @@ public class LevelInfoImpl implements LevelInfo {
      */
     private List<ArrDao> daos;
 
+    public LevelInfoImpl(LevelInfoImpl source) {
+        items.addAll(source.getItems());
+        nodeId = source.getNodeId();
+        parentNodeId = source.getParentNodeId();
+        nodeUuid = source.getNodeUuid();
+        if (!source.getDaos().isEmpty()) {
+            daos = new ArrayList<>();
+            daos.addAll(source.getDaos());
+        }
+    }
+
     public LevelInfoImpl(int nodeId, Integer parentNodeId) {
         this.nodeId = nodeId;
         this.parentNodeId = parentNodeId;
@@ -59,6 +70,14 @@ public class LevelInfoImpl implements LevelInfo {
         items.add(item);
     }
 
+    public void addItems(Collection<ArrItem> items) {
+        this.items.addAll(items);
+    }
+    
+    public void removeItems(Collection<ArrItem> items) {
+        this.items.removeAll(items);
+    }
+
     @Override
     public Collection<ArrDao> getDaos() {
         return daos != null ? daos : Collections.emptyList();
@@ -71,4 +90,8 @@ public class LevelInfoImpl implements LevelInfo {
         daos.add(dao);
     }
 
+    public void removeDao() {
+        daos = null;
+    }
+    
 }

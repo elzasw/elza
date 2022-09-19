@@ -10,7 +10,6 @@ import {DEFAULT_LIST_SIZE, URL_ENTITY} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 import {AP_VALIDATION} from '../../constants';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
@@ -96,11 +95,18 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
+export const getArchiveEntityUrl = (id) => {
+    return `${URL_ENTITY}/${(id == null ? "" : id)}`
+}
+
 export function goToAe(history, id, force = false, redirect = true) {
     return dispatch => {
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
+        // Zabraneni zmeny adresy v adresnim radku, pokud
+        // je RegistryPage v rezimu modalu ( vyber entity
+        // pomoci tlacitka v RegistryField )
         if (redirect) {
-            history.push(`${URL_ENTITY}/${(id == null ? "" : id)}`);
+            history.push(getArchiveEntityUrl(id));
         }
         return result;
     };
@@ -115,15 +121,13 @@ export function registryDetailFetchIfNeeded(id, force = false) {
                 () => {
                     return WebApi.getAccessPoint(id)
                         .then(data => {
-                            if (data && data.invalid) {
-                                dispatch(addToastrWarning(i18n('registry.invalid.warning')));
-                            }
                             return data;
-                        })
-                        .catch(error => {
-                            dispatch(registryDetailClear());
+                        }).catch((error) => {
+                            if(error.status === 404){
+                                return null;
+                            }
                             throw error;
-                        });
+                        })
                 },
                 force,
             ),

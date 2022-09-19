@@ -108,6 +108,11 @@ public class GroovyUnitdateFormatter {
         return prefix + str;
     }
 
+    // získat první slovo v řetězci, kde jsou slova oddělena mezerami
+    private String getFirstWord(String str) {
+        return str != null? str.split(" ")[0] : null;
+    }
+
     @NotNull
     public String build() {
         String result = "";
@@ -116,7 +121,7 @@ public class GroovyUnitdateFormatter {
 
         if (from == null && to == null) {
             return result;
-        } else if (from != null && to != null && formatYear && yearEqual && fromStr.equals(toStr)) {
+        } else if (from != null && to != null && formatYear && yearEqual && fromStr.equals(toStr) && getFirstWord(prefixFrom).equals(getFirstWord(prefixTo))) {
             result = completeEqualUnitdate(from.getUnitdateValue(), to.getUnitdateValue(), fromStr);
         } else if (from != null && to != null) {
             result = completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);

@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -20,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -38,10 +38,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 
@@ -342,6 +340,9 @@ public class AccessPointItemService {
      *            seznam odkazovaných entit
      * @return
      */
+    // TODO: method is used also to update existing items
+    //       in such case we should retain objectId and not issue new one
+    //       see nextItemObjectId()
     public List<ApItem> createItems(final ApPart part,
                                     final List<ApItemVO> createItems,
                                     final ApChange change,
@@ -465,8 +466,10 @@ public class AccessPointItemService {
                         && bindingItem.getItem().getItemId().equals(createItem.getId())) {
                     // prevzeti puvodniho odkazu
                     ApItem origItem = bindingItem.getItem();
-                    ArrDataRecordRef origData = (ArrDataRecordRef) origItem.getData();
-                    data.setBinding(origData.getBinding());
+                    ArrData origData = HibernateUtils.unproxy(origItem.getData());
+                    Validate.isTrue(origData instanceof ArrDataRecordRef);
+                    ArrDataRecordRef origDataRRef = (ArrDataRecordRef) origData;
+                    data.setBinding(origDataRRef.getBinding());
 
                     dataRefList.add(new ReferencedEntities(data, apItemAccessPointRefVO.getExternalName()));
                     break;
@@ -487,12 +490,18 @@ public class AccessPointItemService {
     /**
      * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
      * 
-     * @param itemsMap mapa zmen
+     * @param itemsMap
+     *            mapa zmen
      * @param bindingItemList
+     * @return list of changed bindings
      */
-    private void changeBindingItemsItems(Map<Integer, ApItem> itemsMap, List<ApBindingItem> bindingItemList) {
+    public List<ApBindingItem> changeBindingItemsItems(Map<Integer, ApItem> itemsMap,
+                                                       Collection<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
-            return;
+            return Collections.emptyList();
+        }
+        if (itemsMap == null || itemsMap.size() == 0) {
+            return Collections.emptyList();
         }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();
         for (ApBindingItem bindingItem : bindingItemList) {
@@ -502,24 +511,10 @@ public class AccessPointItemService {
                 currentItemBindings.add(bindingItem);
             }
         }
-        if (CollectionUtils.isNotEmpty(currentItemBindings)) {
-            bindingItemRepository.saveAll(currentItemBindings);
+        if (CollectionUtils.isEmpty(currentItemBindings)) {
+            return Collections.emptyList();
         }
-    }
-
-    public ApItem copyItem(final ApItem oldItem,
-                             final ApChange change,
-                             final ApPart apPart) {
-        ApItem newItem = new ApItem();
-        newItem.setCreateChange(change);
-        newItem.setData(oldItem.getData());
-        newItem.setItemSpec(oldItem.getItemSpec());
-        newItem.setItemType(oldItem.getItemType());
-        newItem.setObjectId(oldItem.getObjectId());
-        newItem.setPosition(oldItem.getPosition());
-        newItem.setPart(apPart);
-
-        return newItem;
+        return bindingItemRepository.saveAll(currentItemBindings);
     }
 
     /**
@@ -541,7 +536,8 @@ public class AccessPointItemService {
      */
     public ApItem createItem(final ApPart part,
                              final ArrData data,
-                             final RulItemType it, final RulItemSpec is, final ApChange c,
+                             final RulItemType it,
+                             final RulItemSpec is, final ApChange c,
                              final int objectId, final int position) {
         ApItem item = new ApItem();
         item.setData(data);
@@ -597,20 +593,6 @@ public class AccessPointItemService {
         for (ApItem item : items) {
             if (item.getDeleteChange() == null) {
                 if (item.getPosition() >= position) {
-                    result.add(item);
-                }
-            }
-        }
-        return result;
-    }
-
-    private List<ApItem> findItemsBetween(final List<ApItem> items, final int aPosition, final int bPosition) {
-        int minPosition = Math.min(aPosition, bPosition);
-        int maxPosition = Math.max(aPosition, bPosition);
-        List<ApItem> result = new ArrayList<>();
-        for (ApItem item : items) {
-            if (item.getDeleteChange() == null) {
-                if (item.getPosition() >= minPosition && item.getPosition() <= maxPosition) {
                     result.add(item);
                 }
             }
@@ -697,6 +679,36 @@ public class AccessPointItemService {
             externalSystemService.createApBindingItem(binding, change, bindingValue, null, itemCreated);
         }
         return itemCreated;
+    }
+
+    /**
+     * Update existing item with new value
+     * 
+     * Updated item is flushed to the DB. It is up to caller
+     * to sync cache and revalidate AP
+     * 
+     * @param change
+     * @param apItem
+     * @param drr
+     * @return
+     */
+    public ApItem updateItem(ApChange change, ApItem apItem, ArrData data) {
+        Validate.isTrue(apItem.getDeleteChange() == null);
+
+        apItem.setDeleteChange(change);
+        apItem = itemRepository.saveAndFlush(apItem);
+
+        data = dataRepository.save(data);
+
+        // create new item
+        ApItem ret = createItem(apItem.getPart(), data,
+                                apItem.getItemType(),
+                                apItem.getItemSpec(), change,
+                                apItem.getObjectId(),
+                                apItem.getPosition());
+
+        ret = itemRepository.saveAndFlush(ret);
+        return ret;
     }
 
 }

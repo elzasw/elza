@@ -190,6 +190,7 @@ class GroupDetail extends AbstractReactComponent {
                                 addTitle="admin.user.user.action.add"
                                 removeTitle="admin.user.user.action.delete"
                                 renderItem={renderUserItem}
+                                className="no-hover alternating-rows"
                             />
                         }
                     >

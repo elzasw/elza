@@ -47,17 +47,14 @@ public class DeleteFundAction {
     @Autowired
     private IEventNotificationService eventNotificationService;
     @Autowired
-    private NodeConformityRepository nodeConformityInfoRepository;
-    @Autowired
-    private NodeConformityMissingRepository nodeConformityMissingRepository;
-    @Autowired
-    private NodeConformityErrorRepository nodeConformityErrorRepository;
-    @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -303,9 +300,7 @@ public class DeleteFundAction {
         cachedNodeRepository.deleteByFund(fund);
 
         // delete node conformity
-        nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
-        nodeConformityMissingRepository.deleteByNodeConformityNodeFund(fund);
-        nodeConformityInfoRepository.deleteByNodeFund(fund);
+        ruleService.deleteByNodeFund(fund);
 
         // delete attached extensions
         nodeExtensionRepository.deleteByNodeFund(fund);
