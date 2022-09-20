@@ -2398,7 +2398,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Povinné role entit pro Hudebniny v INV (část jednotlivosti)"
+rule "Doporučené role entit pro Hudebniny v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -2742,7 +2742,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro typáře v INV (část jednotlivosti)"
+rule "Doporučené role entit pro typáře v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -2830,7 +2830,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro otisky v INV (část jednotlivost)"
+rule "Doporučené role entit pro otisky v INV (část jednotlivost)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -2915,7 +2915,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Povinné role entit pro kopie otisků v INV (část jednotlivosti)"
+rule "Doporučené role entit pro kopie otisků v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3009,7 +3009,7 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "Doporučenné prvky pro mapy v inv (část jednotlivosti)"
+rule "Doporučené prvky pro mapy v inv (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3099,7 +3099,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro mapy v INV (část jednotlivosti)"
+rule "Doporučené role entit pro mapy v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3294,7 +3294,7 @@ then
 end
 
 
-rule "Povinné role entit pro technické výkresy v INV (část jednotlivosti)"
+rule "Doporučené role entit pro technické výkresy v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3485,7 +3485,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit Grafické listy a kresby v INV (část jednotlivost)"
+rule "Doporučené role entit Grafické listy a kresby v INV (část jednotlivost)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3696,8 +3696,6 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // fotograf
         "ZP2015_ENTITY_ROLE_31",
-        // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61",
         // místo fotografování
         "ZP2015_ENTITY_ROLE_86"
      ) ) from $itemType.rulItemSpecList
@@ -3726,7 +3724,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro fotograficky material bez fotoalb v INV (část jednotlivosti)"
+rule "Doporučené role entit pro fotograficky material bez fotoalb v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3742,8 +3740,6 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // fotograf
         "ZP2015_ENTITY_ROLE_31",
-        // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61",
         // místo fotografování
         "ZP2015_ENTITY_ROLE_86"
      ) ) from $itemType.rulItemSpecList
@@ -3751,7 +3747,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Povinné role entit pro fotoalba v INV (část jednotlivosti)"
+rule "Doporučené role entit pro fotoalba v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -4462,7 +4458,7 @@ then
 	$itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Povinné role entit pro tisky v INV (část jednotlivosti)"
+rule "Doporučené role entit pro tisky v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -4937,7 +4933,7 @@ then
 	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro cenné papíry v INV (část jednotlivosti)"
+rule "Doporučené role entit pro cenné papíry v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
