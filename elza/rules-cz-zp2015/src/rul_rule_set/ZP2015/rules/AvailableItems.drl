@@ -289,7 +289,7 @@ then
 end
 
 
-rule "HP_010 Složka může být pod složkou"
+rule "HP_010 Složka nebo jednotlivost může být pod složkou"
 no-loop
 when    
     $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
@@ -314,20 +314,40 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-// Pokud je rodič jednotlivost, tak je část
-rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_ITEM"
+// HP_012 Jedna složka v hierarchii může určit EJ
+rule "HP_012_01 Jedna složka v hierarchii může určit EJ - množstevní EJ a digitální"
 no-loop
 when
-    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && (specCode=="ZP2015_LEVEL_ITEM"||specCode=="ZP2015_LEVEL_PART") ) from $parentDescItems
-    $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $itemType.rulItemSpecList
+    $activeLevel : ActiveLevel( )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+    // neexistje nadrizeny level typu slozka
+    not ( $level : Level( this!=$activeLevel ) and
+         DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", 
+         		"ZP2015_FOLDER_DAO") ) from $level.descItems )
+    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_DAO") ) from $itemType.rulItemSpecList
 then
-    $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Pokud je nadřazená složka s uvedenim EJ nebo hromadina, potom musí být logická
-rule "Musí být logická složka, pokud nadřazená složka je s uvedenim EJ nebo hromadina"
+rule "HP_012_02 Jedna složka v hierarchii může určit EJ - s typem EJ"
+no-loop
+when
+    $activeLevel : ActiveLevel( )
+    // tyka se manip. seznamu, inventare a starsich pomucek
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+    // neexistje nadrizeny level typu slozka
+    not ( $level : Level( this!=$activeLevel ) and
+         DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", 
+         		"ZP2015_FOLDER_DAO") ) from $level.descItems )
+    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_FOLDER_SINGLE_TYPE") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "HP_013 Pokud je nadřazená složka s uvedenim EJ, hromadina či digitální, potom musí být logická"
 no-loop
 when
     $activeLevel : ActiveLevel( parent!=null  )
@@ -337,43 +357,21 @@ when
     $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
     $itemSpec : RulItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+    $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Nesmí být jiná než logická složka, pokud nadřazená složka je s uvedenim EJ nebo hromadina"
+
+rule "HP_014 Část jednotlivosti může být pod jednotlivostí nebo částí jednotlivosti"
 no-loop
 when
-    $activeLevel : ActiveLevel( parent!=null  )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    $level : Level( this!=$activeLevel )
-    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_DAO") ) ) from $level.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
-    $itemSpec : RulItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", specCode=="ZP2015_LEVEL_PART") ) from $parentDescItems
+    $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.IMPOSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
-// Pokud je nadřazená složka bez uvedeni EJ nebo hromadina, potom muze byt hromadina nebo s uvedenim EJ
-rule "Může být hromadina nebo s uvedením EJ, pokud nemá nadřazenou složku nebo jen logické"
-no-loop
-when
-    $activeLevel : ActiveLevel( )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    // neexistje nadrizeny level typu slozka
-    not ( $level : Level( this!=$activeLevel ) and
-         DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $level.descItems and
-         DescItem(type=="ZP2015_FOLDER_TYPE" && specCode!="ZP2015_FOLDER_LOGICAL" ) from $level.descItems )
-    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
-    $itemSpec : RulItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $itemType.rulItemSpecList
-    // v katalogu nelze zadat slozku s vice stejnymi EJ
-    // TODO: prepsat podminku pozitivne
-    not (
-        DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode=="ZP2015_ARRANGEMENT_KAT") from $activeLevel.descItems and
-        RulItemSpecExt($itemSpec==this && code == "ZP2015_FOLDER_SINGLE_TYPE" ) from $itemType.rulItemSpecList
-        )
-then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
-end
 
 //
 // RE_001 Související entita u jednotky popisu
