@@ -509,7 +509,6 @@ end
 
 rule "PP_005_02 Zneplatněný záznam možný pro složky a jednotlivosti - specifikace"
 no-loop
-salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
