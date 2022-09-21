@@ -88,7 +88,6 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                                     <FormLabel className={'d-block'}>{node.name}</FormLabel>
                                     {node.children.map(item => (
                                         <Button
-                                            variant={'link'}
                                             className="add-link"
                                             key={item.id}
                                             onClick={this.selectDescItem.bind(this, item)}
