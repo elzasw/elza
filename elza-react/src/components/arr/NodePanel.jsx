@@ -491,7 +491,7 @@ class NodePanel extends AbstractReactComponent {
 
         // Modální dialog
         const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form, "dialog-md"));
     }
 
     ensureItemVisible() {
