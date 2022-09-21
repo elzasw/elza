@@ -511,7 +511,6 @@ rule "PP_005_02 Zneplatněný záznam možný pro složky a jednotlivosti - spec
 no-loop
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in (
         // Zneplatněný záznam
         "ZP2015_INVALID_RECORD"
@@ -519,6 +518,18 @@ when $activeLevel: ActiveLevel( )
     $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "PP_006 Zneplatněný záznam - doporučené prvky popisu"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Veřejná poznámka
+        "ZP2015_NOTE"
+        ) )
+then
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 
@@ -973,21 +984,34 @@ end
 // Druhy archivalii
 //---------------------------------------------------
 
-// Druh archiválie povinně - u složky s jednotlivostmi
-rule "Druh archiválie - povinně u složky"
+// TA_001 U složky s typem EJ se uvádí její druh EJ a počet
+rule "TA_001_01 U složky s typem EJ se uvádí její druh EJ a počet"
 no-loop
 when
     $activeLevel: ActiveLevel( )
-    // jedna se o slozku
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
     // ma nastaven typ slozky - slozka jednotlivosti
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
+    // výjimka pro zneplatněný záznam
+    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT") )
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
-rule "Druh archiválie možný u logické podřízené složky pod mnozstevni"
+rule "TA_001_02 U složky s typem EJ se uvádí její druh EJ a počet - zneplatněný záznam - možné"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    // ma nastaven typ slozky - slozka jednotlivosti
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
+    // výjimka pro zneplatněný záznam
+    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE") )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "TA_002 Pod množstevní složkou lze uvést u podřízené složky druh archiválií a počet"
 no-loop
 when 
     $activeLevel: ActiveLevel( )
@@ -998,26 +1022,26 @@ when
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS" ) ) ) from $level.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE") )
 then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Počet ej povinný na složce s uvedením druhu archivalie"
-salience -100
+rule "TA_003 Pokud je na složce uveden typ archiválie je nutné uvést počet"
 no-loop
 when 
     $activeLevel: ActiveLevel( )
     // jedna se o logickou slozku
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
+    DescItem(type=="ZP2015_FOLDER_TYPE") from $activeLevel.ownDescItems
     // ma uveden typ archivalie
     DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
+
 
 // U složky man. seznamu lze vybrat skoro libovolny typ jendotlivosti
 // Nelze vybrat cast jednotlivosti
-rule "Druh archiválie - složka MAN a Starsi pomucky"
+rule "TA_004 Možné druhy archiválie na složce ve starší pomůcce a manipulačním seznamu"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1098,12 +1122,12 @@ when
         "ZP2015_UNIT_TYPE_JIN"
          ) ) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
 // 3.4.2 Inventar
 // U logické složky inventare nesmi byt uvedene typy
-rule "Druh archiválie - slozka v INV"
+rule "TA_005 Možné druhy archiválie na složce v inventáři"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1166,21 +1190,33 @@ when
     "ZP2015_UNIT_TYPE_JIN"    
     )) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Poznamka 3.4.3 Katalog - nelze evidovat jednotlivosti u slozky
 
-
-rule "Druh archiválie - povinně u jednotlivosti a části jednotlivosti"
+// TA_006 Druh archiválie - povinně u jednotlivosti a části jednotlivosti
+rule "TA_006_01 Druh archiválie - povinně u jednotlivosti a části jednotlivosti"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
+
+rule "TA_006_02 Druh archiválie - u jednotlivosti a části jednotlivosti u zneplatněného záznamu"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
 
 rule "Druh archiválie - možné u jednotlivosti a části jednotlivosti (všechny typy pomůcek)"
 no-loop
