@@ -372,6 +372,156 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
 end
 
+//
+// Univerzální prvku popisu
+//
+
+rule "PP_001 Univerzální prvky popisu - vždy možné"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in
+    ( "ZP2015_OTHER_ID",
+      // 4.3.1 Odkaz na původce 
+      "ZP2015_ORIGINATOR", 
+      // 4.3.2 Dějiny jednotky popisu
+      "ZP2015_UNIT_HIST", 
+      // 4.3.3 Způsob uspořádání jednotky popisu
+      "ZP2015_UNIT_ARR",
+      // 4.3.4 Tematický popis jednotky popisu
+      "ZP2015_UNIT_CONTENT",
+      // 4.3.5 Přímý zdroj akvizice
+      "ZP2015_UNIT_SOURCE", 
+      // ZP4.3.6 Budoucí přírůstky 
+      "ZP2015_FUTURE_UNITS",
+      // 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci
+      "ZP2015_UNIT_ACCESS",
+      // 4.4.2 Možnost zveřejnění informací o jednotce popisu
+      "ZP2015_UNIT_INFO_RIGHTS", 
+      "ZP2015_RESTRICTION_ACCESS_SHARED", 
+      "ZP2015_RESTRICTION_ACCESS_INLINE", 
+      "ZP2015_PUBLISHED",
+      // 4.4.3 Možnost zveřejnění reprodukce jednotky popisu
+      "ZP2015_UNIT_COPY_RIGHTS",
+      // 4.4.4 Fyzický stav jednotky popisu a technické požadavky
+      "ZP2015_UNIT_CURRENT_STATUS",
+      // ZP 4.5.1 Identifikace předlohy kopie
+      "ZP2015_COPY_SOURCE",
+      // ZP 4.5.2
+      "ZP2015_RELATED_UNITS",
+      // ZP 4.5.3
+      "ZP2015_EXISTING_COPY",
+      // Poznámky - ZP 4.6.1, 4.6.2
+      "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
+      // 4.7.1 Zpracovatel jednotky popisu
+      "ZP2015_ARRANGER",
+      // 4.7.1 Informace o zpracování
+      "ZP2015_ARRANGEMENT_INFO",
+      // 4.7.2 Pravidla zpracování jednotky popisu
+      "ZP2015_ARRANGE_RULES",
+      // ZP4.7.3 Datum (data) popisu 
+      "ZP2015_DESCRIPTION_DATE",
+      // ZP 5.2.10 Jazyk
+      "ZP2015_LANGUAGE",
+      // ZP 5.2.10 písmo
+      "ZP2015_WRITING",
+      // ZP 5.2.11 Edice a literatura
+      "ZP2015_EDITION",
+      // Obecná příloha 
+      "ZP2015_ATTACHMENT",
+      // Role entit jsou možné vždy
+      "ZP2015_ENTITY_ROLE",
+      "ZP2015_TITLE_PUBLIC"
+      ) )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "PP_002 Univerzální prvky popisu - možné od série níže"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in (
+        "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", 
+        "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART",
+        "ZP2015_AP_REF") 
+        ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in
+    ( 
+      // ZP4.2.4 Formální název jednotky popisu
+      "ZP2015_FORMAL_TITLE"
+     ) )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "PP_003 Univerzální prvky popisu - možné od složky níže"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", 
+                             "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in
+    ( 
+      // ZP5.2.3 Způsob a forma dochování
+      "ZP2015_STORAGE_COND",
+      // ZP5.2.4 Rozměry, hmotnost, velikost, množství 
+      "ZP2015_SIZE",
+      // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
+      "ZP2015_ITEM_MAT",
+      // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
+      "ZP2015_PART",
+      // číslo digitalizátu
+      "ZP2015_DAO_ID"
+     ) )    
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+
+rule "PP_004 Univerzální prvky popisu - možné na složce"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $itemType : RulItemTypeExt(code in
+    (
+      // ZP5.2.2 Název autorského díla
+      "ZP2015_ITEM_TITLE_REF"
+     ) )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+
+// PP_005 Zneplatněný záznam možný pro složky a jednotlivosti
+rule "PP_005_01 Zneplatněný záznam možný pro složky a jednotlivosti - prvek popisu"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Zneplatněný záznam
+        "ZP2015_INVALID_RECORD"
+        ) )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "PP_005_02 Zneplatněný záznam možný pro složky a jednotlivosti - specifikace"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in (
+        // Zneplatněný záznam
+        "ZP2015_INVALID_RECORD"
+        ) )
+    $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
 
 //
 // RE_001 Související entita u jednotky popisu
@@ -1166,122 +1316,6 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-// Vždy možné prvky popisu
-rule "Univerzální prvky popisu - možné"
-no-loop
-when
-    $itemType : RulItemTypeExt(code in
-    ( "ZP2015_OTHER_ID",
-      // 4.3.1 Odkaz na původce 
-      "ZP2015_ORIGINATOR", 
-      // 4.3.2 Dějiny jednotky popisu
-      "ZP2015_UNIT_HIST", 
-      // 4.3.3 Způsob uspořádání jednotky popisu
-      "ZP2015_UNIT_ARR",
-      // 4.3.4 Tematický popis jednotky popisu
-      "ZP2015_UNIT_CONTENT",
-      // 4.3.5 Přímý zdroj akvizice
-      "ZP2015_UNIT_SOURCE", 
-      // ZP4.3.6 Budoucí přírůstky 
-      "ZP2015_FUTURE_UNITS",
-      // 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci
-      "ZP2015_UNIT_ACCESS",
-      // 4.4.2 Možnost zveřejnění informací o jednotce popisu
-      "ZP2015_UNIT_INFO_RIGHTS", 
-      "ZP2015_RESTRICTION_ACCESS_SHARED", 
-      "ZP2015_RESTRICTION_ACCESS_INLINE", 
-      "ZP2015_PUBLISHED",
-      // 4.4.3 Možnost zveřejnění reprodukce jednotky popisu
-      "ZP2015_UNIT_COPY_RIGHTS",
-      // 4.4.4 Fyzický stav jednotky popisu a technické požadavky
-      "ZP2015_UNIT_CURRENT_STATUS",
-      // ZP 4.5.1 Identifikace předlohy kopie
-      "ZP2015_COPY_SOURCE",
-      // ZP 4.5.2
-      "ZP2015_RELATED_UNITS",
-      // ZP 4.5.3
-      "ZP2015_EXISTING_COPY",
-      // Poznámky - ZP 4.6.1, 4.6.2
-      "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
-      // 4.7.1 Zpracovatel jednotky popisu
-      "ZP2015_ARRANGER",
-      // 4.7.1 Informace o zpracování
-      "ZP2015_ARRANGEMENT_INFO",
-      // 4.7.2 Pravidla zpracování jednotky popisu
-      "ZP2015_ARRANGE_RULES",
-      // ZP4.7.3 Datum (data) popisu 
-      "ZP2015_DESCRIPTION_DATE",
-      // ZP 5.2.10 Jazyk
-      "ZP2015_LANGUAGE",
-      // ZP 5.2.10 písmo
-      "ZP2015_WRITING",
-      // ZP 5.2.11 Edice a literatura
-      "ZP2015_EDITION",
-      // Obecná příloha 
-      "ZP2015_ATTACHMENT",
-      // Role entit jsou možné vždy
-      "ZP2015_ENTITY_ROLE",
-      "ZP2015_TITLE_PUBLIC"
-      ) )
-then
-    $itemType.setMinType(RulItemType.Type.POSSIBLE);
-end
-
-rule "Univerzální prvky popisu - možné od série níže"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    $itemType : RulItemTypeExt(code in
-    ( 
-      // ZP4.2.4 Formální název jednotky popisu
-      "ZP2015_FORMAL_TITLE"
-     ) )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in (
-        "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", 
-        "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART",
-        "ZP2015_AP_REF") 
-        ) from $activeLevel.descItems
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
-
-rule "Univerzální prvky popisu - možné na složce"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    $itemType : RulItemTypeExt(code in
-    (
-      // ZP5.2.2 Název autorského díla
-      "ZP2015_ITEM_TITLE_REF"
-     ) )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
-
-rule "Univerzální prvky popisu - možné od složky níže"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    $itemType : RulItemTypeExt(code in
-    ( 
-      // ZP4.2.10 Ukládací jednotka a číslo
-      "ZP2015_STORAGE_ID",      
-      // ZP5.2.3 Způsob a forma dochování
-      "ZP2015_STORAGE_COND",
-      // ZP5.2.4 Rozměry, hmotnost, velikost, množství 
-      "ZP2015_SIZE",
-      // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
-      "ZP2015_ITEM_MAT",
-      // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
-      "ZP2015_PART",
-      // číslo digitalizátu
-      "ZP2015_DAO_ID"
-     ) )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
 
 rule "Ideální popis - jednotlivost"
 no-loop
@@ -1573,34 +1607,6 @@ when $activeLevel: ActiveLevel( )
         ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
-end
-
-rule "Zneplatněný záznam možný pro složky a jednotlivosti"
-no-loop
-when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
-    $itemType: RulItemTypeExt( code in (
-        // Zneplatněný záznam
-        "ZP2015_INVALID_RECORD"
-        ) )
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
-
-rule "Zneplatněný záznam možný pro složky a jednotlivosti - specifikace"
-no-loop
-salience -100
-when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
-    $itemType: RulItemTypeExt( code in (
-        // Zneplatněný záznam
-        "ZP2015_INVALID_RECORD"
-        ) )
-    $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
-then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "Související záznam s jinou EJ"
