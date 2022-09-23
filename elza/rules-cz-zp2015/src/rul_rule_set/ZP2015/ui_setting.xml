@@ -219,8 +219,19 @@
                 <!-- Prvky pro vystup -->
                 <type code="ZP2015_UNIT_COUNT_TABLE" width="3"/>
             </group>
+            <!-- Other items -->
+            <group code="10_UKL_JEDNOTKA">
+                <name>Ukládací jednotka</name>
+                <type code="ZP2015_PACKET_TYPE" width="1"/>
+                <type code="ZP2015_PACKET_FIXED_PREFIX" width="1"/>
+                <type code="ZP2015_PACKET_PREFIX" width="1"/>
+                <type code="ZP2015_PACKET_START_NUMBER" width="1"/>
+                <type code="ZP2015_PACKET_NUMBER" width="1"/>
+                <type code="ZP2015_PACKET_POSTFIX" width="1"/>
+                <type code="ZP2015_PACKET_METRAGE" width="1"/>
+            </group>
             <!-- Items from CAM -->
-            <group code="10_CAM">
+            <group code="11_CAM">
                 <name>CAM</name>
                 <type code="CORP_PURPOSE" width="0"/>
                 <type code="CORP_STRUCTURE" width="0"/>
