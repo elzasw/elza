@@ -2116,7 +2116,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
 		// tvůrci výtvarné stránky
-        "ZP2015_ENTITY_ROLE_39"        
+        "ZP2015_ENTITY_ROLE_39",
 		// místa vzniku předloh popisovaných kopií
         "ZP2015_ENTITY_ROLE_62"        
      ) ) from $itemType.rulItemSpecList
@@ -5318,7 +5318,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // nositel státního vyznamenání / ceny
-        "ZP2015_ENTITY_ROLE_74",         
+        "ZP2015_ENTITY_ROLE_74"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
