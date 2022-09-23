@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller;
 
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,13 +20,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.domain.RulExportFilter;
-import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.ExportFilterRepository;
-import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +44,8 @@ import cz.tacr.elza.controller.vo.PackageDependencyVO;
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -60,24 +58,26 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
-
-import static cz.tacr.elza.repository.ExceptionThrow.node;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 
 /**
@@ -275,7 +275,8 @@ public class RuleController {
             group.setItemTypes(typeInfos);
             result.add(group);
         }
-
+        // vychozi skupina, asi je zbytecna
+        /*
         GroupVO defaultGroup = new GroupVO("DEFAULT", "Bez skupiny");
         List<TypeInfoVO> typeInfos = new ArrayList<>();
         for (ItemType ruleSystemItemType : ruleSystemItemTypes) {
@@ -283,8 +284,9 @@ public class RuleController {
             ItemType itemType = sdp.getItemTypeByCode(code);
             typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
         }
-        defaultGroup.setItemTypes(typeInfos);
+        defaultGroup.setItemTypes(typeInfos);        
         result.add(defaultGroup);
+        */
 
         return result;
     }
