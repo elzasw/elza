@@ -682,7 +682,6 @@ rule "PP_005_01 Zneplatněný záznam možný pro složky a jednotlivosti - prve
 no-loop
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in (
         // Zneplatněný záznam
         "ZP2015_INVALID_RECORD"
