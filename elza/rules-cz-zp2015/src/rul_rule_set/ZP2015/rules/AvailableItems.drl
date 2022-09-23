@@ -2086,6 +2086,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // písaři
         "ZP2015_ENTITY_ROLE_48",
         // výrobci
@@ -2111,6 +2113,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
+		// tvůrci výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39"        
 		// místa vzniku předloh popisovaných kopií
         "ZP2015_ENTITY_ROLE_62"        
      ) ) from $itemType.rulItemSpecList
@@ -2789,6 +2793,26 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
+rule "Doporučené role entit pro typáře v INV (jednotlivost)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
+        "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+    // Rodic je INV
+    $level: Level( $items: descItems )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // místa vzniku předloh popisovaných kopií
+        "ZP2015_ENTITY_ROLE_62"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
 rule "Doporučené role entit pro typáře v INV (část jednotlivosti)"
 no-loop
 salience -100
@@ -2805,7 +2829,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
         // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61"
+        "ZP2015_ENTITY_ROLE_61",
+        // místa vzniku předloh popisovaných kopií
+        "ZP2015_ENTITY_ROLE_62"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
@@ -2914,7 +2940,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
         // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61"
+        "ZP2015_ENTITY_ROLE_61",
+        // místa vydání
+        "ZP2015_ENTITY_ROLE_58"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -3112,6 +3140,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_36",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
+        // tvůrci technického zpracování
+        "ZP2015_ENTITY_ROLE_38",
         // výrobci nosičů záznamů
         "ZP2015_ENTITY_ROLE_50",
         // tiskárny/tiskaři
@@ -3193,8 +3223,12 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_32",
         // editoři
         "ZP2015_ENTITY_ROLE_34",
+        // kresliči
+        "ZP2015_ENTITY_ROLE_36",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
+        // tvůrci technického zpracování
+        "ZP2015_ENTITY_ROLE_38",
         // výrobci nosičů záznamů
         "ZP2015_ENTITY_ROLE_50",
         // tiskárny/tiskaři
@@ -3386,6 +3420,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_26",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
+        // kresliči
+        "ZP2015_ENTITY_ROLE_36",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // typová označení a názvy výrobků a typových staveb
@@ -3750,27 +3786,6 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Povinné role entit pro fotoalba v INV (jednotlivost)"
-no-loop
-salience -100
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_FAL") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
-    // Rodic je INV
-    $level: Level( $items: descItems )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
-    // nastaveni prvku
-    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
-    $itemSpec: RulItemSpecExt( code in (
-        // fotograf
-        "ZP2015_ENTITY_ROLE_31",
-        // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61"
-     ) ) from $itemType.rulItemSpecList
-then
-    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
-end
-
 rule "Doporučené role entit pro fotograficky material bez fotoalb v INV (část jednotlivosti)"
 no-loop
 salience -100
@@ -3808,8 +3823,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // fotograf
         "ZP2015_ENTITY_ROLE_31",
-        // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61"
+        // místo fotografování
+        "ZP2015_ENTITY_ROLE_86"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
@@ -3837,12 +3852,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_24",
         // výrobci nosičů záznamů
         "ZP2015_ENTITY_ROLE_50",
-        // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61",
         // místo fotografování
-        "ZP2015_ENTITY_ROLE_86"
-        // místa vzniku předloh popisovaných kopií
-        //"ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_86",
+        // místa vzniku jednotek popisu
+        "ZP2015_ENTITY_ROLE_61"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -3980,6 +3993,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
         "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // autoři komentářů
         "ZP2015_ENTITY_ROLE_8",
         // autoři choreografií
@@ -4040,7 +4055,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // autoři dialogů
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
-        "ZP2015_ENTITY_ROLE_6"
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10"
         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -4077,6 +4094,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
         "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // autoři komentářů
         "ZP2015_ENTITY_ROLE_8",
         // autoři choreografií
@@ -4219,6 +4238,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
         "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // autoři komentářů
         "ZP2015_ENTITY_ROLE_8",
         // autoři triků a speciálních efektů
@@ -4275,7 +4296,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // autoři dialogů
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
-        "ZP2015_ENTITY_ROLE_6"
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10"
         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -4310,6 +4333,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_2",
         // autoři hudby
         "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // autoři komentářů
         "ZP2015_ENTITY_ROLE_8",
         // autoři triků a speciálních efektů
@@ -4439,9 +4464,13 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		// fotografové
 		"ZP2015_ENTITY_ROLE_31",
         // redaktor
-        "ZP2015_ENTITY_ROLE_32",		
+        "ZP2015_ENTITY_ROLE_32",
+        // editoři
+        "ZP2015_ENTITY_ROLE_34",		
 		// kartografové
 		"ZP2015_ENTITY_ROLE_33",
+        // autoři hudby
+        "ZP2015_ENTITY_ROLE_6",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",		
 		// překladatelé
@@ -4530,11 +4559,54 @@ then
 	$itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Povinné role entit pro tisky v KAT"
+rule "Povinné role entit pro tisky do roku 1800 v KAT"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIO", "ZP2015_UNIT_TYPE_TIP") ) from $ownItems
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIO") ) from $ownItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
+	// Rodic je KAT 
+	Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( 
+		// vydavatelé/nakladatelé 
+		"ZP2015_ENTITY_ROLE_16",
+		// příjemci 
+		"ZP2015_ENTITY_ROLE_21",		
+		// autoři textu
+		"ZP2015_ENTITY_ROLE_11",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",
+        // editoři
+        "ZP2015_ENTITY_ROLE_34",
+		// kartografové
+		"ZP2015_ENTITY_ROLE_33",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",		
+		// překladatelé
+		"ZP2015_ENTITY_ROLE_44",
+		// lektoři
+		"ZP2015_ENTITY_ROLE_45",
+		// výrobci nosičů záznamů
+		"ZP2015_ENTITY_ROLE_50",
+		// tiskárny/tiskaři
+		"ZP2015_ENTITY_ROLE_52",
+		// místa vydání
+		"ZP2015_ENTITY_ROLE_58",
+		// vlastník
+		"ZP2015_ENTITY_ROLE_85"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "Povinné role entit pro tisky po roce 1800 v KAT"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIP") ) from $ownItems
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
 	// Rodic je KAT 
 	Level( $items: descItems ) 
@@ -4551,7 +4623,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		// fotografové
 		"ZP2015_ENTITY_ROLE_31",
         // redaktor
-        "ZP2015_ENTITY_ROLE_32",		
+        "ZP2015_ENTITY_ROLE_32",
+        // editoři
+        "ZP2015_ENTITY_ROLE_34",		
 		// kartografové
 		"ZP2015_ENTITY_ROLE_33",
         // tvůrce výtvarné stránky
@@ -4646,10 +4720,50 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // místa vydání
         "ZP2015_ENTITY_ROLE_58",
         // místa vzniku předloh popisovaných kopií
-        "ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_62",
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Povinné role entit pro Pohlednice v INV (jednotlivost)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_POH") ) from $ownItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+	// Rodic je INV 
+	Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( 
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "Doporučené role entit pro Pohlednice v INV (část jednotlivosti)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_POH") ) from $ownItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+	// Rodic je INV 
+	Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( 
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
 rule "Povinné role entit pro Pohlednice v KAT"
@@ -4677,7 +4791,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
-        "ZP2015_ENTITY_ROLE_58"     
+        "ZP2015_ENTITY_ROLE_58",
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -4834,10 +4950,50 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
-        "ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_62",
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Povinné role entit pro Štočky v INV (jednotlivost)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_STO") ) from $ownItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+	// Rodic je INV 
+	Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( 
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "Doporučené role entit pro Štočky v INV (část jednotlivosti)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_STO") ) from $ownItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+	// Rodic je INV 
+	Level( $items: descItems ) 
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+	// nastaveni prvku	
+	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+	$itemSpec: RulItemSpecExt( code in ( 
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
+	 ) ) from $itemType.rulItemSpecList
+then
+	$itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
 rule "Povinné role entit pro Štočky v KAT"
@@ -4863,7 +5019,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
-        "ZP2015_ENTITY_ROLE_61"
+        "ZP2015_ENTITY_ROLE_61",
+		// geografický objekt zachycený jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71"
         ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -5100,7 +5258,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
-        "ZP2015_ENTITY_ROLE_21",        
+        "ZP2015_ENTITY_ROLE_21",
+        // nositel státního vyznamenání / ceny
+        "ZP2015_ENTITY_ROLE_74",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
         // výrobci
@@ -5109,6 +5269,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_57",
         // místa vzniku předloh popisovaných kopií
         "ZP2015_ENTITY_ROLE_62",
+        // navrhovatel
+        "ZP2015_ENTITY_ROLE_75",
+        // předávající
+        "ZP2015_ENTITY_ROLE_76",
         // místo předání
         "ZP2015_ENTITY_ROLE_88"
      ) ) from $itemType.rulItemSpecList
@@ -5130,12 +5294,32 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
         // vydavatelé
-        "ZP2015_ENTITY_ROLE_15",
-        // příjemci
-        "ZP2015_ENTITY_ROLE_21"        
+        "ZP2015_ENTITY_ROLE_15"      
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "Doporučené role entit pro Faleristické předměty v INV (jednotlivost)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+    // Rodic je INV
+    Level( $items: descItems ) 
+    not(DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items)
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in ( 
+        // příjemci
+        "ZP2015_ENTITY_ROLE_21",
+        // nositel státního vyznamenání / ceny
+        "ZP2015_ENTITY_ROLE_74",         
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
 end
 
 rule "Povinné role entit pro Faleristické předměty v KAT"
@@ -5154,13 +5338,19 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
-        "ZP2015_ENTITY_ROLE_21",        
+        "ZP2015_ENTITY_ROLE_21",
+        // nositel státního vyznamenání / ceny
+        "ZP2015_ENTITY_ROLE_74",      
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // místa vydavatelů
         "ZP2015_ENTITY_ROLE_57",
+        // navrhovatel
+        "ZP2015_ENTITY_ROLE_75",
+        // předávající
+        "ZP2015_ENTITY_ROLE_76",
         // místo předání
         "ZP2015_ENTITY_ROLE_88"
      ) ) from $itemType.rulItemSpecList
