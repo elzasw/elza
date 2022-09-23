@@ -483,9 +483,8 @@ then
     $itemType.setPolicyTypeCode("ZP2015_POL_STORAGE_ID");
 end
 
-rule "Ukládací jednotka na jednotlivosti bez nadřazené množstevní složky nebo složky s EJ - doporučené pro KZA, ZZA"
+rule "UJ_007 Ukládací jednotka na jednotlivosti - doporučené pro KZA, ZZA"
 // Pravidlo se vyhodnocuje později - po nastavení volitelnosti
-salience -100
 no-loop
 when
     // pokud ma dilci casti, tak muze byt ukladaci jednotka specifikovana na nich
@@ -496,31 +495,33 @@ when
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // neni ciste digitalni
     not DescItem(type=="ZP2015_AIP_ID" && readOnly) from $activeLevel.descItems
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // jedná se o Film nebo zvuk záznam
     DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA") ) ) from $activeLevel.descItems    
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Ukládací jednotka na jednotlivosti bez nadřazené množstevní složky nebo složky s EJ - doporučené pro KTT"
-// Pravidlo se vyhodnocuje později - po nastavení volitelnosti
-salience -100
+rule "UJ_008 Ukládací jednotka na jednotlivosti bez uložení - doporučené pro KTT"
 no-loop
 when
     $activeLevel: ActiveLevel( !hasChildren )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
-    // nemá poděděný typ složky množstevní nebo s EJ
-    not DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.ownDescItems
+    // nemá uložení definováno výše
+    not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
     // neni pevne spojeni
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // neni ciste digitalni
     not DescItem(type=="ZP2015_AIP_ID" && readOnly) from $activeLevel.descItems
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // jedná se o kartotéku
-    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KTT") ) ) from $activeLevel.descItems    
+    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KTT") ) ) from $activeLevel.ownDescItems    
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 // Ukládací jednotka pro kartoteční zásuvku
