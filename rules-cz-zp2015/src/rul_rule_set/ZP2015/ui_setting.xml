@@ -230,9 +230,9 @@
                 <type code="ZP2015_PACKET_POSTFIX" width="1"/>
                 <type code="ZP2015_PACKET_METRAGE" width="1"/>
             </group>
-            <!-- Items from CAM -->
+            <!-- Items from CAM pro Původce -->
             <group code="11_CAM">
-                <name>CAM</name>
+                <name>Zjednodušený původce</name>
                 <type code="CORP_PURPOSE" width="0"/>
                 <type code="CORP_STRUCTURE" width="0"/>
                 <type code="FOUNDING_NORMS" width="0"/>
