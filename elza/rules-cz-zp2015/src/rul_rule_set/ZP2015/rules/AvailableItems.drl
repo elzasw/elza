@@ -395,8 +395,8 @@ rule "UJ_001 Ukládací jednotka na množstevní složce a složce s EJ - povin�
 no-loop
 when
     $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.ownDescItems
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
@@ -408,23 +408,44 @@ then
     $itemType.setPolicyTypeCode("ZP2015_POL_STORAGE_ID");
 end
 
-rule "UJ_002 Ukládací jednotka na logické a hromadné složce"
+rule "UJ_002 Ukládací jednotka možná na logické složce"
+no-loop
+when
+    $activeLevel: ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_LOGICAL") ) ) from $activeLevel.ownDescItems
+    // zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // nemá uložení výše
+    not DescItem(type in ("ZP2015_STORAGE_ID") ) from $parentDescItems
+    $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "UJ_003 Ukládací jednotka v případě dodatečných EJ"
 // využívá se pro složku manip seznamu a to i ve starších pomůckách
 no-loop
 when
-    $activeLevel: ActiveLevel( )
+    $activeLevel: ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_LOGICAL", "ZP2015_FOLDER_UNITS") ) ) from $activeLevel.ownDescItems
+    // zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // nemá uložení výše
+    not DescItem(type in ("ZP2015_STORAGE_ID") ) from $parentDescItems
     // složka s dodatečnými EJ (obyvkle složka manip.seznamu)
     DescItem(type=="ZP2015_EXTRA_UNITS" ) from $activeLevel.ownDescItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
+    // System.out.println("UJ_003: nodeId="+$activeLevel.getNodeId());
     $itemType.setMinType(RulItemType.Type.REQUIRED);
     $itemType.setPolicyTypeCode("ZP2015_POL_STORAGE_ID");
     $itemType.setRepeatable(true);
 end
 
-rule "UJ_003 Uložení v DA na digitální složce"
+
+rule "UJ_004 Uložení v DA na digitální složce"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -437,12 +458,12 @@ then
 end
 
 
-rule "UJ_004 Uložení v DA možné na složce s jedním typem arch"
+rule "UJ_005 Uložení v DA možné na složce s jedním typem arch"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     // ma nastaven typ slozky - slozka jednotlivosti
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_AIP_ID") )
 then
@@ -450,11 +471,11 @@ then
 end
 
 
-rule "UJ_005 Ukládací jednotka na jednotlivosti pokud není výše - povinně (vyjma KZA a ZZA, KTT)"
+rule "UJ_006 Ukládací jednotka na jednotlivosti pokud není výše - povinně (vyjma KZA a ZZA, KTT)"
 no-loop
 when
     $activeLevel: ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.ownDescItems
     // nejedná se o Film nebo zvuk záznam
     not DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA", "ZP2015_UNIT_TYPE_KTT") ) ) from $activeLevel.descItems
     // není s ničím pevně spojena
@@ -469,28 +490,30 @@ then
     $itemType.setPolicyTypeCode("ZP2015_POL_STORAGE_ID");
 end
 
-rule "UJ_006 Uložení v digitálním archivu možné na jednotlivosti"
+rule "UJ_007 Uložení v digitálním archivu možné na jednotlivosti"
 no-loop
 when
     $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.ownDescItems
     // nemá poděděný typ složky množstevní nebo s EJ
     not DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_DAO") ) ) from $activeLevel.descItems
     // není s ničím pevně spojena
     not DescItem(type in ("ZP2015_ITEM_LINK", "ZP2015_STORAGE_ID") ) from $activeLevel.descItems    
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_AIP_ID") )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
     $itemType.setPolicyTypeCode("ZP2015_POL_STORAGE_ID");
 end
 
-rule "UJ_007 Ukládací jednotka na jednotlivosti - doporučené pro KZA, ZZA"
+rule "UJ_008 Ukládací jednotka na jednotlivosti - doporučené pro KZA, ZZA"
 // Pravidlo se vyhodnocuje později - po nastavení volitelnosti
 no-loop
 when
     // pokud ma dilci casti, tak muze byt ukladaci jednotka specifikovana na nich
-    $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
+    $activeLevel: ActiveLevel( parent!=null && $parentDescItems: parent.descItems  )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.ownDescItems
     // nemá poděděný typ složky množstevní nebo s EJ
     not DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
@@ -499,13 +522,13 @@ when
     // není zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // jedná se o Film nebo zvuk záznam
-    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA") ) ) from $activeLevel.descItems    
+    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA") ) ) from $activeLevel.ownDescItems    
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
     $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "UJ_008 Ukládací jednotka na jednotlivosti bez uložení - doporučené pro KTT"
+rule "UJ_009 Ukládací jednotka na jednotlivosti bez uložení - doporučené pro KTT"
 no-loop
 when
     $activeLevel: ActiveLevel( !hasChildren && parent!=null && $parentDescItems: parent.descItems )
@@ -526,13 +549,13 @@ then
 end
 
 // Ukládací jednotka pro kartoteční zásuvku
-rule "UJ_009 Ukládací jednotka pro kartoteční zásuvku"
+rule "UJ_010 Ukládací jednotka pro kartoteční zásuvku"
 no-loop
 when
     $activeLevel: ActiveLevel()
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_PART" ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_PART" ) from $activeLevel.ownDescItems
     // jedná se o kartotéční zásuvku
-    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KTT_BOX") ) ) from $activeLevel.descItems    
+    DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KTT_BOX") ) ) from $activeLevel.ownDescItems    
     // není zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
@@ -540,7 +563,8 @@ then
     $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Hromadinová ukládací jednotka se nesmí opakovat"
+
+rule "UJ_011 Hromadinová ukládací jednotka se nesmí opakovat"
 salience -200
 no-loop
 when
@@ -553,6 +577,30 @@ when
     
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
+    // System.out.println("UJ_011 1: "+$descItem.getStructured().getValue() + ", 2: "+$descItem2.getStructured().getValue());
+    $itemType.setType(RulItemType.Type.IMPOSSIBLE);
+end
+
+
+rule "UJ_012 Na množstevní složce musí být uvedena jedna hromadinová ukl. jednotka"
+salience -200
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    // typ složky množstevní
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS") ) ) from $activeLevel.ownDescItems
+    
+    not ($descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null ) from $activeLevel.descItems and
+         StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $descItem.structured.items )
+
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni ciste digitalni
+    not DescItem(type=="ZP2015_AIP_ID" && readOnly) from $activeLevel.descItems
+    
+    $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
+then
+    // System.out.println("UJ_012");
     $itemType.setType(RulItemType.Type.IMPOSSIBLE);
 end
 
