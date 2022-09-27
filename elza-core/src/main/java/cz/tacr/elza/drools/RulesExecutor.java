@@ -24,15 +24,14 @@ import cz.tacr.elza.exception.SystemException;
 
 
 /**
- * Serviska má na starosti spouštění pravidel přes Drools.
+ * Spouštění pravidel přes Drools.
  *
- * @author Martin Šlapa
  * @since 26.11.2015
  */
 @Service
 public class RulesExecutor {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    static private final Logger logger = LoggerFactory.getLogger(RulesExecutor.class);
 
     @Autowired
     private ValidationRules descItemValidationRules;
