@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.StatelessKieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,9 +96,9 @@ public class ValidationRules extends Rules {
                              Thread.currentThread().getId(), path,
                              System.currentTimeMillis() - startTime);
 
-                KieSession session = createKieSession(path);
-                session.setGlobal("results", validationResults);
-                executeSession(session, facts);
+                StatelessKieSession ksession = createKieStatelessSession(path);
+                ksession.setGlobal("results", validationResults);
+                executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
                 logger.debug("Rule executed (workerId: {}) in {}ms",
@@ -116,8 +116,9 @@ public class ValidationRules extends Rules {
 
                 logger.debug("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
 
-                KieSession session = createKieSession(path);
-                executeSession(session, facts);
+                StatelessKieSession ksession = createKieStatelessSession(path);
+                ksession.setGlobal("results", validationResults);
+                executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
                 logger.debug("Extension executed (workerId: {}) in {}ms",
