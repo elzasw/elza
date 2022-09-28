@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -128,7 +130,8 @@ public class EntityDBDispatcher {
      * Valid during synchronization
      */
     Map<String, ApBindingItem> bindingPartLookup;
-    Map<String, ApBindingItem> bindingItemLookup;
+
+    Map<Integer, Map<String, ApBindingItem>> bindingItemsByPart;
 
     /**
      * Parts without binding
@@ -807,26 +810,36 @@ public class EntityDBDispatcher {
                 }
             }
         }
-
+        
         // smazání partů dle externího systému
         // mažou se zbývající party
         deletePartsInLookup(apChange, accessPoint, syncQueue);
 
         // smazání zbývajících nezpracovaných item
-        Collection<ApBindingItem> remainingBindingItems = bindingItemLookup.values();
+        Collection<ApBindingItem> remainingBindingItems = bindingItemsByPart.values().stream()
+                .flatMap(m -> m.values().stream())
+                .collect(Collectors.toCollection(ArrayList::new));
         if (remainingBindingItems.size() > 0) {
             List<ApItem> items = remainingBindingItems.stream().map(ApBindingItem::getItem)
                     .collect(Collectors.toList());
             deleteItems(items, apChange);
         }
-        if (bindingItemLookup.size() > 0) {
-            log.error("Exists unresolved bindings (items), accessPointId: {}, items: {}",
+
+        // delete empty map(s) from bindingItemsByPart
+        Iterator<Map.Entry<Integer, Map<String, ApBindingItem>>> iterator = bindingItemsByPart.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Map<String, ApBindingItem>> entry = iterator.next();
+            if (entry.getValue().isEmpty()) { 
+                iterator.remove();
+            }
+        }
+
+        if (bindingItemsByPart.size() > 0) {
+            log.error("Exists unresolved bindings (items), accessPointId: {}, partIds: {}",
                       accessPoint.getAccessPointId(),
-                      bindingItemLookup.keySet());
-            throw new BusinessException("Exists unresolved bindings, accessPointId: " + accessPointId +
-                    ", count: " + bindingItemLookup.size(),
-                    BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("accessPointId", accessPointId);
+                      bindingItemsByPart.keySet());
+            throw new BusinessException("Exists unresolved bindings, accessPointId: " + accessPointId + ", count: " + bindingItemsByPart.size(),
+                    BaseCode.DB_INTEGRITY_PROBLEM).set("accessPointId", accessPointId);
         }
         if (bindingPartLookup.size() > 0) {
             log.error("Exists unresolved bindings (parts), accessPointId: {}, items: {}",
@@ -851,7 +864,7 @@ public class EntityDBDispatcher {
                   syncResult.getAccessPoint().getVersion());
 
         bindingPartLookup = null;
-        bindingItemLookup = null;
+        bindingItemsByPart = null;
 
         return syncResult;
     }
@@ -991,10 +1004,13 @@ public class EntityDBDispatcher {
     private void deleteItems(List<ApItem> items, ApChange apChange) {
         // delete items in parts
         DeletedItems deletedItems = accessPointItemService.deleteItems(items, apChange);
-        
-        // delete bindings from lookup
+
+        // delete bindings from bindingItemsByPart
         for (ApBindingItem bindingItem : deletedItems.getBindings()) {
-            bindingItemLookup.remove(bindingItem.getValue());
+            for (Integer partId : bindingItemsByPart.keySet()) {
+                Map<String, ApBindingItem> bindingItemsPart = bindingItemsByPart.get(partId);
+                bindingItemsPart.remove(bindingItem.getValue());
+            }
         }
     }
 
@@ -1026,11 +1042,13 @@ public class EntityDBDispatcher {
             srcItemsMap = srcItems.stream().collect(Collectors.toMap(i -> i.getItemId(), i -> i));
         }
 
-        ItemUpdates itemUpdates = findNewOrChangedItems(itemsXml);
+        ItemUpdates itemUpdates = findNewOrChangedItems(apPart, itemsXml);
+        Validate.notNull(itemUpdates);
 
         List<ApItem> result = new ArrayList<>(itemUpdates.getItemCount());
         // remove unchanged items from binding lookup and add to result
         for (ApBindingItem notChangeItem : itemUpdates.getNotChangeItems()) {
+            Map<String, ApBindingItem> bindingItemLookup = bindingItemsByPart.get(apPart.getPartId());
             ApBindingItem removedItem = bindingItemLookup.remove(notChangeItem.getValue());
             if (removedItem == null) {
                 throw new SystemException("Missing item in lookup.").set("missingValue", notChangeItem.getValue());
@@ -1044,7 +1062,7 @@ public class EntityDBDispatcher {
             // drop old bindings
             List<ApBindingItem> bindedItems = changedItems.stream().map(ChangedBindedItem::getBindingItem)
                     .collect(Collectors.toList());
-            deleteBindedItems(bindedItems, procCtx.getApChange());
+            deleteBindedItems(apPart, bindedItems, procCtx.getApChange());
 
             List<Object> xmlItems = changedItems.stream().map(ChangedBindedItem::getXmlItem)
                     .collect(Collectors.toList());
@@ -1053,6 +1071,15 @@ public class EntityDBDispatcher {
             // remove processed items from srcItemMap
             for (ChangedBindedItem changedItem : itemUpdates.getChangedItems()) {
                 srcItemsMap.remove(changedItem.getBindingItem().getItemId());
+            }
+        }
+
+        // check last items with binding in srcItemMap
+        // if item has binding -> remove it from srcItemsMap 
+        Map<String, ApBindingItem> bindingItemsPart = bindingItemsByPart.get(apPart.getPartId());
+        if (bindingItemsPart != null) {
+            for (ApBindingItem bindingItem : bindingItemsPart.values()) {
+                srcItemsMap.remove(bindingItem.getItemId());
             }
         }
 
@@ -1066,10 +1093,12 @@ public class EntityDBDispatcher {
         return result;
     }
 
-    private void deleteBindedItems(List<ApBindingItem> bindingItemsInPart, ApChange apChange) {
+    private void deleteBindedItems(ApPart part, List<ApBindingItem> bindingItemsInPart, ApChange apChange) {
         if (CollectionUtils.isEmpty(bindingItemsInPart)) {
             return;
         }
+        Map<String, ApBindingItem> bindingItemLookup = bindingItemsByPart.get(part.getPartId());
+        Validate.notNull(bindingItemLookup);
         for (ApBindingItem bindingItem : bindingItemsInPart) {
             bindingItemLookup.remove(bindingItem.getValue());
         }
@@ -1307,8 +1336,9 @@ public class EntityDBDispatcher {
         List<ApBindingItem> bindingItems = this.externalSystemService.getBindingItems(binding);
 
         Map<Integer, ApBindingItem> partIdBindingMap = new HashMap<>();
-        bindingPartLookup = new HashMap<>();
-        bindingItemLookup = new HashMap<>();
+        bindingPartLookup = new HashMap<>();        
+        bindingItemsByPart = new HashMap<>();
+        
         partsWithoutBinding = partService.findPartsByAccessPoint(accessPoint);
 
         for (ApBindingItem bindingItem : bindingItems) {
@@ -1317,6 +1347,9 @@ public class EntityDBDispatcher {
                 partIdBindingMap.put(bindingItem.getPart().getPartId(), bindingItem);
                 partsWithoutBinding.remove(bindingItem.getPart());
             } else if (bindingItem.getItem() != null) {
+                Integer partId = bindingItem.getItem().getPartId();
+
+                Map<String, ApBindingItem> bindingItemLookup = bindingItemsByPart.computeIfAbsent(partId, id -> new HashMap<>());
                 bindingItemLookup.put(bindingItem.getValue(), bindingItem);
             } else {
                 throw new IllegalStateException();
@@ -1325,17 +1358,12 @@ public class EntityDBDispatcher {
 
         // safety check 
         // binded item should belong to some part in lookup
-        for (ApBindingItem bitem : bindingItemLookup.values()) {
-            ApItem apItem = bitem.getItem();
-            Integer partId = apItem.getPartId();
+        for (Integer partId: bindingItemsByPart.keySet()) {
             ApBindingItem parentBinding = partIdBindingMap.get(partId);
             if (parentBinding == null) {
-                log.error("Item with binding, but part is not binded, bindingItemId: {}, apItemId: {}, partId: {}",
-                          bitem.getBindingItemId(), apItem.getItemId(), partId);
+                log.error("Item with binding, but part is not binded, partId: {}", partId);
                 throw new SystemException("Item with binding, but part is not binded",
                         BaseCode.DB_INTEGRITY_PROBLEM)
-                                .set("bindingItemId", bitem.getBindingItemId())
-                                .set("apItemId", apItem.getItemId())
                                 .set("partId", partId);
             }
         }
@@ -1344,22 +1372,24 @@ public class EntityDBDispatcher {
 
     /**
      * Try to map received items to existing items
+     * @param part
      * @param items
-     * @param partUpdater
      * @return
      */
-    public ItemUpdates findNewOrChangedItems(List<Object> items) {
+    public ItemUpdates findNewOrChangedItems(ApPart part, List<Object> items) {
+        Map<String, ApBindingItem> bindingItemLookup = bindingItemsByPart.getOrDefault(part.getPartId(), Collections.emptyMap());
+
     	ItemUpdates result = new ItemUpdates();
         for (Object item : items) {
             if (item instanceof ItemBinaryXml) {
                 ItemBinaryXml itemBinary = (ItemBinaryXml) item;                
-                prepareBinaryUpdate(itemBinary, result);                
+                prepareBinaryUpdate(bindingItemLookup, itemBinary, result);                
             } else if (item instanceof ItemBooleanXml) {
                 ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
-                prepareBooleanUpdate(itemBoolean, result);
+                prepareBooleanUpdate(bindingItemLookup, itemBoolean, result);
             } else if (item instanceof ItemEntityRefXml) {
                 ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
-                prepareEntityRefUpdate(itemEntityRef, result);
+                prepareEntityRefUpdate(bindingItemLookup, itemEntityRef, result);
             } else if (item instanceof ItemEnumXml) {
                 ItemEnumXml itemEnum = (ItemEnumXml) item;
                 ApBindingItem bindingItem = bindingItemLookup.get(itemEnum.getUuid().getValue());
@@ -1470,7 +1500,7 @@ public class EntityDBDispatcher {
         return result;
     }
 
-	private void prepareBooleanUpdate(ItemBooleanXml itemBoolean, ItemUpdates result) {
+	private void prepareBooleanUpdate(Map<String, ApBindingItem> bindingItemLookup, ItemBooleanXml itemBoolean, ItemUpdates result) {
 		ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
         if (bindingItem == null) {
         	result.addNewItem(itemBoolean);
@@ -1512,7 +1542,7 @@ public class EntityDBDispatcher {
         return true;
     }
     
-    private void prepareBinaryUpdate(ItemBinaryXml itemBinary, ItemUpdates result) {
+    private void prepareBinaryUpdate(Map<String, ApBindingItem> bindingItemLookup, ItemBinaryXml itemBinary, ItemUpdates result) {
     	ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
         if (bindingItem == null) {
         	result.addNewItem(itemBinary);
@@ -1540,7 +1570,7 @@ public class EntityDBDispatcher {
 
 	}
 
-	private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
+	private void prepareEntityRefUpdate(Map<String, ApBindingItem> bindingItemLookup, ItemEntityRefXml itemEntityRef, ItemUpdates result) {
         ApBindingItem bindingItem = bindingItemLookup.get(itemEntityRef.getUuid().getValue());
 
         if (bindingItem == null) {
