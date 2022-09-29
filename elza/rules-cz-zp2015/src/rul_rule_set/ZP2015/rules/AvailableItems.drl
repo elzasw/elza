@@ -5786,6 +5786,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_24",
         // schvalovatel
         "ZP2015_ENTITY_ROLE_25",
+        // stavitelé
+        "ZP2015_ENTITY_ROLE_26",        
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
         // redaktor
