@@ -309,6 +309,8 @@ when
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems   
     // rodic neni slozka jednotlivosti (s typem EJ)    
     not( DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $parentDescItems )
+    // rodice neni složka s dodatečnými EJ (obyvkle složka manip.seznamu)
+    not( DescItem(type=="ZP2015_EXTRA_UNITS" ) from $parentDescItems )
     
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $itemType.rulItemSpecList
