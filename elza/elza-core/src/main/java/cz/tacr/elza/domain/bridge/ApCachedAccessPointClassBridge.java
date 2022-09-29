@@ -1,25 +1,13 @@
 package cz.tacr.elza.domain.bridge;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
-import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
-import cz.tacr.elza.service.cache.ApVisibilityChecker;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
-import net.bytebuddy.asm.Advice.This;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +18,6 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.RamUsageEstimator;
@@ -42,19 +29,28 @@ import org.hibernate.search.bridge.spi.FieldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+import cz.tacr.elza.service.cache.ApVisibilityChecker;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 public class ApCachedAccessPointClassBridge implements StringBridge, MetadataProvidingFieldBridge {
 
@@ -93,6 +89,7 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     @Override
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         ApCachedAccessPoint apCachedAccessPoint = (ApCachedAccessPoint) value;
+
         final ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -101,7 +98,14 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                 LocalDate.class, LocalDateTime.class));
 
         try {
+            // TODO: use cache service to deserialize
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
+            // do not index APs without state or deleted APs
+            ApState apState = cachedAccessPoint.getApState();
+            if (apState == null || apState.getDeleteChangeId() != null) {
+                return;
+            }
+
             addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document,
                            luceneOptions);
             addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document,
