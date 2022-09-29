@@ -252,9 +252,20 @@ public abstract class BulkAction {
         return descItems.get(0);
     }
 
+    public void deleteDescItems(List<ArrDescItem> items, final boolean moveAfter) {
+        ArrNode node = items.get(0).getNode();
+        if(multipleItemChangeContext==null) {
+            descriptionItemService.deleteDescriptionItems(items, node, getFundVersion(), getChange(),
+                                                          moveAfter, false);
+        } else {
+            descriptionItemService.deleteDescriptionItems(items, node, getFundVersion(), getChange(),
+                                                          moveAfter, false, multipleItemChangeContext);
+            multipleItemChangeContext.flushIfNeeded();
+        }
+    }
+
     public void deleteDescItem(ArrDescItem oldDescItem) {
         List<ArrDescItem> items = Collections.singletonList(oldDescItem);
-        descriptionItemService.deleteDescriptionItems(items, oldDescItem.getNode(), getFundVersion(), getChange(),
-                                                      true, false);
+        deleteDescItems(items, true);
     }
 }
