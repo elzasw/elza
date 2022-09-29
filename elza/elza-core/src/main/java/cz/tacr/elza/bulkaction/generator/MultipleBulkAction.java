@@ -75,7 +75,7 @@ public class MultipleBulkAction extends BulkAction {
 		for (ActionConfig ac : config.getActions()) {
 			Action a = appCtx.getBean(ac.getActionClass(), ac);
 			// initialize each action after all properties are autowired
-			a.init(bulkActionRun);
+            a.init(this, bulkActionRun);
 			actions.add(a);
 		}
 
@@ -160,6 +160,10 @@ public class MultipleBulkAction extends BulkAction {
             Map<Integer, TreeNode> treeNodeMap = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
 
             generate(levelWithItems, treeNodeMap);
+        }
+
+        if (multipleItemChangeContext != null) {
+            multipleItemChangeContext.flush();
         }
 
         // Collect results
