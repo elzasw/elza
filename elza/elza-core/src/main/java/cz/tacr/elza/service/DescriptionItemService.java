@@ -873,7 +873,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
         List<ArrDescItem> ret = deleteDescriptionItems(descItemsToDelete, node, fundVersion, change,
-                                                       moveAfter, force);
+                                                       moveAfter, force, changeContext);
 
         changeContext.flush();
 
