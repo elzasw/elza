@@ -1,15 +1,16 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.NodeCountActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 
 /**
@@ -38,7 +39,9 @@ public class NodeCountAction extends Action {
     }
 
     @Override
-	public void init(ArrBulkActionRun bulkActionRun) {
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        super.init(bulkAction, bulkActionRun);
+
 		StaticDataProvider ruleSystem = getStaticDataProvider();
 
 		String outputType = config.getOutputType();

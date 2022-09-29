@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
@@ -26,6 +27,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -33,6 +35,7 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 
@@ -72,10 +75,13 @@ public class UnitCountAction extends Action {
     private Map<Integer, Consumer<LevelWithItems>> countedObjects = new HashMap<>();
 
     @Autowired
-    StructuredItemRepository structureItemRepository;
+    private StructuredItemRepository structureItemRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
 	final UnitCountConfig config;
 
@@ -92,7 +98,9 @@ public class UnitCountAction extends Action {
     }
 
     @Override
-	public void init(ArrBulkActionRun bulkActionRun) {
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        super.init(bulkAction, bulkActionRun);
+
         Validate.notNull(structureItemRepository);
 
         //dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
@@ -106,6 +114,8 @@ public class UnitCountAction extends Action {
 		change = bulkActionRun.getChange();
 		if (isLocal()) {
 			checkValidDataType(outputItemType, DataType.INT);
+            // initialize multipleChangeContext
+            bulkAction.getMultipleItemChangeContext();
 		} else {
 			checkValidDataType(outputItemType, DataType.JSON_TABLE);
 
@@ -219,7 +229,7 @@ public class UnitCountAction extends Action {
 		if (item == null) {
             item = new ItemTypeSummary();
 	        dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
-            dateRangeAction.init(null);
+            dateRangeAction.init(bulkAction, null);
 		    item.setDateCounter(dateRangeAction);
 		    resultMap.put(key, item);
 		} else {
@@ -237,14 +247,18 @@ public class UnitCountAction extends Action {
 		return config.isLocal();
 	}
 
-    public void createDescItem(Integer nodeId, String value, int count) {
+    public void createDescItem(LevelWithItems level, String value, int count) {
+        ArrNode nodeRef = nodeRepository.getOne(level.getNodeId());
+
 		ArrDataInteger arrDataInteger = new ArrDataInteger();
 		arrDataInteger.setIntegerValue(count);
 
 		ArrDescItem descItem = new ArrDescItem();
 		descItem.setData(arrDataInteger);
 		descItem.setItemType(outputItemType.getEntity());
+        descItem.setNode(nodeRef);
 		descItem.setCreateChange(change);
+
 
 		if (outputItemType.getEntity().getUseSpecification()) {
             RulItemSpec rulItemSpec = outputItemType.getItemSpecByCode(value);
@@ -253,7 +267,7 @@ public class UnitCountAction extends Action {
             }
             descItem.setItemSpec(rulItemSpec);
         }
-        descriptionItemService.createDescriptionItem(descItem, nodeId, fundVersion, change);
+        bulkAction.saveDescItem(descItem);
 	}
 
     public boolean isCountedObject(Integer packetId) {

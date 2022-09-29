@@ -1,5 +1,7 @@
 package cz.tacr.elza.bulkaction;
 
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -30,8 +32,6 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
-
-import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 
 /**
@@ -67,8 +67,8 @@ public abstract class BulkAction {
 	protected StaticDataProvider staticDataProvider;
 
 	/**
-	 * Verze archivní pomůcky
-	 */
+     * Verze fondu
+     */
 	protected ArrFundVersion version;
 
 	/**
@@ -83,9 +83,21 @@ public abstract class BulkAction {
      */
     protected MultipleItemChangeContext multipleItemChangeContext = null;
 
-	/**
-	 * Změna
-	 */
+    /**
+     * Return or create multipleChangeContext
+     * 
+     * @return
+     */
+    public MultipleItemChangeContext getMultipleItemChangeContext() {
+        if (multipleItemChangeContext == null) {
+            multipleItemChangeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+        }
+        return multipleItemChangeContext;
+    }
+
+    /**
+     * Změna
+     */
     public ArrChange getChange() {
 		return bulkActionRun.getChange();
 	}

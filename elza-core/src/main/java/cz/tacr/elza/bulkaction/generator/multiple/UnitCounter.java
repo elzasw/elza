@@ -181,7 +181,7 @@ public class UnitCounter {
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNodeId(), value, count);
+                        unitCountAction.createDescItem(level, value, count);
                     } else {
                         nextAction = unitCountAction.addValue(level, value, count);
                     }
@@ -241,7 +241,7 @@ public class UnitCounter {
                 if (value != null) {
                     Consumer<LevelWithItems> nextAction;
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNodeId(), value, 1);
+                        unitCountAction.createDescItem(level, value, 1);
                         nextAction = null;
                     } else {
                         nextAction = unitCountAction.addValue(level, value, 1);
