@@ -78,14 +78,14 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
                 bulkActionHelperService.updateAction(bulkActionRun);
                 return null;
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("Failed to start action: {}", this, e);
             try {
             new TransactionTemplate(transactionManager).execute(status -> {
                 handleException(e);
                 return null;
             });
-            } catch (Exception eI) {
+        } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
                 throw eI;
             }
@@ -97,14 +97,14 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
                 logger.info("Bulk action succesfully finished: {}", this);
                 return null;
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("Bulk action failed, action: " + this + ", error: ", e);
             try {
             new TransactionTemplate(transactionManager).execute(status -> {
                 handleException(e);
                 return null;
             });
-            } catch (Exception eI) {
+        } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
                 throw eI;
             }
@@ -158,7 +158,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         }
     }
 
-    private void handleException(Exception e) {
+    private void handleException(Throwable e) {
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         bulkActionRun.setError(e.getLocalizedMessage());
         bulkActionRun.setState(ArrBulkActionRun.State.ERROR);
