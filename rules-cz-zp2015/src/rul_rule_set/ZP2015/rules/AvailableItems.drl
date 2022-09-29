@@ -421,6 +421,8 @@ when
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_LOGICAL") ) ) from $activeLevel.ownDescItems
     // zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // není pevné spojení
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // nemá uložení výše
     not DescItem(type in ("ZP2015_STORAGE_ID") ) from $parentDescItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
