@@ -76,10 +76,10 @@ public class ArrDataText extends ArrData {
     @Override
     protected void validateInternal() {
         Validate.notNull(textValue);
-        // check any leading and trailing whitespace in data
-        String value = textValue.trim();
-        Validate.isTrue(value.length() == textValue.length());
 // TODO: #7987 temporarily
+//        // check any leading and trailing whitespace in data
+//        String value = textValue.trim();
+//        Validate.isTrue(value.length() == textValue.length());
 //        // check for non-printable chars in the string, exclude 0x0D, 0x0A
 //        for (int i = 0; i < value.length(); i++) {
 //            char c = value.charAt(i);
