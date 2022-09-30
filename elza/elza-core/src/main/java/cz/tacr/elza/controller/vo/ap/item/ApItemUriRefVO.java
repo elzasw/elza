@@ -62,8 +62,8 @@ public class ApItemUriRefVO extends ApItemVO {
            schema = ArrDataUriRef.createSchema(value);
        }
        data.setSchema(schema);
-       data.setUriRefValue(value);
-       data.setDescription(description);
+       data.setUriRefValue(value.trim());
+       data.setDescription(description == null? null : description.trim());
 
        if(node != null) {
            if(!Objects.equals(node.getId(), nodeId)) {

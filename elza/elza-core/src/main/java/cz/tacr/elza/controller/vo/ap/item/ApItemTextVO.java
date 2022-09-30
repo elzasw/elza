@@ -41,7 +41,7 @@ public class ApItemTextVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataText data = new ArrDataText();
-        data.setTextValue(value);
+        data.setTextValue(value.trim());
         data.setDataType(DataType.TEXT.getEntity());
         return data;
     }

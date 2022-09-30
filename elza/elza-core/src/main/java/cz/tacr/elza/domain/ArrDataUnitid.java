@@ -80,5 +80,7 @@ public class ArrDataUnitid extends ArrData {
     @Override
     protected void validateInternal() {
         Validate.notNull(unitId);
+        // check any leading and trailing whitespace in data
+        Validate.isTrue(unitId.trim().length() == unitId.length());
     }
 }
