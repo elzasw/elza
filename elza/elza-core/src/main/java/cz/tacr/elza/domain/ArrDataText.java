@@ -79,10 +79,11 @@ public class ArrDataText extends ArrData {
         // check any leading and trailing whitespace in data
         String value = textValue.trim();
         Validate.isTrue(value.length() == textValue.length());
-        // check for non-printable chars in the string, exclude 0x0D, 0x0A
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A);
-        }
+// TODO: #7987 temporarily
+//        // check for non-printable chars in the string, exclude 0x0D, 0x0A
+//        for (int i = 0; i < value.length(); i++) {
+//            char c = value.charAt(i);
+//            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A);
+//        }
     }
 }
