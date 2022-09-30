@@ -42,7 +42,7 @@ public class ArrItemStringVO extends ArrItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataString data = new ArrDataString();
-        data.setStringValue(value);
+        data.setStringValue(value.trim());
         data.setDataType(DataType.STRING.getEntity());
         return data;
     }
