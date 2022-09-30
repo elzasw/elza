@@ -2194,20 +2194,6 @@ then
     $itemType.setRepeatable(true);
 end
 
-rule "Doporučené specifikace pro Matriky"
-no-loop
-when $activeLevel: ActiveLevel( $items: descItems )
-    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
-    $itemType: RulItemTypeExt( code in (
-        "ZP2015_ENTITY_ROLE"
-       ) )    
-    $itemSpec: RulItemSpecExt( code in ("ZP2015_ENTITY_ROLE_82")
-     	) from $itemType.rulItemSpecList
-then
-    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
-end
-
-
 rule "Možné specifikace pro Matriky"
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
