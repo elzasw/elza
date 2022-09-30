@@ -911,7 +911,7 @@ end
 rule "Možné role entit pro složku (i sérii)"
 no-loop
 when $activeLevel: ActiveLevel( )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_SERIES") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autoři textů
