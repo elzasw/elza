@@ -867,12 +867,26 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrChange change,
                                                     final boolean moveAfter,
                                                     final boolean force) {
-        Validate.notEmpty(descItemsToDelete);
         Validate.notNull(fundVersion);
+        Validate.notEmpty(descItemsToDelete);
         Validate.notNull(change);
 
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        List<ArrDescItem> ret = deleteDescriptionItems(descItemsToDelete, node, fundVersion, change,
+                                                       moveAfter, force, changeContext);
 
+        changeContext.flush();
+
+        return ret;
+    }
+
+    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
+                                                    final ArrNode node,
+                                                    final ArrFundVersion fundVersion,
+                                                    final ArrChange change,
+                                                    final boolean moveAfter,
+                                                    final boolean force,
+                                                    final BatchChangeContext changeContext) {
         List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
         List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
 
@@ -890,8 +904,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             results.add(deletedItem);
         }
-
-        changeContext.flush();
 
         return results;
     }

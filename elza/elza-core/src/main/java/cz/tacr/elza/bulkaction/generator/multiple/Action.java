@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.data.DataType;
@@ -34,14 +35,23 @@ public abstract class Action {
 	protected StaticDataService staticDataService;
 
     @Autowired
-    protected ApplicationContext appCtx;	
+    protected ApplicationContext appCtx;
 
     /**
-	 * Inicializace akce.
-	 *
-	 * @param bulkActionRun
-	 */
-	abstract public void init(ArrBulkActionRun bulkActionRun);
+     * Parent bulk action
+     */
+    protected BulkAction bulkAction;
+
+    /**
+     * Inicializace akce.
+     *
+     * @param bulkAction
+     *            Master bulk action
+     * @param bulkActionRun
+     */
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        this.bulkAction = bulkAction;
+    }
 
     /**
      * Aplikování akce na uzel.

@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,15 +66,15 @@ public class DescItemTypesRules extends Rules {
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
-            KieSession session = createKieSession(path);
-            executeSession(session, facts);
+            StatelessKieSession ksession = createKieStatelessSession(path);
+            executeStateless(ksession, facts);
         }
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
-            KieSession session = createKieSession(path);
-            executeSession(session, facts);
+            StatelessKieSession session = createKieStatelessSession(path);
+            executeStateless(session, facts);
         }
 
         return rulDescItemTypeExtList;

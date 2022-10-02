@@ -55,6 +55,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
@@ -772,20 +773,24 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                 cachedAccessPoint.getAccessPointId(),
                                 cachedPart.getPartId());
             }
-            for(ApItem item: cachedPart.getItems()) {
-            	if(item.getDeleteChangeId()!=null||item.getDeleteChange()!=null) {
+            for (ApItem item: cachedPart.getItems()) {
+            	if (item.getDeleteChangeId() != null || item.getDeleteChange() != null) {
                     Validate.isTrue(false,
                             "Deleted item cannot be cached, accessPointId=%s",
                             cachedAccessPoint.getAccessPointId());            		
             	}
-            	if(!itemIds.add(item.getItemId())) {
+            	if (!itemIds.add(item.getItemId())) {
                     Validate.isTrue(false,
                             "Duplicated item in cache, accessPointId=%s, itemId=%s",
                             cachedAccessPoint.getAccessPointId(),
                             item.getItemId());
             	}
+                ArrData data = item.getData();
+                if (data != null) {
+                    data.validate();
+                }
             }
-        }      
+        }
         // validate preferred name
         if (prefPart == null) {
             Validate.notNull(prefPart, "Missing preferred parts, accessPointId=%s",

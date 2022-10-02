@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DateRangeActionResult;
@@ -85,7 +86,9 @@ public class DateRangeAction extends Action {
 	}
 
     @Override
-	public void init(ArrBulkActionRun bulkActionRun) {
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        super.init(bulkAction, bulkActionRun);
+
         StaticDataProvider sdp = this.getStaticDataProvider();
 
         // initialize exclude configuration

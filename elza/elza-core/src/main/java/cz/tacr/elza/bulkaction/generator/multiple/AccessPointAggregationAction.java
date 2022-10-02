@@ -13,9 +13,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -26,15 +23,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationResult;
 import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationStructResult;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -56,6 +56,7 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 
@@ -101,7 +102,9 @@ public class AccessPointAggregationAction extends Action {
     }
 
     @Override
-    public void init(ArrBulkActionRun bulkActionRun) {
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        super.init(bulkAction, bulkActionRun);
+
         results = new LinkedHashMap<>();
         ruleSystem = getStaticDataProvider();
         StaticDataProvider sdp = StaticDataProvider.getInstance();

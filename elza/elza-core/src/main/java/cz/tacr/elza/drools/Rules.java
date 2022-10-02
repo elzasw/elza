@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.kie.api.KieBase;
+import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
@@ -18,7 +20,10 @@ import org.kie.api.builder.Message;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.io.ResourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.core.data.StaticDataService;
@@ -36,10 +41,12 @@ import cz.tacr.elza.repository.PackageRepository;
  */
 public abstract class Rules {
 
+    static private final Logger logger = LoggerFactory.getLogger(Rules.class);
+
     /**
      * uchování informace o načtených drools souborech
      */
-    private Map<Path, Map.Entry<FileTime, KieContainer>> rulesByPathMap = new HashMap<>();
+    private Map<Path, Map.Entry<FileTime, KieBase>> rulesByPathMap = new HashMap<>();
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
@@ -53,18 +60,27 @@ public abstract class Rules {
     @Autowired
     protected StaticDataService staticDataService;
 
+    // KIE configuration
+    private KieBaseConfiguration kieBaseConf;
+
+    public Rules() {
+        KieServices ks = KieServices.Factory.get();
+        kieBaseConf = ks.newKieBaseConfiguration();
+        //kieBaseConf.setOption(SequentialOption.YES);
+    }
+
 
     /**
      * Metoda pro kontrolu aktuálnosti souboru s pravidly.
      * 
      * @throws IOException
      */
-    protected Map.Entry<FileTime, KieContainer> testChangeFile(final Path path,
-                                                               final Map.Entry<FileTime, KieContainer> entry)
+    protected Map.Entry<FileTime, KieBase> testChangeFile(final Path path,
+                                                          final Map.Entry<FileTime, KieBase> entry)
             throws IOException {
         FileTime ft = Files.getLastModifiedTime(path);
         if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
-            Map.Entry<FileTime, KieContainer> entryNew = reloadRules(path);
+            Map.Entry<FileTime, KieBase> entryNew = reloadRules(path);
             rulesByPathMap.remove(path);
             rulesByPathMap.put(path, entryNew);
             return entryNew;
@@ -78,7 +94,9 @@ public abstract class Rules {
      * 
      * @throws IOException
      */
-    private Map.Entry<FileTime, KieContainer> reloadRules(final Path path) throws IOException {
+    private Map.Entry<FileTime, KieBase> reloadRules(final Path path) throws IOException {
+        logger.debug("Loading rules: {}", path);
+
         KieServices ks = KieServices.Factory.get();
         KieFileSystem kfs = ks.newKieFileSystem();
 
@@ -90,8 +108,24 @@ public abstract class Rules {
                     .set("detail", kBuilder.getResults().getMessages());
         }
         KieContainer kc = ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
+        // set kieBase configuration
+        KieBase kbc = kc.newKieBase(kieBaseConf);
         FileTime ft = Files.getLastModifiedTime(path);
-        return new AbstractMap.SimpleEntry<>(ft, kc);
+        return new AbstractMap.SimpleEntry<>(ft, kbc);
+    }
+
+    private KieBase getKieBase(Path path) throws IOException {
+        Map.Entry<FileTime, KieBase> entry = rulesByPathMap.get(path);
+
+        if (entry == null) {
+            entry = reloadRules(path);
+            rulesByPathMap.put(path, entry);
+        } else {
+            entry = testChangeFile(path, entry);
+        }
+
+        KieBase kb = entry.getValue();
+        return kb;
     }
 
     /**
@@ -103,24 +137,38 @@ public abstract class Rules {
      */
     public synchronized KieSession createKieSession(final Path path) throws IOException {
 
-        Map.Entry<FileTime, KieContainer> entry = rulesByPathMap.get(path);
+        logger.debug("Creating KieSession for rules: {}", path);
 
-        if (entry == null) {
-            entry = reloadRules(path);
-            rulesByPathMap.put(path, entry);
-        } else {
-            entry = testChangeFile(path, entry);
-        }
+        KieBase kb = getKieBase(path);
 
-        return entry.getValue().newKieSession();
+        KieSession ksession = kb.newKieSession();
+        return ksession;
     }
 
-    public void executeSession(KieSession session, List<Object> facts) {
+    public synchronized StatelessKieSession createKieStatelessSession(final Path path) throws IOException {
+
+        logger.debug("Creating StatelessKieSession for rules: {}", path);
+
+        KieBase kb = getKieBase(path);
+
+        StatelessKieSession ksession = kb.newStatelessKieSession();
+        return ksession;
+    }
+
+    /**
+     * Execute with stateless session
+     */
+    public void executeStateless(StatelessKieSession ksession, List<Object> facts) {
+        ksession.execute(facts);
+    }
+
+    public void executeSession(KieSession ksession, List<Object> facts) {
+
         for (Object fact : facts) {
-            session.insert(fact);
+            ksession.insert(fact);
         }
-        session.fireAllRules();
-        session.dispose();
+        ksession.fireAllRules();
+        ksession.dispose();
     }
 
     protected void sortDefinitionByPackages(final List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions) {

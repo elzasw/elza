@@ -9,19 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.DeleteItemConfig;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.DeleteItemResult;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.service.DescriptionItemService;
 
 /**
  * Akce na odstranění hodnot atributu.
@@ -33,16 +31,9 @@ public class DeleteItemAction extends Action {
     @Autowired
     private DescItemRepository descItemRepository;
 
-    @Autowired
-    private DescriptionItemService descriptionItemService;
-
     private DeleteItemConfig config;
 
     private ItemType itemType;
-
-    private ArrChange change;
-
-    private ArrFundVersion fundVersion;
 
     DeleteItemAction(final DeleteItemConfig config) {
         Validate.notNull(config);
@@ -50,11 +41,14 @@ public class DeleteItemAction extends Action {
     }
 
     @Override
-    public void init(ArrBulkActionRun bulkActionRun) {
+    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+        super.init(bulkAction, bulkActionRun);
+
+        // initialize multipleChangeContext
+        bulkAction.getMultipleItemChangeContext();
+
         String inputTypeCode = config.getInputType();
         itemType = getStaticDataProvider().getItemTypeByCode(inputTypeCode);
-        fundVersion = bulkActionRun.getFundVersion();
-        change = bulkActionRun.getChange();
     }
 
     @Override
@@ -78,13 +72,10 @@ public class DeleteItemAction extends Action {
             }
         }
         if (deleteItems != null) {
-            descriptionItemService.deleteDescriptionItems(deleteItems,
-                                                          node,
-                                                          fundVersion,
-                                                          change,
-                                                          // mazou se vsechny prvky popisu daneho typu,
-                                                          // nemohou se posouvat pozice
-                                                          false, false);
+            bulkAction.deleteDescItems(deleteItems,
+                                       // mazou se vsechny prvky popisu daneho typu,
+                                       // nemohou se posouvat pozice
+                                       false);
         }
     }
 
