@@ -66,7 +66,19 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
             " where i.delete_change_id is not null", nativeQuery = true)
     int countDeletedItemsWithUndeletedBindingItem();
 
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    /**
+     * Find usage of access point in another items
+     * 
+     * Includes only valid access points (not deleted)
+     * 
+     * @param replaced
+     * @return
+     */
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p "
+            + "JOIN FETCH p.accessPoint "
+            + "JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d "
+            + "JOIN ap_state st ON st.accessPointId = p.accessPointId AND st.deleteChangeId IS NULL "
+            + "WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
 
     @Query("SELECT d.recordId FROM ApItem i "

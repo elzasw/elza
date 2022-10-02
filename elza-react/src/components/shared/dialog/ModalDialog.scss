@@ -1,5 +1,13 @@
 @import 'variables.scss';
 .modal {
+    &.dialog-md {
+        @media screen and (min-width: map_get($grid-breakpoints, 'md')) {
+          .modal-dialog {
+              max-width: 750px;
+              width: 750px;
+          }
+        }
+    }
     &.dialog-lg {
         @media screen and (min-width: map_get($grid-breakpoints, 'md')) {
           .modal-dialog {

@@ -1,18 +1,18 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
-
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import java.util.Collection;
-import java.util.List;
 
 public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem, Integer> {
 
@@ -37,7 +37,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     List<ApBindingItem> findByParts(@Param("parts") List<ApPart> parts);
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.item IS NOT NULL AND bi.item IN :items AND bi.deleteChange IS NULL")
-    List<ApBindingItem> findByItems(@Param("items") List<ApItem> items);
+    List<ApBindingItem> findByItems(@Param("items") Collection<ApItem> apItems);
 
     void deleteByBinding(ApBinding binding);
 

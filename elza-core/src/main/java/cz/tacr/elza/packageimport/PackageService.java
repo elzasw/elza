@@ -785,10 +785,16 @@ public class PackageService {
                 }
             });
             List<String> sortedPkg = g.topologicalSort();
+            logger.debug("Sorted packages: {}", sortedPkg);
 
             // import balíčku
             for (String codePkg : sortedPkg) {
                 PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
+                // Nenalezen balicek na disku pro dany typ
+                if (pkgZip == null) {
+                    logger.debug("No package with code: {}", codePkg);
+                    continue;
+                }
 
                 Path packagePath = pkgZip.getPath();
                 // Kontrola, zda existuje soubor nebo je jiz v DB

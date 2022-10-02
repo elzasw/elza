@@ -73,6 +73,7 @@ export function fundSelectSubNode(
     newFilterCurrentIndex = null,
     ensureItemVisible = false,
     subNodeIndex = null,
+    selectSibling = false,
 ) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
@@ -85,7 +86,20 @@ export function fundSelectSubNode(
         let nodeIndex = null;
         let treeIndex;
 
-        if (!subNodeId && subNodeIndex !== null) {
+        if (selectSibling){
+            const { id, depth } = subNodeParentNode;
+            nodeIndex = indexById(treeNodes, id);
+
+            // filter by depth to select from siblings
+            const filteredNodes = treeNodes.filter((node) => node.depth <= depth + 1);
+            const parentIndex = indexById(filteredNodes, id);
+            const _subNodeIndex = parentIndex + subNodeIndex + 1;
+            const subNode = filteredNodes[_subNodeIndex];
+
+            subNodeId = subNode?.id || undefined;
+            // get real index from tree
+            treeIndex = indexById(treeNodes, subNodeId)
+        } else if (!subNodeId && subNodeIndex !== null) {
             // vyhledani indexu ve stromu, za pomoci id rodice,
             // pokud je poskytnut pouze subNodeIndex
             const parentNodeIndex = indexById(treeNodes, subNodeParentNode.id);

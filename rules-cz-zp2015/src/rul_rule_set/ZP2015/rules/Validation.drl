@@ -41,7 +41,7 @@ then
 	results.createMissing("ZP2015_UNIT_DATE", "Datace není zahrnuta v časovém rozsahu vyšší úrovně", "ZP2015_POL_BASIC");
 end
 
-
+/*
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
 rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
 when
@@ -52,6 +52,7 @@ when
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
 end
+*/
 
 // uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku
 rule "Počet jednotek musí být větší roven než 2"

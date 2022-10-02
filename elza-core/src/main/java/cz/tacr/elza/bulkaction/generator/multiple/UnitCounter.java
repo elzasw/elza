@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
@@ -180,7 +181,7 @@ public class UnitCounter {
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNodeId(), value, count);
+                        unitCountAction.createDescItem(level, value, count);
                     } else {
                         nextAction = unitCountAction.addValue(level, value, count);
                     }
@@ -194,25 +195,25 @@ public class UnitCounter {
 
         // StructObj mapping
         if (srcStructObjType != null) {
-            countStructObjs(srcStructObjType.getItemTypeId(), level, unitCountAction);
+            countStructObjs(srcStructObjType, level, unitCountAction);
         }
     }
 
     /**
      * Count from given structured object
      * 
-     * @param itemTypeId
+     * @param itemType
      * @param Level.get
      */
-    private void countStructObjs(@Nonnull Integer itemTypeId, LevelWithItems level,
+    private void countStructObjs(@Nonnull ItemType itemType, LevelWithItems level,
                                 UnitCountAction unitCountAction) {
-        List<ArrDescItem> descItems = level.getDescItems();
-        for (ArrDescItem item : descItems) {
-            // check if type match
-            if (!itemTypeId.equals(item.getItemTypeId())) {
-                continue;
-            }
 
+        // List<ArrDescItem> descItems = level.getDescItems();
+        List<ArrDescItem> descItems = level.getInheritedDescItems(itemType);
+        if (CollectionUtils.isEmpty(descItems)) {
+            return;
+        }
+        for (ArrDescItem item : descItems) {
             // fetch valid items from packet
             ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
             Integer packetId = dataStructObjRef.getStructuredObjectId();
@@ -240,7 +241,7 @@ public class UnitCounter {
                 if (value != null) {
                     Consumer<LevelWithItems> nextAction;
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNodeId(), value, 1);
+                        unitCountAction.createDescItem(level, value, 1);
                         nextAction = null;
                     } else {
                         nextAction = unitCountAction.addValue(level, value, 1);

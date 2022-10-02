@@ -7,6 +7,11 @@
 
 @import "../../variables.scss";
 
+@mixin box-shadow($shadow) {
+    -webkit-box-shadow: $shadow; // iOS <4.3 & Android <4.1
+    box-shadow: $shadow;
+}
+
 .node-actions-bar {
     width: 100%;
     background: $node-panel-actions-bg;
@@ -17,53 +22,131 @@
         display:flex;
         position: relative;
 
-        .button-wrap{
-            position: relative;
-            width: 100%;
-            display:flex;
-            padding: 0 10px;
+    }
+}
 
-            &>div {
-                display:flex;
-                align-items: center;
-                &.left-side{
-                    flex-grow: 1;
-                }
-            }
-            .btn {
-                background: transparent;
-                height: 2em;
-                font-size: 0.9em;
-                border: none;
-                padding: 2px 4px;
-                margin: 0 2px;
-                vertical-align: top;
-                &.dropdown-toggle {
-                    padding: 0 3px 0 3px;
-                    margin-left: -8px;
-                }
-                .icon {
-                    color: $node-form-actions-color;
-                    height: 1.35em;
-                    line-height: 1.35em;
-                    width: 1.35em;
-                }
-                &:hover {
-                    background-color: $node-form-actions-hover;
-                }
-            }
-            .search-input {
-                display: inline-block;
-                position: relative;
-                height: 1.8em;
-                line-height: 1.8em;
-                .btn {
-                    margin: 0;
-                }
-            }
+.button-wrap{
+    position: relative;
+    width: 100%;
+    display:flex;
+    padding: 0 10px;
+
+    &>div {
+        display:flex;
+        align-items: center;
+        &.left-side{
+            flex-grow: 1;
+        }
+    }
+    .btn {
+        background: transparent;
+        height: 2em;
+        font-size: 0.9em;
+        border: none;
+        padding: 2px 4px;
+        margin: 0 2px;
+        vertical-align: top;
+        &.dropdown-toggle {
+            padding: 0 3px 0 3px;
+            margin-left: -8px;
+        }
+        .icon {
+            color: $node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+        }
+        &:hover {
+            background-color: $node-form-actions-hover;
+        }
+    }
+    .search-input {
+        display: inline-block;
+        position: relative;
+        height: 1.8em;
+        line-height: 1.8em;
+        .btn {
+            margin: 0;
         }
     }
 }
 
+.node-navigation {
+    display: flex;
+    height: 1.8em;
+
+    & > .btn {
+        background: #eee;
+        font-size: 0.9em;
+        border: 1px solid #ccc;
+        padding: 0;
+        margin: 0;
+        vertical-align: top;
+        height: 100%;
+        width: 1.8em;
+        /* &.dropdown-toggle { */
+        /*     padding: 0 3px 0 3px; */
+        /*     margin-left: -8px; */
+        /* } */
+        &.left {
+            border-right: none;
+        }
+        &.right {
+            border-left: none;
+        }
+        .icon {
+            color: $node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+        }
+        &:hover {
+            background-color: $node-form-actions-hover;
+        }
+    }
+
+    .input-wrapper {
+        display: flex;
+        border: 1px solid #ccc;
+        background-color: white;
+        transition: box-shadow ease-out 200ms, border ease-out 200ms;
+        padding: 3px 6px;
+        font-size: 0.7rem;
+        height: 100%;
+        align-items: center;
+
+        &:focus-within {
+            border-color: darken($focus-border-color, 10%) !important;
+            outline: 0px solid darken($focus-border-color, 10%) !important;
+            outline-offset: -1px;
+            $focus-shadow: inset 0 0px 1px rgba(0, 0, 0, .075), 0 0 6px lighten($focus-border-color, 10%);
+            @include box-shadow($focus-shadow);
+        }
+
+        input {
+            border: none;
+            background-color: transparent;
+            width: 50px;
+            text-align: right;
+            padding: 0;
+            margin: 0;
+            padding-right: 3px;
+            font-size: 1em;
+            line-height: 1em;
+            height: 1em;
+
+            &:focus {
+                box-shadow: none;
+            }
+        }
+        
+        & > div {
+            font-size: 1em;
+            line-height: 1em;
+            height: 1em;
+        }
+
+    }
+}
 
 /* END */

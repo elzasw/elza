@@ -88,7 +88,6 @@ public class ArrDataUriRef extends ArrData {
         this.uriRefValue = uriRefValue;
     }
 
-
     public String getDescription() {
         return description;
     }
@@ -157,7 +156,12 @@ public class ArrDataUriRef extends ArrData {
     protected void validateInternal() {
         Validate.notNull(uriRefValue);
         Validate.notNull(schema);
-
+        // check any leading and trailing whitespace in data
+        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length());
+        Validate.isTrue(schema.trim().length() == schema.length());
+        if (description != null) {
+            Validate.isTrue(description.trim().length() == description.length());
+        }
     }
 
     public static String createSchema(String value) {

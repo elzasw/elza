@@ -103,7 +103,10 @@ public class ArrDataRecordRef extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(record);
-        Validate.notNull(recordId);
+        if (record == null) {
+            Validate.isTrue(recordId == null);
+        } else {
+            Validate.notNull(recordId);
+        }
     }
 }

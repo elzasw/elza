@@ -8,4 +8,7 @@
     <structure-extension code="ZP2015_PACKET_EXTTYPE" structure-type="ZP2015_PACKET" >
         <name>Uložení s typem ukládací jednotky</name>
     </structure-extension>
+    <structure-extension code="ZP2015_PACKET_METRAGE" structure-type="ZP2015_PACKET" >
+        <name>Uložení s metráží</name>
+    </structure-extension>
 </structure-extensions>
