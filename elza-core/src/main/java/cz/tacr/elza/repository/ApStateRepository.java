@@ -68,6 +68,12 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
            " AND state.deleteChange IS NULL")
     int countValidByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
+    @Query("SELECT state.accessPointId FROM ap_state state" +
+            " WHERE state.accessPointId IN :accessPointIds" +
+            " AND state.createChangeId = (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = state.accessPoint)" +
+            " AND state.deleteChange IS NOT NULL")
+     List<Integer> findDeletedAccessPointIdsByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
     @Modifying
     @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
     void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);

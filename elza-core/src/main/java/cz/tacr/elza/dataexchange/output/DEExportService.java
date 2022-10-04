@@ -233,13 +233,13 @@ public class DEExportService {
                 ObjectListIterator.forEachPage(recordIds, page -> 
                                                accessPointIds.addAll(apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page)));
             }
-    
+
             // check all access points
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 ObjectListIterator.forEachPage(accessPointIds, page -> {
                     if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
                         throw new BusinessException("Entity(es) has been deleted.", BaseCode.INVALID_STATE)
-                            .set("IDs", page);
+                            .set("IDs", stateRepository.findDeletedAccessPointIdsByAccessPointIds(page));
                     }
                 });
             }
