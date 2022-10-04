@@ -184,7 +184,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         }
         
         // fixed ArrDataUriRef
-        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_uri_ref SET shema = ?, value = ?, description = ? WHERE data_id = ?")) {
+        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_uri_ref SET schema = ?, value = ?, description = ? WHERE data_id = ?")) {
             List<ArrDataUriRef> dataUriRefs = prepareArrDataUriRef();
             if (!dataUriRefs.isEmpty()) {
                 for (ArrDataUriRef dataUriRef : dataUriRefs) {
