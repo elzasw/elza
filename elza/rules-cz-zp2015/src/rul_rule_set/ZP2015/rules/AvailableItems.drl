@@ -5581,7 +5581,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // místa vzniku předloh popisovaných kopií
-        "ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_62",
+        // místo předání
+        "ZP2015_ENTITY_ROLE_88"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
@@ -5615,8 +5617,6 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
-        // příjemci
-        "ZP2015_ENTITY_ROLE_21",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",
         // výrobci
@@ -5624,9 +5624,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // místa vydavatelů
         "ZP2015_ENTITY_ROLE_57",
         // státní vyznamenání / cena
-        "ZP2015_ENTITY_ROLE_73",
-        // místo předání
-        "ZP2015_ENTITY_ROLE_88"        
+        "ZP2015_ENTITY_ROLE_73"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
