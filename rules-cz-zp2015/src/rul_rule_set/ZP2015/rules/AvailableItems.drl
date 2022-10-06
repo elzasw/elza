@@ -897,7 +897,7 @@ no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	 DescItem(type=="ZP2015_INVALID_RECORD") from $ownItems
      $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
-     $itemSpec: RulItemSpecExt( not code in ( "ZP2015_ENTITY_ROLE_5", "ZP2015_ENTITY_ROLE_64", "ZP2015_ENTITY_ROLE_65" ) ) from $itemType.rulItemSpecList
+     $itemSpec: RulItemSpecExt( code not in ( "ZP2015_ENTITY_ROLE_5", "ZP2015_ENTITY_ROLE_64", "ZP2015_ENTITY_ROLE_65" ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
