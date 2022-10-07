@@ -263,6 +263,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: false,
                 cellFocus: {row: 0, col: 0},
             };
+        case types.FUND_FUND_DATA_GRID_FILTER_SET:
+            return {
+                ...state,
+                filter: action.filter,
+                fetchedFilter: false,
+                cellFocus: {row: 0, col: 0},
+            };
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
                 ...state,

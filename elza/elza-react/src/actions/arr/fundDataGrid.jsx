@@ -17,6 +17,7 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
+        case types.FUND_FUND_DATA_GRID_FILTER_SET:
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
@@ -275,20 +276,30 @@ export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
     };
 }
 
-export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
+export function fundDataGridFilterSet(versionId, filter) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FUND_FUND_DATA_GRID_FILTER_SET,
+            versionId,
+            filter,
+        });
+    };
+}
+
+export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize, force = false) {
     return (dispatch, getState) => {
         const fundDataGrid = getFundDataGrid(getState, versionId);
-        if (!fundDataGrid) {
+        if (!fundDataGrid && !force) {
             return;
         }
 
-        if (!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) {
+        if ((!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) && !force) {
             // již musí být načtený filtr
             return;
         }
 
         const dataKey = _fundDataGridKey(fundDataGrid);
-        if (fundDataGrid.currentDataKey !== dataKey) {
+        if (fundDataGrid.currentDataKey !== dataKey || force) {
             dispatch(_dataRequest(versionId, dataKey));
 
             WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(

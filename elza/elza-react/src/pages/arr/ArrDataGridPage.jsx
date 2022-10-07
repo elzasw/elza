@@ -12,6 +12,7 @@ import {FundDataGrid, Ribbon} from 'components/index.jsx';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import DataGridExportDialog from '../../components/arr/DataGridExportDialog';
+import {urlFundGrid} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -30,6 +31,10 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(refRuleSetFetchIfNeeded());
         super.UNSAFE_componentWillReceiveProps(nextProps);
+    }
+
+    getPageUrl(fund) {
+        return urlFundGrid(fund.id);
     }
 
     /**
@@ -109,6 +114,10 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         const {descItemTypes, rulDataTypes, ruleSet} = this.props;
         const fund = this.getActiveFund(this.props);
 
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+
         return (
             <div className="datagrid-content-container">
                 <StoreHorizontalLoader store={ruleSet} />
@@ -123,6 +132,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                         descItemTypes={descItemTypes}
                         rulDataTypes={rulDataTypes}
                         ruleSet={ruleSet}
+                        urlFilterEncoded={params.filter}
                     />
                 )}
             </div>

@@ -11,6 +11,7 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet';
 import {routerNavigate} from 'actions/router';
 
 import './FundDetail.scss';
+import {URL_FUND_TREE} from "../../constants";
 
 class FundDetail extends AbstractReactComponent {
     constructor(props) {
@@ -28,7 +29,7 @@ class FundDetail extends AbstractReactComponent {
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
+        this.props.dispatch(routerNavigate(URL_FUND_TREE));
 
         // Otevření archivního souboru
         const fund = this.props.fundDetail;

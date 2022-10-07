@@ -13,6 +13,7 @@ import ArrParentPage from './ArrParentPage';
 import {i18n, Icon, RibbonGroup} from '../../components/shared';
 import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index';
 import {Button} from '../../components/ui';
+import {urlFundMovements} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -38,6 +39,10 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         return fund.fundTreeMovementsRight.nodes[
             indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)
         ];
+    }
+
+    getPageUrl(fund) {
+        return urlFundMovements(fund.id);
     }
 
     handleShortcuts(action, e) {

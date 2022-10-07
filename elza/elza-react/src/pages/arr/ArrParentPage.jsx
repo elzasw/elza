@@ -16,8 +16,18 @@ import {Shortcuts} from 'react-shortcuts';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './ArrParentPageKeymap.jsx';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {
+    FOCUS_KEYS,
+    URL_FUND,
+    URL_FUND_TREE,
+    urlFundActions,
+    urlFundGrid,
+    urlFundMovements,
+    urlFundOutputs
+} from '../../constants.tsx';
 import * as groups from '../../actions/refTables/groups';
+import {WebApi} from "../../actions";
+import {selectFundTab} from "../../actions/arr/fund";
 
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
@@ -50,28 +60,29 @@ export default class ArrParentPage extends AbstractReactComponent {
     handleShortcuts(action, e) {
         console.log('#handleShortcuts ArrParentPage', '[' + action + ']', this);
         e.preventDefault();
+        let activeFund = this.getActiveFund(this.props);
         switch (action) {
             case 'back':
-                this.props.dispatch(routerNavigate('/~arr'));
+                this.props.dispatch(routerNavigate(URL_FUND));
                 break;
             case 'arr':
-                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(routerNavigate(URL_FUND_TREE));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
             case 'movements':
-                this.props.dispatch(routerNavigate('/arr/movements'));
+                this.props.dispatch(routerNavigate(urlFundMovements(activeFund.id)));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'dataGrid':
-                this.props.dispatch(routerNavigate('/arr/dataGrid'));
+                this.props.dispatch(routerNavigate(urlFundGrid(activeFund.id)));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'output':
-                this.props.dispatch(routerNavigate('/arr/output'));
+                this.props.dispatch(routerNavigate(urlFundOutputs(activeFund.id)));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'actions':
-                this.props.dispatch(routerNavigate('/arr/actions'));
+                this.props.dispatch(routerNavigate(urlFundActions(activeFund.id)));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
             case 'TOGGLE_READ_MODE':
@@ -82,13 +93,35 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
     }
 
-    componentDidMount() {
-        this.props.dispatch(descItemTypesFetchIfNeeded());
-        this.props.dispatch(fundsFetchIfNeeded());
-        var activeFund = this.getActiveFund(this.props);
-        if (activeFund !== null) {
+    getPageUrl(fund) {
+        return URL_FUND_TREE;
+    }
+
+    async componentDidMount() {
+        const {dispatch, match} = this.props;
+        dispatch(descItemTypesFetchIfNeeded());
+        dispatch(fundsFetchIfNeeded());
+
+        const matchId = match.params.id;
+        const urlFundId = matchId ? parseInt(matchId) : null;
+        const activeFund = this.getActiveFund(this.props);
+        let reloadFund = false;
+        if (activeFund !== null && activeFund.id === urlFundId) {
             this.requestFundTreeData(activeFund);
-            this.props.dispatch(groups.fetchIfNeeded(activeFund.versionId));
+            dispatch(groups.fetchIfNeeded(activeFund.versionId));
+        } else {
+            reloadFund = true;
+        }
+        if (reloadFund) {
+            if (urlFundId) {
+                await WebApi.getFundDetail(urlFundId)
+                    .then(data => {
+                        dispatch(selectFundTab(data));
+                        dispatch(routerNavigate(this.getPageUrl(data)));
+                    }).catch(e => {
+                    console.error("Nepodařilo se získat detail o AS", e);
+                    });
+            }
         }
     }
 
