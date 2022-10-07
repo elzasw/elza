@@ -47,7 +47,7 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap';
 
 import TemplateSettingsForm from '../../components/arr/TemplateSettingsForm';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {FOCUS_KEYS, urlFundActions, urlFundOutputs} from '../../constants.tsx';
 import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
@@ -113,18 +113,33 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         selectedTab: '0',
     };
 
-    componentDidMount() {
-        super.componentDidMount();
-        this.props.dispatch(templatesFetchIfNeeded());
-        this.props.dispatch(outputFilters.fetchIfNeeded());
-        this.props.dispatch(structureTypesFetchIfNeeded(null));
+    async componentDidMount() {
+        const {dispatch, match, history} = this.props;
+        await super.componentDidMount();
+        dispatch(templatesFetchIfNeeded());
+        dispatch(outputFilters.fetchIfNeeded());
+        dispatch(structureTypesFetchIfNeeded(null));
 
         const fund = this.getActiveFund(this.props);
+        const matchId = match.params.outputId;
+        const urlOutputId = matchId ? parseInt(matchId) : null;
+        dispatch(outputTypesFetchIfNeeded());
         if (fund) {
-            this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
-            this.props.dispatch(outputTypesFetchIfNeeded());
+            dispatch(fundOutputFetchIfNeeded(fund.versionId));
+            const outputDetail = fund.fundOutput.fundOutputDetail;
+            const outputId = outputDetail.id;
+            if (urlOutputId == null && outputId != null) {
+                history.replace(urlFundOutputs(fund.id, outputId));
+            } else if (urlOutputId !== outputId) {
+                dispatch(fundOutputSelectOutput(fund.versionId, urlOutputId));
+                history.replace(urlFundOutputs(fund.id, urlOutputId));
+            }
         }
         this.trySetFocus(this.props);
+    }
+
+    getPageUrl(fund) {
+        return urlFundOutputs(fund.id);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -221,7 +236,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         this.props.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.nodes}));
         this.props.dispatch(fundActionFormShow(fund.versionId));
-        this.props.dispatch(routerNavigate('/arr/actions'));
+        this.props.dispatch(routerNavigate(urlFundActions(fund.id)));
     }
 
     handleOtherActionDialog() {
@@ -521,8 +536,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     handleSelect(item) {
+        const {dispatch, history} = this.props;
         const fund = this.getActiveFund(this.props);
-        this.props.dispatch(fundOutputSelectOutput(fund.versionId, item.id));
+        dispatch(fundOutputSelectOutput(fund.versionId, item.id));
+        history.push(urlFundOutputs(fund.id, item.id));
     }
 
     renderRightPanel(readMode, closed) {

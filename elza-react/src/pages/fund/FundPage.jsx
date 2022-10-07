@@ -39,6 +39,8 @@ import {Autocomplete} from '../../components/shared';
 import {refInstitutionsFetchIfNeeded} from '../../actions/refTables/institutions';
 import {objectById} from '../../shared/utils';
 import { showConfirmDialog } from 'components/shared/dialog';
+import {withRouter} from "react-router";
+import {URL_FUND_TREE, urlFund} from "../../constants";
 
 /**
  * Stránka archivní soubory.
@@ -85,8 +87,22 @@ class FundPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.props.dispatch(fundsFetchIfNeeded());
-        this.props.dispatch(refInstitutionsFetchIfNeeded());
+        const {dispatch, fundRegion, history, select = false} = this.props;
+        dispatch(fundsFetchIfNeeded());
+        dispatch(refInstitutionsFetchIfNeeded());
+
+        if (!select) {
+            const matchId = this.props.match.params.id;
+
+            // pokud si pamatujeme poslední navštívý AS při prvním vstupu - provedeme přesměrování
+            if (fundRegion.fundDetail.id !== null && matchId == null) {
+                history.replace(urlFund(fundRegion.fundDetail.id));
+            }
+
+            if (matchId) {
+                dispatch(fundsSelectFund(matchId));
+            }
+        }
     }
 
     handleAddFund() {
@@ -411,7 +427,7 @@ class FundPage extends AbstractReactComponent {
 
     handleShowInArr(item) {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
+        this.props.dispatch(routerNavigate(URL_FUND_TREE));
 
         // Otevření archivního souboru
         WebApi.getFundDetail(item.id).then(data => {
@@ -450,7 +466,9 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleSelect(item) {
-        this.props.dispatch(fundsSelectFund(item.id));
+        const {history, dispatch} = this.props;
+        history.push(urlFund(item.id));
+        dispatch(fundsSelectFund(item.id));
     }
 
     handleSearch(filterText) {
@@ -583,4 +601,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundPage);
+export default withRouter(connect(mapStateToProps)(FundPage));

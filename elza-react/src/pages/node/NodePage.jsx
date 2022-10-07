@@ -7,14 +7,10 @@ import {connect} from 'react-redux';
 import {AbstractReactComponent} from 'components/shared';
 import PageLayout from '../shared/layout/PageLayout';
 import Ribbon from '../../components/page/Ribbon';
-import {fundsSelectFund} from '../../actions/fund/fund';
-import {createFundRoot, getFundFromFundAndVersion} from '../../components/arr/ArrUtils';
-import {selectFundTab} from '../../actions/arr/fund';
 import {WebApi} from '../../actions';
-import {routerNavigate} from '../../actions/router';
-import {fundSelectSubNode} from '../../actions/arr/node';
 import Loading from '../../components/shared/loading/Loading';
 import './NodePage.scss';
+import {processNodeNavigation} from "../../utils/ArrShared";
 
 class NodePage extends AbstractReactComponent {
     constructor(props) {
@@ -26,54 +22,13 @@ class NodePage extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(props) {}
 
-    waitForLoadAS = fce => {
-        const next = fce();
-        if (next) {
-            setTimeout(() => {
-                this.waitForLoadAS(fce);
-            }, 50);
-        }
-    };
-
     componentDidMount() {
         const uuid = this.props.match.params.uuid;
         console.info('Select JP: ' + uuid);
 
         this.setState({fetching: true});
         WebApi.selectNode(uuid)
-            .then(data => {
-                const fund = data.fund;
-                this.props.dispatch(fundsSelectFund(fund.id));
-                const fundVersion = fund.versions.find(v => !v.lockDate);
-                this.props.dispatch(routerNavigate('/'));
-                this.props.dispatch(routerNavigate('/arr', 'REPLACE'));
-                const fundObj = getFundFromFundAndVersion(fund, fundVersion);
-                this.props.dispatch(selectFundTab(fundObj));
-
-                this.waitForLoadAS(() => {
-                    let arrRegion = this.props.arrRegion;
-                    this.props.dispatch((dispatch, getState) => {
-                        arrRegion = getState().arrRegion; // aktuální stav ve store
-                    });
-
-                    const selectFund = arrRegion.funds[arrRegion.activeIndex];
-
-                    if (selectFund.fundTree.fetched) {
-                        // čekáme na načtení stromu, potom můžeme vybrat JP
-                        const nodeWithParent = data.nodeWithParent;
-                        const node = nodeWithParent.node;
-                        let parentNode = nodeWithParent.parentNode;
-                        if (parentNode == null) {
-                            // root
-                            parentNode = createFundRoot(selectFund);
-                        }
-                        this.props.dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false));
-                        return false;
-                    } else {
-                        return true;
-                    }
-                });
-            })
+            .then(data => processNodeNavigation(this.props.dispatch, data, this.props.arrRegion))
             .catch(error => {
                 this.setState({message: error.message});
             })

@@ -18,7 +18,15 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {userPasswordChange} from 'actions/admin/user.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import PasswordForm from '../admin/PasswordForm';
-import {URL_ENTITY} from "../../constants";
+import {
+    URL_ENTITY,
+    URL_FUND,
+    URL_FUND_TREE, URL_NODE,
+    urlFundActions, urlFundDaos,
+    urlFundGrid,
+    urlFundMovements,
+    urlFundOutputs, urlFundRequests
+} from "../../constants";
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
@@ -73,7 +81,7 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handleBack = () => {
-        this.props.dispatch(routerNavigate('/~arr'));
+        this.props.dispatch(routerNavigate(URL_FUND));
     };
 
     handleLogout = () => {
@@ -187,15 +195,15 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasRdPage(fundId)) {
                 // právo na čtení
                 arrParts.push(
-                    <IndexLinkContainer key="ribbon-btn-arr-index" to="/arr">
-                        <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'}>
+                    <IndexLinkContainer key="ribbon-btn-arr-index" to={URL_FUND_TREE}>
+                        <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'} className={window.location.pathname.startsWith(URL_NODE) ? "active" : ""}>
                             <Icon glyph="fa-sitemap" />
                             <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
                         </BootstrapButton>
                     </IndexLinkContainer>,
                 );
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid">
+                    <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-table" />
                             <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
@@ -206,7 +214,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements">
+                    <LinkContainer key="ribbon-btn-arr-movements" to={urlFundMovements(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-exchange" />
                             <span className="btnText">{i18n('ribbon.action.arr.movements')}</span>
@@ -218,7 +226,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrOutputPage(fundId)) {
                 // právo na výstupy
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-output" to="/arr/output">
+                    <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-print" />
                             <span className="btnText">{i18n('ribbon.action.arr.output')}</span>
@@ -230,7 +238,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasFundActionPage(fundId)) {
                 // právo na hromadné akce
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions">
+                    <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-calculator" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span>
@@ -242,7 +250,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests">
+                    <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-shopping-basket" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
@@ -250,7 +258,7 @@ class Ribbon extends AbstractReactComponent {
                     </LinkContainer>,
                 );
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos">
+                    <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-camera" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>

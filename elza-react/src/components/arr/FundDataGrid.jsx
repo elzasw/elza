@@ -66,12 +66,15 @@ import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from './FundDataGridConst';
 import './FundDataGrid.scss';
 import {getPagesCount} from '../shared/datagrid/DataGridPagination';
 import {toDuration} from '../validate';
-import {DisplayType} from '../../constants';
+import {DisplayType, urlFundGrid} from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';
 import {WebApi} from "../../actions/WebApi";
 import { showConfirmDialog } from 'components/shared/dialog';
+import {withRouter} from "react-router";
+import {storeSave} from "../../actions/store/storeEx";
+import {fundDataGridFilterSet} from "../../actions/arr/fundDataGrid";
 
 class FundDataGrid extends AbstractReactComponent {
     dataGridRef = null;
@@ -87,6 +90,7 @@ class FundDataGrid extends AbstractReactComponent {
         closed: PropTypes.bool.isRequired,
         fundDataGrid: PropTypes.object.isRequired, // store
         structureTypes: PropTypes.object.isRequired,
+        urlFilterEncoded: PropTypes.string
     };
 
     constructor(props) {
@@ -140,7 +144,18 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     fetchData(props) {
-        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
+        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet, urlFilterEncoded} = props;
+
+        const filterStr = this.serializeFilter(fundDataGrid.filter);
+        if (urlFilterEncoded == null && filterStr !== null) {
+            this.setState({}, () => {
+                this.setFilterUrl(); // nastavujeme až se zpožděním kvůli aktualizaci store
+            })
+        } else if (urlFilterEncoded !== filterStr) {
+            const urlFilter = this.deserializeFilter(urlFilterEncoded);
+            this.props.dispatch(fundDataGridFilterSet(versionId, urlFilter));
+        }
+
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(structureTypesFetchIfNeeded(this.props.versionId));
         this.props.dispatch(groups.fetchIfNeeded(this.props.versionId));
@@ -182,6 +197,17 @@ class FundDataGrid extends AbstractReactComponent {
                 this.props.dispatch(fundDataInitIfNeeded(versionId, initData));
             }
         }
+    }
+
+    setFilterUrl = () => {
+        const {fundDataGrid, fund, history, dispatch} = this.props;
+        const encodeFilter = this.serializeFilter(fundDataGrid.filter);
+        let url = urlFundGrid(fund.id);
+        if (encodeFilter !== null) {
+            url = url + "?filter=" + encodeFilter;
+        }
+        dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
+        history.replace(url);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -504,8 +530,10 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterClearAll() {
-        const {versionId} = this.props;
-        this.props.dispatch(fundDataGridFilterClearAll(versionId));
+        const {versionId, dispatch, fundId, history} = this.props;
+        dispatch(fundDataGridFilterClearAll(versionId));
+        dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
+        history.push(urlFundGrid(fundId));
     }
 
     handleFilterUpdateData() {
@@ -583,6 +611,23 @@ class FundDataGrid extends AbstractReactComponent {
     handleChangeFilter(versionId, refType, filter) {
         this.props.dispatch(modalDialogHide());
         this.props.dispatch(fundDataGridFilterChange(versionId, refType.id, filter));
+        this.setState({}, () => {
+            this.setFilterUrl(); // nastavujeme až se zpožděním kvůli aktualizaci store
+        })
+    }
+
+    serializeFilter(filter) {
+        let s = JSON.stringify(filter);
+        return filter == null || s === '{}' ? null : btoa(s);
+    }
+
+    deserializeFilter(str) {
+        try {
+            return JSON.parse(atob(str));
+        } catch (e) {
+            console.log("Data filtru se nepodařilo deserializovat", str);
+            return {}
+        }
     }
 
     handleChangeStructValue(valueItems) {
@@ -1024,4 +1069,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundDataGrid);
+export default withRouter(connect(mapStateToProps)(FundDataGrid));

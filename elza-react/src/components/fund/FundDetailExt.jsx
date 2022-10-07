@@ -11,6 +11,7 @@ import {downloadFile} from 'actions/global/download';
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundDetailExt.scss';
+import {URL_FUND_TREE} from "../../constants";
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     static propTypes = {
@@ -29,7 +30,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
+        this.props.dispatch(routerNavigate(URL_FUND_TREE));
 
         // Otevření archivního souboru
         const fund = this.props.fundDetail;

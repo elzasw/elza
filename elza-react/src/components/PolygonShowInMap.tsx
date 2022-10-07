@@ -8,7 +8,7 @@ import classNames from 'classnames';
 
 const IFRAME_SIZE = 400;
 
-type PolygonTooltipProps = { 
+type PolygonTooltipProps = {
     polygon: string;
 };
 
@@ -31,7 +31,7 @@ export const PolygonTooltip = ({
         }
 
         window.addEventListener("message", receiveMessage);
-        
+
         return () => {
             window.removeEventListener("message", receiveMessage);
         }
@@ -50,8 +50,8 @@ interface ChildrenRenderProps {
     handleShowInMap: () => void;
 }
 
-interface Props extends React.ComponentPropsWithoutRef<"span">{ 
-    className?: string; 
+interface Props extends React.ComponentPropsWithoutRef<"span">{
+    className?: string;
     polygon: string;
     children?: (props: ChildrenRenderProps) => React.ReactNode;
 };
@@ -71,9 +71,9 @@ export const PolygonShowInMap = ({
 
         if (thisLayout) {
             CrossTabHelper.sendEvent(
-                thisLayout, 
+                thisLayout,
                 {
-                    type: CrossTabEventType.SHOW_IN_MAP, 
+                    type: CrossTabEventType.SHOW_IN_MAP,
                     data: polygon
                 }
             );
@@ -90,7 +90,7 @@ export const PolygonShowInMap = ({
             hideDelay={0}
         >
             {
-            children?.({handleShowInMap: () => showInMap()}) 
+            children?.({handleShowInMap: () => showInMap()})
                 || <Button className={classNames(className)} onClick={() => showInMap()} variant={'action' as any}>
                     <Icon glyph={'fa-map'} />
                 </Button>

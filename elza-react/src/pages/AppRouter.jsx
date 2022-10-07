@@ -42,24 +42,12 @@ class AppRouter extends AbstractReactComponent {
         const method = routerStore.method;
 
         if (navigateTo) {
-            if (navigateTo.startsWith('/~arr')) {
-                const i = getIndexBefore('/arr');
-                let navigateToBack;
-                if (i >= 0) {
-                    navigateToBack = localRouterHistory[i];
-                } else {
-                    navigateToBack = '/';
-                }
-                this.props.history.push(navigateToBack);
-                this.props.dispatch(routerNavigateFinish());
+            if (method === 'REPLACE') {
+                this.props.history.replace(navigateTo);
             } else {
-                if (method === 'REPLACE') {
-                    this.props.history.replace(navigateTo);
-                } else {
-                    this.props.history.push(navigateTo);
-                }
-                this.props.dispatch(routerNavigateFinish());
+                this.props.history.push(navigateTo);
             }
+            this.props.dispatch(routerNavigateFinish());
         }
     };
 
