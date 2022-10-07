@@ -39,7 +39,15 @@ import {
     MapPage,
 } from 'pages';
 import './Layout.scss';
-import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
+import {
+    FOCUS_KEYS, REG_NUMBER, REG_UUID,
+    URL_ENTITY,
+    URL_ENTITY_CREATE,
+    URL_FUND, URL_FUND_ACTIONS_PATH, URL_FUND_DAOS_PATH,
+    URL_FUND_GRID_PATH,
+    URL_FUND_MOVEMENTS_PATH, URL_FUND_OUTPUTS_PATH, URL_FUND_REQUESTS_PATH, URL_FUND_TREE,
+    URL_NODE
+} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
 import {MAP_URL} from './map/MapPage';
@@ -95,7 +103,7 @@ class Layout extends AbstractReactComponent {
                 this.props.dispatch(setFocus(FOCUS_KEYS.HOME, 1, 'list'));
                 break;
             case 'arr':
-                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(routerNavigate(URL_FUND_TREE));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'registry':
@@ -166,22 +174,24 @@ class Layout extends AbstractReactComponent {
                     </div>
                     {this.props.login.logged && (
                         <Switch>
-                            <Route path="/fund" component={FundPage} />
-                            <Route path="/node/:uuid" component={NodePage} />
-                            <Route path={URL_ENTITY + "/:uuid([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"} component={EntityPage} />
-                            <Route path={URL_ENTITY + "/:id([0-9]+)?"} component={RegistryPage} />
-                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
-                            <Route path="/arr">
+                            <Route path={URL_FUND_TREE} component={ArrPage} />
+                            <Route path={URL_FUND + "/:id(" + REG_NUMBER + ")?"}>
                                 <Switch>
-                                    <Route path="/arr/dataGrid" component={ArrDataGridPage} />
-                                    <Route path="/arr/movements" component={ArrMovementsPage} />
-                                    <Route path="/arr/output" component={ArrOutputPage} />
-                                    <Route path="/arr/actions" component={FundActionPage} />
-                                    <Route path="/arr/daos" component={ArrDaoPage} />
-                                    <Route path="/arr/requests" component={ArrRequestPage} />
-                                    <Route component={ArrPage} />
+                                    <Route path={URL_FUND_GRID_PATH} component={ArrDataGridPage} />
+                                    <Route path={URL_FUND_MOVEMENTS_PATH} component={ArrMovementsPage} />
+                                    <Route path={URL_FUND_OUTPUTS_PATH} component={ArrOutputPage} />
+                                    <Route path={URL_FUND_ACTIONS_PATH} component={FundActionPage} />
+                                    <Route path={URL_FUND_DAOS_PATH} component={ArrDaoPage} />
+                                    <Route path={URL_FUND_REQUESTS_PATH} component={ArrRequestPage} />
+                                    <Route component={FundPage} />
                                 </Switch>
                             </Route>
+                            <Route path={URL_NODE + "/:uuid(" + REG_UUID + ")"} component={NodePage} />
+                            <Route path={URL_NODE + "/:nodeId(" + REG_NUMBER + ")"} component={ArrPage} />
+                            <Route path={URL_ENTITY + "/:uuid(" + REG_UUID + ")"} component={EntityPage} />
+                            <Route path={URL_ENTITY + "/:id(" + REG_NUMBER + ")?"} component={RegistryPage} />
+                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
+
                             <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                             <Route path="/admin">
                                 <Switch>

@@ -40,13 +40,14 @@ import {objectEqualsDiff} from 'components/Utils';
 import {NODE_SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
-import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemClass} from '../../constants';
+import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemClass, urlNode} from '../../constants';
 
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 import {TextFragmentsWindow} from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
+import {withRouter} from "react-router";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -122,7 +123,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     componentDidMount(){
-        this.props.dispatch(refExternalSystemsFetchIfNeeded());
+        const {history, selectedSubNodeId, dispatch} = this.props;
+        dispatch(refExternalSystemsFetchIfNeeded());
+        history.replace(urlNode(selectedSubNodeId));
     }
 
     UNSAFE_componentWillReceiveProps() {
@@ -997,4 +1000,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm);
+export default withRouter(connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm));
