@@ -32,6 +32,7 @@ import {
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
 import {structureTypeInvalidate} from '../arr/structureType';
 import {DetailActions} from '../../shared/detail';
+import {urlFundOutputs} from "../../constants";
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -307,12 +308,12 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
             var currentLocation = window.location.pathname;
             // show butten only if on another page
             var showBtn;
-            if(!currentLocation.endsWith('/arr/output')) {
+            if(!currentLocation.endsWith(urlFundOutputs(fund.id))) {
                 showBtn = (
                 <Button
                     variant="link"
                     onClick={() => {
-                        dispatch(routerNavigate('/arr/output'));
+                        dispatch(routerNavigate(urlFundOutputs(fund.id, entityId)));
                         dispatch(fundOutputSelectOutput(versionId, entityId));
                     }}
                 >

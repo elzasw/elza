@@ -27,6 +27,7 @@ import {
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 
 import './SearchFundsForm.scss';
+import {URL_FUND_TREE} from "../../constants";
 
 const FUND_NAME_MAX_CHARS = 60;
 
@@ -74,7 +75,7 @@ class SearchFundsForm extends AbstractReactComponent {
         const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === item.id));
 
         // Přepnutí na stránku pořádání a zavření dialogu
-        this.props.dispatch(routerNavigate('/arr'));
+        this.props.dispatch(routerNavigate(URL_FUND_TREE));
         this.props.dispatch(modalDialogHide());
 
         // Otevře detailu uzlu

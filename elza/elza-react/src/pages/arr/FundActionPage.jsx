@@ -25,7 +25,7 @@ import {
     fundActionFormSubmit,
 } from 'actions/arr/fundAction';
 import * as perms from 'actions/user/Permission';
-import {ActionState, PERSISTENT_SORT_CODE} from '../../constants.tsx';
+import {ActionState, PERSISTENT_SORT_CODE, urlFundActions} from '../../constants.tsx';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap';
@@ -65,20 +65,35 @@ class FundActionPage extends ArrParentPage {
         this.state = {};
     }
 
-    componentDidMount() {
-        this.props.dispatch(descItemTypesFetchIfNeeded());
+    async componentDidMount() {
+        const {dispatch, match, history} = this.props;
+        await super.componentDidMount();
+        dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props);
+        const matchId = match.params.actionId;
+        const urlActionId = matchId ? parseInt(matchId) : null;
         if (fund) {
-            this.props.dispatch(fundActionFetchListIfNeeded(fund.versionId));
-            this.props.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
-            this.props.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+            dispatch(fundActionFetchListIfNeeded(fund.versionId));
+            dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+            dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+            const actionDetail = fund.fundAction.detail.data;
+            const actionId = actionDetail?.id;
+            if (urlActionId == null && actionId != null) {
+                history.replace(urlFundActions(fund.id, actionId));
+            } else if (urlActionId !== actionId) {
+                dispatch(fundActionActionSelect(fund.versionId, urlActionId));
+                history.replace(urlFundActions(fund.id, urlActionId));
+            }
         }
+    }
+
+    getPageUrl(fund) {
+        return urlFundActions(fund.id);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
-
         const fund = this.getActiveFund(nextProps);
         if (fund) {
             this.props.dispatch(fundActionFetchListIfNeeded(fund.versionId));
@@ -163,9 +178,10 @@ class FundActionPage extends ArrParentPage {
     }
 
     handleListBoxActionSelect(item) {
+        const {dispatch, history} = this.props;
         const fund = this.getActiveFund(this.props);
-        const {versionId} = fund;
-        this.props.dispatch(fundActionActionSelect(versionId, item.id));
+        dispatch(fundActionActionSelect(fund.versionId, item.id));
+        history.push(urlFundActions(fund.id, item.id));
     }
 
     handleFormNodesAdd() {

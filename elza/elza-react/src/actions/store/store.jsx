@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {routerNavigate} from 'actions/router.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS, URL_ENTITY} from '../../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY, URL_FUND_TREE} from '../../constants.tsx';
 
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
@@ -68,7 +68,7 @@ export function storeLoadData(type, data, switchView = true) {
             case 'ARR_REGION':
                 dispatch(storeLoad({arrRegion: data}));
                 if (switchView) {
-                    dispatch(routerNavigate('/arr'));
+                    dispatch(routerNavigate(URL_FUND_TREE));
                 }
                 break;
             case 'ADMIN_REGION':
@@ -86,7 +86,7 @@ export function storeLoadData(type, data, switchView = true) {
             case 'ARR_REGION_FUND':
                 dispatch(storeLoad({arrRegionFund: data}));
                 if (switchView) {
-                    dispatch(routerNavigate('/arr'));
+                    dispatch(routerNavigate(URL_FUND_TREE));
                     dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 }
                 break;
