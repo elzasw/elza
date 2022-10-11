@@ -1,8 +1,11 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
@@ -12,6 +15,8 @@ import java.net.URI;
 @Table(name="arr_data_uri_ref")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUriRef extends ArrData {
+
+    private static final Logger logger = LoggerFactory.getLogger(ArrDataUriRef.class);
 
     public static final String DESCRIPTION = "description";
     public static final String URI_REF_VALUE = "uriRefValue";
@@ -157,10 +162,13 @@ public class ArrDataUriRef extends ArrData {
         Validate.notNull(uriRefValue);
         Validate.notNull(schema);
         // check any leading and trailing whitespace in data
-        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length());
-        Validate.isTrue(schema.trim().length() == schema.length());
+        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length(), "UriRefValue obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+        Validate.isTrue(schema.trim().length() == schema.length(), "Schema obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
         if (description != null) {
-            Validate.isTrue(description.trim().length() == description.length());
+            if (description.trim().length() != description.length()) {
+                logger.error("Description obsahuje whitespaces na začátku nebo na konci, dataId: {}", getDataId());
+                throw new IllegalArgumentException("Description obsahuje whitespaces na začátku nebo na konci");
+            }
         }
     }
 
