@@ -510,7 +510,7 @@ when
     // není s ničím pevně spojena
     not DescItem(type in ("ZP2015_ITEM_LINK") ) from $activeLevel.descItems
     // není uloženo v DA
-    not DescItem(type in ("ZP2015_AIP_ID") ) from $activeLevel.descItems
+    not DescItem(type=="ZP2015_AIP_ID" && inherited ) from $activeLevel.descItems
     // není zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_AIP_ID") )
