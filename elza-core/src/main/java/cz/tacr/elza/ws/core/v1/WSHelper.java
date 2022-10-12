@@ -226,10 +226,10 @@ public class WSHelper {
     }
 
     static public CoreServiceException prepareException(String msg, Exception e) {
-        
+
         String detail;
-        if(e!=null) {
-            detail = e.toString() + ": " + e.getMessage();
+        if (e != null) {
+            detail = e.getClass().getSimpleName() + ": " + e.getMessage();
         } else {
             detail = null;
         }
