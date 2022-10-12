@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 
@@ -41,7 +41,7 @@ public class ApItemTextVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataText data = new ArrDataText();
-        data.setTextValue(value.trim());
+        data.setTextValue(StringNormalize.normalizeText(value));
         data.setDataType(DataType.TEXT.getEntity());
         return data;
     }
