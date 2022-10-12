@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -20,34 +21,6 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
 
     private JdbcConnection dc;
 
-    // trim and replace unprinted characters with spaces and delete double space
-    private String fixedString(String value) {
-        if (value == null) {
-            return null;
-        }
-        value = value.trim();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            sb.append(c >= 0x1f ? c : " ");
-        }
-        return sb.toString().replaceAll(" +", " ");
-    }
-
-    // trim and replace unprinted characters (exclude 0x0D and 0x0A) with spaces
-    private String fixedText(String value) {
-        if (value == null) {
-            return null;
-        }
-        value = value.trim();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            sb.append(c >= 0x1f || c == 0x0D || c == 0x0A ? c : " ");
-        }
-        return sb.toString();
-    }
-
     private List<ArrDataString> prepareArrDataString() throws DatabaseException, SQLException {
         List<ArrDataString> result = new ArrayList<>();
         Statement stmt = dc.createStatement();
@@ -56,7 +29,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
                 int dataId = rs.getInt("data_id");
                 String value = rs.getString("value");
                 // delete any leading and trailing whitespace, replace unprintable chars (exclude 0x0D and 0x0A) and delete double spaces  
-                String fixedValue = fixedString(value);
+                String fixedValue = StringNormalize.normalizeString(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataString dataString = new ArrDataString();
                     dataString.setDataId(dataId);
@@ -76,7 +49,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
                 int dataId = rs.getInt("data_id");
                 String value = rs.getString("value");
                 // delete any leading and trailing whitespace and replace unprintable chars (exclude 0x0D and 0x0A) 
-                String fixedValue = fixedText(value.trim());
+                String fixedValue = StringNormalize.normalizeText(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataText dataText = new ArrDataText();
                     dataText.setDataId(dataId);
@@ -96,7 +69,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
                 int dataId = rs.getInt("data_id");
                 String value = rs.getString("value");
                 // delete any leading and trailing whitespace 
-                String fixedValue = fixedString(value);
+                String fixedValue = StringNormalize.normalizeString(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataUnitid dataUnitid = new ArrDataUnitid();
                     dataUnitid.setDataId(dataId);
@@ -118,9 +91,9 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
                 String schema = rs.getString("schema");
                 String description = rs.getString("description");
                 // delete any leading and trailing whitespace 
-                String fixedValue = fixedString(value);
-                String fixedSchema = fixedString(schema);
-                String fixedDescription = fixedString(description);
+                String fixedValue = StringNormalize.normalizeString(value);
+                String fixedSchema = StringNormalize.normalizeString(schema);
+                String fixedDescription = StringNormalize.normalizeString(description);
                 if (!value.equals(fixedValue) || !schema.equals(fixedSchema) || (description != null && !description.equals(fixedDescription))) {
                     ArrDataUriRef dataUriRef = new ArrDataUriRef();
                     dataUriRef.setDataId(dataId);
