@@ -91,6 +91,31 @@
   }
 >
 
+<#-- Mapování datace-->
+<#assign dateOtherMapping = {
+  "ZP2015_DATE_OF_CONTENT": "CONTENT",
+  "ZP2015_DATE_DECLARED": "DECLARED",
+  "ZP2015_DATE_ORIG": "ORIGIN",
+  "ZP2015_DATE_OF_COPY": "COPY",
+  "ZP2015_DATE_SEALING": "SEALING",
+  "ZP2015_DATE_ACT_PUBLISHING": "ACT_PUBLISHING",
+  "ZP2015_DATE_INSERT": "INSERT",
+  "ZP2015_DATE_MOLD_CREATION": "MOLD_CREATION",
+  "ZP2015_DATE_USAGE": "USAGE",
+  "ZP2015_DATE_PUBLISHING": "PUBLISHING",
+  "ZP2015_DATE_MAP_UPDATE": "MAP_UPDATE",
+  "ZP2015_DATE_CAPTURING": "CAPTURING",
+  "ZP2015_DATE_RECORDING": "RECORDING",
+  "ZP2015_DATE_AWARDING": "AWARDING",
+  "ZP2015_DATE_AWARD_CER": "AWARD_CER",
+  "ZP2015_DATE_WITHDRAWAL": "WITHDRAWAL",
+  "ZP2015_DATE_LEGALLY_EFFECTIVE_FROM": "LEGALLY_EFFECTIVE_FROM",
+  "ZP2015_DATE_VALID_FROM": "VALID_FROM",
+  "ZP2015_DATE_LEGALLY_EFFECTIVE_TO": "LEGALLY_EFFECTIVE_TO",
+  "ZP2015_DATE_VALID_TO": "VALID_TO"  
+  }
+>
+
 <ead:control>
   <#-- 2.1. recordid: uuid -->
   <ead:recordid>${output.uuid}</ead:recordid>
@@ -331,6 +356,8 @@
   <#local languagesProcessed=0>
   <#-- Proměná určující, zda se bude vypisovat charakteristika JP -->
   <#local needsCharakteristikaJP=false>
+  <#-- Určení počtu datací -->
+  <#local unitDates=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -357,8 +384,17 @@
       <#case "ZP2015_TITLE">
         <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
         <#break>
+      <#case "ZP2015_FORMAL_TITLE">
+        <#lt>  <ead:unittitle localtype="FORMAL_TITLE">${item.serializedValue}</ead:unittitle>
+        <#break>        
       <#case "ZP2015_UNIT_DATE">
-        <@writeUnitDate item />
+        <#local unitDates=unitDates+[item]>        
+        <#break>
+      <#case "ZP2015_DATE_OTHER">
+        <#local unitDates=unitDates+[item]>
+        <#break>
+      <#case "ZP2015_UNIT_DATE_TEXT">
+        <#lt>  <ead:unitdate>${item.serializedValue}</ead:unitdate>
         <#break>
       <#case "ZP2015_NOTE">
         <#lt>  <ead:didnote localtype="PUBLIC">${item.serializedValue}</ead:didnote>
@@ -412,6 +448,9 @@
   </#list>
   <#if (needsCharakteristikaJP)>
     <@writeCharakteristika node />
+  </#if>
+  <#if (unitDates?size>0) >
+    <@writeUnitDates unitDates />
   </#if>
   <#-- zápis DAOs -->
   <#if (node.daos?size==1)>
@@ -711,22 +750,41 @@
   <ead:container>${item.serializedValue}</ead:container>
 </#macro>-->
 
+<#-- Zapis dataci -->
+<#macro writeUnitDates unitDates>
+  <ead:unitdatestructured>
+  <#if (unitDates?size>1)>
+  <ead:dateset>
+  </#if>
+  <#list unitDates as unitDate>
+  <@writeUnitDate unitDate />
+  </#list>
+  <#if (unitDates?size>1)>
+  </ead:dateset>
+  </#if>
+  </ead:unitdatestructured>
+</#macro>
+
 <#-- Zapis datace -->
 <#macro writeUnitDate unitDate>
 <#local fromAttr="standarddate">
 <#local toAttr="standarddate">
+<#local dateRangeLocaltype="">
+<#if (unitDate.type.code=="ZP2015_DATE_OTHER")>
+  <#if dateOtherMapping?keys?seq_contains(unitDate.specification.code)>
+    <#local dateRangeLocaltype=dateOtherMapping[unitDate.specification.code]>
+  </#if>
+</#if>
 <#if unitDate.unitDate.valueFromEstimated>
   <#local fromAttr="notbefore">
 </#if>
 <#if unitDate.unitDate.valueToEstimated>
   <#local toAttr="notafter">
 </#if>
-  <ead:unitdatestructured>
-    <ead:daterange>
+    <ead:daterange altrender="${unitDate.unitDate.format}" <#if dateRangeLocaltype!="">localtype="${dateRangeLocaltype}"</#if> >
       <ead:fromdate ${fromAttr}="${unitDate.unitDate.valueFrom}">${unitDate.valueFrom}</ead:fromdate>
       <ead:todate ${toAttr}="${unitDate.unitDate.valueTo}">${unitDate.valueTo}</ead:todate>
     </ead:daterange>
-  </ead:unitdatestructured>
 </#macro>
 
 <#macro writeRelations items>
