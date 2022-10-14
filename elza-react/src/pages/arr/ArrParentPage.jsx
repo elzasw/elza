@@ -7,7 +7,7 @@ import {i18n} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {getOneSettings, setSettings, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {routerNavigate} from 'actions/router.jsx';
@@ -19,11 +19,12 @@ import defaultKeymap from './ArrParentPageKeymap.jsx';
 import {
     FOCUS_KEYS,
     URL_FUND,
-    URL_FUND_TREE,
     urlFundActions,
     urlFundGrid,
     urlFundMovements,
-    urlFundOutputs
+    urlFundOutputs,
+    urlFundTree,
+    getFundVersion,
 } from '../../constants.tsx';
 import * as groups from '../../actions/refTables/groups';
 import {WebApi} from "../../actions";
@@ -66,23 +67,23 @@ export default class ArrParentPage extends AbstractReactComponent {
                 this.props.dispatch(routerNavigate(URL_FUND));
                 break;
             case 'arr':
-                this.props.dispatch(routerNavigate(URL_FUND_TREE));
+                this.props.dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
             case 'movements':
-                this.props.dispatch(routerNavigate(urlFundMovements(activeFund.id)));
+                this.props.dispatch(routerNavigate(urlFundMovements(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'dataGrid':
-                this.props.dispatch(routerNavigate(urlFundGrid(activeFund.id)));
+                this.props.dispatch(routerNavigate(urlFundGrid(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'output':
-                this.props.dispatch(routerNavigate(urlFundOutputs(activeFund.id)));
+                this.props.dispatch(routerNavigate(urlFundOutputs(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'actions':
-                this.props.dispatch(routerNavigate(urlFundActions(activeFund.id)));
+                this.props.dispatch(routerNavigate(urlFundActions(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
             case 'TOGGLE_READ_MODE':
@@ -94,35 +95,45 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     getPageUrl(fund) {
-        return URL_FUND_TREE;
+        const {match} = this.props;
+        if(match?.params?.id !== undefined){
+            return urlFundTree(match.params.id, match.params.versionId);
+        }
+        throw "no fundId or versionId"
     }
 
     async componentDidMount() {
         const {dispatch, match} = this.props;
+        const {id, versionId, nodeId} = match.params;
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(fundsFetchIfNeeded());
 
-        const matchId = match.params.id;
-        const urlFundId = matchId ? parseInt(matchId) : null;
+        const urlFundId = id ? parseInt(id) : null;
+        const urlVersionId = versionId ? parseInt(versionId) : null;
         const activeFund = this.getActiveFund(this.props);
-        let reloadFund = false;
-        if (activeFund !== null && activeFund.id === urlFundId) {
-            this.requestFundTreeData(activeFund);
-            dispatch(groups.fetchIfNeeded(activeFund.versionId));
-        } else {
-            reloadFund = true;
+        
+        // skip loading data, if fund is currently open
+        if(activeFund?.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
+            return;
         }
-        if (reloadFund) {
-            if (urlFundId) {
-                await WebApi.getFundDetail(urlFundId)
-                    .then(data => {
-                        dispatch(selectFundTab(data));
-                        dispatch(routerNavigate(this.getPageUrl(data)));
-                    }).catch(e => {
-                    console.error("Nepodařilo se získat detail o AS", e);
-                    });
+
+        if (urlFundId) {
+            try{
+                const data = await WebApi.getFundDetail(urlFundId)
+
+                // select the current version, when it is missing in the path
+                const version = urlVersionId ? data.versions.find((version) => version.id === urlVersionId) : data.versions[0];
+                dispatch(selectFundTab(getFundFromFundAndVersion(data, version)));
+                return;
             }
+            catch(e) {
+                console.error("Nepodařilo se získat detail o AS", e);
+            };
         }
+        if((!id && !nodeId) && activeFund) {
+            dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund)),"REPLACE"));
+        }
+        // }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {

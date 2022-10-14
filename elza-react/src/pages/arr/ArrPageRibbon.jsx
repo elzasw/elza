@@ -14,6 +14,7 @@ import IssueForm from '../../components/form/IssueForm';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
 import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
+import { getFundVersion } from '../../constants';
 
 const clientLog = window.clientLog !== undefined && window.clientLog;
 
@@ -256,7 +257,7 @@ class ArrPageRibbon extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon arr subMenu fundId={activeFund?.id} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon arr subMenu versionId={getFundVersion(activeFund)} fundId={activeFund?.id} altSection={altSection} itemSection={itemSection} />;
     }
 
     canCreateIssue = () => {

@@ -108,18 +108,22 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
-        const {match} = this.props;
+        const {match, dispatch, arrRegion} = this.props;
         await super.componentDidMount();
         const matchId = match.params.nodeId;
-        const urlNodeId = matchId ? parseInt(matchId) : null;
+        const urlNodeId = matchId || null;
         if (urlNodeId != null) {
             const activeFund = this.getActiveFund(this.props);
+
             let activeNode = null;
-            if (activeFund.nodes.activeIndex != null) {
+
+            if (activeFund?.nodes?.activeIndex != null) {
                 activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             }
-            if (activeNode != null && activeNode.selectedSubNodeId !== urlNodeId) {
-                await WebApi.selectNode(urlNodeId).then(data => processNodeNavigation(this.props.dispatch, data, this.props.arrRegion));
+
+            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeFund) {
+                const data = await WebApi.selectNode(urlNodeId);
+                processNodeNavigation(dispatch, data, arrRegion);
             }
         }
         this.trySetFocus(this.props);

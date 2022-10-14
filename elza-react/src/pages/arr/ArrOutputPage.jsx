@@ -47,7 +47,7 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap';
 
 import TemplateSettingsForm from '../../components/arr/TemplateSettingsForm';
-import {FOCUS_KEYS, urlFundActions, urlFundOutputs} from '../../constants.tsx';
+import {FOCUS_KEYS, urlFundActions, urlFundOutputs, getFundVersion} from '../../constants.tsx';
 import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
@@ -129,17 +129,17 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             const outputDetail = fund.fundOutput.fundOutputDetail;
             const outputId = outputDetail.id;
             if (urlOutputId == null && outputId != null) {
-                history.replace(urlFundOutputs(fund.id, outputId));
+                history.replace(urlFundOutputs(fund.id, getFundVersion(fund), outputId));
             } else if (urlOutputId !== outputId) {
                 dispatch(fundOutputSelectOutput(fund.versionId, urlOutputId));
-                history.replace(urlFundOutputs(fund.id, urlOutputId));
+                history.replace(urlFundOutputs(fund.id, getFundVersion(fund), urlOutputId));
             }
         }
         this.trySetFocus(this.props);
     }
 
     getPageUrl(fund) {
-        return urlFundOutputs(fund.id);
+        return urlFundOutputs(fund.id, getFundVersion(fund));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -236,7 +236,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         this.props.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.nodes}));
         this.props.dispatch(fundActionFormShow(fund.versionId));
-        this.props.dispatch(routerNavigate(urlFundActions(fund.id)));
+        this.props.dispatch(routerNavigate(urlFundActions(fund.id, getFundVersion(fund))));
     }
 
     handleOtherActionDialog() {
@@ -480,7 +480,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             );
         }
 
-        return <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon arr subMenu versionId={getFundVersion(fund)} fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection} />;
     }
 
     isOutputGeneratingAllowed(output) {
@@ -522,7 +522,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         return (
             <div className={classNames('item')}>
-                <div className="name">{item.name}</div>
+                <div className="name">{item.internalCode }{item.name}</div>
                 <div className="type">
                     {i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : '')}
                 </div>
@@ -539,7 +539,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const {dispatch, history} = this.props;
         const fund = this.getActiveFund(this.props);
         dispatch(fundOutputSelectOutput(fund.versionId, item.id));
-        history.push(urlFundOutputs(fund.id, item.id));
+        history.push(urlFundOutputs(fund.id, getFundVersion(fund), item.id));
     }
 
     renderRightPanel(readMode, closed) {

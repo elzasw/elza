@@ -1,4 +1,6 @@
 import {string} from "prop-types";
+import { Fund } from "typings/store";
+import { DAO } from "components/arr/ArrUtils";
 
 export const DEFAULT_LIST_SIZE = 200;
 
@@ -144,65 +146,88 @@ export enum CoordinateFileType {
 
 export const CLS_CALCULABLE = 'calculable';
 
-const GRID = 'grid';
-const MOVEMENTS = 'movements';
-const OUTPUTS = 'outputs';
-const ACTIONS = 'actions';
-const DAOS = 'daos';
-const REQUESTS = 'requests';
-
-export const REG_NUMBER = "[0-9]+";
-export const REG_UUID = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}";
+export const TREE = 'tree';
+export const GRID = 'grid';
+export const MOVEMENTS = 'movements';
+export const OUTPUTS = 'outputs';
+export const ACTIONS = 'actions';
+export const DAOS = 'daos';
+export const REQUESTS = 'requests';
 
 export const URL_ENTITY = '/entity';
 export const URL_ENTITY_CREATE = '/entity-create';
 export const URL_FUND = '/fund';
-export const URL_FUND_TREE = URL_FUND + '/tree';
-export const URL_FUND_GRID_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + GRID;
-export const URL_FUND_MOVEMENTS_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + MOVEMENTS;
-export const URL_FUND_OUTPUTS_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + OUTPUTS + "/:outputId([0-9]+)?";
-export const URL_FUND_ACTIONS_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + ACTIONS + "/:actionId([0-9]+)?";
-export const URL_FUND_REQUESTS_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + REQUESTS + "/:requestId([0-9]+)?";
-export const URL_FUND_DAOS_PATH = URL_FUND + "/:id(" + REG_NUMBER + ")/" + DAOS;
+export const URL_FUND_TREE = `${URL_FUND}/tree`;
+export const URL_FUND_GRID_PATH = `${URL_FUND}/:id/${GRID}`;
+export const URL_FUND_MOVEMENTS_PATH = `${URL_FUND}/:id/${MOVEMENTS}`;
+export const URL_FUND_OUTPUTS_PATH = `${URL_FUND}/:id/${OUTPUTS}/:outputId`;
+export const URL_FUND_ACTIONS_PATH = `${URL_FUND}/:id/${ACTIONS}/:actionId`;
+export const URL_FUND_REQUESTS_PATH = `${URL_FUND}/:id/${REQUESTS}/:requestId`;
+export const URL_FUND_DAOS_PATH = `${URL_FUND}/:id/${DAOS}`;
 
 export const URL_NODE = '/node'
 
+export const getFundVersion = (fund: Fund) => {
+    if(!fund?.activeVersion){ 
+        // console.error("No active version on fund", fund);
+        // throw Error("No active version on fund")
+        return undefined;
+    }
+    //@ts-ignore - TODO doplnit typ pro active version
+    return fund?.activeVersion.lockDate === null ? undefined : fund.activeVersion.id;
+}
+
 export const urlFund = (fundId: number) => {
-    return URL_FUND + "/" + fundId;
+    return `${URL_FUND}/${fundId}`;
+}
+
+export const urlFundWithVersion = (fundId: number, versionId: number) => {
+    return `${URL_FUND}/${fundId}/v/${versionId}`
+}
+
+export const urlFundBase = (fundId: number, versionId?: number) => {
+    return versionId === undefined 
+        ? urlFund(fundId)
+        : urlFundWithVersion(fundId, versionId);
 }
 
 export const urlNode = (nodeId: number | undefined) => {
     if (nodeId == null) {
+        console.log("url fund tree")
         return URL_FUND_TREE;
     }
     return URL_NODE + "/" + nodeId;
 }
 
-const fundSub = (fundId: number, sub: string, subId?: number) => {
-    const url = urlFund(fundId) + '/' + sub
+const fundSub = (fundId: number, versionId: number | undefined, sub: string, subId?: number) => {
+    const url = `${urlFundBase(fundId, versionId)}/${sub}`;
     return subId == null ? url : url + '/' + subId;
 }
 
-export const urlFundGrid = (fundId: number) => {
-    return fundSub(fundId, GRID);
+export const urlFundTree = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, TREE);
 }
 
-export const urlFundMovements = (fundId: number) => {
-    return fundSub(fundId, MOVEMENTS);
+export const urlFundGrid = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, GRID);
 }
 
-export const urlFundOutputs = (fundId: number, outputId?: number) => {
-    return fundSub(fundId, OUTPUTS, outputId);
+export const urlFundMovements = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, MOVEMENTS);
 }
 
-export const urlFundActions = (fundId: number, actionId?: number) => {
-    return fundSub(fundId, ACTIONS, actionId);
+export const urlFundOutputs = (fundId: number, versionId?: number, outputId?: number) => {
+    return fundSub(fundId, versionId, OUTPUTS, outputId);
 }
 
-export const urlFundRequests = (fundId: number, requestId?: number) => {
-    return fundSub(fundId, REQUESTS, requestId);
+export const urlFundActions = (fundId: number, versionId?: number, actionId?: number) => {
+    return fundSub(fundId, versionId, ACTIONS, actionId);
 }
 
-export const urlFundDaos = (fundId: number, daoId?: number) => {
-    return fundSub(fundId, DAOS, daoId);
+export const urlFundRequests = (fundId: number, versionId?: number, requestId?: number) => {
+    return fundSub(fundId, versionId, REQUESTS, requestId);
+}
+
+export const urlFundDaos = (fundId: number, versionId?: number, daoId?: number) => {
+    return fundSub(fundId, versionId, DAOS, daoId);
 }

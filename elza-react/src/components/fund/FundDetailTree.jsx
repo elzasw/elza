@@ -27,7 +27,7 @@ import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {selectFundTab} from 'actions/arr/fund.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import FundTreeLazy from '../arr/FundTreeLazy';
-import {FOCUS_KEYS, URL_FUND_TREE} from '../../constants.tsx';
+import {FOCUS_KEYS} from '../../constants.tsx';
 
 class FundDetailTree extends React.Component {
     refTree = null;
@@ -130,7 +130,6 @@ class FundDetailTree extends React.Component {
      */
     callFundSelectSubNode = (node, openNewTab) => {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate(URL_FUND_TREE));
 
         // Otevření archivního souboru
         const {fund} = this.props;

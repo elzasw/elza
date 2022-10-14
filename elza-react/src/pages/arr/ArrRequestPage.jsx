@@ -19,7 +19,7 @@ import ArrParentPage from './ArrParentPage';
 import classNames from 'classnames';
 
 import './ArrRequestPage.scss';
-import {FOCUS_KEYS, urlFundRequests} from '../../constants.tsx';
+import {FOCUS_KEYS, urlFundRequests, getFundVersion} from '../../constants.tsx';
 import { showConfirmDialog } from 'components/shared/dialog';
 
 class ArrRequestPage extends ArrParentPage {
@@ -47,10 +47,10 @@ class ArrRequestPage extends ArrParentPage {
             const requestDetail = fund.requestDetail;
             const requestId = requestDetail.id;
             if (urlRequestId == null && requestId != null) {
-                history.replace(urlFundRequests(fund.id, requestId));
+                history.replace(urlFundRequests(fund.id, getFundVersion(fund), requestId));
             } else if (urlRequestId !== requestId) {
                 dispatch(arrRequestActions.selectDetail(fund.versionId, urlRequestId));
-                history.replace(urlFundRequests(fund.id, urlRequestId));
+                history.replace(urlFundRequests(fund.id, getFundVersion(fund), urlRequestId));
             }
         }
 
@@ -58,7 +58,7 @@ class ArrRequestPage extends ArrParentPage {
     }
 
     getPageUrl(fund) {
-        return urlFundRequests(fund.id);
+        return urlFundRequests(fund.id, getFundVersion(fund));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -168,14 +168,14 @@ class ArrRequestPage extends ArrParentPage {
             );
         }
 
-        return <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon arr subMenu fundId={fund ? fund.id : null} versionId={getFundVersion(fund)} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleSelect = item => {
         const {dispatch, history} = this.props;
         const fund = this.getActiveFund(this.props);
         dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
-        history.push(urlFundRequests(fund.id, item.id));
+        history.push(urlFundRequests(fund.id, getFundVersion(fund), item.id));
     };
 
     handleSend = id => {
