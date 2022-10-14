@@ -291,8 +291,16 @@
   <#list node.items as item>
     <#switch item.type.code>
       <#case "ZP2015_UNIT_ID">
-        <#lt>  <ead:unitid localtype="ReferencniOznaceni">${item.serializedValue}</ead:unitid>
+        <#if output.fund.fundNumber?has_content>
+        <#lt>  <ead:unitid localtype="REFERENCNI_OZNACENI" label="referenční označení">CZ${output.fund.institution.code}//${output.fund.fundNumber}//${item.serializedValue}</ead:unitid>
+        </#if>
         <#break>
+      <#case "ZP2015_SERIAL_NUMBER">
+        <#lt>  <ead:unitid localtype="PORADOVE_CISLO" label="pořadové číslo">${item.serializedValue}</ead:unitid>
+        <#break>
+      <#case "ZP2015_INV_CISLO">
+        <#lt>  <ead:unitid localtype="INV_CISLO" label="inv. č.">${item.serializedValue}</ead:unitid>
+        <#break>        
       <#case "ZP2015_TITLE">
         <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
         <#break>
@@ -300,12 +308,15 @@
         <@writeUnitDate item />
         <#break>
       <#case "ZP2015_NOTE">
-      <ead:didnote>${item.serializedValue}</ead:didnote>
+        <#lt>  <ead:didnote localtype="PUBLIC">${item.serializedValue}</ead:didnote>
+        <#break>
+      <#case "ZP2015_INTERNAL_NOTE">
+        <#lt>  <ead:didnote localtype="INTERNAL" audience="internal">${item.serializedValue}</ead:didnote>
         <#break>
       <#case "ZP2015_ORIGINATOR">
-      <ead:origination localtype="ORIGINATOR">
+        <#lt>  <ead:origination localtype="ORIGINATOR">
         <@writeAp item.record "ORIGINATOR" />
-      </ead:origination>        
+        <#lt>  </ead:origination>        
         <#break>
       <#case "ZP2015_UNIT_CURRENT_STATUS">
       <ead:physdesc>${item.serializedValue}</ead:physdesc>
@@ -318,7 +329,7 @@
         <#break>
       <#case "ZP2015_STORAGE_ID">
       <#-- Ukladaci jednotka -->
-      <ead:container>${item.serializedValue}</ead:container>
+      <#lt>  <ead:container>${item.serializedValue}</ead:container>
         <#break>
       <#-- Prvky popisu pro charakteristiku JP -->
       <#case "ZP2015_UNIT_TYPE">
@@ -430,28 +441,28 @@
     </#switch>
   </#list>
 
-<ead:physdescstructured physdescstructuredtype="materialtype" coverage="whole">
-  <ead:quantity>${pocet}</ead:quantity>
-  <ead:unittype>${druh}</ead:unittype>
+  <ead:physdescstructured physdescstructuredtype="materialtype" coverage="whole">
+    <ead:quantity>${pocet}</ead:quantity>
+    <ead:unittype>${druh}</ead:unittype>
   <#if (itemMat!="")>
-  <ead:physfacet localtype="TECHNIQUE">${itemMat}</ead:physfacet>
+    <ead:physfacet localtype="TECHNIQUE">${itemMat}</ead:physfacet>
   </#if>
   <#if (legenda!="")>
-  <ead:physfacet localtype="LEGEND">${legenda}</ead:physfacet>  
+    <ead:physfacet localtype="LEGEND">${legenda}</ead:physfacet>  
   </#if>
   <#if (paintingChar!="")>
-  <ead:physfacet localtype="IMPRINT_IMAGE">${paintingChar}</ead:physfacet>  
+    <ead:physfacet localtype="IMPRINT_IMAGE">${paintingChar}</ead:physfacet>  
   </#if>
   <#if (corboration!="")>
-  <ead:physfacet localtype="CORROBORATIO">${corboration}</ead:physfacet>  
+    <ead:physfacet localtype="CORROBORATIO">${corboration}</ead:physfacet>  
   </#if>  
   <#if (imprintCount!="")>
-  <ead:physfacet localtype="IMPRINT_COUNT">${imprintCount}</ead:physfacet>  
+    <ead:physfacet localtype="IMPRINT_COUNT">${imprintCount}</ead:physfacet>  
   </#if>  
   <#if (imprintOrder!="")>
-  <ead:physfacet localtype="IMPRINT_ORDER">${imprintOrder}</ead:physfacet>  
+    <ead:physfacet localtype="IMPRINT_ORDER">${imprintOrder}</ead:physfacet>  
   </#if>  
-</ead:physdescstructured>
+  </ead:physdescstructured>
 </#macro>
 
 <#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
