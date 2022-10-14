@@ -1,5 +1,48 @@
 <#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/">
 
+<#-- Seznam mapování typů dle 5.9 -->
+<#assign unitTypeMapping = { 
+        "ZP2015_UNIT_TYPE_LIO": "lio",
+        "ZP2015_UNIT_TYPE_LIP": "lip",
+        "ZP2015_UNIT_TYPE_UKN": "ukn",
+        "ZP2015_UNIT_TYPE_RKP": "rkp",
+        "ZP2015_UNIT_TYPE_HDB": "rkp",
+        "ZP2015_UNIT_TYPE_PPR": "ppr",
+        "ZP2015_UNIT_TYPE_IND": "ind",
+        "ZP2015_UNIT_TYPE_REP": "rep",
+        "ZP2015_UNIT_TYPE_KTT": "ktt",
+        "ZP2015_UNIT_TYPE_PEC": "pec",
+        "ZP2015_UNIT_TYPE_RAZ": "raz",
+        "ZP2015_UNIT_TYPE_OTD": "otd",
+        "ZP2015_UNIT_TYPE_OTC": "otd",
+        "ZP2015_UNIT_TYPE_MAP": "map",
+        "ZP2015_UNIT_TYPE_ATL": "atl",
+        "ZP2015_UNIT_TYPE_TVY": "tvy",
+        "ZP2015_UNIT_TYPE_GLI": "gli",
+        "ZP2015_UNIT_TYPE_KRE": "kre",
+        "ZP2015_UNIT_TYPE_FSN": "fsn",
+        "ZP2015_UNIT_TYPE_FSD": "fsd",
+        "ZP2015_UNIT_TYPE_LFI": "lfi",
+        "ZP2015_UNIT_TYPE_SFI": "sfi",
+        "ZP2015_UNIT_TYPE_KIN": "kin",
+        "ZP2015_UNIT_TYPE_MF": "mf",
+        "ZP2015_UNIT_TYPE_MFS": "mfis",
+        "ZP2015_UNIT_TYPE_FAL": "fal",
+        "ZP2015_UNIT_TYPE_DFO": "dfo",
+        "ZP2015_UNIT_TYPE_KZA": "kza",
+        "ZP2015_UNIT_TYPE_ZZA": "zza",
+        "ZP2015_UNIT_TYPE_TIO": "tio",
+        "ZP2015_UNIT_TYPE_TIP": "tip",
+        "ZP2015_UNIT_TYPE_POH": "poh",
+        "ZP2015_UNIT_TYPE_PKT": "pkt",
+        "ZP2015_UNIT_TYPE_CPA": "cpa",
+        "ZP2015_UNIT_TYPE_STO": "sto",
+        "ZP2015_UNIT_TYPE_PNP": "pnp",
+        "ZP2015_UNIT_TYPE_PFP": "pfp",
+        "ZP2015_UNIT_TYPE_JIN": "jin"
+  }
+>
+
 <ead:control>
   <#-- 2.1. recordid: uuid -->
   <ead:recordid>${output.uuid}</ead:recordid>
@@ -165,7 +208,7 @@
       <#local level="series">
       <#break>
     <#case "ZP2015_LEVEL_FOLDER">
-      <#local level="subseries">
+      <#local level="file">
       <#break>
     <#case "ZP2015_LEVEL_ITEM">
       <#local level="item">
@@ -238,6 +281,8 @@
 <#-- Zápis did -->
 <#macro writeDid node>
   <#local languagesProcessed=0>
+  <#-- Proměná určující, zda se bude vypisovat charakteristika JP -->
+  <#local needsCharakteristikaJP=false>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -272,11 +317,38 @@
         </#if>
         <#break>
       <#case "ZP2015_STORAGE_ID">
-      <!-- Ukladaci jednotka -->
+      <#-- Ukladaci jednotka -->
       <ead:container>${item.serializedValue}</ead:container>
         <#break>
+      <#-- Prvky popisu pro charakteristiku JP -->
+      <#case "ZP2015_UNIT_TYPE">
+        <#if unitTypeMapping?keys?seq_contains(item.specification.code)>
+          <#local needsCharakteristikaJP=true>
+        </#if>
+        <#break>
+      <#case "ZP2015_ITEM_MAT">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_LEGEND">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_PAINTING_CHAR">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_CORROBORATION">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_IMPRINT_COUNT">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_IMPRINT_ORDER">        
+        <#local needsCharakteristikaJP=true>
+        <#break>        
     </#switch>
   </#list>
+  <#if (needsCharakteristikaJP)>
+    <@writeCharakteristika node />
+  </#if>
   <#-- zápis DAOs -->
   <#if (node.daos?size==1)>
     <@writeDao node node.daos?first /> 
@@ -295,6 +367,91 @@
 <#macro writeDao node dao>
 <ead:dao daotype="unknown" identifier="${dao.code}">
 </ead:dao>
+</#macro>
+
+<#-- Zápis charakteristiky 3.3 -->
+<#macro writeCharakteristika node>
+  <#local pocet="">
+  <#local druh="">
+  <#local itemMat="">
+  <#local legenda="">
+  <#local paintingChar="">
+  <#local corboration="">
+  <#local imprintCount="">
+  <#local imprintOrder="">
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_UNIT_TYPE">
+        <#if unitTypeMapping?keys?seq_contains(item.specification.code)>
+          <#local druh=unitTypeMapping[item.specification.code]>
+        </#if>
+        <#break>
+      <#case "ZP2015_UNIT_COUNT">
+        <#local pocet=item.serializedValue>
+        <#break>
+      <#case "ZP2015_ITEM_MAT">
+        <#local itemMat=item.serializedValue>
+        <#break>
+      <#case "ZP2015_LEGEND">
+        <#local legenda=item.serializedValue>
+        <#break>
+      <#case "ZP2015_PAINTING_CHAR">
+        <#local paintingChar=item.serializedValue>
+        <#break>
+      <#case "ZP2015_CORROBORATION">        
+        <#local corboration=item.serializedValue>
+        <#break>
+      <#case "ZP2015_IMPRINT_COUNT">        
+        <#local imprintCount=item.serializedValue>
+        <#break>
+      <#case "ZP2015_IMPRINT_ORDER">        
+        <#local imprintOrder=item.serializedValue>
+        <#break>
+      <#case "ZP2015_LEVEL_TYPE">
+        <#switch item.specification.code>
+          <#case "ZP2015_LEVEL_FOLDER">
+            <#if (druh=="")>
+              <#local druh="file">
+            </#if>
+            <#break>
+          <#case "ZP2015_LEVEL_ITEM">
+            <#if (druh=="")>
+              <#local druh="item">              
+            </#if>
+            <#local pocet="1">
+            <#break>
+          <#case "ZP2015_LEVEL_PART">
+            <#if (druh=="")>
+              <#local druh="itempart">
+            </#if>
+            <#break>
+        </#switch>
+        <#break>
+    </#switch>
+  </#list>
+
+<ead:physdescstructured physdescstructuredtype="materialtype" coverage="whole">
+  <ead:quantity>${pocet}</ead:quantity>
+  <ead:unittype>${druh}</ead:unittype>
+  <#if (itemMat!="")>
+  <ead:physfacet localtype="TECHNIQUE">${itemMat}</ead:physfacet>
+  </#if>
+  <#if (legenda!="")>
+  <ead:physfacet localtype="LEGEND">${legenda}</ead:physfacet>  
+  </#if>
+  <#if (paintingChar!="")>
+  <ead:physfacet localtype="IMPRINT_IMAGE">${paintingChar}</ead:physfacet>  
+  </#if>
+  <#if (corboration!="")>
+  <ead:physfacet localtype="CORROBORATIO">${corboration}</ead:physfacet>  
+  </#if>  
+  <#if (imprintCount!="")>
+  <ead:physfacet localtype="IMPRINT_COUNT">${imprintCount}</ead:physfacet>  
+  </#if>  
+  <#if (imprintOrder!="")>
+  <ead:physfacet localtype="IMPRINT_ORDER">${imprintOrder}</ead:physfacet>  
+  </#if>  
+</ead:physdescstructured>
 </#macro>
 
 <#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
