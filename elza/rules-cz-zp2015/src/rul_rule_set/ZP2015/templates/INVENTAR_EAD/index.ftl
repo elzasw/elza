@@ -43,6 +43,54 @@
   }
 >
 
+<#-- Seznam mapování typů dle 5.4 -->
+<#assign otherIdTypeMapping = { 
+  "ZP2015_OTHERID_SIG_ORIG": "SIGNATURA_PUVODNI",
+  "ZP2015_OTHERID_SIG": "SIGNATURA_ZPRACOVANI",
+  "ZP2015_OTHERID_STORAGE_ID": "UKLADACI_ZNAK",
+  "ZP2015_OTHERID_CJ": "CISLO_JEDNACI",
+  "ZP2015_OTHERID_DOCID": "SPISOVA_ZNACKA",
+  "ZP2015_OTHERID_FORMAL_DOCID": "CISLO_VLOZKY",
+  "ZP2015_OTHERID_ADDID": "CISLO_PRIRUSTKOVE",
+  "ZP2015_OTHERID_OLDSIG": "NEPL_SIGNATURA_ZPRACOVANI",
+  "ZP2015_OTHERID_OLDSIG2": "UKLADACI_ZNAK",
+  "ZP2015_OTHERID_OLDID": "NEPL_INV_CISLO",
+  <#-- Chybí mapování "ZP2015_OTHERID_INVALID_UNITID": "neplatné ukládací číslo", -->
+  "ZP2015_OTHERID_INVALID_REFNO": "NEPL_REFERENCNI_OZNACENI",
+  "ZP2015_OTHERID_PRINTID": "NEPL_PORADOVE_CISLO",
+  "ZP2015_OTHERID_PICID": "NAKL_CISLO",
+  "ZP2015_OTHERID_NEGID": "CISLO_NEGATIVU",
+  "ZP2015_OTHERID_CDID": "CISLO_PRODUKCE",
+  "ZP2015_OTHERID_ISBN": "KOD_ISBN",
+  "ZP2015_OTHERID_ISSN": "KOD_ISSN",
+  "ZP2015_OTHERID_ISMN": "KOD_ISMN",
+  "ZP2015_OTHERID_MATRIXID": "MATRICNI_CISLO"
+  }
+>
+<#-- Mapování localType na label -->
+<#assign otherIdLabelMapping = { 
+  "SIGNATURA_PUVODNI": "signatura přidělená původcem",
+  "SIGNATURA_ZPRACOVANI": "signatura přidělená při zpracování archiválie",
+  "UKLADACI_ZNAK": "ukládací znak / spisový znak",
+  "CISLO_JEDNACI": "číslo jednací",
+  "SPISOVA_ZNACKA": "spisová značka",
+  "CISLO_VLOZKY": "číslo vložky úřední knihy",
+  "CISLO_PRIRUSTKOVE": "přírůstkové číslo",
+  "NEPL_PORADOVE_CISLO": "neplatné pořadové číslo manipulačního seznamu",
+  "NEPL_INV_CISLO": "neplatné inventární číslo",
+  "NEPL_SIGNATURA_ZPRACOVANI": "signatura přidělená při předchozím zpracování",
+  "NEPL_REFERENCNI_OZNACENI": "neplatné referenční označení",
+  "NAKL_CISLO": "číslo pohlednice nakladatelství Orbis",
+  "CISLO_NEGATIVU": "číslo negativu",
+  "CISLO_PRODUKCE": "číslo produkce CD",
+  "KOD_ISBN": "kód ISBN",
+  "KOD_ISSN": "kód ISSN",
+  "KOD_ISMN": "kód ISMN",
+  "MATRICNI_CISLO": "matriční číslo (propůjčeného vyznamenání)",
+  "JINE": "jiné"
+  }
+>
+
 <ead:control>
   <#-- 2.1. recordid: uuid -->
   <ead:recordid>${output.uuid}</ead:recordid>
@@ -299,7 +347,12 @@
         <#lt>  <ead:unitid localtype="PORADOVE_CISLO" label="pořadové číslo">${item.serializedValue}</ead:unitid>
         <#break>
       <#case "ZP2015_INV_CISLO">
-        <#lt>  <ead:unitid localtype="INV_CISLO" label="inv. č.">${item.serializedValue}</ead:unitid>
+        <#lt>  <ead:unitid localtype="INV_CISLO" label="inventární číslo">${item.serializedValue}</ead:unitid>
+        <#break>        
+      <#case "ZP2015_OTHER_ID">
+        <#if (otherIdTypeMapping?keys?seq_contains(item.specification.code)) >
+        <#lt>  <ead:unitid localtype="${otherIdTypeMapping[item.specification.code]}" label="${otherIdLabelMapping[otherIdTypeMapping[item.specification.code]]}">${item.serializedValue}</ead:unitid>
+        </#if>
         <#break>        
       <#case "ZP2015_TITLE">
         <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
