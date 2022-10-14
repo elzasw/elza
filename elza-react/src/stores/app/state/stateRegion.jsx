@@ -30,7 +30,7 @@ function updateFront(front, item, index) {
     }
 
     // Pokud máme moc dlouhou frontu, zkrátíme ji
-    result = result.slice(0, 5);
+    result = result.slice(0, 10);
 
     return result;
 }
