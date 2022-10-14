@@ -333,20 +333,26 @@
       </#if>
       <#break>
     <#case "ZP2015_UNIT_HIST">
-  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
+      <#lt>  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
       <#break>
     <#case "ZP2015_UNIT_ARR">
-  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
+      <#lt>  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
       <#break>
     <#case "ZP2015_UNIT_CONTENT">
-  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
+      <#lt>  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
       <#break>
     <#case "ZP2015_UNIT_SOURCE">
-  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
+      <#lt>  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
       <#break>
     <#case "ZP2015_FUTURE_UNITS">
-  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
+      <#lt>  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
       <#break>
+    <#case "ZP2015_UNIT_ACCESS">
+      <#lt>  <ead:accessrestrict><ead:p>${item.serializedValue}</ead:p></ead:accessrestrict>
+      <#break>      
+    <#case "ZP2015_UNIT_CURRENT_STATUS">
+      <#lt>  <ead:phystech><ead:p>${item.serializedValue}</ead:p></ead:phystech>
+      <#break>      
     </#switch>
   </#list>
 </#macro>
@@ -406,9 +412,6 @@
         <#lt>  <ead:origination localtype="ORIGINATOR">
         <@writeAp item.record "ORIGINATOR" />
         <#lt>  </ead:origination>        
-        <#break>
-      <#case "ZP2015_UNIT_CURRENT_STATUS">
-      <ead:physdesc>${item.serializedValue}</ead:physdesc>
         <#break>
       <#case "ZP2015_LANGUAGE">
         <#if languagesProcessed==0>
