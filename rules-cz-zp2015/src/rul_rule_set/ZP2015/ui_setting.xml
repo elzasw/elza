@@ -208,6 +208,11 @@
                 <type code="ZP2015_RECORD_TYPE" width="1"/>
                 <type code="ZP2015_GEO_REF" width="0"/>
                 <type code="ZP2015_LEGEND" width="2"/>
+                <type code="ZP2015_EXERQUE" width="0"/>
+                <type code="ZP2015_PAINTING_CHAR" width="0"/>
+                <type code="ZP2015_CORROBORATION" width="0"/>
+                <type code="ZP2015_IMPRINT_COUNT" width="1"/>
+                <type code="ZP2015_IMPRINT_ORDER" width="1"/>
             </group>
             <!-- Other items -->
             <group code="09_OTHERS">
