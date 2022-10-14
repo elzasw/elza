@@ -352,7 +352,25 @@
       <#break>      
     <#case "ZP2015_UNIT_CURRENT_STATUS">
       <#lt>  <ead:phystech><ead:p>${item.serializedValue}</ead:p></ead:phystech>
-      <#break>      
+      <#break>
+    <#case "ZP2015_COPY_SOURCE">
+      <#lt>  <ead:originalsloc><ead:p>${item.serializedValue}</ead:p></ead:originalsloc>
+      <#break>
+    <#case "ZP2015_RELATED_UNITS">
+      <#lt>  <ead:relatedmaterial><ead:p>${item.serializedValue}</ead:p></ead:relatedmaterial>
+      <#break>
+    <#case "ZP2015_EXISTING_COPY">
+      <#lt>  <ead:altformavail><ead:p>${item.serializedValue}</ead:p></ead:altformavail>
+      <#break>
+    <#case "ZP2015_ARRANGEMENT_INFO">
+      <#lt>  <ead:processinfo localtype="ARCHIVIST_NOTE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
+    <#case "ZP2015_ARRANGE_RULES">
+      <#lt>  <ead:processinfo localtype="RULES"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
+    <#case "ZP2015_DESCRIPTION_DATE">
+      <#lt>  <ead:processinfo localtype="DESCRIPTION_DATE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
     </#switch>
   </#list>
 </#macro>
