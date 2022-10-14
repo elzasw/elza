@@ -12,7 +12,7 @@ import {FundDataGrid, Ribbon} from 'components/index.jsx';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import DataGridExportDialog from '../../components/arr/DataGridExportDialog';
-import {urlFundGrid} from "../../constants";
+import {urlFundGrid, getFundVersion} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -34,7 +34,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     getPageUrl(fund) {
-        return urlFundGrid(fund.id);
+        return urlFundGrid(fund.id, getFundVersion(fund));
     }
 
     /**
@@ -84,6 +84,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 arr
                 subMenu
                 fundId={activeFund ? activeFund.id : null}
+                versionId={getFundVersion(activeFund)}
                 altSection={altSection}
                 itemSection={itemSection}
             />

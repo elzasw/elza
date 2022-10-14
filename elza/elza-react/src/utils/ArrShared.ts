@@ -1,5 +1,4 @@
 import {fundsSelectFund} from "../actions/fund/fund";
-import {URL_FUND_TREE} from "../constants";
 import {createFundRoot, getFundFromFundAndVersion} from "../components/arr/ArrUtils";
 import {selectFundTab} from "../actions/arr/fund";
 import {routerNavigate} from "../actions/router";
@@ -9,8 +8,6 @@ export const processNodeNavigation = (dispatch, data, arrRegion) => {
     const fund = data.fund;
     dispatch(fundsSelectFund(fund.id));
     const fundVersion = fund.versions.find(v => !v.lockDate);
-    dispatch(routerNavigate('/'));
-    dispatch(routerNavigate(URL_FUND_TREE, 'REPLACE'));
     const fundObj = getFundFromFundAndVersion(fund, fundVersion);
     dispatch(selectFundTab(fundObj));
 

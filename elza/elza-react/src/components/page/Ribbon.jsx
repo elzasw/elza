@@ -21,11 +21,11 @@ import PasswordForm from '../admin/PasswordForm';
 import {
     URL_ENTITY,
     URL_FUND,
-    URL_FUND_TREE, URL_NODE,
+    URL_NODE,
     urlFundActions, urlFundDaos,
     urlFundGrid,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund
 } from "../../constants";
 
 // Nacteni globalni promenne ze <script> v <head>
@@ -41,6 +41,8 @@ class Ribbon extends AbstractReactComponent {
         altSection: PropTypes.object,
         itemSection: PropTypes.object,
         fundId: PropTypes.number,
+        versionId: PropTypes.number,
+        isCurrentVersion: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -115,6 +117,7 @@ class Ribbon extends AbstractReactComponent {
             itemSection,
             primarySection,
             fundId,
+            versionId,
             status: {saveCounter},
             showUser,
         } = this.props;
@@ -195,7 +198,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasRdPage(fundId)) {
                 // právo na čtení
                 arrParts.push(
-                    <IndexLinkContainer key="ribbon-btn-arr-index" to={URL_FUND_TREE}>
+                    <IndexLinkContainer key="ribbon-btn-arr-index" to={urlFundTree(fundId, versionId)}>
                         <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'} className={window.location.pathname.startsWith(URL_NODE) ? "active" : ""}>
                             <Icon glyph="fa-sitemap" />
                             <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
@@ -203,7 +206,7 @@ class Ribbon extends AbstractReactComponent {
                     </IndexLinkContainer>,
                 );
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-table" />
                             <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
@@ -214,7 +217,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-movements" to={urlFundMovements(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-movements" to={urlFundMovements(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-exchange" />
                             <span className="btnText">{i18n('ribbon.action.arr.movements')}</span>
@@ -223,10 +226,10 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
-            if (userDetail.hasArrOutputPage(fundId)) {
+            if (userDetail.hasArrOutputPage(fundId, versionId)) {
                 // právo na výstupy
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-print" />
                             <span className="btnText">{i18n('ribbon.action.arr.output')}</span>
@@ -238,7 +241,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasFundActionPage(fundId)) {
                 // právo na hromadné akce
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-calculator" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span>
@@ -250,7 +253,7 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-shopping-basket" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
@@ -258,7 +261,7 @@ class Ribbon extends AbstractReactComponent {
                     </LinkContainer>,
                 );
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-camera" />
                             <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
@@ -279,14 +282,15 @@ class Ribbon extends AbstractReactComponent {
             // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large big-icon">
-                    <Button
-                        variant={'default'}
-                        className="large"
-                        onClick={this.handleBack}
-                        title={i18n('ribbon.action.back')}
-                    >
-                        <Icon glyph="fa-arrow-circle-o-left" />
-                    </Button>
+                    <LinkContainer key="ribbon-btn-arr-back" to={urlFund(fundId)}>
+                        <Button
+                            variant={'default'}
+                            className="large"
+                            title={i18n('ribbon.action.back')}
+                        >
+                            <Icon glyph="fa-arrow-circle-o-left" />
+                        </Button>
+                    </LinkContainer>
                 </RibbonGroup>,
             );
         } else if (primarySection) {

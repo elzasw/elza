@@ -383,7 +383,7 @@ var messages = {
     "home.action.registry": "Rejstříky",
     "home.recent.fund.title": "Naposledy otevřené archivní soubory",
     "home.recent.party.title": "Naposledy zobrazené osoby",
-    "home.recent.registry.title": "Naposledy zobrazená rejstříková hesla",
+    "home.recent.registry.title": "Naposledy zobrazené archivní entity",
     "home.recent.fund.emptyList.title": "Zatím nebyly otevřeny žádné archivní soubory.",
     "home.recent.fund.emptyList.message": "V této sekci se nachází historie otevřených archivních souborů.",
     "home.recent.party.emptyList.title": "Zatím nebyly otevřeny žádné osoby.",
@@ -391,7 +391,7 @@ var messages = {
     "home.recent.registry.emptyList.title": "Zatím nebyla otevřena žádná rejstříková hesla.",
     "home.recent.registry.emptyList.message": "V této sekci se nachází historie otevřených rejstříkových hesel.",
     "home.recent.fund.goTo": "Přejít na archivní soubory",
-    "home.recent.registry.goTo": "Přejít na rejstříková hesla",
+    "home.recent.registry.goTo": "Přejít na archivní entity",
     "home.recent.party.goTo": "Přejít na osoby",
 
     "toggle.action.minimize": "Minimalizovat",

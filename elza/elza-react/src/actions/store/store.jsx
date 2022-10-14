@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {routerNavigate} from 'actions/router.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS, URL_ENTITY, URL_FUND_TREE} from '../../constants.tsx';
+import {FOCUS_KEYS, URL_ENTITY} from '../../constants.tsx';
 
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
@@ -18,19 +18,19 @@ export function storeRestoreFromStorage() {
                 var stateRegion = localStorageData.stateRegion;
                 if (stateRegion) {
                     if (stateRegion.arrRegion) {
-                        dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
+                        dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion));
                     }
                     if (stateRegion.fundRegion) {
-                        dispatch(storeLoadData('FUND_REGION', stateRegion.fundRegion, false));
+                        dispatch(storeLoadData('FUND_REGION', stateRegion.fundRegion));
                     }
                     if (stateRegion.app) {
-                        dispatch(storeLoadData('APP', stateRegion.app, false));
+                        dispatch(storeLoadData('APP', stateRegion.app));
                     }
                     if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
-                        dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[0], false));
+                        dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[0]));
                     }
                     if (stateRegion.adminRegion) {
-                        dispatch(storeLoadData('ADMIN_REGION', stateRegion.adminRegion, false));
+                        dispatch(storeLoadData('ADMIN_REGION', stateRegion.adminRegion));
                     }
                 }
             }
@@ -52,43 +52,26 @@ export function storeStateData(data) {
     };
 }
 
-export function storeLoadData(type, data, switchView = true) {
-    return (dispatch, getState) => {
+export function storeLoadData(type, data) {
+    return (dispatch) => {
         switch (type) {
             case 'APP':
                 dispatch(storeLoad({store: 'app', ...data}));
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({store: 'app', registryDetail: {...data}}));
-                if (switchView) {
-                    dispatch(routerNavigate(URL_ENTITY));
-                    dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
-                }
                 break;
             case 'ARR_REGION':
                 dispatch(storeLoad({arrRegion: data}));
-                if (switchView) {
-                    dispatch(routerNavigate(URL_FUND_TREE));
-                }
                 break;
             case 'ADMIN_REGION':
                 dispatch(storeLoad({adminRegion: data}));
-                if (switchView) {
-                    dispatch(routerNavigate('/admin'));
-                }
                 break;
             case 'FUND_REGION':
                 dispatch(storeLoad({fundRegion: data}));
-                if (switchView) {
-                    dispatch(routerNavigate('/fund'));
-                }
                 break;
             case 'ARR_REGION_FUND':
                 dispatch(storeLoad({arrRegionFund: data}));
-                if (switchView) {
-                    dispatch(routerNavigate(URL_FUND_TREE));
-                    dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
-                }
                 break;
             default:
                 break;

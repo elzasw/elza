@@ -7,7 +7,7 @@
     overflow:auto;
 
     h4{
-        font-size: 15px;
+        font-size: 1.2rem;
         margin-left: 10px;
         color:#333;
         font-weight: bold;
@@ -24,7 +24,7 @@
                 width: 13em;
                 align-items: center;
                 justify-content: center;
-                margin: 0.1em 0.2em;
+                margin: 0.2em;
                 padding: 15px;
                 background-color: $homepage-button-bg;
                 border: none;
@@ -33,18 +33,95 @@
 
                 .history-name {
                     white-space: normal;
-                    max-height: 3.9em;
                     line-height: 1.3em;
                     overflow: hidden;
                     max-width: 100%;
-                }
-                .icon {
-                    font-size: 2.5em;
-                    margin-bottom: 10px;
+                    font-weight: bold;
+                    padding: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-grow: 1;
+                    flex-shrink: 1;
                 }
 
+                .icon {
+                    font-size: 1em;
+                }
+
+                .background-text-container {
+                    height: 100%;
+                    width: 100%;
+                    font-size: 6.5em;
+                    z-index:0;
+                    opacity: 0.065;
+                    padding: 0 5px;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    border-radius: 0 0 5px 0;
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: center;
+                    font-family: serif;
+                    line-height: 0.7em;
+                    flex-direction: column;
+                }
+
+                .background-text {
+                    white-space: normal;
+                    width: 200%;
+                    text-align: left;
+                }
+
+                .fund-content {
+                    z-index: 2;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    width: 100%;
+                }
+
+                .desc-container {
+                    transition: background 200ms ease-out;
+                    width: 100%;
+                    padding: 5px;
+                    padding-top: 0;
+                    line-height: 1.2em;
+                    font-size: 0.8em;
+                    flex-grow: 0;
+                    line-clamp: 6;
+                }
+
+                .fund-desc-container {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+
+                .fund-desc-item {
+                    margin-bottom: 3px;
+
+                    &.version {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .fund-label {
+                    line-height: 1.1em;
+                    padding: 5px;
+                    background: #333;
+                    color: white;
+                    font-size: 0.8em;
+                    font-weight: bold;
+                }
             }
             .history-button {
+                transition: background 200ms ease-out;
+                position: relative;
+                border-radius: 5px;
+                padding: 0;
+
                 &:hover, &:focus {
                     color: #333;
                     background-color: $homepage-button-bg-hover;
@@ -59,6 +136,16 @@
             }
             .link{
                 width:8em;
+                
+                .big-icon {
+                    font-size: 2.5em;
+                    padding: 20px;
+                }
+
+                .history-name {
+                    align-items: flex-start;
+                    padding: 20px;
+                }
             }
         }
     }
@@ -132,8 +219,5 @@
             width: 200px;
             display: inline-block;
         }
-    }
-    .autocomplete-menu-footer {
-
     }
 }

@@ -13,7 +13,7 @@ import ArrParentPage from './ArrParentPage';
 import {i18n, Icon, RibbonGroup} from '../../components/shared';
 import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index';
 import {Button} from '../../components/ui';
-import {urlFundMovements} from "../../constants";
+import {urlFundMovements, getFundVersion} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -42,7 +42,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     }
 
     getPageUrl(fund) {
-        return urlFundMovements(fund.id);
+        return urlFundMovements(fund.id, getFundVersion(fund));
     }
 
     handleShortcuts(action, e) {
@@ -179,6 +179,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
                 arr
                 subMenu
                 fundId={activeFund ? activeFund.id : null}
+                versionId={getFundVersion(activeFund)}
                 altSection={altSection}
                 itemSection={itemSection}
             />

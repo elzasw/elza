@@ -19,7 +19,7 @@ import ArrParentPage from './ArrParentPage';
 import {fundTreeSelectNode} from 'actions/arr/fundTree';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index';
-import {urlFundDaos} from "../../constants";
+import {urlFundDaos, getFundVersion} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -68,7 +68,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     getPageUrl(fund) {
-        return urlFundDaos(fund.id);
+        return urlFundDaos(fund.id, getFundVersion(fund));
     }
 
     handleCreateUnderAndLink = () => {
@@ -149,6 +149,7 @@ class ArrDaoPage extends ArrParentPage {
                 arr
                 subMenu
                 fundId={activeFund ? activeFund.id : null}
+                versionId={getFundVersion(activeFund)}
                 altSection={altSection}
                 itemSection={itemSection}
             />

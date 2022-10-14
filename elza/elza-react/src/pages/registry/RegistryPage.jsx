@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl
 } from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
@@ -46,6 +46,8 @@ import {withRouter} from "react-router";
 import {RevStateApproval} from 'api/RevStateApproval';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { Api } from 'api';
+import { routerNavigate } from 'actions/router';
+import { isInteger, isUuid } from 'utils/regex';
 
 /**
  * Stránka rejstříků.
@@ -117,7 +119,13 @@ class RegistryPage extends AbstractReactComponent {
                 history.replace(`${URL_ENTITY}/${registryDetail.id}`);
             }
 
-            if (matchId) {
+            if (isUuid(matchId)) {
+                dispatch(registryDetailFetchIfNeeded(matchId)).then((data)=>{
+                    if(data){
+                        dispatch(routerNavigate(getArchiveEntityUrl(data.id), "REPLACE"));
+                    }
+                }); 
+            } else if(isInteger(matchId)) {
                 dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
             }
         }
@@ -782,14 +790,13 @@ class RegistryPage extends AbstractReactComponent {
 
     render() {
         const {splitter, status, registryDetail, select = false} = this.props;
-        const matchId = this.props.match.params.id;
 
         const centerPanel = (
             <div className="registry-page">
-                {(matchId != null || (select && registryDetail.id && registryDetail.fetched)) && 
+                {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) && 
                     <ApDetailPageWrapper 
                         select={select} 
-                        id={matchId != null ? parseInt(matchId) : registryDetail.id} 
+                        id={registryDetail?.data?.id} 
                         editMode={this.getEditMode()} 
                         />}
             </div>
