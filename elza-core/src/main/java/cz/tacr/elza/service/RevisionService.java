@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -404,9 +405,35 @@ public class RevisionService {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
         ApPart apPart = partService.getPart(partId);
+        List<ApPart> childParts = partService.findPartsByParentPart(apPart);
+        List<Integer> childPartIds = childParts.stream().map(i -> i.getPartId()).collect(Collectors.toList());
+
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
+        List<ApRevPart> childRevParts = revisionPartService.findPartsByParentPart(apPart);
+
         List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
+
+        // pokud existují podřízené ApPart je nutné ověřit, zda nebyly odstraněny
+        // mazání v seznamech podřízených ApPart, které jsou v revizi smazány
+        Iterator<ApRevPart> iterator = childRevParts.iterator();
+        while (iterator.hasNext()) {
+            ApRevPart childRevPart = iterator.next();
+            Integer originalPartId = childRevPart.getOriginalPartId();
+            if (originalPartId != null && childPartIds.contains(originalPartId)) {
+                childPartIds.remove(originalPartId);
+                iterator.remove();
+            }
+        }
+
+        // pokud existují podřízené ApPart(s)
+        if (!childPartIds.isEmpty() || !childRevParts.isEmpty()) {
+            List<Integer> childRevPartIds = childRevParts.stream().map(i -> i.getPartId()).collect(Collectors.toList());
+            throw new BusinessException("Nelze smazat part, který má aktivní podřízené party, partId: " + partId, BaseCode.INVALID_STATE)
+                    .set("revPartId", revPart.getPartId())
+                    .set("childPartIds", childPartIds)
+                    .set("childRevPartIds", childRevPartIds);
+        }
 
         if (revPart != null) {
             // smazat itemy a indexi
@@ -440,11 +467,21 @@ public class RevisionService {
         if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
-        ApRevPart revPart = revisionPartService.findById(partId);
 
+        ApRevPart revPart = revisionPartService.findById(partId);
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         List<ApRevIndex> indices = revIndexRepository.findByPart(revPart);
         List<ApRevItem> items = revisionItemService.findByPart(revPart);
+
+        // pokud existuje smazaný rodičovský part obnovení není možné
+        if (revPart.getParentPartId() != null) {
+            ApRevPart revParentPart = revisionPartService.findByOriginalPart(revPart.getParentPart());
+            if (revParentPart != null && revParentPart.isDeleted()) {
+                throw new BusinessException("Nelze obnovit part, který má smazaný rodičovský part, partId: " + partId, BaseCode.INVALID_STATE)
+                        .set("revParentPartId", revPart.getParentPartId())
+                        .set("origPartId", revPart.getOriginalPartId());
+            }
+        }
 
         deleteRevisionIndices(indices);
         revisionItemService.deleteRevisionItems(items, apChange);
