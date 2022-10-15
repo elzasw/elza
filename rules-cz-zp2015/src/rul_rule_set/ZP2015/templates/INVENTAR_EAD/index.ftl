@@ -371,17 +371,20 @@
     <#case "ZP2015_DESCRIPTION_DATE">
       <#lt>  <ead:processinfo localtype="DESCRIPTION_DATE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
       <#break>
+    <#case "ZP2015_EDITION">
+      <#lt>  <ead:bibliography><ead:p>${item.serializedValue}</ead:p></ead:bibliography>
+      <#break>
     </#switch>
   </#list>
 </#macro>
 
 <#-- Zápis did -->
 <#macro writeDid node>
-  <#local languagesProcessed=0>
   <#-- Proměná určující, zda se bude vypisovat charakteristika JP -->
   <#local needsCharakteristikaJP=false>
   <#-- Určení počtu datací -->
   <#local unitDates=[]>
+  <#local languages=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -429,16 +432,22 @@
       <#case "ZP2015_STORAGE_COND">
         <#lt>  <ead:physdesc>${item.serializedValue}</ead:physdesc>
         <#break>
+      <#case "ZP2015_SCALE">
+        <#lt>  <ead:materialspec localtype="SCALE">${item.serializedValue}</ead:materialspec>
+        <#break>
+      <#case "ZP2015_ORIENTATION">
+        <#lt>  <ead:materialspec localtype="ORIENTATION">${item.serializedValue}</ead:materialspec>
+        <#break>
+      <#case "ZP2015_PART">
+        <#lt>  <ead:materialspec localtype="VOLUME">${item.serializedValue}</ead:materialspec>
+        <#break>
       <#case "ZP2015_ORIGINATOR">
         <#lt>  <ead:origination localtype="ORIGINATOR">
         <@writeAp item.record "ORIGINATOR" />
         <#lt>  </ead:origination>        
         <#break>
       <#case "ZP2015_LANGUAGE">
-        <#if languagesProcessed==0>
-          <@writeLangMaterials node.items />
-          <#local languagesProcessed=1>
-        </#if>
+        <#local languages=languages+[item]>
         <#break>
       <#case "ZP2015_STORAGE_ID">
       <#-- Ukladaci jednotka -->
@@ -524,6 +533,9 @@
   </#if>
   <#if (unitDates?size>0) >
     <@writeUnitDates unitDates />
+  </#if>
+  <#if (languages?size>0) >
+    <@writeLangMaterials languages />
   </#if>
   <#-- zápis DAOs -->
   <#if (node.daos?size==1)>
@@ -649,8 +661,8 @@
 <#macro writeLangMaterials items>
   <!-- Jazyky JP -->
   <ead:langmaterial>
-  <#list items?filter(langItem -> langItem.type.code=="ZP2015_LANGUAGE") as langItem>
-    <ead:language langcode="${langItem.specification.code}">${langItem.specification.name}</ead:language>
+  <#list items as langItem>
+    <ead:language langcode="${langItem.specification.code[4..]}">${langItem.specification.name}</ead:language>
   </#list>
   </ead:langmaterial>
 </#macro>
