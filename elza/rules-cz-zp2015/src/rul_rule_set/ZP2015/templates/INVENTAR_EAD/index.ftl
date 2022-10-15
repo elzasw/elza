@@ -471,6 +471,52 @@
       <#case "ZP2015_SIZE">        
         <#local needsCharakteristikaJP=true>
         <#break>
+      <#case "ZP2015_SIZE_WIDTH">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE_HEIGHT">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE_DEPTH">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_WEIGHT">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>${item.specification.name}</ead:unittype>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_AMOUNT">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#switch item.specification.code>
+          <#case "ZP2015_AMOUNT_B">
+            <#lt>    <ead:unittype>byte</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_PIECES">
+            <#lt>    <ead:unittype>pieces</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_SHEETS">
+            <#lt>    <ead:unittype>sheets</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_PAGES">
+            <#lt>    <ead:unittype>pages</ead:unittype>
+            <#break>
+        </#switch>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_MOVIE_LENGTH">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>s</ead:unittype>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_RECORD_LENGTH">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>s</ead:unittype>
+        <#lt>  </ead:physdescstructured>
+        <#break>
     </#switch>
   </#list>
   <#if (needsCharakteristikaJP)>
