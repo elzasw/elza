@@ -426,6 +426,9 @@
       <#case "ZP2015_INTERNAL_NOTE">
         <#lt>  <ead:didnote localtype="INTERNAL" audience="internal">${item.serializedValue}</ead:didnote>
         <#break>
+      <#case "ZP2015_STORAGE_COND">
+        <#lt>  <ead:physdesc>${item.serializedValue}</ead:physdesc>
+        <#break>
       <#case "ZP2015_ORIGINATOR">
         <#lt>  <ead:origination localtype="ORIGINATOR">
         <@writeAp item.record "ORIGINATOR" />
@@ -464,7 +467,10 @@
         <#break>
       <#case "ZP2015_IMPRINT_ORDER">        
         <#local needsCharakteristikaJP=true>
-        <#break>        
+        <#break>
+      <#case "ZP2015_SIZE">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
     </#switch>
   </#list>
   <#if (needsCharakteristikaJP)>
@@ -497,12 +503,8 @@
 <#macro writeCharakteristika node>
   <#local pocet="">
   <#local druh="">
-  <#local itemMat="">
-  <#local legenda="">
-  <#local paintingChar="">
-  <#local corboration="">
-  <#local imprintCount="">
-  <#local imprintOrder="">
+  <#local dimensions=[]>
+  <#local dimensionUnits="mm">  
   <#list node.items as item>
     <#switch item.type.code>
       <#case "ZP2015_UNIT_TYPE">
@@ -512,24 +514,6 @@
         <#break>
       <#case "ZP2015_UNIT_COUNT">
         <#local pocet=item.serializedValue>
-        <#break>
-      <#case "ZP2015_ITEM_MAT">
-        <#local itemMat=item.serializedValue>
-        <#break>
-      <#case "ZP2015_LEGEND">
-        <#local legenda=item.serializedValue>
-        <#break>
-      <#case "ZP2015_PAINTING_CHAR">
-        <#local paintingChar=item.serializedValue>
-        <#break>
-      <#case "ZP2015_CORROBORATION">        
-        <#local corboration=item.serializedValue>
-        <#break>
-      <#case "ZP2015_IMPRINT_COUNT">        
-        <#local imprintCount=item.serializedValue>
-        <#break>
-      <#case "ZP2015_IMPRINT_ORDER">        
-        <#local imprintOrder=item.serializedValue>
         <#break>
       <#case "ZP2015_LEVEL_TYPE">
         <#switch item.specification.code>
@@ -551,30 +535,67 @@
             <#break>
         </#switch>
         <#break>
+      <#case "ZP2015_SIZE_WIDTH">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_HEIGHT">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_DEPTH">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_UNITS">
+        <#local dimensionUnits=item.specification.name>
+        <#break>
     </#switch>
   </#list>
 
   <ead:physdescstructured physdescstructuredtype="materialtype" coverage="whole">
     <ead:quantity>${pocet}</ead:quantity>
     <ead:unittype>${druh}</ead:unittype>
-  <#if (itemMat!="")>
-    <ead:physfacet localtype="TECHNIQUE">${itemMat}</ead:physfacet>
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_ITEM_MAT">
+        <#lt>    <ead:physfacet localtype="TECHNIQUE">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_LEGEND">
+        <#lt>    <ead:physfacet localtype="LEGEND">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_PAINTING_CHAR">
+        <#lt>    <ead:physfacet localtype="IMPRINT_IMAGE">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_CORROBORATION">        
+        <#lt>    <ead:physfacet localtype="CORROBORATIO">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_IMPRINT_COUNT">        
+        <#lt>    <ead:physfacet localtype="IMPRINT_COUNT">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_IMPRINT_ORDER">        
+        <#lt>    <ead:physfacet localtype="IMPRINT_ORDER">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_SIZE">
+        <#lt>    <ead:dimensions>${item.serializedValue}</ead:dimensions>  
+        <#break>
+    </#switch>
+  </#list>
+  <#-- Zapis strukturovanych rozmeru -->
+  <#if (dimensions?size>0)>
+    <#lt>    <ead:dimensions>  
+    <#list dimensions as dimension>
+      <#switch dimension.type.code>
+        <#case "ZP2015_SIZE_WIDTH">
+          <#lt>      <ead:dimensions localtype="WIDTH" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+        <#case "ZP2015_SIZE_HEIGHT">
+          <#lt>      <ead:dimensions localtype="HEIGHT" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+        <#case "ZP2015_SIZE_DEPTH">
+          <#lt>      <ead:dimensions localtype="DEPTH" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+      </#switch>
+    </#list>
+    <#lt>    </ead:dimensions>
   </#if>
-  <#if (legenda!="")>
-    <ead:physfacet localtype="LEGEND">${legenda}</ead:physfacet>  
-  </#if>
-  <#if (paintingChar!="")>
-    <ead:physfacet localtype="IMPRINT_IMAGE">${paintingChar}</ead:physfacet>  
-  </#if>
-  <#if (corboration!="")>
-    <ead:physfacet localtype="CORROBORATIO">${corboration}</ead:physfacet>  
-  </#if>  
-  <#if (imprintCount!="")>
-    <ead:physfacet localtype="IMPRINT_COUNT">${imprintCount}</ead:physfacet>  
-  </#if>  
-  <#if (imprintOrder!="")>
-    <ead:physfacet localtype="IMPRINT_ORDER">${imprintOrder}</ead:physfacet>  
-  </#if>  
   </ead:physdescstructured>
 </#macro>
 
