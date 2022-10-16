@@ -323,14 +323,17 @@
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
   </#if>
   <#-- Elements outside did -->
-  <#local relationsProcessed=0>
+  <#local relations=[]>
   <#list node.items as item>
     <#switch item.type.code>
+    <#case "ZP2015_POSITION">
+      <#local relations = relations + [item]>
+      <#break>
+    <#case "ZP2015_ITEM_TITLE_REF">
+      <#local relations = relations + [item]>
+      <#break>
     <#case "ZP2015_ENTITY_ROLE">
-      <#if relationsProcessed==0>
-        <@writeRelations node.items />
-        <#local relationsProcessed=1>
-      </#if>
+      <#local relations = relations + [item]>
       <#break>
     <#case "ZP2015_UNIT_HIST">
       <#lt>  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
@@ -376,6 +379,10 @@
       <#break>
     </#switch>
   </#list>
+  <#if (relations?size>0)>
+    <@writeRelations relations />
+  </#if>
+  
 </#macro>
 
 <#-- Zápis did -->
@@ -887,15 +894,32 @@
     </ead:daterange>
 </#macro>
 
-<#macro writeRelations items>
-  <!-- Role entit -->
+<#macro writeRelations relations>
+  <#-- Role entit, souřadnice, autorské dílo -->
   <ead:relations>
-  <#list items as item>
-    <#if item.type.code=="ZP2015_ENTITY_ROLE">
+  <#list relations as item>
+    <#switch item.type.code>
+    <#case "ZP2015_POSITION">
+      <#lt>    <ead:relation relationtype = "otherrelationtype"  otherrelationtype="COORDINATES">
+      <#lt>      <ead:geogname>
+      <#lt>        <ead:part>5.2.6 Souřadnice</ead:part>
+      <#lt>        <ead:geographiccoordinates
+      <#lt>             coordinatesystem="WGS84">${item.base64Value}</ead:geographiccoordinates>
+      <#lt>      </ead:geogname>
+      <#lt>    </ead:relation>
+      <#break>
+    <#case "ZP2015_ITEM_TITLE_REF">
+      <#lt>    <ead:relation relationtype="resourcerelation" linktitle="autorské dílo" linkrole="ARTWORK">
+      <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
+      <#-- <#lt>      <ead:descriptivenote><ead:p><ead:ref target="ap157" /><ead:p></ead:descriptivenote>-->      
+      <#lt>    </ead:relation>
+      <#break>
+    <#case "ZP2015_ENTITY_ROLE">
       <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.uuid}" linkrole="${item.specification.code}">
         <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       </ead:relation>
-    </#if>
+      <#break>
+    </#switch>
   </#list>
   </ead:relations>
 </#macro>
