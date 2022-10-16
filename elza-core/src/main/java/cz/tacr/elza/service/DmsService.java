@@ -37,13 +37,13 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -227,6 +227,7 @@ public class DmsService {
         Path dmsFilePath = resourcePathResolver.getDmsDir().resolve(dmsFile.getFileId().toString());
         //File outputFile = 
         if (!Files.exists(dmsFilePath)) {
+            logger.error("File not exist, fileId: {}, filePath: {}", dmsFile.getFileId(), dmsFilePath);
             throw new SystemException("Požadovaný soubor neexistuje")
                     .set("fileId", dmsFile.getFileId().toString())
                     .set("filePath", dmsFilePath.toString());
