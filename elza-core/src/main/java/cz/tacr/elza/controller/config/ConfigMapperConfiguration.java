@@ -754,7 +754,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataString string,
                                         final MappingContext context) {
                         super.mapBtoA(stringVO, string, context);
-                        string.setStringValue(stringVO.getValue());
+                        string.setStringValue(StringNormalize.normalizeString(stringVO.getValue()));
                     }
                 }
         ).byDefault().register();
