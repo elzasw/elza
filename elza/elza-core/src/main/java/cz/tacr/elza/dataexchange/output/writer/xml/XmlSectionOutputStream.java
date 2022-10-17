@@ -16,7 +16,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.Validate;
 
@@ -43,6 +42,16 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.schema.v2.DescriptionItem;
+import cz.tacr.elza.schema.v2.DescriptionItemAPRef;
+import cz.tacr.elza.schema.v2.DescriptionItemFileRef;
+import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
+import cz.tacr.elza.schema.v2.DigitalArchivalObject;
+import cz.tacr.elza.schema.v2.DigitalArchivalObjects;
+import cz.tacr.elza.schema.v2.FundInfo;
+import cz.tacr.elza.schema.v2.Level;
+import cz.tacr.elza.schema.v2.ObjectFactory;
+import cz.tacr.elza.schema.v2.StructuredObject;
 
 /**
  * XML output stream for section export.
@@ -347,9 +356,10 @@ class XmlSectionOutputStream implements SectionOutputStream {
         public FileRefConvertor createFileRefConvertor() {
             return new FileRefConvertor() {
                 @Override
-                public DescriptionItemFileRef convert(ArrData data, ObjectFactory objectFactory) {
-                    DescriptionItemFileRef item = super.convert(data, objectFactory);
-                    if (item != null) {
+                public DescriptionItem convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItem item = super.convert(data, objectFactory);
+                    // item might be null or DescriptionItemUndefined if undefined
+                    if (item != null && item instanceof DescriptionItemFileRef) {
                         ArrDataFileRef fileRef = (ArrDataFileRef) data;
                         sectionContext.addDmsFile(fileRef.getFileId());
                     }
