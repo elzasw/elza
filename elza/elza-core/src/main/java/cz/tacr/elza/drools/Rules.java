@@ -17,6 +17,15 @@ import org.kie.api.KieServices;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.Message;
+import org.kie.api.event.rule.AfterMatchFiredEvent;
+import org.kie.api.event.rule.AgendaEventListener;
+import org.kie.api.event.rule.AgendaGroupPoppedEvent;
+import org.kie.api.event.rule.AgendaGroupPushedEvent;
+import org.kie.api.event.rule.BeforeMatchFiredEvent;
+import org.kie.api.event.rule.MatchCancelledEvent;
+import org.kie.api.event.rule.MatchCreatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupActivatedEvent;
+import org.kie.api.event.rule.RuleFlowGroupDeactivatedEvent;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -152,6 +161,51 @@ public abstract class Rules {
         KieBase kb = getKieBase(path);
 
         StatelessKieSession ksession = kb.newStatelessKieSession();
+        if (logger.isTraceEnabled()) {
+            ksession.addEventListener(new AgendaEventListener() {
+
+                @Override
+                public void matchCreated(MatchCreatedEvent event) {
+                }
+
+                @Override
+                public void matchCancelled(MatchCancelledEvent event) {
+                }
+
+                @Override
+                public void beforeRuleFlowGroupDeactivated(RuleFlowGroupDeactivatedEvent event) {
+                }
+
+                @Override
+                public void beforeRuleFlowGroupActivated(RuleFlowGroupActivatedEvent event) {
+                }
+
+                @Override
+                public void beforeMatchFired(BeforeMatchFiredEvent event) {
+                }
+
+                @Override
+                public void agendaGroupPushed(AgendaGroupPushedEvent event) {
+                }
+
+                @Override
+                public void agendaGroupPopped(AgendaGroupPoppedEvent event) {
+                }
+
+                @Override
+                public void afterRuleFlowGroupDeactivated(RuleFlowGroupDeactivatedEvent event) {
+                }
+
+                @Override
+                public void afterRuleFlowGroupActivated(RuleFlowGroupActivatedEvent event) {
+                }
+
+                @Override
+                public void afterMatchFired(AfterMatchFiredEvent event) {
+                    logger.trace("Rule matched: {}", event.getMatch().getRule().getName());
+                }
+            });
+        }
         return ksession;
     }
 
