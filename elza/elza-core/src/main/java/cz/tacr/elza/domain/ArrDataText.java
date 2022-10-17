@@ -78,11 +78,11 @@ public class ArrDataText extends ArrData {
         Validate.notNull(textValue);
         // check any leading and trailing whitespace in data
         String value = textValue.trim();
-        Validate.isTrue(value.length() == textValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+        Validate.isTrue(value.length() == textValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: ", getDataId());
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A, "Value obsahuje netiskové znaky, dataId: %s", getDataId());
+            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A, "Value obsahuje netiskové znaky, dataId: ", getDataId());
         }
     }
 }

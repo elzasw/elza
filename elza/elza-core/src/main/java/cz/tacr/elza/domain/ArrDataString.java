@@ -76,13 +76,13 @@ public class ArrDataString extends ArrData {
         Validate.notNull(stringValue);
         // check any leading and trailing whitespace in data
         String value = stringValue.trim();
-        Validate.isTrue(value.length() == stringValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+        Validate.isTrue(value.length() == stringValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: ", getDataId());
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f, "Value obsahuje netiskové znaky, dataId: %s", getDataId());
+            Validate.isTrue(c >= 0x1f, "Value obsahuje netiskové znaky, dataId: ", getDataId());
         }
         // check double-space
-        Validate.isTrue(value.indexOf("  ") < 0, "Value obsahuje dvojité mezery, dataId: %s", getDataId());
+        Validate.isTrue(value.indexOf("  ") < 0, "Value obsahuje dvojité mezery, dataId: ", getDataId());
     }
 }
