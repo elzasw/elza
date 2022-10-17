@@ -420,7 +420,8 @@ when
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.ownDescItems
     // uložení není určeno výše
-    not DescItem(type=="ZP2015_STORAGE_ID" && inherited ) from $activeLevel.descItems
+    not ( $level : Level( this!=$activeLevel ) and
+          DescItem(type=="ZP2015_STORAGE_ID") from $level.descItems )
     // pevné spojení
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // zneplatněný záznam
@@ -602,7 +603,7 @@ end
 
 // UJ_011 Na množstevní složce nebo výše musí být uvedena jedna hromadinová ukl. jednotka
 // - druhá polovina kontroly je v rámci HP012
-rule "UJ_011_01 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka"
+rule "UJ_011 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka"
 salience -200
 no-loop
 when
