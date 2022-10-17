@@ -3452,7 +3452,7 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "Doporučenné prvky pro technické výkresy v inv (část jednotlivosti)"
+rule "Doporučené prvky pro technické výkresy v inv (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -3481,6 +3481,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
+
 // Možné role entit pro technické výkresy (vždy)
 rule "Možné role entit pro technické výkresy (vždy)"
 no-loop
@@ -3526,9 +3527,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // autor
         "ZP2015_ENTITY_ROLE_1", 
         // objednatelé/příjemci 
-        "ZP2015_ENTITY_ROLE_19",
-        // typová označení a názvy výrobků a typových staveb
-        "ZP2015_ENTITY_ROLE_63"
+        "ZP2015_ENTITY_ROLE_19"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -3550,9 +3549,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         // autor
         "ZP2015_ENTITY_ROLE_1",
         // objednatelé/příjemci 
-        "ZP2015_ENTITY_ROLE_19",
-        // typová označení a názvy výrobků a typových staveb
-        "ZP2015_ENTITY_ROLE_63"
+        "ZP2015_ENTITY_ROLE_19"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
