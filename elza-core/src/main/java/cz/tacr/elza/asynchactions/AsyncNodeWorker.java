@@ -2,12 +2,14 @@ package cz.tacr.elza.asynchactions;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.persistence.EntityNotFoundException;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,37 +66,48 @@ public class AsyncNodeWorker implements IAsyncWorker {
     @Autowired
     private EventBus eventBus;
 
-    private final AsyncRequest request;
+    private AsyncRequest request;
+
+    private final List<AsyncRequest> requests;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public AsyncNodeWorker(final AsyncRequest request) {
+    public AsyncNodeWorker(final List<AsyncRequest> requests) {
         running.set(true);
-        this.request = request;
+        this.requests = requests;
     }
 
     @Override
     public void run() {
-        Integer fundVersionId = request.getFundVersionId();
-        Long requestId = request.getRequestId();
-        Integer nodeId = request.getNodeId();
-
         beginTime = System.currentTimeMillis();
-        logger.debug("Start worker, threadId: {},  beginAt: {}, fundVersionId: {}, nodeId: {}",
-                     Thread.currentThread().getId(), beginTime,
-                     fundVersionId, nodeId);
+        logger.debug("Start worker, threadId: {},  beginAt: {}",
+                     Thread.currentThread().getId(), beginTime);
         try {
-            new TransactionTemplate(transactionManager).execute((status) -> {
-                Set<Integer> processedRequestIds = new LinkedHashSet<>();
-                ArrFundVersion version = getFundVersion();
+            if (CollectionUtils.isNotEmpty(requests)) {
+                for (AsyncRequest request : requests) {
+                    Integer fundVersionId = request.getFundVersionId();
+                    Long requestId = request.getRequestId();
+                    Integer nodeId = request.getNodeId();
+                    this.request = request;
 
-                processRequest(requestId, nodeId, version);
-                processedRequestIds.add(nodeId);
+                    long nodeBeginTime = System.currentTimeMillis();
+                    logger.debug("Start worker, threadId: {},  beginAt: {}, fundVersionId: {}, nodeId: {}",
+                            Thread.currentThread().getId(), nodeBeginTime,
+                            fundVersionId, nodeId);
 
-                eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version, processedRequestIds.toArray(new Integer[0])));
-                eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
-                return null;
-            });
+                    new TransactionTemplate(transactionManager).execute((status) -> {
+                        Set<Integer> processedRequestIds = new LinkedHashSet<>();
+                        ArrFundVersion version = getFundVersion(request);
+
+                        processRequest(requestId, nodeId, version);
+                        processedRequestIds.add(nodeId);
+
+                        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version, processedRequestIds.toArray(new Integer[0])));
+                        eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                        return null;
+                    });
+                }
+            }
         } catch (Throwable t) {
             logger.error("Validation failed", t);
 
@@ -138,7 +151,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
         }
     }
 
-    private ArrFundVersion getFundVersion() {
+    private ArrFundVersion getFundVersion(AsyncRequest request) {
         return fundVersionRepository.findById(request.getFundVersionId())
                 .orElseThrow(() -> new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId: " + request.getFundVersionId()));
     }
@@ -214,11 +227,11 @@ public class AsyncNodeWorker implements IAsyncWorker {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AsyncNodeWorker that = (AsyncNodeWorker) o;
-        return request.equals(that.request);
+        return requests.equals(that.requests);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(request);
+        return Objects.hash(requests);
     }
 }

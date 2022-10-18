@@ -16,9 +16,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.cxf.common.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +99,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private SchemaManager schemaManager;
 
@@ -107,8 +107,12 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     private final AsyncRequest request;
 
-    public AsyncOutputGeneratorWorker(final AsyncRequest request) {
-        this.request = request;
+    public AsyncOutputGeneratorWorker(final List<AsyncRequest> requests) {
+        if (CollectionUtils.isNotEmpty(requests)) {
+            this.request = requests.get(0);
+        } else {
+            this.request = null;
+        }
     }
 
     @Override
@@ -151,7 +155,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     /**
      * Generování výstupu
-     * 
+     *
      * @param outputId
      * @param userId
      */
@@ -242,7 +246,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         outputParams.setTemplate(template);
         outputParams.setTemplateDir(templateDir);
     }
-    
+
     /**
      * Handle exception raised during output processing. Must be called in transaction.
      */
