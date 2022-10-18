@@ -447,8 +447,8 @@ class DescItemType extends AbstractReactComponent {
         const {onBlur, onChange, rulDataType} = this.props;
         let {value, error} = this.state;
 
-        value = await this.interceptValue(value, rulDataType);
-        if(!value){return;} // Cancel the value change when null
+        const newValue = await this.interceptValue(value, rulDataType);
+        if(!newValue && newValue !== value){return;} // Cancel the value change when null
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
         value &&
