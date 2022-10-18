@@ -19,6 +19,7 @@ import ArrParentPage from './ArrParentPage';
 import {fundTreeSelectNode} from 'actions/arr/fundTree';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index';
+import {urlFundDaos, getFundVersion} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -50,7 +51,9 @@ class ArrDaoPage extends ArrParentPage {
         ruleSet: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {}
+    componentDidMount() {
+        super.componentDidMount();
+    }
 
     UNSAFE_componentWillReceiveProps(nextProps) {}
 
@@ -62,6 +65,10 @@ class ArrDaoPage extends ArrParentPage {
     handleShortcuts(action) {
         console.log('#handleShortcuts ArrDaoPage', '[' + action + ']', this);
         super.handleShortcuts(action);
+    }
+
+    getPageUrl(fund) {
+        return urlFundDaos(fund.id, getFundVersion(fund));
     }
 
     handleCreateUnderAndLink = () => {
@@ -142,6 +149,7 @@ class ArrDaoPage extends ArrParentPage {
                 arr
                 subMenu
                 fundId={activeFund ? activeFund.id : null}
+                versionId={getFundVersion(activeFund)}
                 altSection={altSection}
                 itemSection={itemSection}
             />

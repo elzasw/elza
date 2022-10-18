@@ -19,7 +19,7 @@ import ArrParentPage from './ArrParentPage';
 import classNames from 'classnames';
 
 import './ArrRequestPage.scss';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {FOCUS_KEYS, urlFundRequests, getFundVersion} from '../../constants.tsx';
 import { showConfirmDialog } from 'components/shared/dialog';
 
 class ArrRequestPage extends ArrParentPage {
@@ -34,15 +34,31 @@ class ArrRequestPage extends ArrParentPage {
         userDetail: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
-        super.componentDidMount();
+    async componentDidMount() {
+        const {dispatch, match, history} = this.props;
+        await super.componentDidMount();
 
         const fund = this.getActiveFund(this.props);
+        const matchId = match.params.requestId;
+        const urlRequestId = matchId ? parseInt(matchId) : null;
         if (fund) {
-            this.props.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+            dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+
+            const requestDetail = fund.requestDetail;
+            const requestId = requestDetail.id;
+            if (urlRequestId == null && requestId != null) {
+                history.replace(urlFundRequests(fund.id, getFundVersion(fund), requestId));
+            } else if (urlRequestId !== requestId) {
+                dispatch(arrRequestActions.selectDetail(fund.versionId, urlRequestId));
+                history.replace(urlFundRequests(fund.id, getFundVersion(fund), urlRequestId));
+            }
         }
 
         this.trySetFocus(this.props);
+    }
+
+    getPageUrl(fund) {
+        return urlFundRequests(fund.id, getFundVersion(fund));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -152,12 +168,14 @@ class ArrRequestPage extends ArrParentPage {
             );
         }
 
-        return <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon arr subMenu fundId={fund ? fund.id : null} versionId={getFundVersion(fund)} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleSelect = item => {
+        const {dispatch, history} = this.props;
         const fund = this.getActiveFund(this.props);
-        this.props.dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
+        dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
+        history.push(urlFundRequests(fund.id, getFundVersion(fund), item.id));
     };
 
     handleSend = id => {

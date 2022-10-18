@@ -83,6 +83,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -753,7 +754,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataString string,
                                         final MappingContext context) {
                         super.mapBtoA(stringVO, string, context);
-                        string.setStringValue(stringVO.getValue());
+                        string.setStringValue(StringNormalize.normalizeString(stringVO.getValue()));
                     }
                 }
         ).byDefault().register();
@@ -825,7 +826,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataText text,
                                         final MappingContext context) {
                         super.mapBtoA(textVO, text, context);
-                        text.setTextValue(textVO.getValue());
+                        text.setTextValue(StringNormalize.normalizeText(textVO.getValue()));
                     }
                 }
         ).byDefault().register();

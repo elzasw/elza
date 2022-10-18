@@ -1,34 +1,120 @@
+import { createFund } from 'actions/arr/fund.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import * as perms from 'actions/user/Permission.jsx';
+import { Api } from 'api';
+import { FundForm, i18n, Icon, Ribbon } from 'components/index.jsx';
+import { AbstractReactComponent, RibbonGroup, TooltipTrigger, Utils } from 'components/shared';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import {connect} from 'react-redux';
-import {LinkContainer} from 'react-router-bootstrap';
-import {FundForm, i18n, Icon, Ribbon} from 'components/index.jsx';
-import {AbstractReactComponent, RibbonGroup, Utils} from 'components/shared';
-import {Button} from '../../components/ui';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {createFund} from 'actions/arr/fund.jsx';
-import {storeLoadData} from 'actions/store/store.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
-import * as perms from 'actions/user/Permission.jsx';
+import { connect } from 'react-redux';
+import { LinkContainer } from 'react-router-bootstrap';
+import { WebApi } from "../../actions/WebApi";
+import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import { Button } from '../../components/ui';
+import { FOCUS_KEYS, urlFundTree, URL_ENTITY } from '../../constants.tsx';
 import PageLayout from '../shared/layout/PageLayout';
 import './HomePage.scss';
-import {FOCUS_KEYS, URL_ENTITY} from '../../constants.tsx';
-import SearchFundsForm from '../../components/arr/SearchFundsForm';
-import {WebApi} from "../../actions/WebApi";
+
 
 // Testování
 // import AutocompleteTest from "./test/AutocompleteTest";
+
+const truncateStringWithTooltip = (string, length, maxWidth = "13em") => {
+    if(string.length <= length){
+        return string;
+    }
+    return <TooltipTrigger content={<div style={{maxWidth}}>{string}</div>} placement='vertical'>
+        {`${string.slice(0, length-3).trim()}...`}
+    </TooltipTrigger>
+}
+
+const FundItem = ({fundDetail, version}) => {
+    const name = truncateStringWithTooltip(fundDetail.name, 90)
+
+    return <LinkContainer to={urlFundTree(fundDetail.id, version.lockDate === null ? undefined : version.id)} className="history-list-item history-button">
+        <Button>
+            <div className="background-text-container">
+                {/* <Icon glyph='fa-database' /> */}
+                <div className="background-text">{fundDetail.name}</div>
+            </div>
+            <div className="fund-content">
+                <div className="history-name">
+                    {name}
+                </div>
+                <div className="desc-container">
+                    <>
+                        <div className="fund-desc-container">
+                            {fundDetail.mark && <div className="fund-desc-item" >
+                                {fundDetail.mark}
+                            </div>}
+                            <div className="fund-desc-item version" >
+                                {version.lockDate && <>
+                                    <Icon glyph={'fa-lock'}/> Verze {new Date(version.lockDate).toLocaleString()}
+                                    </>}
+                            </div>
+                        </div>
+                        </>
+                </div>
+                <div className="fund-label">
+                    {[fundDetail.fundNumber, fundDetail.internalCode].filter((item) => item).join(", ")}
+                    &nbsp;
+                </div>
+            </div>
+        </Button>
+    </LinkContainer>
+}
+
+const EntityItem = ({entity}) => {
+    return (
+        <TooltipTrigger 
+            style={{zIndex: 2, display: "inline-block"}} 
+            content={entity.data.description 
+                && <div style={{maxWidth: "13em"}} >
+                    {entity.data.description}
+                </div>} 
+            placement="vertical"
+        >
+            <LinkContainer 
+                to={`/entity/${entity.id}`} 
+                className="history-list-item history-button" 
+            >
+                <Button>
+                    <div className="background-text-container">
+                        {/* <Icon glyph='fa-th-list' /> */}
+                        <div className="background-text">{entity.data.name}</div>
+                    </div>
+                    <div style={{zIndex: 2}} className="history-name">
+                        {truncateStringWithTooltip(entity.data.name, 120)}
+                    </div>
+                </Button>
+            </LinkContainer>
+        </TooltipTrigger>
+    )
+}
 
 /**
  * Home stránka
  */
 class HomePage extends AbstractReactComponent {
+    state = {
+        fundDetails: []
+    }
+
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps);
     }
 
     componentDidMount() {
+        const funds = this.props.stateRegion?.arrRegionFront;
+        if(funds?.length > 0){
+            Promise.all(funds.map((fund) => Api.funds.getFund(fund.id, {overrideErrorHandler: true})
+                .catch(()=>{return undefined;})))
+                .then((responses)=>{
+                    const fundDetails = responses.filter((response) => response != undefined).map((response) => response.data);
+                    this.setState({ fundDetails })
+                });
+        }
         this.trySetFocus(this.props);
     }
 
@@ -122,74 +208,24 @@ class HomePage extends AbstractReactComponent {
         return <Ribbon ref="ribbon" home altSection={altSection} {...this.props} />;
     };
 
-    renderHistoryItem = (name, desc, type, data, keyIndex) => {
-        let glyph;
-        switch (type) {
-            case 'REGISTRY_REGION':
-                glyph = 'fa-th-list';
-                break;
-            case 'ARR_REGION':
-                glyph = 'fa-file-text';
-                break;
-            case 'ARR_REGION_FUND':
-                glyph = 'fa-file-text';
-                break;
-            default:
-                break;
-        }
-
-        const hasDesc = desc && desc.length > 0;
-
-        let descComp;
-        if (hasDesc) {
-            descComp = <small>{desc}</small>;
-        } else {
-            descComp = <small>&nbsp;</small>;
-        }
-
-        return (
-            <Button
-                className="history-list-item history-button"
-                onClick={() => this.props.dispatch(storeLoadData(type, data))}
-                key={'button-' + keyIndex}
-            >
-                <Icon glyph={glyph} />
-                <div className="history-name">{name}</div>
-                {false && descComp}
-            </Button>
-        );
-    };
-
-    arrToString = arr => {
-        return arr.map((d, index) => {
-            if (index > 0 && index < arr.length) {
-                return ',  ' + d;
-            } else {
-                return d;
-            }
-        });
-    };
-
-    getFundDesc = fund => {
-        const descs = fund.nodes.nodes.map(nodeobj => nodeobj.name);
-        return this.arrToString(descs);
-    };
-
     renderHistory = () => {
-        const {stateRegion} = this.props;
-        //eslint-disable-next-line array-callback-return
-        const registryItems = stateRegion.registryRegionFront.map((item, index) => {
+        const {registryRegionFront, arrRegionFront} = this.props.stateRegion;
+        const {fundDetails} = this.state;
+
+        const registryItems = registryRegionFront.map((item) => {
             if (item.data) {
-                const name = item.data.name;
-                const desc = item.data.description;
-                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', item, index);
+                return <EntityItem entity={item}/>;
             }
+            return <></>
         });
-        const arrItems = stateRegion.arrRegionFront.map((item, index) => {
-            const name = item.name + (item.lockDate ? ' ' + Utils.dateToString(new Date(item.lockDate)) : '');
-            const desc = this.getFundDesc(item);
-            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', item, index);
-        });
+
+        const arrItems = [];
+        arrRegionFront.forEach(({activeVersion, id}) => {
+            const item = fundDetails.find((fund) => fund.id === id);
+            if(item){
+                arrItems.push(<FundItem fundDetail={item} version={activeVersion}/>);
+            }
+        })
 
         if (arrItems.length === 0) {
             arrItems.push(
@@ -199,6 +235,7 @@ class HomePage extends AbstractReactComponent {
                 ),
             );
         }
+
         if (registryItems.length === 0) {
             registryItems.push(
                 this.renderMessage(
@@ -207,9 +244,6 @@ class HomePage extends AbstractReactComponent {
                 ),
             );
         }
-
-        arrItems.push(this.renderLink('/fund', i18n('home.recent.fund.goTo')));
-        registryItems.push(this.renderLink(URL_ENTITY, i18n('home.recent.registry.goTo')));
 
         return (
             <div ref="list" className="history-list-container">
@@ -231,18 +265,6 @@ class HomePage extends AbstractReactComponent {
             <div className="title">{title}</div>
             <div className="message">{message}</div>
         </div>
-    );
-
-    /**
-     * Vykreslení odkazu do příslušných modulů
-     */
-    renderLink = (to, text, glyph = 'fa-arrow-right') => (
-        <LinkContainer key={to} to={to} className="history-list-item history-button link">
-            <Button>
-                <Icon glyph={glyph} />
-                <div className="history-name">{text}</div>
-            </Button>
-        </LinkContainer>
     );
 
     render() {

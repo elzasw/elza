@@ -2128,16 +2128,10 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         <delete tableName="ap_cached_access_point" />
 	</changeSet>
 
-<!-- 
 	<changeSet id="20220929134000" author="sergey.iryupin">
-		<sql dbms="postgresql">UPDATE arr_data_string SET value = TRIM(both '' from value)</sql>
-		<sql dbms="postgresql">UPDATE arr_data_text SET value = TRIM(value) where LENGTH(value) > LENGTH(TRIM(value))</sql>
-		<sql dbms="postgresql">UPDATE arr_data_unitid SET value = TRIM(value) where LENGTH(value) > LENGTH(TRIM(value))</sql>
-		<sql dbms="postgresql">UPDATE arr_data_uri_ref SET description = TRIM(description) where LENGTH(description) > LENGTH(TRIM(description))</sql>
-		<sql dbms="postgresql">UPDATE arr_data_uri_ref SET schema = TRIM(schema) where LENGTH(schema) > LENGTH(TRIM(schema))</sql>
-		<sql dbms="postgresql">UPDATE arr_data_uri_ref SET value = TRIM(value) where LENGTH(value) > LENGTH(TRIM(value))</sql>
+	    <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20220929134000" />
 		<delete tableName="ap_cached_access_point" />
 		<delete tableName="arr_cached_node" />
 	</changeSet>
--->
+
 </databaseChangeLog>

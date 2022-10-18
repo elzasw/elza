@@ -7,7 +7,7 @@ import {i18n} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {getOneSettings, setSettings, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {routerNavigate} from 'actions/router.jsx';
@@ -16,8 +16,19 @@ import {Shortcuts} from 'react-shortcuts';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './ArrParentPageKeymap.jsx';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {
+    FOCUS_KEYS,
+    URL_FUND,
+    urlFundActions,
+    urlFundGrid,
+    urlFundMovements,
+    urlFundOutputs,
+    urlFundTree,
+    getFundVersion,
+} from '../../constants.tsx';
 import * as groups from '../../actions/refTables/groups';
+import {WebApi} from "../../actions";
+import {selectFundTab} from "../../actions/arr/fund";
 
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
@@ -50,28 +61,29 @@ export default class ArrParentPage extends AbstractReactComponent {
     handleShortcuts(action, e) {
         console.log('#handleShortcuts ArrParentPage', '[' + action + ']', this);
         e.preventDefault();
+        let activeFund = this.getActiveFund(this.props);
         switch (action) {
             case 'back':
-                this.props.dispatch(routerNavigate('/~arr'));
+                this.props.dispatch(routerNavigate(URL_FUND));
                 break;
             case 'arr':
-                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
             case 'movements':
-                this.props.dispatch(routerNavigate('/arr/movements'));
+                this.props.dispatch(routerNavigate(urlFundMovements(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'dataGrid':
-                this.props.dispatch(routerNavigate('/arr/dataGrid'));
+                this.props.dispatch(routerNavigate(urlFundGrid(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'output':
-                this.props.dispatch(routerNavigate('/arr/output'));
+                this.props.dispatch(routerNavigate(urlFundOutputs(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 1));
                 break;
             case 'actions':
-                this.props.dispatch(routerNavigate('/arr/actions'));
+                this.props.dispatch(routerNavigate(urlFundActions(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
             case 'TOGGLE_READ_MODE':
@@ -82,14 +94,46 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
     }
 
-    componentDidMount() {
-        this.props.dispatch(descItemTypesFetchIfNeeded());
-        this.props.dispatch(fundsFetchIfNeeded());
-        var activeFund = this.getActiveFund(this.props);
-        if (activeFund !== null) {
-            this.requestFundTreeData(activeFund);
-            this.props.dispatch(groups.fetchIfNeeded(activeFund.versionId));
+    getPageUrl(fund) {
+        const {match} = this.props;
+        if(match?.params?.id !== undefined){
+            return urlFundTree(match.params.id, match.params.versionId);
         }
+        throw "no fundId or versionId"
+    }
+
+    async componentDidMount() {
+        const {dispatch, match} = this.props;
+        const {id, versionId, nodeId} = match.params;
+        dispatch(descItemTypesFetchIfNeeded());
+        dispatch(fundsFetchIfNeeded());
+
+        const urlFundId = id ? parseInt(id) : null;
+        const urlVersionId = versionId ? parseInt(versionId) : null;
+        const activeFund = this.getActiveFund(this.props);
+        
+        // skip loading data, if fund is currently open
+        if(activeFund?.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
+            return;
+        }
+
+        if (urlFundId) {
+            try{
+                const data = await WebApi.getFundDetail(urlFundId)
+
+                // select the current version, when it is missing in the path
+                const version = urlVersionId ? data.versions.find((version) => version.id === urlVersionId) : data.versions[0];
+                dispatch(selectFundTab(getFundFromFundAndVersion(data, version)));
+                return;
+            }
+            catch(e) {
+                console.error("Nepodařilo se získat detail o AS", e);
+            };
+        }
+        if((!id && !nodeId) && activeFund) {
+            dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund)),"REPLACE"));
+        }
+        // }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {

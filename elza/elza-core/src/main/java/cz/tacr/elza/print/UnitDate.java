@@ -1,7 +1,5 @@
 package cz.tacr.elza.print;
 
-import java.util.Objects;
-
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
@@ -21,8 +19,6 @@ public class UnitDate implements IUnitdate {
 
     private String format;
 
-    private String valueText;
-
     public UnitDate() {
     }
 
@@ -41,9 +37,6 @@ public class UnitDate implements IUnitdate {
 
     @Override
     public void setFormat(final String format) {
-        if (!Objects.equals(this.format, format)) {
-            valueText = null;
-        }
         this.format = format;
     }
 
@@ -93,9 +86,6 @@ public class UnitDate implements IUnitdate {
     }
 
     public String getValueText() {
-        if (valueText == null) {
-            valueText = UnitDateConvertor.convertToString(this);
-        }
-        return valueText;
+        return UnitDateConvertor.convertToString(this);
     }
 }

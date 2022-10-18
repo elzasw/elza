@@ -1,4 +1,120 @@
-<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/">
+<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+
+<#-- Seznam mapování typů dle 5.9 -->
+<#assign unitTypeMapping = { 
+        "ZP2015_UNIT_TYPE_LIO": "lio",
+        "ZP2015_UNIT_TYPE_LIP": "lip",
+        "ZP2015_UNIT_TYPE_UKN": "ukn",
+        "ZP2015_UNIT_TYPE_RKP": "rkp",
+        "ZP2015_UNIT_TYPE_HDB": "rkp",
+        "ZP2015_UNIT_TYPE_PPR": "ppr",
+        "ZP2015_UNIT_TYPE_IND": "ind",
+        "ZP2015_UNIT_TYPE_REP": "rep",
+        "ZP2015_UNIT_TYPE_KTT": "ktt",
+        "ZP2015_UNIT_TYPE_PEC": "pec",
+        "ZP2015_UNIT_TYPE_RAZ": "raz",
+        "ZP2015_UNIT_TYPE_OTD": "otd",
+        "ZP2015_UNIT_TYPE_OTC": "otd",
+        "ZP2015_UNIT_TYPE_MAP": "map",
+        "ZP2015_UNIT_TYPE_ATL": "atl",
+        "ZP2015_UNIT_TYPE_TVY": "tvy",
+        "ZP2015_UNIT_TYPE_GLI": "gli",
+        "ZP2015_UNIT_TYPE_KRE": "kre",
+        "ZP2015_UNIT_TYPE_FSN": "fsn",
+        "ZP2015_UNIT_TYPE_FSD": "fsd",
+        "ZP2015_UNIT_TYPE_LFI": "lfi",
+        "ZP2015_UNIT_TYPE_SFI": "sfi",
+        "ZP2015_UNIT_TYPE_KIN": "kin",
+        "ZP2015_UNIT_TYPE_MF": "mf",
+        "ZP2015_UNIT_TYPE_MFS": "mfis",
+        "ZP2015_UNIT_TYPE_FAL": "fal",
+        "ZP2015_UNIT_TYPE_DFO": "dfo",
+        "ZP2015_UNIT_TYPE_KZA": "kza",
+        "ZP2015_UNIT_TYPE_ZZA": "zza",
+        "ZP2015_UNIT_TYPE_TIO": "tio",
+        "ZP2015_UNIT_TYPE_TIP": "tip",
+        "ZP2015_UNIT_TYPE_POH": "poh",
+        "ZP2015_UNIT_TYPE_PKT": "pkt",
+        "ZP2015_UNIT_TYPE_CPA": "cpa",
+        "ZP2015_UNIT_TYPE_STO": "sto",
+        "ZP2015_UNIT_TYPE_PNP": "pnp",
+        "ZP2015_UNIT_TYPE_PFP": "pfp",
+        "ZP2015_UNIT_TYPE_JIN": "jin"
+  }
+>
+
+<#-- Seznam mapování typů dle 5.4 -->
+<#assign otherIdTypeMapping = { 
+  "ZP2015_OTHERID_SIG_ORIG": "SIGNATURA_PUVODNI",
+  "ZP2015_OTHERID_SIG": "SIGNATURA_ZPRACOVANI",
+  "ZP2015_OTHERID_STORAGE_ID": "UKLADACI_ZNAK",
+  "ZP2015_OTHERID_CJ": "CISLO_JEDNACI",
+  "ZP2015_OTHERID_DOCID": "SPISOVA_ZNACKA",
+  "ZP2015_OTHERID_FORMAL_DOCID": "CISLO_VLOZKY",
+  "ZP2015_OTHERID_ADDID": "CISLO_PRIRUSTKOVE",
+  "ZP2015_OTHERID_OLDSIG": "NEPL_SIGNATURA_ZPRACOVANI",
+  "ZP2015_OTHERID_OLDSIG2": "UKLADACI_ZNAK",
+  "ZP2015_OTHERID_OLDID": "NEPL_INV_CISLO",
+  <#-- Chybí mapování "ZP2015_OTHERID_INVALID_UNITID": "neplatné ukládací číslo", -->
+  "ZP2015_OTHERID_INVALID_REFNO": "NEPL_REFERENCNI_OZNACENI",
+  "ZP2015_OTHERID_PRINTID": "NEPL_PORADOVE_CISLO",
+  "ZP2015_OTHERID_PICID": "NAKL_CISLO",
+  "ZP2015_OTHERID_NEGID": "CISLO_NEGATIVU",
+  "ZP2015_OTHERID_CDID": "CISLO_PRODUKCE",
+  "ZP2015_OTHERID_ISBN": "KOD_ISBN",
+  "ZP2015_OTHERID_ISSN": "KOD_ISSN",
+  "ZP2015_OTHERID_ISMN": "KOD_ISMN",
+  "ZP2015_OTHERID_MATRIXID": "MATRICNI_CISLO"
+  }
+>
+<#-- Mapování localType na label -->
+<#assign otherIdLabelMapping = { 
+  "SIGNATURA_PUVODNI": "signatura přidělená původcem",
+  "SIGNATURA_ZPRACOVANI": "signatura přidělená při zpracování archiválie",
+  "UKLADACI_ZNAK": "ukládací znak / spisový znak",
+  "CISLO_JEDNACI": "číslo jednací",
+  "SPISOVA_ZNACKA": "spisová značka",
+  "CISLO_VLOZKY": "číslo vložky úřední knihy",
+  "CISLO_PRIRUSTKOVE": "přírůstkové číslo",
+  "NEPL_PORADOVE_CISLO": "neplatné pořadové číslo manipulačního seznamu",
+  "NEPL_INV_CISLO": "neplatné inventární číslo",
+  "NEPL_SIGNATURA_ZPRACOVANI": "signatura přidělená při předchozím zpracování",
+  "NEPL_REFERENCNI_OZNACENI": "neplatné referenční označení",
+  "NAKL_CISLO": "číslo pohlednice nakladatelství Orbis",
+  "CISLO_NEGATIVU": "číslo negativu",
+  "CISLO_PRODUKCE": "číslo produkce CD",
+  "KOD_ISBN": "kód ISBN",
+  "KOD_ISSN": "kód ISSN",
+  "KOD_ISMN": "kód ISMN",
+  "MATRICNI_CISLO": "matriční číslo (propůjčeného vyznamenání)",
+  "JINE": "jiné"
+  }
+>
+
+<#-- Mapování datace-->
+<#assign dateOtherMapping = {
+  "ZP2015_DATE_OF_CONTENT": "CONTENT",
+  "ZP2015_DATE_DECLARED": "DECLARED",
+  "ZP2015_DATE_ORIG": "ORIGIN",
+  "ZP2015_DATE_OF_COPY": "COPY",
+  "ZP2015_DATE_SEALING": "SEALING",
+  "ZP2015_DATE_ACT_PUBLISHING": "ACT_PUBLISHING",
+  "ZP2015_DATE_INSERT": "INSERT",
+  "ZP2015_DATE_MOLD_CREATION": "MOLD_CREATION",
+  "ZP2015_DATE_USAGE": "USAGE",
+  "ZP2015_DATE_PUBLISHING": "PUBLISHING",
+  "ZP2015_DATE_MAP_UPDATE": "MAP_UPDATE",
+  "ZP2015_DATE_CAPTURING": "CAPTURING",
+  "ZP2015_DATE_RECORDING": "RECORDING",
+  "ZP2015_DATE_AWARDING": "AWARDING",
+  "ZP2015_DATE_AWARD_CER": "AWARD_CER",
+  "ZP2015_DATE_WITHDRAWAL": "WITHDRAWAL",
+  "ZP2015_DATE_LEGALLY_EFFECTIVE_FROM": "LEGALLY_EFFECTIVE_FROM",
+  "ZP2015_DATE_VALID_FROM": "VALID_FROM",
+  "ZP2015_DATE_LEGALLY_EFFECTIVE_TO": "LEGALLY_EFFECTIVE_TO",
+  "ZP2015_DATE_VALID_TO": "VALID_TO"  
+  }
+>
 
 <ead:control>
   <#-- 2.1. recordid: uuid -->
@@ -131,6 +247,22 @@
       <ead:agent>ELZA ${output.appVersion}</ead:agent>
     </ead:maintenanceevent>
   </ead:maintenancehistory>
+  
+  <#-- Zápis entit -->
+  <#assign sourcesElem=0>
+  <#list output.records as ap >
+    <#if (sourcesElem==0)>
+      <#lt>  <ead:sources>
+      <#assign sourcesElem=1>
+    </#if>
+    <#lt>    <ead:source id="ap${ap.id?c}"><ead:objectxmlwrap>
+    <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
+    <#lt>    </cam:ent>
+    <#lt>    </ead:objectxmlwrap></ead:source>
+  </#list>
+  <#if (sourcesElem==1)>
+    <#lt>  </ead:sources>
+  </#if>
 </ead:control>
 
 <#-- TODO: nahradit funkčním kódem -->
@@ -165,7 +297,7 @@
       <#local level="series">
       <#break>
     <#case "ZP2015_LEVEL_FOLDER">
-      <#local level="subseries">
+      <#local level="file">
       <#break>
     <#case "ZP2015_LEVEL_ITEM">
       <#local level="item">
@@ -207,37 +339,75 @@
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
   </#if>
   <#-- Elements outside did -->
-  <#local relationsProcessed=0>
+  <#local relations=[]>
   <#list node.items as item>
     <#switch item.type.code>
+    <#case "ZP2015_POSITION">
+      <#local relations = relations + [item]>
+      <#break>
+    <#case "ZP2015_ITEM_TITLE_REF">
+      <#local relations = relations + [item]>
+      <#break>
     <#case "ZP2015_ENTITY_ROLE">
-      <#if relationsProcessed==0>
-        <@writeRelations node.items />
-        <#local relationsProcessed=1>
-      </#if>
+      <#local relations = relations + [item]>
       <#break>
     <#case "ZP2015_UNIT_HIST">
-  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
+      <#lt>  <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
       <#break>
     <#case "ZP2015_UNIT_ARR">
-  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
+      <#lt>  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
       <#break>
     <#case "ZP2015_UNIT_CONTENT">
-  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
+      <#lt>  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
       <#break>
     <#case "ZP2015_UNIT_SOURCE">
-  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
+      <#lt>  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
       <#break>
     <#case "ZP2015_FUTURE_UNITS">
-  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
+      <#lt>  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
+      <#break>
+    <#case "ZP2015_UNIT_ACCESS">
+      <#lt>  <ead:accessrestrict><ead:p>${item.serializedValue}</ead:p></ead:accessrestrict>
+      <#break>      
+    <#case "ZP2015_UNIT_CURRENT_STATUS">
+      <#lt>  <ead:phystech><ead:p>${item.serializedValue}</ead:p></ead:phystech>
+      <#break>
+    <#case "ZP2015_COPY_SOURCE">
+      <#lt>  <ead:originalsloc><ead:p>${item.serializedValue}</ead:p></ead:originalsloc>
+      <#break>
+    <#case "ZP2015_RELATED_UNITS">
+      <#lt>  <ead:relatedmaterial><ead:p>${item.serializedValue}</ead:p></ead:relatedmaterial>
+      <#break>
+    <#case "ZP2015_EXISTING_COPY">
+      <#lt>  <ead:altformavail><ead:p>${item.serializedValue}</ead:p></ead:altformavail>
+      <#break>
+    <#case "ZP2015_ARRANGEMENT_INFO">
+      <#lt>  <ead:processinfo localtype="ARCHIVIST_NOTE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
+    <#case "ZP2015_ARRANGE_RULES">
+      <#lt>  <ead:processinfo localtype="RULES"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
+    <#case "ZP2015_DESCRIPTION_DATE">
+      <#lt>  <ead:processinfo localtype="DESCRIPTION_DATE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
+      <#break>
+    <#case "ZP2015_EDITION">
+      <#lt>  <ead:bibliography><ead:p>${item.serializedValue}</ead:p></ead:bibliography>
       <#break>
     </#switch>
   </#list>
+  <#if (relations?size>0)>
+    <@writeRelations relations />
+  </#if>
+  
 </#macro>
 
 <#-- Zápis did -->
 <#macro writeDid node>
-  <#local languagesProcessed=0>
+  <#-- Proměná určující, zda se bude vypisovat charakteristika JP -->
+  <#local needsCharakteristikaJP=false>
+  <#-- Určení počtu datací -->
+  <#local unitDates=[]>
+  <#local languages=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -246,42 +416,155 @@
   <#list node.items as item>
     <#switch item.type.code>
       <#case "ZP2015_UNIT_ID">
-        <#lt>  <ead:unitid localtype="ReferencniOznaceni">${item.serializedValue}</ead:unitid>
+        <#if output.fund.fundNumber?has_content>
+        <#lt>  <ead:unitid localtype="REFERENCNI_OZNACENI" label="referenční označení">CZ${output.fund.institution.code}//${output.fund.fundNumber}//${item.serializedValue}</ead:unitid>
+        </#if>
         <#break>
+      <#case "ZP2015_SERIAL_NUMBER">
+        <#lt>  <ead:unitid localtype="PORADOVE_CISLO" label="pořadové číslo">${item.serializedValue}</ead:unitid>
+        <#break>
+      <#case "ZP2015_INV_CISLO">
+        <#lt>  <ead:unitid localtype="INV_CISLO" label="inventární číslo">${item.serializedValue}</ead:unitid>
+        <#break>        
+      <#case "ZP2015_OTHER_ID">
+        <#if (otherIdTypeMapping?keys?seq_contains(item.specification.code)) >
+        <#lt>  <ead:unitid localtype="${otherIdTypeMapping[item.specification.code]}" label="${otherIdLabelMapping[otherIdTypeMapping[item.specification.code]]}">${item.serializedValue}</ead:unitid>
+        </#if>
+        <#break>        
       <#case "ZP2015_TITLE">
         <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
         <#break>
+      <#case "ZP2015_FORMAL_TITLE">
+        <#lt>  <ead:unittitle localtype="FORMAL_TITLE">${item.serializedValue}</ead:unittitle>
+        <#break>        
       <#case "ZP2015_UNIT_DATE">
-        <@writeUnitDate item />
+        <#local unitDates=unitDates+[item]>        
+        <#break>
+      <#case "ZP2015_DATE_OTHER">
+        <#local unitDates=unitDates+[item]>
+        <#break>
+      <#case "ZP2015_UNIT_DATE_TEXT">
+        <#lt>  <ead:unitdate>${item.serializedValue}</ead:unitdate>
         <#break>
       <#case "ZP2015_NOTE">
-      <ead:didnote>${item.serializedValue}</ead:didnote>
+        <#lt>  <ead:didnote localtype="PUBLIC">${item.serializedValue}</ead:didnote>
+        <#break>
+      <#case "ZP2015_INTERNAL_NOTE">
+        <#lt>  <ead:didnote localtype="INTERNAL" audience="internal">${item.serializedValue}</ead:didnote>
+        <#break>
+      <#case "ZP2015_STORAGE_COND">
+        <#lt>  <ead:physdesc>${item.serializedValue}</ead:physdesc>
+        <#break>
+      <#case "ZP2015_SCALE">
+        <#lt>  <ead:materialspec localtype="SCALE">${item.serializedValue}</ead:materialspec>
+        <#break>
+      <#case "ZP2015_ORIENTATION">
+        <#lt>  <ead:materialspec localtype="ORIENTATION">${item.serializedValue}</ead:materialspec>
+        <#break>
+      <#case "ZP2015_PART">
+        <#lt>  <ead:materialspec localtype="VOLUME">${item.serializedValue}</ead:materialspec>
         <#break>
       <#case "ZP2015_ORIGINATOR">
-      <ead:origination localtype="ORIGINATOR">
+        <#lt>  <ead:origination localtype="ORIGINATOR">
         <@writeAp item.record "ORIGINATOR" />
-      </ead:origination>        
-        <#break>
-      <#case "ZP2015_UNIT_CURRENT_STATUS">
-      <ead:physdesc>${item.serializedValue}</ead:physdesc>
+        <#lt>  </ead:origination>        
         <#break>
       <#case "ZP2015_LANGUAGE">
-        <#if languagesProcessed==0>
-          <@writeLangMaterials node.items />
-          <#local languagesProcessed=1>
-        </#if>
+        <#local languages=languages+[item]>
         <#break>
       <#case "ZP2015_STORAGE_ID">
-      <!-- Ukladaci jednotka -->
-      <ead:container>${item.serializedValue}</ead:container>
+      <#-- Ukladaci jednotka -->
+      <#lt>  <ead:container>${item.serializedValue}</ead:container>
+        <#break>
+      <#-- Prvky popisu pro charakteristiku JP -->
+      <#case "ZP2015_UNIT_TYPE">
+        <#if unitTypeMapping?keys?seq_contains(item.specification.code)>
+          <#local needsCharakteristikaJP=true>
+        </#if>
+        <#break>
+      <#case "ZP2015_ITEM_MAT">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_LEGEND">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_PAINTING_CHAR">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_CORROBORATION">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_IMPRINT_COUNT">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_IMPRINT_ORDER">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE">        
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE_WIDTH">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE_HEIGHT">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_SIZE_DEPTH">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_WEIGHT">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>${item.specification.name}</ead:unittype>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_AMOUNT">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#switch item.specification.code>
+          <#case "ZP2015_AMOUNT_B">
+            <#lt>    <ead:unittype>byte</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_PIECES">
+            <#lt>    <ead:unittype>pieces</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_SHEETS">
+            <#lt>    <ead:unittype>sheets</ead:unittype>
+            <#break>
+          <#case "ZP2015_AMOUNT_PAGES">
+            <#lt>    <ead:unittype>pages</ead:unittype>
+            <#break>
+        </#switch>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_MOVIE_LENGTH">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>s</ead:unittype>
+        <#lt>  </ead:physdescstructured>
+        <#break>
+      <#case "ZP2015_RECORD_LENGTH">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>    <ead:unittype>s</ead:unittype>
+        <#lt>  </ead:physdescstructured>
         <#break>
     </#switch>
   </#list>
+  <#if (needsCharakteristikaJP)>
+    <@writeCharakteristika node />
+  </#if>
+  <#if (unitDates?size>0) >
+    <@writeUnitDates unitDates />
+  </#if>
+  <#if (languages?size>0) >
+    <@writeLangMaterials languages />
+  </#if>
   <#-- zápis DAOs -->
   <#if (node.daos?size==1)>
     <@writeDao node node.daos?first /> 
   </#if>
-  <#if (node.daos?size>1)>  
+  <#if (node.daos?size>1)>
   <ead:daoset>
     <#list node.daos as dao>
       <@writeDao node dao />
@@ -297,12 +580,112 @@
 </ead:dao>
 </#macro>
 
+<#-- Zápis charakteristiky 3.3 -->
+<#macro writeCharakteristika node>
+  <#local pocet="">
+  <#local druh="">
+  <#local dimensions=[]>
+  <#local dimensionUnits="mm">  
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_UNIT_TYPE">
+        <#if unitTypeMapping?keys?seq_contains(item.specification.code)>
+          <#local druh=unitTypeMapping[item.specification.code]>
+        </#if>
+        <#break>
+      <#case "ZP2015_UNIT_COUNT">
+        <#local pocet=item.serializedValue>
+        <#break>
+      <#case "ZP2015_LEVEL_TYPE">
+        <#switch item.specification.code>
+          <#case "ZP2015_LEVEL_FOLDER">
+            <#if (druh=="")>
+              <#local druh="file">
+            </#if>
+            <#break>
+          <#case "ZP2015_LEVEL_ITEM">
+            <#if (druh=="")>
+              <#local druh="item">              
+            </#if>
+            <#local pocet="1">
+            <#break>
+          <#case "ZP2015_LEVEL_PART">
+            <#if (druh=="")>
+              <#local druh="itempart">
+            </#if>
+            <#break>
+        </#switch>
+        <#break>
+      <#case "ZP2015_SIZE_WIDTH">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_HEIGHT">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_DEPTH">
+        <#local dimensions=dimensions+[item]>
+        <#break>
+      <#case "ZP2015_SIZE_UNITS">
+        <#local dimensionUnits=item.specification.name>
+        <#break>
+    </#switch>
+  </#list>
+
+  <ead:physdescstructured physdescstructuredtype="materialtype" coverage="whole">
+    <ead:quantity>${pocet}</ead:quantity>
+    <ead:unittype>${druh}</ead:unittype>
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_ITEM_MAT">
+        <#lt>    <ead:physfacet localtype="TECHNIQUE">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_LEGEND">
+        <#lt>    <ead:physfacet localtype="LEGEND">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_PAINTING_CHAR">
+        <#lt>    <ead:physfacet localtype="IMPRINT_IMAGE">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_CORROBORATION">        
+        <#lt>    <ead:physfacet localtype="CORROBORATIO">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_IMPRINT_COUNT">        
+        <#lt>    <ead:physfacet localtype="IMPRINT_COUNT">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_IMPRINT_ORDER">        
+        <#lt>    <ead:physfacet localtype="IMPRINT_ORDER">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_SIZE">
+        <#lt>    <ead:dimensions>${item.serializedValue}</ead:dimensions>  
+        <#break>
+    </#switch>
+  </#list>
+  <#-- Zapis strukturovanych rozmeru -->
+  <#if (dimensions?size>0)>
+    <#lt>    <ead:dimensions>  
+    <#list dimensions as dimension>
+      <#switch dimension.type.code>
+        <#case "ZP2015_SIZE_WIDTH">
+          <#lt>      <ead:dimensions localtype="WIDTH" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+        <#case "ZP2015_SIZE_HEIGHT">
+          <#lt>      <ead:dimensions localtype="HEIGHT" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+        <#case "ZP2015_SIZE_DEPTH">
+          <#lt>      <ead:dimensions localtype="DEPTH" unit="${dimensionUnits}">${dimension.serializedValue}</ead:dimensions>
+          <#break>
+      </#switch>
+    </#list>
+    <#lt>    </ead:dimensions>
+  </#if>
+  </ead:physdescstructured>
+</#macro>
+
 <#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
 <#macro writeLangMaterials items>
   <!-- Jazyky JP -->
   <ead:langmaterial>
-  <#list items?filter(langItem -> langItem.type.code=="ZP2015_LANGUAGE") as langItem>
-    <ead:language langcode="${langItem.specification.code}">${langItem.specification.name}</ead:language>
+  <#list items as langItem>
+    <ead:language langcode="${langItem.specification.code[4..]}">${langItem.specification.name}</ead:language>
   </#list>
   </ead:langmaterial>
 </#macro>
@@ -322,8 +705,8 @@
     <#local tagname="name">
     <#break>
 </#switch>
-        <ead:${tagname} localtype="${localtype}" identifier="${ap.uuid}">
-          <ead:part>${ap.preferredPart.value}</ead:part>
+        <ead:${tagname} localtype="${localtype}" identifier="${ap.uuid}">          
+          <ead:part><ead:ref target="ap${ap.id?c}">${ap.preferredPart.value}</ead:ref></ead:part>
         </ead:${tagname}>
 </#macro>
 
@@ -490,33 +873,69 @@
   <ead:container>${item.serializedValue}</ead:container>
 </#macro>-->
 
+<#-- Zapis dataci -->
+<#macro writeUnitDates unitDates>
+  <ead:unitdatestructured>
+  <#if (unitDates?size>1)>
+  <ead:dateset>
+  </#if>
+  <#list unitDates as unitDate>
+  <@writeUnitDate unitDate />
+  </#list>
+  <#if (unitDates?size>1)>
+  </ead:dateset>
+  </#if>
+  </ead:unitdatestructured>
+</#macro>
+
 <#-- Zapis datace -->
 <#macro writeUnitDate unitDate>
 <#local fromAttr="standarddate">
 <#local toAttr="standarddate">
+<#local dateRangeLocaltype="">
+<#if (unitDate.type.code=="ZP2015_DATE_OTHER")>
+  <#if dateOtherMapping?keys?seq_contains(unitDate.specification.code)>
+    <#local dateRangeLocaltype=dateOtherMapping[unitDate.specification.code]>
+  </#if>
+</#if>
 <#if unitDate.unitDate.valueFromEstimated>
   <#local fromAttr="notbefore">
 </#if>
 <#if unitDate.unitDate.valueToEstimated>
   <#local toAttr="notafter">
 </#if>
-  <ead:unitdatestructured>
-    <ead:daterange>
+    <ead:daterange altrender="${unitDate.unitDate.format}" <#if dateRangeLocaltype!="">localtype="${dateRangeLocaltype}"</#if> >
       <ead:fromdate ${fromAttr}="${unitDate.unitDate.valueFrom}">${unitDate.valueFrom}</ead:fromdate>
       <ead:todate ${toAttr}="${unitDate.unitDate.valueTo}">${unitDate.valueTo}</ead:todate>
     </ead:daterange>
-  </ead:unitdatestructured>
 </#macro>
 
-<#macro writeRelations items>
-  <!-- Role entit -->
+<#macro writeRelations relations>
+  <#-- Role entit, souřadnice, autorské dílo -->
   <ead:relations>
-  <#list items as item>
-    <#if item.type.code=="ZP2015_ENTITY_ROLE">
+  <#list relations as item>
+    <#switch item.type.code>
+    <#case "ZP2015_POSITION">
+      <#lt>    <ead:relation relationtype = "otherrelationtype"  otherrelationtype="COORDINATES">
+      <#lt>      <ead:geogname>
+      <#lt>        <ead:part>5.2.6 Souřadnice</ead:part>
+      <#lt>        <ead:geographiccoordinates
+      <#lt>             coordinatesystem="WGS84">${item.base64Value}</ead:geographiccoordinates>
+      <#lt>      </ead:geogname>
+      <#lt>    </ead:relation>
+      <#break>
+    <#case "ZP2015_ITEM_TITLE_REF">
+      <#lt>    <ead:relation relationtype="resourcerelation" linktitle="autorské dílo" linkrole="ARTWORK">
+      <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
+      <#-- <#lt>      <ead:descriptivenote><ead:p><ead:ref target="ap157" /><ead:p></ead:descriptivenote>-->      
+      <#lt>    </ead:relation>
+      <#break>
+    <#case "ZP2015_ENTITY_ROLE">
       <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.uuid}" linkrole="${item.specification.code}">
         <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       </ead:relation>
-    </#if>
+      <#break>
+    </#switch>
   </#list>
   </ead:relations>
 </#macro>

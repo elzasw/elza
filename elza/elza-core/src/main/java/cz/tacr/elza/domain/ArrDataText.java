@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -76,14 +76,13 @@ public class ArrDataText extends ArrData {
     @Override
     protected void validateInternal() {
         Validate.notNull(textValue);
-// TODO: #7987 temporarily
-//        // check any leading and trailing whitespace in data
-//        String value = textValue.trim();
-//        Validate.isTrue(value.length() == textValue.length());
-//        // check for non-printable chars in the string, exclude 0x0D, 0x0A
-//        for (int i = 0; i < value.length(); i++) {
-//            char c = value.charAt(i);
-//            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A);
-//        }
+        // check any leading and trailing whitespace in data
+        String value = textValue.trim();
+        Validate.isTrue(value.length() == textValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: ", getDataId());
+        // check for non-printable chars in the string, exclude 0x0D, 0x0A
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A, "Value obsahuje netiskové znaky, dataId: ", getDataId());
+        }
     }
 }

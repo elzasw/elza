@@ -1,15 +1,13 @@
+import { downloadFile } from 'actions/global/download';
+import { UrlFactory } from 'actions/index.jsx';
+import { AbstractReactComponent, i18n } from 'components/shared';
+import { dateToString } from 'components/Utils.jsx';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {AbstractReactComponent, i18n} from 'components/shared';
-import {dateToString} from 'components/Utils.jsx';
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
-import {selectFundTab} from 'actions/arr/fund.jsx';
-import {routerNavigate} from 'actions/router.jsx';
-import {downloadFile} from 'actions/global/download';
-import {UrlFactory} from 'actions/index.jsx';
-
+import { connect } from 'react-redux';
+import { LinkContainer } from 'react-router-bootstrap';
+import { urlFundTree } from "../../constants";
+import { Button } from '../ui';
 import './FundDetailExt.scss';
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
@@ -20,22 +18,9 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleShowInArr');
     }
 
     componentDidMount() {}
-
-    UNSAFE_componentWillReceiveProps(nextProps) {}
-
-    handleShowInArr(version) {
-        // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
-
-        // Otevření archivního souboru
-        const fund = this.props.fundDetail;
-        const fundObj = getFundFromFundAndVersion(fund, version);
-        this.props.dispatch(selectFundTab(fundObj));
-    }
 
     handleDownload = id => {
         this.props.dispatch(downloadFile(UrlFactory.downloadOutputResults(id)));
@@ -85,18 +70,22 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                                     <div className="version-label">
                                         {i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}
                                     </div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant="link">
+                                    <LinkContainer key={`fund-${ver.id}`} to={urlFundTree(fundDetail.id, ver.id)}>
+                                        <Button variant='link'>
                                         {i18n('arr.fund.action.showInArr')}
-                                    </Button>
+                                        </Button>
+                                    </LinkContainer>
                                 </div>
                             );
                         } else {
                             return (
                                 <div className="fund-version" key={'fund-version-' + index}>
                                     <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant="link">
+                                    <LinkContainer key={`fund-${ver.id}`} to={urlFundTree(fundDetail.id)}>
+                                        <Button variant='link'>
                                         {i18n('arr.fund.action.openInArr')}
-                                    </Button>
+                                        </Button>
+                                    </LinkContainer>
                                 </div>
                             );
                         }

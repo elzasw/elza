@@ -12,6 +12,7 @@ import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.base.Objects;
 
 
 /**
@@ -36,6 +37,9 @@ public class ArrDataRecordRef extends ArrData {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApBinding.class)
     @JoinColumn(name = "bindingId")
     private ApBinding binding;
+
+    @Column(name = "bindingId", updatable = false, insertable = false)
+    private Integer bindingId;
 
     private static ApFulltextProvider fulltextProvider;
 
@@ -64,6 +68,11 @@ public class ArrDataRecordRef extends ArrData {
     }
 
     public Integer getRecordId() {
+        if (recordId == null) {
+            if (record != null) {
+                return record.getAccessPointId();
+            }
+        }
         return recordId;
     }
 
@@ -73,6 +82,16 @@ public class ArrDataRecordRef extends ArrData {
 
     public void setBinding(ApBinding binding) {
         this.binding = binding;
+        this.bindingId = binding == null ? null : binding.getBindingId();
+    }
+
+    public Integer getBindingId() {
+        if (bindingId == null) {
+            if (binding != null) {
+                return binding.getBindingId();
+            }
+        }
+        return bindingId;
     }
 
     @Override
@@ -87,8 +106,11 @@ public class ArrDataRecordRef extends ArrData {
 
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
-        ArrDataRecordRef src = (ArrDataRecordRef)srcData;
-        return recordId.equals(src.recordId);
+        ArrDataRecordRef src = (ArrDataRecordRef) srcData;
+        if (recordId == null && src.getRecordId() == null) {
+            return Objects.equal(bindingId, src.getBindingId());
+        }
+        return Objects.equal(recordId, src.getRecordId());
     }
 
     @Override

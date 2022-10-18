@@ -23,6 +23,8 @@ globalAxios.interceptors.request.use((config) => {
 const axios = globalAxios.create();
 
 axios.interceptors.response.use(undefined, error => {
+    if(error.config.overrideErrorHandler){ throw error; }
+
     const exception = resolveException(error);
     if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);

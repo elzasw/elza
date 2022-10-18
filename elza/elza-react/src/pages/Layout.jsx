@@ -1,19 +1,11 @@
 /**
  * Globální layout stránek - obsahuje komponenty podle přepnuté hlavní oblasti, např. Archivní pomůcky, Rejstříky atp.
  */
-import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSocket} from 'components/shared';
-import Login from '../components/shared/login/Login';
-import {Route, Switch} from 'react-router-dom';
-import AppRouter from './AppRouter';
-import {Shortcuts} from 'react-shortcuts';
-import {routerNavigate} from 'actions/router.jsx';
-import {setFocus} from 'actions/global/focus.jsx';
+import { setFocus } from 'actions/global/focus.jsx';
+import { routerNavigate } from 'actions/router.jsx';
 import Tetris from 'components/game/Tetris.jsx';
-import {PropTypes} from 'prop-types';
+import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSocket } from 'components/shared';
 import keymap from 'keymap.jsx';
-import defaultKeymap from './LayoutKeymap.jsx';
 import {
     AdminExtSystemPage,
     AdminFundPage,
@@ -29,20 +21,42 @@ import {
     ArrOutputPage,
     ArrPage,
     ArrRequestPage,
+    EntityCreatePage,
     FundActionPage,
     FundPage,
     HomePage,
-    NodePage,
-    RegistryPage,
-    EntityCreatePage,
-    EntityPage,
     MapPage,
+    RegistryPage
 } from 'pages';
-import './Layout.scss';
-import {FOCUS_KEYS, URL_ENTITY, URL_ENTITY_CREATE} from '../constants.tsx';
+import { PropTypes } from 'prop-types';
+import React from 'react';
+import { connect } from 'react-redux';
+import { Route, Switch } from 'react-router-dom';
+import { Shortcuts } from 'react-shortcuts';
+import CrossTabHelper, { CrossTabEventType } from "../components/CrossTabHelper";
+import Login from '../components/shared/login/Login';
+import {
+    ACTIONS,
+    DAOS,
+    FOCUS_KEYS,
+    getFundVersion, 
+    GRID,
+    MOVEMENTS,
+    OUTPUTS, 
+    REQUESTS,
+    TREE,
+    urlFundTree,
+    URL_ENTITY,
+    URL_ENTITY_CREATE,
+    URL_FUND,
+    URL_NODE
+} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
-import CrossTabHelper, {CrossTabEventType} from "../components/CrossTabHelper";
-import {MAP_URL} from './map/MapPage';
+import AppRouter from './AppRouter';
+import './Layout.scss';
+import defaultKeymap from './LayoutKeymap.jsx';
+import { MAP_URL } from './map/MapPage';
+// import FundOpenPage from './fund_open/FundOpenPage';
 
 let _gameRunner = null;
 
@@ -88,6 +102,8 @@ class Layout extends AbstractReactComponent {
     };
 
     handleShortcuts = action => {
+        const { activeFund } = this.props;
+
         console.log('#handleShortcuts', '[' + action + ']', this);
         switch (action) {
             case 'home':
@@ -95,7 +111,7 @@ class Layout extends AbstractReactComponent {
                 this.props.dispatch(setFocus(FOCUS_KEYS.HOME, 1, 'list'));
                 break;
             case 'arr':
-                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'registry':
@@ -166,22 +182,37 @@ class Layout extends AbstractReactComponent {
                     </div>
                     {this.props.login.logged && (
                         <Switch>
-                            <Route path="/fund" component={FundPage} />
-                            <Route path="/node/:uuid" component={NodePage} />
-                            <Route path={URL_ENTITY + "/:uuid([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})"} component={EntityPage} />
-                            <Route path={URL_ENTITY + "/:id([0-9]+)?"} component={RegistryPage} />
-                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
-                            <Route path="/arr">
+                            <Route path={`${URL_FUND}/open`} component={ArrPage}/>
+                            <Route path={`${URL_FUND}/:id/v/:versionId`}>
                                 <Switch>
-                                    <Route path="/arr/dataGrid" component={ArrDataGridPage} />
-                                    <Route path="/arr/movements" component={ArrMovementsPage} />
-                                    <Route path="/arr/output" component={ArrOutputPage} />
-                                    <Route path="/arr/actions" component={FundActionPage} />
-                                    <Route path="/arr/daos" component={ArrDaoPage} />
-                                    <Route path="/arr/requests" component={ArrRequestPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
+                            <Route path={`${URL_FUND}/:id`}>
+                                <Switch>
+                                    <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                    <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
+                                    <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
+                                    <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
+                                    <Route component={FundPage} />
+                                </Switch>
+                            </Route>
+                            <Route path={`${URL_FUND}/`} component={FundPage}/>
+                            <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
+                            <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
+                            <Route path={URL_ENTITY} component={RegistryPage} />
+                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
+
                             <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                             <Route path="/admin">
                                 <Switch>
@@ -217,11 +248,12 @@ class Layout extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {contextMenu, modalDialog, login} = state;
+    const {contextMenu, modalDialog, login, arrRegion} = state;
     return {
         contextMenu,
         modalDialog,
         login,
+        activeFund: arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null,
     };
 }
 

@@ -45,7 +45,7 @@ public class DateRangeAction extends Action {
     /**
      * Vstupní atributy datace.
      */
-	private ItemType inputItemType;
+    private ItemType unitDateType;
 
     /**
      * Vlastní rozsah fondu.
@@ -115,8 +115,8 @@ public class DateRangeAction extends Action {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
                     .set(PARAM_PROPERTY, "input_type");
 		}
-        inputItemType = sdp.getItemTypeByCode(inputType);
-		checkValidDataType(inputItemType, DataType.UNITDATE);
+        unitDateType = sdp.getItemTypeByCode(inputType);
+        checkValidDataType(unitDateType, DataType.UNITDATE);
 
         String bulkRangeCode = config.getBulkRangeType();
         if (bulkRangeCode == null) {
@@ -157,20 +157,20 @@ public class DateRangeAction extends Action {
             }
         }
 
-		List<ArrDescItem> items = level.getDescItems();
+        List<ArrDescItem> unitDates = level.getInheritedDescItems(unitDateType);
+        if (CollectionUtils.isEmpty(unitDates)) {
+            return;
+        }
 
 		// iterate all items and find unit date
-        for (ArrItem item : items) {
+        for (ArrItem item : unitDates) {
 
 			if (item.isUndefined()) {
                 continue;
             }
 
-			Integer itemTypeId = item.getItemTypeId();
-			if (inputItemType.getItemTypeId().equals(itemTypeId)) {
-                ArrDataUnitdate unitDate = (ArrDataUnitdate) item.getData();
-                processUnitDate(unitDate, level);
-            }
+            ArrDataUnitdate unitDate = (ArrDataUnitdate) item.getData();
+            processUnitDate(unitDate, level);
         }
     }
 

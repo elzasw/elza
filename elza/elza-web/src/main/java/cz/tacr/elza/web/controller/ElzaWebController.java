@@ -118,7 +118,7 @@ public class ElzaWebController {
         return "web";
     }
 
-    @RequestMapping(value = "/fund", method = RequestMethod.GET)
+    @RequestMapping(value = "/fund/**", method = RequestMethod.GET)
     public String fundPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
