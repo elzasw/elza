@@ -1,4 +1,4 @@
-<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/">
+<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
 
 <#-- Seznam mapování typů dle 5.9 -->
 <#assign unitTypeMapping = { 
@@ -247,6 +247,22 @@
       <ead:agent>ELZA ${output.appVersion}</ead:agent>
     </ead:maintenanceevent>
   </ead:maintenancehistory>
+  
+  <#-- Zápis entit -->
+  <#assign sourcesElem=0>
+  <#list output.records as ap >
+    <#if (sourcesElem==0)>
+      <#lt>  <ead:sources>
+      <#assign sourcesElem=1>
+    </#if>
+    <#lt>    <ead:source id="ap${ap.id?c}"><ead:objectxmlwrap>
+    <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
+    <#lt>    </cam:ent>
+    <#lt>    </ead:objectxmlwrap></ead:source>
+  </#list>
+  <#if (sourcesElem==1)>
+    <#lt>  </ead:sources>
+  </#if>
 </ead:control>
 
 <#-- TODO: nahradit funkčním kódem -->
@@ -548,7 +564,7 @@
   <#if (node.daos?size==1)>
     <@writeDao node node.daos?first /> 
   </#if>
-  <#if (node.daos?size>1)>  
+  <#if (node.daos?size>1)>
   <ead:daoset>
     <#list node.daos as dao>
       <@writeDao node dao />
@@ -689,8 +705,8 @@
     <#local tagname="name">
     <#break>
 </#switch>
-        <ead:${tagname} localtype="${localtype}" identifier="${ap.uuid}">
-          <ead:part>${ap.preferredPart.value}</ead:part>
+        <ead:${tagname} localtype="${localtype}" identifier="${ap.uuid}">          
+          <ead:part><ead:ref target="ap${ap.id?c}">${ap.preferredPart.value}</ead:ref></ead:part>
         </ead:${tagname}>
 </#macro>
 

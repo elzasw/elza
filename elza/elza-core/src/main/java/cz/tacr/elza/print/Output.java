@@ -2,6 +2,7 @@ package cz.tacr.elza.print;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import cz.tacr.elza.print.item.Item;
@@ -118,4 +119,11 @@ public interface Output {
      * @return seznam recordů v daného typu
      */
     FilteredRecords getRecordsByType(final String code);
+
+    /**
+     * Vrací seznam všech archivních entit ve výstupu
+     * 
+     * @return
+     */
+    Iterator<Record> getRecords();
 }
