@@ -75,6 +75,11 @@ public class AsyncNodeWorker implements IAsyncWorker {
     public AsyncNodeWorker(final List<AsyncRequest> requests) {
         running.set(true);
         this.requests = requests;
+        if (CollectionUtils.isNotEmpty(requests)) {
+            this.request = requests.get(0);
+        } else {
+            this.request = null;
+        }
     }
 
     @Override
