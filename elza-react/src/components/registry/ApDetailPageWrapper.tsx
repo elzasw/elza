@@ -163,7 +163,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     // Show message when entity with specified id does not exist
-    if (id && (!detail.id || !detail.data)) {
+    if (id == null || (id && (!detail.id || !detail.data))) {
         return <div  className="detail-page-wrapper missing-entity">
             <div className="message-container">
                 <div className="message">

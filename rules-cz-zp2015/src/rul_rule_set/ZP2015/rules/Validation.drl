@@ -11,15 +11,48 @@ import cz.tacr.elza.domain.vo.DataValidationResults;
 
 global DataValidationResults results;
 
-// Kontrola, zda každý list má ukládací jednotku
-rule "List musí mít ukládací jednotku směrem ke kořeni"
+rule "UJ_012 Větev archivního popisu obsahující pouze logické složky musí obsahovat ukládací jednotku"
 when
-	$activeLevel: ActiveLevel( !hasChildren && $items: descItems )
-	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
-	not ( DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID", "ZP2015_ITEM_LINK")) from $items )
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.ownDescItems
+	DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_LOGICAL") ) from $activeLevel.ownDescItems
+	not ( 
+		$level: Level( ) and 
+		DescItem(type=="ZP2015_FOLDER_TYPE" && specCode not in ("ZP2015_FOLDER_LOGICAL") ) from $level.ownDescItems
+	)
+	// není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
+    // neni ulozeno v DA
+    not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
+	// chybi UJ
+	not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
 then
-	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka (pravidlo UJ_012)", "ZP2015_POL_STORAGE_ID");
 end
+
+
+rule "HP_015 Větev archivního popisu zakončená složkou má složku s EJ"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.ownDescItems	
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
+    // není složka s dodatečnými EJ (obyvkle složka manip.seznamu)
+    not DescItem(type=="ZP2015_EXTRA_UNITS" ) from $activeLevel.descItems	
+    // neexistuje slozka daneho typu
+	not (
+	  Level( $items: descItems ) and 
+	  DescItem(type=="ZP2015_FOLDER_TYPE" && 
+	           specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_DAO")) from $items
+	)
+then
+	results.createMissing("ZP2015_FOLDER_TYPE", "Chybí složka určující evidenční jednotku (pravidlo HP_015)", "ZP2015_POL_BASIC");
+end
+
 
 rule "List musí mít strojovou dataci směrem ke kořeni"
 when

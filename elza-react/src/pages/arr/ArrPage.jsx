@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import { MODAL_DIALOG_SIZE } from '../../constants';
+import {MODAL_DIALOG_SIZE, urlFundActions} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -46,10 +46,7 @@ import './ArrPage.scss';
 import defaultKeymap from './ArrPageKeymap';
 import ArrPageRibbon from './ArrPageRibbon';
 import ArrParentPage from './ArrParentPage';
-
-
-
-
+import {processNodeNavigation} from "../../utils/ArrShared";
 
 class ArrPage extends ArrParentPage {
     static TAB_KEY = 'arr-as';
@@ -110,10 +107,36 @@ class ArrPage extends ArrParentPage {
         );
     }
 
-    componentDidMount() {
-        super.componentDidMount();
+    async componentDidMount() {
+        const {match, dispatch, arrRegion} = this.props;
+        await super.componentDidMount();
+        const matchId = match.params.nodeId;
+        const urlNodeId = matchId || null;
+        if (urlNodeId != null) {
+            const activeFund = this.getActiveFund(this.props);
+
+            let activeNode = null;
+
+            if (activeFund?.nodes?.activeIndex != null) {
+                activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+            }
+
+            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeFund) {
+                const data = await WebApi.selectNode(urlNodeId);
+                processNodeNavigation(dispatch, data, arrRegion);
+            }
+        }
         this.trySetFocus(this.props);
     }
+
+    waitForLoadAS = fce => {
+        const next = fce();
+        if (next) {
+            setTimeout(() => {
+                this.waitForLoadAS(fce);
+            }, 50);
+        }
+    };
 
     UNSAFE_componentWillMount() {
         this.registerTabs(this.props);
@@ -282,7 +305,7 @@ class ArrPage extends ArrParentPage {
 
         this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.props.dispatch(fundActionFormShow(versionId));
-        this.props.dispatch(routerNavigate('/arr/actions'));
+        this.props.dispatch(routerNavigate(urlFundActions(activeInfo.activeFund)));
     };
 
     /**

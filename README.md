@@ -63,6 +63,7 @@ ENDPOINT=http://localhost:8080
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
 Podrobnosti o nastavení viz sekce 'Databázové připojení'.
 Pro release v souboru elza-web/config/elza.yaml zakomentovat radek: buildType: DEV
+[Deaktivovat maven blokování externích úložišť HTTP](https://stackoverflow.com/questions/67001968/how-to-disable-maven-blocking-external-http-repositories)
 ```
 mvn -Prelease install
 ```

@@ -1,39 +1,24 @@
+import { refInstitutionsFetchIfNeeded } from 'actions/refTables/institutions';
+import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
+import { AbstractReactComponent, i18n, Icon, StoreHorizontalLoader } from 'components/shared';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {AbstractReactComponent, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
-import {indexById, indexByProperty} from 'stores/app/utils';
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils';
-import {selectFundTab} from 'actions/arr/fund';
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet';
-import {routerNavigate} from 'actions/router';
-
+import { connect } from 'react-redux';
+import { LinkContainer } from 'react-router-bootstrap';
+import { indexById, indexByProperty } from 'stores/app/utils';
+import { urlFundTree } from "../../constants";
+import { Button } from '../ui';
 import './FundDetail.scss';
+
 
 class FundDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
-        this.bindMethods('handleShowInArr');
     }
 
     componentDidMount() {
         this.props.dispatch(refInstitutionsFetchIfNeeded());
         this.props.dispatch(refRuleSetFetchIfNeeded());
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {}
-
-    handleShowInArr(version) {
-        // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
-
-        // Otevření archivního souboru
-        const fund = this.props.fundDetail;
-        var fundObj = getFundFromFundAndVersion(fund, version);
-        this.props.dispatch(selectFundTab(fundObj));
     }
 
     render() {
@@ -66,7 +51,7 @@ class FundDetail extends AbstractReactComponent {
             const activeVersionIndex = indexByProperty(fundDetail.versions, null, 'lockDate');
             const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex]?.ruleSetId);
             const rule = ruleIndex !== null ? ruleSet.items[ruleIndex].name : '';
-            const ver = fundDetail.versions[activeVersionIndex];
+
             content = (
                 <div className="fund-detail-container">
                     <div className="fund-detail-info">
@@ -84,14 +69,15 @@ class FundDetail extends AbstractReactComponent {
                             <label>{i18n('arr.fund.detail.ruleSet')}:</label>
                             <span>{rule}</span>
                         </div>
-                        <Button
-                            className="fund-detail-button"
-                            variant="outline-secondary"
-                            onClick={this.handleShowInArr.bind(this, ver)}
-                        >
-                            <Icon glyph="fa-folder-open" />
-                            &nbsp;{i18n('arr.fund.action.openInArr')}
-                        </Button>
+                        <LinkContainer key={`fund-${fundDetail.id}`} to={urlFundTree(fundDetail.id)}>
+                            <Button
+                                className="fund-detail-button"
+                                variant="outline-secondary"
+                            >
+                                <Icon glyph="fa-folder-open" />
+                                &nbsp;{i18n('arr.fund.action.openInArr')}
+                            </Button>
+                        </LinkContainer>
                     </div>
                 </div>
             );

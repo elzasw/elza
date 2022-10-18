@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +74,7 @@ import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -408,6 +408,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         filteredAPs.nodesAdded();
 
         return filteredAPs;
+    }
+
+    public Iterator<Record> getRecords() {
+        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
+        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+
+        RecordIterator ri = new RecordIterator(this, nodeIterator);
+        return ri;
     }
 
     @Override

@@ -130,7 +130,6 @@ class FundDetailTree extends React.Component {
      */
     callFundSelectSubNode = (node, openNewTab) => {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'));
 
         // Otevření archivního souboru
         const {fund} = this.props;

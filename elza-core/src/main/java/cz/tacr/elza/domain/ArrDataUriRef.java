@@ -1,8 +1,9 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.*;
@@ -157,10 +158,10 @@ public class ArrDataUriRef extends ArrData {
         Validate.notNull(uriRefValue);
         Validate.notNull(schema);
         // check any leading and trailing whitespace in data
-        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length());
-        Validate.isTrue(schema.trim().length() == schema.length());
+        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length(), "UriRefValue obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+        Validate.isTrue(schema.trim().length() == schema.length(), "Schema obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
         if (description != null) {
-            Validate.isTrue(description.trim().length() == description.length());
+            Validate.isTrue(description.trim().length() == description.length(), "Description obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
         }
     }
 

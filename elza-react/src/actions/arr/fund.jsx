@@ -172,7 +172,7 @@ export function selectFundTab(fund) {
             }
         }
         if (itemFound) {
-            dispatch(storeLoadData('ARR_REGION_FUND', itemFound, true));
+            dispatch(storeLoadData('ARR_REGION_FUND', itemFound));
         } else {
             dispatch({
                 type: types.FUND_SELECT_FUND_TAB,

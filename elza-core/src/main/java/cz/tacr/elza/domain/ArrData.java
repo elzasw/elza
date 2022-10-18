@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -202,7 +203,7 @@ public abstract class ArrData implements NodeCacheSerializable, AccessPointCache
      * @param srcData
      * @return
      */
-    abstract protected boolean isEqualValueInternal(ArrData srcData);
+    abstract protected boolean isEqualValueInternal(@NotNull ArrData srcData);
 
 	/**
 	 * Prepare copy of the data object

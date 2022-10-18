@@ -293,6 +293,7 @@ public class ImportServiceImpl implements ImportService {
 
             ApBindingState bindingState = syncEntity.getBindingState();
             if (bindingState.getSyncOk() == SyncState.NOT_SYNCED) {
+                logger.info("Synchronization isn't possible access point has state NOT_SYNCED id: {}", bindingState.getAccessPointId());
                 continue;
             }
 

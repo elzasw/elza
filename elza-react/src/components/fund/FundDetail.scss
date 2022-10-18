@@ -28,6 +28,16 @@
             min-width: 200px;
             min-height: 60px;
             font-size: 16px;
+            display: flex;
+            background: #eee;
+            border: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+
+            &:hover {
+                background: #ddd;
+            }
         }
 
         label {
