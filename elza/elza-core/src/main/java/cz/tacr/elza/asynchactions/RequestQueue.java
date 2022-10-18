@@ -5,8 +5,10 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Spliterator;
@@ -19,7 +21,7 @@ import java.util.function.Function;
  *
  * @param <E> generičnost
  */
-public class RequestQueue<E> implements Iterable<E> {
+public class RequestQueue<E> implements IRequestQueue<E> {
 
     private final Queue<E> originalQueue;
     private final Function<E, Integer> calcId;
@@ -73,14 +75,17 @@ public class RequestQueue<E> implements Iterable<E> {
         return new RequestQueue<>(queue);
     }
 
+    @Override
     public int size() {
         return originalQueue.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return originalQueue.isEmpty();
     }
 
+    @Override
     public boolean add(final E e) {
         if (calcId != null) {
             idMap.put(calcId.apply(e), e);
@@ -88,6 +93,7 @@ public class RequestQueue<E> implements Iterable<E> {
         return originalQueue.add(e);
     }
 
+    @Override
     public boolean remove(final E o) {
         if (calcId != null) {
             idMap.remove(calcId.apply(o));
@@ -95,6 +101,7 @@ public class RequestQueue<E> implements Iterable<E> {
         return originalQueue.remove(o);
     }
 
+    @Override
     public boolean addAll(final Collection<? extends E> c) {
         if (calcId != null) {
             for (E e : c) {
@@ -104,17 +111,19 @@ public class RequestQueue<E> implements Iterable<E> {
         return originalQueue.addAll(c);
     }
 
+    @Override
     public void clear() {
         originalQueue.clear();
         idMap.clear();
     }
 
-    public E poll() {
+    @Override
+    public List<E> poll() {
         E item = originalQueue.poll();
         if (calcId != null && item != null) {
             idMap.remove(calcId.apply(item));
         }
-        return item;
+        return Collections.singletonList(item);
     }
 
     @Override
@@ -154,12 +163,8 @@ public class RequestQueue<E> implements Iterable<E> {
         throw new NotImplementedException("spliterator not implemented");
     }
 
-    /**
-     * Vyhledání položky podle identifikátoru návazné entity.
-     *
-     * @param id identifikátor návazné entity fronty
-     * @return nalezená položka
-     */
+
+    @Override
     public E findById(final Integer id) {
         if (calcId != null) {
             return idMap.get(id);
