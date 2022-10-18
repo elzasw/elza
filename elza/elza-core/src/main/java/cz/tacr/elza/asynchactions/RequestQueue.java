@@ -123,7 +123,7 @@ public class RequestQueue<E> implements IRequestQueue<E> {
         if (calcId != null && item != null) {
             idMap.remove(calcId.apply(item));
         }
-        return Collections.singletonList(item);
+        return item != null ? Collections.singletonList(item) : null;
     }
 
     @Override
