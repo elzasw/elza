@@ -1,14 +1,18 @@
-Expression = interval:Interval / InstantEstimate
+// Gramatika pro 'datace.js'. Slouzi pro validaci datace.
 
-Interval = a:InstantEstimate [-/] b:InstantEstimate { return {from: {...a}, to: {...b}}}
+Expression = IntervalEstimate / Interval / InstantEstimate
+
+IntervalEstimate = a:Instant "/" b:Instant { return {from: {...a, estimate: true}, to: {...b, estimate: true}}}
+
+Interval = a:InstantEstimate [-] b:InstantEstimate { return {from: {...a}, to: {...b}}}
 
 InstantEstimate = Estimate / Instant
 
 Estimate = EstimateParen / EstimateBracket
 
-EstimateParen = "(" instant:Instant ")" { return {...instant}}
+EstimateParen = "(" instant:Instant ")" { return {...instant, estimate: true}}
 
-EstimateBracket = "[" instant:Instant "]"  { return {...instant}}
+EstimateBracket = "[" instant:Instant "]"  { return {...instant, estimate: true}}
 
 Instant = BcRawInstant / NoBcRawInstant
 

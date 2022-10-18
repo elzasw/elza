@@ -30,6 +30,8 @@ import {RulItemTypeType} from '../../../api/RulItemTypeType';
 import {registerField, unregisterField} from "../text-fragments";
 import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
 import ImportCoordinateModal from "../../registry/Detail/coordinate/ImportCoordinateModal";
+import { parse } from 'components/shared/datace/datace';
+import { showYesNoDialog, YesNoDialogResult } from 'components/shared/dialog';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -387,13 +389,66 @@ class DescItemType extends AbstractReactComponent {
         this.props.onChangeSpec(descItemIndex, specId);
     }
 
+    interceptValue = async (value, rulDataType) => {
+        const {dispatch} = this.props;
+
+        if(rulDataType.code === 'UNITDATE'){
+            try {
+                let newValue = value.value;
+                const {from, to, c, estimate} = parse(newValue) || {};
+                const validated = validateUnitDate(newValue);
+
+                const getResult = async () => await dispatch(showYesNoDialog(i18n("field.unitdate.convertToEstimate.message"), i18n("field.unitdate.convertToEstimate.title")));
+
+                if(validated.valid){
+                    if (from?.c && to?.c && (!from?.estimate || !to?.estimate)){
+                        const result = await getResult();
+                        if(result === YesNoDialogResult.YES){
+                            const parts = newValue.replace("[","").replace("]","").split("-");
+                            value.value = `${parts[0]}/${parts[1]}`;
+                        }
+                        else if(result === YesNoDialogResult.CANCEL){return;}
+                    }
+                    else if(from?.c && !from?.estimate){
+                        const result = await getResult();
+                        if(result === YesNoDialogResult.YES){
+                            const parts = newValue.split("-");
+                            value.value = `[${parts[0]}]-${parts[1]}`;
+                        }
+                        else if(result === YesNoDialogResult.CANCEL){return;}
+                    }
+                    else if (to?.c && !to?.estimate){
+                        const result = await getResult();
+                        if(result === YesNoDialogResult.YES){
+                            const parts = newValue.split("-");
+                            value.value = `${parts[0]}-[${parts[1]}]`;
+                        }
+                        else if(result === YesNoDialogResult.CANCEL){return;}
+                    }
+                    else if (c && !estimate){
+                        const result = await getResult();
+                        if(result === YesNoDialogResult.YES){
+                            value.value = `[${newValue}]`;
+                        } 
+                        else if(result === YesNoDialogResult.CANCEL){return;}
+                    }
+                }
+            } catch (e) { }
+        }
+
+        return value
+    }
+
     /**
      * Opuštení focusu hodnoty atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
-    handleBlur(descItemIndex) {
-        const {onBlur, onChange} = this.props;
-        const {value, error} = this.state;
+    async handleBlur(descItemIndex) {
+        const {onBlur, onChange, rulDataType} = this.props;
+        let {value, error} = this.state;
+
+        value = await this.interceptValue(value, rulDataType);
+        if(!value){return;} // Cancel the value change when null
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
         value &&
