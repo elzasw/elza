@@ -862,19 +862,19 @@ rule "RE_001 Související entita u jednotky popisu - specifikace"
 no-loop
 when $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // osoba/bytost zachycená jednotkami popisu
+        // osoba/bytost související s jednotkami popisu
         "ZP2015_ENTITY_ROLE_66",
-        // rod/rodina zachycená jednotkami popisu
+        // rod/rodina související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_67",
-		// korporace zachycená jednotkami popisu
+		// korporace související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_68",
-		// událost zachycená jednotkami popisu
+		// událost související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_69",
-		// dílo/výtvor zachycené jednotkami popisu
+		// dílo/výtvor související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_70",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71",
-		// obecný pojem vztahující se k jednotce popisu
+		// obecný pojem související s jednotkou popisu
 		"ZP2015_ENTITY_ROLE_72",
 		// sekundární klasifikace
 		"ZP2015_ENTITY_ROLE_83"
@@ -943,19 +943,19 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
      	"ZP2015_UNIT_TYPE_PART") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // osoba/bytost zachycená jednotkami popisu
+        // osoba/bytost související s jednotkami popisu
         "ZP2015_ENTITY_ROLE_66",
-        // rod/rodina zachycená jednotkami popisu
+        // rod/rodina související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_67",
-		// korporace zachycená jednotkami popisu
+		// korporace související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_68",
-		// událost zachycená jednotkami popisu
+		// událost související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_69",
-		// dílo/výtvor zachycené jednotkami popisu
+		// dílo/výtvor související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_70",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71",
-		// obecný pojem vztahující se k jednotce popisu
+		// obecný pojem související s jednotkou popisu
 		"ZP2015_ENTITY_ROLE_72"
      ) ) from $itemType.rulItemSpecList
 then
@@ -4894,7 +4894,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_58",
         // místa vzniku předloh popisovaných kopií
         "ZP2015_ENTITY_ROLE_62",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
      ) ) from $itemType.rulItemSpecList
 then
@@ -4913,7 +4913,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	// nastaveni prvku	
 	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
 	$itemSpec: RulItemSpecExt( code in ( 
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
 	 ) ) from $itemType.rulItemSpecList
 then
@@ -4932,7 +4932,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	// nastaveni prvku	
 	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
 	$itemSpec: RulItemSpecExt( code in ( 
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
 	 ) ) from $itemType.rulItemSpecList
 then
@@ -4965,7 +4965,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
         "ZP2015_ENTITY_ROLE_58",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
         ) ) from $itemType.rulItemSpecList
 then
@@ -5124,7 +5124,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
         "ZP2015_ENTITY_ROLE_62",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
      ) ) from $itemType.rulItemSpecList
 then
@@ -5143,7 +5143,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	// nastaveni prvku	
 	$itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
 	$itemSpec: RulItemSpecExt( code in ( 
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
 	 ) ) from $itemType.rulItemSpecList
 then
@@ -5174,7 +5174,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
-		// geografický objekt zachycený jednotkami popisu
+		// geografický objekt související s jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71"
         ) ) from $itemType.rulItemSpecList
 then
