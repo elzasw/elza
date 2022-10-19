@@ -1,4 +1,4 @@
-<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+<#ftl output_format="XML" ns_prefixes={"ead":"http://ead3.archivists.org/schema/", "cam":"http://cam.tacr.cz/2019"}><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
 
 <#-- Seznam mapování typů dle 5.9 -->
 <#assign unitTypeMapping = { 
@@ -256,8 +256,11 @@
       <#assign sourcesElem=1>
     </#if>
     <#lt>    <ead:source id="ap${ap.id?c}"><ead:objectxmlwrap>
-    <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
-    <#lt>    </cam:ent>
+<#noautoesc>${ap.exportData("http://cam.tacr.cz/2019")?replace(' xmlns:cam="http://cam.tacr.cz/2019"','','f')}</#noautoesc>
+<#--     <#lt>    ${ap.exportXmlData("http://cam.tacr.cz/2019")}-->
+<#--     <#lt>    <#noautoesc>${ap.exportData("http://cam.tacr.cz/2019")}</#noautoesc>-->
+<#--     <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
+<#--    <#lt>    </cam:ent>-->
     <#lt>    </ead:objectxmlwrap></ead:source>
   </#list>
   <#if (sourcesElem==1)>

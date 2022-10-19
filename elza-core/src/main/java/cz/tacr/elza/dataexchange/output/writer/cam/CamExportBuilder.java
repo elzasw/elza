@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.output.writer.cam;
 
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,11 +15,12 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.Validate;
+import org.w3c.dom.Document;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
@@ -40,7 +42,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     private ApStream apStream;
 
-    final private StaticDataService staticDataService;
+    final private StaticDataProvider staticDataSProvider;
 
     final private GroovyService groovyService;
 
@@ -74,11 +76,11 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
-    public CamExportBuilder(final StaticDataService staticDataService,
+    public CamExportBuilder(final StaticDataProvider staticDataSProvider,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
                             final AccessPointDataService apDataService) {
-        this.staticDataService = staticDataService;
+        this.staticDataSProvider = staticDataSProvider;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
         this.apDataService = apDataService;
@@ -93,7 +95,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     public void addAccessPoint(ApInfo apInfo) {
         EntityXmlBuilder exb = new EntityXmlBuilder(
-                staticDataService.getData(),
+                staticDataSProvider,
                 apInfo.getAccessPoint(),
                 apInfo.getApState(),
                 apInfo.getExternalIds(),
@@ -137,6 +139,40 @@ public class CamExportBuilder implements ExportBuilder {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
             marshaller.marshal(jaxbEnts, os);
+        } catch (JAXBException e) {
+            throw new XMLStreamException("Failed to save with JAXB", e);
+        }
+    }
+
+    public void buildEntity(Writer writer) throws XMLStreamException {
+        Validate.isTrue(this.entities.getList().size() == 1);
+        EntityXml entXml = this.entities.getList().get(0);
+
+        JAXBElement<EntityXml> jaxbEnt = CamUtils.getObjectFactory().createEnt(entXml);
+
+        try {
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+            marshaller.marshal(jaxbEnt, writer);
+        } catch (JAXBException e) {
+            throw new XMLStreamException("Failed to save with JAXB", e);
+        }
+    }
+
+    public void buildEntity(Document xmlDoc) throws XMLStreamException {
+        Validate.isTrue(this.entities.getList().size() == 1);
+        EntityXml entXml = this.entities.getList().get(0);
+
+        JAXBElement<EntityXml> jaxbEnt = CamUtils.getObjectFactory().createEnt(entXml);
+
+        try {
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+            marshaller.marshal(jaxbEnt, xmlDoc);
         } catch (JAXBException e) {
             throw new XMLStreamException("Failed to save with JAXB", e);
         }

@@ -5,8 +5,6 @@ import java.net.URL;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.ArrAsyncRequest;
-import cz.tacr.elza.repository.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,12 +12,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
 
 
@@ -58,6 +64,9 @@ public abstract class AbstractTest {
 
     @Autowired
     protected ElzaLocale elzaLocale;
+    
+    @Autowired
+    protected ApplicationContext applicationContext;
 
     @Autowired
     protected EntityManager em;
