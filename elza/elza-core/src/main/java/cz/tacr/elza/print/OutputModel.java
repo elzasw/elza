@@ -76,7 +76,6 @@ import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
@@ -157,8 +156,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApBindingRepository bindingRepository;
 
-    private final ApPartRepository partRepository;
-
     private final ApItemRepository itemRepository;
 
     private final ApBindingStateRepository bindingStateRepository;
@@ -197,7 +194,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
 
-    public OutputModel(final StaticDataService staticDataService,
+    private OutputContext outputContext;
+
+    public OutputModel(final OutputContext outputContext,
+                       final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
                        final FundRepository fundRepository,
                        final FundTreeProvider fundTreeProvider,
@@ -208,13 +208,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final AttPageProvider attPageProvider,
                        final StructuredObjectRepository structObjRepos,
                        final StructuredItemRepository structItemRepos,
-                       final ApPartRepository partRepository,
                        final ApItemRepository itemRepository,
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository,
                        final AccessPointCacheService accessPointCacheService,
                        final EntityManager em) {
+        this.outputContext = outputContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundRepository = fundRepository;
@@ -226,7 +226,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
         this.structItemRepos = structItemRepos;
-        this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
@@ -811,10 +810,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPointId(accessPointId);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(apState.getAccessPoint(), type, sdp, apStateRepository,
-                bindingRepository, partRepository, itemRepository,
+        record = new Record(outputContext, apState, type,
+                bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository,
-                itemConvertor, accessPointCacheService, elzaLocale);
+                itemConvertor, elzaLocale);
 
         // add to lookup
         apIdMap.put(accessPointId, record);

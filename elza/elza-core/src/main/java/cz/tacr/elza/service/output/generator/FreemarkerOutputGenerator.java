@@ -10,18 +10,18 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.print.OutputContext;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -52,7 +52,6 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               InstitutionRepository institutionRepository,
                               ApStateRepository apStateRepository,
                               ApBindingRepository bindingRepository,
-                              ApPartRepository partRepository,
                               ApItemRepository itemRepository,
                               ApBindingStateRepository bindingStateRepository,
                               ApIndexRepository indexRepository,
@@ -65,10 +64,12 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
-        outputModel = new OutputModel(staticDataService, elzaLocale,
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+
+        outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 daoLinkRepository, accessPointCacheService, em);
     }

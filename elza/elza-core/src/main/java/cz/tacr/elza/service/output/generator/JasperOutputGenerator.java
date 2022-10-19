@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
@@ -36,11 +35,12 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.AttPagePlaceHolder;
+import cz.tacr.elza.print.OutputContext;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -87,7 +87,6 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           InstitutionRepository institutionRepository,
                           ApStateRepository apStateRepository,
                           ApBindingRepository bindingRepository,
-                          ApPartRepository partRepository,
                           ApItemRepository itemRepository,
                           ApBindingStateRepository bindingStateRepository,
                           ApIndexRepository indexRepository,
@@ -99,13 +98,14 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
 
         pdfAttProvider = new PdfAttProvider(applicationContext);
-        outputModel = new OutputModel(staticDataService, elzaLocale,
+        outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
-                pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository,
+                pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
                 indexRepository, daoLinkRepository, accessPointCacheService, em);
         pdfAttProvider.setOutput(outputModel);
     }

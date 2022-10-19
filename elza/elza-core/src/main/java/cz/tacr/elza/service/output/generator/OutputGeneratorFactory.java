@@ -2,7 +2,6 @@ package cz.tacr.elza.service.output.generator;
 
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,8 @@ import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -49,8 +48,6 @@ public class OutputGeneratorFactory {
 
     private final ApBindingStateRepository bindingStateRepository;
 
-    private final ApPartRepository partRepository;
-
     private final ApItemRepository itemRepository;
 
     private final DaoLinkRepository daoLinkRepository;
@@ -73,7 +70,6 @@ public class OutputGeneratorFactory {
                                   final InstitutionRepository institutionRepository,
                                   final ApStateRepository apStateRepository,
                                   final ApBindingRepository bindingRepository,
-                                  final ApPartRepository partRepository,
                                   final ApItemRepository itemRepository,
                                   final ApBindingStateRepository bindingStateRepository,
                                   final ApIndexRepository indexRepository,
@@ -91,7 +87,6 @@ public class OutputGeneratorFactory {
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
         this.bindingRepository = bindingRepository;
-        this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
@@ -119,7 +114,7 @@ public class OutputGeneratorFactory {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository,
+                institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
                 daoLinkRepository, accessPointCacheService);
     }
@@ -129,7 +124,7 @@ public class OutputGeneratorFactory {
                 fundRepository, fundTreeProvider,
                 nodeCacheService,
                 institutionRepository, apStateRepository,
-                bindingRepository, partRepository, itemRepository, bindingStateRepository,
+                bindingRepository, itemRepository, bindingStateRepository,
                 indexRepository, em, dmsService, daoLinkRepository, accessPointCacheService);
     }
 
