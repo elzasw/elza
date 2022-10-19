@@ -4644,8 +4644,6 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_34",		
 		// kartografové
 		"ZP2015_ENTITY_ROLE_33",
-        // autoři hudby
-        "ZP2015_ENTITY_ROLE_6",
         // tvůrce výtvarné stránky
         "ZP2015_ENTITY_ROLE_39",		
 		// překladatelé
