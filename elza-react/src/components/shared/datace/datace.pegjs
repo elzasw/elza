@@ -1,4 +1,6 @@
 // Gramatika pro 'datace.js'. Slouzi pro validaci datace.
+// Pro vygenerovani je potreba zavolat prikaz:
+// npx peggy --format es <filename>
 
 Expression = IntervalEstimate / Interval / InstantEstimate
 

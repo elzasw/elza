@@ -1,7 +1,7 @@
 import React, {FC} from 'react';
 import moment from "moment";
 import {Datace} from "../../shared/datace/datace-types";
-import {parse} from "../../shared/datace/datace";
+import {parse} from "components/shared/datace/datace";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
 import {i18n} from "../../shared";
