@@ -14,18 +14,23 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
     .fa-tree-wrapper{
         flex-grow:1;
         height: 100%;
-        border: 1px solid #DDDDDD;
+        border: 1px solid $border-color;
         display:flex;
         flex-direction:column;
         // force flex recalc
         min-height: 0;
+
+        &:focus, &:active {
+            border-color: $accent-color;
+            box-shadow: 0 0 0px 1px $accent-color;
+        }
     }
     .fa-tree-lazy-container {
         flex-grow:1;
         height: 400px; // musí být fixní číslo kvůli správnému lazy zobrazení!
         //height: calc("100% - 49px");
         overflow: auto;
-        background: white;
+        background: $shade-0;
         position: relative;
         margin-top: $TREE_TOP_PADDING;
         width: 100%;
@@ -90,7 +95,7 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             width: 100%;
 
             &:nth-child(even) {
-                background: #f8f8f8;
+                background: $shade-1;
             }
             &:hover {
                 background: $tree-node-label-active-bg;
@@ -117,10 +122,10 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         .without-arr-perm {
             color: #444;
             font-style: italic;
-            background: #eee;
+            background: $shade-2;
 
             &:hover {
-                background: #ddd;
+                background: $shade-4;
             }
         }
 
@@ -152,7 +157,7 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         display: flex;
         flex-shrink: 0;
         justify-content: flex-end;
-        background: white;
+        background: $shade-0;
         margin: 0;
         .btn {
             border: none;

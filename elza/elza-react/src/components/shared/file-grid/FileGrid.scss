@@ -1,3 +1,4 @@
+@import "../../../variables.scss";
 .file-grid {
     display: flex;
     flex-wrap: wrap;
@@ -6,7 +7,7 @@
     .file-grid-item {
         padding: 10px 15px;
         margin: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid $border-color;
         display: flex;
         align-items: center;
         position: relative;
@@ -74,10 +75,10 @@
             justify-content: center;
             transition: none;
             flex: 1;
-            background: rgba(#fff,0.8);
+            background: rgba($shade-0,0.8);
 
             &:hover {
-                background: rgba(#eee,0.8);
+                background: rgba($shade-2,0.8);
             }
         }
 
