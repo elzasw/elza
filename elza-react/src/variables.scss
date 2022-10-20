@@ -1,7 +1,49 @@
+// Theme styles
+$bg-color: #000;
+
+
+$shade-7: red;
+
+
+// Vars
+
+$fg-color: var(--fg-color);
+$fg-shade-2: var(--fg-shade-2);
+$contrast-color-fg: var(--contrast-color-fg);
+$fg-shade-4: var(--fg-shade-4);
+
+$shade-0: var(--shade-0);
+$shade-1: var(--shade-1);
+$shade-2: var(--shade-2);
+$shade-3: var(--shade-3);
+$shade-4: var(--shade-4);
+$shade-5: var(--shade-5);
+$shade-6: var(--shade-6);
+$shade-7: var(--shade-7);
+$contrast-color: var(--contrast-color);
+$shade-9: var(--shade-9);
+
+$primary-border: var(--primary-border);
+$border-color: var(--border-color);
+
+$accent-color: var(--accent-color);
+$accent-color-fg: var(--accent-color-fg);
+
+$color-red: var(--color-red);
+$color-orange: var(--color-orange);
+$color-blue: var(--color-blue);
+$color-green: var(--color-green);
+
+$color-link: var(--color-link);
+
+
+
+
+
 $border-radius: 0;
 $border-radius-lg: 0;
 $border-radius-sm: 0;
-$border-color: #dddddd;
+
 $font-size-base: .75rem;
 
 @import "~bootstrap/scss/functions.scss";
@@ -13,102 +55,105 @@ $border-radius-base: 0;
 $border-radius-large: 0;
 $border-radius-small: 0;
 $form-group-margin-bottom: 0;
-$color-link: #23527c;
-$color-warn: #D90606;
-$color-success: #29b70c;
-$focus-border-color: #66afe9;
-$defaultBtnColor: #333333;
-$outlineBtnHoverBg: #e6e6e6;
+/* $color-warn: #D90606; */
+$color-warn: $color-red;
+/* $color-success: #29b70c; */
+$color-success: $color-green;
+$focus-border-color: $accent-color;
+$defaultBtnColor: $fg-color;
+$outlineBtnHoverBg: $shade-3;
 
 // App header
-$app-header-border: #DDDDDD;
+$app-header-border: $border-color;
 
 // Splitter
-$split-pane-divider-bg: #f8f8f8;
+$split-pane-divider-bg: $shade-1;
 
 // Accordion
-$accordion-header-bg: #E7E7E7;
-$accordion-header-bg-opened: #C0C0C0;
-$accordion-header-border: #f1f1f1;
-$accordion-header-border-opened: #a5a5a5;
+$accordion-header-bg: $shade-3;
+$accordion-header-bg-opened: $shade-5;
+$accordion-header-border: $border-color;
+$accordion-header-border-opened: $border-color;
 
 // Node panel
-$node-panel-border: #DDDDDD;
+$node-panel-border: $border-color;
 $node-panel-actions-bg: transparent;
-$node-panel-parents-bg: white;
-$node-panel-parents-active-bg: #C0C0C0;
-$node-panel-parents-border: #DDDDDD;
+$node-panel-parents-bg: $shade-0;
+$node-panel-parents-active-bg: $shade-5;
+$node-panel-parents-border: $border-color;
 $node-panel-children-bg: $node-panel-parents-bg;
 $node-panel-children-active-bg: $node-panel-parents-active-bg;
-$node-panel-children-border: $node-panel-parents-border;
+$node-panel-children-border: $border-color;
 $node-panel-actions-height: 3em;
 
 // Node form
-$node-form-actions-bg: #EEEEEE;
-$node-form-bg: white;
-$node-form-value-error-bg: #FFDCDC;
-$node-form-actions-color: #000000;
-$node-form-actions-hover: #ddd;
-$node-form-actions-active-color: #808080;
+$node-form-actions-bg: $shade-2;
+$node-form-bg: $shade-0;
+$node-form-value-error-bg: $color-red;
+$node-form-actions-color: $contrast-color;
+$node-form-actions-hover: $shade-4;
+$node-form-actions-active-color: $shade-7;
 $node-form-group-bg: transparent;
 $node-form-group-border: transparent;
-$node-form-group-active-bg: #f9f9f9;
-$node-form-group-active-border: #ececec;
+$node-form-group-active-bg: $shade-1;
+$node-form-group-active-border: $border-color;
 $node-form-item-type-bg: transparent;
-$node-form-item-type-active-bg: #f0f0f0;
+$node-form-item-type-active-bg: $shade-1;
 $node-form-item-type-element-width: 225px;
-$node-form-registry: #f8f8f8;
-$node-form-dao: white;
+$node-form-registry: $shade-1;
+$node-form-dao: $shade-0;
 
 // Tabs
-$tabs-tab-active-bg: #f8f8f8;
+$tabs-tab-active-bg: $shade-1;
 $tabs-tab-content-bg: $tabs-tab-active-bg;
-$tabs-tab-content-border: #DDDDDD;
+$tabs-tab-content-border: $border-color;
 
 // Min max buttons - ribbon i levý vyskakovací panel
-$btn-min-max-bg: white;
-$btn-min-max-border: #DDDDDD;
+$btn-min-max-bg: $shade-0;
+$btn-min-max-border: $border-color;
 
 // Fa file tree panel - levý vyskakovací panel
-$fa-file-tree-bg: #f8f8f8;
-$fa-file-tree-bg-list: white;
-$fa-file-tree-active-bg: #C0C0C0;
-$fa-file-tree-border: #DDDDDD;
+$fa-file-tree-bg: $shade-1;
+$fa-file-tree-bg-list: $shade-0;
+$fa-file-tree-active-bg: $shade-5;
+$fa-file-tree-border: $border-color;
 
 // Tree
-$tree-node-active-bg: #C0C0C0;
-$tree-node-active-hover-bg: #CCCCCC;
-$tree-node-label-active-bg: #EEEEEE;
-$tree-node-focus-border: #A9A9A9;
-$tree-node-separator-border: #808080;
-$tree-node-reference-mark: grey;
+$tree-node-active-bg: $shade-5;
+$tree-node-active-hover-bg: $shade-5;
+$tree-node-label-active-bg: $shade-2;
+$tree-node-focus-border: $border-color;
+$tree-node-separator-border: $shade-7;
+$tree-node-reference-mark: $shade-7;
 
 // Ribbon
-$ribbon-bg: #f8f8f8;
+$ribbon-bg: $shade-1;
 $ribbon-button-bg: transparent;
-$ribbon-button-active-bg: #C0C0C0;
+$ribbon-button-active-bg: $shade-5;
 
 // Table
-$table-header-bg: #C0C0C0;
+$table-header-bg: $shade-5;
 
 // Dragger
-$dragger-bg: #E7E7E7;
-$dragger-bg-hover: #C0C0C0;
-$dragger-border: #adadad;
+$dragger-bg: $shade-3;
+$dragger-bg-hover: $shade-5;
+$dragger-border: $border-color;
 
 // Button
-$button-fg: #333333;
-$button-bg: #EEEEEE;
-$button-bg-hover: #C0C0C0;
+$button-fg: $fg-color;
+$button-bg: $shade-2;
+$button-bg-hover: $shade-5;
 
 // HomePage
-$homepage-static-bg: #f8f8f8;
-$homepage-button-bg: #EEEEEE;
-$homepage-button-bg-hover: #C0C0C0;
-$homepage-empty-list-msg-col: #aaa;
+$homepage-static-bg: $shade-1;
+$homepage-button-bg: $shade-2;
+$homepage-button-bg-hover: $shade-5;
+$homepage-empty-list-msg-col: $shade-6;
 
 // Scrollbars
-$scrollbar-bg: #fafafa;
-$scrollbar-active-bg: #f1f1f1;
-$scrollbar-color: #d9d9d9;
-$scrollbar-active-color: #a1a1a1;
+$scrollbar-bg: $shade-1;
+$scrollbar-active-bg: $shade-2;
+$scrollbar-color: $shade-4;
+$scrollbar-active-color: $shade-5;
+
+

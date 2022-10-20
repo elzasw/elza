@@ -1,10 +1,5 @@
 // ELZA upraveni stylu
 @import "./variables.scss";
-@import "./commons.scss";
-@import "./tables.scss";
-@import "./elements-grid.scss";
-@import "./accordion.scss";
-@import "./scrollbar.scss";
 
 //@import "~bootstrap/scss/functions";
 //@import "~bootstrap/scss/variables";
@@ -43,3 +38,9 @@
 @import "~bootstrap/scss/spinners";
 @import "~bootstrap/scss/utilities";
 @import "~bootstrap/scss/print";
+
+@import "./commons.scss";
+@import "./tables.scss";
+@import "./elements-grid.scss";
+@import "./accordion.scss";
+@import "./scrollbar.scss";

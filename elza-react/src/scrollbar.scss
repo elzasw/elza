@@ -53,7 +53,7 @@
 
 ::-webkit-scrollbar-thumb {
     background: $scrollbar-color;
-    border: 0 none #ffffff;
+    border: 0 none $shade-0;
     border-radius: 0;
 
     &:hover, &:active {
@@ -63,7 +63,7 @@
 
 ::-webkit-scrollbar-track {
     background: $scrollbar-bg;
-    border: 0 none #ffffff;
+    border: 0 none $shade-0;
     border-radius: 0;
 
     &:hover, &:active {

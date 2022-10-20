@@ -4,7 +4,7 @@
     color: $defaultBtnColor;
 
     &[class*="btn-outline-"] {
-        background: #fff;
+        background: $shade-0;
 
         &:hover {
             color: initial;

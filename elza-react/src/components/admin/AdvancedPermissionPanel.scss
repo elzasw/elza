@@ -1,6 +1,7 @@
+@import "../../variables.scss";
 .advanced-rights-container {
-    background-color: white;
-    border: 1px solid #ddd;
+    background-color: $shade-0;
+    border: 1px solid $border-color;
 
     .admin-rights-content {
         .admin-rights-right {

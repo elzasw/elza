@@ -1,3 +1,4 @@
+@import "../../../variables.scss";
 .loaderInf-container-wrapper {
     z-index: 1;
     width: 100%;
@@ -25,7 +26,7 @@
     .loaderInf-container {
       width: 100%;
       overflow: hidden;
-      background-color: #ddd;
+      background-color: $shade-4;
       height: 2px;
     }
     .loaderInf {

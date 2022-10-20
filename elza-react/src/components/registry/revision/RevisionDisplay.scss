@@ -1,3 +1,4 @@
+@import "../../../variables.scss";
 $deletion-color: #de8f8f;
 $addition-color: #97d697;
 
@@ -36,9 +37,9 @@ $addition-color: #97d697;
 
     .colored {
         padding: 3px 6px;
-        background-color: lighten($color: #bbb, $amount: 20);
+        background-color: $shade-6;
         border-radius: 5px;
-        border: 1px solid #bbb;
+        border: 1px solid $shade-6;
     }
 
     .value-current {

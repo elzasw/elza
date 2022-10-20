@@ -55,7 +55,7 @@ $arr-history-line-height: 24px; // definuje se i v JS!!!!!
     }
     .selected-node-info-container {
         display: flex;
-        border: 1px solid #ddd;
+        border: 1px solid $border-color;
         margin-left: 5px;
         border-radius: 3px;
         overflow: hidden;
@@ -67,7 +67,7 @@ $arr-history-line-height: 24px; // definuje se i v JS!!!!!
             white-space: nowrap;
             display: inline-block;
             padding: 0 5px;
-            border-right: 1px solid #ddd;
+            border-right: 1px solid $border-color;
             flex-shrink: 0;
 
             &.full {
@@ -80,9 +80,9 @@ $arr-history-line-height: 24px; // definuje se i v JS!!!!!
         button {
             margin: 0;
             border: none;
-            background-color:#eee;
+            background-color:$shade-2;
             &:hover {
-                background-color:#ddd;
+                background-color:$shade-4;
             }
         }
 

@@ -1,10 +1,11 @@
 @import "../../../variables.scss";
-$default-bg: #333;
-$default-fg: white;
-$active-bg: #86bb65;
+$default-bg: $contrast-color;
+$default-fg: $contrast-color-fg;
+/* $active-bg: #86bb65; */
+$active-bg: $color-green;
 $active-fg: $default-fg;
-$inactive-bg: #bbb;
-$inactive-fg: $default-fg;
+$inactive-bg: $shade-6;
+$inactive-fg: $fg-color;
 
 .detail-header-container {
     display: flex;
@@ -12,7 +13,7 @@ $inactive-fg: $default-fg;
 
     .detail-header-main {
         display: flex;
-        border-bottom: 1px #ddd solid;
+        border-bottom: 1px $border-color solid;
 
         .detail-header-icon {
             display: flex;
