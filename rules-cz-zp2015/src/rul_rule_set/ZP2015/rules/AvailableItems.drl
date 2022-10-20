@@ -6311,7 +6311,7 @@ when  $activeLevel: ActiveLevel( )
     DescItem(type=="ZP2015_STORAGE_COND" ) from $ownItems
     $itemType: RulItemTypeExt( code=="ZP2015_STORAGE_COND" && type==RulItemType.Type.REQUIRED )
 then
-    $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "PP_007_002 Změna povinnosti prvku Kvantita v důsledku existence na vyšší úrovni (dědičnost)"
@@ -6323,7 +6323,7 @@ when  $activeLevel: ActiveLevel( )
     DescItem(type=="ZP2015_SIZE" ) from $ownItems
     $itemType: RulItemTypeExt( code=="ZP2015_SIZE" && type==RulItemType.Type.REQUIRED )
 then
-    $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "PP_007_003 Změna povinnosti prvku Měřítko v důsledku existence na vyšší úrovni (dědičnost)"
@@ -6335,7 +6335,7 @@ when  $activeLevel: ActiveLevel( )
     DescItem(type=="ZP2015_SCALE" ) from $ownItems
     $itemType: RulItemTypeExt( code=="ZP2015_SCALE" && type==RulItemType.Type.REQUIRED )
 then
-    $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "PP_007_004 Změna povinnosti prvku Technika záznamu v důsledku existence na vyšší úrovni (dědičnost)"
@@ -6347,5 +6347,5 @@ when  $activeLevel: ActiveLevel( )
     DescItem(type=="ZP2015_ITEM_MAT" ) from $ownItems
     $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" && type==RulItemType.Type.REQUIRED )
 then
-    $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
