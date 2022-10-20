@@ -6309,7 +6309,7 @@ when  $activeLevel: ActiveLevel( )
     $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.3 Způsob a forma dochování
     DescItem(type=="ZP2015_STORAGE_COND" ) from $ownItems
-    $itemType: RulItemTypeExt( code=="ZP2015_STORAGE_COND" )
+    $itemType: RulItemTypeExt( code=="ZP2015_STORAGE_COND" && type==RulItemType.Type.REQUIRED )
 then
     $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
 end
@@ -6321,7 +6321,7 @@ when  $activeLevel: ActiveLevel( )
     $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.4 Rozměry, hmotnost, velikost, množství
     DescItem(type=="ZP2015_SIZE" ) from $ownItems
-    $itemType: RulItemTypeExt( code=="ZP2015_SIZE" )
+    $itemType: RulItemTypeExt( code=="ZP2015_SIZE" && type==RulItemType.Type.REQUIRED )
 then
     $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
 end
@@ -6333,7 +6333,7 @@ when  $activeLevel: ActiveLevel( )
     $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.5 Měřítko
     DescItem(type=="ZP2015_SCALE" ) from $ownItems
-    $itemType: RulItemTypeExt( code=="ZP2015_SCALE" )
+    $itemType: RulItemTypeExt( code=="ZP2015_SCALE" && type==RulItemType.Type.REQUIRED )
 then
     $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
 end
@@ -6345,7 +6345,7 @@ when  $activeLevel: ActiveLevel( )
     $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
     DescItem(type=="ZP2015_ITEM_MAT" ) from $ownItems
-    $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" )
+    $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" && type==RulItemType.Type.REQUIRED )
 then
     $itemType.setTypeMax(RulItemType.Type.RECOMMENDED);
 end
