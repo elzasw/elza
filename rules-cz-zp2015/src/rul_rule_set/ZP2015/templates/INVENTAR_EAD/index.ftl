@@ -731,11 +731,11 @@
 </#macro>
 
 <#-- Zápis single dao object -->
-<#macro writeDao node dao>
-  <#local daotype="derive">
-  
+<#macro writeDaos node>
+  <#local daotype="derived">  
   <#local hasAipid=false>
   <#local hasStorageid=false>
+  
   <#-- Digitální archiválie je pokud nemá storage_id a současně má AIP_ID -->
   <#list node.items as item>
     <#switch item.type.code>
@@ -759,8 +759,7 @@
     <ead:descriptivenote><ead:p>${dao.label}</ead:p></ead:descriptivenote>
   </#if>
   </ead:dao>
-  </#list>
-  
+  </#list>  
 </#macro>
 
 <#-- Zápis charakteristiky 3.3 -->
