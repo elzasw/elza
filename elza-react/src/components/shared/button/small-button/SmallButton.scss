@@ -1,3 +1,4 @@
+@import "../../../../variables.scss";
 .small-button {
     cursor: pointer;
     padding: 3px;
@@ -8,6 +9,6 @@
     align-items: center;
 
     &:hover {
-        background-color: #ddd;
+        background-color: $shade-4;
     }
 }

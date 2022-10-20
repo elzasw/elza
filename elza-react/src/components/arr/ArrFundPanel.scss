@@ -8,12 +8,13 @@
 
     font-size: 13px;
     font-weight: bold;
-    background-color: #EA9999;
+    color: $fg-shade-4;
+    background-color: $color-red;
     padding: 4px 4px 4px 10px;
     border-bottom: 1px solid $fa-file-tree-border;
 
     &.read-mode {
-        background-color: #B6D7A8;
+        background-color: $color-green;
     }
 
     .lock {

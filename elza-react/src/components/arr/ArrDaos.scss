@@ -28,7 +28,7 @@
             .tree-list {
                 flex-grow: 1;
                 background-color: $node-form-dao;
-                border: 1px solid #DDDDDD;
+                border: 1px solid $border-color;
                 .item {
                     .item-text {
                         overflow: hidden;

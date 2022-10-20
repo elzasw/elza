@@ -1,17 +1,18 @@
+@import "../../../../variables.scss";
 .ap-type {
-    background-color: #333333;
-    color: #fff9;
+    background-color: $contrast-color;
+    color: #{$contrast-color-fg}; /* TODO alpha*/
     font-size: 1.2em;
     padding: 5px 10px;
 
     &.new, &.old {
-        color: #333;
+        color: $contrast-color-fg;
         border-style: solid;
         border-width: 1px 0;
 
         .hierarchy-level {
             &.main {
-                color: #333;
+                color: $contrast-color-fg;
                 font-weight: bold;
             }
         }
@@ -25,12 +26,12 @@
         background-color: #f5dede;
         border-color: #de8f8f;
         text-decoration: line-through;
-        text-decoration-color: #3338;
+        text-decoration-color: #{$contrast-color}; /*TODO alpha*/
     }
 
     .hierarchy-level {
         &.main {
-            color: #ffffff;
+            color: $contrast-color-fg;
             font-weight: bold;
         }
     }

@@ -15,20 +15,25 @@ $ribbon-sm-btn-height: "calc(100% / #{$ribbon-sm-grp-lines})";
 
 $ribbon-btn-bg: transparent;
 $ribbon-btn-col: inherit;
-$ribbon-btn-hover-bg: #ccc;
+$ribbon-btn-hover-bg: $shade-5;
 $ribbon-btn-focus-bg: $ribbon-btn-hover-bg;
-$ribbon-btn-active-bg: #bbb;
+$ribbon-btn-active-bg: $shade-6;
 
-$ribbon-user-btn-bg: #333;
-$ribbon-user-btn-col: #ddd;
-$ribbon-user-btn-hover-bg: #333;
+$ribbon-user-btn-bg: $contrast-color;
+$ribbon-user-btn-col: $contrast-color-fg;
+$ribbon-user-btn-hover-bg: $contrast-color;
 
-$ribbon-splitter-col: #ddd;
+$ribbon-splitter-col: $shade-4;
 
 .ribbon-menu-container {
     display: flex;
     background: $ribbon-bg;
     height: 100%;
+
+    .accented & {
+        background: $accent-color;
+        color: $accent-color-fg;
+    }
 
     .user-menu-container {
         display: flex;
@@ -58,7 +63,6 @@ $ribbon-splitter-col: #ddd;
     }
 
     .ribbon-menu.btn-toolbar{
-        background: $ribbon-bg;
         height: 100%;
         font-size:$ribbon-font-size;
         display:flex;
@@ -92,7 +96,7 @@ $ribbon-splitter-col: #ddd;
                     z-index:50;
                 }
             }
-            border-right: 1px solid $ribbon-splitter-col;
+            border-right: 1px solid $border-color;
 
             &:last-child{
                 border-right: none;
@@ -257,7 +261,7 @@ $ribbon-splitter-col: #ddd;
                     position: absolute;
                     right:2em;
                     bottom:2%;
-                    color:#888;
+                    color:$shade-7;
                     text-align: right;
                     font-size: 1em;
                     font-style: italic;

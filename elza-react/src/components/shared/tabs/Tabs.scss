@@ -35,7 +35,8 @@ $tabs-height: 28px;
                 padding: 5px;
                 font-size: 12px;
                 font-weight: normal;
-                border: 1px solid #ddd;
+                border: 1px solid $shade-3;
+                color: $fg-color;
 
                 span {
                     overflow: hidden;
@@ -68,10 +69,14 @@ $tabs-height: 28px;
 
                 &.active {
                     background: $tabs-tab-active-bg;
+                    color: $fg-color;
+                    border-color: $border-color;
                 }
 
                 &:hover {
                     background: $tabs-tab-active-bg;
+                    color: $fg-color;
+                    border-color: $border-color;
                 }
             }
         }

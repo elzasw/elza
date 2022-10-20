@@ -1,7 +1,7 @@
 @import "../../../variables.scss";
 
 .floating-menu {
-    background: white;
+    background: $shade-0;
     position: fixed;
     z-index: 9999;
 }
