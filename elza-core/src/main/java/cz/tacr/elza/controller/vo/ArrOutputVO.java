@@ -3,6 +3,8 @@ package cz.tacr.elza.controller.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 
@@ -76,11 +78,14 @@ public class ArrOutputVO {
 		outputTypeId = output.getOutputType().getOutputTypeId();
 		createDate = (Date.from(output.getCreateChange().getChangeDate().toInstant()));
 		version = output.getVersion();
-		if(output.getDeleteChange()!=null) {
+		if (output.getDeleteChange() != null) {
           deleteDate = Date.from(output.getDeleteChange().getChangeDate().toInstant());
 		}
 		if (output.getOutputFilter() != null) {
 		    outputFilterId = output.getOutputFilter().getOutputFilterId();
+        }
+        if (CollectionUtils.isNotEmpty(output.getOutputResults())) {
+            generatedDate = Date.from(output.getOutputResults().get(0).getChange().getChangeDate().toInstant());
         }
 	}
 
