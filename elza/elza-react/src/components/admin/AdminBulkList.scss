@@ -1,16 +1,17 @@
+@import "../../variables.scss";
 .panel-group {
     margin-bottom: 0;
 
     &.open {
         .panel {
             .panel-heading {
-                background: #C0C0C0;
+                background: $shade-5;
 
                 .panel-title {
                     font-weight: bold;
 
                     &:hover {
-                        background-color: #ddd;
+                        background-color: $shade-4;
                     }
                 }
             }
@@ -19,14 +20,14 @@
 
     .panel {
         border: none;
-        border-bottom: 1px solid #f8f8f8;
+        border-bottom: 1px solid $shade-1;
         box-shadow: none;
 
         .panel-heading {
             border: none;
             padding: 0;
             cursor: pointer;
-            background-color: #E7E7E7;
+            background-color: $shade-3;
 
             .panel-title {
                 font-size: 1em;

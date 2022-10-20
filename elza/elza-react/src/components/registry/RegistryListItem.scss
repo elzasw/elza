@@ -2,16 +2,11 @@
 
 .registry-list-item {
 	padding: 5px;
-	border-bottom: 1px solid #EEEEEE;
 	display: flex;
 	flex-shrink: 0;
 	flex-grow: 1;
 	flex-direction: column;
-    color: #333;
-
-	&.empty {
-		border-bottom: #c2c2c2 1px solid;
-	}
+    color: $fg-color;
 
     > div {
         display: flex;
@@ -58,6 +53,6 @@
 
 .listbox-item {
     .invalid {
-        color: #999999;
+        color: $shade-7;
     }
 }

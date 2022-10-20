@@ -38,6 +38,11 @@ $node-panel-children-height: 15%;
             flex-grow: 1;
             border: 1px solid $node-panel-border;
 
+            &:focus {
+                border-color: $accent-color;
+                box-shadow: 0 0 0px 1px $accent-color;
+            }
+
             .inner-wrapper {
                 height: 100%;
 
@@ -149,6 +154,11 @@ $node-panel-children-height: 15%;
             overflow-y: auto;
             border: 1px solid $node-panel-children-border;
             background: $node-panel-children-bg;
+
+            &:focus {
+                border-color: $accent-color;
+                box-shadow: 0 0 0px 1px $accent-color;
+            }
         }
     }
 }

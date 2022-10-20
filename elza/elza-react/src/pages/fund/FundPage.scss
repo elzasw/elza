@@ -2,7 +2,7 @@
 
 .fund-page {
     .splitter-right {
-        border-left: 1px solid #DDDDDD;
+        border-left: 1px solid $border-color;
     }
 
     .fund-list-container {
@@ -16,7 +16,7 @@
 
         .fund-listbox {
             background: $fa-file-tree-bg-list;
-            border: 1px solid $fa-file-tree-border;
+            /* border: 1px solid $fa-file-tree-border; */
             flex-grow: 1;
             margin: 0;
             overflow: hidden;
@@ -26,7 +26,6 @@
                 //padding: 5px;
                 //height: 40px;
                 overflow:hidden;
-                border-bottom: 1px solid #eee;
                 padding:5px;
 
                 .item-row{
@@ -62,15 +61,15 @@
                         }
 
                         &:hover {
-                            background-color: #6fa8dc;
-                            color: white;
+                            background-color: $shade-2;
+                            color: $fg-color;
                         }
                     }
                     .link{
                         //color:$color-link;
 
                         &:hover{
-                            color:lighten($color-link,20%);
+                            color:$color-link;
                             text-decoration: underline;
                         }
                     }
