@@ -1981,6 +1981,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in (
+        // ZP5.2.3 Způsob a forma dochování
+        "ZP2015_STORAGE_COND",
         // ZP5.7.4 Počet otisků původní a současný
         "ZP2015_IMPRINT_COUNT",
         // nastaveni vztahu
@@ -2972,7 +2974,7 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "Doporučené prvky pro otisky v KAT (jednotlivost)"
+rule "Povinné prvky pro otisky v KAT (jednotlivost)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -2989,7 +2991,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_STORAGE_COND"
     ) )
 then
-  $itemType.setType(RulItemType.Type.RECOMMENDED);
+  $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
 rule "Povinné role entit pro typáře v INV (jednotlivost)"
