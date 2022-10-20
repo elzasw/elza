@@ -1848,8 +1848,6 @@ when $activeLevel: ActiveLevel( hasChildren && $ownItems:ownDescItems)
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
     $itemType: RulItemTypeExt( code in (
-        // ZP5.2.3 Způsob a forma dochování
-        "ZP2015_STORAGE_COND",
         // ZP5.2.4 Rozměry, hmotnost, velikost, množství 
         "ZP2015_SIZE", 
         // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
@@ -1868,8 +1866,6 @@ when $activeLevel: ActiveLevel( !hasChildren && $ownItems:ownDescItems )
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
     $itemType: RulItemTypeExt( code in (
-        // ZP5.2.3 Způsob a forma dochování
-        "ZP2015_STORAGE_COND",
         // ZP5.2.4 Rozměry, hmotnost, velikost, množství 
         "ZP2015_SIZE", 
         // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
@@ -2974,6 +2970,26 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Doporučené prvky pro otisky v KAT (jednotlivost)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
+                   "ZP2015_UNIT_TYPE_OTD"
+    ) ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+    // Rodic je KAT
+    $level: Level( $items: descItems )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
+    // nastaveni prvku
+    $itemType: RulItemTypeExt( code in (
+        // ZP5.2.3 Způsob a forma dochování
+        "ZP2015_STORAGE_COND"
+    ) )
+then
+  $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Povinné role entit pro typáře v INV (jednotlivost)"
