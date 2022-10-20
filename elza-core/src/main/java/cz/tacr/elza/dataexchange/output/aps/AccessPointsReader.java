@@ -73,6 +73,7 @@ public class AccessPointsReader implements ExportReader {
                         }
                     }
 
+                    // Load items
                     ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {
                         @Override
                         protected void onCompleted() {
@@ -85,6 +86,20 @@ public class AccessPointsReader implements ExportReader {
                         itemLoader.addRequest(part.getPartId(), itd);
                     }
                     itemLoader.flush();
+
+                    // Load indexes
+                    IndexDispatcher indxd = new IndexDispatcher() {
+                        @Override
+                        protected void onCompleted() {
+                            apInfo.setIndexes(this.getPartIndexMap());
+                        }
+                    };
+                    IndexLoader indexLoader = new IndexLoader(context, em, 1000);
+                    for (ApPart part : parts) {
+                        indexLoader.addRequest(part.getPartId(), indxd);
+                    }
+                    indexLoader.flush();
+
                     os.addAccessPoint(apInfo);
                 }
             };

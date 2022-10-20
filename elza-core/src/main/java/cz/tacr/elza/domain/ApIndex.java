@@ -1,8 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -15,6 +12,9 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+
 @Entity(name = "ap_index")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApIndex implements AccessPointCacheSerializable {
@@ -22,6 +22,7 @@ public class ApIndex implements AccessPointCacheSerializable {
     public static final String VALUE = "value";
     public static final String INDEX_TYPE = "indexType";
     public static final String PART = "part";
+    public static final String PART_ID = "partId";
 
     @Id
     @GeneratedValue

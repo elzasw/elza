@@ -103,13 +103,14 @@ public class CamExportBuilder implements ExportBuilder {
                 apDataService,
                 apInfo.getApState().getScope());
 
+        // Copy received items
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
         Map<Integer, Collection<ApItem>> items = apInfo.getItems();
         if (items != null) {
             items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
         }
 
-        EntityXml ent = exb.build(apInfo.getParts(), itemsConv);
+        EntityXml ent = exb.build(apInfo.getParts(), itemsConv, apInfo.getIndexes());
         this.entities.getList().add(ent);
     }
 
