@@ -206,6 +206,7 @@
                 <type code="ZP2015_SOURCES" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
+                <type code="ZP2015_AP_REF" width="0"/>
                 <!-- Matrika -->
                 <type code="ZP2015_RECORD_TYPE" width="1"/>
                 <type code="ZP2015_GEO_REF" width="0"/>
