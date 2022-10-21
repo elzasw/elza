@@ -208,19 +208,22 @@ $descItemDraggerSize: 6px;
                                 .desc-item-spec {
                                     width: 100%;
                                     &.error {
-                                        background: $node-form-value-error-bg;
+                                        box-shadow: 0 0 0 2px $node-form-value-error-bg;
+                                        border-color: $node-form-value-error-bg;
                                     }
                                 }
                                 .desc-item-value {
                                     width: 100%;
                                     .error {
                                         &input, input, &textarea, textarea, &select, select {
-                                            background: $node-form-value-error-bg;
+                                            box-shadow: 0 0 0 2px $node-form-value-error-bg;
+                                            border-color: $node-form-value-error-bg;
                                         }
                                     }
                                     input, textarea, select {
                                         &.error {
-                                            background: $node-form-value-error-bg;
+                                            box-shadow: 0 0 0 2px $node-form-value-error-bg;
+                                            border-color: $node-form-value-error-bg;
                                         }
                                     }
                                     .desc-item-value-actions {
