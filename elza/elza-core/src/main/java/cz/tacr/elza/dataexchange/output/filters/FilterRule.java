@@ -11,7 +11,6 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Def;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Result;
-import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -133,13 +132,12 @@ public class FilterRule {
         return hiddenItemTypes;
     }
 
-    public boolean canApply(StructObjectInfo soi) {
+    public boolean canApply(Collection<? extends ArrItem> items) {
         if (itemType != null) {
-            Collection<ArrItem> soiItems = soi.getItems();
-            if (soiItems == null) {
+            if (items == null) {
                 return false;
             }
-            for (ArrItem soiItem : soiItems) {
+            for (ArrItem soiItem : items) {
                 if (itemType.getItemTypeId().equals(soiItem.getItemTypeId())) {
                     if (itemSpec != null) {
                         if (!itemSpec.getItemSpecId().equals(soiItem.getItemSpecId())) {
