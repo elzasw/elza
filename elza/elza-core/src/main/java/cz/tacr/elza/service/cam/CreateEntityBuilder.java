@@ -52,7 +52,7 @@ public class CreateEntityBuilder extends BatchUpdateBuilder {
                                  Map<Integer, List<ApItem>> itemMap) {
         Validate.isTrue(CollectionUtils.isEmpty(trgList));
 
-        PartsXml xmlParts = createParts(partList, itemMap);
+        PartsXml xmlParts = createParts(partList, itemMap, null);
         // Check if parts exists
         if(xmlParts==null||xmlParts.getList().size()==0) {
         	return false;

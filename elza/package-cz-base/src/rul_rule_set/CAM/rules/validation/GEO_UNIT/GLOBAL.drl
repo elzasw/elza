@@ -92,7 +92,7 @@ rule "R_BDG_004 část obce, ulice, náměstí, nábřeží, městská část/ob
 when $ae: Ap($aeParts : parts)
      not (Part(type == PartType.PT_EXT) from $aeParts)
      $part: Part(type == PartType.PT_BODY) from $aeParts
-     $i: Item(type == "GEO_TYPE", spec in ("GT_MUNIPPART","GT_STREET","GT_SQUARE","GT_WATERFRONT","GT_CITYDISTRICT", "GT_CADASTRALTERRITORY")) from $part.items
+     $i: Item(type == "GEO_TYPE", spec in ("GT_MUNIPPART","GT_STREET","GT_SQUARE","GT_WATERFRONT","GT_CITYDISTRICT")) from $part.items
      $geo: GeoModel(country in ("SK", "SVK", "CZ", "CZE"), parentGeoType not in ("GT_MUNIP","GT_MUNIPDISTR"))
 then
     results.addError("Nezaniklá entita v ČR/SR typu část obce, ulice, náměstí, nábřeží, městská část/obvod musí být zařazena pod obec nebo obec s charakterem okresu.");

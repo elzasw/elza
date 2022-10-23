@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.output.aps;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
@@ -12,6 +13,7 @@ import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
 import cz.tacr.elza.dataexchange.output.writer.PartsApInfo;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
@@ -27,6 +29,8 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
     private ArrayList<ApPart> parts = new ArrayList<>();
 
     private Map<Integer, Collection<ApItem>> partItemsMap; // partId, items
+
+    private Map<Integer, Collection<ApIndex>> partIndexMap;
 
     // --- getters/setters ---
 
@@ -78,7 +82,7 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
     }
 
     @Override
-    public void setItems(Map<Integer, Collection<ApItem>> items) {
+    public void setItems(final Map<Integer, Collection<ApItem>> items) {
         partItemsMap = items;
     }
 
@@ -90,5 +94,26 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
         Collection<ApItem> items = partItemsMap.get(partId);
         Validate.notNull(items, "Items for part not found, partId: %i", partId);
         return items;
+    }
+
+    public Map<Integer, Collection<ApIndex>> getIndexes() {
+        return partIndexMap;
+    }
+
+    public void setIndexes(final Map<Integer, Collection<ApIndex>> indexMap) {
+        this.partIndexMap = indexMap;
+
+    }
+
+    /**
+     * Return list of indexes for the part
+     * 
+     * @param partId
+     * @return
+     */
+    public Collection<ApIndex> getIndexesForPart(Integer partId) {
+        Collection<ApIndex> items = partIndexMap.get(partId);
+        return items == null ? Collections.emptyList() : items;
+
     }
 }

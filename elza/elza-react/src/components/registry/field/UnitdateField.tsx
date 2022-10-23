@@ -1,7 +1,7 @@
 import React, {FC} from 'react';
 import moment from "moment";
 import {Datace} from "../../shared/datace/datace-types";
-import parse from "../../shared/datace/datace";
+import {parse} from "components/shared/datace/datace";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
 import {i18n} from "../../shared";
@@ -16,6 +16,17 @@ const validateUnitDateInput = (input: Datace) => {
         if (input.to) {
             validateUnitDateInput(input.from);
             validateUnitDateInput(input.to);
+            if(input.from.c){
+                input.from.y = (input.from.c * 100) - 99;
+            }
+            if(input.to.c){
+                input.to.y = input.to.c * 100;
+                input.to.M = 11;
+                input.to.d = 31;
+                input.to.h = 23;
+                input.to.m = 59;
+                input.to.s = 59;
+            }
             if (input.from.bc && input.from.y) {
                 input.from.y *= -1;
             }

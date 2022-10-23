@@ -19,6 +19,7 @@ import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -44,7 +45,8 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         this.apState = apState;
     }
 
-    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap) {
+    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap,
+                           Map<Integer, Collection<ApIndex>> indexMap) {
 
         EntityXml ent = new EntityXml();
         ent.setEid(new EntityIdXml(apState.getAccessPointId()));
@@ -82,7 +84,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         ent.setRevi(revInfo);
 
         // Prepare empty parts
-        ent.setPrts(this.createParts(partList, itemMap));
+        ent.setPrts(this.createParts(partList, itemMap, indexMap));
 
         return ent;
     }

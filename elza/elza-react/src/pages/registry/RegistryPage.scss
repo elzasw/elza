@@ -126,7 +126,7 @@ $registry-panel-actions-height: 26px;
 
     div.desc-item-type-label {
         .actions {
-            background: #F5F5F5;
+            background: $shade-1;
             height: $registry-panel-actions-height;
             display: inline-block;
             .btn {

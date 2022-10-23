@@ -2,27 +2,44 @@ package cz.tacr.elza.print;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.util.CollectionUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.aps.AccessPointsReader;
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
+import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
-import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.ap.ExternalId;
@@ -33,11 +50,9 @@ import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
+import cz.tacr.elza.ws.core.v1.ExportRequestException;
 
 /**
  * One record from registry
@@ -48,23 +63,19 @@ public class Record {
 
     private final ApAccessPoint ap;
 
+    final private ApState apState;
+
     private final RecordType type;
 
     private final StaticDataProvider staticData;
-
-    private final ApStateRepository stateRepository;
 
     private final ApBindingRepository bindingRepository;
 
     private final ApBindingStateRepository bindingStateRepository;
 
-    private final ApPartRepository partRepository;
-
     private final ApItemRepository itemRepository;
 
     private final ApIndexRepository indexRepository;
-
-    private final AccessPointCacheService accessPointCacheService;
     
     private final ElzaLocale elzaLocale;
 
@@ -76,29 +87,27 @@ public class Record {
 
     private OutputItemConvertor outputItemConvertor;
 
-    public Record(final ApAccessPoint ap,
+    final private OutputContext outputContext;
+
+    public Record(final OutputContext outputContext,
+                  final ApState apState,
                   final RecordType type,
-                  final StaticDataProvider staticData,
-                  final ApStateRepository stateRepository,
                   final ApBindingRepository bindingRepository,
-                  final ApPartRepository partRepository,
                   final ApItemRepository itemRepository,
                   final ApBindingStateRepository bindingStateRepository,
                   final ApIndexRepository indexRepository,
                   final OutputItemConvertor outputItemConvertor,
-                  final AccessPointCacheService accessPointCacheService,
                   final ElzaLocale elzaLocale) {
-        this.ap = ap;
+        this.outputContext = outputContext;
+        this.apState = apState;
+        this.ap = apState.getAccessPoint();
         this.type = type;
-        this.staticData = staticData;
-        this.stateRepository = stateRepository;
+        this.staticData = outputContext.getStaticData();
         this.bindingRepository = bindingRepository;
-        this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
         this.outputItemConvertor = outputItemConvertor;
-        this.accessPointCacheService = accessPointCacheService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -106,12 +115,12 @@ public class Record {
      * Copy constructor
      */
     protected Record(Record src) {
+        this.outputContext = src.outputContext;
+        this.apState = src.apState;
         this.ap = src.ap;
         this.type = src.type;
         this.staticData = src.staticData;
-        this.stateRepository = src.stateRepository;
         this.bindingRepository = src.bindingRepository;
-        this.partRepository = src.partRepository;
         this.itemRepository = src.itemRepository;
         this.eids = src.eids;
         this.preferredPart = src.preferredPart;
@@ -119,7 +128,6 @@ public class Record {
         this.bindingStateRepository = src.bindingStateRepository;
         this.indexRepository = src.indexRepository;
         this.outputItemConvertor = src.outputItemConvertor;
-        this.accessPointCacheService = src.accessPointCacheService;
         this.elzaLocale = src.elzaLocale;
     }
 
@@ -189,7 +197,7 @@ public class Record {
             return;
         }
 
-        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(ap.getAccessPointId());
+        CachedAccessPoint cachedAccessPoint = this.outputContext.findCachedAccessPoint(ap.getAccessPointId());
         if (cachedAccessPoint == null) {
             throw new IllegalStateException("ApAccessPoint not found in CachedAccessPoint, apAccessPointId=" + ap.getAccessPointId());
         }
@@ -316,5 +324,114 @@ public class Record {
 
     public void setParts(List<Part> parts) {
         this.parts = parts;
+    }
+
+    /**
+     * Export entity in given format
+     * 
+     * @param nameSpace
+     * @return
+     * @throws XMLStreamException
+     * @throws ParserConfigurationException
+     */
+    public String exportData(String format) throws Exception {
+        if (CamUtils.CAM_SCHEMA.equals(format)) {
+            return exportDataCam();
+        } else {
+            throw new ExportRequestException("Unrecognized schema: " + format);
+        }
+    }
+
+    private String exportDataCam() throws Exception {
+        /*
+        // fomat CAM
+        CamExportBuilder exportBuilder = new CamExportBuilder(staticData, outputContext.getGroovyService(),
+                outputContext.getSchemaManager(),
+                outputContext.getApDataService());
+
+        ExportContext ec = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
+        ec.addApId(this.ap.getAccessPointId());
+
+        ExportInitHelper eih = outputContext.getExportInitHelper();
+        AccessPointsReader apr = new AccessPointsReader(ec, eih);
+
+        apr.read();
+
+        exportBuilder.buildEntity(writer);
+        */
+        Document xmlDoc = exportXmlDataCam();
+        // rename namespace to cam        
+        LinkedList<org.w3c.dom.Node> xmlNodes = new LinkedList<>();
+        xmlNodes.add(xmlDoc);
+        while (xmlNodes.size() > 0) {
+            org.w3c.dom.Node n = xmlNodes.pop();
+            NodeList childNodes = null;
+            if (n.getNodeType() == org.w3c.dom.Node.DOCUMENT_NODE) {
+                Document doc = (Document) n;
+                childNodes = doc.getChildNodes();
+            } else
+            if (n.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                Element el = (Element) n;
+                String nsUri = el.getNamespaceURI();
+                if (CamUtils.CAM_SCHEMA.equals(nsUri) && el.getPrefix() == null) {
+                    el.setPrefix("cam");
+                }
+                // remove xmlns declaration
+                if (el.hasAttribute("xmlns")) {
+                    el.removeAttribute("xmlns");
+                }
+                childNodes = el.getChildNodes();
+            }
+            if (childNodes != null) {
+                for (int i = 0; i < childNodes.getLength(); i++) {
+                    xmlNodes.add(childNodes.item(i));
+                }
+            }
+        }
+
+        StringWriter writer = new StringWriter();
+        StreamResult sr = new StreamResult(writer);
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+        //transform document to string 
+        transformer.transform(new DOMSource(xmlDoc.getFirstChild()), sr);
+
+        return writer.toString();
+    }
+
+    public org.w3c.dom.Node exportXmlData(String format) throws XMLStreamException, ParserConfigurationException {
+        if (CamUtils.CAM_SCHEMA.equals(format)) {
+            return exportXmlDataCam();
+        } else {
+            throw new ExportRequestException("Unrecognized schema: " + format);
+        }
+    }
+
+    private Document exportXmlDataCam() throws XMLStreamException, ParserConfigurationException {
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder db = factory.newDocumentBuilder();
+        Document xmlDoc = db.newDocument();
+
+        // fomat CAM
+        CamExportBuilder exportBuilder = new CamExportBuilder(staticData, outputContext.getGroovyService(),
+                outputContext.getSchemaManager(),
+                outputContext.getApDataService());
+
+        ExportContext ec = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
+        ec.addApId(this.ap.getAccessPointId());
+
+        ExportInitHelper eih = outputContext.getExportInitHelper();
+        AccessPointsReader apr = new AccessPointsReader(ec, eih);
+
+        apr.read();
+
+        exportBuilder.buildEntity(xmlDoc);
+
+        return xmlDoc;
     }
 }

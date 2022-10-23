@@ -1015,6 +1015,9 @@ var messages = {
     "subNodeDao.dao.files.one": "soubor",
     "subNodeDao.dao.files.few": "soubory",
 
+    "field.unitdate.convertToEstimate.message": "Byla vložena datace velkého rozsahu, pravděpodobně se jedná o odhad. Má se hodnota označit jako odhad?",
+    "field.unitdate.convertToEstimate.title": "Potvrzení datace",
+
     "registry.noSelection.title": "Není vybráno rejstříkové heslo",
     "registry.noSelection.message": "Prosím vyberte rejstříkové heslo ze seznamu nebo vytvořte nové.",
     "registry.addRegistry": "Nová archivní entita",

@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -76,13 +76,17 @@ public class ArrDataString extends ArrData {
         Validate.notNull(stringValue);
         // check any leading and trailing whitespace in data
         String value = stringValue.trim();
-        Validate.isTrue(value.length() == stringValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: ", getDataId());
+        Validate.isTrue(value.length() == stringValue.length(),
+                        "Value obsahuje whitespaces na začátku nebo na konci, dataId:  %s, value: %s", getDataId(),
+                        stringValue);
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f, "Value obsahuje netiskové znaky, dataId: ", getDataId());
+            Validate.isTrue(c >= 0x1f, "Value obsahuje netiskové znaky, dataId: %s, value: %s", getDataId(),
+                            stringValue);
         }
         // check double-space
-        Validate.isTrue(value.indexOf("  ") < 0, "Value obsahuje dvojité mezery, dataId: ", getDataId());
+        Validate.isTrue(value.indexOf("  ") < 0, "Value obsahuje dvojité mezery, dataId: %s, value: %s", getDataId(),
+                        stringValue);
     }
 }

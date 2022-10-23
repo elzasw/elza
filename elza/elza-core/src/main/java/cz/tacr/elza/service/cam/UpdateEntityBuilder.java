@@ -167,7 +167,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             }
         }
 
-        List<PartXml> parts = createNewParts(existingParts, newParts, itemMap);
+        List<PartXml> parts = createNewParts(existingParts, newParts, itemMap, null);
         for (PartXml part : parts) {
             addUpdate(part);
         }

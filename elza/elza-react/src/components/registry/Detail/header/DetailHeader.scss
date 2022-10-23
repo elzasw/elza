@@ -1,3 +1,5 @@
+@import "../../../../variables.scss";
+
 .detail-header-wrapper {
     .detail-descriptions {
         margin: -4px;
@@ -8,23 +10,23 @@
 
             &.revision {
                 background-color: #d7760d;
-                color: white;
+                color: $fg-shade-4;
                 .btn {
-                    background-color: #fff3;
-                    color: white;
+                    background-color: rgba($shade-0,20%);
+                    color: $fg-shade-4;
                 }
             }
             &.to_amend, &.to_approve {
-                background-color: #d7760d;
-                color: white;
+                background-color: $color-orange;
+                color: $fg-shade-4;
             }
             &.replaced, &.invalid {
-                background-color: #d7200d;
-                color: white;
+                background-color: $color-red;
+                color: $fg-shade-4;
             }
             &.new {
-                background-color: #0092ff;
-                color: white;
+                background-color: $color-blue;
+                color: $fg-shade-4;
             }
         }
 
@@ -70,6 +72,7 @@
         }
 
         .collapse-button {
+            background: transparent;
             position: absolute;
             right: 0;
             bottom: 0;
@@ -81,13 +84,13 @@
 
         .btn {
             height: auto;
-            background-color: #ddd;
-            color: #333;
+            background-color: $shade-4;
+            color: $fg-color;
             border-radius: 0 5px 5px 0;
             padding: 0px 8px;
 
             &:hover, &:active, &:focus {
-                background-color: #ccc;
+                background-color: $shade-5;
                 box-shadow: none;
             }
 

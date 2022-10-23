@@ -1,3 +1,4 @@
+@import "../../../../variables.scss";
 .detail-part {
     //padding: 10px;
     &:hover {
@@ -52,17 +53,17 @@
             line-height: 1em;
             border-radius: 5px;
             margin-left: 5px;
-            background-color: #eee;
+            background-color: $shade-2;
         }
     }
     .detail-part-expanded {
         //border-left: 1px solid #ccc;
         padding: 7px 17px;
-        background-color: #eee;
+        background-color: $shade-2;
         margin: 10px;
         margin-top: 5px;
         display: inline-block;
-        border: 1px solid #ccc;
+        border: 1px solid $border-color;
 
     }
     /* .opened { */

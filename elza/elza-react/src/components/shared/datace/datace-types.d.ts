@@ -12,6 +12,7 @@ type DataceElement = {
 type DataceInterval = {
   from?: DataceElement;
   to?: DataceElement;
+  estimate?: boolean;
 };
 
 export type Datace = DataceElement & DataceInterval;

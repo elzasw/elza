@@ -47,8 +47,8 @@
         .item-list-container {
             .item-container {
                 &:nth-child(even){
-                    background-color: #f8f8f8; 
-                    background-color: #0000000b; 
+                    background-color: $shade-1; 
+                    /* background-color: #0000000b;  */
                 }
             }
         }
