@@ -36,6 +36,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
@@ -52,6 +53,7 @@ import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
@@ -436,7 +438,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
 
-        Map<Integer, List<Integer>> levelRestrMap = new HashMap<>();
+        Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
@@ -444,21 +446,21 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             Validate.notNull(cachedNode);
 
             // get list of restriction id relevant filter conditions
-            List<Integer> restrictionIds = getRestrictionIds(cachedNode);
+            List<ArrItem> restrictionItems = getRestrictionItems(cachedNode);
 
             // expand restriction list to include parent(s) restriction list
             if (nodeId.getParent() != null) {
-                List<Integer> restParentIds = levelRestrMap.get(nodeId.getParent().getArrNodeId());
-                if (restParentIds != null) {
-                    restrictionIds.addAll(restParentIds);
+                List<ArrItem> restParentItems = levelRestrMap.get(nodeId.getParent().getArrNodeId());
+                if (restParentItems != null) {
+                    restrictionItems.addAll(restParentItems);
                 }
             }
 
             // if we have a list - we have to filter
-            if (!restrictionIds.isEmpty()) {
-                levelRestrMap.put(nodeId.getArrNodeId(), restrictionIds);
+            if (!restrictionItems.isEmpty()) {
+                levelRestrMap.put(nodeId.getArrNodeId(), restrictionItems);
 
-                cachedNode = filterNode(cachedNode, restrictionIds);
+                cachedNode = filterNode(cachedNode, restrictionItems);
                 if (cachedNode == null) {
                     // if filter return null according to conditions
                     continue;
@@ -492,32 +494,32 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     /**
-     * Return list of IDs of structured objects with restriction definitions
+     * Return list of items with restriction definitions
      * 
      * @param node
      * @return List<Integer>
      */
-    private List<Integer> getRestrictionIds(RestoredNode node) {
-        List<Integer> restrictionIds = new ArrayList<>();
-        if (filterRules != null) {
-            for (ArrItem item : node.getDescItems()) {
-                RulItemType itemType = item.getItemType();
-                for (cz.tacr.elza.core.data.ItemType i : filterRules.getRestrictionTypes()) {
-                    if (item.getData() == null) {
-                        continue;
-                    }
-                    if (i.getEntity().equals(itemType)) {
-                        ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
-                        restrictionIds.add(dsr.getStructuredObjectId());
-                    }
+    private List<ArrItem> getRestrictionItems(RestoredNode node) {
+        if (filterRules == null) {
+            return Collections.emptyList();
+        }
+        List<ArrItem> restrictionItems = new ArrayList<>();
+        for (ArrItem item : node.getDescItems()) {
+            // RulItemType itemType = item.getItemType();
+            for (cz.tacr.elza.core.data.ItemType i : filterRules.getRestrictionTypes()) {
+                if (item.getData() == null) {
+                    continue;
+                }
+                if (i.getItemTypeId().equals(item.getItemTypeId())) {
+                    restrictionItems.add(item);
                 }
             }
         }
-        return restrictionIds;
+        return restrictionItems;
     }
 
-    private RestoredNode filterNode(RestoredNode node, List<Integer> restrictionIds) {
-        if (filterRules == null || restrictionIds.isEmpty()) {
+    private RestoredNode filterNode(RestoredNode node, List<ArrItem> restrictionItems) {
+        if (filterRules == null || CollectionUtils.isEmpty(restrictionItems)) {
             return node;
         }
 
@@ -526,11 +528,25 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         ApplyFilter filter = new ApplyFilter();
 
-        for (Integer restrictionId : restrictionIds) {
-            StructObjectInfo soi = readSoiFromDB(restrictionId);
+        for (ArrItem restrictionItem : restrictionItems) {
+            cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(restrictionItem.getItemTypeId());
+
+            Collection<? extends ArrItem> soiItems;
+            if (itemType.getDataType().equals(DataType.STRUCTURED)) {
+                ArrData data = restrictionItem.getData();
+                if (data == null) {
+                    continue;
+                }
+                ArrDataStructureRef dsr = (ArrDataStructureRef) data;
+                Integer restrictionId = dsr.getStructuredObjectId();
+                StructObjectInfo soi = readSoiFromDB(restrictionId);
+                soiItems = soi.getItems();
+            } else {
+                soiItems = node.getDescItems();
+            }
 
             for (FilterRule rule : filterRules.getFilterRules()) {
-                processRule(rule, itemsByType, soi, filter);
+                processRule(rule, itemsByType, soiItems, filter);
             }
         }
 
@@ -539,10 +555,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private void processRule(FilterRule rule, 
                              Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
-                             StructObjectInfo soi, 
+                             Collection<? extends ArrItem> restrItems,
                              ApplyFilter filter) {
 
-        if (!rule.canApply(soi)) {
+        if (!rule.canApply(restrItems)) {
             // rule does not apply for this soi
             return;
         }
