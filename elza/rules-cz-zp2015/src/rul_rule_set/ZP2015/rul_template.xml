@@ -60,4 +60,11 @@
         <directory>INVENTAR_EAD</directory>
         <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
     </template>
+    <template code="ZP2015_MANIP_SEZNAM_EAD" output-type="ZP2015_MANIP_SEZNAM" 
+              mime-type="application/xml" extension="xml">
+        <name>Publikace do EAD</name>
+        <engine>FREEMARKER</engine>
+        <directory>INVENTAR_EAD</directory>
+        <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
+    </template>
 </templates>
