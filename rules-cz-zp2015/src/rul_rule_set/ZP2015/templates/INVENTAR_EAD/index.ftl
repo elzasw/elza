@@ -570,6 +570,8 @@
   <#local needsCharakteristikaJP=false>
   <#-- Určení počtu datací -->
   <#local unitDates=[]>
+  <#local unitTitles=[]>
+  <#local unitPublicTitles=[]>
   <#local languages=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
@@ -595,7 +597,10 @@
         </#if>
         <#break>        
       <#case "ZP2015_TITLE">
-        <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
+        <#local unitTitles=unitTitles+[item]>
+        <#break>
+      <#case "ZP2015_TITLE_PUBLIC">
+        <#local unitPublicTitles=unitPublicTitles+[item]>
         <#break>
       <#case "ZP2015_FORMAL_TITLE">
         <#lt>  <ead:unittitle localtype="FORMAL_TITLE">${item.serializedValue}</ead:unittitle>
@@ -714,11 +719,27 @@
         <#break>
     </#switch>
   </#list>
-  <#if (needsCharakteristikaJP)>
-    <@writeCharakteristika node />
+  <#if (unitPublicTitles?size>0) >
+    <#--  Obsah s omezenim pristupnosti -->
+    <#list unitPublicTitles as unitPublicTitle>
+      <#lt>  <ead:unittitle audience="external">${unitPublicTitle.serializedValue}</ead:unittitle>
+    </#list>
+    <#if (unitTitles?size>0) >
+      <#list unitTitles as unitTitle>
+        <#lt>  <ead:unittitle audience="internal">${unitTitle.serializedValue}</ead:unittitle>
+      </#list>
+    </#if>
+  <#elseif (unitTitles?size>0) >
+    <#--  Jen samotny obsah -->
+    <#list unitTitles as unitTitle>
+      <#lt>  <ead:unittitle>${unitTitle.serializedValue}</ead:unittitle>
+    </#list>
   </#if>
   <#if (unitDates?size>0) >
     <@writeUnitDates unitDates />
+  </#if>
+  <#if (needsCharakteristikaJP)>
+    <@writeCharakteristika node />
   </#if>
   <#if (languages?size>0) >
     <@writeLangMaterials languages />
