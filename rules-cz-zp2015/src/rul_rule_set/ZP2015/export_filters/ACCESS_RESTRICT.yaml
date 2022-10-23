@@ -2,8 +2,13 @@
 restrictions:
   - ZP2015_RESTRICTION_ACCESS_INLINE
   - ZP2015_RESTRICTION_ACCESS_SHARED
+  - ZP2015_INVALID_RECORD
 
 defs:
+  - when:
+      itemType: ZP2015_INVALID_RECORD
+    result:
+      hiddenLevel: true
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_DAO

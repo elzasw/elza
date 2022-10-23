@@ -1,3 +1,4 @@
+@import "./variables.scss";
 // Simple bootstrap accordion - v případě použití je nutné open panel renderovat se stylem open
 .accordion-simple {
     &.bordered {
@@ -15,27 +16,27 @@
         .panel {
             &.open {
                 .panel-heading {
-                    background: #C0C0C0;
+                    background: $shade-5;
 
                     .panel-title {
                         font-weight: bold;
 
                         &:hover {
-                            background-color: #C0C0C0 !important;
+                            background-color: $shade-5 !important;
                         }
                     }
                 }
             }
 
             border: none;
-            border-bottom: 1px solid #f8f8f8;
+            border-bottom: 1px solid $shade-1;
             box-shadow: none;
 
             .panel-heading {
                 border: none;
                 padding: 0;
                 cursor: pointer;
-                background-color: #E7E7E7;
+                background-color: $shade-3;
 
                 .panel-title {
                     font-size: 1em;
@@ -57,7 +58,7 @@
 
                     &:hover, &:focus{
                         text-decoration: none;
-                        background-color: #E7E7E7 !important;
+                        background-color: $shade-3 !important;
                     }
                 }
             }

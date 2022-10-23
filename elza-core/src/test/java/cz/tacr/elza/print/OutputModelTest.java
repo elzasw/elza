@@ -34,7 +34,6 @@ import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -70,9 +69,6 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     ApBindingRepository bindingRepository;
-
-    @Autowired
-    ApPartRepository partRepository;
 
     @Autowired
     ApItemRepository itemRepository;
@@ -164,9 +160,11 @@ public class OutputModelTest extends AbstractServiceTest {
         ArrDescItem descItemResult2 = createDescItem(itemSVO2, level2.get(0).getNode(), fi.getFundVersionId());
         assertNotNull(descItemResult2);
         helperTestService.waitForWorkers();
-        OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+
+        OutputModel outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 daoLinkRepository, accessPointCacheService, em);
 

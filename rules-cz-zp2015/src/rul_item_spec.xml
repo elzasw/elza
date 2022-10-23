@@ -1393,6 +1393,21 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_89">
+        <name>obrazově a/nebo zvukově zachycená entita</name>
+        <description>obrazově a/nebo zvukově zachycená entita</description>
+        <shortcut>zachycená entita</shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="EVENT"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
     <!-- Zneplatněno viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6146 -->
     <item-spec code="ZP2015_ENTITY_ROLE_64">
         <name>entita zachycená jednotkami popisu</name>
@@ -1422,7 +1437,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_66">
-        <name>osoba/bytost zachycená jednotkou popisu</name>
+        <name>osoba/bytost související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>osoba/bytost</shortcut>
         <item-aptypes>
@@ -1431,7 +1446,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_67">
-        <name>rod/rodina zachycený/á jednotkou popisu</name>
+        <name>rod/rodina související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>rod/rodina</shortcut>
         <item-aptypes>
@@ -1440,7 +1455,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_68">
-        <name>korporace zachycená jednotkou popisu</name>
+        <name>korporace související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>korporace</shortcut>
         <item-aptypes>
@@ -1449,7 +1464,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_69">
-        <name>událost zachycená jednotkou popisu</name>
+        <name>událost související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>událost</shortcut>
         <item-aptypes>
@@ -1458,7 +1473,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_70">
-        <name>dílo/výtvor zachycené/ý jednotkou popisu</name>
+        <name>dílo/výtvor související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>dílo/výtvor</shortcut>
         <item-aptypes>
@@ -1467,7 +1482,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_71">
-        <name>geografický objekt zachycený jednotkou popisu</name>
+        <name>geografický objekt související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>geografický objekt</shortcut>
         <item-aptypes>
@@ -1476,7 +1491,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_72">
-        <name>obecný pojem vztahující se k jednotce popisu</name>
+        <name>obecný pojem související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>obecný pojem</shortcut>
         <item-aptypes>
@@ -1515,7 +1530,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_88 -->    
+    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_89 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>

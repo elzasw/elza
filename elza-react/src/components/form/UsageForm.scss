@@ -1,3 +1,4 @@
+@import "../../variables.scss";
 .reg-usage-form {
     .toggle {
         padding-right: 10px;
@@ -26,13 +27,13 @@
 
         .btn {
             flex-shrink: 0;
-            background-color: #eee;
+            background-color: $shade-2;
             color: currentColor;
-            border-color: #bbb;
+            border-color: $shade-6;
 
             &:disabled {
-                background-color: #ddd;
-                color: #888;
+                background-color: $shade-4;
+                color: $shade-7;
             }
         }
     }
@@ -53,7 +54,7 @@
             display: flex;
             .info-item {
                 padding: 5px;
-                background:#eee;
+                background:$shade-2;
                 border-radius: 5px;
                 margin: 2px;
                 line-height: 1em;

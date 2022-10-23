@@ -351,6 +351,39 @@ public class RulItemType {
     }
 
     /**
+     * Nastaví druh povinnosti vyplnění na maximálně danou hladinu
+     * 
+     * @param type
+     */
+    public void setMaxType(final Type type) {
+        if (this.type != null) {
+            switch (type) {
+            case REQUIRED:
+                if (this.type != Type.REQUIRED) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case RECOMMENDED:
+                if (this.type == Type.IMPOSSIBLE || this.type == Type.POSSIBLE) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case POSSIBLE:
+                if (this.type == Type.IMPOSSIBLE) {
+                    // nothing to change
+                    return;
+                }
+                break;
+            case IMPOSSIBLE:
+                break;
+            }
+        }
+        this.type = type;
+    }
+
+    /**
      * @return příznak udává, zda je atribut opakovatelný
      */
     public Boolean getRepeatable() {

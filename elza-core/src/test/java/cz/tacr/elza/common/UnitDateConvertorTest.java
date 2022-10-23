@@ -1,5 +1,10 @@
 package cz.tacr.elza.common;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -7,8 +12,6 @@ import org.junit.Test;
 
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 public class UnitDateConvertorTest {
 
@@ -117,7 +120,17 @@ public class UnitDateConvertorTest {
         result = UnitDateConvertor.convertToString(unitDate);
         assertEquals(result, "1. st.");
 
+        sourceDate = "(1st)";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals(result, "[1. st.]");
+
         sourceDate = "17st-20st";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals(result, "17. st.-20. st.");
+
+        sourceDate = "17st/20st";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         result = UnitDateConvertor.convertToString(unitDate);
         assertEquals(result, "17. st./20. st.");

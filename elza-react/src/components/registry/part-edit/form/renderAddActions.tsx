@@ -51,7 +51,7 @@ export const renderAddActions = ({
                     key={index}
                     variant={'link'}
                     title={itemType.name}
-                    style={{paddingLeft: 0, color: '#000'}}
+                    style={{paddingLeft: 0}}
                     onClick={() => {
                         handleAddItems(
                             [attr],

@@ -3,10 +3,10 @@
 // Toto nutné upravit i v props komponenty!
 $lazy-listbox-height: 24px;
 .lazy-listbox-wrapper{
-  border: 1px solid #DDDDDD;
+  border: 1px solid $border-color;
   display:block;
   height:100%;
-  background-color: white;
+  background-color: $shade-0;
 
   .lazy-listbox-container {
     width: 100%;

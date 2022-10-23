@@ -3,10 +3,11 @@ package cz.tacr.elza.dataexchange.output.filters;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Def;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 public class FilterRules {
 
@@ -21,12 +22,12 @@ public class FilterRules {
 
     private List<ItemType> initRestrictionTypes(final FilterConfig filterConfig, final StaticDataProvider sdp) {
         List<ItemType> restrictionTypes = new ArrayList<>(filterConfig.getRestrictions().size());
-        for (String structItemTypeCode : filterConfig.getRestrictions()) {
-            ItemType structItemType = sdp.getItemTypeByCode(structItemTypeCode);
-            if (structItemType == null || structItemType.getDataType() != DataType.STRUCTURED) {
-                throw new IllegalStateException("Struct item type is undefined or not STRUCTURED");
+        for (String itemTypeCode : filterConfig.getRestrictions()) {
+            ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+            if (itemType == null) {
+                throw new BusinessException("Item type is undefined: " + itemTypeCode, BaseCode.INVALID_STATE);
             }
-            restrictionTypes.add(structItemType);
+            restrictionTypes.add(itemType);
         }
         return restrictionTypes;
     }

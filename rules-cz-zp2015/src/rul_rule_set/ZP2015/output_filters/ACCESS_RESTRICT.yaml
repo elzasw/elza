@@ -5,6 +5,10 @@ restrictions:
 
 defs:
   - when:
+      itemType: ZP2015_INVALID_RECORD
+    result:
+      hiddenLevel: true
+  - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_DAO
     result:

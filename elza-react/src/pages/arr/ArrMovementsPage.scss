@@ -76,7 +76,7 @@ $movementButtonSize: 8em;
             line-height: 1.2em;
             border:none;
             background-color: $homepage-button-bg;
-            color: #333;
+            color: $fg-color;
 
             &:hover{
                 background-color: $homepage-button-bg-hover;
@@ -84,7 +84,7 @@ $movementButtonSize: 8em;
             .icon{
                 font-size: 2.5em;
                 margin-bottom:0.1em;
-                color:#333;
+                color:$fg-color;
             }
         }
     }

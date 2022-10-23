@@ -165,6 +165,8 @@ function scheduleStoreSave() {
 
 scheduleStoreSave();
 
+const theme = localStorage.getItem("theme") || "light";
+document.getElementsByTagName('body')[0].className = theme;
 // Aplikace
 
 const render = () => {

@@ -9,7 +9,7 @@
     h4{
         font-size: 1.2rem;
         margin-left: 10px;
-        color:#333;
+        color:$fg-color;
         font-weight: bold;
     }
     .button-container{
@@ -110,8 +110,8 @@
                 .fund-label {
                     line-height: 1.1em;
                     padding: 5px;
-                    background: #333;
-                    color: white;
+                    background: $contrast-color;
+                    color: $contrast-color-fg;
                     font-size: 0.8em;
                     font-weight: bold;
                 }
@@ -123,7 +123,7 @@
                 padding: 0;
 
                 &:hover, &:focus {
-                    color: #333;
+                    color: $fg-color;
                     background-color: $homepage-button-bg-hover;
                 }
             }
@@ -154,7 +154,7 @@
 .splitter-home {
     height: 100%;
     .Resizer {
-        background: #000;
+        background: $contrast-color;
         opacity: .2;
         z-index: 1;
         -moz-box-sizing: border-box;

@@ -1,4 +1,4 @@
-<#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+<#ftl output_format="XML" ns_prefixes={"ead":"http://ead3.archivists.org/schema/", "cam":"http://cam.tacr.cz/2019"}><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
 
 <#-- Seznam mapování typů dle 5.9 -->
 <#assign unitTypeMapping = { 
@@ -114,6 +114,166 @@
   "ZP2015_DATE_LEGALLY_EFFECTIVE_TO": "LEGALLY_EFFECTIVE_TO",
   "ZP2015_DATE_VALID_TO": "VALID_TO"  
   }
+>
+
+<#assign linkroleMapping = {
+  "ZP2015_ENTITY_ROLE_1": "AUTHOR",
+  "ZP2015_ENTITY_ROLE_2": "AUTHOR_DIALOGS",
+  "ZP2015_ENTITY_ROLE_3": "AUTHOR_ACCOMP_TEXT",
+  "ZP2015_ENTITY_ROLE_5": "COMPOSER",
+  "ZP2015_ENTITY_ROLE_6": "COMPOSER",
+  "ZP2015_ENTITY_ROLE_7": "CHOREOGRAPHER",
+  "ZP2015_ENTITY_ROLE_8": "AUTHOR_COMMENT",
+  "ZP2015_ENTITY_ROLE_9": "AUTHOR_TOPIC",
+  "ZP2015_ENTITY_ROLE_10": "LYRICIST",
+  "ZP2015_ENTITY_ROLE_11": "AUTHOR_TEXT",
+  "ZP2015_ENTITY_ROLE_12": "TRICKS_EFFECTS",
+  "ZP2015_ENTITY_ROLE_15": "PUBLISHER_OWNER",
+  "ZP2015_ENTITY_ROLE_16": "PUBLISHER",
+  "ZP2015_ENTITY_ROLE_17": "SEALER",
+  "ZP2015_ENTITY_ROLE_18": "PRODUCER",
+  "ZP2015_ENTITY_ROLE_19": "CLIENT",
+  "ZP2015_ENTITY_ROLE_20": "DISTRIBUTOR",
+  "ZP2015_ENTITY_ROLE_21": "RECIPIENT",
+  "ZP2015_ENTITY_ROLE_22": "APPLICANT",
+  "ZP2015_ENTITY_ROLE_23": "HOLDER_SECURITY",
+  "ZP2015_ENTITY_ROLE_24": "SENDER",
+  "ZP2015_ENTITY_ROLE_25": "APPROVER",
+  "ZP2015_ENTITY_ROLE_26": "BUILDER",  
+  "ZP2015_ENTITY_ROLE_27": "DIRECTOR",
+  "ZP2015_ENTITY_ROLE_28": "DIRECTOR",
+  "ZP2015_ENTITY_ROLE_29": "CAMERAMAN",
+  "ZP2015_ENTITY_ROLE_30": "MUSIC_INTERPRETER",
+  "ZP2015_ENTITY_ROLE_31": "PHOTOGRAPHER",
+  "ZP2015_ENTITY_ROLE_32": "REDACTOR",
+  "ZP2015_ENTITY_ROLE_33": "CARTOGRAPHER",
+  "ZP2015_ENTITY_ROLE_34": "EDITOR",
+  "ZP2015_ENTITY_ROLE_36": "DRAFTSMAN",
+  "ZP2015_ENTITY_ROLE_37": "OWNER_AUTHORIZED",
+  "ZP2015_ENTITY_ROLE_38": "CREATOR_TECHNICAL",
+  "ZP2015_ENTITY_ROLE_39": "CREATOR_ARTWORK",
+  "ZP2015_ENTITY_ROLE_40": "DRAMATURG",
+  "ZP2015_ENTITY_ROLE_41": "CUTTER",
+  "ZP2015_ENTITY_ROLE_42": "SOUND",
+  "ZP2015_ENTITY_ROLE_43": "PERFORMER",
+  "ZP2015_ENTITY_ROLE_44": "TRANSLATOR",
+  "ZP2015_ENTITY_ROLE_45": "LECTOR",
+  "ZP2015_ENTITY_ROLE_46": "WITNESS",
+  "ZP2015_ENTITY_ROLE_47": "GUARANTOR",
+  "ZP2015_ENTITY_ROLE_48": "SCRIBE",
+  "ZP2015_ENTITY_ROLE_49": "PROCESSOR_CARRIER",
+  "ZP2015_ENTITY_ROLE_50": "MANUFACTURER_CARRIER",
+  "ZP2015_ENTITY_ROLE_52": "PRINTER",
+  "ZP2015_ENTITY_ROLE_53": "MANUFACTURER",
+  "ZP2015_ENTITY_ROLE_56": "LOCATION_SHOOTING",
+  "ZP2015_ENTITY_ROLE_57": "LOCATION_PUBLISHER",
+  "ZP2015_ENTITY_ROLE_58": "LOCATION_PUBLISHING",
+  "ZP2015_ENTITY_ROLE_60": "PLACE_MANUFACTURE",
+  "ZP2015_ENTITY_ROLE_61": "PLACE_ORIGIN",
+  "ZP2015_ENTITY_ROLE_62": "PLACE_COPY_CREATION",
+  "ZP2015_ENTITY_ROLE_63": "TYPE",
+  "ZP2015_ENTITY_ROLE_64": "ENTITY",
+  "ZP2015_ENTITY_ROLE_65": "ENTITY",
+  "ZP2015_ENTITY_ROLE_66": "ENTITY",
+  "ZP2015_ENTITY_ROLE_67": "ENTITY",
+  "ZP2015_ENTITY_ROLE_68": "ENTITY",
+  "ZP2015_ENTITY_ROLE_69": "ENTITY",
+  "ZP2015_ENTITY_ROLE_70": "ENTITY",
+  "ZP2015_ENTITY_ROLE_71": "ENTITY",
+  "ZP2015_ENTITY_ROLE_72": "ENTITY",
+  "ZP2015_ENTITY_ROLE_73": "AWARD",
+  "ZP2015_ENTITY_ROLE_74": "PERSON_AWARDED",
+  "ZP2015_ENTITY_ROLE_75": "PROPONENT",
+  "ZP2015_ENTITY_ROLE_76": "PERSON_HANDING",
+  "ZP2015_ENTITY_ROLE_77": "PERSON_APPOINTED",
+  "ZP2015_ENTITY_ROLE_78": "POSITION",
+  "ZP2015_ENTITY_ROLE_79": "CORPORATION_ASSIGNED",
+  "ZP2015_ENTITY_ROLE_80": "LOCATION_ASSIGNED", 
+  <#-- "ZP2015_ENTITY_ROLE_81": "katalogizační záznam", -->
+  "ZP2015_ENTITY_ROLE_82": "PLACE_REGISTER",
+  "ZP2015_ENTITY_ROLE_83": "CLASSIFICATION",
+  "ZP2015_ENTITY_ROLE_84": "COPYIST",
+  "ZP2015_ENTITY_ROLE_85": "OWNER",
+  "ZP2015_ENTITY_ROLE_86": "LOCATION_PHOTOGRAPHING",
+  "ZP2015_ENTITY_ROLE_87": "COOPERATION",
+  "ZP2015_ENTITY_ROLE_88": "PLACE_HANDING"
+}
+>
+
+<#assign linktitleMapping = {
+	"AUTHOR": "autor",
+	"AUTHOR_DIALOGS": "autor dialogu",
+	"AUTHOR_ACCOMP_TEXT": "autor doprovodného textu",
+	"COMPOSER": "autor hudby/skladatel",
+	"CHOREOGRAPHER": "autor choreografie/choreograf",
+	"AUTHOR_COMMENT": "autor komentáře",
+	"AUTHOR_TOPIC": "autor námětu",
+	"LYRICIST": "autor textové složky/textař",
+	"AUTHOR_TEXT": "autor textu",
+	"TRICKS_EFFECTS": "autor triků a speciálních efektů",
+	"ARTWORK": "autorské dílo",
+	"PUBLISHER_OWNER": "vydavatel",
+	"PUBLISHER": "vydavatel/nakladatel",
+	"SEALER": "pečetitel",
+	"PRODUCER": "produkční společnost/producent",
+	"CLIENT": "objednavatel/příjemce",
+	"DISTRIBUTOR": "distributor",
+	"RECIPIENT": "příjemce",
+	"APPLICANT": "žadatel",
+	"HOLDER_SECURITY": "držitel cenného papíru",
+	"SENDER": "odesílatel",
+	"APPROVER": "schvalovatel technického výkresu",
+	"BUILDER": "stavitel",
+	"DIRECTOR": "režisér",
+	"SCRIPTWRITER": "scénárista",
+	"CAMERAMAN": "kameraman",
+	"MUSIC_INTERPRETER": "interpret hudby",
+	"PHOTOGRAPHER": "fotograf",
+	"REDACTOR": "redaktor",
+	"CARTOGRAPHER": "kartograf",
+	"EDITOR": "editor",
+	"DRAFTSMAN": "kreslič",
+	"OWNER_AUTHORIZED": "majitel typáře",
+	"CREATOR_TECHNICAL": "tvůrce technického zpracování",
+	"CREATOR_ARTWORK": "tvůrce výtvarné stránky",
+	"DRAMATURG": "dramaturg",
+	"CUTTER": "střih/střihač",
+	"SOUND": "zvuk/zvukař",
+	"PERFORMER": "účinkující",
+	"TRANSLATOR": "překladatel",
+	"LECTOR": "lektor",
+	"WITNESS": "svědek",
+	"GUARANTOR": "ručitel (rukojmě)", 
+	"SCRIBE": "písař",
+	"PROCESSOR_CARRIER": "zpracovatel nosiče záznamu",
+	"MANUFACTURER_CARRIER": "výrobce nosiče záznamu",
+	"PRINTER": "tiskárna/tiskař",
+	"MANUFACTURER": "výrobce",
+	"LOCATION_SHOOTING": "místo natáčení",
+	"LOCATION_PUBLISHER": "místo vydavatele",
+	"LOCATION_PUBLISHING": "místo vydání",
+	"PLACE_MANUFACTURE": "místo výroby jednotky popisu",
+	"PLACE_ORIGIN": "místo vzniku jednotky popisu",
+	"PLACE_COPY_CREATION": "místo vzniku předlohy popisované kopie",
+	"TYPE": "typové označení a název výrobku a typové stavby",
+	"ENTITY": "související entita",
+	"AWARD": "vyznamenání/cena",
+	"PERSON_AWARDED": "nositel vyznamenání/ceny",
+	"PROPONENT": "navrhovatel",
+	"PERSON_HANDING": "předávající",
+	"PERSON_APPOINTED": "osoba jmenovaná / ustanovená do funkce",
+	"POSITION": "funkce",
+	"CORPORATION_ASSIGNED": "korporace výkonu funkce",
+	"LOCATION_ASSIGNED": "místo výkonu funkce",
+	"PLACE_REGISTER": "matriční místo",
+	"CLASSIFICATION": "sekundární klasifikace",
+	"COPYIST": "opisovač",
+	"OWNER": "vlastník",
+	"LOCATION_PHOTOGRAPHING": "místo fotografování",
+	"COOPERATION": "odborná spolupráce",
+	"PLACE_HANDING": "místo předání",
+	"CAPTURED_ENTITY": "obrazově a/nebo zvukově zachycená entita"
+}
 >
 
 <ead:control>
@@ -256,8 +416,11 @@
       <#assign sourcesElem=1>
     </#if>
     <#lt>    <ead:source id="ap${ap.id?c}"><ead:objectxmlwrap>
-    <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
-    <#lt>    </cam:ent>
+<#noautoesc>${ap.exportData("http://cam.tacr.cz/2019")?replace(' xmlns:cam="http://cam.tacr.cz/2019"','','f')}</#noautoesc>
+<#--     <#lt>    ${ap.exportXmlData("http://cam.tacr.cz/2019")}-->
+<#--     <#lt>    <#noautoesc>${ap.exportData("http://cam.tacr.cz/2019")}</#noautoesc>-->
+<#--     <#lt>    <cam:ent><!-- Record id: ${ap.id?c} -->
+<#--    <#lt>    </cam:ent>-->
     <#lt>    </ead:objectxmlwrap></ead:source>
   </#list>
   <#if (sourcesElem==1)>
@@ -407,6 +570,8 @@
   <#local needsCharakteristikaJP=false>
   <#-- Určení počtu datací -->
   <#local unitDates=[]>
+  <#local unitTitles=[]>
+  <#local unitPublicTitles=[]>
   <#local languages=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
@@ -432,7 +597,10 @@
         </#if>
         <#break>        
       <#case "ZP2015_TITLE">
-        <#lt>  <ead:unittitle>${item.serializedValue}</ead:unittitle>
+        <#local unitTitles=unitTitles+[item]>
+        <#break>
+      <#case "ZP2015_TITLE_PUBLIC">
+        <#local unitPublicTitles=unitPublicTitles+[item]>
         <#break>
       <#case "ZP2015_FORMAL_TITLE">
         <#lt>  <ead:unittitle localtype="FORMAL_TITLE">${item.serializedValue}</ead:unittitle>
@@ -551,33 +719,68 @@
         <#break>
     </#switch>
   </#list>
-  <#if (needsCharakteristikaJP)>
-    <@writeCharakteristika node />
+  <#if (unitPublicTitles?size>0) >
+    <#--  Obsah s omezenim pristupnosti -->
+    <#list unitPublicTitles as unitPublicTitle>
+      <#lt>  <ead:unittitle audience="external">${unitPublicTitle.serializedValue}</ead:unittitle>
+    </#list>
+    <#if (unitTitles?size>0) >
+      <#list unitTitles as unitTitle>
+        <#lt>  <ead:unittitle audience="internal">${unitTitle.serializedValue}</ead:unittitle>
+      </#list>
+    </#if>
+  <#elseif (unitTitles?size>0) >
+    <#--  Jen samotny obsah -->
+    <#list unitTitles as unitTitle>
+      <#lt>  <ead:unittitle>${unitTitle.serializedValue}</ead:unittitle>
+    </#list>
   </#if>
   <#if (unitDates?size>0) >
     <@writeUnitDates unitDates />
+  </#if>
+  <#if (needsCharakteristikaJP)>
+    <@writeCharakteristika node />
   </#if>
   <#if (languages?size>0) >
     <@writeLangMaterials languages />
   </#if>
   <#-- zápis DAOs -->
-  <#if (node.daos?size==1)>
-    <@writeDao node node.daos?first /> 
-  </#if>
-  <#if (node.daos?size>1)>
-  <ead:daoset>
-    <#list node.daos as dao>
-      <@writeDao node dao />
-    </#list>
-  </ead:daoset>
+  <#if (node.daos?size>0)>
+    <@writeDaos node />
   </#if>
 </ead:did>
 </#macro>
 
 <#-- Zápis single dao object -->
-<#macro writeDao node dao>
-<ead:dao daotype="unknown" identifier="${dao.code}">
-</ead:dao>
+<#macro writeDaos node>
+  <#local daotype="derived">  
+  <#local hasAipid=false>
+  <#local hasStorageid=false>
+  
+  <#-- Digitální archiválie je pokud nemá storage_id a současně má AIP_ID -->
+  <#list node.items as item>
+    <#switch item.type.code>
+      <#case "ZP2015_AIP_ID">
+        <#local hasAipid=true>
+        <#break>
+      <#case "ZP2015_STORAGE_ID">
+        <#local hasStorageid=true>
+        <#break>
+    </#switch>
+  </#list>
+  
+  <#if (hasAipid && !hasStorageid)>
+    <#local daotype="borndigital">
+  </#if>
+
+  <#list node.daos as dao>
+  <ead:dao daotype="${daotype}" identifier="${dao.code}">
+  <#if (dao.label?length>0&&dao.attachment)>
+    <#-- Popis jen v případě DAO jako příloha, tj. netvoří přímo jednotku popisu -->
+    <ead:descriptivenote><ead:p>${dao.label}</ead:p></ead:descriptivenote>
+  </#if>
+  </ead:dao>
+  </#list>  
 </#macro>
 
 <#-- Zápis charakteristiky 3.3 -->
@@ -691,21 +894,21 @@
 </#macro>
 
 <#macro writeAp ap localtype>
-<#switch ap.type.parentType>
+<#switch ap.type.parentType.code>
   <#case "PERSON">
     <#local tagname="persname">
     <#break>
   <#case "DYNASTY">
     <#local tagname="famname">
     <#break>
-  <#case "GROUP_PARTY">
+  <#case "PARTY_GROUP">
     <#local tagname="corpname">
     <#break>
   <#default>
     <#local tagname="name">
     <#break>
 </#switch>
-        <ead:${tagname} localtype="${localtype}" identifier="${ap.uuid}">          
+        <ead:${tagname} localtype="${localtype}">          
           <ead:part><ead:ref target="ap${ap.id?c}">${ap.preferredPart.value}</ead:ref></ead:part>
         </ead:${tagname}>
 </#macro>
@@ -927,13 +1130,37 @@
     <#case "ZP2015_ITEM_TITLE_REF">
       <#lt>    <ead:relation relationtype="resourcerelation" linktitle="autorské dílo" linkrole="ARTWORK">
       <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
-      <#-- <#lt>      <ead:descriptivenote><ead:p><ead:ref target="ap157" /><ead:p></ead:descriptivenote>-->      
+      <#lt>      <ead:descriptivenote><ead:p><ead:ptr target="ap${item.record.id?c}" /></ead:p></ead:descriptivenote>      
       <#lt>    </ead:relation>
-      <#break>
+      <#break>      
     <#case "ZP2015_ENTITY_ROLE">
-      <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.uuid}" linkrole="${item.specification.code}">
-        <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
-      </ead:relation>
+      <#local relationType="resourcerelation">
+      <#switch item.record.type.parentType.code>
+        <#case "PERSON">
+          <#local relationType="cpfrelation">
+          <#break>
+        <#case "DYNASTY">
+          <#local relationType="cpfrelation">
+          <#break>
+        <#case "PARTY_GROUP">
+          <#local relationType="cpfrelation">
+          <#break>
+        <#case "EVENT">
+          <#local relationType="cpfrelation">
+          <#break>
+      </#switch>
+      <#local linkrole="ENTITY">
+      <#local linktitle="související entita">
+      <#if (linkroleMapping?keys?seq_contains(item.specification.code)) >
+        <#local linkrole=linkroleMapping[item.specification.code]>
+      </#if>
+      <#if (linktitleMapping?keys?seq_contains(linkrole)) >
+        <#local linktitle=linktitleMapping[linkrole]>
+      </#if>
+      <#lt>    <ead:relation relationtype="${relationType}" linktitle="${linktitle}" linkrole="${linkrole}">
+      <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
+      <#lt>      <ead:descriptivenote><ead:p><ead:ptr target="ap${item.record.id?c}" /></ead:p></ead:descriptivenote>      
+      <#lt>    </ead:relation>
       <#break>
     </#switch>
   </#list>
