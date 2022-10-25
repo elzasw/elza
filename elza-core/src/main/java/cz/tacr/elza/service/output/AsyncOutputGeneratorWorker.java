@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -137,6 +138,11 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     @Override
     public AsyncRequest getRequest() {
         return request;
+    }
+
+    @Override
+    public List<AsyncRequest> getRequests() {
+        return Collections.singletonList(request);
     }
 
     @Override
