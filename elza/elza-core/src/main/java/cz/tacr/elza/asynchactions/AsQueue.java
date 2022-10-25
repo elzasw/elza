@@ -27,18 +27,22 @@ public class AsQueue<E> implements IRequestQueue<E> {
     private final Function<E, Integer> fundId;
     private final Map<Integer, NodeQueue<E>> fundMap = new HashMap<>();
     private final Comparator<E> comparator;
+    private final Function<E, Boolean> failed;
 
     private AsQueue(final Queue<NodeQueue<E>> originalQueue,
                     final Function<E, Integer> calcId,
                     final Function<E, Integer> fundId,
+                    final Function<E, Boolean> failed,
                     final Comparator<E> comparator) {
         Validate.notNull(originalQueue);
         Validate.notNull(calcId);
         Validate.notNull(fundId);
         Validate.notNull(comparator);
+        Validate.notNull(failed);
         this.originalQueue = originalQueue;
         this.calcId = calcId;
         this.fundId = fundId;
+        this.failed = failed;
         this.comparator = comparator;
     }
 
@@ -53,8 +57,9 @@ public class AsQueue<E> implements IRequestQueue<E> {
     public static <E> AsQueue<E> of(final Queue<NodeQueue<E>> queue,
                                     final Function<E, Integer> calcId,
                                     final Function<E, Integer> fundId,
+                                    final Function<E, Boolean> failed,
                                     final Comparator<E> comparator) {
-        return new AsQueue<>(queue, calcId, fundId, comparator);
+        return new AsQueue<>(queue, calcId, fundId, failed, comparator);
     }
 
     @Override
@@ -136,6 +141,16 @@ public class AsQueue<E> implements IRequestQueue<E> {
         int i = 0;
         if (nodeQueue != null) {
             while (i < BATCH_SIZE && !nodeQueue.isEmpty()) {
+                if (isFirstFailed(nodeQueue)) {
+                    if (l.size() == 0) {
+                        E item = nodeQueue.poll();
+                        l.add(item);
+                        if (calcId != null && item != null) {
+                            idMap.remove(calcId.apply(item));
+                        }
+                    }
+                    break;
+                }
                 E item = nodeQueue.poll();
                 l.add(item);
                 if (calcId != null && item != null) {
@@ -150,6 +165,11 @@ public class AsQueue<E> implements IRequestQueue<E> {
             }
         }
         return l;
+    }
+
+    private boolean isFirstFailed(NodeQueue<E> nodeQueue) {
+        E item = nodeQueue.peak();
+        return failed.apply(item);
     }
 
     @Override

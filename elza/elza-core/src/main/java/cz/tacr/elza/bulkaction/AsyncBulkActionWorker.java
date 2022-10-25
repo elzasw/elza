@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -65,6 +66,11 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     @Override
     public AsyncRequest getRequest() {
         return request;
+    }
+
+    @Override
+    public List<AsyncRequest> getRequests() {
+        return Collections.singletonList(request);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package cz.tacr.elza.asynchactions;
 
+import java.util.List;
+
 public interface IAsyncWorker extends Runnable {
 
     AsyncRequest getRequest();
@@ -9,5 +11,7 @@ public interface IAsyncWorker extends Runnable {
     Long getRunningTime();
 
     void terminate();
+
+    List<AsyncRequest> getRequests();
 
 }

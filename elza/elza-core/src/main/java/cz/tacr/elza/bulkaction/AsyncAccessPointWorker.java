@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,6 +49,11 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
     @Override
     public AsyncRequest getRequest() {
         return request;
+    }
+
+    @Override
+    public List<AsyncRequest> getRequests() {
+        return Collections.singletonList(request);
     }
 
     @Override

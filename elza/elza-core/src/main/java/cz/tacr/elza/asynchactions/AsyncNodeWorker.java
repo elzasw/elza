@@ -108,10 +108,10 @@ public class AsyncNodeWorker implements IAsyncWorker {
                         processedRequestIds.add(nodeId);
 
                         eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version, processedRequestIds.toArray(new Integer[0])));
-                        eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
                         return null;
                     });
                 }
+                eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
             }
         } catch (Throwable t) {
             logger.error("Validation failed", t);
@@ -136,6 +136,11 @@ public class AsyncNodeWorker implements IAsyncWorker {
     @Override
     public AsyncRequest getRequest() {
         return request;
+    }
+
+    @Override
+    public List<AsyncRequest> getRequests() {
+        return requests;
     }
 
     public Integer getFundVersionId() {
