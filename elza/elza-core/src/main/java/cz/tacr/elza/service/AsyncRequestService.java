@@ -23,7 +23,9 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import cz.tacr.elza.asynchactions.AsQueue;
 import cz.tacr.elza.asynchactions.IRequestQueue;
+import cz.tacr.elza.asynchactions.NodeQueuePriorityComparator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1004,7 +1006,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private static class AsyncNodeExecutor extends AsyncExecutor {
 
         AsyncNodeExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
-            super(AsyncTypeEnum.NODE, executor, RequestQueue.of(new PriorityQueue<>(1000, new NodePriorityComparator()), AsyncRequest::getNodeId), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.NODE, executor, AsQueue.of(new PriorityQueue<>(1000, new NodeQueuePriorityComparator()), AsyncRequest::getNodeId, AsyncRequest::getFundVersionId, new NodePriorityComparator()), txManager, asyncRequestRepository, appCtx, maxPerFund);
         }
 
         @Override

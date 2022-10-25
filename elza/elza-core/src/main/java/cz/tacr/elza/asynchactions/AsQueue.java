@@ -77,6 +77,7 @@ public class AsQueue<E> implements IRequestQueue<E> {
         if (nodeQueue == null) {
             nodeQueue = NodeQueue.of(new PriorityQueue<>(1000, comparator), fundId.apply(e));
             fundMap.put(fundId.apply(e), nodeQueue);
+            originalQueue.add(nodeQueue);
         }
         if (calcId != null) {
             idMap.put(calcId.apply(e), e);
@@ -93,7 +94,7 @@ public class AsQueue<E> implements IRequestQueue<E> {
         if (calcId != null) {
             idMap.remove(calcId.apply(e));
         }
-        boolean remove =  nodeQueue.remove(e);
+        boolean remove = nodeQueue.remove(e);
         if (nodeQueue.isEmpty()) {
             originalQueue.remove(nodeQueue);
             fundMap.remove(nodeQueue.getFundVersion());
@@ -112,6 +113,7 @@ public class AsQueue<E> implements IRequestQueue<E> {
                 if (nodeQueue == null) {
                     nodeQueue = NodeQueue.of(new PriorityQueue<>(1000, comparator), fundId.apply(e));
                     fundMap.put(fundId.apply(e), nodeQueue);
+                    originalQueue.add(nodeQueue);
                 }
                 nodeQueue.add(e);
             }
@@ -132,18 +134,20 @@ public class AsQueue<E> implements IRequestQueue<E> {
         NodeQueue<E> nodeQueue = originalQueue.poll();
         List<E> l = new ArrayList<>();
         int i = 0;
-        while (i < BATCH_SIZE && !nodeQueue.isEmpty()) {
-            E item = nodeQueue.poll();
-            l.add(item);
-            if (calcId != null && item != null) {
-                idMap.remove(calcId.apply(item));
+        if (nodeQueue != null) {
+            while (i < BATCH_SIZE && !nodeQueue.isEmpty()) {
+                E item = nodeQueue.poll();
+                l.add(item);
+                if (calcId != null && item != null) {
+                    idMap.remove(calcId.apply(item));
+                }
+                i++;
             }
-            i++;
-        }
 
-        if (nodeQueue.isEmpty()) {
-            originalQueue.remove(nodeQueue);
-            idMap.remove(nodeQueue.getFundVersion());
+            if (nodeQueue.isEmpty()) {
+                originalQueue.remove(nodeQueue);
+                fundMap.remove(nodeQueue.getFundVersion());
+            }
         }
         return l;
     }
@@ -163,7 +167,36 @@ public class AsQueue<E> implements IRequestQueue<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        return new Iterator<E>() {
+            private final Iterator<E> it = idMap.values().iterator();
+            private E lastNext;
+
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public E next() {
+                lastNext = it.next();
+                return lastNext;
+            }
+
+            @Override
+            public void remove() {
+                if (lastNext != null) {
+                    NodeQueue<E> nodeQueue = findQueueByFundId(lastNext);
+                    if (nodeQueue != null) {
+                        boolean remove = nodeQueue.remove(lastNext);
+                        if (nodeQueue.isEmpty()) {
+                            originalQueue.remove(nodeQueue);
+                            fundMap.remove(nodeQueue.getFundVersion());
+                        }
+                    }
+                }
+                it.remove();
+            }
+        };
     }
 
     @Override
