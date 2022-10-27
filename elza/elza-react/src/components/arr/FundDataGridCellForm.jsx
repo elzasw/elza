@@ -20,11 +20,11 @@ import {WebApiCls as WebApi} from '../../actions/WebApi';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 
 class FundDataGridCellForm extends AbstractReactComponent {
-    subNodeFormRef = null;
     constructor(props) {
         super(props);
 
         this.bindMethods('getFundDataGrid');
+        this.subNodeFormRef = React.createRef(null);
 
         this.state = {
             fundDataGrid: this.getFundDataGrid(props),
@@ -52,7 +52,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
             },
             () => {
                 if (loadingChanged) {
-                    this.subNodeFormRef.initFocus();
+                    this.subNodeFormRef?.current && this.subNodeFormRef.current.initFocus();
                 }
             },
         );
@@ -217,7 +217,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
                 <NodeSubNodeForm
                     singleDescItemTypeEdit
                     singleDescItemTypeId={fundDataGrid.descItemTypeId}
-                    ref={ref => (this.subNodeFormRef = ref)}
+                    ref={this.subNodeFormRef}
                     nodeId={fundDataGrid.parentNodeId}
                     versionId={versionId}
                     selectedSubNodeId={fundDataGrid.nodeId}
