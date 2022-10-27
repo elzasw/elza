@@ -99,8 +99,8 @@ const UnitdateField: FC<Props> = ({name, ...rest}) => {
                 1968<br/>Měsíc: 8.1968<br/>Den: 21.8.1968<br/>Hodiny, minuty, sekundy: 21.8.1968
                 2:43 <i>nebo</i> 21.8.1968 8:23:31<br/><b>Intervaly</b><br/>Roky: 1968-1969<br/>Kombinace:
                 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1969<br/><b>Odhad</b><br/>Definuje se uzavřením hodnoty do kulatých nebo
-                hranatých závorek:<br/>Např.:[16.8.1977] <i>nebo</i> [1990]-1992<br/>Při použití znaku "/" pro oddělení intervalu jsou od i do
-                chápány jako odhad:<br/>Např.:1985/1990<br/><b>Záporná datace</b><br/>Definuje se prefixem: <b>-</b> [znaménko minus]<br/>Např.:
+                hranatých závorek:<br/>Např.: [16.8.1977] <i>nebo</i> [1990]-1992<br/>Při použití znaku "/" pro oddělení intervalu jsou od i do
+                chápány jako odhad:<br/>Např.: 1985/1990<br/><b>Záporná datace</b><br/>Definuje se prefixem: <b>-</b> [znaménko minus]<br/>Např.:
                 -200 <i>nebo</i> -5000-1.st.<br/>
             </Tooltip>
         }
