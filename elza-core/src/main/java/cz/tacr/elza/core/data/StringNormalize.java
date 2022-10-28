@@ -11,7 +11,7 @@ public class StringNormalize {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            sb.append(c >= 0x1f ? c : " ");
+            sb.append(c > 0x1f ? c : " ");
         }
         return sb.toString().replaceAll(" +", " ");
     }
@@ -25,7 +25,7 @@ public class StringNormalize {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            sb.append(c >= 0x1f || c == 0x0D || c == 0x0A ? c : " ");
+            sb.append(c > 0x1f || c == 0x0D || c == 0x0A ? c : " ");
         }
         return sb.toString();
     }

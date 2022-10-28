@@ -9,6 +9,8 @@ import org.apache.commons.lang3.Validate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 
 /**
@@ -76,17 +78,29 @@ public class ArrDataString extends ArrData {
         Validate.notNull(stringValue);
         // check any leading and trailing whitespace in data
         String value = stringValue.trim();
-        Validate.isTrue(value.length() == stringValue.length(),
-                        "Value obsahuje whitespaces na začátku nebo na konci, dataId:  %s, value: %s", getDataId(),
-                        stringValue);
+        if (value.length() != stringValue.length()) {
+            throw new BusinessException("Value contains whitespaces at the begining or end",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", stringValue);
+        }
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f, "Value obsahuje netiskové znaky, dataId: %s, value: %s", getDataId(),
-                            stringValue);
+            if (c <= 0x1f) {
+                throw new BusinessException("Value contains invalid characters.",
+                        BaseCode.PROPERTY_IS_INVALID)
+                                .set("dataId", getDataId())
+                                .set("property", stringValue)
+                                .set("invalidCharacter", Integer.valueOf(c));
+            }
         }
         // check double-space
-        Validate.isTrue(value.indexOf("  ") < 0, "Value obsahuje dvojité mezery, dataId: %s, value: %s", getDataId(),
-                        stringValue);
+        if (value.indexOf("  ") >= 0) {
+            throw new BusinessException("Value contains double spaces.",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", stringValue);
+        }
     }
 }
