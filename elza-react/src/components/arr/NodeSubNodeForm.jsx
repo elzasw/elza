@@ -47,7 +47,6 @@ import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems
 import {TextFragmentsWindow} from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
-import {withRouter} from "react-router";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -82,11 +81,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
         arrPerm: PropTypes.bool,
     };
 
-    refSubNodeForm = null;
-
     constructor(props) {
         super(props);
 
+        this.refSubNodeForm = React.createRef(null);
         this.bindMethods(
             'renderFormActions',
             'handleDeleteNode',
@@ -123,9 +121,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     componentDidMount(){
-        const {history, selectedSubNodeId, dispatch} = this.props;
+        const {dispatch} = this.props;
         dispatch(refExternalSystemsFetchIfNeeded());
-        history.replace(urlNode(selectedSubNodeId));
     }
 
     UNSAFE_componentWillReceiveProps() {
@@ -913,7 +910,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     initFocus() {
-        this.refSubNodeForm && this.refSubNodeForm.initFocus();
+        this.refSubNodeForm?.current && this.refSubNodeForm.current.initFocus();
     }
 
     render() {
@@ -948,7 +945,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             <div className="node-item-form-container">
                 {formActions}
                 <SubNodeForm
-                    ref={ref => (this.refSubNodeForm = ref)}
+                    wrappedComponentRef={this.refSubNodeForm}
                     typePrefix="desc"
                     structureTypes={structureTypes}
                     versionId={versionId}
@@ -1000,4 +997,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default withRouter(connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm));
+export default connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm);
