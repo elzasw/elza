@@ -46,6 +46,17 @@ actions:
       inputType: ZP2015_UNIT_DATE
       bulkRangeType: ZP2015_UNIT_DATE_BULK
       outputType: ZP2015_DATE_RANGE
+    - !SizeCounter
+      # Výpočet metráže
+      excludeWhen:
+        someOf:
+          # Nesmí být nastaven jako pevné spojení s jinou
+          - itemType: ZP2015_ITEM_LINK    
+      storageType: ZP2015_STORAGE_ID
+      sizeType: ZP2015_PACKET_METRAGE
+      outputType: ZP2015_UNITS_AMOUNT
+      outputPostfix: " bm"
+      outputPostfixMissing: " bm. UPOZORNĚNÍ: Prvek Metráž UJ není všude vyplněn."
 
     - !TextAggregation
       inputTypes:
