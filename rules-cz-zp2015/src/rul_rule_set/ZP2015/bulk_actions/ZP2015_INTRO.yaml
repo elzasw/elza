@@ -291,7 +291,7 @@ actions:
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
                  # Zneplatněný záznam
-                 - itemType: ZP2015_INVALID_RECORD                 
+                 - itemType: ZP2015_INVALID_RECORD
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
