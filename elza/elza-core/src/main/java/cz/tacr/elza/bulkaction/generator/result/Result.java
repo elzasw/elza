@@ -3,6 +3,8 @@ package cz.tacr.elza.bulkaction.generator.result;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 /**
  * Výsledek hromadné akce.
  *
@@ -28,8 +30,7 @@ public class Result {
     }
 
     public void addResults(ActionResult result) {
-        if (result != null) {
-            results.add(result);
-        }
+        Validate.notNull(result);
+        results.add(result);
     }
 }
