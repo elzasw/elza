@@ -43,6 +43,7 @@ actions:
         someOf:
           # Nesmí být nastaven jako pevné spojení s jinou
           - itemType: ZP2015_ITEM_LINK    
+          - itemType: ZP2015_INVALID_RECORD
       inputType: ZP2015_UNIT_DATE
       bulkRangeType: ZP2015_UNIT_DATE_BULK
       outputType: ZP2015_DATE_RANGE
@@ -51,7 +52,8 @@ actions:
       excludeWhen:
         someOf:
           # Nesmí být nastaven jako pevné spojení s jinou
-          - itemType: ZP2015_ITEM_LINK    
+          - itemType: ZP2015_ITEM_LINK
+          - itemType: ZP2015_INVALID_RECORD
       storageType: ZP2015_STORAGE_ID
       sizeType: ZP2015_PACKET_METRAGE
       outputType: ZP2015_UNITS_AMOUNT
