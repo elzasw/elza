@@ -159,14 +159,20 @@ class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {node, versionId, history} = this.props;
+        const {node, versionId} = this.props;
         const settings = this.getSettingsFromProps();
 
         this.requestData(versionId, node, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
 
-        history.replace(urlNode(node.selectedSubNodeId));
+    }
+
+    componentDidUpdate(prevProps){
+        const {node, history} = this.props;
+        if(prevProps.node.selectedSubNodeId !== node.selectedSubNodeId){
+            history.replace(urlNode(node.selectedSubNodeId));
+        }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
