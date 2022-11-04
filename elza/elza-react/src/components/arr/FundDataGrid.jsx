@@ -618,12 +618,12 @@ class FundDataGrid extends AbstractReactComponent {
 
     serializeFilter(filter) {
         let s = JSON.stringify(filter);
-        return filter == null || s === '{}' ? null : btoa(s);
+        return filter == null || s === '{}' ? null : btoa(encodeURIComponent(s));
     }
 
     deserializeFilter(str) {
         try {
-            return JSON.parse(atob(str));
+            return JSON.parse(decodeURIComponent(atob(str)));
         } catch (e) {
             console.log("Data filtru se nepodařilo deserializovat", str);
             return {}
