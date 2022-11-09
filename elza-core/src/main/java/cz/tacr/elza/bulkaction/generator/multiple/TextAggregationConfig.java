@@ -18,7 +18,22 @@ public class TextAggregationConfig implements ActionConfig {
 	 */
 	protected boolean createEmpty;
 
-	public boolean isCreateEmpty() {
+    /**
+     * Flag to aggregate data only from root nodes
+     * 
+     * This flag will aggregate only connected nodes and their predecessors.
+     */
+    protected boolean onlyRoots = false;
+
+    public boolean isOnlyRoots() {
+        return onlyRoots;
+    }
+
+    public void setOnlyRoots(boolean onlyRoots) {
+        this.onlyRoots = onlyRoots;
+    }
+
+    public boolean isCreateEmpty() {
 		return createEmpty;
 	}
 

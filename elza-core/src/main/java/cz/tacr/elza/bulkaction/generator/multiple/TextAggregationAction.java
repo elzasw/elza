@@ -2,8 +2,10 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -27,8 +29,6 @@ import cz.tacr.elza.domain.ArrItem;
 /**
  * Akce na agregaci textových hodnot.
  *
- * @author Martin Šlapa
- * @author Petr Pytelka
  * @since 29.06.2016
  */
 @Component
@@ -54,6 +54,11 @@ public class TextAggregationAction extends Action {
      * Seznam textových hodnot
      */
     private List<String> texts = new ArrayList<>();
+
+    /**
+     * Set of root levels
+     */
+    private Set<Integer> parentLevels = new HashSet<>();
 
 	TextAggregationConfig config;
 
@@ -84,6 +89,26 @@ public class TextAggregationAction extends Action {
 
     @Override
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
+        if (typeLevel.equals(TypeLevel.PARENT)) {
+            // store parent ID
+            parentLevels.add(level.getNodeId());
+        }
+
+        if (config.isOnlyRoots()) {
+            // check if root node
+            // it means - has no parent or node is marked as parent
+            if (typeLevel.equals(TypeLevel.CHILD)) {
+                LevelWithItems parentLevel = level.getParent();
+                if (parentLevel != null) {
+                    if (!parentLevels.contains(parentLevel.getNodeId())) {
+                        // child level and not directly connected
+                        // it is not root level
+                        return;
+                    }
+                }
+            }
+        }
+
 		List<ArrDescItem> items = level.getDescItems();
 
 		for (ArrItem item : items) {
