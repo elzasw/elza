@@ -25,7 +25,7 @@ import {
     urlFundActions, urlFundDaos,
     urlFundGrid,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID
 } from "../../constants";
 
 // Nacteni globalni promenne ze <script> v <head>
@@ -213,6 +213,7 @@ class Ribbon extends AbstractReactComponent {
         if (this.props.arr) {
             const arrParts = [];
             if (userDetail.hasRdPage(fundId)) {
+                
                 // právo na čtení
                 arrParts.push(
                     <IndexLinkContainer key="ribbon-btn-arr-index" to={urlFundTree(fundId, versionId)}>
@@ -222,9 +223,10 @@ class Ribbon extends AbstractReactComponent {
                         </BootstrapButton>
                     </IndexLinkContainer>,
                 );
+
                 arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId, versionId)}>
-                        <Button variant={'default'}>
+                    <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId, versionId, this.props.serializedFilter)}>
+                        <Button variant={'default'} className={window.location.pathname.includes(GRID) ? "active" : ""}>
                             <Icon glyph="fa-table" />
                             <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
                         </Button>
@@ -414,8 +416,9 @@ class Ribbon extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, login, userDetail, status} = state;
+    const {focus, login, userDetail, status, arrRegion} = state;
     return {
+        serializedFilter: arrRegion.funds?.[arrRegion.activeIndex]?.fundDataGrid?.serializedFilter,
         focus,
         login,
         userDetail,

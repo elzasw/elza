@@ -191,7 +191,7 @@ export const urlFundBase = (fundId: number, versionId?: number) => {
         : urlFundWithVersion(fundId, versionId);
 }
 
-export const urlNode = (nodeId: number | undefined) => {
+export const urlNode = (nodeId: number | string | undefined) => {
     if (nodeId == null) {
         console.log("url fund tree")
         return URL_FUND_TREE;
@@ -208,8 +208,8 @@ export const urlFundTree = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, TREE);
 }
 
-export const urlFundGrid = (fundId: number, versionId?: number) => {
-    return fundSub(fundId, versionId, GRID);
+export const urlFundGrid = (fundId: number, versionId?: number, filter?: string) => {
+    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter="+filter : ""}`;
 }
 
 export const urlFundMovements = (fundId: number, versionId?: number) => {
