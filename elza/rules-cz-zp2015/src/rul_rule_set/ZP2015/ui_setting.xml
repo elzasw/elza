@@ -143,6 +143,7 @@
                 <type code="ZP2015_FUTURE_UNITS" width="0"/>
                 <!-- 4.4.4 Fyzický stav jednotky popisu a technické požadavky -->
                 <type code="ZP2015_UNIT_CURRENT_STATUS" width="0"/>
+                <type code="ZP2015_UNIT_DAMAGE_TYPE" width="1"/>
                 <!-- 4.5.1 Identifikace předlohy kopie -->
                 <type code="ZP2015_COPY_SOURCE" width="1"/>
                 <!-- 4.5.2 Odkazy na příbuzné dokumenty -->

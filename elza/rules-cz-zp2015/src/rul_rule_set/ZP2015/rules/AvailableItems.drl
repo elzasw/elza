@@ -718,6 +718,7 @@ when
       "ZP2015_UNIT_COPY_RIGHTS",
       // 4.4.4 Fyzický stav jednotky popisu a technické požadavky
       "ZP2015_UNIT_CURRENT_STATUS",
+      "ZP2015_UNIT_DAMAGE_TYPE",
       // ZP 4.5.1 Identifikace předlohy kopie
       "ZP2015_COPY_SOURCE",
       // ZP 4.5.2
@@ -6368,4 +6369,15 @@ when  $activeLevel: ActiveLevel( )
     $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "PP_008 Charakter poškození - specifikace"
+no-loop
+when $itemType: RulItemTypeExt( code in (
+        // Charakter poškození
+        "ZP2015_UNIT_DAMAGE_TYPE"
+        ) )
+     $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
