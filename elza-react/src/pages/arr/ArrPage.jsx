@@ -834,8 +834,8 @@ class ArrPage extends ArrParentPage {
         return (
             <div className="issues-panel">
                 <HorizontalSplitter
-                    top={<LecturingTop fund={activeFund} node={node} />}
-                    bottom={<LecturingBottom fund={activeFund} />}
+                    top={<LecturingTop key={activeFund.id} fund={activeFund} node={node} />}
+                    bottom={<LecturingBottom key={activeFund.id} fund={activeFund} />}
                 />
             </div>
         );
@@ -939,7 +939,7 @@ class ArrPage extends ArrParentPage {
                 key: 'discrepancies',
                 ref: 'fundErrors',
                 name: i18n('arr.panel.title.discrepancies'),
-                render: () => <DiscrepanciesList activeFund={activeFund}/>,
+                render: () => <DiscrepanciesList key={activeFund.id} activeFund={activeFund}/>,
             },
             visiblePolicies: {
                 id: 'visiblePolicies',
