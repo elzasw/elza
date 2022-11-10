@@ -2382,4 +2382,95 @@
         <shortcut>nepřístupné vztahy mezi JP a entitami</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
+    <item-spec code="ZP2015_DAMAGE_FRAGILE">
+        <name>křehký, lámavý</name>
+        <description>křehký, lámavý</description>
+        <shortcut>křehký, lámavý</shortcut>
+        <view-order>1</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_CRACK">
+        <name>trhliny, přelomení</name>
+        <description>trhliny, přelomení</description>
+        <shortcut>trhliny, přelomení</shortcut>
+        <view-order>2</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_MOULD">
+        <name>poškozený plísněmi</name>
+        <description>poškozený plísněmi</description>
+        <shortcut>plíseň</shortcut>
+        <view-order>3</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_INSECT">
+        <name>poškozený hmyzem</name>
+        <description>poškozený hmyzem</description>
+        <shortcut>hmyz</shortcut>
+        <view-order>4</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_RODENT">
+        <name>poškozený hlodavci</name>
+        <description>poškozený hlodavci</description>
+        <shortcut>hlodavci</shortcut>
+        <view-order>5</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_FIRE">
+        <name>poškozený ohněm</name>
+        <description>poškozený ohněm</description>
+        <shortcut>oheň</shortcut>
+        <view-order>6</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_HEAT">
+        <name>poškozený teplem</name>
+        <description>poškozený teplem</description>
+        <shortcut>teplo</shortcut>
+        <view-order>7</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_WATER">
+        <name>poškozený vodou</name>
+        <description>poškozený vodou</description>
+        <shortcut>voda</shortcut>
+        <view-order>8</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_RUST">
+        <name>poškozený rzí</name>
+        <description>poškozený rzí</description>
+        <shortcut>rez</shortcut>
+        <view-order>9</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_ELECTROMAGNETIC">
+        <name>poškozený vlivem elektromagnetického pole</name>
+        <description>poškozený vlivem elektromagnetického pole</description>
+        <shortcut>vliv elektromagnetického pole</shortcut>
+        <view-order>10</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_DUST">
+        <name>poškozený prachem</name>
+        <description>poškozený prachem</description>
+        <shortcut>prach</shortcut>
+        <view-order>11</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_LIGHT">
+        <name>poškozený světlem</name>
+        <description>poškozený světlem</description>
+        <shortcut>světlo</shortcut>
+        <view-order>12</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_OTHER">
+        <name>jiné</name>
+        <description>jiné</description>
+        <shortcut>jiné</shortcut>
+        <view-order>13</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
 </item-specs>
