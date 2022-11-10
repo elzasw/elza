@@ -140,6 +140,11 @@ actions:
         inputType: ZP2015_LANGUAGE
         distinct: true
 
+    # Agregace charakteru poškození
+    - !Copy
+        inputType: ZP2015_UNIT_DAMAGE_TYPE
+        distinct: true
+
     # Agregace příloh
     - !Copy
         inputType: ZP2015_ATTACHMENT
