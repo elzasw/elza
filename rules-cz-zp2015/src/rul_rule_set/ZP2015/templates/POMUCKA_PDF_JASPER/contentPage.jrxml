@@ -268,7 +268,6 @@
 	.setSpecSeparator(": ")
 	.setBlockSeparators("","")
 	.beginBlock()
-		.addValueWithTitle("ZP2015_UNIT_COUNT_TABLE")
 		.addValueWithTitle("ZP2015_DATE_OTHER")
 		.addValueWithTitle("ZP2015_ITEM_TITLE")
 		.addValueWithTitle("ZP2015_PART")
