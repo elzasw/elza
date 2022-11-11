@@ -363,7 +363,7 @@
 		<variableExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></variableExpression>
 	</variable>
 	<variable name="shortDetail" class="java.lang.String">
-		<variableExpression><![CDATA[$V{isRoot} ? $P{rootShortDetailFormatter}.format($P{output}): $P{shortDetailFormatter}.format($F{node})]]></variableExpression>
+		<variableExpression><![CDATA[$P{shortDetailFormatter}.format($F{node})]]></variableExpression>
 	</variable>
 	<variable name="rootDetail" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isRoot} ? $P{rootNodeDetailFormatter}.format($F{node}) : ""]]></variableExpression>

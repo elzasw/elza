@@ -61,6 +61,13 @@
 	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="languageFormatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator(", ")
+	.setBlockSeparators("","; ")
+	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()]]></defaultValueExpression>
+	</parameter>
 	<detail>
 		<band height="50">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -291,6 +298,33 @@
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$P{output}.getItems( java.util.Collections.singletonList("ZP2015_LANGUAGE") ).size()>0]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0f41d8e8-4da9-47bd-9559-16558580bc4d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement markup="none">
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Jazyk:"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement markup="none">
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{languageFormatter}.format( $P{output} )]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="62">
