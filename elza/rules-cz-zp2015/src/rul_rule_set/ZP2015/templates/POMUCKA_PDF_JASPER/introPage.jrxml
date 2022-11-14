@@ -227,7 +227,6 @@
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f25b33fd-65d5-44e6-9ade-da1325840840">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
@@ -391,7 +390,7 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="tablerows" uuid="3ab9dc2b-3276-423f-85d9-17d3ed0466ad">
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource( ((cz.tacr.elza.print.item.ItemJsonTable)$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" )).getTable().getRows()) ]]></dataSourceExpression>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource( ((cz.tacr.elza.print.item.ItemJsonTable)$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" )).getTable().getRows())]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="110" uuid="1e9867f2-4809-4fea-b1e2-8903b2ab2fc5">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
