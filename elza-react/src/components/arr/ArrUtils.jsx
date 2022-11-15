@@ -1,7 +1,7 @@
 /**
  * Utility pro pořádání.
  */
-import {getSetFromIdsList, indexById} from 'stores/app/utils';
+import {getSetFromIdsList, indexById, getMapFromList} from 'stores/app/utils';
 import React from 'react';
 import {dateTimeToString} from 'components/Utils';
 import {i18n} from 'components/shared';
@@ -58,7 +58,7 @@ export function getDescItemsAddTree(
             descItemTypes.push({
                 groupItem: true,
                 id: infoGroup.code,
-                name: infoGroup.code === 'DEFAULT' ? i18n('subNodeForm.descItemGroup.default') : infoGroup.name,
+                name: infoGroup.name,
                 children: itemTypes,
             });
         }

@@ -942,7 +942,7 @@ var messages = {
     "arr.structure.modal.updateMultiple.originalValue": "Původní hodnota",
     "arr.structure.conformityInfo.impossible": "Tento prvek popisu není možné evidovat u této struktury.",
 
-    "subNodeForm.descItemGroup.default": "Ostatní",
+    "subNodeForm.descItemGroup.default": "Bez skupiny",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
