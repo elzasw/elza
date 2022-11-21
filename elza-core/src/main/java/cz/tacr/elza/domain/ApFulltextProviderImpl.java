@@ -1,12 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.EntityManager;
-
-import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointService;
 
 public class ApFulltextProviderImpl implements ApFulltextProvider {
