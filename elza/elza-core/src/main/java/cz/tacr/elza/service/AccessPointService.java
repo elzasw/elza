@@ -2830,6 +2830,10 @@ public class AccessPointService {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
+    public ApIndex findPreferredPartIndex(Integer accessPointId) {
+        return indexRepository.findPreferredPartIndexByAccessPointIdAndIndexType(accessPointId, DISPLAY_NAME);
+    }
+
     public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
         if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {

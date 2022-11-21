@@ -24,6 +24,7 @@ import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.data.StructTypeExtension;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.AccessPointPart;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
@@ -79,6 +80,9 @@ public class GroovyService {
 
     @Autowired
     private AccessPointItemService accessPointItemService;
+
+    @Autowired
+    private AccessPointService apService;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -303,8 +307,9 @@ public class GroovyService {
                 Integer intValue;
                 CachedAccessPoint accessPoint = null;
                 if (dataTmp.getRecord() != null) {
-                    value = dataTmp.getFulltextValue();
                     intValue = dataTmp.getRecordId();
+                    ApIndex index = apService.findPreferredPartIndex(intValue);
+                    value = index == null? null : index.getValue();
                     accessPoint = accessPointCacheService.findCachedAccessPoint(intValue);
                 } else if (dataTmp.getBinding() != null) {
                     value = dataTmp.getBinding().getValue();
