@@ -100,6 +100,16 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
+    public ResponseEntity<Void> validateAccessPoint(String id) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+
+        accessPointService.validate(accessPoint, true);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
     public ResponseEntity<Void> createRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
 
