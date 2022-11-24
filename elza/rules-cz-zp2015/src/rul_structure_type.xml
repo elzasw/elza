@@ -3,7 +3,7 @@
         <name>Uložení</name>
     </structure-type>
     <structure-type code="ZP2015_ACCESS_COND_TYPE" validValueFromVersion="162" >
-        <name>Druh omezení přístupnosti</name>
+        <name>Omezení</name>
     </structure-type>
     <structure-type code="ZP2015_ACCESS_COND" validValueFromVersion="162" anonymous="true">
         <name>Zvláštní omezení přístupnosti</name>
