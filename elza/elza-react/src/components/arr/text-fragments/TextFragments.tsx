@@ -128,11 +128,6 @@ export const TextFragmentsWindow:FC<{
             {editMode && 
             <div className="edit-form">
                     <textarea 
-                        style={{
-                            border:"1px solid #ddd",
-                            backgroundColor: "#fff",
-                            width:"100%"
-                        }} 
                         onChange={handleChangeFragmentsString}
                         value={fragments.join(delimiter)}
                     />

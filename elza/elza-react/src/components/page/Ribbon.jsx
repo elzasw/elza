@@ -388,9 +388,9 @@ class Ribbon extends AbstractReactComponent {
                                     <Dropdown.Divider key="divired" />,
                                 ]}
                                 {
-                                    window.enableThemes && <>
+                                    <>
                                         <Dropdown.Item eventKey="3" onClick={this.handleChangeTheme}>
-                                            {this.state.theme === "light" ? "Tmavy motiv" : "Svetly motiv"}
+                                            {this.state.theme === "dark" ? <Icon glyph="fa-check-square"/> : <Icon glyph="fa-square-o"/>} {i18n("ribbon.action.darkTheme")}
                                         </Dropdown.Item>
                                         <Dropdown.Divider key="divider" />
                                     </>

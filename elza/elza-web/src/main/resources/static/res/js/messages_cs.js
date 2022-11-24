@@ -366,6 +366,7 @@ var messages = {
     "ribbon.action.registry.import": "Import ze souboru",
     "ribbon.action.registry.importExt": "Import ze systému",
     "ribbon.action.logout": "Odhlásit",
+    "ribbon.action.darkTheme": "Tmavý motiv",
     "ribbon.action.showFundHistory": "Historie změn",
     "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
     "ribbon.action.ap.ext-search": "Vyhledávání v externím systému",
