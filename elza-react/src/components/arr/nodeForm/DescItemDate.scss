@@ -19,6 +19,9 @@
 @import "~react-widgets/lib/scss/popup.scss";
 @import "~react-widgets/lib/scss/state.scss";
 
+@import "../../../variables.scss";
+
+
 
 //$font-size: 16px;
 //$input-height: 20px; // at 16px, this an even 40px
@@ -27,8 +30,113 @@ $border-radius: unset;
 $input-height: 22px;
 $input-padding-horizontal: 5px;
 
+
 .desc-item-value-container {
     .rw-btn-select {
-        height: auto;
+        /* height: auto; */
     }
+
+    .rw-widget {
+        color: $fg-color;
+
+        &.rw-state-focus .rw-widget-picker {
+            background-color: var(--shade-0);
+            box-shadow: none;
+
+            border-color: $accent-color;
+            /* outline: 5px solid $accent-color; */
+            box-shadow: 0 0 0px 1px $accent-color;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .rw-widget-picker {
+            height: 1.8em;
+            display: flex;
+            border: $primary-border;
+            background-color: $shade-0;
+            border-radius: 0;
+            overflow: visible;
+
+            .rw-widget-input {
+                display: block;
+                width: auto;
+                flex: 1;
+                box-shadow: none;
+                color: $fg-color;
+                background-color: transparent;
+            }
+
+            .rw-select {
+                display: block;
+                width: auto;
+                flex:0;
+                border: none;
+                height: 1.8em;
+
+                &:hover {
+                    background-color: transparent;
+                }
+
+                .rw-btn {
+                    background-color: transparent;
+                    color: $fg-color;
+                    opacity: 1;
+
+                    &:hover {
+                        background-color: $shade-4;
+                    }
+                }
+            }
+        }
+        .rw-popup {
+            background-color: var(--shade-0);
+            border: $primary-border;
+
+            .rw-calendar-grid {
+                background: transparent;
+
+                .rw-head-cell {
+                    border-bottom: $primary-border;
+                }
+
+                .rw-cell {
+                    color: $fg-color;
+                    border-radius: 0;
+
+                    &.rw-state-focus {
+                        border-color: $accent-color;
+                    }
+                    &.rw-state-selected {
+                        background-color: $accent-color;
+                        border-color: $accent-color;
+                        color: $accent-color-fg;
+                    }
+
+                    &:hover {
+                        background-color: $shade-4;
+                        border-color: $shade-4;
+                        color: $fg-color;
+                    }
+                }
+                .rw-cell-off-range {
+                    opacity: 0.5;
+                }
+            }
+
+            .rw-calendar-footer {
+                border-top: $primary-border;
+            }
+
+            .rw-btn {
+                /* background-color: $shade-2; */
+                color: $fg-color;
+                /* opacity: 1; */
+                &:hover {
+                    background-color: $shade-4;
+                }
+            }
+        }
+    }
+
 }

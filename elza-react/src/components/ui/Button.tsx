@@ -22,7 +22,7 @@ export const Button = memo(forwardRef<
     });
 
     return (
-        <BootstrapButton {...buttonProps} ref={ref} className={buttonClass} variant={buttonProps.variant || 'secondary'}>
+        <BootstrapButton {...buttonProps} ref={ref} className={buttonClass} variant={buttonProps.variant || null}>
             {children}
         </BootstrapButton>
     );

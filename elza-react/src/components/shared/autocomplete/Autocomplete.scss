@@ -26,7 +26,7 @@
                 box-shadow: none;
             }
             &:disabled, &[readonly] {
-                background-color: #e9ecef;
+                background-color: $shade-1;
                 opacity: 1;
             }
         }
@@ -64,6 +64,8 @@
             border-color: $accent-color;
             outline: 0;
             box-shadow: 0 0 0px 1px $accent-color;
+            position: relative;
+            z-index: 1000;
         }
     }
     .floating-menu {

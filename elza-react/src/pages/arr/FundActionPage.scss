@@ -64,6 +64,8 @@ $header-minimized-height: 12px;
         .detail {
             .config {
                 width:100%;
+                background-color: $shade-0;
+                border: $primary-border;
             }
         }
     }
