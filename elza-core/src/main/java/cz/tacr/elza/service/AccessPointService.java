@@ -2722,7 +2722,10 @@ public class AccessPointService {
      *         Dochazi k zapisu aktualniho stavu validace.
      * 
      */
-    private ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
+    public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
+        ApState state = getStateInternal(accessPoint);
+        checkPermissionForEdit(state);
+
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
         return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
