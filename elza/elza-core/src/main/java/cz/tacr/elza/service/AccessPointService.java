@@ -1729,6 +1729,16 @@ public class AccessPointService {
     }
 
     /**
+     * Získání id přístupových bodů podle stavu
+     * 
+     * @param state
+     * @return ids
+     */
+    public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
+        return apAccessPointRepository.findAccessPointIdByState(state);
+    }
+
+    /**
      * Uložení AP s odverzováním.
      *
      * @param accessPoint přístupový bod
@@ -2920,6 +2930,7 @@ public class AccessPointService {
         return false;
     }
 
+    // metoda nepoužívá se
     public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
                                                                                                                      binding));

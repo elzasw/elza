@@ -27,6 +27,7 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
@@ -188,11 +189,14 @@ public class StartupService implements SmartLifecycle {
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
 
+        List<Integer> accessPoints = accessPointService.getAccessPointIdsByState(ApStateEnum.INIT);
+        asyncRequestService.enqueue(accessPoints);
+
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());
         syncApCacheService();
 
-        // Prepare system security context for import
+        // prepare system security context for import
         SecurityContextHolder.setContext(userService.createSecurityContextSystem());
         packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
