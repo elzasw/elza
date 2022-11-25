@@ -57,7 +57,8 @@ $accent-color-fg: white;
 /* $color-red: mix($shade-7, #f00, 40%); */
 $color-red: mix($shade-7, #f00, 60%);
 $color-orange: mix($shade-7, #ff7700, 40%);
-$color-yellow: mix($shade-7, #ffff00, 40%);
+/* $color-yellow: mix($shade-7, #ffff00, 40%); */
+$color-yellow: #e5ca09;
 $color-blue: mix($shade-7, #0033ff, 40%);
 $color-green: mix($shade-7, #00ff33, 60%);
 
@@ -127,8 +128,11 @@ $accent-color-fg: $fg-color;
 
 $color-red: mix($shade-5, #f00, 60%);
 $color-orange: mix($shade-5, #ff6600, 60%);
-$color-yellow: mix($shade-5, #ffff00, 60%);
-$color-blue: mix($shade-5, #0000ff, 60%);
+/* $color-yellow: mix($shade-5, #ffff00, 60%); */
+$color-yellow: #c9b317;
+
+/* $color-blue: mix($shade-5, #0000ff, 60%); */
+$color-blue: #4242cf;
 $color-green: mix($shade-5, #00ff00, 60%);
 
 $color-link: mix($fg-color, #0000ff, 60%);
