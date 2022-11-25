@@ -723,6 +723,7 @@ when
       "ZP2015_COPY_SOURCE",
       // ZP 4.5.2
       "ZP2015_RELATED_UNITS",
+      "ZP2015_RELATED_UNITS_LINK",
       // ZP 4.5.3
       "ZP2015_EXISTING_COPY",
       // Poznámky - ZP 4.6.1, 4.6.2
