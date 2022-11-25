@@ -16,6 +16,7 @@ defs:
       hiddenDao: true
       hiddenItems:
         - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_DAO_LINK
         - itemType: ZP2015_AIP_ID
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
@@ -27,6 +28,7 @@ defs:
       hiddenDao: true
       hiddenItems:
         - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_DAO_LINK
         - itemType: ZP2015_AIP_ID
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
