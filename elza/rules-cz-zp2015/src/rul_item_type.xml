@@ -349,16 +349,16 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
-        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky - Textově</name>
-        <shortcut>Odkazy - Textově</shortcut>
+        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky (TEXT)</name>
+        <shortcut>Odkazy (TEXT)</shortcut>
         <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RELATED_UNITS_LINK" data-type="URI_REF">
-        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky</name>
-        <shortcut>Odkazy</shortcut>
+        <name>Odkazy na příbuzné jednotky popisu (URL)</name>
+        <shortcut>Odkazy (URL)</shortcut>
         <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
