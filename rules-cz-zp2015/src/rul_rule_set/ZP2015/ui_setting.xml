@@ -148,6 +148,7 @@
                 <type code="ZP2015_COPY_SOURCE" width="1"/>
                 <!-- 4.5.2 Odkazy na příbuzné dokumenty -->
                 <type code="ZP2015_RELATED_UNITS" width="2"/>
+                <type code="ZP2015_RELATED_UNITS_LINK" width="0"/>
                 <type code="ZP2015_EXISTING_COPY" width="1"/>
                 <!-- 4.7.1 Zpracovatel jednotky popisu -->
                 <type code="ZP2015_ARRANGER" width="2"/>
