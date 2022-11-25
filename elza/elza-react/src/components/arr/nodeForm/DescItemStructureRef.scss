@@ -41,9 +41,10 @@
 
 .dtSTRUCTURED {
     .calculable {
-        padding-left: 5px;
-        background-color: #e9ecef;
+        padding: 5px;
+        line-height: 1em;
+        background-color: $shade-1;
         opacity: 1;
-        border: 1px solid #ced4da;
+        border: $primary-border;
     }
 }
