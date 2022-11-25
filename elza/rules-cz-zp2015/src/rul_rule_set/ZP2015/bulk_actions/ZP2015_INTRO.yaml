@@ -94,6 +94,13 @@ actions:
         - ZP2015_FUTURE_UNITS
       outputType: ZP2015_FUTURE_UNITS
       onlyRoots: true
+
+    - !TextAggregation
+      inputTypes:
+        # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
+        - ZP2015_UNIT_CURRENT_STATUS
+      outputType: ZP2015_UNIT_CURRENT_STATUS
+      onlyRoots: true
     
     - !TextAggregation
       createEmpty: false
