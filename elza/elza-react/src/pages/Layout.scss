@@ -121,8 +121,8 @@ $shade-9: lighten($contrast-color, 10%);
 
 $border-color: rgba(#fff, 0.2);
 $primary-border: 1px solid $border-color;
-
-$accent-color: mix(teal, $shade-2, 60%);
+$accent-color: #226fac;
+// $accent-color: mix(teal, $shade-2, 60%);
 $accent-color-fg: $fg-color;
 
 $color-red: mix($shade-5, #f00, 60%);
