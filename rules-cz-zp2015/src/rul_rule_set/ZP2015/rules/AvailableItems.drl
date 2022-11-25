@@ -787,7 +787,9 @@ when
       // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
       "ZP2015_PART",
       // číslo digitalizátu
-      "ZP2015_DAO_ID"
+      "ZP2015_DAO_ID",
+      // odkaz na digitalizát
+      "ZP2015_DAO_LINK"
      ) )    
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
