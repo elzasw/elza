@@ -46,6 +46,7 @@
 	</style>
 	<subDataset name="tablerows" uuid="643d9627-1c8a-4c67-bff4-993e24ddf759">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+		<parameter name="unitTypeMapper" class="java.util.Map"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -74,6 +75,50 @@
 	.setItemSeparator(", ")
 	.setBlockSeparators("","; ")
 	.beginBlock().addValue("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="unitTypeMapper" class="java.util.Map">
+		<defaultValueExpression><![CDATA[com.google.common.collect.ImmutableMap.builder()
+.put("kar", "kartony")
+.put("fas", "fascikly")
+.put("daj", "digitální archivní jednotky")
+.put("lio", "listiny do roku 1850")
+.put("lip", "listiny po roce 1850")
+.put("ukn", "úřední knihy")
+.put("rkp", "rukopisy")
+.put("ppr", "podací protokoly")
+.put("ind", "indexy")
+.put("ele", "elenchy")
+.put("rep", "repertáře")
+.put("ktt", "kartotéky")
+.put("pec", "pečetidla")
+.put("raz", "razítka")
+.put("otd", "samostatné pečetě, odlitky pečetí a otisky typářů")
+.put("map", "mapy")
+.put("atl", "atlasy")
+.put("tvy", "technické výkresy")
+.put("gli", "grafické listy")
+.put("kre", "kresby")
+.put("fsn", "fotografie na papírové podložce")
+.put("fsd", "fotografické desky")
+.put("lfi", "listové filmy")
+.put("sfi", "svitkové filmy")
+.put("kin", "kinofilmy")
+.put("mf", "mikrofilmy")
+.put("mfis", "mikrofiše")
+.put("fal", "fotoalba")
+.put("dfo", "digitální fotografie")
+.put("kza", "kinematografické záznamy (díla) v analogové i digitální podobě")
+.put("zza", "zvukové záznamy (díla) v analogové i digitální podobě")
+.put("tio", "tisky do roku 1800")
+.put("tip", "tisky po roce 1800")
+.put("poh", "pohlednice")
+.put("pkt", "plakáty")
+.put("cpa", "cenné papíry")
+.put("sto", "štočky")
+.put("pnp", "předměty numizmatické povahy")
+.put("pfp", "předměty faleristické povahy")
+.put("jin", "jiné")
+.build()]]></defaultValueExpression>
 	</parameter>
 	<detail>
 		<band height="50">
@@ -390,15 +435,19 @@
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
 					<datasetRun subDataset="tablerows" uuid="3ab9dc2b-3276-423f-85d9-17d3ed0466ad">
+						<datasetParameter name="unitTypeMapper">
+							<datasetParameterExpression><![CDATA[$P{unitTypeMapper}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource( ((cz.tacr.elza.print.item.ItemJsonTable)$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" )).getTable().getRows())]]></dataSourceExpression>
 					</datasetRun>
-					<jr:column width="110" uuid="1e9867f2-4809-4fea-b1e2-8903b2ab2fc5">
+					<jr:column width="205" uuid="1e9867f2-4809-4fea-b1e2-8903b2ab2fc5">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:columnHeader style="Table_CH" height="15" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<staticText>
-								<reportElement x="0" y="0" width="110" height="15" uuid="31b59932-2fd3-4479-9150-44897992f73d">
+								<reportElement x="0" y="0" width="205" height="15" uuid="31b59932-2fd3-4479-9150-44897992f73d">
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								</reportElement>
 								<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
 								<textElement verticalAlignment="Middle"/>
@@ -407,11 +456,11 @@
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField>
-								<reportElement x="0" y="0" width="110" height="15" uuid="adac8057-c019-484b-b9f7-8e7e6e7092ad"/>
+							<textField textAdjust="StretchHeight">
+								<reportElement x="0" y="0" width="205" height="15" uuid="adac8057-c019-484b-b9f7-8e7e6e7092ad"/>
 								<box leftPadding="5"/>
-								<textElement verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{values}.get( "NAME" )]]></textFieldExpression>
+								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[$P{unitTypeMapper}.getOrDefault( $F{values}.get( "NAME" ), $F{values}.get( "NAME" ))]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -435,12 +484,14 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="290" uuid="b7a1f813-c33a-472d-b1c6-1be6fc060210">
+					<jr:column width="200" uuid="b7a1f813-c33a-472d-b1c6-1be6fc060210">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:columnHeader style="Table_CH" height="15" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<staticText>
-								<reportElement x="0" y="0" width="290" height="15" uuid="bc8f71f5-7597-4e43-b2fa-134d812ed3f1"/>
+								<reportElement x="0" y="0" width="200" height="15" uuid="bc8f71f5-7597-4e43-b2fa-134d812ed3f1">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
 								<box leftPadding="5"/>
 								<textElement verticalAlignment="Middle"/>
 								<text><![CDATA[Datace]]></text>
@@ -448,7 +499,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="15">
 							<textField textAdjust="ScaleFont">
-								<reportElement x="0" y="0" width="290" height="15" uuid="ee54dad3-f135-4888-8b0a-5d2e59059bdd"/>
+								<reportElement x="0" y="0" width="200" height="15" uuid="ee54dad3-f135-4888-8b0a-5d2e59059bdd"/>
 								<box leftPadding="5"/>
 								<textElement verticalAlignment="Middle"/>
 								<textFieldExpression><![CDATA[$F{values}.get( "DATE_RANGE" )]]></textFieldExpression>
