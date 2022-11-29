@@ -137,12 +137,18 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(descItemTypesFetchIfNeeded());
-        this.props.dispatch(fundsFetchIfNeeded());
+        const {dispatch, descItemTypes} = this.props;
+
+        dispatch(descItemTypesFetchIfNeeded())
+        dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
+
         if (activeFund !== null) {
             this.requestFundTreeData(activeFund);
-            this.props.dispatch(groups.fetchIfNeeded(activeFund.versionId));
+
+            if(descItemTypes.fetched){
+                dispatch(groups.fetchIfNeeded(activeFund.versionId));
+            }
         }
     }
 

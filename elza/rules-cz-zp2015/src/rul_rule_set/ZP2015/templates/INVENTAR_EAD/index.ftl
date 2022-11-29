@@ -1,4 +1,5 @@
-<#ftl output_format="XML" ns_prefixes={"ead":"http://ead3.archivists.org/schema/", "cam":"http://cam.tacr.cz/2019"}><ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+<#ftl output_format="XML" ns_prefixes={"ead":"http://ead3.archivists.org/schema/", "cam":"http://cam.tacr.cz/2019"}><#noautoesc><?xml version="1.0" encoding="UTF-8"?></#noautoesc>
+<ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
 
 <#-- Seznam mapování typů dle 5.9 -->
 <#assign unitTypeMapping = { 

@@ -86,7 +86,7 @@ var messages = {
     "dataType.date.format": null,
     "dataType.text.format": null,
     "dataType.unitdate.format":
-        '<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.</div>',
+        '<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc: 8.1968<br />Den: 21.8.1968<br />Hodiny, minuty, sekundy: 21.8.1968 2:43 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Roky: 1968-1969<br />Kombinace: 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:<br />Např.: [16.8.1977] <i>nebo</i> [1990]-1992<br />Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad:<br />Např.: 1985/1990</div>',
     "dataType.unitid.format": null,
 
 
@@ -366,6 +366,7 @@ var messages = {
     "ribbon.action.registry.import": "Import ze souboru",
     "ribbon.action.registry.importExt": "Import ze systému",
     "ribbon.action.logout": "Odhlásit",
+    "ribbon.action.darkTheme": "Tmavý motiv",
     "ribbon.action.showFundHistory": "Historie změn",
     "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
     "ribbon.action.ap.ext-search": "Vyhledávání v externím systému",
@@ -942,7 +943,7 @@ var messages = {
     "arr.structure.modal.updateMultiple.originalValue": "Původní hodnota",
     "arr.structure.conformityInfo.impossible": "Tento prvek popisu není možné evidovat u této struktury.",
 
-    "subNodeForm.descItemGroup.default": "Ostatní",
+    "subNodeForm.descItemGroup.default": "Bez skupiny",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",

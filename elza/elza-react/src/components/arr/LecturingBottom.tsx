@@ -153,7 +153,7 @@ class LecturingBottom extends React.Component {
                 {fetched && (
                     <div className="lecturing-bottom-container">
                         <div className="comments">
-                            <div className="comment text-muted">
+                            <div className="comment">
                                 <div className="comment-text">{data.description}</div>
                                 <div className="text-right">
                                     {canUpdateIssue && (

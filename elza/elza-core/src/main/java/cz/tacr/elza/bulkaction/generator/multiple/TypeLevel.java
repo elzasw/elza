@@ -9,12 +9,12 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 public enum TypeLevel {
 
     /**
-     * Rodič
+     * Rodič - nad připojeným uzlem
      */
     PARENT,
 
     /**
-     * Potomek
+     * Potomek - připojený uzel a podřízený
      */
     CHILD
 }

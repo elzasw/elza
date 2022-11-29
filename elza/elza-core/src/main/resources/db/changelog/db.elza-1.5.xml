@@ -2134,4 +2134,15 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 		<delete tableName="arr_cached_node" />
 	</changeSet>
 
+	<changeSet id="20221124101000" author="sergey.iryupin">
+		<sql dbms="postgresql">UPDATE ap_access_point SET state = 'INIT'
+			WHERE access_point_id IN (SELECT distinct s.access_point_id FROM ap_item i
+			JOIN ap_part p ON p.part_id = i.part_id
+			JOIN arr_data_record_ref r ON r.data_id = i.data_id
+			JOIN ap_state s ON s.access_point_id = r.record_id 
+			WHERE i.delete_change_id IS NULL 
+				AND s.create_change_id = (SELECT MAX(create_change_id) FROM ap_state WHERE access_point_id = s.access_point_id)
+				AND s.delete_change_id IS NOT NULL)</sql>
+	</changeSet>
+
 </databaseChangeLog>

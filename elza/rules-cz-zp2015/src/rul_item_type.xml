@@ -76,6 +76,14 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_DAO_LINK" data-type="URI_REF">
+        <name>Odkaz na digitalizát</name>
+        <shortcut>Odkaz na digitalizát</shortcut>
+        <description>ZP4.5.3 Existence kopií jednotky popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
         <shortcut>Další EJ</shortcut>
@@ -332,6 +340,14 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_UNIT_DAMAGE_TYPE" data-type="ENUM">
+        <name>Charakter poškození</name>
+        <shortcut>Poškození</shortcut>
+        <description>ZP4.4.4 Fyzický stav - charakter poškození</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>    
     <item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
         <name>Identifikace předlohy kopie</name>
         <shortcut>Předloha kopie</shortcut>
@@ -341,11 +357,19 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
-        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</name>
-        <shortcut>Odkazy</shortcut>
+        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky (TEXT)</name>
+        <shortcut>Odkazy (TEXT)</shortcut>
         <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RELATED_UNITS_LINK" data-type="URI_REF">
+        <name>Odkazy na příbuzné jednotky popisu (URL)</name>
+        <shortcut>Odkazy (URL)</shortcut>
+        <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">

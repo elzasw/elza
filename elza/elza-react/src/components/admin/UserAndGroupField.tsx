@@ -158,7 +158,7 @@ class UserAndGroupField extends React.Component<Props, State> {
         return (
             <div className={'position-relative user-and-group-field'}>
                 <Dropdown
-                    className={'user-and-group-search-type bg-white'}
+                    className={'user-and-group-search-type'}
                     onSelect={eventKey => this.setState({searchType: eventKey as SEARCH_TYPE})}
                 >
                     <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">

@@ -52,6 +52,7 @@ const RelationsFilterSection = ({
 };
 
 interface RelFilterProps {
+    itemSpec?: RulDescItemSpecExtVO;
     itemType: RulDescItemTypeExtVO;
     obj: any;
 }
@@ -59,7 +60,7 @@ interface RelFilterProps {
 const renderRelFilter = (index: number, disabled: boolean, item: RelFilterProps, remove: () => void) => {
     return <Row className="rel-filter mb-1" key={index}>
         <Col xs={10}>
-            {item.itemType && <span className="type">{item.itemType.name}</span>}
+            {item.itemType && <span className="type">{item.itemType.name}</span>}{item.itemSpec && <span className="type">: {item.itemSpec.name}</span>}
             {item.obj && <span className="value">{item.obj.name}</span>}
         </Col>
         <Col xs={2} className="remove">

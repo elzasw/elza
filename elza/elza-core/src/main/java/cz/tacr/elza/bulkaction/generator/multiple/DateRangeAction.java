@@ -34,9 +34,7 @@ public class DateRangeAction extends Action {
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    public static final String PARAM_PROPERTY = "property";
-
-	private final DateRangeConfig config;
+    private final DateRangeConfig config;
     /**
      * Skip subtree
      */
@@ -101,7 +99,7 @@ public class DateRangeAction extends Action {
 		String outputType = config.getOutputType();
 		if (outputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'output_type' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-                    .set(PARAM_PROPERTY, "outputType");
+                    .set(BaseCode.PARAM_PROPERTY, "outputType");
 		}
         outputItemType = sdp.getItemTypeByCode(outputType);
 		if (outputItemType.getDataType() != DataType.TEXT) {
@@ -113,7 +111,7 @@ public class DateRangeAction extends Action {
 		String inputType = config.getInputType();
 		if (inputType == null) {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-                    .set(PARAM_PROPERTY, "input_type");
+                    .set(BaseCode.PARAM_PROPERTY, "input_type");
 		}
         unitDateType = sdp.getItemTypeByCode(inputType);
         checkValidDataType(unitDateType, DataType.UNITDATE);
@@ -121,7 +119,7 @@ public class DateRangeAction extends Action {
         String bulkRangeCode = config.getBulkRangeType();
         if (bulkRangeCode == null) {
             throw new BusinessException("Není vyplněn parametr 'bulkRangeType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
-                    .set(PARAM_PROPERTY, "bulkRangeType");
+                    .set(BaseCode.PARAM_PROPERTY, "bulkRangeType");
 		}
         bulkRangeType = sdp.getItemTypeByCode(bulkRangeCode);
         checkValidDataType(bulkRangeType, DataType.UNITDATE);

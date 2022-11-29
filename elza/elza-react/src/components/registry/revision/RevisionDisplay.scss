@@ -1,6 +1,6 @@
 @import "../../../variables.scss";
-$deletion-color: #de8f8f;
-$addition-color: #97d697;
+$deletion-color: $color-red;
+$addition-color: $color-green;
 
 .revision-display {
     display: flex;
@@ -36,7 +36,7 @@ $addition-color: #97d697;
     }
 
     .colored {
-        padding: 3px 6px;
+        padding: 5px 8px;
         background-color: $shade-6;
         border-radius: 5px;
         border: 1px solid $shade-6;
@@ -47,14 +47,18 @@ $addition-color: #97d697;
         flex-direction: column;
 
         &.colored {
-            background-color: lighten($color: $addition-color, $amount: 20);
+            // background-color: lighten($color: $addition-color, $amount: 20);
+            background-color: transparent;
             border-color: $addition-color;
+            border-width: 2px;
         }
     }
     .value-previous {
         &.colored {
-            background-color:lighten($color: $deletion-color, $amount: 20);
+            // background-color:lighten($color: $deletion-color, $amount: 20);
+            background-color: transparent;
             border-color: $deletion-color;
+            border-width: 2px;
         }
     }
 

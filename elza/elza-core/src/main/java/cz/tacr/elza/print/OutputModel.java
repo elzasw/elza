@@ -136,6 +136,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, Fund> fundIdMap = new HashMap<>();
 
+    final Set<Integer> restrictedNodeIds = new HashSet<>();
+
     /**
      * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
      * we keep only last loaded instance instead of complete map.
@@ -385,8 +387,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public FilteredRecords getRecordsByType(String typeCode) {
-        if (lastFilteredRecords == null || !lastFilteredRecords.getFilterType().equals(typeCode)) {
-            lastFilteredRecords = filterRecords(typeCode);
+        RecordsFilter filter = new RecordsFilter();
+        filter.addType(typeCode);
+
+        return getFilteredRecords(filter);
+    }
+
+    @Override
+    public FilteredRecords getFilteredRecords(RecordsFilter filter) {
+        if (lastFilteredRecords == null || !lastFilteredRecords.getFilter().equals(filter)) {
+            lastFilteredRecords = filterRecords(filter);
         }
         return lastFilteredRecords;
     }
@@ -394,8 +404,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     /**
      * Prepare filtered list of records
      */
-    private FilteredRecords filterRecords(String typeCode) {
-        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, typeCode);
+    private FilteredRecords filterRecords(RecordsFilter filter) {
+        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, filter);
 
         // add all nodes
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
@@ -460,7 +470,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             if (!restrictionItems.isEmpty()) {
                 levelRestrMap.put(nodeId.getArrNodeId(), restrictionItems);
 
-                cachedNode = filterNode(cachedNode, restrictionItems);
+                cachedNode = filterNode(nodeId, cachedNode, restrictionItems);
                 if (cachedNode == null) {
                     // if filter return null according to conditions
                     continue;
@@ -518,7 +528,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return restrictionItems;
     }
 
-    private RestoredNode filterNode(RestoredNode node, List<ArrItem> restrictionItems) {
+    private RestoredNode filterNode(NodeId nodeId, RestoredNode node, List<ArrItem> restrictionItems) {
+        NodeId parentNodeId = nodeId.getParent();
+        if (parentNodeId != null && restrictedNodeIds.contains(parentNodeId.getArrNodeId())) {
+            restrictedNodeIds.add(nodeId.getArrNodeId());
+            return null;
+        }
+
         if (filterRules == null || CollectionUtils.isEmpty(restrictionItems)) {
             return node;
         }
@@ -546,14 +562,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             }
 
             for (FilterRule rule : filterRules.getFilterRules()) {
-                processRule(rule, itemsByType, soiItems, filter);
+                processRule(nodeId, rule, itemsByType, soiItems, filter);
             }
         }
 
         return filter.apply(node);
     }
 
-    private void processRule(FilterRule rule, 
+    private void processRule(NodeId nodeId, FilterRule rule,
                              Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
                              Collection<? extends ArrItem> restrItems,
                              ApplyFilter filter) {
@@ -565,6 +581,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         // if we need to hide level
         if (rule.isHiddenLevel()) {
+            restrictedNodeIds.add(nodeId.getArrNodeId());
+
             filter.hideLevel();
             return;
         }

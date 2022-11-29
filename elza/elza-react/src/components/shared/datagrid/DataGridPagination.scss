@@ -37,11 +37,14 @@ $element-line-height: 22px;
                 width: 100px;
                 border: none;
                 padding: 0 5px;
+                background: $shade-0;
+                color: $fg-color;
             }
             select {
                 border: none;
                 height: $element-height;
-                background: transparent;
+                background: $shade-0;
+                color: $fg-color;
             }
         }
 
