@@ -3,6 +3,7 @@ package cz.tacr.elza.drools.model;
 import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,13 +164,18 @@ public class ApBuilder {
     }
 
     private Part createPart(ApRevPart revPart, List<ApRevItem> revItems, boolean preferred) {
-        List<AbstractItem> itemList = new ArrayList<>(revItems.size());
-        for (ApRevItem revItem : revItems) {
-            if (revItem.isDeleted() || revItem.getDeleteChangeId() != null) {
-                continue;
+        List<AbstractItem> itemList;
+        if (revItems != null) {
+            itemList = new ArrayList<>(revItems.size());
+            for (ApRevItem revItem : revItems) {
+                if (revItem.isDeleted() || revItem.getDeleteChangeId() != null) {
+                    continue;
+                }
+                AbstractItem item = createItem(revItem);
+                itemList.add(item);
             }
-            AbstractItem item = createItem(revItem);
-            itemList.add(item);
+        } else {
+            itemList = Collections.emptyList();
         }
 
         Integer parentPartId = revPart.getParentPartId();
