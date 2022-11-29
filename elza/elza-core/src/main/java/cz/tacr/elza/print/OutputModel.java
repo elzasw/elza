@@ -387,8 +387,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public FilteredRecords getRecordsByType(String typeCode) {
-        if (lastFilteredRecords == null || !lastFilteredRecords.getFilterType().equals(typeCode)) {
-            lastFilteredRecords = filterRecords(typeCode);
+        RecordsFilter filter = new RecordsFilter();
+        filter.addType(typeCode);
+
+        return getFilteredRecords(filter);
+    }
+
+    @Override
+    public FilteredRecords getFilteredRecords(RecordsFilter filter) {
+        if (lastFilteredRecords == null || !lastFilteredRecords.getFilter().equals(filter)) {
+            lastFilteredRecords = filterRecords(filter);
         }
         return lastFilteredRecords;
     }
@@ -396,8 +404,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     /**
      * Prepare filtered list of records
      */
-    private FilteredRecords filterRecords(String typeCode) {
-        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, typeCode);
+    private FilteredRecords filterRecords(RecordsFilter filter) {
+        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, filter);
 
         // add all nodes
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
