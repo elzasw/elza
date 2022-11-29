@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -71,10 +70,10 @@ public class ArchiveEntityVO {
         List<CachedPart> parts = entity.getParts();
         for (CachedPart part : parts) {
             if (part.getPartId().equals(entity.getPreferredPartId())) {
-                ae.name = ApFactory.findDisplayIndexValue(part.getIndices());
+                ae.name = ApFactory.findDisplayIndexValue(part);
             } else {
                 if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
-                    ae.description = ApFactory.findDisplayIndexValue(part.getIndices());
+                    ae.description = ApFactory.findDisplayIndexValue(part);
                 }
             }
         }
