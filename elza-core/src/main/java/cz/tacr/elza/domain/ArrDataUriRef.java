@@ -1,13 +1,24 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.net.URI;
+
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
-import java.net.URI;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 @Entity
 @Table(name="arr_data_uri_ref")
@@ -158,10 +169,25 @@ public class ArrDataUriRef extends ArrData {
         Validate.notNull(uriRefValue);
         Validate.notNull(schema);
         // check any leading and trailing whitespace in data
-        Validate.isTrue(uriRefValue.trim().length() == uriRefValue.length(), "UriRefValue obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
-        Validate.isTrue(schema.trim().length() == schema.length(), "Schema obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+        if (uriRefValue.trim().length() != uriRefValue.length()) {
+            throw new BusinessException("URI contains whitespaces at the begining or end",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", uriRefValue);
+        }
+        if (schema.trim().length() != schema.length()) {
+            throw new BusinessException("Schema contains whitespaces at the begining or end",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", schema);
+        }
         if (description != null) {
-            Validate.isTrue(description.trim().length() == description.length(), "Description obsahuje whitespaces na začátku nebo na konci, dataId: %s", getDataId());
+            if (description.trim().length() != description.length()) {
+                throw new BusinessException("Description contains whitespaces at the begining or end",
+                        BaseCode.PROPERTY_IS_INVALID)
+                                .set("dataId", getDataId())
+                                .set("property", description);
+            }
         }
     }
 

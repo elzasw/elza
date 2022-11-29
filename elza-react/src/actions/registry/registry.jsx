@@ -30,6 +30,7 @@ const createFilter = values => {
     const relFilters = values.relFilters
         ? values.relFilters.map(f => {
               return {
+                  relSpecId: f.itemSpec ? f.itemSpec.id : null,
                   relTypeId: f.itemType ? f.itemType.id : null,
                   code: f.obj ? f.obj.id : null,
               };

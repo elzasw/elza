@@ -1729,6 +1729,16 @@ public class AccessPointService {
     }
 
     /**
+     * Získání id přístupových bodů podle stavu
+     * 
+     * @param state
+     * @return ids
+     */
+    public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
+        return apAccessPointRepository.findAccessPointIdByState(state);
+    }
+
+    /**
      * Uložení AP s odverzováním.
      *
      * @param accessPoint přístupový bod
@@ -2722,7 +2732,7 @@ public class AccessPointService {
      *         Dochazi k zapisu aktualniho stavu validace.
      * 
      */
-    private ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
+    public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
         return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
@@ -2830,6 +2840,10 @@ public class AccessPointService {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
+    public ApIndex findPreferredPartIndex(Integer accessPointId) {
+        return indexRepository.findPreferredPartIndexByAccessPointIdAndIndexType(accessPointId, DISPLAY_NAME);
+    }
+
     public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
         if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
@@ -2916,6 +2930,7 @@ public class AccessPointService {
         return false;
     }
 
+    // metoda nepoužívá se
     public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
                                                                                                                      binding));

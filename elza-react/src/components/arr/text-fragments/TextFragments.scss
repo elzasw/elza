@@ -42,6 +42,7 @@
         textarea {
             border: 1px solid $border-color;
             background-color: $shade-0;
+            color: $fg-color;
             width: 100%;
             padding: 10px;
             padding-top: 25px;
@@ -49,6 +50,7 @@
         }
 
         button {
+            color: currentColor;
             border: none;
             background-color: $shade-0;
         }
@@ -100,13 +102,11 @@
                 }
 
                 &.edit {
-                    border: 1px solid #D86464;
-                    background-color: #D86464;
+                    border: 1px solid $color-red;
+                    background-color: $color-red;
                     color: $fg-color;
 
                     &:hover {
-                        background-color: #FF7C7C;
-                        border-color: #FF7C7C;
                         color: $fg-color;
                         
                         .delete-overlay {
@@ -115,7 +115,7 @@
                     }
 
                     .delete-overlay {
-                        background-color: #FF7C7C;
+                        background-color: $color-red;
                         position: absolute;
                         top: 0;
                         left: 0;

@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import {MODAL_DIALOG_SIZE, urlFundActions} from '../../constants';
+import {MODAL_DIALOG_SIZE, urlFundActions, urlNode} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -108,18 +108,25 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
-        const {match, dispatch, arrRegion} = this.props;
         await super.componentDidMount();
+        this.selectNodeFromUrl();
+    }
+
+    componentDidUpdate(prevProps) {
+        const {match} = this.props;
+        if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
+            this.selectNodeFromUrl();
+        }
+    }
+
+    async selectNodeFromUrl() {
+        const {match, dispatch, arrRegion} = this.props;
         const matchId = match.params.nodeId;
         const urlNodeId = matchId || null;
+
         if (urlNodeId != null) {
             const activeFund = this.getActiveFund(this.props);
-
-            let activeNode = null;
-
-            if (activeFund?.nodes?.activeIndex != null) {
-                activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-            }
+            const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
             if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeFund) {
                 const data = await WebApi.selectNode(urlNodeId);
@@ -827,8 +834,8 @@ class ArrPage extends ArrParentPage {
         return (
             <div className="issues-panel">
                 <HorizontalSplitter
-                    top={<LecturingTop fund={activeFund} node={node} />}
-                    bottom={<LecturingBottom fund={activeFund} />}
+                    top={<LecturingTop key={activeFund.id} fund={activeFund} node={node} />}
+                    bottom={<LecturingBottom key={activeFund.id} fund={activeFund} />}
                 />
             </div>
         );
@@ -932,7 +939,7 @@ class ArrPage extends ArrParentPage {
                 key: 'discrepancies',
                 ref: 'fundErrors',
                 name: i18n('arr.panel.title.discrepancies'),
-                render: () => <DiscrepanciesList activeFund={activeFund}/>,
+                render: () => <DiscrepanciesList key={activeFund.id} activeFund={activeFund}/>,
             },
             visiblePolicies: {
                 id: 'visiblePolicies',

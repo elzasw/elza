@@ -25,6 +25,12 @@ public class RecordWithLinks extends Record {
     }
 
     public void addNode(Node node) {
+        // aa only once
+        for (Node n : nodes) {
+            if (n == node) {
+                return;
+            }
+        }
         nodes.add(node);
     }
 

@@ -194,6 +194,24 @@ paths:
           description: Entita byla obnovena
         404:
           description: AP neexistuje
+  /accesspoints/{id}/validate:
+    put: 
+      summary: Ověřování entity
+      operationId: validateAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Entita byla ověřena
+        404:
+          description: AP neexistuje
   /accesspoints:
     delete:
       summary: Zneplatnění přístupovych bodu

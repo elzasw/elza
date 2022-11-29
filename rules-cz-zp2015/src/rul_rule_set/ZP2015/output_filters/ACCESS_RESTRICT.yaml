@@ -2,6 +2,7 @@
 restrictions:
   - ZP2015_RESTRICTION_ACCESS_INLINE
   - ZP2015_RESTRICTION_ACCESS_SHARED
+  - ZP2015_INVALID_RECORD
 
 defs:
   - when:
@@ -15,6 +16,7 @@ defs:
       hiddenDao: true
       hiddenItems:
         - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_DAO_LINK
         - itemType: ZP2015_AIP_ID
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
@@ -26,6 +28,7 @@ defs:
       hiddenDao: true
       hiddenItems:
         - itemType: ZP2015_DAO_ID
+        - itemType: ZP2015_DAO_LINK
         - itemType: ZP2015_AIP_ID
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION

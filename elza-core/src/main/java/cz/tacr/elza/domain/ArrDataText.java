@@ -10,6 +10,9 @@ import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+
 
 /**
  * Hodnota atributu archivního popisu typu "neomezený" textový řetězec.
@@ -78,11 +81,22 @@ public class ArrDataText extends ArrData {
         Validate.notNull(textValue);
         // check any leading and trailing whitespace in data
         String value = textValue.trim();
-        Validate.isTrue(value.length() == textValue.length(), "Value obsahuje whitespaces na začátku nebo na konci, dataId: ", getDataId());
+        if (value.length() != textValue.length()) {
+            throw new BusinessException("Value contains whitespaces at the begining/end",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", textValue);
+        }
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            Validate.isTrue(c >= 0x1f || c == 0x0D || c == 0x0A, "Value obsahuje netiskové znaky, dataId: ", getDataId());
+            if (c <= 0x1f && c != 0x0D && c != 0x0A) {
+                throw new BusinessException("Value contains invalid characters.",
+                        BaseCode.PROPERTY_IS_INVALID)
+                                .set("dataId", getDataId())
+                                .set("property", textValue)
+                                .set("invalidCharacter", Integer.valueOf(c));
+            }
         }
     }
 }

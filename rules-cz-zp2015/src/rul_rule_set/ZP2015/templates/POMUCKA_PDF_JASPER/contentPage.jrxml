@@ -243,6 +243,11 @@
 	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
 	.addValueWithTitle("ZP2015_RECORD_LENGTH")
 	.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+    .setItemSeparator(", ")
+    .beginBlock()
+	  .addValueWithTitle("ZP2015_UNIT_DAMAGE_TYPE")
+	.endBlock()
+    .setItemSeparator("\n")
 	.addValueWithTitle("ZP2015_RELATED_UNITS")
 	.addValueWithTitle("ZP2015_EXISTING_COPY")
 	.addValueWithTitle("ZP2015_COPY_SOURCE")
@@ -268,7 +273,6 @@
 	.setSpecSeparator(": ")
 	.setBlockSeparators("","")
 	.beginBlock()
-		.addValueWithTitle("ZP2015_UNIT_COUNT_TABLE")
 		.addValueWithTitle("ZP2015_DATE_OTHER")
 		.addValueWithTitle("ZP2015_ITEM_TITLE")
 		.addValueWithTitle("ZP2015_PART")
@@ -287,6 +291,7 @@
 		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
 		.addValueWithTitle("ZP2015_EXISTING_COPY")
 		.addValueWithTitle("ZP2015_COPY_SOURCE")
+		.addValueWithTitle("ZP2015_EDITION")
 		.addValueWithTitle("ZP2015_NOTE")
 	.endBlock()]]></defaultValueExpression>
 	</parameter>
@@ -296,21 +301,15 @@
 	.setTitleSeparator(": ")
 	.setItemSeparator(", ")
 	.setBlockSeparators("","; ")
-	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()]]></defaultValueExpression>
+	.beginBlock().addValue("ZP2015_STORAGE_COND").endBlock()
+	.beginBlock().addValue("ZP2015_SCALE").endBlock()
+	.beginBlock().addValue("ZP2015_SIZE").endBlock()
+	.beginBlock().addValue("ZP2015_WRITING").endBlock()	
+	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()
+]]></defaultValueExpression>
 	</parameter>
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
-	</parameter>
-	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator("\n")
-	.setSpecSeparator(": ")
-	.setBlockSeparators("","")
-	.beginBlock()
-		.addValueWithTitle("ZP2015_EDITION")
-	.endBlock()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
@@ -333,6 +332,9 @@
 	<variable name="isRoot" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></variableExpression>
 	</variable>
+	<variable name="isContentNode" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{node}.getNodeId().isPublished()&&$F{node}.getParent()!=null&&$F{node}.getParent().isPublished()]]></variableExpression>
+	</variable>
 	<variable name="formalTitle" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE")]]></variableExpression>
 	</variable>
@@ -340,9 +342,9 @@
 		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"/"+$P{fund}.getFundNumber()]]></variableExpression>
 	</variable>
 	<variable name="detail" class="java.lang.String">
-		<variableExpression><![CDATA[$V{isRoot} ?
-	$P{rootDetailFotmatter}.format($P{output}) :
-	$P{detailFormatter}.format($F{node})]]></variableExpression>
+		<variableExpression><![CDATA[$V{isContentNode} ?
+	$P{detailFormatter}.format($F{node}):
+	$P{rootDetailFotmatter}.format($P{output})]]></variableExpression>
 	</variable>
 	<variable name="unitDate" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></variableExpression>
@@ -364,10 +366,9 @@
 		<variableExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></variableExpression>
 	</variable>
 	<variable name="shortDetail" class="java.lang.String">
-		<variableExpression><![CDATA[$V{isRoot} ? $P{rootShortDetailFormatter}.format($P{output}): $P{shortDetailFormatter}.format($F{node})]]></variableExpression>
-	</variable>
-	<variable name="rootDetail" class="java.lang.String">
-		<variableExpression><![CDATA[$V{isRoot} ? $P{rootNodeDetailFormatter}.format($F{node}) : ""]]></variableExpression>
+		<variableExpression><![CDATA[$V{isContentNode} ?
+$P{shortDetailFormatter}.format($F{node}):
+$P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 	</variable>
 	<variable name="contentEntry" class="java.lang.String">
 		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":(($V{levelName}.length()>50)?$V{levelName}.substring(0,50)+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
@@ -623,19 +624,6 @@
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{detail}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="13">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[!$V{rootDetail}.isEmpty()]]></printWhenExpression>
-			<textField textAdjust="StretchHeight" pattern="">
-				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#FFCC00" uuid="06be55e2-a051-4582-93e6-d5d04f9e26e5">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{rootDetail}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="6">

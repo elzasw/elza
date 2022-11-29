@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.Validate;
-
 import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemRecordRef;
 
 /**
  * Collection of records
@@ -19,7 +19,7 @@ public class FilteredRecords {
     /**
      * Code of applied filter
      */
-    private final String filterType;
+    private final RecordsFilter filter;
 
     /**
      * Hash map of records by record id
@@ -33,13 +33,13 @@ public class FilteredRecords {
 
     private ElzaLocale elzaLocale;
 
-    FilteredRecords(ElzaLocale elzaLocale, String filterType) {
-        this.filterType = Validate.notEmpty(filterType);
+    FilteredRecords(final ElzaLocale elzaLocale, final RecordsFilter filter) {
+        this.filter = filter;
         this.elzaLocale = elzaLocale;
     }
 
-    public String getFilterType() {
-        return filterType;
+    public RecordsFilter getFilter() {
+        return filter;
     }
 
     public Collection<RecordWithLinks> getRecords() {
@@ -52,10 +52,16 @@ public class FilteredRecords {
      * @param node
      */
     public void addNode(Node node) {
-        List<Record> recs = node.getRecords();
-
-        for (Record rec : recs) {
-            addRecord(rec, node);
+        List<Item> items = node.getItems();
+        if (items != null) {
+            for (Item item : items) {
+                if (item instanceof ItemRecordRef) {
+                    Record r = item.getValue(Record.class);
+                    if (filter.match(r, item)) {
+                        addRecord(r, node);
+                    }
+                }
+            }
         }
     }
 
@@ -72,20 +78,11 @@ public class FilteredRecords {
         RecordWithLinks rwl = recordsMap.get(recordId);
         if (rwl == null) {
             // check if allowed record type
-            RecordType type = rec.getType();
-            while (type != null) {
-                if (filterType.equals(type.getCode())) {
-                    rwl = RecordWithLinks.newInstance(rec);
-                    recordsMap.put(recordId, rwl);
-                    rwl.addNode(node);
-                    break;
-                }
-                // get parent type
-                type = type.getParentType();
-            }
-        } else {
-            rwl.addNode(node);
+            rwl = RecordWithLinks.newInstance(rec);
+            recordsMap.put(recordId, rwl);
         }
+        rwl.addNode(node);
+
         return rwl;
     }
 

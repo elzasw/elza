@@ -70,7 +70,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Archivní pomůcka č. "+$P{output}.getInternalCode()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Archivní pomůcka č. "+org.apache.commons.lang3.StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_FINDING_AID_ID"))?$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_ID" ):$P{output}.getInternalCode()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="95" width="455" height="14" uuid="4aeda5cf-c599-4af0-8152-15902d195e51">

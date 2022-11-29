@@ -49,6 +49,11 @@
             }
         }
     }
+    .modal-header {
+        .close {
+            color: $fg-color;
+        }
+    }
     &.dialog-no-header {
         .modal-header {
             display:none;

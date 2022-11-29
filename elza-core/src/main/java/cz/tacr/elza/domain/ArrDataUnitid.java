@@ -9,6 +9,8 @@ import org.apache.commons.lang.Validate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 
 /**
@@ -81,6 +83,11 @@ public class ArrDataUnitid extends ArrData {
     protected void validateInternal() {
         Validate.notNull(unitId);
         // check any leading and trailing whitespace in data
-        Validate.isTrue(unitId.trim().length() == unitId.length());
+        if (unitId.trim().length() != unitId.length()) {
+            throw new BusinessException("Value contains whitespaces at the begining or end",
+                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("dataId", getDataId())
+                            .set("property", unitId);
+        }
     }
 }

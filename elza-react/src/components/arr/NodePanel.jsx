@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
+import {withRouter} from "react-router";
 import {AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils} from 'components/shared';
 import {SubNodeDao} from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
@@ -34,7 +35,7 @@ import defaultKeymap from './NodePanelKeymap';
 
 import './NodePanel.scss';
 import { NodeSettingsModal } from './node-settings-form';
-import {FOCUS_KEYS} from '../../constants';
+import {FOCUS_KEYS, urlNode} from '../../constants';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
 import SyncNodes from './SyncNodes';
@@ -158,11 +159,25 @@ class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        const {node, versionId} = this.props;
         const settings = this.getSettingsFromProps();
 
-        this.requestData(this.props.versionId, this.props.node, settings);
+        this.requestData(versionId, node, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
+        this.replaceUrl();
+    }
+
+    componentDidUpdate(prevProps){
+        const {node} = this.props;
+        if(prevProps.node.selectedSubNodeId !== node.selectedSubNodeId){
+            this.replaceUrl();
+        }
+    }
+
+    replaceUrl() {
+        const {node, history} = this.props;
+        history.replace(urlNode(node.selectedSubNodeId));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -1215,4 +1230,4 @@ function mapState(state) {
     };
 }
 
-export default connect(mapState)(NodePanel);
+export default withRouter(connect(mapState)(NodePanel));
