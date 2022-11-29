@@ -322,11 +322,13 @@ public class ApController {
                 .collect(Collectors.toList());
 
         final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApIndex> descriptionMap = accessPointService.findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
 
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
-                        apState.getAccessPoint(),
-                        nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
+                    apState.getAccessPoint(),
+                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null,
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
     }
 
