@@ -2836,6 +2836,11 @@ public class AccessPointService {
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
     }
 
+    public Map<Integer, ApIndex> findPartIndexMap(Collection<ApAccessPoint> accessPoints, RulPartType partType) {
+        return indexRepository.findPartIndexByAccessPointsAndPartTypeAndIndexType(accessPoints, partType, DISPLAY_NAME).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+    }
+
     public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
