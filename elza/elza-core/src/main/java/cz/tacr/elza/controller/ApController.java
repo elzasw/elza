@@ -1051,8 +1051,13 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
     public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
         ApState apState = accessPointService.getApState(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(apState);
 
-        return apFactory.createValidationVO(apState.getAccessPoint());
+        if (revision != null) {
+            return ruleService.executeValidation(apState.getAccessPoint());
+        } else {
+            return apFactory.createValidationVO(apState.getAccessPoint());
+        }
     }
 
     /**
