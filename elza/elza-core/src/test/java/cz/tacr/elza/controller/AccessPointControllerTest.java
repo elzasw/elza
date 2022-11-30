@@ -133,17 +133,17 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());
+
         // create revision
         accesspointsApi.createRevision(ap1.getAccessPointId());
 
-        List<ApItemVO> items = new ArrayList<>();
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_SUP_GEN);
         Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
         RulPartTypeVO ptName = partTypes.get(ApControllerTest.PT_NAME);
 
         // add new part Karel IV
-        items = new ArrayList<>();
+        List<ApItemVO> items = new ArrayList<>();
         items.add(buildApItem(nmMainItemType.getCode(), null, "Karel", null, null));
         items.add(buildApItem(nmSupGenItemType.getCode(), null, "IV", null, null));
 
