@@ -72,7 +72,7 @@ public class ArchiveEntityVO {
             if (part.getPartId().equals(entity.getPreferredPartId())) {
                 ae.name = ApFactory.findDisplayIndexValue(part);
             } else {
-                if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
+                if (part.getPartTypeCode().equals(PartType.PT_BODY.name())) {
                     ae.description = ApFactory.findDisplayIndexValue(part);
                 }
             }
