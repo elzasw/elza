@@ -1037,6 +1037,7 @@ public class ApController {
             accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
             accessPointService.setPreferName(apAccessPoint, apPart);
+            accessPointService.updateAndValidate(accessPointId);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
         }
     }

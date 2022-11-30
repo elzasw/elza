@@ -2563,7 +2563,7 @@ public class AccessPointService {
     	if(Objects.equals(oldPrefNameId, apPart.getPartId())) {
     		return accessPoint;
     	}
-    	
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -2573,13 +2573,12 @@ public class AccessPointService {
 
         if (apPart.getParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
-        }        
+        }
        	partService.unsetPreferredPart(oldPrefNameId);
         accessPoint.setPreferredPart(apPart);
 
-        ApAccessPoint ret = saveWithLock(accessPoint);
-        updateAndValidate(ret.getAccessPointId());
-        return ret;
+        ApAccessPoint apAccessPoint = saveWithLock(accessPoint);        
+        return apAccessPoint;
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
