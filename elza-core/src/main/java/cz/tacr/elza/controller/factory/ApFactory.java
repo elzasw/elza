@@ -258,7 +258,8 @@ public class ApFactory {
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
         StaticDataProvider sdp = staticDataService.getData();
-        ApIndex bodyPartDisplayName = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        List<ApIndex> bodyPartDisplayNames = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
         String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
 
         return createVO(apState, accessPoint, name, description);
@@ -314,7 +315,8 @@ public class ApFactory {
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
         StaticDataProvider sdp = staticDataService.getData();
-        ApIndex bodyPartDisplayName = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        List<ApIndex> bodyPartDisplayNames = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
         String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
 
         List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
