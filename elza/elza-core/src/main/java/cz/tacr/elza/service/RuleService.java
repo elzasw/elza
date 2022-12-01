@@ -1293,7 +1293,8 @@ public class RuleService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint,
+                                                  final boolean includeRevision) {
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
@@ -1307,13 +1308,15 @@ public class RuleService {
         ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
         apBuilder.setAccessPoint(apState, parts, itemList);
 
-        ApRevision revision = revisionService.findRevisionByState(apState);
-        if (revision != null) {
-            List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
-            List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+        if (includeRevision) {
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
+                List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
 
-            // apply revision data
-            apBuilder.setRevision(revision, revParts, revItems);
+                // apply revision data
+                apBuilder.setRevision(revision, revParts, revItems);
+            }
         }
         Ap ap = apBuilder.build();
 
