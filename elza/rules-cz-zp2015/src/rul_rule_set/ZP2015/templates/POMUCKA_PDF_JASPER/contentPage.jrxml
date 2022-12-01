@@ -269,13 +269,8 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator("\n")
 	.setSpecSeparator(": ")
 	.setBlockSeparators("", "\n")
-	.beginBlock()
-		.setItemSeparator(", ")
-		.addValueWithTitle("ZP2015_ORIGINATOR")
-	.endBlock()
 	.setItemSeparator("\n")
 	.addValueWithTitle("ZP2015_UNIT_COUNT")
 	.setItemSeparator(", ")
@@ -339,16 +334,10 @@
 	.addValueWithTitle("ZP2015_LEGEND")
 	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
 	.addValueWithTitle("ZP2015_RECORD_LENGTH")
-    .setItemSeparator(", ")
-    .beginBlock()
-	  .addValueWithTitle("ZP2015_UNIT_DAMAGE_TYPE")
-	.endBlock()
-    .setItemSeparator("\n")
 	.addValueWithTitle("ZP2015_EXISTING_COPY")
 	.addValueWithTitle("ZP2015_COPY_SOURCE")
 	.addValueWithTitle("ZP2015_EDITION")
-	.addValueWithTitle("ZP2015_NOTE")
-	.addValueWithTitle("ZP2015_ARRANGER")]]></defaultValueExpression>
+	.addValueWithTitle("ZP2015_NOTE")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="rootShortDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -398,7 +387,7 @@
 	<variable name="detail" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isContentNode} ?
 	$P{detailFormatter}.format($F{node}):
-	$P{rootDetailFotmatter}.format($P{output})]]></variableExpression>
+	$P{rootDetailFotmatter}.format($F{node})]]></variableExpression>
 	</variable>
 	<variable name="unitDate" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></variableExpression>
