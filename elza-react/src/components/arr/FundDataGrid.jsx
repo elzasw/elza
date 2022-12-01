@@ -637,10 +637,6 @@ class FundDataGrid extends AbstractReactComponent {
         this.setFilterUrl(filter);
     }
 
-    handleChangeStructValue(valueItems) {
-        this.setState({valueItems: valueItems});
-    }
-
     handleBulkModifications(refType, dataType) {
         const {versionId, fundDataGrid, structureTypes, dispatch} = this.props;
 
@@ -714,7 +710,7 @@ class FundDataGrid extends AbstractReactComponent {
             };
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
             specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
-            let valuesIds = getValueIds(this.state.valueItems, data.values.type, data.values.ids);
+            let valuesIds = data.values.ids;
             const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
             if (response) {
                 return this.props.dispatch(
@@ -747,7 +743,6 @@ class FundDataGrid extends AbstractReactComponent {
                     checkedItemsCount={fundDataGrid.selectedIds.length}
                     versionId={versionId}
                     structureTypes={structureTypes}
-                    onStructValueChange={this.handleChangeStructValue.bind(this)}
                 />,
             ),
         );
