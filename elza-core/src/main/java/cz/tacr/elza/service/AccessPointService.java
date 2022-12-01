@@ -2832,7 +2832,7 @@ public class AccessPointService {
 
     public Map<Integer, ApIndex> findPreferredPartIndexMap(Collection<ApAccessPoint> accessPoints) {
         return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
-                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (key1, key2) -> key1));
     }
 
     public Map<Integer, ApIndex> findPartIndexMap(Collection<ApAccessPoint> accessPoints, RulPartType partType) {
