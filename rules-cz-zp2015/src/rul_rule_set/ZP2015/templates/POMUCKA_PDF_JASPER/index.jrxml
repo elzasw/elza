@@ -23,7 +23,7 @@
 		<![CDATA[]]>
 	</queryString>
 	<variable name="personFilter" class="cz.tacr.elza.print.RecordsFilter">
-		<initialValueExpression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></initialValueExpression>
+		<variableExpression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></variableExpression>
 	</variable>
 	<detail>
 		<part uuid="d7db2050-8991-444e-bf92-503b5f47b1d0">
