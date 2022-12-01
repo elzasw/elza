@@ -682,7 +682,7 @@ public class ApFactory {
         StaticDataProvider sdp = staticDataService.getData();
         Map<Integer, ApIndex> descriptionMap = ObjectListIterator.findIterable(accessPoints,
                 ap -> indexRepository.findPartIndexByAccessPointsAndPartTypeAndIndexType(ap, sdp.getDefaultBodyPartType(), DISPLAY_NAME)).stream()
-                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (key1, key2) -> key1));
 
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
