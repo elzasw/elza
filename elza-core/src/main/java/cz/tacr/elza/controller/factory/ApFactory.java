@@ -258,7 +258,9 @@ public class ApFactory {
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
         StaticDataProvider sdp = staticDataService.getData();
-        List<ApIndex> bodyPartDisplayNames = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        List<ApIndex> bodyPartDisplayNames = indexRepository
+                .findPartIndexByAccessPointsAndPartTypeAndIndexType(Collections.singletonList(accessPoint),
+                                                                    sdp.getDefaultBodyPartType(), DISPLAY_NAME);
         ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
         String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
 
@@ -315,7 +317,9 @@ public class ApFactory {
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
 
         StaticDataProvider sdp = staticDataService.getData();
-        List<ApIndex> bodyPartDisplayNames = indexRepository.findByPartTypeAndIndexType(sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        List<ApIndex> bodyPartDisplayNames = indexRepository
+                .findPartIndexByAccessPointsAndPartTypeAndIndexType(Collections.singletonList(ap),
+                                                                    sdp.getDefaultBodyPartType(), DISPLAY_NAME);
         ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
         String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
 
