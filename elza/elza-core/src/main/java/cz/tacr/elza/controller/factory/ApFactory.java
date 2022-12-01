@@ -680,6 +680,8 @@ public class ApFactory {
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
 
         StaticDataProvider sdp = staticDataService.getData();
+        // seznam ApIndex může mít ApPart(s) stejného typu ve jednom ApAccessPoint v tomto případě dojde k chybě při převodu na mapu
+        // z tohoto důvodu se používá design Collectors.toMap(keyMapper, valueMapper, (key1, key2) -> key1))
         Map<Integer, ApIndex> descriptionMap = ObjectListIterator.findIterable(accessPoints,
                 ap -> indexRepository.findPartIndexByAccessPointsAndPartTypeAndIndexType(ap, sdp.getDefaultBodyPartType(), DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (key1, key2) -> key1));
