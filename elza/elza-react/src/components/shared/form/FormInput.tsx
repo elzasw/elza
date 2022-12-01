@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, {memo, PropsWithChildren, ReactElement} from 'react';
 import {Form} from 'react-bootstrap';
-import {Autocomplete} from '../index';
+import {Autocomplete, AsyncAutocomplete} from '../index';
 
 interface IFormInputProps {
     name?: string;
@@ -136,6 +136,22 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                         >
                             {children}
                         </Autocomplete>
+                    </Form.Group>
+                );
+            case 'asyncAutocomplete':
+                return (
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <AsyncAutocomplete
+                            ref={ref}
+                            value={value}
+                            error={hasError && error}
+                            touched={touched}
+                            {...otherProps}
+                            {...inlineProps}
+                        >
+                            {children}
+                        </AsyncAutocomplete>
                     </Form.Group>
                 );
             case 'simple':

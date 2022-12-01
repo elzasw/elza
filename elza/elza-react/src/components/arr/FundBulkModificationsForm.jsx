@@ -20,7 +20,7 @@ import './FundBulkModificationsForm.scss';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import SimpleCheckListBox from './SimpleCheckListBox';
-import ValueCheckListBox from './ValueCheckListBox';
+import Tags from 'components/form/Tags';
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -53,6 +53,61 @@ const getDefaultItemsArea = props => {
         return 'page';
     }
 };
+
+const StructuredTypeField = ({refType, versionId, name}) => {
+    return <Field name={name} >{({input}) => {
+        const handleAddItem = (item) => {
+            if(!(input.value.items || []).find(({id}) => (item.id === id))){
+                input.onChange({
+                    type: input.value.type,
+                    items: [...(input.value.items || []), item]
+                });
+            }
+        }
+
+        const handleRemoveItem = (_item, index) => {
+            if(index !== -1){
+                const _array = [...input.value.items];
+                _array.splice(index, 1)
+                input.onChange(_array);
+            }
+        }
+
+        const getItems = async (search) => {
+            const response = await WebApi.getDescItemTypeValues(versionId, refType.id, search, null, 50)
+            const valueItems = response.map(({id, value}) => ({id, name: value}));
+            if(
+                search === '' 
+                    || i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(search) !== -1
+            ) {
+                valueItems.unshift({
+                    id: -1,
+                    name: i18n('arr.fund.filterSettings.value.empty'),
+                })
+            }
+            return valueItems;
+        }
+
+        const renderTagItem = ({item}) => {
+            return item.name
+        }
+
+        return <div>
+            <FormInputField 
+                {...input}
+                type={'asyncAutocomplete'}
+                disabled={false}
+                getItems={getItems}
+                onChange={handleAddItem}
+                />
+            <Tags 
+                items={input.value?.items || []} 
+                onRemove={handleRemoveItem} 
+                renderItem={renderTagItem} 
+                />
+        </div>
+    }}</Field>
+}
 
 /**
  * Formulář hledání a nahrazení.
@@ -231,8 +286,23 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return result;
     };
 
+    /**
+    * Transorm values for form submit
+    */
+    transformValues = (values) => {
+        return {
+            ...values,
+            replaceValueId: values.replaceValueId?.id,
+            values: {
+                type: values.values.type,
+                ids: values.values.items.map(({id}) => (id)),
+            }
+        }
+    }
+
     handleSubmitForm = (values) =>{
-        submitForm(FundBulkModificationsForm.validate, values, this.props, this.props.onSubmitForm, this.props.dispatch);
+        const transformedValues = this.transformValues(values);
+        submitForm(FundBulkModificationsForm.validate, transformedValues, this.props, this.props.onSubmitForm, this.props.dispatch);
     }
 
     /**
@@ -275,24 +345,21 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     valueItems: valueItems,
                 });
             });
-
-            if (structureTypes) {
-                let structTypes = objectById(structureTypes.data, versionId, 'versionId');
-                if (structTypes) {
-                    let structureType = objectById(structTypes.data, refType.structureTypeId);
-                    if (structureType) {
-                        WebApi.findStructureData(versionId, structureType.code, "", true, 0, 200).then(json => {
-                            const valueItems = json.rows.map(i => ({id: i.id, name: i.value}));
-
-                            this.setState({
-                                allValueItems: valueItems,
-                            });
-
-                        });
-                    }
-                }
-            }
         }
+    }
+
+    findStructureData = async (value = "") => {
+        const {versionId, structureTypes: structureTypesRef, refType} = this.props;
+        let structureTypes = objectById(structureTypesRef?.data, versionId, 'versionId');
+        let structureType = objectById(structureTypes?.data, refType.structureTypeId);
+
+        if (!structureType) { return; }
+
+        const {rows} = await WebApi.findStructureData(versionId, structureType.code, value, true, 0, 50);
+        return rows.map(({id, value}) => ({
+            id, 
+            name: value,
+        }));
     }
 
     render() {
@@ -336,6 +403,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             const {allValueItems} = this.state;
 
             let operationInputs = [];
+
+            console.log("bulk modification form", operationType, allValueItems)
 
             switch (operationType) {
                 case 'setSpecification':
@@ -495,18 +564,12 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         <Field
                             key={'replaceValueId'}
                             name="replaceValueId"
-                            as={'select'}
+                            type={'asyncAutocomplete'}
                             component={FormInputField}
                             label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
                             disabled={submitting}
-                        >
-                            <option />
-                            {allValueItems.map(i => (
-                                <option key={i.id} value={i.id}>
-                                    {i.name}
-                                </option>
-                            ))}
-                        </Field>,
+                            getItems={(search) => this.findStructureData(search)}
+                        />
                     );
                     break;
                 default:
@@ -524,7 +587,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     itemsArea: getDefaultItemsArea(this.props),
                     operationType: getDefaultOperationType(this.props),
                     specs: {type: 'unselected'},
-                    values: {type: 'unselected'},
+                    values: {type: 'selected'},
                 }}
             >
                 {({handleSubmit, pristine, form, submitting})=>{
@@ -572,13 +635,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                     <FormLabel>
                                         {i18n('arr.fund.bulkModifications.values')}
                                     </FormLabel>
-                                    <Field
-                                        component={ValueCheckListBox}
-                                        refType={refType}
-                                        versionId={versionId}
-                                        name={'values'}
-                                        onStructValueChange={this.props.onStructValueChange}
-                                        />
+                                    <StructuredTypeField name={'values'} refType={refType} versionId={versionId} />
                                 </FormGroup>
                             )}
 
