@@ -2732,7 +2732,7 @@ public class AccessPointService {
      * 
      */
     public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint, false);
         return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
@@ -3377,7 +3377,7 @@ public class AccessPointService {
     }
 
     public void validateEntityAndFailOnError(ApAccessPoint accessPoint) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint);
+        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint, false);
         if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
                 CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
             return;
