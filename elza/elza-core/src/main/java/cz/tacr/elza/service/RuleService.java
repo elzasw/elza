@@ -1293,7 +1293,8 @@ public class RuleService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint,
+                                                  final boolean includeRevision) {
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
@@ -1301,12 +1302,22 @@ public class RuleService {
         ApState apState = accessPointService.getStateInternal(accessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
-        Integer preferredPartId = accessPoint.getPreferredPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
         List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId());
 
         ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
         apBuilder.setAccessPoint(apState, parts, itemList);
+
+        if (includeRevision) {
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
+                List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+
+                // apply revision data
+                apBuilder.setRevision(revision, revParts, revItems);
+            }
+        }
         Ap ap = apBuilder.build();
 
         Map<PartType, List<Index>> indexMap = indexList.stream()

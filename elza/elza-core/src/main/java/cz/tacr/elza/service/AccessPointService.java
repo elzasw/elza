@@ -2563,7 +2563,7 @@ public class AccessPointService {
     	if(Objects.equals(oldPrefNameId, apPart.getPartId())) {
     		return accessPoint;
     	}
-    	
+
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -2573,13 +2573,12 @@ public class AccessPointService {
 
         if (apPart.getParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
-        }        
+        }
        	partService.unsetPreferredPart(oldPrefNameId);
         accessPoint.setPreferredPart(apPart);
 
-        ApAccessPoint ret = saveWithLock(accessPoint);
-        updateAndValidate(ret.getAccessPointId());
-        return ret;
+        ApAccessPoint apAccessPoint = saveWithLock(accessPoint);        
+        return apAccessPoint;
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
@@ -2733,7 +2732,7 @@ public class AccessPointService {
      * 
      */
     public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint, false);
         return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
@@ -2834,6 +2833,13 @@ public class AccessPointService {
     public Map<Integer, ApIndex> findPreferredPartIndexMap(Collection<ApAccessPoint> accessPoints) {
         return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+    }
+
+    // seznam ApIndex může mít ApPart(s) stejného typu ve jednom ApAccessPoint v tomto případě dojde k chybě při převodu na mapu
+    // z tohoto důvodu se používá design Collectors.toMap(keyMapper, valueMapper, (key1, key2) -> key1))
+    public Map<Integer, ApIndex> findPartIndexMap(Collection<ApAccessPoint> accessPoints, RulPartType partType) {
+        return indexRepository.findPartIndexByAccessPointsAndPartTypeAndIndexType(accessPoints, partType, DISPLAY_NAME).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (key1, key2) -> key1));
     }
 
     public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
@@ -3373,7 +3379,7 @@ public class AccessPointService {
     }
 
     public void validateEntityAndFailOnError(ApAccessPoint accessPoint) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint);
+        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint, false);
         if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
                 CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
             return;

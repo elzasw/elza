@@ -56,6 +56,11 @@ const DetailHeader: FC<Props> = ({
 
 
     const showValidationError = () => {
+        if(!validationErrors){
+            return <span className="small-button spinner">
+                <Icon glyph="fa-spinner fa-spin"/>
+            </span>
+        }
         if (validationErrors && validationErrors.length > 0) {
             return <ValidationResultIcon message={validationErrors} />;
         }
@@ -77,7 +82,9 @@ const DetailHeader: FC<Props> = ({
                         <h4 className="name">
                             <Icon glyph={'fa-file-o'}/>
                             <span className="text">{item.name}</span>
-                            {showValidationError()}
+                            <span className="validation">
+                                {showValidationError()}
+                            </span>
                         </h4>
                         {item.description &&
                             <div title={item.description} className="description">
@@ -94,7 +101,9 @@ const DetailHeader: FC<Props> = ({
                                 <h1 style={{margin: 0}}>
                                     <Icon glyph={'fa-file-o'}/>
                                     <span className="text">{item.name}</span>
-                                    {showValidationError()}
+                                    <span className="validation">
+                                        {showValidationError()}
+                                    </span>
                                 </h1>
                                 {item.replacedById != undefined && 
                                     <div style={{fontSize: "1rem"}}>

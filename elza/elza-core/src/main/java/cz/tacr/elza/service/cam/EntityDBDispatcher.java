@@ -857,6 +857,7 @@ public class EntityDBDispatcher {
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
         accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
+        accessPointService.updateAndValidate(accessPoint.getAccessPointId());
         syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",

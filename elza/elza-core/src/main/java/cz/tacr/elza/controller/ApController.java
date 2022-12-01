@@ -322,11 +322,13 @@ public class ApController {
                 .collect(Collectors.toList());
 
         final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApIndex> descriptionMap = accessPointService.findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
 
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
-                        apState.getAccessPoint(),
-                        nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
+                    apState.getAccessPoint(),
+                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null,
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
     }
 
@@ -1035,6 +1037,7 @@ public class ApController {
             accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
             accessPointService.setPreferName(apAccessPoint, apPart);
+            accessPointService.updateAndValidate(accessPointId);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
         }
     }
@@ -1047,9 +1050,15 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
+    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
         ApState apState = accessPointService.getApState(accessPointId);
 
+        if (includeRevision) {
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                return ruleService.executeValidation(apState.getAccessPoint(), true);
+            }
+        }
         return apFactory.createValidationVO(apState.getAccessPoint());
     }
 

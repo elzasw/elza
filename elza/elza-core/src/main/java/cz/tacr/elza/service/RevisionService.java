@@ -808,34 +808,36 @@ public class RevisionService {
         List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
 
+        // spojení všeh Part + revPart a Items
         Map<Integer, ApPart> savedParts = mergeParts(accessPoint, revParts, revItems, change);
 
+        // nastavení hlavního Part
         ApPart newPreferredPart = null;
         if (revision.getPreferredPartId() != null) {
             newPreferredPart = partService.getPart(revision.getPreferredPartId());
-        } else
-        if (revision.getRevPreferredPartId() != null) {
+        } else if (revision.getRevPreferredPartId() != null) {
             newPreferredPart = savedParts.get(revision.getRevPreferredPartId());
-            Validate.notNull(newPreferredPart, "RevPart for preferred name not found, revPartId: %s", revision
-                    .getRevPreferredPartId());
+            Validate.notNull(newPreferredPart, "RevPart for preferred name not found, revPartId: %s", revision.getRevPreferredPartId());
         }
         if (newPreferredPart != null) {
             accessPoint = accessPointService.setPreferName(accessPoint, newPreferredPart);
         }
 
-        //změna stavu entity
+        // změna stavu entity
         apState.setDeleteChange(change);
-        apState=stateRepository.save(apState);
+        apState = stateRepository.save(apState);
 
         ApState newState = accessPointService.copyState(apState, change);
         newState.setStateApproval(newStateApproval);
         newState.setApType(revision.getType());
         newState = stateRepository.save(newState);
 
-        //smazání revize
+        // smazání revize
         deleteRevision(revision, change, revParts, revItems);
 
+        // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+
         // Pokud je entita schvalena je nutne overit jeji bezchybnost
         if (newStateApproval == StateApproval.APPROVED) {
             if (accessPoint.getState() == ApStateEnum.ERROR) {

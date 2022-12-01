@@ -136,6 +136,15 @@
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
 	</subDataset>
+	<subDataset name="ItemCoords" uuid="99f11d1e-0c0e-4dd3-a896-388b6014c8ed">
+		<parameter name="node" class="cz.tacr.elza.print.Node"/>
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="item" class="cz.tacr.elza.print.item.ItemCoordinates">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
+	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -237,7 +246,6 @@
 	.addValueWithTitle("ZP2015_PAINTING_CHAR")
 	.addValueWithTitle("ZP2015_CORROBORATION")
 	.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-	.addValueWithTitle("ZP2015_POSITION")
 	.addValueWithTitle("ZP2015_ORIENTATION")
 	.addValueWithTitle("ZP2015_LEGEND")
 	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
@@ -269,31 +277,74 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator("\n")
 	.setSpecSeparator(": ")
-	.setBlockSeparators("","")
-	.beginBlock()
-		.addValueWithTitle("ZP2015_DATE_OTHER")
-		.addValueWithTitle("ZP2015_ITEM_TITLE")
-		.addValueWithTitle("ZP2015_PART")
-		.addValue("ZP2015_ENTITY_ROLE")
-		.addValueWithTitle("ZP2015_UNIT_ACCESS")
-		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
-		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
-		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
-		.addValueWithTitle("ZP2015_EXERQUE")
-		.addValueWithTitle("ZP2015_PAINTING_CHAR")
-		.addValueWithTitle("ZP2015_CORROBORATION")
-		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-		.addValueWithTitle("ZP2015_POSITION")
-		.addValueWithTitle("ZP2015_ORIENTATION")
-		.addValueWithTitle("ZP2015_LEGEND")
-		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
-		.addValueWithTitle("ZP2015_EXISTING_COPY")
-		.addValueWithTitle("ZP2015_COPY_SOURCE")
-		.addValueWithTitle("ZP2015_EDITION")
-		.addValueWithTitle("ZP2015_NOTE")
-	.endBlock()]]></defaultValueExpression>
+	.setBlockSeparators("", "\n")
+	.setItemSeparator("\n")
+	.addValueWithTitle("ZP2015_UNIT_COUNT")
+	.setItemSeparator(", ")
+	.setSpecFormat(" (", ")",true)
+	.addValueWithTitle("ZP2015_EXTRA_UNITS")
+	.setSpecFormat("", ": ", false)
+	.setItemSeparator("\n")
+	.setTitleSeparator(" - ")
+    .setSpecName("ZP2015_DATE_OF_CONTENT", "datace obsahu")
+	.setSpecName("ZP2015_DATE_DECLARED", "datace deklarovaná")
+	.setSpecName("ZP2015_DATE_ORIG", "datace vzniku předlohy")
+	.setSpecName("ZP2015_DATE_OF_COPY", "datace vzniku kopie")
+	.setSpecName("ZP2015_DATE_SEALING", "datace zpečetění")
+	.setSpecName("ZP2015_DATE_ACT_PUBLISHING", "datace vydání listiny")
+	.setSpecName("ZP2015_DATE_INSERT", "datace insertu/transeptu")
+	.setSpecName("ZP2015_DATE_MOLD_CREATION", "datace vzniku matrice")
+	.setSpecName("ZP2015_DATE_USAGE", "datace užívání typáře")
+	.setSpecName("ZP2015_DATE_PUBLISHING", "datace vydání dokumentu")
+	.setSpecName("ZP2015_DATE_MAP_UPDATE", "datace reambulace mapy")
+	.setSpecName("ZP2015_DATE_CAPTURING", "datace pořízení obrazového záznamu")
+	.setSpecName("ZP2015_DATE_RECORDING", "datace pořízení filmového / zvukového záznamu")
+	.setSpecName("ZP2015_DATE_AWARDING", "datace udělení / propůjčení faleristického předmětu")
+	.setSpecName("ZP2015_DATE_AWARD_CER", "datace předání faleristického předmětu")
+	.setSpecName("ZP2015_DATE_WITHDRAWAL", "datace odnětí / vrácení faleristického předmětu")
+	.setSpecName("ZP2015_DATE_LEGALLY_EFFECTIVE_FROM", "datace nabytí právní účinnosti")
+	.setSpecName("ZP2015_DATE_VALID_FROM", "datace nabytí právní platnosti")
+	.setSpecName("ZP2015_DATE_LEGALLY_EFFECTIVE_TO", "datace pozbytí právní účinnosti")
+	.setSpecName("ZP2015_DATE_VALID_TO", "datace pozbytí právní platnosti")
+	.addValue("ZP2015_DATE_OTHER")
+	.setTitleSeparator(": ")
+	.addValueWithTitle("ZP2015_ITEM_TITLE_REF")
+	.addValueWithTitle("ZP2015_PART")
+	.setGroupFormat("; ")
+	.addValue("ZP2015_ENTITY_ROLE")
+	.addValueWithTitle("ZP2015_UNIT_ACCESS")
+	.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+	.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+	.addValueWithTitle("ZP2015_SIZE_WIDTH")
+	.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+	.addValueWithTitle("ZP2015_SIZE_DEPTH")
+	.addValueWithTitle("ZP2015_SIZE_UNITS")
+    .setItemSeparator(", ")
+	.setSpecFormat(" ", "", true)		
+    .beginBlock()
+    	.addValueWithTitle("ZP2015_WEIGHT")
+	.endBlock()
+	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+	.setSpecFormat(" (", ")", true)		
+    .beginBlock()
+    	.addValueWithTitle("ZP2015_AMOUNT" )
+	.endBlock()
+	.setSpecFormat("", ": ", false)
+	.setItemSeparator("\n")
+	.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+	.addValueWithTitle("ZP2015_EXERQUE")
+	.addValueWithTitle("ZP2015_PAINTING_CHAR")
+	.addValueWithTitle("ZP2015_CORROBORATION")
+	.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+	.addValueWithTitle("ZP2015_ORIENTATION")
+	.addValueWithTitle("ZP2015_LEGEND")
+	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+	.addValueWithTitle("ZP2015_RECORD_LENGTH")
+	.addValueWithTitle("ZP2015_EXISTING_COPY")
+	.addValueWithTitle("ZP2015_COPY_SOURCE")
+	.addValueWithTitle("ZP2015_EDITION")
+	.addValueWithTitle("ZP2015_NOTE")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="rootShortDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -305,8 +356,7 @@
 	.beginBlock().addValue("ZP2015_SCALE").endBlock()
 	.beginBlock().addValue("ZP2015_SIZE").endBlock()
 	.beginBlock().addValue("ZP2015_WRITING").endBlock()	
-	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()
-]]></defaultValueExpression>
+	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
@@ -344,7 +394,7 @@
 	<variable name="detail" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isContentNode} ?
 	$P{detailFormatter}.format($F{node}):
-	$P{rootDetailFotmatter}.format($P{output})]]></variableExpression>
+	$P{rootDetailFotmatter}.format($F{node})]]></variableExpression>
 	</variable>
 	<variable name="unitDate" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></variableExpression>
@@ -588,6 +638,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="2bc5262b-fa8b-4cf9-8e36-36e36b522d36">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</reportElement>
+							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
@@ -598,8 +649,112 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 			</componentElement>
 			<staticText>
 				<reportElement style="Item" x="0" y="0" width="50" height="13" isRemoveLineWhenBlank="true" uuid="4fad29fe-addb-415e-a76f-44c104c5e58c"/>
-				<text><![CDATA[Spojeno s:]]></text>
+				<text><![CDATA[spojeno s:]]></text>
 			</staticText>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_RELATED_UNITS_LINK") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="40" height="13" isRemoveLineWhenBlank="true" uuid="f3f3c75c-6dbf-4fc1-8ecc-612abc848dd4"/>
+				<text><![CDATA[odkazy:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="40" y="0" width="414" height="13" isRemoveLineWhenBlank="true" uuid="2884ae47-d2e6-4707-9ac0-3b3649763cda">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemLinks" uuid="b3f9bec1-6ce5-481f-a6b0-d7c4715258b7">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_RELATED_UNITS_LINK") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="414">
+						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
+							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_DAO_LINK") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="57" height="13" isRemoveLineWhenBlank="true" uuid="a9ed73fe-071c-43e3-a196-a11a8b0d9628">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<text><![CDATA[digitalizáty:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="57" y="0" width="397" height="13" isRemoveLineWhenBlank="true" uuid="05a5ce3f-1940-4299-b206-42571cbec5ca">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemLinks" uuid="42e56759-0463-4a18-8831-6fe15589fb28">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_DAO_LINK") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="397">
+						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
+							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="741a3653-62b2-4056-b1ee-7244a5113787">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="57" height="13" isRemoveLineWhenBlank="true" uuid="576b6746-2437-4b0b-b717-faa5f94d359d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<text><![CDATA[souřadnice:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="57" y="0" width="397" height="13" isRemoveLineWhenBlank="true" uuid="ce42ed8d-e77a-46d0-814a-8e9de39f7c0b">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemCoords" uuid="98fe8f2f-843f-4239-af71-f815abe03bad">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="397">
+						<textField textAdjust="StretchHeight" hyperlinkType="RemoteAnchor">
+							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="bd615070-bb7f-44a1-bc33-c3e5ce73f68e">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA["GPS souřadnice uvedeny v elektronické formě pomůcky"]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkReferenceExpression>
+							<hyperlinkWhenExpression><![CDATA[true]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkTooltipExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
 		</band>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -615,7 +770,6 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 		</band>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$F{node}.getNodeId().isPublished()]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#336699" uuid="3c1bed84-a8d7-4689-b873-651991dc790d">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>

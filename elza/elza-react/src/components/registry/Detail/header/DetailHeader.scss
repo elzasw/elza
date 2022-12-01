@@ -42,6 +42,18 @@
                 .text {
                     margin-left: 10px;
                 }
+                .validation {
+                    font-size: 0.9em;
+                    .small-button {
+                        padding: 0;
+                        margin: 0;
+                        margin-left: 10px;
+
+                        &.spinner {
+                            opacity: 0.6;
+                        }
+                    }
+                }
             }
             .description {
                 font-size: 1rem;
