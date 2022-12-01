@@ -696,7 +696,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 					</datasetRun>
 					<jr:listContents height="13" width="394">
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
-							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="741a3653-62b2-4056-b1ee-7244a5113787">
+							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="741a3653-62b2-4056-b1ee-7244a5113787">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</reportElement>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
