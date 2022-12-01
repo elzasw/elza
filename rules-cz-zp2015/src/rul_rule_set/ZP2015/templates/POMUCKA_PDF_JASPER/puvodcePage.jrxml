@@ -253,7 +253,7 @@
 					<jr:listContents height="20" width="425">
 						<textField textAdjust="StretchHeight">
 							<reportElement positionType="Float" x="0" y="0" width="425" height="20" isRemoveLineWhenBlank="true" uuid="26f2a3a5-09e4-4c78-95cc-47bfbd1ae5cd"/>
-							<textElement markup="html">
+							<textElement markup="none">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$F{part}.getValue()+ ((StringUtils.isBlank($F{part}.getSingleItemValue("NOTE")))?"":("; "+$F{part}.getSingleItemValue("NOTE")))]]></textFieldExpression>
@@ -297,7 +297,7 @@
 					<jr:listContents height="20" width="425">
 						<textField textAdjust="StretchHeight">
 							<reportElement positionType="Float" x="0" y="0" width="425" height="20" isRemoveLineWhenBlank="true" uuid="a05c2199-e83d-4171-9904-1be59ba11db4"/>
-							<textElement markup="html">
+							<textElement markup="none">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$F{part}.getValue()+ ((StringUtils.isBlank($F{part}.getSingleItemValue("NOTE")))?"":("; "+$F{part}.getSingleItemValue("NOTE")))]]></textFieldExpression>
@@ -339,7 +339,7 @@
 									<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{part}.getParts())]]></dataSourceExpression>
 								</datasetRun>
 								<jr:listContents height="15" width="425">
-									<textField>
+									<textField textAdjust="StretchHeight">
 										<reportElement x="0" y="0" width="425" height="15" uuid="7a4fc7e2-7240-42f9-84de-8e5316a887c0"/>
 										<textFieldExpression><![CDATA[$F{part}.getValue()+ ((StringUtils.isBlank($F{part}.getSingleItemValue("NOTE")))?"":("; "+$F{part}.getSingleItemValue("NOTE")))]]></textFieldExpression>
 									</textField>
