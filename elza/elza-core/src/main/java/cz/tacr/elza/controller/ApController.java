@@ -1050,11 +1050,9 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
+    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
         ApState apState = accessPointService.getApState(accessPointId);
 
-        // TODO: Add optional parameter to REST API
-        boolean includeRevision = false;
         if (includeRevision) {
             ApRevision revision = revisionService.findRevisionByState(apState);
             if (revision != null) {
