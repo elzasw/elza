@@ -136,6 +136,15 @@
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
 	</subDataset>
+	<subDataset name="ItemCoords" uuid="99f11d1e-0c0e-4dd3-a896-388b6014c8ed">
+		<parameter name="node" class="cz.tacr.elza.print.Node"/>
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="item" class="cz.tacr.elza.print.item.ItemCoordinates">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
+	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -237,7 +246,6 @@
 	.addValueWithTitle("ZP2015_PAINTING_CHAR")
 	.addValueWithTitle("ZP2015_CORROBORATION")
 	.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-	.addValueWithTitle("ZP2015_POSITION")
 	.addValueWithTitle("ZP2015_ORIENTATION")
 	.addValueWithTitle("ZP2015_LEGEND")
 	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
@@ -329,7 +337,6 @@
 	.addValueWithTitle("ZP2015_PAINTING_CHAR")
 	.addValueWithTitle("ZP2015_CORROBORATION")
 	.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-	.addValueWithTitle("ZP2015_POSITION")
 	.addValueWithTitle("ZP2015_ORIENTATION")
 	.addValueWithTitle("ZP2015_LEGEND")
 	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
@@ -642,7 +649,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 			</componentElement>
 			<staticText>
 				<reportElement style="Item" x="0" y="0" width="50" height="13" isRemoveLineWhenBlank="true" uuid="4fad29fe-addb-415e-a76f-44c104c5e58c"/>
-				<text><![CDATA[Spojeno s:]]></text>
+				<text><![CDATA[spojeno s:]]></text>
 			</staticText>
 		</band>
 		<band height="13">
@@ -650,7 +657,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_RELATED_UNITS_LINK") ).size()>0]]></printWhenExpression>
 			<staticText>
 				<reportElement style="Item" x="0" y="0" width="40" height="13" isRemoveLineWhenBlank="true" uuid="f3f3c75c-6dbf-4fc1-8ecc-612abc848dd4"/>
-				<text><![CDATA[Odkazy:]]></text>
+				<text><![CDATA[odkazy:]]></text>
 			</staticText>
 			<componentElement>
 				<reportElement style="Item" stretchType="ContainerHeight" x="40" y="0" width="414" height="13" isRemoveLineWhenBlank="true" uuid="2884ae47-d2e6-4707-9ac0-3b3649763cda">
@@ -685,7 +692,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 				<reportElement style="Item" x="0" y="0" width="57" height="13" isRemoveLineWhenBlank="true" uuid="a9ed73fe-071c-43e3-a196-a11a8b0d9628">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
-				<text><![CDATA[Digitalizáty:]]></text>
+				<text><![CDATA[digitalizáty:]]></text>
 			</staticText>
 			<componentElement>
 				<reportElement style="Item" stretchType="ContainerHeight" x="57" y="0" width="397" height="13" isRemoveLineWhenBlank="true" uuid="05a5ce3f-1940-4299-b206-42571cbec5ca">
@@ -708,6 +715,42 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="57" height="13" isRemoveLineWhenBlank="true" uuid="576b6746-2437-4b0b-b717-faa5f94d359d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<text><![CDATA[souřadnice:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="57" y="0" width="397" height="13" isRemoveLineWhenBlank="true" uuid="ce42ed8d-e77a-46d0-814a-8e9de39f7c0b">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemCoords" uuid="98fe8f2f-843f-4239-af71-f815abe03bad">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="397">
+						<textField textAdjust="StretchHeight" hyperlinkType="RemoteAnchor">
+							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="bd615070-bb7f-44a1-bc33-c3e5ce73f68e">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA["GPS souřadnice uvedeny v elektronické formě pomůcky"]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkReferenceExpression>
+							<hyperlinkWhenExpression><![CDATA[true]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkTooltipExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
