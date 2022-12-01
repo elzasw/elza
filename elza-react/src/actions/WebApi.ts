@@ -1020,8 +1020,8 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @return validační chyby přístupového bodu
      */
-    validateAccessPoint(accessPointId: number): Promise<ApValidationErrorsVO> {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/validate');
+    validateAccessPoint(accessPointId: number, includeRevision?: boolean): Promise<ApValidationErrorsVO> {
+        return AjaxUtils.ajaxGet(`${WebApiCls.registryUrl}/${accessPointId}/validate${includeRevision ? '?includeRevision=true' : ''}`);
     }
 
     /**

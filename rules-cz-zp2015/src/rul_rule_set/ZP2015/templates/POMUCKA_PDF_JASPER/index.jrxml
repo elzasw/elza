@@ -23,7 +23,7 @@
 		<![CDATA[]]>
 	</queryString>
 	<variable name="personFilter" class="cz.tacr.elza.print.RecordsFilter">
-		<initialValueExpression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></initialValueExpression>
+		<variableExpression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></variableExpression>
 	</variable>
 	<detail>
 		<part uuid="d7db2050-8991-444e-bf92-503b5f47b1d0">
@@ -124,6 +124,9 @@
 				<subreportParameter name="registryName">
 					<subreportParameterExpression><![CDATA["Rejstřík korporativní"]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
@@ -138,6 +141,9 @@
 				</subreportParameter>
 				<subreportParameter name="registryName">
 					<subreportParameterExpression><![CDATA["Rejstřík osobní"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="REPORT_DATA_SOURCE">
 					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getFilteredRecords($V{personFilter}).getRecords())]]></subreportParameterExpression>
@@ -160,6 +166,9 @@
 				<subreportParameter name="registryName">
 					<subreportParameterExpression><![CDATA["Rejstřík zeměpisný"]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
@@ -177,6 +186,9 @@
 				</subreportParameter>
 				<subreportParameter name="fund">
 					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
 			</p:subreportPart>
@@ -196,6 +208,9 @@
 				<subreportParameter name="output">
 					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
 			</p:subreportPart>
 		</part>
@@ -207,6 +222,9 @@
 				</subreportParameter>
 				<subreportParameter name="registryName">
 					<subreportParameterExpression><![CDATA["Rejstřík věcný"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printDescription">
+					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="fund">
 					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>

@@ -140,7 +140,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     useEffect(() => {
         fetchViewSettings();
         if(detail.fetched && detail.data){
-            refreshValidation(id);
+            refreshValidation(id, revisionActive);
         }
     }, [id, detail]);
 
@@ -184,7 +184,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             saveScrollPosition();
             part ? await setPreferred(id, nextPreferredPart.id) : await setRevisionPreferred(id, nextPreferredPart.id);
             restoreScrollPosition();
-            refreshValidation(id);
+            refreshValidation(id, revisionActive);
         }
     };
 
@@ -200,7 +200,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 restoreScrollPosition();
             }
 
-            refreshValidation(id);
+            refreshValidation(id, revisionActive);
         }
     };
 
@@ -212,7 +212,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             saveScrollPosition();
             await deleteRevisionPart(id, updatedPart.id);
             restoreScrollPosition();
-            refreshValidation(id);
+            refreshValidation(id, revisionActive);
         }
     }
 
@@ -246,7 +246,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 !!detail.data.revStateApproval,
                 () => restoreScrollPosition()
             );
-        refreshValidation(id);
+        refreshValidation(id, revisionActive);
     };
 
     const handleAdd = (partType: RulPartTypeVO, parentPartId?: number, revParentPartId?: number) => {
@@ -262,7 +262,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 revParentPartId
             );
         }
-        refreshValidation(id);
+        refreshValidation(id, revisionActive);
     };
 
     const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
@@ -309,7 +309,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     const groupedRevisionParts = groupPartsByType(filteredRevisionParts);
-    const validationResult = apValidation.data;
+    const validationResult = apValidation.isFetching ? undefined : apValidation.data;
 
     const getSectionValidationErrors = (parts:RevisionPart[] = []) => {
         const errors:PartValidationErrorsVO[] = [];
@@ -341,7 +341,10 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     id={detail.data!.id}
                     collapsed={collapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
-                    onToggleRevision={() => setRevisionActive(!revisionActive)}
+                    onToggleRevision={() => {
+                        setRevisionActive(!revisionActive);
+                        refreshValidation(id, !revisionActive);
+                    }}
                     validationErrors={validationResult && validationResult.errors}
                     onInvalidateDetail={() => refreshDetail(detail.data!.id)}
                     revisionActive={revisionActive}
@@ -481,17 +484,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
             partTypeCode: typeCode,
         })
     },
-    refreshValidation: (apId: number) => {
-        dispatch(
-            DetailActions.fetchIfNeeded(
-                AP_VALIDATION,
-                apId,
-                id => {
-                    return WebApi.validateAccessPoint(id);
-                },
-                true,
-            ),
-        );
+    refreshValidation: (apId: number, includeRevision?: boolean) => {
+        dispatch(DetailActions.fetchIfNeeded(
+            AP_VALIDATION,
+            apId,
+            (id: number) => WebApi.validateAccessPoint(id, includeRevision),
+            true
+        ));
     },
     refreshDetail: (apId: number, force: boolean = true, redirect: boolean = true) => {
         dispatch(goToAe(history, apId, force, redirect));

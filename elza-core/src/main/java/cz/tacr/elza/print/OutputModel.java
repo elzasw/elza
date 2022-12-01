@@ -67,6 +67,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.ItemSpec;
@@ -395,6 +396,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public FilteredRecords getFilteredRecords(RecordsFilter filter) {
+        if (filter == null) {
+            throw new BusinessException("Filter is null", BaseCode.INVALID_STATE);
+        }
+
         if (lastFilteredRecords == null || !lastFilteredRecords.getFilter().equals(filter)) {
             lastFilteredRecords = filterRecords(filter);
         }

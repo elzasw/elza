@@ -355,12 +355,28 @@ public class DateRangeAction extends Action {
      * @param datePriorMax
      */
     private void appendTimeInterval(StringBuilder sb, ArrDataUnitdate minDate, ArrDataUnitdate maxDate) {
+        String minDateStr, maxDateStr;
         if (minDate != null) {
-            sb.append(UnitDateConvertor.beginToString(minDate, true));
+            minDateStr = UnitDateConvertor.beginToString(minDate, true);
+        } else {
+            minDateStr = null;
+        }
+        if (maxDate != null) {
+            maxDateStr = UnitDateConvertor.endToString(maxDate, true);
+        } else {
+            maxDateStr = null;
+        }
+
+        if (minDateStr != null) {
+            sb.append(minDateStr);
+            // if same value -> do not repeat
+            if (minDateStr.equals(maxDateStr)) {
+                return;
+            }
         }
         sb.append("-");
-        if (maxDate != null) {
-            sb.append(UnitDateConvertor.endToString(maxDate, true));
+        if (maxDateStr != null) {
+            sb.append(maxDateStr);
         }
     }
 
