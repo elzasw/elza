@@ -256,7 +256,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{part}.getValue()+ ((StringUtils.isBlank($F{part}.getSingleItemValue("NOTE")))?"":("; "+$F{part}.getSingleItemValue("NOTE")))]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -300,7 +300,7 @@
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{part}.getValue()+ ((StringUtils.isBlank($F{part}.getSingleItemValue("NOTE")))?"":("; "+$F{part}.getSingleItemValue("NOTE")))]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
