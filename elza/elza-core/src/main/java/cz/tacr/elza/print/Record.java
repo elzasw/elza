@@ -28,6 +28,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -240,7 +241,9 @@ public class Record {
         if (eids == null) {
             return "";
         } else {
-            return eids.stream().map(eid -> {
+            return eids.stream()
+                    .filter(eid -> !eid.getType().getType().equals(ApExternalSystemType.CAM_UUID))
+                    .map(eid -> {
                 return eid.getType().getName() + ": " + eid.getValue();
             }).collect(Collectors.joining(", "));
         }
