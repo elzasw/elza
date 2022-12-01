@@ -646,6 +646,70 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 		</band>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_RELATED_UNITS_LINK") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="50" height="13" isRemoveLineWhenBlank="true" uuid="f3f3c75c-6dbf-4fc1-8ecc-612abc848dd4"/>
+				<text><![CDATA[Odkazy:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="50" y="0" width="404" height="13" isRemoveLineWhenBlank="true" uuid="2884ae47-d2e6-4707-9ac0-3b3649763cda">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemLinks" uuid="b3f9bec1-6ce5-481f-a6b0-d7c4715258b7">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_RELATED_UNITS_LINK") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="404">
+						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
+							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getItems( java.util.Collections.singletonList("ZP2015_DAO_LINK") ).size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement style="Item" x="0" y="0" width="60" height="13" isRemoveLineWhenBlank="true" uuid="a9ed73fe-071c-43e3-a196-a11a8b0d9628"/>
+				<text><![CDATA[Digitalizáty:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement style="Item" stretchType="ContainerHeight" x="60" y="0" width="394" height="13" isRemoveLineWhenBlank="true" uuid="05a5ce3f-1940-4299-b206-42571cbec5ca">
+					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="ItemLinks" uuid="42e56759-0463-4a18-8831-6fe15589fb28">
+						<datasetParameter name="node">
+							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_DAO_LINK") ))]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="13" width="394">
+						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
+							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="741a3653-62b2-4056-b1ee-7244a5113787">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#FF00CC" uuid="674eef49-aa12-47b5-964c-4681de760f53">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
