@@ -750,7 +750,7 @@ class NodePanel extends AbstractReactComponent {
             if (errors && errors.length > 0) {
                 messages.push(
                     <div key="errors" className="error">
-                        Chyby
+                        {i18n('arr.node.status.err.errors')}
                     </div>,
                 );
                 errors.forEach(error => {
@@ -775,7 +775,7 @@ class NodePanel extends AbstractReactComponent {
             if (missings && missings.length > 0) {
                 messages.push(
                     <div key="missings" className="missing">
-                        Chybějící
+                        {i18n('arr.node.status.err.missing')}
                     </div>,
                 );
                 missings.forEach(missing => {
@@ -814,7 +814,7 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-exclamation-circle" />;
                     tooltip = (
                         <div>
-                            {i18n('arr.node.status.err')} {description} {messages}
+                             {description} {messages}
                         </div>
                     );
                 }
