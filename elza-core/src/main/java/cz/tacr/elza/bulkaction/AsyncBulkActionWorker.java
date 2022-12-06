@@ -20,12 +20,18 @@ import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
 
 @Component
 @Scope("prototype")
 public class AsyncBulkActionWorker implements IAsyncWorker {
+
     private static final Logger logger = LoggerFactory.getLogger(AsyncBulkActionWorker.class);
+
+    @Autowired
+    private OutputServiceInternal outputServiceInternal;
 
     @Autowired
     protected BulkActionHelperService bulkActionHelperService;
@@ -81,11 +87,11 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         } catch (Throwable e) {
             logger.error("Failed to start action: {}", this, e);
             try {
-            new TransactionTemplate(transactionManager).execute(status -> {
-                handleException(e);
-                return null;
-            });
-        } catch (Throwable eI) {
+                new TransactionTemplate(transactionManager).execute(status -> {
+                    handleException(e);
+                    return null;
+                });
+            } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
                 throw eI;
             }
@@ -100,11 +106,11 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         } catch (Throwable e) {
             logger.error("Bulk action failed, action: " + this + ", error: ", e);
             try {
-            new TransactionTemplate(transactionManager).execute(status -> {
-                handleException(e);
-                return null;
-            });
-        } catch (Throwable eI) {
+                new TransactionTemplate(transactionManager).execute(status -> {
+                    handleException(e);
+                    return null;
+                });
+            } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
                 throw eI;
             }
@@ -162,6 +168,14 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         bulkActionRun.setError(e.getLocalizedMessage());
         bulkActionRun.setState(ArrBulkActionRun.State.ERROR);
+
+        // protože hromadná akce skončila chybou vrátíme výstup do původního stavu
+        List<Integer> nodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);        
+        outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
+                                                        nodeIds,
+                                                        ArrOutput.OutputState.OPEN,
+                                                        ArrOutput.OutputState.COMPUTING);
+
         bulkActionHelperService.updateAction(bulkActionRun);
         eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, e));
     }
