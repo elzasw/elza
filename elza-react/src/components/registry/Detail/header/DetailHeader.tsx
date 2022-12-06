@@ -19,15 +19,19 @@ import DetailRevState from "./DetailRevState";
 import DetailState from './DetailState';
 import { EntityBindings } from './EntityBindings';
 import { ReplacedEntities } from './ReplacedEntities';
+import { PartValidationErrorsVO } from 'api/PartValidationErrorsVO';
+import { Api } from 'api';
 
 interface Props {
     item: ApAccessPointVO;
     onToggleCollapsed?: () => void;
     onInvalidateDetail?: () => void;
+    onInvalidateValidation?: () => void;
     onToggleRevision?: () => void;
     collapsed: boolean;
     id?: number;
     validationErrors?: string[];
+    validationPartErrors?: PartValidationErrorsVO[]
     revisionActive?: boolean;
 }
 
@@ -40,12 +44,14 @@ const getItemState = (item: ApAccessPointVO) => {
 
 const DetailHeader: FC<Props> = ({
     onInvalidateDetail,
+    onInvalidateValidation,
     item,
     id,
     collapsed,
     onToggleCollapsed,
     onToggleRevision,
     validationErrors,
+    validationPartErrors,
     revisionActive,
 }) => {
     const scopes = useSelector(({ refTables: { scopesData } }:AppState) =>
@@ -53,26 +59,25 @@ const DetailHeader: FC<Props> = ({
     const apTypesMap = useSelector(({refTables}:AppState) => refTables.recordTypes.itemsMap);
     const apType = apTypesMap[item.typeId] as any;
     const apTypeNew = apTypesMap[item.newTypeId] as any;
+    const itemState = getItemState(item);
+    const errorsFetched = validationErrors && validationPartErrors;
+    const hasErrors = (validationErrors && validationErrors.length > 0) || (validationPartErrors && validationPartErrors.length > 0);
 
-
-    const showValidationError = () => {
-        if(!validationErrors){
-            return <span className="small-button spinner">
-                <Icon glyph="fa-spinner fa-spin"/>
-            </span>
-        }
-        if (validationErrors && validationErrors.length > 0) {
-            return <ValidationResultIcon message={validationErrors} />;
+    const renderValidationIcon = () => {
+        if(!validationErrors || !validationPartErrors){
+            return <Icon glyph="fa-spinner fa-spin"/>
+        } else if (validationErrors.length > 0 || validationPartErrors.length > 0) {
+            return <Icon glyph="fa-exclamation-triangle"/>
+        } else {
+            return <Icon glyph="fa-check-circle"/>
         }
     };
-
 
     let scope: FundScope | null = null;
     if (item.scopeId) {
         scope = objectById(scopes, item.scopeId);
     }
 
-    const itemState = getItemState(item);
 
     return (
         <div className={'detail-header-wrapper'}>
@@ -82,9 +87,6 @@ const DetailHeader: FC<Props> = ({
                         <h4 className="name">
                             <Icon glyph={'fa-file-o'}/>
                             <span className="text">{item.name}</span>
-                            <span className="validation">
-                                {showValidationError()}
-                            </span>
                         </h4>
                         {item.description &&
                             <div title={item.description} className="description">
@@ -101,9 +103,6 @@ const DetailHeader: FC<Props> = ({
                                 <h1 style={{margin: 0}}>
                                     <Icon glyph={'fa-file-o'}/>
                                     <span className="text">{item.name}</span>
-                                    <span className="validation">
-                                        {showValidationError()}
-                                    </span>
                                 </h1>
                                 {item.replacedById != undefined && 
                                     <div style={{fontSize: "1rem"}}>
@@ -149,6 +148,41 @@ const DetailHeader: FC<Props> = ({
                                     </DetailDescriptionsItem>
                                 </TooltipTrigger>
                             )}
+                            <TooltipTrigger style={{width:"auto"}} content={  <div>
+                                {hasErrors
+                                    ?
+                                    <div>
+                                        <div>
+                                            <b>{i18n('arr.node.status.err.errors')}</b>
+                                        </div>
+                                        <div>
+                                            {validationErrors?.map((error) => {return <div> {error}</div>})}
+                                        </div>
+                                        <div>
+                                            {validationPartErrors?.map((partErrors) => <div>
+                                                {partErrors.errors?.map((error) => <div> {error}</div>)}
+                                            </div>)}
+                                        </div>
+                                    </div>
+                                    : errorsFetched ? i18n('arr.node.status.ok') : i18n('global.validation.loading')}
+                                {!revisionActive && errorsFetched && <div>
+                                    <button className="tooltip-link" onClick={async () => { 
+                                        if(id != undefined) {
+                                            await Api.accesspoints.validateAccessPoint(id.toString())
+                                            if(onInvalidateValidation) onInvalidateValidation();
+                                        }
+                                    }}>{i18n('global.validation.run')}</button>
+                                </div>}
+                                
+                            </div>
+                            }>
+                                <DetailDescriptionsItem className={hasErrors ? "invalid" : undefined}>
+                                    <div>
+                                        {renderValidationIcon()}
+                                    </div>
+                                </DetailDescriptionsItem>
+                            </TooltipTrigger>
+
                             {scope && (
                                 <DetailDescriptionsItem>
                                     <Icon glyph={'fa-globe'} className={'mr-1'} />
