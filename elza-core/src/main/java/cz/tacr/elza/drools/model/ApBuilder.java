@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.DataType;
@@ -43,6 +45,7 @@ import cz.tacr.elza.service.cache.CachedPart;
 
 public class ApBuilder {
 
+    private static final Logger logger = LoggerFactory.getLogger(ApBuilder.class);
 
     private Integer id;
     private Integer preferredPartId;
@@ -158,7 +161,10 @@ public class ApBuilder {
         }
 
         AbstractItem prevAbstrItem = objectIdItemMap.put(objectId, abstractItem);
-        Validate.isTrue(prevAbstrItem == null);
+        if (prevAbstrItem != null) {
+            logger.error("Item nesmí být dvakrát, objectId: {}, itemId: {}, dataType: {}", objectId, itemId, dataType);
+            throw new SystemException("Item can't be twice, objectId: " + objectId + ", itemId: " + itemId + ", fataType: " + dataType, INVALID_STATE);
+        }
 
         return abstractItem;
     }
