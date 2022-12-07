@@ -630,14 +630,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 </FormGroup>
                             )}
 
-                            {dataType.code === "STRUCTURED" && (
-                                <FormGroup>
-                                    <FormLabel>
-                                        {i18n('arr.fund.bulkModifications.values')}
-                                    </FormLabel>
-                                    <StructuredTypeField name={'values'} refType={refType} versionId={versionId} />
-                                </FormGroup>
-                            )}
                             <FormGroup>
                                 <FormLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</FormLabel>
                                 <Field
