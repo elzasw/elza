@@ -228,9 +228,13 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                 + " AND i.node IN (:nodes) AND i.deleteChange IS NULL";
 
         if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
-            hql += " AND i.data IN (SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObjectId IN :stuctureObjectIds)";
+            if (stuctureObjectIds.iterator().next() == -1) { // vybrat pouze prázdné hodnoty
+                hql += " AND i.data IS NULL";
+            } else {
+                hql += " AND i.data IN (SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObjectId IN :stuctureObjectIds)";
+            }
         }
-
+        
         if (itemType.getUseSpecification()) {
             hql += " AND i.itemSpec IN (:specs)";
         }
@@ -238,7 +242,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         Query query = entityManager.createQuery(hql);
         query.setParameter("itemType", itemType);
         query.setParameter("nodes", nodes);
-        if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
+        if (!CollectionUtils.isEmpty(stuctureObjectIds) && stuctureObjectIds.iterator().next() != -1) {
             query.setParameter("stuctureObjectIds", stuctureObjectIds);
         }
         if (itemType.getUseSpecification()) {

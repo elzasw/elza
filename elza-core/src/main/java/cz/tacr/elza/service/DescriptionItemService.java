@@ -2077,33 +2077,28 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         List<ArrDescItem> descItems = new ArrayList<>();
 
         if (descItemType.getDataType().getCode().equals(DataType.STRUCTURED.getCode())) {
-            if (CollectionUtils.isNotEmpty(valueIds)) {
-                if (allNodes) {
-                    Integer rootNodeId = version.getRootNode().getNodeId();
-                    Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
-                    nodeIds.add(rootNodeId);
-                    for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
-                                                                   ObjectListIterator.getMaxBatchSize())) {
-                        descItems.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, descItemType, null, valueIds));
-                    }
-                } else {
-                    descItems = descItemRepository.findByNodesContainingStructureObjectIds(nodes, descItemType, null, valueIds);
+            if (allNodes) {
+                Integer rootNodeId = version.getRootNode().getNodeId();
+                Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+                nodeIds.add(rootNodeId);
+                for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
+                                                               ObjectListIterator.getMaxBatchSize())) {
+                    descItems.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, descItemType, null, valueIds));
                 }
+            } else {
+                descItems = descItemRepository.findByNodesContainingStructureObjectIds(nodes, descItemType, null, valueIds);
             }
         } else {
             if (allNodes) {
                 descItems = descItemType.getUseSpecification() ?
-                        descItemRepository
-                                .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                        descItemRepository.findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
                         descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
             } else {
                 descItems = descItemType.getUseSpecification() ?
-                        descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
-                                specifications) :
+                        descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
                         descItemRepository.findOpenByNodesAndType(nodes, descItemType);
             }
         }
-
 
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
@@ -2114,7 +2109,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
-            	
+
                 deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
 
