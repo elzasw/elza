@@ -220,28 +220,27 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                                                                      final Set<RulItemSpec> specifications,
                                                                      final Collection<Integer> stuctureObjectIds) {
 
-        if(CollectionUtils.isEmpty(stuctureObjectIds)){
-            throw new IllegalArgumentException("Kolekce id strukturovaných typů nesmí být prázdná.");
-        }
-
-        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+        if (itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE di.data IN " +
-                "(SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObjectId IN :stuctureObjectIds)"
-                + " AND di.itemType = :itemType";
+        String hql = "SELECT i FROM arr_item i JOIN FETCH i.data d WHERE i.itemType = :itemType"
+                + " AND i.node IN (:nodes) AND i.deleteChange IS NULL";
 
-        if(itemType.getUseSpecification()){
-            hql+= " AND di.itemSpec IN (:specs)";
+        if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
+            hql += " AND i.data IN (SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObjectId IN :stuctureObjectIds)";
         }
 
-        hql += " AND di.node IN (:nodes) AND di.deleteChange IS NULL";
+        if (itemType.getUseSpecification()) {
+            hql += " AND i.itemSpec IN (:specs)";
+        }
 
         Query query = entityManager.createQuery(hql);
         query.setParameter("itemType", itemType);
         query.setParameter("nodes", nodes);
-        query.setParameter("stuctureObjectIds", stuctureObjectIds);
+        if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
+            query.setParameter("stuctureObjectIds", stuctureObjectIds);
+        }
         if (itemType.getUseSpecification()) {
             query.setParameter("specs", specifications);
         }
