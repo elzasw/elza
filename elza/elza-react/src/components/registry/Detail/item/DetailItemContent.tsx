@@ -62,6 +62,7 @@ const DetailItemContent: FC<Props> = ({
     let customFieldRender = false;
 
     let valueField: React.ReactNode;
+    let textValue:string;
 
     switch (dataType.code) {
         case RulDataTypeCodeEnum.INT:
@@ -72,7 +73,7 @@ const DetailItemContent: FC<Props> = ({
         case RulDataTypeCodeEnum.STRING:
         case RulDataTypeCodeEnum.TEXT:
         case RulDataTypeCodeEnum.FORMATTED_TEXT:
-            let textValue = (item as ApItemStringVO).value;
+            textValue = (item as ApItemStringVO).value;
             const prevTextValue = (prevItem as ApItemStringVO | undefined)?.value;
             const updatedTextValue = (updatedItem as ApItemStringVO | undefined)?.value;
 
