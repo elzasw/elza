@@ -85,11 +85,9 @@ public class ApBuilder {
     }
 
     private AbstractItem createItem(ApItem item) {
-
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
         DataType dataType = itemType.getDataType();
-        String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode()
-                : null;
+        String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode() : null;
 
         return createItem(item.getObjectId(), item.getItemId(), dataType, itemType, itemSpecCode, item.getData());
     }
@@ -97,10 +95,10 @@ public class ApBuilder {
     private AbstractItem createItem(ApRevItem revItem) {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(revItem.getItemTypeId());
         DataType dataType = itemType.getDataType();
-        String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId())
-                .getCode() : null;
+        String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId()).getCode() : null;
+        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();  
 
-        return createItem(revItem.getObjectId(), null, dataType, itemType, itemSpecCode, revItem.getData());
+        return createItem(objectId, null, dataType, itemType, itemSpecCode, revItem.getData());
     }
 
     private AbstractItem createItem(Integer objectId,
