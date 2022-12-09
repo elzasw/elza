@@ -543,8 +543,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderRightPanel(readMode, closed) {
-        const {descItemTypes} = this.props;
+        const {descItemTypes, userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
+
+        if (!userDetail.hasFundActionPage(fund.id)) {
+            //Pokud uživatel nemá oprávnění spouštět funkce
+            return null;
+        }
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         const fetched =
             fundOutputDetail.fetched &&
@@ -645,7 +650,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasArrOutputPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
     renderFunctionsPanel(readMode) {

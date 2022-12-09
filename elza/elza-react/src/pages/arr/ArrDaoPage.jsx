@@ -157,7 +157,7 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     hasPageShowRights = (userDetail, activeFund) => {
-        return userDetail.hasArrPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     };
 
     handleSelectPackage = (pkg, unassigned, selectedIndex) => {
