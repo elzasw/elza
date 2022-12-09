@@ -251,6 +251,7 @@ class ListBox extends AbstractReactComponent {
     };
 
     dragEnd = e => {
+        if(!this.dragged) return;
         this.dragged.style.display = 'block';
         this.dragged.parentNode.removeChild(_ListBox_placeholder);
         // Update data
@@ -266,6 +267,7 @@ class ListBox extends AbstractReactComponent {
     };
 
     dragOver = e => {
+        if(!this.dragged) return;
         e.preventDefault();
         this.dragged.style.display = 'none';
         if (e.target.className == _ListBox_placeholder_cls) return;
