@@ -269,7 +269,7 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
-            if (userDetail.hasArrPage(fundId)) {
+            if (userDetail.hasRdPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
