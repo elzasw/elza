@@ -2,5 +2,6 @@
     <rule-set code="CAM">
         <name>CAM</name>
         <rule-type>ENTITY</rule-type>
+        <rule-item-type-filter>ItemTypeFilter.drl</rule-item-type-filter>
     </rule-set>
 </rule-sets>
