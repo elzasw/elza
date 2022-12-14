@@ -2145,4 +2145,9 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 				AND s.delete_change_id IS NOT NULL)</sql>
 	</changeSet>
 
+	<changeSet id="20221214091300" author="sergey.iryupin">
+		<sql dbms="postgresql">DELETE FROM arr_cached_node WHERE data LIKE '%nodeExtensions":null%' AND node_id IN 
+			(SELECT DISTINCT node_id FROM arr_node_extension WHERE delete_change_id IS NULL);</sql>
+	</changeSet>
+
 </databaseChangeLog>
