@@ -2814,6 +2814,7 @@ public class AccessPointService {
             accessPoint.setState(ApStateEnum.OK);
         }
 
+        logger.debug("Save accessPoint id={} version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
         return apAccessPointRepository.save(accessPoint);
     }
 
