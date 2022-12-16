@@ -62,6 +62,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
 
+    /**
+     * Related access point ID
+     * 
+     * Index all related AP
+     */
+    public static final String REL_AP_ID = "rel_accesspoint_id";
+
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
     public static final String INDEX = "index";
@@ -145,6 +152,7 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                         continue;
                     }
                     value = dataRecordRef.getRecordId().toString();
+                    addField(REL_AP_ID, value, document, luceneOptions, REL_AP_ID);
                 } else {
                     value = item.getData().getFulltextValue();
                 }
