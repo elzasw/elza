@@ -709,6 +709,8 @@ public class EntityDBDispatcher {
      * Metoda mění odkaz na aktuální podobu preferovaného označení.
      * Dochází k uložení entity, další metody by měly používat aktualizovanou
      * entitu.
+     * 
+     * Nedochazi k validaci entity.
      *
      * @param procCtx
      *            context
@@ -856,8 +858,7 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
-        accessPointService.updateAndValidate(accessPoint.getAccessPointId());
+        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);        
         syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",
