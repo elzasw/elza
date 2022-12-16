@@ -368,7 +368,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Tematický popis jednotky popisu:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Tematický popis:"]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121">
@@ -423,7 +423,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Počet evidenčních jednotek zpřístupněných archivní pomůckou:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Počet zpřístupněných evidenčních jednotek:"]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="0" y="25" width="455" height="30" uuid="695ef96e-cbe1-4ebc-9707-8b1db428966f">
