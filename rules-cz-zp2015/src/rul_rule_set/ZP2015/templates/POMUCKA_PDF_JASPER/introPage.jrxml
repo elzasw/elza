@@ -351,7 +351,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["IV. Tematický popis archivního souboru"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></textFieldExpression>
 				<anchorNameExpression><![CDATA["IV. Tematický popis archivního souboru"]]></anchorNameExpression>
 			</textField>
 		</band>
