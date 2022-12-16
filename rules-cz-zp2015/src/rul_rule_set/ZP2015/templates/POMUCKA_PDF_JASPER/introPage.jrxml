@@ -269,6 +269,7 @@
 			</textField>
 		</band>
 		<band height="50">
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{damageFormatter}.format( $P{output} ))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f25b33fd-65d5-44e6-9ade-da1325840840">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -283,7 +284,6 @@
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d487b18a-b382-432a-98b1-b70e7138b0b2">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
