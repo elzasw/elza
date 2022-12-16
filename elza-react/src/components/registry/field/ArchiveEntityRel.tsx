@@ -56,6 +56,12 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
             });
         }
 
+        if(itemTypeId == undefined){
+            return WebApi.findAccessPoint(filter.search,undefined,undefined,undefined,undefined,undefined,0,50 ).then((result) => {
+                setItems(result.rows);
+            })
+        }
+
         return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId!, filter, scopeId).then(result => {
             setItems(result.data);
         })
@@ -76,7 +82,7 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
             >
                 <RegistryListItem
                     {...item}
-                    typeId={item.aeTypeId}
+                    typeId={item.aeTypeId || item.typeId}
                     key={'reg-' + item.id}
                     apTypeIdMap={apTypeIdMap}
                     className={classnames('item', {focus: highlighted, active: selected})}

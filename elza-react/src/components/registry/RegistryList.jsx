@@ -39,6 +39,7 @@ import {Button} from '../ui';
 import {withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import {goToAe, getArchiveEntityUrl} from "../../actions/registry/registry";
+import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -68,6 +69,7 @@ class RegistryList extends AbstractReactComponent {
         this.props.dispatch(refRecordTypesFetchIfNeeded());
         this.props.dispatch(registryListFetchIfNeeded(0, maxSize));
         this.props.dispatch(requestScopesIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
     };
 
     trySetFocus = (props = this.props) => {
@@ -325,8 +327,22 @@ class RegistryList extends AbstractReactComponent {
         );
     };
 
+    getRuleSetsIds = () => {
+        const {scopes, ruleSet} = this.props;
+        const rulSetsIds = [];
+
+        scopes.forEach((scopeData) => scopeData.scopes.forEach((scope) => {
+            const _ruleSet = ruleSet.items.find((_ruleSet) => _ruleSet.code === scope.ruleSetCode);
+            if(_ruleSet.id == undefined || rulSetsIds.includes(_ruleSet.id)){return;}
+            rulSetsIds.push(_ruleSet.id);
+        }))
+
+        return rulSetsIds;
+    }
+
     handleExtFilter = () => {
         const {dispatch, registryList} = this.props;
+
         dispatch(
             modalDialogShow(
                 this,
@@ -339,6 +355,7 @@ class RegistryList extends AbstractReactComponent {
                         search: registryList.filter.text,
                         ...registryList.filter.searchFilter,
                     }}
+                    rulSetsIds={this.getRuleSetsIds()}
                     onSubmit={data => {
                         this.handleExtFilterResult(data);
                         dispatch(modalDialogHide());
@@ -496,7 +513,7 @@ export default withRouter(connect(state => {
         app: {registryList, registryDetail},
         userDetail,
         focus,
-        refTables: {recordTypes, scopesData, eidTypes},
+        refTables: {recordTypes, scopesData, eidTypes, ruleSet},
     } = state;
     return {
         focus,
@@ -507,5 +524,6 @@ export default withRouter(connect(state => {
         scopes: scopesData.scopes,
         userDetail,
         eidTypes: eidTypes.data,
+        ruleSet,
     };
 })(RegistryList));

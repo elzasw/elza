@@ -1202,6 +1202,7 @@ var messages = {
     "ap.ext-search.section.cre-ext": "Vznik/Zánik",
     "ap.ext-search.section.relations": "Vztahy",
     "ap.ext-search.section.extends": "Rozšířený filtr",
+    "ap.ext-search.input.select.all": "Vše",
 
     "ap.ext-search.section.extends.title": "Přidat rozšířený filtr",
     "ap.ext-search.section.extends.part": "Část popisu",

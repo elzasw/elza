@@ -36,6 +36,7 @@ type Props = {
     accessPointId?: number;
     onSubmit: any;
     scopeId?: number;
+    rulSetsIds?: number[];
 } & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const ExtFilterModal = ({
@@ -45,6 +46,7 @@ const ExtFilterModal = ({
     refTables, 
     reset,
     scopeId,
+    rulSetsIds,
 }: Props) => {
     const {apTypes} = refTables;
 
@@ -57,7 +59,7 @@ const ExtFilterModal = ({
                 </Col>
                 <Col xs={6}>
                     <CreExtFilterSection submitting={submitting}/>
-                    <RelationsFilterSection scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
+                    <RelationsFilterSection rulSetsIds={rulSetsIds} scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
                     <ExtendsFilterSection scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
                 </Col>
             </Row>
