@@ -147,6 +147,7 @@ public class ApStateSpecification implements Specification<ApState> {
         indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
         Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
         q.orderBy(cb.asc(accessPointName));
+        q.distinct(true);
 
         return condition;
     }
