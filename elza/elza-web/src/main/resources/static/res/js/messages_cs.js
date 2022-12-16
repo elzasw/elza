@@ -1214,7 +1214,7 @@ var messages = {
     "ap.ext-search.section.relations.spec": "Specifikace",
     "ap.ext-search.section.relations.area": "Oblast hledání",
     "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
-    "ap.ext-search.section.relations.obj": "Návazná archivní entita",
+    "ap.ext-search.section.relations.obj": "Související entita",
 
 
     "ap.form.ref.value": "Externí entita [{0}]",
