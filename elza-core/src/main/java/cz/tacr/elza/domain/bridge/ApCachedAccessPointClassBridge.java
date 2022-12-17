@@ -5,11 +5,16 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.document.Document;
@@ -81,6 +86,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     public static final String PREF_NM_MINOR = "pref_nm_minor";
     public static final String NM_MAIN = "nm_main";
     public static final String NM_MINOR = "nm_minor";
+
+    /**
+     * Map of field configurations
+     * 
+     * Map is not null if configuration was processed
+     */
+    private Map<String, SettingIndexSearch.Field> fieldConfigMap;
 
     public ApCachedAccessPointClassBridge() {
         log.debug("Creating ApCachedAccessPointClassBridge");
@@ -255,31 +267,22 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
-        if (elzaSearchConfig != null) {
-            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), name);
-            if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
-                transliterate = fieldSearchConfig.getTransliterate();
-            }
+        if (fieldConfigMap == null) {
+            loadElzaSearchConfig();
+            // Field should be set
+            Validate.notNull(fieldConfigMap);
+        }
+
+        SettingIndexSearch.Field fieldSearchConfig = fieldConfigMap.get(name);
+        if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
+            transliterate = fieldSearchConfig.getTransliterate();
         }
 
         return transliterate;
     }
 
     @Nullable
-    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
-        if (CollectionUtils.isNotEmpty(fields)) {
-            for (SettingIndexSearch.Field field : fields) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private SettingIndexSearch getElzaSearchConfig() {
+    private void loadElzaSearchConfig() {
         if (settingsService == null) {
             log.error("Search configuration is not set");
             throw new IllegalStateException("Not initialized");
@@ -288,10 +291,19 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
         List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch
                 .getEntityType());
-        if (CollectionUtils.isNotEmpty(uiSettings)) {
-            return SettingIndexSearch.newInstance(uiSettings.get(0));
+        if (CollectionUtils.isEmpty(uiSettings)) {
+            this.fieldConfigMap = Collections.emptyMap();
+            return;
         }
-        return null;
+        // TODO: process more configs
+        SettingIndexSearch cfg = SettingIndexSearch.newInstance(uiSettings.get(0));
+        List<SettingIndexSearch.Field> fields = cfg.getFields();
+        if (CollectionUtils.isEmpty(fields)) {
+            this.fieldConfigMap = Collections.emptyMap();
+            return;
+        }
+        this.fieldConfigMap = fields.stream().collect(Collectors.toMap(SettingIndexSearch.Field::getName,
+                                                                       Function.identity()));
     }
 
     @Override
