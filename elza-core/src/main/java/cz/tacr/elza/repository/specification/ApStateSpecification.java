@@ -86,7 +86,6 @@ public class ApStateSpecification implements Specification<ApState> {
     @Override
     public Predicate toPredicate(Root<ApState> stateRoot, CriteriaQuery<?> q, CriteriaBuilder cb) {
         Ctx ctx = new Ctx(cb, q);
-        q.distinct(true);
         ctx.setStateRoot(stateRoot);
 
         Join<ApState, ApAccessPoint> accessPointJoin = stateRoot.join(ApState.FIELD_ACCESS_POINT, JoinType.INNER);

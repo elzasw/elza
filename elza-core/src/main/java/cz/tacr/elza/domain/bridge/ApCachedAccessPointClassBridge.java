@@ -20,6 +20,7 @@ import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -125,11 +126,10 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                 return;
             }
 
-            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document,
-                           luceneOptions);
-            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document,
-                           luceneOptions);
-            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
+            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
+            // TODO: rework as int values
+            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
+            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
@@ -163,8 +163,8 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                     if (dataRecordRef == null || dataRecordRef.getRecordId() == null) {
                         continue;
                     }
+                    addIntField(REL_AP_ID, dataRecordRef.getRecordId(), document);
                     value = dataRecordRef.getRecordId().toString();
-                    addField(REL_AP_ID, value, document, luceneOptions, REL_AP_ID);
                 } else {
                     value = item.getData().getFulltextValue();
                 }
@@ -235,7 +235,12 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         document.add(new SortedDocValuesField(name, new BytesRef(valueTrans)));
     }
 
-    private void addStringField(String name, String value, Document document, LuceneOptions luceneOptions) {
+    private void addIntField(String name, Integer value, Document document) {
+        IntField field = new IntField(name, value, Store.YES);
+        document.add(field);
+    }
+
+    private void addStringField(String name, String value, Document document) {
         StringField field = new StringField(name, value, Store.YES);
         document.add(field);
     }

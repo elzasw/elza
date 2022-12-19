@@ -157,8 +157,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
          *            Final field name
          * @param value
          */
-        private void addExactQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value,
-                                   String fieldPrefix) {
+        private void addExactQuery(BooleanJunction<BooleanJunction> query,
+                                   String fieldName, String value, String fieldPrefix) {
             Float boost = null;
             Float boostTrans = null;
 
@@ -183,6 +183,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
         }
 
+        /**
+         * Add exact query for int value
+         * 
+         * @param transQuery
+         * @param fieldName
+         * @param accessPointId
+         */
         public void addExactQuery(BooleanJunction<BooleanJunction> transQuery, String fieldName,
                                   int accessPointId) {
             Query q = NumericRangeQuery.newIntRange(fieldName,
@@ -521,9 +528,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         BooleanJunction<BooleanJunction> valueQuery = queryBuilder.bool();
 
-        //item
-        fcf.addExactQuery(valueQuery, ApCachedAccessPointClassBridge.REL_AP_ID.toLowerCase(),
-                          code.toString(), DATA + SEPARATOR);
+        // add boost if needed
+        fcf.addExactQuery(valueQuery, ApCachedAccessPointClassBridge.REL_AP_ID.toLowerCase(), code);
 
         return valueQuery.createQuery();
     }
