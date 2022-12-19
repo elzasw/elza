@@ -290,6 +290,14 @@ public class StaticDataProvider {
         return apExternalSystemIdMap.get(id);
     }
 
+    /**
+     * Return item type and check error.
+     * 
+     * Method will throw exception if itemType not found.
+     * 
+     * @param code
+     * @return Return item type.
+     */
     public RulItemType getItemType(String code) {
         ItemType type = getItemTypeByCode(code);
         if (type == null) {

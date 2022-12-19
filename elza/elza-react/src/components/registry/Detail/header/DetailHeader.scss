@@ -1,5 +1,15 @@
 @import "../../../../variables.scss";
 
+.tooltip-link {
+    cursor: pointer; 
+    text-decoration: underline; 
+    background: none; 
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+}
 .detail-header-wrapper {
     .detail-descriptions {
         margin: -4px;
@@ -7,9 +17,10 @@
 
         .detail-descriptions-item {
             margin: 4px;
+            transition: background-color 200ms ease-in 200ms, color 200ms ease-in 200ms;
 
             &.revision {
-                background-color: #d7760d;
+                background-color: $color-orange;
                 color: $fg-shade-4;
                 .btn {
                     background-color: rgba($shade-0,20%);
@@ -42,18 +53,6 @@
                 .text {
                     margin-left: 10px;
                 }
-                .validation {
-                    font-size: 0.9em;
-                    .small-button {
-                        padding: 0;
-                        margin: 0;
-                        margin-left: 10px;
-
-                        &.spinner {
-                            opacity: 0.6;
-                        }
-                    }
-                }
             }
             .description {
                 font-size: 1rem;
@@ -79,6 +78,19 @@
             &.expanded {
                 .description {
                     padding: 5px 10px;
+                }
+            }
+
+            .validation {
+                font-size: 0.9em;
+                .small-button {
+                    padding: 0;
+                    margin: 0;
+                    margin-left: 10px;
+
+                    &.spinner {
+                        opacity: 0.6;
+                    }
                 }
             }
         }

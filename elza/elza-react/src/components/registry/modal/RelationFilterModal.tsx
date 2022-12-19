@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {ConfigProps, Field, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
 import {connect} from "react-redux";
 import {Col, Form, Modal, Row} from "react-bootstrap";
@@ -42,6 +42,7 @@ type Props = {
     refTables?: any;
     onClose: () => void;
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
+    rulSetsIds?: number[];
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const RelationFilterModal = ({
@@ -55,27 +56,60 @@ const RelationFilterModal = ({
     submitting,
     relApi,
     scopeId,
+    rulSetsIds = [],
 }: Props) => {
+    const [rulDescItemTypes, setRulDescItemTypes] = useState<string[]>([]);
+    useEffect(() => {
+        (async () => {
+            const result:string[][] = await Promise.all(rulSetsIds.map((rulSetId) => WebApi.getItemTypeCodesByRuleSet(rulSetId)));
+            setRulDescItemTypes(result.reduce(function(a,b){ return a.concat(b) }, [])); // flattened array
+        })()
+    }, [rulSetsIds])
+
     if (!refTables) {
         return <div/>;
     }
 
-    const itemTypes = refTables.descItemTypes.items.filter((itemType: RulDescItemTypeExtVO) => {
-        const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
-        return dataType.code === RulDataTypeCodeEnum.RECORD_REF;
-    });
+    const getItemTypes = (_rulDescItemTypes: string[]) => {
+        return _rulDescItemTypes.length === 0 ? [] : refTables.descItemTypes.items.filter((itemType: RulDescItemTypeExtVO) => {
+            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
+            return _rulDescItemTypes.includes(itemType.code) && dataType.code === RulDataTypeCodeEnum.RECORD_REF;
+        });
+    }
+
+    const itemTypes = getItemTypes(rulDescItemTypes);
 
     const itemSpecs = itemType != null && itemType.useSpecification ? itemType.descItemSpecs : null;
 
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             <Row>
+                {<Col xs={12}>
+                    <ArchiveEntityRel
+                        name={'obj'}
+                        label={i18n('ap.ext-search.section.relations.obj')}
+                        onlyMainPart={onlyMainPart}
+                        area={area}
+                        api={relApi}
+                        scopeId={scopeId}
+                        itemTypeId={itemType?.id}
+                        itemSpecId={itemSpec && itemSpec.id}
+                        modifyFilterData={data => {
+                            data.relFilters = [{
+                                relTypeId: itemType?.id,
+                                relSpecId: itemSpec && itemSpec.id,
+                            }]
+                            return data;
+                        }}
+                        disabled={submitting}
+                    />
+                </Col>}
                 <Col xs={12}>
                     <Field name="itemType"
                            label={i18n('ap.ext-search.section.relations.type')}
                            type="autocomplete"
                            component={FormInputField}
-                           items={itemTypes}
+                           items={[{id: null, name: i18n('ap.ext-search.input.select.all')},...itemTypes]}
                            disabled={submitting}
                     />
                 </Col>
@@ -116,26 +150,6 @@ const RelationFilterModal = ({
                         type='checkbox'
                     />
                 </Col>
-                {itemType && <Col xs={12}>
-                    <ArchiveEntityRel
-                        name={'obj'}
-                        label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={onlyMainPart}
-                        area={area}
-                        api={relApi}
-                        scopeId={scopeId}
-                        itemTypeId={itemType.id}
-                        itemSpecId={itemSpec && itemSpec.id}
-                        modifyFilterData={data => {
-                            data.relFilters = [{
-                                relTypeId: itemType.id,
-                                relSpecId: itemSpec && itemSpec.id,
-                            }]
-                            return data;
-                        }}
-                        disabled={submitting}
-                    />
-                </Col>}
             </Row>
         </Modal.Body>
         <Modal.Footer>

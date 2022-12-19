@@ -1,5 +1,54 @@
 package cz.tacr.elza.repository;
 
+import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.AP_TYPE_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.NM_MAIN;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.NM_MINOR;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.PREFIX_PREF;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SCOPE_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SEPARATOR;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SORT;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.TRANS;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.USERNAME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BoostQuery;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.ArrayUtil;
+import org.apache.lucene.util.RamUsageEstimator;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
@@ -16,64 +65,12 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.xml.builders.NumericRangeQueryBuilder;
-import org.apache.lucene.search.BoostQuery;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.util.ArrayUtil;
-import org.apache.lucene.util.RamUsageEstimator;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.AP_TYPE_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.INDEX;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.NM_MAIN;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.NM_MINOR;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.PREFIX_PREF;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SCOPE_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SEPARATOR;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SORT;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.STATE;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.TRANS;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.USERNAME;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 
 public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRepositoryCustom {
 
@@ -160,8 +157,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
          *            Final field name
          * @param value
          */
-        private void addExactQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value,
-                                   String fieldPrefix) {
+        private void addExactQuery(BooleanJunction<BooleanJunction> query,
+                                   String fieldName, String value, String fieldPrefix) {
             Float boost = null;
             Float boostTrans = null;
 
@@ -186,6 +183,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
         }
 
+        /**
+         * Add exact query for int value
+         * 
+         * @param transQuery
+         * @param fieldName
+         * @param accessPointId
+         */
         public void addExactQuery(BooleanJunction<BooleanJunction> transQuery, String fieldName,
                                   int accessPointId) {
             Query q = NumericRangeQuery.newIntRange(fieldName,
@@ -415,16 +419,21 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
             for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
                 if (rel.getCode() != null) {
-                    Validate.notNull(rel.getRelTypeId());
-                    ItemType itemType = sdp.getItemTypeById(rel.getRelTypeId());
-                    RulItemSpec itemSpec;
-                    if (rel.getRelSpecId() != null) {
-                        itemSpec = sdp.getItemSpecById(rel.getRelSpecId());
+                    Query query;
+                    if (rel.getRelTypeId() != null) {
+                        ItemType itemType = sdp.getItemTypeById(rel.getRelTypeId());
+                        RulItemSpec itemSpec;
+                        if (rel.getRelSpecId() != null) {
+                            itemSpec = sdp.getItemSpecById(rel.getRelSpecId());
+                        } else {
+                            itemSpec = null;
+                        }
+                        query = processValueCondDef(queryBuilder, rel.getCode().toString(),
+                                                    itemType.getEntity(), itemSpec, null, fcf);
                     } else {
-                        itemSpec = null;
+                        query = processRecordRefCond(queryBuilder, rel.getCode(), fcf);
                     }
-                    searchQuery.must(processValueCondDef(queryBuilder, rel.getCode().toString(),
-                                                         itemType.getEntity(), itemSpec, null, fcf));
+                    searchQuery.must(query);
                 }
             }
         }
@@ -513,6 +522,16 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
 
         return processValueCondDef(queryBuilder, value, itemType, itemSpec, partTypeCode, fcf);
+    }
+
+    private Query processRecordRefCond(QueryBuilder queryBuilder, Integer code, FulltextCondFactory fcf) {
+
+        BooleanJunction<BooleanJunction> valueQuery = queryBuilder.bool();
+
+        // add boost if needed
+        fcf.addExactQuery(valueQuery, ApCachedAccessPointClassBridge.REL_AP_ID.toLowerCase(), code);
+
+        return valueQuery.createQuery();
     }
 
     private Query processValueCondDef(QueryBuilder queryBuilder, String value,

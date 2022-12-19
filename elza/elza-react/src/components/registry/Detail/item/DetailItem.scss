@@ -1,3 +1,5 @@
+@import "../../../../variables.scss";
+
 .detail-item {
     display: table-row;
     padding: 3px;
@@ -25,6 +27,17 @@
         .sync-wrapper {
             /* padding: 0 10px; */
             margin-left: 5px;
+        }
+
+        .added {
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-style: dashed;
+            text-decoration-color: $shade-7;
+        }
+        .removed {
+            text-decoration: line-through;
+            font-weight: bold;
         }
     }
     .actions {

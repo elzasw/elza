@@ -269,6 +269,7 @@
 			</textField>
 		</band>
 		<band height="50">
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{damageFormatter}.format( $P{output} ))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f25b33fd-65d5-44e6-9ade-da1325840840">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -283,7 +284,6 @@
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d487b18a-b382-432a-98b1-b70e7138b0b2">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
@@ -351,8 +351,8 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["IV. Tematický popis archivního souboru"]]></textFieldExpression>
-				<anchorNameExpression><![CDATA["IV. Tematický popis archivního souboru"]]></anchorNameExpression>
+				<textFieldExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></textFieldExpression>
+				<anchorNameExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></anchorNameExpression>
 			</textField>
 		</band>
 		<band height="50">
@@ -368,7 +368,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Tematický popis jednotky popisu:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Tematický popis:"]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121">
@@ -423,7 +423,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Počet evidenčních jednotek zpřístupněných archivní pomůckou:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Počet zpřístupněných evidenčních jednotek:"]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="0" y="25" width="455" height="30" uuid="695ef96e-cbe1-4ebc-9707-8b1db428966f">

@@ -27,9 +27,12 @@ import { SyncIcon } from '../sync-icon';
 import { SyncState } from '../../../../api/SyncState';
 import {RouteComponentProps, withRouter} from "react-router";
 import {Link} from "react-router-dom";
+import {diffChars, diffWords} from "diff";
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
+    prevItem?: ApItemVO;
+    updatedItem?: ApItemVO;
     globalEntity: boolean;
     bindings?: Bindings;
     revision?: boolean;
@@ -37,9 +40,12 @@ interface OwnProps extends ReturnType<typeof mapStateToProps> {
 }
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & RouteComponentProps;
+const SHORT_TEXT_LENGTH = 40;
 
 const DetailItemContent: FC<Props> = ({
     item, 
+    prevItem,
+    updatedItem,
     globalEntity, 
     rulDataTypes,
     descItemTypes, 
@@ -56,15 +62,50 @@ const DetailItemContent: FC<Props> = ({
     let customFieldRender = false;
 
     let valueField: React.ReactNode;
+    let textValue:string;
 
     switch (dataType.code) {
         case RulDataTypeCodeEnum.INT:
+        case RulDataTypeCodeEnum.DECIMAL:
+            valueField = (item as ApItemStringVO).value;
+            break;
+
         case RulDataTypeCodeEnum.STRING:
         case RulDataTypeCodeEnum.TEXT:
         case RulDataTypeCodeEnum.FORMATTED_TEXT:
-        case RulDataTypeCodeEnum.DECIMAL:
-            let textItem = item as ApItemStringVO;
-            valueField = textItem.value;
+            textValue = (item as ApItemStringVO).value;
+            const prevTextValue = (prevItem as ApItemStringVO | undefined)?.value;
+            const updatedTextValue = (updatedItem as ApItemStringVO | undefined)?.value;
+
+            valueField = textValue;
+            if(textValue){
+                const diffFn = textValue.includes(" ") && textValue.length > SHORT_TEXT_LENGTH ? diffWords : diffChars;
+
+                if(updatedTextValue){
+                    const diff = diffFn(textValue, updatedTextValue)
+                    valueField = <div>
+                        {diff.map(({removed, value, added})=>{
+                            return !added 
+                                ? <span className={removed ? "removed" : undefined}>
+                                    {value}
+                                </span> 
+                                : <></>
+                        })}
+                    </div>
+                }
+                if(prevTextValue){
+                    const diff = diffFn(prevTextValue, textValue)
+                    valueField = <div>
+                        {diff.map(({added, value, removed})=>{
+                            return !removed 
+                                ? <span className={added ? "added" : undefined}>
+                                    {value}
+                                </span> 
+                                : <></>
+                        })}
+                    </div>
+                }
+            }
             break;
 
         case RulDataTypeCodeEnum.BIT:
@@ -82,7 +123,7 @@ const DetailItemContent: FC<Props> = ({
             let recordRefItem = item as ApItemAccessPointRefVO;
             let displayValue: string;
 
-            let textValue = '?';
+            textValue = '?';
             if (recordRefItem.value && recordRefItem.accessPoint) {
                 textValue = recordRefItem.accessPoint.name;
             } else if (recordRefItem.externalName) {
