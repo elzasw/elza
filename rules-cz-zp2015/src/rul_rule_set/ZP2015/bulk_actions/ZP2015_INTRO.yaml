@@ -166,6 +166,49 @@ actions:
         outputColumnUnitName: NAME
         outputColumnUnitCount: COUNT
         outputColumnDateRange: DATE_RANGE
+        outputOrderBy:
+          - columnName: NAME
+            valueOrder:
+              - lio
+              - lip
+              - ukn
+              - rkp
+              - ppr
+              - ind
+              - ele
+              - rep
+              - ktt
+              - pec
+              - raz
+              - otd
+              - kar
+              - fas
+              - map
+              - atl
+              - tvy
+              - gli
+              - kre
+              - fsn
+              - fsd
+              - lfi
+              - sfi
+              - kin
+              - mf
+              - mfis
+              - fal
+              - dfo
+              - kza
+              - zza
+              - tio
+              - tip
+              - poh
+              - pkt
+              - cpa
+              - sto
+              - daj
+              - pnp
+              - pfp
+              - jin
         dateRangeCounter:
           # Extra EJ - kdekoliv
           excludeWhen:

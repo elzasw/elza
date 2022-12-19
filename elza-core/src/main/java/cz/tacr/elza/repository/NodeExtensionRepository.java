@@ -27,6 +27,8 @@ public interface NodeExtensionRepository extends JpaRepository<ArrNodeExtension,
     @Query("SELECT i FROM arr_node_extension i JOIN i.arrangementExtension n WHERE n.arrangementExtensionId IN :ids AND i.node = :node AND i.deleteChange IS NULL")
     List<ArrNodeExtension> findByArrExtensionIdsAndNodeNotDeleted(@Param("ids") final Collection<Integer> ids, @Param("node") final ArrNode node);
 
+    List<ArrNodeExtension> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
+
     void deleteByNodeFund(ArrFund fund);
 
     void deleteByNodeIdIn(Collection<Integer> nodeIds);

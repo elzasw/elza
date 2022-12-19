@@ -284,6 +284,9 @@ public class StructObjService {
             if (structureData.getDeleteChange() != null) {
                 throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
             }
+            if (!assignable && structureData.getErrorDescription() != null) {
+                throw new BusinessException("Nelze zavřít, pokud strukturovaná data obsahují chyby", BaseCode.INVALID_STATE);
+            }
             structureData.setAssignable(assignable);
         }
 

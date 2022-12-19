@@ -108,8 +108,12 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
-        await super.componentDidMount();
-        this.selectNodeFromUrl();
+        const {match} = this.props;
+        if(match?.params?.nodeId){
+            this.selectNodeFromUrl();
+        } else {
+            super.componentDidMount();
+        }
     }
 
     componentDidUpdate(prevProps) {

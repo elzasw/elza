@@ -742,8 +742,9 @@ public class OutputService {
      * @return seznam výstupů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR,
-            /*UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR*/})
+            UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL,
+            UsrPermission.Permission.FUND_OUTPUT_WR, UsrPermission.Permission.FUND_OUTPUT_WR_ALL
+    })
     public List<ArrOutput> getSortedOutputs(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         List<ArrOutput> outputs = outputRepository.findByFundVersionSorted(fundVersion);
@@ -758,8 +759,8 @@ public class OutputService {
      * @return seznam výstupů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR,
-            /*UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR*/})
+            UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL,
+            UsrPermission.Permission.FUND_OUTPUT_WR, UsrPermission.Permission.FUND_OUTPUT_WR_ALL })
     public List<ArrOutput> getSortedOutputsByState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final OutputState state) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         return outputRepository.findByFundVersionAndStateSorted(fundVersion, state);
@@ -773,8 +774,9 @@ public class OutputService {
      * @return pojmenovaný výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR,
-            /*UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR*/})
+            UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR
+    })
     public ArrOutput getOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrOutput output) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
@@ -1186,8 +1188,8 @@ public class OutputService {
      * @return seznam hodnot atrubutů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR,
-            /*UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR*/})
+            UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR })
     public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrOutput output) {
         return outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
     }

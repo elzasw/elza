@@ -250,6 +250,8 @@ var messages = {
     "search.extended.form.unitdate.type.le": "Do (vč.)",
     "search.extended.form.unitdate.type.contains": "Během",
 
+    "global.validation.run": "Spustit validaci",
+    "global.validation.loading": "Načítání výsledku validace",
     "global.validation.required": "Pole je povinné",
     "global.validation.exists": "Již existuje",
     "global.validation.datation.invalid": "Vstupní řetězec není validní.",
@@ -821,6 +823,8 @@ var messages = {
     "arr.node.status.ok": "Ok",
     "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Chyba",
+    "arr.node.status.err.errors": "Chyby",
+    "arr.node.status.err.missing": "Chybějící",
     "arr.node.status.undefined": "Nezvalidovaný",
     "arr.node.noSelection.title": "Není vybrána jednotka popisu",
     "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
@@ -1160,6 +1164,7 @@ var messages = {
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
+
     "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
@@ -1197,6 +1202,7 @@ var messages = {
     "ap.ext-search.section.cre-ext": "Vznik/Zánik",
     "ap.ext-search.section.relations": "Vztahy",
     "ap.ext-search.section.extends": "Rozšířený filtr",
+    "ap.ext-search.input.select.all": "Vše",
 
     "ap.ext-search.section.extends.title": "Přidat rozšířený filtr",
     "ap.ext-search.section.extends.part": "Část popisu",
@@ -1208,7 +1214,7 @@ var messages = {
     "ap.ext-search.section.relations.spec": "Specifikace",
     "ap.ext-search.section.relations.area": "Oblast hledání",
     "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
-    "ap.ext-search.section.relations.obj": "Návazná archivní entita",
+    "ap.ext-search.section.relations.obj": "Archivní entita",
 
 
     "ap.form.ref.value": "Externí entita [{0}]",

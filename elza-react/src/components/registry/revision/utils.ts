@@ -7,8 +7,14 @@ export const getRevisionParts = (parts: ApPartVO[] = [], updatedParts: ApPartVO[
 
     // add updated items
     parts.forEach((part)=>{
+        // nalezeni odpovidajiciho partu v updatedParts
         const updatedPart = updatedParts.find((updatedPart) => updatedPart.origPartId === part.id);
-        revisionItems.push({part, updatedPart});
+
+        if(updatedPart?.items && updatedPart.items.length > 0){
+            revisionItems.push({part, updatedPart});
+        } else {
+            revisionItems.push({part});
+        }
     })
 
     // add newly added items

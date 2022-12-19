@@ -245,7 +245,7 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
-            if (userDetail.hasArrOutputPage(fundId, versionId)) {
+            if (userDetail.hasRdPage(fundId, versionId)) {
                 // právo na výstupy
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId, versionId)}>
@@ -257,7 +257,7 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
-            if (userDetail.hasFundActionPage(fundId)) {
+            if (userDetail.hasRdPage(fundId)) {
                 // právo na hromadné akce
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId, versionId)}>
@@ -269,7 +269,7 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
-            if (userDetail.hasArrPage(fundId)) {
+            if (userDetail.hasRdPage(fundId)) {
                 // právo na pořádání
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>

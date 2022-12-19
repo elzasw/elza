@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -205,11 +206,65 @@ public class UnitCountAction extends Action {
             table.addRow(new ElzaRow(name, count, datace));
         }
 
+        // sort rows
+        if (config.getOutputOrderBy() != null) {
+            Comparator<? super ElzaRow> comparator = createTableComparator(config.getOutputOrderBy());
+            table.getRows().sort(comparator);
+        }
+
         result.setTable(table);
         return result;
     }
 
-	public void setSkipSubtree(LevelWithItems level) {
+    private Comparator<? super ElzaRow> createTableComparator(List<TableOrderConfig> orderDefs) {
+        List<Comparator<? super ElzaRow>> comps = new ArrayList<>(orderDefs.size());
+        for (TableOrderConfig orderDef : orderDefs) {
+            String colName = orderDef.getColumnName();
+            List<String> valueOrder = orderDef.getValueOrder();
+            Map<String, Integer> valueOrderMap = new HashMap<>();
+            if (valueOrder != null) {
+                valueOrder.forEach(v -> valueOrderMap.put(v, valueOrderMap.size()));
+            }
+            comps.add((o1, o2) -> {
+                String v1 = o1.getValue(colName);
+                String v2 = o2.getValue(colName);
+                if (v1 == null && v2 == null) {
+                    return 0;
+                }
+                if (v1 == null) {
+                    return -1;
+                } else if (v2 == null) {
+                    return 1;
+                }
+                // order by value map
+                Integer pos1 = valueOrderMap.get(v1);
+                Integer pos2 = valueOrderMap.get(v2);
+                if (pos1 != null || pos2 != null) {
+                    if (pos1 == null) {
+                        return 1;
+                    } else
+                    if (pos2 == null) {
+                        return -1;
+                    }
+                    return pos1.compareTo(pos2);
+                }
+                // pos1 && pos2 are null
+                // alphabetic order
+                return v1.compareTo(v2);
+            });
+        }
+        return (o1, o2) -> {
+            for (Comparator<? super ElzaRow> comp : comps) {
+                int ret = comp.compare(o1, o2);
+                if (ret != 0) {
+                    return ret;
+                }
+            }
+            return 0;
+        };
+    }
+
+    public void setSkipSubtree(LevelWithItems level) {
 		this.skipSubtree = level;
 	}
 

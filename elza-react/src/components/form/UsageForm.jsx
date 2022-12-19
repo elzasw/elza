@@ -18,6 +18,8 @@ import RegistryField from '../registry/RegistryField';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
 import { Button } from '../ui';
 import './UsageForm.scss';
+import { routerNavigate } from 'actions/router';
+import { urlNode } from '../../constants';
 
 const EntityDisplay = ({
     scope, 
@@ -228,7 +230,7 @@ class RegistryUsageForm extends React.Component {
         const { dispatch, history } = this.props;
         dispatch(modalDialogHide());
         if (node.type === 'fund') {
-            history.push(`/node/${node.id}`)
+            dispatch(routerNavigate(urlNode(node.id)));
         }
     };
 

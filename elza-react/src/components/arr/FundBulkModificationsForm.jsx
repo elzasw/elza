@@ -295,7 +295,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             replaceValueId: values.replaceValueId?.id,
             values: {
                 type: values.values.type,
-                ids: values.values.items.map(({id}) => (id)),
+                ids: (values.values?.items || []).map(({id}) => (id)),
             }
         }
     }
@@ -627,15 +627,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                                 ]}
                                                 />
                                         }}</Field>
-                                </FormGroup>
-                            )}
-
-                            {dataType.code === "STRUCTURED" && (
-                                <FormGroup>
-                                    <FormLabel>
-                                        {i18n('arr.fund.bulkModifications.values')}
-                                    </FormLabel>
-                                    <StructuredTypeField name={'values'} refType={refType} versionId={versionId} />
                                 </FormGroup>
                             )}
 

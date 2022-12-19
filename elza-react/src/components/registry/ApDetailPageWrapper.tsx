@@ -345,8 +345,10 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                         setRevisionActive(!revisionActive);
                         refreshValidation(id, !revisionActive);
                     }}
-                    validationErrors={validationResult && validationResult.errors}
+                    validationErrors={validationResult?.errors}
+                    validationPartErrors={validationResult?.partErrors}
                     onInvalidateDetail={() => refreshDetail(detail.data!.id)}
+                    onInvalidateValidation={() => refreshValidation(id, !revisionActive)}
                     revisionActive={revisionActive}
                 />
 

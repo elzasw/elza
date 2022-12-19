@@ -5,16 +5,22 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -62,6 +68,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
 
+    /**
+     * Related access point ID
+     * 
+     * Index all related AP
+     */
+    public static final String REL_AP_ID = "rel_accesspoint_id";
+
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
     public static final String INDEX = "index";
@@ -74,6 +87,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     public static final String PREF_NM_MINOR = "pref_nm_minor";
     public static final String NM_MAIN = "nm_main";
     public static final String NM_MINOR = "nm_minor";
+
+    /**
+     * Map of field configurations
+     * 
+     * Map is not null if configuration was processed
+     */
+    private Map<String, SettingIndexSearch.Field> fieldConfigMap;
 
     public ApCachedAccessPointClassBridge() {
         log.debug("Creating ApCachedAccessPointClassBridge");
@@ -106,11 +126,10 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                 return;
             }
 
-            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document,
-                           luceneOptions);
-            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document,
-                           luceneOptions);
-            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
+            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
+            // TODO: rework as int values
+            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
+            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
@@ -144,6 +163,7 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                     if (dataRecordRef == null || dataRecordRef.getRecordId() == null) {
                         continue;
                     }
+                    addIntField(REL_AP_ID, dataRecordRef.getRecordId(), document);
                     value = dataRecordRef.getRecordId().toString();
                 } else {
                     value = item.getData().getFulltextValue();
@@ -215,7 +235,12 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         document.add(new SortedDocValuesField(name, new BytesRef(valueTrans)));
     }
 
-    private void addStringField(String name, String value, Document document, LuceneOptions luceneOptions) {
+    private void addIntField(String name, Integer value, Document document) {
+        IntField field = new IntField(name, value, Store.YES);
+        document.add(field);
+    }
+
+    private void addStringField(String name, String value, Document document) {
         StringField field = new StringField(name, value, Store.YES);
         document.add(field);
     }
@@ -247,31 +272,22 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
-        if (elzaSearchConfig != null) {
-            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), name);
-            if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
-                transliterate = fieldSearchConfig.getTransliterate();
-            }
+        if (fieldConfigMap == null) {
+            loadElzaSearchConfig();
+            // Field should be set
+            Validate.notNull(fieldConfigMap);
+        }
+
+        SettingIndexSearch.Field fieldSearchConfig = fieldConfigMap.get(name);
+        if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
+            transliterate = fieldSearchConfig.getTransliterate();
         }
 
         return transliterate;
     }
 
     @Nullable
-    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
-        if (CollectionUtils.isNotEmpty(fields)) {
-            for (SettingIndexSearch.Field field : fields) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private SettingIndexSearch getElzaSearchConfig() {
+    private void loadElzaSearchConfig() {
         if (settingsService == null) {
             log.error("Search configuration is not set");
             throw new IllegalStateException("Not initialized");
@@ -280,10 +296,19 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
         List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch
                 .getEntityType());
-        if (CollectionUtils.isNotEmpty(uiSettings)) {
-            return SettingIndexSearch.newInstance(uiSettings.get(0));
+        if (CollectionUtils.isEmpty(uiSettings)) {
+            this.fieldConfigMap = Collections.emptyMap();
+            return;
         }
-        return null;
+        // TODO: process more configs
+        SettingIndexSearch cfg = SettingIndexSearch.newInstance(uiSettings.get(0));
+        List<SettingIndexSearch.Field> fields = cfg.getFields();
+        if (CollectionUtils.isEmpty(fields)) {
+            this.fieldConfigMap = Collections.emptyMap();
+            return;
+        }
+        this.fieldConfigMap = fields.stream().collect(Collectors.toMap(SettingIndexSearch.Field::getName,
+                                                                       Function.identity()));
     }
 
     @Override

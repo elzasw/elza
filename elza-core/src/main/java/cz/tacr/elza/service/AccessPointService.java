@@ -2719,6 +2719,8 @@ public class AccessPointService {
     @Transactional(TxType.MANDATORY)
     public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
+
+        logger.debug("Validate accessPointid={}, partId={}, successfulGeneration={}", accessPoint.getAccessPointId(), apPart.getPartId(), successfulGeneration);
         validate(accessPoint, successfulGeneration);
     }
 
@@ -2756,9 +2758,10 @@ public class AccessPointService {
 
         Integer prefPartId = accessPoint.getPreferredPartId();
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
+
+        logger.debug("Validate accessPointid={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), partList.size(), successfulGeneration);
         return validate(accessPoint, successfulGeneration);
     }
-
 
     /**
      * Zapsání validačních chyb přístupového bodu do databáze.
@@ -2814,7 +2817,8 @@ public class AccessPointService {
             accessPoint.setState(ApStateEnum.OK);
         }
 
-        return apAccessPointRepository.save(accessPoint);
+        logger.debug("Save accessPoint id={} version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
+        return apAccessPointRepository.saveAndFlush(accessPoint);
     }
 
     @Nullable
