@@ -1159,7 +1159,7 @@ public class AccessPointService {
 
         ApItem updatedItem = apItemService.updateItem(change, apItem, drr);
 
-        generateSync(apItem.getPart().getAccessPoint(), apItem.getPart());
+        generateSync(apState, apItem.getPart());
         accessPointCacheService.createApCachedAccessPoint(apItem.getPart().getAccessPointId());
 
         return updatedItem;
@@ -1275,7 +1275,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(accessPoint, apPart);
+        generateSync(apState, apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -1379,7 +1379,7 @@ public class AccessPointService {
 
         apItemService.deleteItems(deleteItems, change);
 
-        generateSync(apAccessPoint, apPart);
+        generateSync(state, apPart);
 
         return true;
     }
@@ -1573,8 +1573,7 @@ public class AccessPointService {
         return items;
     }
 
-    public boolean updatePartValue(final ApPart apPart) {
-        ApState state = getStateInternal(apPart.getAccessPoint());
+    public boolean updatePartValue(final ApState state, final ApPart apPart) {        
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -2100,12 +2099,12 @@ public class AccessPointService {
         // k overeni platnosti validace
         if (newStateApproval == StateApproval.APPROVED ||
                 newStateApproval == StateApproval.TO_APPROVE) {
-            validateEntityAndFailOnError(accessPoint);
+            validateEntityAndFailOnError(oldApState);
         }
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
-        apStateRepository.save(oldApState);
+        oldApState = apStateRepository.save(oldApState);
 
         ApState newApState = copyState(oldApState, change);
         if (newApScope != null) {
@@ -2717,25 +2716,25 @@ public class AccessPointService {
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
-        boolean successfulGeneration = updatePartValue(apPart);
+    public void generateSync(final ApState apState, final ApPart apPart) {
+        boolean successfulGeneration = updatePartValue(apState, apPart);
 
-        logger.debug("Validate accessPointid={}, partId={}, successfulGeneration={}", accessPoint.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(accessPoint, successfulGeneration);
+        logger.debug("Validate accessPointid={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
+        validate(apState, successfulGeneration);
     }
 
     /**
      * Spusteni validace AP
      * 
-     * @param accessPoint
+     * @param apState
      * @param successfulGeneration
      * @return Upraveny AP.
      *         Dochazi k zapisu aktualniho stavu validace.
      * 
      */
-    public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint, false);
-        return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+    public ApAccessPoint validate(ApState apState, boolean successfulGeneration) {
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
+        return updateValidationErrors(apState.getAccessPoint(), apValidationErrorsVO, successfulGeneration);
     }
 
 
@@ -2760,7 +2759,7 @@ public class AccessPointService {
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
 
         logger.debug("Validate accessPointid={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), partList.size(), successfulGeneration);
-        return validate(accessPoint, successfulGeneration);
+        return validate(apState, successfulGeneration);
     }
 
     /**
@@ -2938,22 +2937,6 @@ public class AccessPointService {
     public boolean isQueryComplex(SearchFilterVO searchFilter) {
         //todo fantiš definovat příliš složitý dotaz
         return false;
-    }
-
-    // metoda nepoužívá se
-    public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
-                                                                                                                     binding));
-        setAccessPointInDataRecordRefs(accessPoint, dataRecordRefList, binding);
-
-        dataRecordRefRepository.saveAll(dataRecordRefList);
-
-        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                updatePartValue(part);
-            }
-        }
     }
 
     /**
@@ -3382,8 +3365,8 @@ public class AccessPointService {
         return false;
     }
 
-    public void validateEntityAndFailOnError(ApAccessPoint accessPoint) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint, false);
+    public void validateEntityAndFailOnError(ApState apState) {
+        ApValidationErrorsVO validationErrors = ruleService.executeValidation(apState, false);
         if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
                 CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
             return;
@@ -3403,7 +3386,7 @@ public class AccessPointService {
         throw new BusinessException("Přístupový bod obsahuje chyby a nelze nastavit stav schválený." +
                 " " + sb.toString(),
                 BaseCode.INVALID_STATE)
-                        .set("accessPointId", accessPoint.getAccessPointId())
+                        .set("accessPointId", apState.getAccessPointId())
                         .set("error", sb.toString());
     }
 }

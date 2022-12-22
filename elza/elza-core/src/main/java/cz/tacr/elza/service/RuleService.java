@@ -1203,6 +1203,7 @@ public class RuleService {
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
         ApScope scope = accessPointService.getApScope(form.getScopeId());
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
 
         Integer preferredPartId = null;
 
@@ -1280,9 +1281,9 @@ public class RuleService {
 
         ModelAvailable modelAvailable = new ModelAvailable(ae, part, modelItems, modelItemTypes);
 
-        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
+        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, ruleSet);
     }
-
+    
     /**
      * Run access point validation
      * 
@@ -1293,19 +1294,27 @@ public class RuleService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint,
+    public ApValidationErrorsVO executeValidation(final ApState apState,
                                                   final boolean includeRevision) {
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
+        
+        StaticDataProvider sdp = staticDataService.getData();
 
-        ApState apState = accessPointService.getStateInternal(accessPoint);
-        RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
+        ApAccessPoint accessPoint = apState.getAccessPoint();
+        ApScope scope = apState.getScope();
+        RuleSet ruleSet = null;
+        try {
+            ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+        } catch (Exception e) {
+            System.out.print(e);
+        }
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
-        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId());
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
 
-        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
+        ApBuilder apBuilder = new ApBuilder(sdp);
         apBuilder.setAccessPoint(apState, parts, itemList);
 
         if (includeRevision) {
@@ -1335,7 +1344,7 @@ public class RuleService {
 
         List<AbstractItem> items = apBuilder.createAbstractItemList();
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
-        ModelValidation validationResult = executeValidation(modelValidation, rulRuleSet);
+        ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
@@ -1349,7 +1358,7 @@ public class RuleService {
 
         for (Part part : ap.getParts()) {
             ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
-            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, rulRuleSet);
+            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, ruleSet);
 
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
@@ -1838,7 +1847,7 @@ public class RuleService {
 
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
                                             @NotNull final ModelAvailable modelAvailable,
-                                            @NotNull final RulRuleSet rulRuleSet) {
+                                            @NotNull final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.AVAILABLE_ITEMS;
 
@@ -1855,8 +1864,7 @@ public class RuleService {
         }
         executeDrls.add(drlType.value() + "/" + partType.value());
         executeDrls.add(drlType.value());
-
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
+        
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
 
         try {
@@ -1869,7 +1877,7 @@ public class RuleService {
     }
 
     private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation,
-                                              @NotNull final RulRuleSet rulRuleSet) {
+                                              @NotNull final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.VALIDATION;
 
@@ -1891,7 +1899,6 @@ public class RuleService {
         }
         executeDrls.add(drlType.value());
 
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
 
         try {

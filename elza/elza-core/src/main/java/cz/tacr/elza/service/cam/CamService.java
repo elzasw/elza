@@ -42,6 +42,7 @@ import cz.tacr.cam.schema.cam.UpdatesFromXml;
 import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -1112,6 +1113,7 @@ public class CamService {
         EntitiesXml entities = camConnector.getEntities(bindingValues, externalSystem);
         
         importNew(externalSystem, entities, bindingMap);
+        log.info("Download {} entity from CAM", queueItems.size());
 
         setQueueItemState(queueItems,
                          ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_OK,
@@ -1120,8 +1122,12 @@ public class CamService {
     }
     
     public void importNew(ApExternalSystem externalSystem, EntitiesXml entities, Map<String, ApBinding> bindingMap) {
+        // All objects have to be fully initialized, 
+        // no HibernateProxy objects are allowed!!!
+        // EntityManager.clear() is called inside synchronizeAccessPoint
     	ApScope scope = externalSystem.getScope();
-    	
+    	scope = HibernateUtils.unproxy(scope);
+
         ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
         for (EntityXml entity : entities.getList()) {
             String value = String.valueOf(entity.getEid().getValue());
