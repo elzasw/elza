@@ -841,7 +841,7 @@ public class RevisionService {
         // Pokud je entita schvalena je nutne overit jeji bezchybnost
         if (newStateApproval == StateApproval.APPROVED) {
             if (accessPoint.getState() == ApStateEnum.ERROR) {
-                accessPointService.validateEntityAndFailOnError(accessPoint);
+                accessPointService.validateEntityAndFailOnError(newState);
             }
         }
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());

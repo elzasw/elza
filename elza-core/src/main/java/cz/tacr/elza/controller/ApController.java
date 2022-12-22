@@ -908,7 +908,7 @@ public class ApController {
             accessPointService.checkPermissionForEdit(state);
 
             ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-            accessPointService.generateSync(apAccessPoint, apPart);
+            accessPointService.generateSync(state, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
 
             return apPart.getPartId();
@@ -1056,7 +1056,7 @@ public class ApController {
         if (includeRevision) {
             ApRevision revision = revisionService.findRevisionByState(apState);
             if (revision != null) {
-                return ruleService.executeValidation(apState.getAccessPoint(), true);
+                return ruleService.executeValidation(apState, true);
             }
         }
         return apFactory.createValidationVO(apState.getAccessPoint());
