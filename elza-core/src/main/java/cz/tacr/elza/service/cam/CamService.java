@@ -820,12 +820,10 @@ public class CamService {
             ApRevision revision = revisionService.findRevisionByState(state);
             boolean modifiedPartOrItem = hasModifiedPartOrItem(state, bindingState);
 
-            // do not sync deleted aps, mark as not synced
-            if (state.getDeleteChangeId() != null ||
-            // check if synced or not
-                    (syncQueue &&
-                            (modifiedPartOrItem || revision != null ||
-                                    SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
+            // Nesynchronizovat pokud se jedná o volání z fronty I
+            //    (existují lokální změny NEBO existují revize NEBO entita ve stavu NOT_SYNCED)
+            // jinak synchronizovat, i když entita je neplatná 
+            if (syncQueue && (modifiedPartOrItem || revision != null || SyncState.NOT_SYNCED.equals(bindingState.getSyncOk()))) {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                     bindingState.setSyncOk(SyncState.NOT_SYNCED);
                     bindingStateRepository.save(bindingState);
