@@ -8,6 +8,8 @@
         position: absolute;
         top: 0;
         right: 0;
+        z-index: 1000;
+
         .fa-tree-lazy-search-info {
             float: right;
             height: 1.8em;
