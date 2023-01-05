@@ -2719,24 +2719,28 @@ public class AccessPointService {
     public void generateSync(final ApState apState, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apState, apPart);
 
-        logger.debug("Validate accessPointid={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(apState, successfulGeneration);
+        logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
+        validate(apState.getAccessPoint(), apState, successfulGeneration);
     }
 
     /**
      * Spusteni validace AP
      * 
+     * @param accessPoint - protože může mít modifikace
      * @param apState
      * @param successfulGeneration
      * @return Upraveny AP.
      *         Dochazi k zapisu aktualniho stavu validace.
      * 
      */
-    public ApAccessPoint validate(ApState apState, boolean successfulGeneration) {
+    public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
+        logger.debug("Validate stateId={}, accessPointId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), accessPoint.getVersion());
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
-        return updateValidationErrors(apState.getAccessPoint(), apValidationErrorsVO, successfulGeneration);
-    }
+        accessPoint = updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
 
+        logger.debug("Validate accessPointId={}, version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
+        return accessPoint;
+    }
 
     public ApAccessPoint updateAndValidate(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
@@ -2758,20 +2762,21 @@ public class AccessPointService {
         Integer prefPartId = accessPoint.getPreferredPartId();
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
 
-        logger.debug("Validate accessPointid={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), partList.size(), successfulGeneration);
-        return validate(apState, successfulGeneration);
+        logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
+        return validate(accessPoint, apState, successfulGeneration);
     }
 
     /**
      * Zapsání validačních chyb přístupového bodu do databáze.
      *
+     * @param accessPoint
      * @param apValidationErrorsVO
      *            chyby přístupového bodu
      * @param successfulGeneration
      *            úspěšné generování keyValue
      * @return
      */
-    public ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
+    private ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
                                        final ApValidationErrorsVO apValidationErrorsVO,
                                        final boolean successfulGeneration) {
 
