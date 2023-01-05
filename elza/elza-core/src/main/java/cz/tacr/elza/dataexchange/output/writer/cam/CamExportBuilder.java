@@ -21,6 +21,7 @@ import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
@@ -42,7 +43,11 @@ public class CamExportBuilder implements ExportBuilder {
 
     private ApStream apStream;
 
-    final private StaticDataProvider staticDataSProvider;
+    // static data service or staticDataProvider have to be set
+    // for asynchronous workers staticDataProvider has to be request
+    // during processing
+    private StaticDataService staticDataService;
+    private StaticDataProvider staticDataProvider;
 
     final private GroovyService groovyService;
 
@@ -76,11 +81,22 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
-    public CamExportBuilder(final StaticDataProvider staticDataSProvider,
+    public CamExportBuilder(final StaticDataProvider staticDataProvider,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
                             final AccessPointDataService apDataService) {
-        this.staticDataSProvider = staticDataSProvider;
+        this.staticDataProvider = staticDataProvider;
+        this.groovyService = groovyService;
+        this.schemaManager = schemaManager;
+        this.apDataService = apDataService;
+        initBuilder();
+    }
+
+    public CamExportBuilder(final StaticDataService staticDataService,
+                            final GroovyService groovyService,
+                            final SchemaManager schemaManager,
+                            final AccessPointDataService apDataService) {
+        this.staticDataService = staticDataService;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
         this.apDataService = apDataService;
@@ -91,11 +107,16 @@ public class CamExportBuilder implements ExportBuilder {
         this.entities = CamUtils.getObjectFactory().createEntitiesXml();
         Validate.isTrue(apStream == null);
         this.apStream = null;
+        if (staticDataService != null) {
+            // reset data provider
+            // has to be reinitialized at the next transaction
+            staticDataProvider = null;
+        }
     }
 
     public void addAccessPoint(ApInfo apInfo) {
         EntityXmlBuilder exb = new EntityXmlBuilder(
-                staticDataSProvider,
+                getStaticDataProvider(),
                 apInfo.getAccessPoint(),
                 apInfo.getApState(),
                 apInfo.getExternalIds(),
@@ -112,6 +133,20 @@ public class CamExportBuilder implements ExportBuilder {
 
         EntityXml ent = exb.build(apInfo.getParts(), itemsConv, apInfo.getIndexes());
         this.entities.getList().add(ent);
+    }
+
+    /**
+     * Return static data provider.
+     * 
+     * Method will use existing or get new from staticDataService.
+     * 
+     * @return
+     */
+    private StaticDataProvider getStaticDataProvider() {
+        if (staticDataProvider == null) {
+            staticDataProvider = staticDataService.getData();
+        }
+        return staticDataProvider;
     }
 
     /* private void addAPName(Entity ent, ApName apName) {
