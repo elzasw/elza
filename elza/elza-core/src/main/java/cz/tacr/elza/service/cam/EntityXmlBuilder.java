@@ -58,9 +58,11 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         EntityRecordStateXml ens;
         if (apState.getDeleteChangeId() != null) {
             if (apState.getReplacedBy() != null) {
-                // TODO: set ID/UUID if available in binding
+                ApAccessPoint replacedBy = apState.getReplacedBy();
+                // set ID/UUID if available in binding
                 ens = EntityRecordStateXml.ERS_REPLACED;
-                ent.setReud(new UuidXml(apState.getReplacedBy().getUuid()));
+                ent.setReid(new EntityIdXml(replacedBy.getAccessPointId()));
+                ent.setReud(new UuidXml(replacedBy.getUuid()));
             } else {
                 ens = EntityRecordStateXml.ERS_INVALID;
             }
