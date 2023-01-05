@@ -22,6 +22,7 @@ type OwnProps = {
     name?: string;
     nameFormSection?: string; // název pro FormSection
     scopeId?: number;
+    rulSetsIds?: number[];
 }
 
 type Props = {
@@ -37,6 +38,7 @@ const ExtendsFilterSection = ({
     name = 'ap.ext-search.section.extends', 
     relEntityApi,
     scopeId,
+    rulSetsIds
 }: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
@@ -47,6 +49,7 @@ const ExtendsFilterSection = ({
             component={ExtFilters}
             disabled={submitting}
             scopeId={scopeId}
+            rulSetsIds={rulSetsIds}
         />
     </FormSection>
 };
@@ -81,6 +84,7 @@ interface ExtFilterFieldProps extends WrappedFieldArrayProps<string> {
     relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
     scopeId?: number;
+    rulSetsIds?: number[];
 }
 
 const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
@@ -90,6 +94,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
     dispatch,
     relEntityApi,
     scopeId,
+    rulSetsIds,
 }) => {
     return <>
         <Button size="small" className="fr" disabled={disabled} variant="outline-secondary" onClick={() => {
@@ -103,6 +108,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
                             area: Area.ALLNAMES,
                             scopeId,
                         }}
+                        rulSetsIds={rulSetsIds}
                         relEntityApi={relEntityApi}
                         onSubmit={(data) => {
                         fields.push(data);
