@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ConfigProps,
     Field,
@@ -26,6 +26,8 @@ import {Area} from '../../../api/Area';
 import {ArchiveEntityResultListVO} from '../../../api/ArchiveEntityResultListVO';
 import {FilteredResultVO} from '../../../api/FilteredResultVO';
 import {ApAccessPointVO} from '../../../api/ApAccessPointVO';
+import {WebApi} from "../../../actions/WebApi";
+import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 
 const FORM_NAME = 'extendsFilter';
 
@@ -65,6 +67,7 @@ type Props = {
         itemSpecId: number,
         filter: any,
     ) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
+    rulSetsIds?: number[];
 } & ReturnType<typeof mapDispatchToProps> &
     ReturnType<typeof mapStateToProps> &
     InjectedFormProps;
@@ -91,11 +94,33 @@ const ExtendsFilterModal = ({
     area,
     onlyMainPart,
     scopeId,
+    rulSetsIds = [],
 }: Props) => {
+    const [rulDescItemTypes, setRulDescItemTypes] = useState<string[]>([]);
     const parts = refTables.partTypes.items;
-    const itemTypes = refTables.descItemTypes.items;
     const dataType = itemType == null ? null : (refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO);
     const itemSpecs = itemType != null && itemType.useSpecification ? itemType.descItemSpecs : null;
+
+    useEffect(() => {
+        (async () => {
+            // fetch list of DescItemType codes for ruleSets
+            const result:string[][] = await Promise.all(rulSetsIds.map((rulSetId) => WebApi.getItemTypeCodesByRuleSet(rulSetId)));
+            setRulDescItemTypes(result.reduce(function(a,b){ return a.concat(b) }, [])); // flattened array
+        })()
+    }, [rulSetsIds]);
+
+    if (!refTables) {
+        return <div/>;
+    }
+
+    const getItemTypes = (_rulDescItemTypes: string[]) => {
+        return _rulDescItemTypes.length === 0 ? [] : refTables.descItemTypes.items.filter((itemType: RulDescItemTypeExtVO) => {
+            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
+            return _rulDescItemTypes.includes(itemType.code);
+        });
+    }
+
+    const itemTypes = getItemTypes(rulDescItemTypes);
 
     const renderData = dataType => {
         switch (dataType.code) {
