@@ -9,16 +9,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.ApStateRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.ArrangementService;
 
 /**
@@ -204,20 +212,21 @@ public class Validator {
                 String name = itemType.getName();
                 String policyTypeCode = extNodeTypes.get(itemTypeId).getPolicyTypeCode();
 
+                if (!extNodeTypes.containsKey(itemTypeId)) {
+                    validationResults.createError(descItem, "Prvek " + name + " není možný u této jednotky popisu.",
+                                                  policyTypeCode);
+                    continue;
+                }
+
                 if (data instanceof ArrDataRecordRef) {
                     ApAccessPoint accessPoint = ((ArrDataRecordRef) data).getRecord();
                     ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
                     // Kontrola stavu entity
                     if (apState.getStateApproval() != ApState.StateApproval.APPROVED) {
-                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na neschválenou entitu.",
+                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na neschválenou entitu ("
+                                + accessPoint.getAccessPointId() + ").",
                                                       policyTypeCode);
-                        continue;
                     }
-                }
-
-                if (!extNodeTypes.containsKey(itemTypeId)) {
-                    validationResults.createError(descItem, "Prvek " + name + " není možný u této jednotky popisu.", policyTypeCode);
-                    continue;
                 }
 
                 List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(itemTypeId, k -> new LinkedList<>());
