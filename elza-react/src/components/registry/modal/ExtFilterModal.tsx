@@ -60,7 +60,7 @@ const ExtFilterModal = ({
                 <Col xs={6}>
                     <CreExtFilterSection submitting={submitting}/>
                     <RelationsFilterSection rulSetsIds={rulSetsIds} scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
-                    <ExtendsFilterSection scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
+                    <ExtendsFilterSection rulSetsIds={rulSetsIds} scopeId={scopeId} formName={FORM_NAME} submitting={submitting}/>
                 </Col>
             </Row>
         </Modal.Body>

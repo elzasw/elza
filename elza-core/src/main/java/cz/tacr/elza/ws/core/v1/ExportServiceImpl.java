@@ -186,7 +186,7 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            exportBuilder = new CamExportBuilder(staticDataService.getData(),
+            exportBuilder = new CamExportBuilder(staticDataService,
                     groovyService, schemaManager,
                     apDataService);
         } else {

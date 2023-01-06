@@ -741,15 +741,14 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ))]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="13" width="397">
-						<textField textAdjust="StretchHeight" hyperlinkType="RemoteAnchor">
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
 							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="bd615070-bb7f-44a1-bc33-c3e5ce73f68e">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA["GPS souřadnice uvedeny v elektronické formě pomůcky"]]></textFieldExpression>
-							<hyperlinkReferenceExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkReferenceExpression>
+							<hyperlinkReferenceExpression><![CDATA["https://mapview.lightcomp.cz/wkb?"+$F{item}.getBase64Value()]]></hyperlinkReferenceExpression>
 							<hyperlinkWhenExpression><![CDATA[true]]></hyperlinkWhenExpression>
-							<hyperlinkAnchorExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkAnchorExpression>
 							<hyperlinkTooltipExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkTooltipExpression>
 						</textField>
 					</jr:listContents>

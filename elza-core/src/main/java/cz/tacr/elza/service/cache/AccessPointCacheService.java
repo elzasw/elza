@@ -366,6 +366,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return apCachedAccessPoints;
     }
 
+    /**
+     * Create AP in cache
+     * 
+     * Method will flush entityManager and clear ALL objectcs from entityManager (including HibernateProxyObj)
+     * 
+     * @param accessPointId
+     */
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
     	

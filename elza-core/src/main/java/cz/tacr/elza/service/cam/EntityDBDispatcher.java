@@ -648,13 +648,13 @@ public class EntityDBDispatcher {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
                 ApPart part = item.getPart();
-                accessPointService.updatePartValue(part);
+                accessPointService.updatePartValue(apState, part);
                 if (part.getParentPartId() != null) {
                     // Item was in some cases dettached proxy
                     // we have to fetch part from DB
                     ApPart parentPart = this.partService.getPart(part.getParentPartId());
                     Validate.notNull(parentPart, "Failed to read parent part, partId: ", part.getParentPartId());
-                    accessPointService.updatePartValue(parentPart);
+                    accessPointService.updatePartValue(apState, parentPart);
                 }
                 accessPointCacheService.createApCachedAccessPoint(part.getAccessPointId());
             }

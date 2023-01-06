@@ -444,7 +444,7 @@ public class AccessPointService {
             	}
             }
 
-            // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
+            // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED
             if (mergeAp) {
                 validationMergePossibility(replacedByState);
             }
@@ -503,8 +503,7 @@ public class AccessPointService {
      */
     private void validationMergePossibility(final ApState state) {
         if (state.getStateApproval() == StateApproval.TO_APPROVE
-                || state.getStateApproval() == StateApproval.APPROVED
-                || state.getStateApproval() == StateApproval.REV_PREPARED) {
+                || state.getStateApproval() == StateApproval.APPROVED) {
             throw new BusinessException("Cílová entita je schválená nebo čeká na schválení a nelze ji měnit",
                     RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
@@ -1159,7 +1158,7 @@ public class AccessPointService {
 
         ApItem updatedItem = apItemService.updateItem(change, apItem, drr);
 
-        generateSync(apItem.getPart().getAccessPoint(), apItem.getPart());
+        generateSync(apState, apItem.getPart());
         accessPointCacheService.createApCachedAccessPoint(apItem.getPart().getAccessPointId());
 
         return updatedItem;
@@ -1275,7 +1274,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(accessPoint, apPart);
+        generateSync(apState, apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -1379,7 +1378,7 @@ public class AccessPointService {
 
         apItemService.deleteItems(deleteItems, change);
 
-        generateSync(apAccessPoint, apPart);
+        generateSync(state, apPart);
 
         return true;
     }
@@ -1573,8 +1572,7 @@ public class AccessPointService {
         return items;
     }
 
-    public boolean updatePartValue(final ApPart apPart) {
-        ApState state = getStateInternal(apPart.getAccessPoint());
+    public boolean updatePartValue(final ApState state, final ApPart apPart) {        
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -2100,12 +2098,12 @@ public class AccessPointService {
         // k overeni platnosti validace
         if (newStateApproval == StateApproval.APPROVED ||
                 newStateApproval == StateApproval.TO_APPROVE) {
-            validateEntityAndFailOnError(accessPoint);
+            validateEntityAndFailOnError(oldApState);
         }
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
-        apStateRepository.save(oldApState);
+        oldApState = apStateRepository.save(oldApState);
 
         ApState newApState = copyState(oldApState, change);
         if (newApScope != null) {
@@ -2146,12 +2144,6 @@ public class AccessPointService {
             case APPROVED:
                 return Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE, StateApproval.TO_AMEND,
                                      StateApproval.APPROVED);
-            // starsi stavy - budou odstraneny
-            // z nich je mozne prepnuti do vsech
-            case REV_NEW:
-            case REV_AMEND:
-            case REV_PREPARED:
-                return Arrays.asList(StateApproval.values());
             }
         }
 
@@ -2177,8 +2169,7 @@ public class AccessPointService {
         // schvalování
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
                 || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
-            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE) ||
-                    apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
                 // kontrola, kdo přepnul do stavu ke schválení (nesmí být shodný uživatel)
                 UsrUser prevUser = apState.getCreateChange().getUser();
                 if (prevUser == null || !Objects.equals(prevUser.getUserId(), user.getId())) {
@@ -2195,27 +2186,17 @@ public class AccessPointService {
                 // oblasti u schvalenych entit
                 result.add(StateApproval.APPROVED);
             }
-            if (apState.getStateApproval().equals(StateApproval.REV_NEW)) {
-                result.add(StateApproval.REV_PREPARED);
-            }
-            if (apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
-                result.add(StateApproval.REV_AMEND);
-            }
-            if (apState.getStateApproval().equals(StateApproval.REV_AMEND)) {
-                result.add(StateApproval.REV_PREPARED);
-            }
         }
 
         // odstranění neplatných stavů, pokud existuje chybný stav
         if (apState.getAccessPoint().getState() == ApStateEnum.ERROR) {
-            result.removeAll(Arrays.asList(StateApproval.TO_APPROVE, StateApproval.REV_PREPARED, StateApproval.APPROVED));
+            result.removeAll(Arrays.asList(StateApproval.TO_APPROVE, StateApproval.APPROVED));
         }
 
         // zachování aktuálního stavu pro zvláštní případy
         if (apState.getStateApproval().equals(StateApproval.NEW)
                 || apState.getStateApproval().equals(StateApproval.TO_AMEND)
-                || apState.getStateApproval().equals(StateApproval.REV_NEW)
-                || apState.getStateApproval().equals(StateApproval.REV_AMEND)) { 
+        ) {
             result.add(apState.getStateApproval());
         }
 
@@ -2318,41 +2299,24 @@ public class AccessPointService {
             return true;
         }
 
-        if (oldStateApproval != null &&
-                (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.REV_NEW)) ||
-                (oldStateApproval.equals(StateApproval.REV_NEW)
-                        && newStateApproval.equals(StateApproval.REV_PREPARED)) ||
-                (oldStateApproval.equals(StateApproval.REV_NEW)
-                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
-                (oldStateApproval.equals(StateApproval.REV_PREPARED)
-                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
-                (oldStateApproval.equals(StateApproval.REV_AMEND)
-                        && newStateApproval.equals(StateApproval.REV_PREPARED))) {
+        // "Schvalování přístupových bodů" může:
+        // - cokoliv
+        if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+            return true;
+        }
 
-            // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
-            return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId());
-
-        } else {
-
-            // "Schvalování přístupových bodů" může:
-            // - cokoliv
-            if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
-                    || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+        // "Zakládání a změny nových" může:
+        // - nastavení stavu "Nový", "Ke schválení" i "K doplnění"
+        if (newStateApproval.equals(StateApproval.TO_AMEND) || newStateApproval.equals(StateApproval.TO_APPROVE)
+                || newStateApproval.equals(StateApproval.NEW)) {
+            if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                    || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
                 return true;
             }
-
-            // "Zakládání a změny nových" může:
-            // - nastavení stavu "Nový", "Ke schválení" i "K doplnění"
-            if (newStateApproval.equals(StateApproval.TO_AMEND) || newStateApproval.equals(StateApproval.TO_APPROVE) || newStateApproval.equals(StateApproval.NEW)) {
-                if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
-                        || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
-                    return true;
-                }
-            }
-
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -2385,10 +2349,6 @@ public class AccessPointService {
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
                         && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
-        	// lze změnit jen entity ve starších stavech
-            if (stateApproval.equals(StateApproval.REV_NEW) || stateApproval.equals(StateApproval.REV_AMEND)) {
-                return true;
-            }
             // zvláštní případ pro schválené entity - lze změnit oblast 
             if (stateApproval.equals(StateApproval.APPROVED)) {
                 return true;
@@ -2417,14 +2377,6 @@ public class AccessPointService {
                 || (userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId()))) {
 
             if (stateApproval.equals(StateApproval.NEW) || stateApproval.equals(StateApproval.TO_AMEND)) {
-                return true;
-            }
-        }
-
-        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
-                || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId()))) {
-
-            if (stateApproval.equals(StateApproval.REV_NEW) || stateApproval.equals(StateApproval.REV_AMEND)) {
                 return true;
             }
         }
@@ -2465,9 +2417,7 @@ public class AccessPointService {
                 userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId());
         boolean stateApprovedOrRewNewOrRevAmend =
-                state.getStateApproval().equals(StateApproval.APPROVED)
-                || state.getStateApproval().equals(StateApproval.REV_NEW)
-                || state.getStateApproval().equals(StateApproval.REV_AMEND);
+                state.getStateApproval().equals(StateApproval.APPROVED);
         if (!hasEditConfirmedAp && stateApprovedOrRewNewOrRevAmend) {
             throw new SystemException("Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému", BaseCode.INSUFFICIENT_PERMISSIONS)
                 .set("accessPointId", state.getAccessPointId())
@@ -2522,26 +2472,12 @@ public class AccessPointService {
                 }
             }
             break;
-        // old revisions
-        case REV_NEW:
-        case REV_AMEND:
-            if (revState == null) {
-                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
-                    return;
-                }
-            }
         case NEW:
         case TO_AMEND:
             if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                     || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
                 return;
             }
-        case REV_PREPARED:
-            throw new SystemException("Nedostatečné oprávnění na změnu přístupového bodu",
-                    BaseCode.INSUFFICIENT_PERMISSIONS)
-                            .set("accessPointId", state.getAccessPointId())
-                            .set("scopeId", state.getScopeId());
         default:
             break;
         }
@@ -2717,27 +2653,31 @@ public class AccessPointService {
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
-        boolean successfulGeneration = updatePartValue(apPart);
+    public void generateSync(final ApState apState, final ApPart apPart) {
+        boolean successfulGeneration = updatePartValue(apState, apPart);
 
-        logger.debug("Validate accessPointid={}, partId={}, successfulGeneration={}", accessPoint.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(accessPoint, successfulGeneration);
+        logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
+        validate(apState.getAccessPoint(), apState, successfulGeneration);
     }
 
     /**
      * Spusteni validace AP
      * 
-     * @param accessPoint
+     * @param accessPoint - protože může mít modifikace
+     * @param apState
      * @param successfulGeneration
      * @return Upraveny AP.
      *         Dochazi k zapisu aktualniho stavu validace.
      * 
      */
-    public ApAccessPoint validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint, false);
-        return updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
-    }
+    public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
+        logger.debug("Validate stateId={}, accessPointId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), accessPoint.getVersion());
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
+        accessPoint = updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
 
+        logger.debug("Validate accessPointId={}, version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
+        return accessPoint;
+    }
 
     public ApAccessPoint updateAndValidate(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
@@ -2759,20 +2699,21 @@ public class AccessPointService {
         Integer prefPartId = accessPoint.getPreferredPartId();
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
 
-        logger.debug("Validate accessPointid={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), partList.size(), successfulGeneration);
-        return validate(accessPoint, successfulGeneration);
+        logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
+        return validate(accessPoint, apState, successfulGeneration);
     }
 
     /**
      * Zapsání validačních chyb přístupového bodu do databáze.
      *
+     * @param accessPoint
      * @param apValidationErrorsVO
      *            chyby přístupového bodu
      * @param successfulGeneration
      *            úspěšné generování keyValue
      * @return
      */
-    public ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
+    private ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
                                        final ApValidationErrorsVO apValidationErrorsVO,
                                        final boolean successfulGeneration) {
 
@@ -2938,22 +2879,6 @@ public class AccessPointService {
     public boolean isQueryComplex(SearchFilterVO searchFilter) {
         //todo fantiš definovat příliš složitý dotaz
         return false;
-    }
-
-    // metoda nepoužívá se
-    public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
-                                                                                                                     binding));
-        setAccessPointInDataRecordRefs(accessPoint, dataRecordRefList, binding);
-
-        dataRecordRefRepository.saveAll(dataRecordRefList);
-
-        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                updatePartValue(part);
-            }
-        }
     }
 
     /**
@@ -3382,8 +3307,8 @@ public class AccessPointService {
         return false;
     }
 
-    public void validateEntityAndFailOnError(ApAccessPoint accessPoint) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(accessPoint, false);
+    public void validateEntityAndFailOnError(ApState apState) {
+        ApValidationErrorsVO validationErrors = ruleService.executeValidation(apState, false);
         if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
                 CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
             return;
@@ -3403,7 +3328,7 @@ public class AccessPointService {
         throw new BusinessException("Přístupový bod obsahuje chyby a nelze nastavit stav schválený." +
                 " " + sb.toString(),
                 BaseCode.INVALID_STATE)
-                        .set("accessPointId", accessPoint.getAccessPointId())
+                        .set("accessPointId", apState.getAccessPointId())
                         .set("error", sb.toString());
     }
 }
