@@ -800,8 +800,7 @@ public class CamService {
 
         // Pokud je state!=null, tak musi byt vzdy bindingState!=null
         if (state != null && bindingState != null) {
-            if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
-                    || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+            if (state.getStateApproval().equals(StateApproval.TO_APPROVE)) {
                 if (syncQueue) {
                     if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                         bindingState.setSyncOk(SyncState.NOT_SYNCED);
