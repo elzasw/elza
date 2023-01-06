@@ -121,7 +121,7 @@ export const EntityBindings:FC<{
                                 className={'binding-dropdown'}
                                 alignRight={true}
                             >
-                                { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED", "REV_NEW", "REV_AMEND"]) &&
+                                { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
                                     <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
                                         {i18n('ap.binding.action.synchronize')}
                                     </Dropdown.Item>}
