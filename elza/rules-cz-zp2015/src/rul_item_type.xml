@@ -185,7 +185,7 @@
     <item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
         <shortcut>Dat. vzniku - Textově</shortcut>
-        <description>ZP4.2.5 Datace vzniku jednotky popisu - textový zápis</description>
+        <description>ZP4.2.6 Datace vzniku jednotky popisu - textový zápis</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>

@@ -1060,7 +1060,7 @@ var messages = {
     "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
     "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
-    "registry.allRevisionStates": "Všechny stavy revize",
+    "registry.allRevisionStates": "Vše",
     "registry.revisionState": "Stav revize",
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",

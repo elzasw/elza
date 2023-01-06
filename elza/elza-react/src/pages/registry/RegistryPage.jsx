@@ -755,18 +755,11 @@ class RegistryPage extends AbstractReactComponent {
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
             const revisionState = registryDetail.data.revStateApproval;
-            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.REV_PREPARED && apState !== StateApproval.APPROVED ) {
-                if (apState === StateApproval.REV_NEW || apState === StateApproval.REV_AMEND) {
-                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
-                        type: perms.AP_EDIT_CONFIRMED,
-                        scopeId: registryDetail.data.scopeId,
-                    });
-                } else {
-                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
+            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.APPROVED ) {
+                editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
                         type: perms.AP_SCOPE_WR,
                         scopeId: registryDetail.data.scopeId,
-                    });
-                }
+                });
             }
             if(
                 revisionState === RevStateApproval.ACTIVE 

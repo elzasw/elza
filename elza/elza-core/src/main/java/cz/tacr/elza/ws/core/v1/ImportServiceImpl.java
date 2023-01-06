@@ -111,9 +111,7 @@ public class ImportServiceImpl implements ImportService {
 
     @Override
     public void importData(ImportRequest request) throws CoreServiceException {
-        logger.info("Received import request, code: {}, requestId: {}",
-                    request.getExternalSystem(),
-                    request.getRequestId());
+        logger.info("Received import request, code: {}, requestId: {}", request.getExternalSystem(), request.getRequestId());
 
         if (!importActive.compareAndSet(false, true)) {
             logger.error("Another import is active");
@@ -136,6 +134,7 @@ public class ImportServiceImpl implements ImportService {
             throw WSHelper.prepareException("Failed to import data", e);
         } finally {
             importActive.set(false);
+            logger.info("Finished import request, code: {}, requestId: {}", request.getExternalSystem(), request.getRequestId());
         }
     }
 
