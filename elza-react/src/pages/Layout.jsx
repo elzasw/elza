@@ -29,7 +29,7 @@ import {
     RegistryPage
 } from 'pages';
 import { PropTypes } from 'prop-types';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
 import { Shortcuts } from 'react-shortcuts';
@@ -59,6 +59,22 @@ import { MAP_URL } from './map/MapPage';
 // import FundOpenPage from './fund_open/FundOpenPage';
 
 let _gameRunner = null;
+
+const IntegrationPanel = ({
+    integrationFunction, 
+    id,
+    children
+}) => {
+    const elementRef = useRef(null);
+    useEffect(() => {
+        if(integrationFunction && elementRef.current){
+            integrationFunction(elementRef.current);
+        }
+    },[elementRef]);
+
+    if(integrationFunction){return <div ref={elementRef} id={id}/>}
+    return <>{children}</>
+}
 
 class Layout extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -169,6 +185,7 @@ class Layout extends AbstractReactComponent {
                 stopPropagation={false}
                 className="main-shortcuts"
             >
+                <IntegrationPanel id="integration-header" integrationFunction={window.renderIntegrationHeader}/>
                 <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
                     <div
                         onClick={() => {
@@ -239,9 +256,9 @@ class Layout extends AbstractReactComponent {
                     <Login />
                     <AppRouter />
                 </div>
-                {typeof window.versionNumber != 'undefined' && (
-                    <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>
-                )}
+                <IntegrationPanel id="integration-footer" integrationFunction={window.renderIntegrationFooter}>
+                    {window.versionNumber && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}
+                </IntegrationPanel>
             </Shortcuts>
         );
     }
