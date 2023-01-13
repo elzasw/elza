@@ -176,6 +176,35 @@ paths:
                 $ref: "#/components/schemas/ResultAutoItems"
         404:
           description: AP neexistuje
+  /accesspoints/{id}/copy:
+    put:
+      summary: Kopírování archivní entity
+      operationId: copyAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Další možnosti kopírování
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/CopyAccessPointDetail'
+      responses:
+        200:
+          description: Návratová hodnota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityRef"
+        404:
+          description: AP neexistuje
   /accesspoints/{id}/restore:
     put: 
       summary: Obnovení neplatné entity a návrat do původního stavu
@@ -636,6 +665,24 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
+    CopyAccessPointDetail:
+      required:
+        - scope
+      type: object
+      description: Další možnosti kopírování archivní entity
+      properties:
+        scope:
+          description: Kód oblasti nebo její ID
+          type: string
+        replaceOrigin:
+          description: Příznak, zda se má původní AP nahradit
+          type: boolean
+          default: false
+        skipItems:
+          description: Seznam ID prvků popisu, které se nemají kopírovat
+          type: array
+          items:
+            type: integer
     DeleteAccessPointDetail:
       type: object
       description: Doplňující informace k požadavku na zneplatnění přístupového bodu
