@@ -431,6 +431,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     public static final String SCOPE_GLOBAL = "GLOBAL";
+    public static final String SCOPE_COPY = "COPY";
 
     @Value("${local.server.port}")
     protected int port;
