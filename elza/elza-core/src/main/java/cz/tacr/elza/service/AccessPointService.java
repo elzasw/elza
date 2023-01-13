@@ -433,7 +433,7 @@ public class AccessPointService {
             for (ApBindingState srcBinding : srcBindings) {
                 extSystem = srcBinding.getApExternalSystem();
 
-            	for(ApBindingState replacedByBinding: replacedByBindings) {
+            	for (ApBindingState replacedByBinding: replacedByBindings) {
             		if(srcBinding.getExternalSystemId().equals(replacedByBinding.getExternalSystemId())) {
                         throw new BusinessException("Cannot replace entity with other entity from same external system", RegistryCode.EXT_SYSTEM_CONNECTED)
                         	.set("accessPointId", apState.getAccessPointId())
@@ -1757,19 +1757,22 @@ public class AccessPointService {
     }
 
     /**
-     * Získání ApScope podle kódu
+     * Získání ApScope podle kódu nebo Id
      * 
-     * @param s kod
+     * @param kod kod
      * @return ApScope
      */
-    public ApScope getApScope(String s) {
-        ApScope entity = scopeRepository.findByCode(s);
-        if(entity == null) {
-            entity = new ApScope();
-            entity.setCode(s);
-            entity.setName(s);
+    public ApScope getApScope(String kod) {
+        ApScope scope = scopeRepository.findByCode(kod);
+        if (scope == null) {
+            // pokud lze kód převést na celé číslo 
+            if (kod.matches("-?\\d+")) {
+                Integer scopeId = Integer.parseInt(kod);
+                return getApScope(scopeId);
+            }
+            throw new ObjectNotFoundException("ApScope neexistuje", BaseCode.ID_NOT_EXIST).setId(kod);
         }
-        return entity;
+        return scope;
     }
 
     /**
@@ -1925,6 +1928,87 @@ public class AccessPointService {
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
         return stateRepository.save(apState);
+    }
+
+    /**
+     *  Vytvoření kopie ApAccessPoint v ApScope
+     * 
+     * @param accessPoint   - kopírovaná entita
+     * @param scope         - nová oblast (může být stejná, pokud jde o náhradu)
+     * @param replaceOrigin - nahradit zkopírovanou entitu novou nebo ne
+     * @param skipItems     - seznam ID prvků popisu, které se nemají kopírovat
+     * @return ApAccessPoint
+     */
+    public ApAccessPoint copyAccessPoint(ApAccessPoint accessPoint, ApScope scope, boolean replaceOrigin, List<Integer> skipItems) {
+        ApState state = getStateInternal(accessPoint);
+        if (!hasPermissionToCopy(state, scope)) {
+            throw new SystemException("Uživatel nemá oprávnění na kopírování přístupového bodu do cílové oblasti", BaseCode.INSUFFICIENT_PERMISSIONS)
+                .set("accessPointId", state.getAccessPointId())
+                .set("sourceScopeId", state.getScopeId())
+                .set("targetScopeId", scope.getScopeId());
+        }
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
+        ApState copyState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
+
+        List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
+        List<ApItem> itemsFrom = itemRepository.findValidItemsByAccessPoint(accessPoint);
+
+        // filter items
+        if (!CollectionUtils.isEmpty(skipItems)) {
+            itemsFrom = itemsFrom.stream().filter(i -> !skipItems.contains(i.getItemId())).collect(Collectors.toList());
+        }
+        Map<Integer, List<ApItem>> partIdItemsFromMap = itemsFrom.stream().collect(Collectors.groupingBy(ApItem::getPartId));
+        // filter parts
+        if (!CollectionUtils.isEmpty(skipItems)) {
+            // part ids that remain after filter
+            Set<Integer> partIds = partIdItemsFromMap.keySet();
+            // save part(s) without items, but with references to part(s) with items
+            Set<Integer> parentPartIds = partsFrom.stream()
+                    .filter(p -> partIds.contains(p.getPartId()) && p.getParentPartId() != null)
+                    .map(p -> p.getParentPartId())
+                    .collect(Collectors.toSet());
+            partIds.addAll(parentPartIds);
+            partsFrom = partsFrom.stream().filter(p -> partIds.contains(p.getPartId())).collect(Collectors.toList());
+        }
+
+        // copying all parts without parent
+        Map<Integer, ApPart> fromIdToPartMap = new HashMap<>();
+        for (ApPart part : partsFrom) {
+            if (part.getParentPart() == null) {
+                ApPart copyPart = copyPart(part, copyState.getAccessPoint(), null, change);
+                fromIdToPartMap.put(part.getPartId(), copyPart);
+            }
+        }
+
+        // copying the remaining parts and all items
+        for (ApPart part : partsFrom) {
+            if (part.getParentPart() != null) {
+                ApPart copyPart = copyPart(part, copyState.getAccessPoint(), fromIdToPartMap.get(part.getParentPartId()), change);
+                fromIdToPartMap.put(part.getPartId(), copyPart);
+            }
+            for (ApItem item : partIdItemsFromMap.get(part.getPartId())) {
+                copyItem(item, fromIdToPartMap.get(part.getPartId()), change, item.getPosition());
+            }
+        }
+
+        // set preferred part
+        copyState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(accessPoint.getPreferredPartId()));
+
+        if (replaceOrigin) {
+            replace(state, copyState, null);
+            deleteAccessPoint(state, accessPoint, change);
+        }
+
+        // create indexes
+        for (ApPart part : partsFrom) {
+            updatePartValue(copyState, fromIdToPartMap.get(part.getPartId()));
+        }
+
+        ApAccessPoint copyAccessPoint = validate(copyState.getAccessPoint(), copyState, true);
+        accessPointCacheService.createApCachedAccessPoint(copyAccessPoint.getAccessPointId());
+
+        return copyAccessPoint;
     }
 
     public ApState copyState(ApState oldState, ApChange change) {
@@ -2314,6 +2398,30 @@ public class AccessPointService {
                     || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Má uživatel možnost kopírovat přístupový bod (archivní entitu)
+     * 
+     * @param oldApScope
+     * @param newApScope
+     * @return
+     */
+    private boolean hasPermissionToCopy(ApState state, ApScope scope) {
+        Validate.notNull(state, "ApState is null");
+        Validate.notNull(scope, "Target ApScope is null");
+
+        // admin může cokoliv
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return true;
+        }
+
+        if (userService.hasPermission(Permission.AP_SCOPE_RD, state.getScopeId()) 
+                && userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
+            return true;
         }
 
         return false;
@@ -3243,6 +3351,13 @@ public class AccessPointService {
         return itemRepository.save(newItem);
     }
 
+    private ApIndex copyIndex(ApIndex index, ApPart partTo) {
+        ApIndex indexTo = new ApIndex();
+        indexTo.setIndexType(index.getIndexType());
+        indexTo.setPart(partTo);
+        indexTo.setValue(index.getValue());
+        return indexRepository.save(indexTo);
+    }
 
     /**
      * Metoda vyhledá stav přístupového bodu a vrátí ho.

@@ -119,8 +119,6 @@ import cz.tacr.elza.service.cache.CachedPart;
 @Service
 public class ApFactory {
 
-    private static final String BRIEF_DESC = "BRIEF_DESC";
-
     private final ApAccessPointRepository apRepository;
 
     private final ApStateRepository stateRepository;
