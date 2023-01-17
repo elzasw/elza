@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -20,6 +21,7 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.CreateFund;
+import cz.tacr.elza.controller.vo.DeletedStructureData;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
@@ -29,6 +31,8 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
@@ -39,6 +43,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 
 @RestController
@@ -74,6 +79,9 @@ public class FundController implements FundsApi {
     @Autowired
     private ScopeRepository scopeRepository;
 
+    @Autowired
+    private StructObjService structureService;
+    
     @Override
     @Transactional
     public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
@@ -175,5 +183,34 @@ public class FundController implements FundsApi {
         ArrFund updatedFund = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
 
         return ResponseEntity.ok(factoryVo.createFundDetail(updatedFund, userService.getLoggedUserDetail()));
+    }
+
+    /**
+     * Smazání hodnot strukturovaného datového typu.
+     *
+     * @param fundVersionId    identifikátor verze AS
+     * @param structureDataIds identifikátory hodnot strukturovaného datového typu
+     * @return smazané entity
+     */
+    @Override
+    @Transactional
+    public ResponseEntity<List<DeletedStructureData>> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
+        structureService.deleteStructObj(structObjList);
+
+        List<DeletedStructureData> deletedList = new ArrayList<>(structObjList.size());
+        for (ArrStructuredObject structObj : structObjList) {
+            DeletedStructureData deletedData = new DeletedStructureData();
+            deletedData.setId(structObj.getStructuredObjectId());
+            deletedData.setState(structObj.getState().name());
+            deletedData.setTypeCode(structObj.getStructuredType().getCode());
+            deletedData.setValue(structObj.getValue());
+            deletedData.setComplement(structObj.getComplement());
+            deletedData.setAssignable(structObj.getAssignable());
+            deletedData.setErrorDescription(structObj.getErrorDescription());
+            deletedList.add(deletedData);
+        }
+        return ResponseEntity.ok(deletedList);
     }
 }

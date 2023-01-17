@@ -249,8 +249,8 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        structObjInternalService.deleteStructObj(structObj, null);
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs) {
+        structObjInternalService.deleteStructObj(structObjs, null);
     }
 
     /**
@@ -261,8 +261,8 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj, ArrChange change) {
-        structObjInternalService.deleteStructObj(structObj, change);
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs, ArrChange change) {
+        structObjInternalService.deleteStructObj(structObjs, change);
     }
 
     /**

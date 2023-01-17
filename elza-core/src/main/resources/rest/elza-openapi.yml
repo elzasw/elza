@@ -130,6 +130,36 @@ paths:
           description: Neplatné údaje pro úpravu AS
         404:
           description: AS neexistuje
+  /fund/{id}/structuredObject:
+    delete:
+      summary: Smazání seznamu hodnot strukturovaného datového typu
+      operationId: deleteStructureData
+      tags:
+        - funds
+      parameters:
+        - name: id
+          description: Identifikátor AS
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Seznam identifikátorů hodnot strukturovaného datového typu
+        content:
+          'application/json':
+            schema:
+              type: array
+              items:
+                type: integer
+      responses:
+        200:
+          description: Seznam smazaných hodnot strukturovaného datového typu
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeletedStructureData"
   /accesspoints/{id}:
     delete:
       summary: Zneplatnění přístupového bodu
@@ -665,6 +695,36 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
+    DeletedStructureData:
+       required:
+         - id
+         - state
+         - assignable
+         - typeCode
+       type: object
+       description: Smazaný strukturovaný datový typ
+       properties:
+         id:
+           description: Id strukturovaného typu
+           type: integer
+         value:
+           description: Hodnota strukturovaného typu
+           type: string
+         complement:
+           description: Complement strukturovaného typu
+           type: string
+         state:
+           description: Stav strukturovaného typu
+           type: string
+         assignable:
+           description: Assignable strukturovaného typu
+           type: boolean
+         errorDescription:
+           description: Popis chyby strukturovaného typu
+           type: string
+         typeCode:
+           description: Kód typu strukturovaného typu
+           type: string
     CopyAccessPointDetail:
       required:
         - scope
