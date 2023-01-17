@@ -472,7 +472,7 @@ public class ExternalSystemService {
                                   state, 
                                   revisionUuid, 
                                   user,
-                                  Long.valueOf(extReplacedBy),
+                                  extReplacedBy == null? null : Long.valueOf(extReplacedBy),
                                   syncState,
                                   preferredPart,
                                   apType);
