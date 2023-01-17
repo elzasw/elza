@@ -840,7 +840,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
                 ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
-                structObjInternalService.deleteStructObj(data.getStructuredObject(), change);
+                structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
             }
         }
     }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +195,7 @@ public class StructureController {
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
-        structureService.deleteStructObj(structObj);
+        structureService.deleteStructObj(Collections.singletonList(structObj));
         return ArrStructureDataVO.newInstance(structObj);
     }
 

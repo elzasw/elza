@@ -1,6 +1,7 @@
 package cz.tacr.elza.ws.core.v1;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,7 +69,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
             throws DeleteStructuredObjectFailed {
         try {
             ArrStructuredObject structObj = findStructObj(deleteStructuredObj.getId(), deleteStructuredObj.getUuid());
-            structObjService.deleteStructObj(structObj);
+            structObjService.deleteStructObj(Collections.singletonList(structObj));
         } catch (Exception e)
         {
             logger.error("Failed to delete structured object: {}", e.getMessage(), e);
