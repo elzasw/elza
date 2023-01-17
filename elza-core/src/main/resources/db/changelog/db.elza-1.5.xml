@@ -2163,4 +2163,9 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
           <where>state_approval IN ('REV_NEW', 'REV_PREPARED', 'REV_AMEND')</where>
         </update>
 	</changeSet>
+
+	<changeSet id="20230117145500" author="sergey.iryupin">
+    	<modifyDataType tableName="ap_binding_state" columnName="ext_user" newDataType="nvarchar(250)" />
+	</changeSet>
+
 </databaseChangeLog>

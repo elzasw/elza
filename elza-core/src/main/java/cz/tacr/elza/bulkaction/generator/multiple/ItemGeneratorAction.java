@@ -1,6 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +128,7 @@ public class ItemGeneratorAction extends Action {
 
             // vymazani strukt objektu které se již nepoužívají
             for (ArrStructuredObject so : unusedStructObj) {
-                structObjService.deleteStructObj(so, change);
+                structObjService.deleteStructObj(Collections.singletonList(so), change);
             }
         }
     }
