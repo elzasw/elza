@@ -72,7 +72,7 @@ public class ApBindingState implements AccessPointCacheSerializable {
     @Column(length = StringLength.LENGTH_50)
     private String extRevision;
 
-    @Column(length = StringLength.LENGTH_50)
+    @Column(length = StringLength.LENGTH_250)
     private String extUser;
 
     @Column(length = StringLength.LENGTH_50)
