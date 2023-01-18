@@ -376,7 +376,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
     	
-        //flush a batch of updates and release memory:
+        // flush a batch of updates and release memory:
         this.entityManager.flush();
         this.entityManager.clear();
     
@@ -384,6 +384,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 			if (oldApCachedAccessPoint != null) {
 				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+				cachedAccessPointRepository.flush();
 			}
 			processNewAPs(Collections.singletonList(accessPointId));
         }
