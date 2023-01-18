@@ -35,6 +35,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -86,7 +87,6 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
@@ -171,8 +171,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final DaoLinkRepository daoLinkRepository;
 
-    private final AccessPointCacheService accessPointCacheService;
-
     /**
      * Provider for attachments
      */
@@ -201,6 +199,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private OutputContext outputContext;
 
+    private final ExportConfig exportConfig;
+
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -217,7 +217,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository,
-                       final AccessPointCacheService accessPointCacheService,
+                       final ExportConfig exportConfig,
                        final EntityManager em) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
@@ -235,7 +235,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
-        this.accessPointCacheService = accessPointCacheService;
+        this.exportConfig = exportConfig;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
     }
 
@@ -1013,5 +1013,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 .filter(Objects::nonNull)
                 .sorted(cz.tacr.elza.print.item.Item::compareTo)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ExportConfig getExportConfig() {
+        return exportConfig;
     }
 }

@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.AbstractServiceTest;
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
@@ -94,6 +95,9 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     AccessPointCacheService accessPointCacheService;
 
+    @Autowired
+    ExportConfig exportConfig;
+
     // test output with structObjs
     @Test
     @Transactional(TxType.REQUIRES_NEW)
@@ -166,7 +170,7 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, accessPointCacheService, em);
+                daoLinkRepository, exportConfig, em);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());
