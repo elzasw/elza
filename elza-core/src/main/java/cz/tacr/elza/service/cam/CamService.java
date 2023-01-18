@@ -255,7 +255,7 @@ public class CamService {
      * @param binding
      * @param procCtx
      */
-    void createBindingForRel(final List<ReferencedEntities> dataRefList, final ProcessingContext procCtx) {
+    public void createBindingForRel(final List<ReferencedEntities> dataRefList, final ProcessingContext procCtx) {
         for (ReferencedEntities dataRef : dataRefList) {
             createBindingForRel(dataRef.getData(), dataRef.getEntityIdentifier(), procCtx);
         }
