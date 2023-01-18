@@ -673,7 +673,7 @@ public class AccessPointItemService {
         itemService.checkItemLengthLimit(rulItemType, data);
 
         ApItem itemCreated = createItem(part, data, rulItemType, itemSpec, change, existsItems);
-        itemCreated = itemRepository.saveAndFlush(itemCreated);
+        itemCreated = itemRepository.save(itemCreated);
 
         if (binding != null) {
             externalSystemService.createApBindingItem(binding, change, bindingValue, null, itemCreated);

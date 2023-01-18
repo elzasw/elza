@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
@@ -60,6 +61,8 @@ public class OutputGeneratorFactory {
 
     private ElzaLocale elzaLocale;
 
+    private ExportConfig exportConfig;
+
     @Autowired
     public OutputGeneratorFactory(final ApplicationContext applicationContext,
                                   final StaticDataService staticDataService,
@@ -77,7 +80,8 @@ public class OutputGeneratorFactory {
                                   final DmsService dmsService,
                                   final DEExportService exportService,
                                   final DaoLinkRepository daoLinkRepository,
-                                  final AccessPointCacheService accessPointCacheService) {
+                                  final AccessPointCacheService accessPointCacheService,
+                                  final ExportConfig exportConfig) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -95,6 +99,7 @@ public class OutputGeneratorFactory {
         this.exportService = exportService;
         this.daoLinkRepository = daoLinkRepository;
         this.accessPointCacheService = accessPointCacheService;
+        this.exportConfig = exportConfig;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -116,7 +121,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
-                daoLinkRepository, accessPointCacheService);
+                daoLinkRepository, exportConfig);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
@@ -125,7 +130,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository,
                 bindingRepository, itemRepository, bindingStateRepository,
-                indexRepository, em, dmsService, daoLinkRepository, accessPointCacheService);
+                indexRepository, em, dmsService, daoLinkRepository, exportConfig);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

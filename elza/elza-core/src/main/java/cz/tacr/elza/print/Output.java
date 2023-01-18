@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.print.item.Item;
 import net.bytebuddy.implementation.bytecode.Throw;
 
@@ -137,4 +138,11 @@ public interface Output {
      * @return
      */
     Iterator<Record> getRecords();
+
+    /**
+     * Return system/configuration property
+     * 
+     * @return
+     */
+    ExportConfig getExportConfig();
 }

@@ -384,6 +384,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 			if (oldApCachedAccessPoint != null) {
 				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+                this.entityManager.flush();
 			}
 			processNewAPs(Collections.singletonList(accessPointId));
         }

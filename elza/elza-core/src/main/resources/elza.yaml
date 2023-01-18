@@ -9,6 +9,10 @@ elza:
 
   # ISO code of locale
   locale: cs
+  
+  export:
+    mapviewer:
+        url: "https://www.lightcomp.cz/extra/mapview/?wkb="
 
   workingDir: ./work
 

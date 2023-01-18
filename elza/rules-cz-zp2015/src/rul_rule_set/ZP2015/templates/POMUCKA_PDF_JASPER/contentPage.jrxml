@@ -138,6 +138,7 @@
 	</subDataset>
 	<subDataset name="ItemCoords" uuid="99f11d1e-0c0e-4dd3-a896-388b6014c8ed">
 		<parameter name="node" class="cz.tacr.elza.print.Node"/>
+		<parameter name="output" class="cz.tacr.elza.print.Output"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -734,9 +735,12 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="ItemCoords" uuid="98fe8f2f-843f-4239-af71-f815abe03bad">
+					<datasetRun subDataset="ItemCoords" uuid="14787ab6-f352-413a-b8b6-e1e4d5eadb4e">
 						<datasetParameter name="node">
 							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="output">
+							<datasetParameterExpression><![CDATA[$P{output}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ))]]></dataSourceExpression>
 					</datasetRun>
@@ -747,7 +751,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA["GPS souřadnice uvedeny v elektronické formě pomůcky"]]></textFieldExpression>
-							<hyperlinkReferenceExpression><![CDATA["https://www.lightcomp.cz/extra/mapview/?wkb="+java.net.URLEncoder.encode($F{item}.getBase64Value(), "UTF-8")]]></hyperlinkReferenceExpression>
+							<hyperlinkReferenceExpression><![CDATA[$P{output}.getExportConfig().getMapviewer().getUrl()+java.net.URLEncoder.encode($F{item}.getBase64Value(), "UTF-8")]]></hyperlinkReferenceExpression>
 							<hyperlinkWhenExpression><![CDATA[true]]></hyperlinkWhenExpression>
 							<hyperlinkTooltipExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkTooltipExpression>
 						</textField>
