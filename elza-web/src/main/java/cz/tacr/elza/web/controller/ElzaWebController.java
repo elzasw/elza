@@ -96,6 +96,14 @@ public class ElzaWebController {
         return logoutUrl;
     }
 
+    @Value("${elza.integrationScriptUrl:}")
+    private String integrationScriptUrl;
+
+    @ModelAttribute("integrationScriptUrl")
+    public String getIntegrationScriptUrl() {
+        return integrationScriptUrl;
+    }
+
     private void initDefaults(final HttpServletRequest request, final Model model) {
         model.addAttribute("contextPath", request.getContextPath());
     }

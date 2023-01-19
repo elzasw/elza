@@ -32,9 +32,6 @@
         <meta name="format-detection" content="telephone=no"/>
         <meta name="theme-color" content="#ffffff"/>
 
-        <script th:if="${isDefaultUserEnabled}">            
-        </script>
-
         <script th:inline="javascript">
         	/*<![CDATA[*/
             var serverContextPath = [[${contextPath}]];
@@ -45,6 +42,9 @@
             var clientLog = [[${isClientLog}]];
             var logoutUrl = [[${logoutUrl}]];
             /*]]>*/
+        </script>
+
+        <script type="text/javascript" th:if="${integrationScriptUrl}" src="integrationScript.js" th:src="@{${integrationScriptUrl}}">            
         </script>
     </head>
 
