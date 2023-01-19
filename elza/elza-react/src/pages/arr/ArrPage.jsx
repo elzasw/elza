@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import {MODAL_DIALOG_SIZE, urlFundActions, urlNode} from '../../constants';
+import {MODAL_DIALOG_SIZE, urlFundActions, urlNode, getFundVersion} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -109,15 +109,28 @@ class ArrPage extends ArrParentPage {
 
     async componentDidMount() {
         const {match} = this.props;
-        if(match?.params?.nodeId){
-            this.selectNodeFromUrl();
-        } else {
+
+        if(match?.params?.nodeId == undefined){
+            const activeFund = this.getActiveFund(this.props);
+            if(activeFund 
+                && match?.params?.id === activeFund.id.toString() 
+                && match?.params?.versionId === getFundVersion(activeFund)?.toString()){
+                this.selectNodeFromStore();
+            }
             super.componentDidMount();
+        } else {
+            this.selectNodeFromUrl();
         }
     }
 
     componentDidUpdate(prevProps) {
         const {match} = this.props;
+
+        // select active node form active fund
+        if(match?.params?.nodeId == undefined){
+            this.selectNodeFromStore();
+        }
+        // select node by id present in url
         if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
             this.selectNodeFromUrl();
         }
@@ -132,12 +145,24 @@ class ArrPage extends ArrParentPage {
             const activeFund = this.getActiveFund(this.props);
             const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
-            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeFund) {
+            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeNode) {
                 const data = await WebApi.selectNode(urlNodeId);
                 processNodeNavigation(dispatch, data, arrRegion);
             }
         }
         this.trySetFocus(this.props);
+    }
+
+    selectNodeFromStore = () => {
+        const {dispatch} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        if (activeFund?.nodes && activeFund.nodes.activeIndex !== null) {
+            const node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+            if(node){
+                dispatch(routerNavigate(urlNode(node.selectedSubNodeId)))
+            }
+        }
     }
 
     waitForLoadAS = fce => {
@@ -157,7 +182,7 @@ class ArrPage extends ArrParentPage {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         super.UNSAFE_componentWillReceiveProps(nextProps);
-        const {selectedTabKey} = this.props;
+        const {selectedTabKey, match} = this.props;
         const activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
             this.props.dispatch(structureTypesFetchIfNeeded(activeFund.versionId));
@@ -197,10 +222,16 @@ class ArrPage extends ArrParentPage {
                     this.refFundErrors.fetchNow();
                 }
             }
-            if (activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]) {
-                const node = activeFund.fundTree.nodes[0];
-                const parentNode = createFundRoot(activeFund);
-                this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+
+            // redirect to root node only when not a direct node url
+            if(match?.params?.nodeId == null){
+                if (activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]) {
+                    const node = activeFund.fundTree.nodes[0];
+                    if(node){
+                        const parentNode = createFundRoot(activeFund);
+                        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+                    }
+                }
             }
         } else {
             this.setState({fundNodesError: null});
