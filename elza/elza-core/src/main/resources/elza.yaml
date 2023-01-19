@@ -13,6 +13,10 @@ elza:
   export:
     mapviewer:
         url: "https://www.lightcomp.cz/extra/mapview/?wkb="
+ 
+  # Integration settings
+  #  URL for integration JavaScript
+  # integrationScriptUrl: /elzainteg/integ.js  
 
   workingDir: ./work
 
