@@ -102,7 +102,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         throw "no fundId or versionId"
     }
 
-    async componentDidMount() {
+    resolveUrls = async () => {
         const {dispatch, match} = this.props;
         const {id, versionId, nodeId} = match.params;
         dispatch(descItemTypesFetchIfNeeded());
@@ -114,26 +114,22 @@ export default class ArrParentPage extends AbstractReactComponent {
         
         // skip loading data, if fund is currently open
         if(activeFund?.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
-            return;
+            return activeFund;
         }
 
         if (urlFundId) {
             try{
-                const data = await WebApi.getFundDetail(urlFundId)
+                const fund = await WebApi.getFundDetail(urlFundId)
 
                 // select the current version, when it is missing in the path
-                const version = urlVersionId ? data.versions.find((version) => version.id === urlVersionId) : data.versions[0];
-                dispatch(selectFundTab(getFundFromFundAndVersion(data, version)));
-                return;
+                const version = urlVersionId ? fund.versions.find((version) => version.id === urlVersionId) : fund.versions[0];
+                dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
+                return fund;
             }
             catch(e) {
                 console.error("Nepodařilo se získat detail o AS", e);
             };
         }
-        if((!id && !nodeId) && activeFund) {
-            dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund)),"REPLACE"));
-        }
-        // }
     }
 
     // Function to determine whether the fundId in the url is the id of the

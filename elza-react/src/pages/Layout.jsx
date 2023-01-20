@@ -44,6 +44,7 @@ import {
     MOVEMENTS,
     OUTPUTS, 
     REQUESTS,
+    NODE,
     TREE,
     urlFundTree,
     URL_ENTITY,
@@ -203,6 +204,7 @@ class Layout extends AbstractReactComponent {
                             <Route path={`${URL_FUND}/:id/v/:versionId`}>
                                 <Switch>
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
@@ -215,6 +217,7 @@ class Layout extends AbstractReactComponent {
                             <Route path={`${URL_FUND}/:id`}>
                                 <Switch>
                                     <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
                                     <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
