@@ -24,6 +24,7 @@ import UpdateMultipleSub from './structure/UpdateMultipleSub';
 import {addToastrWarning} from '../shared/toastr/ToastrActions';
 import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
 import ListPager from 'components/shared/listPager/ListPager';
+import { Api } from 'api';
 
 class ArrStructurePanel extends AbstractReactComponent {
     static propTypes = {
@@ -282,21 +283,11 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.closeContextMenu();
     };
 
-    deleteItem = itemId => {
+    handleDelete = async (clickItem) => {
         const {fundVersionId} = this.props;
-        WebApi.deleteStructureData(fundVersionId, itemId).then(() => {
-            this.props.dispatch(structureTypeInvalidate());
-        });
-    };
+        const ids = this.getActiveSelection(clickItem) || [clickItem.id];
 
-    handleDelete = clickItem => {
-        const ids = this.getActiveSelection(clickItem);
-
-        if (ids) {
-            ids.forEach(id => this.deleteItem(id));
-        } else {
-            this.deleteItem(clickItem.id);
-        }
+        await Api.funds.deleteStructureData(fundVersionId, ids);
 
         this.closeContextMenu();
     };
