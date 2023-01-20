@@ -52,7 +52,7 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     componentDidMount() {
-        super.componentDidMount();
+        this.resolveUrls();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {}

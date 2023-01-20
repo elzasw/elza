@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import {MODAL_DIALOG_SIZE, urlFundActions, urlNode, getFundVersion} from '../../constants';
+import {MODAL_DIALOG_SIZE, urlFundActions, urlNode, getFundVersion, urlFundNode} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -108,19 +108,31 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
-        const {match} = this.props;
+        const {dispatch, match} = this.props;
 
-        if(match?.params?.nodeId == undefined){
-            const activeFund = this.getActiveFund(this.props);
-            if(activeFund 
-                && match?.params?.id === activeFund.id.toString() 
-                && match?.params?.versionId === getFundVersion(activeFund)?.toString()){
-                this.selectNodeFromStore();
-            }
-            super.componentDidMount();
-        } else {
-            this.selectNodeFromUrl();
+        const activeFund = this.getActiveFund(this.props);
+        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
+
+        // select already opened node
+        if(activeFund 
+            && match?.params?.id === activeFund.id.toString() 
+            && match?.params?.versionId === getFundVersion(activeFund)
+            && (
+                match?.params?.nodeId === activeNode?.selectedSubNodeId
+                || match?.params?.nodeId == undefined
+            )
+        ){
+            this.selectNodeFromStore();
+            return;
         }
+
+        // wait for fund from ArrParentPage
+        let fund;
+        if(match.params.id){
+            fund = await this.resolveUrls()
+        }
+
+        this.selectNodeFromUrl(fund);
     }
 
     componentDidUpdate(prevProps) {
@@ -129,25 +141,29 @@ class ArrPage extends ArrParentPage {
         // select active node form active fund
         if(match?.params?.nodeId == undefined){
             this.selectNodeFromStore();
+            return;
         }
         // select node by id present in url
         if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
             this.selectNodeFromUrl();
+            return;
         }
     }
 
-    async selectNodeFromUrl() {
-        const {match, dispatch, arrRegion} = this.props;
-        const matchId = match.params.nodeId;
-        const urlNodeId = matchId || null;
+    async selectNodeFromUrl(fund) {
+        const {match, dispatch} = this.props;
+
+        const urlNodeId = match?.params?.nodeId ? parseInt(match.params.nodeId) : null;
+        const urlVersionId = match?.params?.versionId ? parseInt(match.params.versionId) : null;
 
         if (urlNodeId != null) {
             const activeFund = this.getActiveFund(this.props);
             const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
-            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeNode) {
+            // select node from url only when it is not already selected (url inserted into address bar)
+            if(activeNode?.selectedSubNodeId !== urlNodeId){
                 const data = await WebApi.selectNode(urlNodeId);
-                processNodeNavigation(dispatch, data, arrRegion);
+                dispatch(processNodeNavigation(data, urlVersionId));
             }
         }
         this.trySetFocus(this.props);
@@ -160,7 +176,7 @@ class ArrPage extends ArrParentPage {
         if (activeFund?.nodes && activeFund.nodes.activeIndex !== null) {
             const node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             if(node){
-                dispatch(routerNavigate(urlNode(node.selectedSubNodeId)))
+                dispatch(routerNavigate(urlFundNode(activeFund.id, getFundVersion(activeFund), node.selectedSubNodeId)))
             }
         }
     }
