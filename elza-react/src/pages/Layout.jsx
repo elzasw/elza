@@ -207,7 +207,9 @@ class Layout extends AbstractReactComponent {
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
@@ -220,7 +222,9 @@ class Layout extends AbstractReactComponent {
                                     <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                     <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
                                     <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
