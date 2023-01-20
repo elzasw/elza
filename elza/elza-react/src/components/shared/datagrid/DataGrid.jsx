@@ -576,35 +576,28 @@ class DataGrid extends AbstractReactComponent {
         var nextFocus = this.getRelativeSelectableItemIndex(row, col, rowStep, colStep);
         this.changeFocus(nextFocus);
     };
+
+    getNewRelativeValue = (value, step, min, max) => {
+        let newValue = value + step;
+        if(newValue < min){
+            newValue = min;
+        }
+        else if(newValue > max){
+            newValue = max;
+        }
+        return newValue;
+    };
+
     getRelativeSelectableItemIndex = (row, col, rowStep, colStep) => {
         const {rows} = this.props;
         const {cols} = this.state;
 
-        const rowIsDecrementing = rowStep < 0;
-        const colIsDecrementing = colStep < 0;
-        let rowLast = false;
-
-        if ((row || row === 0) && (col || col === 0)) {
-            while (rowStep || colStep) {
-                const newFocus = {row: row + rowStep, col: col + colStep};
-                const rowInRange = newFocus.row >= 0 && newFocus.row < rows.length;
-                const colInRange = newFocus.col >= 0 && newFocus.col < cols.length;
-                if (rowInRange && colInRange) {
-                    return newFocus;
-                }
-                if (!rowLast && (rowStep || !colStep)) {
-                    rowIsDecrementing ? rowStep++ : rowStep--;
-                    rowLast = true;
-                } else if (rowLast && (colStep || !rowStep)) {
-                    colIsDecrementing ? colStep++ : colStep--;
-                    rowLast = false;
-                }
-            }
-            return {row: row, col: col};
-        } else {
-            return 0;
+        return {
+            row: this.getNewRelativeValue(row, rowStep, 0, rows.length - 1), 
+            col: this.getNewRelativeValue(col, colStep, 0, cols.length - 1),
         }
     };
+
     actionMap = {
         MOVE_UP: this.selectorMoveUp,
         MOVE_DOWN: this.selectorMoveDown,
