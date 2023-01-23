@@ -295,8 +295,8 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(0, structureDataResult3.getCount());
         assertEquals(0, structureDataResult3.getRows().size());
 
-        ArrStructureDataVO structureDataDeleted = deleteStructureData(fundVersion.getId(), structureData.getId());
-        assertNotNull(structureDataDeleted);
+        List<Integer> structureDataDeletedIds = deleteStructureData(fundVersion.getId(), Collections.singletonList(structureData.getId()));
+        assertNotNull(structureDataDeletedIds.size() == 1);
 
         FilteredResultVO<ArrStructureDataVO> structureDataResult4 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
         assertEquals(0, structureDataResult4.getCount());

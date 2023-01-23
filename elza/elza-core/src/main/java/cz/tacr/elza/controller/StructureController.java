@@ -189,6 +189,7 @@ public class StructureController {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @return smazaná entita
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.DELETE)
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
