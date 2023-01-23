@@ -127,9 +127,7 @@ public class ItemGeneratorAction extends Action {
             List<ArrStructuredObject> unusedStructObj = structObjService.getUnusedStructObj(structObjsToDelete);
 
             // vymazani strukt objektu které se již nepoužívají
-            for (ArrStructuredObject so : unusedStructObj) {
-                structObjService.deleteStructObj(Collections.singletonList(so), change);
-            }
+            structObjService.deleteStructObj(unusedStructObj, change);
         }
     }
 

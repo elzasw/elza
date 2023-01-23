@@ -23,7 +23,6 @@ import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementInternalService;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.Items;
@@ -70,14 +69,13 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
         try {
             ArrStructuredObject structObj = findStructObj(deleteStructuredObj.getId(), deleteStructuredObj.getUuid());
             structObjService.deleteStructObj(Collections.singletonList(structObj));
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.error("Failed to delete structured object: {}", e.getMessage(), e);
             throw prepareDeleteException("Failed to delete structured object.", deleteStructuredObj, e);
         }
     }
 
-    DeleteStructuredObjectFailed prepareDeleteException(String msg, StructuredObjectIdentifiers deleteStructuredObj,
+    private DeleteStructuredObjectFailed prepareDeleteException(String msg, StructuredObjectIdentifiers deleteStructuredObj,
                                                         Exception e) {
         ErrorDescription ed = new ErrorDescription();
         ed.setUserMessage(msg);

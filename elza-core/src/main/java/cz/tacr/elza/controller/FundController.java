@@ -21,7 +21,6 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.CreateFund;
-import cz.tacr.elza.controller.vo.DeletedStructureData;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
@@ -194,23 +193,11 @@ public class FundController implements FundsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<List<DeletedStructureData>> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
+    public ResponseEntity<List<Integer>> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
-        structureService.deleteStructObj(structObjList);
+        List<Integer> deletedIds = structureService.deleteStructObj(structObjList);
 
-        List<DeletedStructureData> deletedList = new ArrayList<>(structObjList.size());
-        for (ArrStructuredObject structObj : structObjList) {
-            DeletedStructureData deletedData = new DeletedStructureData();
-            deletedData.setId(structObj.getStructuredObjectId());
-            deletedData.setState(structObj.getState().name());
-            deletedData.setTypeCode(structObj.getStructuredType().getCode());
-            deletedData.setValue(structObj.getValue());
-            deletedData.setComplement(structObj.getComplement());
-            deletedData.setAssignable(structObj.getAssignable());
-            deletedData.setErrorDescription(structObj.getErrorDescription());
-            deletedList.add(deletedData);
-        }
-        return ResponseEntity.ok(deletedList);
+        return ResponseEntity.ok(deletedIds);
     }
 }

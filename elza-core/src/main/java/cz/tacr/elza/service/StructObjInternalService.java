@@ -68,11 +68,13 @@ public class StructObjInternalService {
      *
      * @param structObjs seznam hodnot struktovaného datového typu
      * @param changeOverride přetížená změna
+     * @return List<Integer>
      */
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs,
+    public List<Integer> deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs,
                                 @Nullable final ArrChange changeOverride) {
         List<ArrStructuredObject> tempStructObj = new ArrayList<>(); 
         List<ArrStructuredObject> permStructObj = new ArrayList<>();
+        List<Integer> deletedIds = new ArrayList<>();
 
         // vytvoření 2 seznamů podle typu objektu
         for (ArrStructuredObject structObj : structObjs) {
@@ -93,6 +95,7 @@ public class StructObjInternalService {
             ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
             structObjRepository.delete(structObj);
             changeRepository.delete(change);
+            deletedIds.add(structObj.getStructuredObjectId());
         }
 
         // vymazání 'permanent' objektů
@@ -132,8 +135,11 @@ public class StructObjInternalService {
                         null,
                         null,
                         Collections.singletonList(structObj.getStructuredObjectId())));
+                deletedIds.add(savedStructObj.getStructuredObjectId());
             }
         }
+
+        return deletedIds;
     }
 
     public RulPartType getPartTypeByCode(final String partTypeCode) {
