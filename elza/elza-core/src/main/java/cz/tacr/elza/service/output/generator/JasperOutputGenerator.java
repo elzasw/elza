@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -48,7 +49,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
@@ -93,7 +93,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           EntityManager em,
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository,
-                          AccessPointCacheService accessPointCacheService) {
+                          ExportConfig exportConfig) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -106,7 +106,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
-                indexRepository, daoLinkRepository, accessPointCacheService, em);
+                indexRepository, daoLinkRepository, exportConfig, em);
         pdfAttProvider.setOutput(outputModel);
     }
 

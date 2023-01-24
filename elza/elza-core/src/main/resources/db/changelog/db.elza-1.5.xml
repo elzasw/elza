@@ -2154,6 +2154,7 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         <!-- Fulltext reindex -->
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
 	</changeSet>
+
     <changeSet id="20230106150300" author="ppyt">
         <delete tableName="ap_cached_access_point">
           <where>access_point_id IN (SELECT access_point_id FROM ap_state WHERE state_approval IN ('REV_NEW', 'REV_PREPARED', 'REV_AMEND'))</where>
@@ -2163,4 +2164,17 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
           <where>state_approval IN ('REV_NEW', 'REV_PREPARED', 'REV_AMEND')</where>
         </update>
 	</changeSet>
+
+	<changeSet id="20230117145500" author="sergey.iryupin">
+    	<modifyDataType tableName="ap_binding_state" columnName="ext_user" newDataType="nvarchar(250)" />
+	</changeSet>
+	
+	<changeSet id="20230118100500" author="sergey.iryupin">
+        <sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id IN 
+            (SELECT access_point_id FROM ap_cached_access_point GROUP BY access_point_id HAVING COUNT(*) > 1)</sql>
+        <createIndex indexName="access_point_id_idx" tableName="ap_cached_access_point" unique="true">
+            <column name="access_point_id" />
+        </createIndex>
+	</changeSet>
+
 </databaseChangeLog>

@@ -147,6 +147,7 @@ export enum CoordinateFileType {
 export const CLS_CALCULABLE = 'calculable';
 
 export const TREE = 'tree';
+export const NODE = 'node';
 export const GRID = 'grid';
 export const MOVEMENTS = 'movements';
 export const OUTPUTS = 'outputs';
@@ -202,6 +203,10 @@ export const urlNode = (nodeId: number | string | undefined) => {
 const fundSub = (fundId: number, versionId: number | undefined, sub: string, subId?: number) => {
     const url = `${urlFundBase(fundId, versionId)}/${sub}`;
     return subId == null ? url : url + '/' + subId;
+}
+
+export const urlFundNode = (fundId: number, versionId?: number, nodeId?: number) => {
+    return fundSub(fundId, versionId, `${NODE}/${nodeId}`);
 }
 
 export const urlFundTree = (fundId: number, versionId?: number) => {

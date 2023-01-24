@@ -130,6 +130,36 @@ paths:
           description: Neplatné údaje pro úpravu AS
         404:
           description: AS neexistuje
+  /fund/{id}/structuredObject:
+    delete:
+      summary: Smazání seznamu hodnot strukturovaného datového typu
+      operationId: deleteStructureData
+      tags:
+        - funds
+      parameters:
+        - name: id
+          description: Identifikátor AS
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Seznam id hodnot strukturovaného datového typu
+        content:
+          'application/json':
+            schema:
+              type: array
+              items:
+                type: integer
+      responses:
+        200:
+          description: Seznam smazaných id hodnot strukturovaného datového typu
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
   /accesspoints/{id}:
     delete:
       summary: Zneplatnění přístupového bodu
@@ -174,6 +204,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ResultAutoItems"
+        404:
+          description: AP neexistuje
+  /accesspoints/{id}/copy:
+    put:
+      summary: Kopírování archivní entity
+      operationId: copyAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Další možnosti kopírování
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/CopyAccessPointDetail'
+      responses:
+        200:
+          description: Návratová hodnota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityRef"
         404:
           description: AP neexistuje
   /accesspoints/{id}/restore:
@@ -636,6 +695,24 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
+    CopyAccessPointDetail:
+      required:
+        - scope
+      type: object
+      description: Další možnosti kopírování archivní entity
+      properties:
+        scope:
+          description: Kód oblasti nebo její ID
+          type: string
+        replaceOrigin:
+          description: Příznak, zda se má původní AP nahradit
+          type: boolean
+          default: false
+        skipItems:
+          description: Seznam ID prvků popisu, které se nemají kopírovat
+          type: array
+          items:
+            type: integer
     DeleteAccessPointDetail:
       type: object
       description: Doplňující informace k požadavku na zneplatnění přístupového bodu

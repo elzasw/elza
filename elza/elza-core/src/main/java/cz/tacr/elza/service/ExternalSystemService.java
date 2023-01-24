@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -416,6 +417,7 @@ public class ExternalSystemService {
         apBindingState.setApExternalSystem(binding.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
+        Validate.isTrue(userName == null || userName.length() <= StringLength.LENGTH_250, "UserName length exceeds the limit");
         apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
@@ -423,7 +425,8 @@ public class ExternalSystemService {
         apBindingState.setSyncOk(syncState);
         apBindingState.setPreferredPart(preferredPart);
         apBindingState.setApType(apType);
-        return bindingStateRepository.save(apBindingState);
+
+        return bindingStateRepository.saveAndFlush(apBindingState);
     }
 
     /**
@@ -463,21 +466,16 @@ public class ExternalSystemService {
         oldbindingState.setDeleteChange(apChange);
         bindingStateRepository.saveAndFlush(oldbindingState);
 
-        ApBindingState apBindingState = new ApBindingState();
-        apBindingState.setBinding(oldbindingState.getBinding());
-        apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
-        apBindingState.setApExternalSystem(oldbindingState.getApExternalSystem());
-        apBindingState.setExtState(state);
-        apBindingState.setExtRevision(revisionUuid);
-        apBindingState.setExtUser(user);
-        apBindingState.setExtReplacedBy(extReplacedBy);
-        apBindingState.setSyncChange(apChange);
-        apBindingState.setCreateChange(apChange);
-        apBindingState.setSyncOk(syncState);
-        apBindingState.setPreferredPart(preferredPart);
-        apBindingState.setApType(apType);
-
-        return bindingStateRepository.saveAndFlush(apBindingState);
+        return createBindingState(oldbindingState.getBinding(), 
+                                  oldbindingState.getAccessPoint(), 
+                                  apChange, 
+                                  state, 
+                                  revisionUuid, 
+                                  user,
+                                  extReplacedBy == null? null : Long.valueOf(extReplacedBy),
+                                  syncState,
+                                  preferredPart,
+                                  apType);
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -188,13 +189,14 @@ public class StructureController {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @return smazaná entita
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.DELETE)
     public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
-        structureService.deleteStructObj(structObj);
+        structureService.deleteStructObj(Collections.singletonList(structObj));
         return ArrStructureDataVO.newInstance(structObj);
     }
 

@@ -22,7 +22,6 @@ import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
-import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -589,7 +588,7 @@ public class NodeCacheService {
      * @return JP
      */
 	private RestoredNode getNodeInternal(final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
         if (cachedNode == null) {
             throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)

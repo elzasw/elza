@@ -64,66 +64,82 @@ public class StructObjInternalService {
     }
 
     /**
-     * Smazání hodnoty strukturovaného datového typu.
+     * Smazání hodnot strukturovaného datového typu.
      *
-     * @param structObj hodnota struktovaného datového typu
+     * @param structObjs seznam hodnot struktovaného datového typu
      * @param changeOverride přetížená změna
+     * @return List<Integer>
      */
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj,
+    public List<Integer> deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs,
                                 @Nullable final ArrChange changeOverride) {
-        if (structObj.getDeleteChange() != null) {
-            throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+        List<ArrStructuredObject> tempStructObj = new ArrayList<>(); 
+        List<ArrStructuredObject> permStructObj = new ArrayList<>();
+        List<Integer> deletedIds = new ArrayList<>();
+
+        // vytvoření 2 seznamů podle typu objektu
+        for (ArrStructuredObject structObj : structObjs) {
+            if (structObj.getDeleteChange() != null) {
+                throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+            }
+            if (structObj.getState() == State.TEMP) {
+                tempStructObj.add(structObj);
+            } else {
+                permStructObj.add(structObj);
+            }
         }
 
-        if (structObj.getState() == State.TEMP) {
-
-            // remove temporary object
+        // vymazání 'temporary' objektů
+        for (ArrStructuredObject structObj : tempStructObj) {
             structureItemRepository.deleteByStructuredObject(structObj);
             dataRepository.deleteByStructuredObject(structObj);
             ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
             structObjRepository.delete(structObj);
             changeRepository.delete(change);
+            deletedIds.add(structObj.getStructuredObjectId());
+        }
 
-        } else {
-
-            // drop permanent object
-
-            // check usage
-            Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
-            if (count > 0) {
-                throw new BusinessException("Existují návazné jednotky popisu, objekt nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
-                        .level(Level.WARNING)
-                        .set("count", count)
-                        .set("id", structObj.getStructuredObjectId());
-            }
-
+        // vymazání 'permanent' objektů
+        if (!permStructObj.isEmpty()) {
             ArrChange change = changeOverride == null
                     ? arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA)
                     : changeOverride;
-            structObj.setDeleteChange(change);
-
-            ArrStructuredObject savedStructObj = structObjRepository.save(structObj);
-
-            // check duplicates for deleted item
-            // find potentially duplicated items
-            List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                    .findValidByStructureTypeAndFund(savedStructObj.getStructuredType(),
-                                                     savedStructObj.getFund(),
-                                                     savedStructObj.getSortValue(),
-                                                     savedStructObj);
-            for (ArrStructuredObject pd : potentialDuplicates) {
-                if (pd.getState().equals(State.ERROR)) {
-                    structObjService.addToValidate(pd);
+            for (ArrStructuredObject structObj : permStructObj) {
+                // check usage
+                Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
+                if (count > 0) {
+                    throw new BusinessException("Existují návazné jednotky popisu, objekt nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                            .level(Level.WARNING)
+                            .set("count", count)
+                            .set("id", structObj.getStructuredObjectId());
                 }
-            }
 
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    null,
-                    Collections.singletonList(structObj.getStructuredObjectId())));
+                structObj.setDeleteChange(change);
+                ArrStructuredObject savedStructObj = structObjRepository.save(structObj);
+
+                // check duplicates for deleted item
+                // find potentially duplicated items
+                List<ArrStructuredObject> potentialDuplicates = structObjRepository
+                        .findValidByStructureTypeAndFund(savedStructObj.getStructuredType(),
+                                                         savedStructObj.getFund(),
+                                                         savedStructObj.getSortValue(),
+                                                         savedStructObj);
+                for (ArrStructuredObject pd : potentialDuplicates) {
+                    if (pd.getState().equals(State.ERROR)) {
+                        structObjService.addToValidate(pd);
+                    }
+                }
+    
+                notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
+                        structObj.getStructuredType().getCode(),
+                        null,
+                        null,
+                        null,
+                        Collections.singletonList(structObj.getStructuredObjectId())));
+                deletedIds.add(savedStructObj.getStructuredObjectId());
+            }
         }
+
+        return deletedIds;
     }
 
     public RulPartType getPartTypeByCode(final String partTypeCode) {

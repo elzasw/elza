@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -22,25 +23,65 @@ import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
+import cz.tacr.elza.test.controller.vo.EntityRef;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
 
     @Autowired
     PartService partService;
-    
+
+    @Autowired
+    ApItemRepository itemRepository;
+
     @Autowired
     ApStateRepository stateRepository; 
-    
+
     @Autowired
     ApAccessPointRepository apRepository;
+
+    @Test
+    public void copyAccessPointsTest() throws ApiException {
+
+        long count = apRepository.count();
+        assertTrue(count == 3);
+        ApAccessPoint ap = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        assertNotNull(ap);
+        List<ApPart> parts = partService.findPartsByAccessPoint(ap);
+        assertTrue(parts.size() == 3);
+        List<ApItem> items = itemRepository.findValidItemsByAccessPoint(ap);
+        assertTrue(items.size() == 8);
+
+        // let's delete the last part
+        List<ApItem> itemsSkip = itemRepository.findValidItemsByPartId(parts.get(parts.size() - 1).getPartId());
+        List<Integer> skipItems = itemsSkip.stream().map(p -> p.getItemId()).collect(Collectors.toList());                
+
+        CopyAccessPointDetail copyAccessPointDetail = new CopyAccessPointDetail();
+        copyAccessPointDetail.setScope(SCOPE_GLOBAL);
+        copyAccessPointDetail.setReplaceOrigin(true);
+        copyAccessPointDetail.setSkipItems(skipItems);
+
+        EntityRef entityRef = accesspointsApi.copyAccessPoint(ap.getUuid(), copyAccessPointDetail);
+        count = apRepository.count();
+        assertTrue(count == 4); // +1
+
+        ApAccessPoint copyAp = apRepository.findAccessPointByUuid(entityRef.getId());
+        assertNotNull(copyAp);
+        List<ApPart> copyParts = partService.findPartsByAccessPoint(copyAp);
+        assertTrue(copyParts.size() == 2); // -1
+        List<ApItem> copyItems = itemRepository.findValidItemsByAccessPoint(copyAp);
+        assertTrue(copyItems.size() == 5); // -3
+    }
 
     @Test
     public void deleteAccessPointsTest() throws ApiException {

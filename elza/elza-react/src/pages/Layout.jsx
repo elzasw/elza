@@ -29,7 +29,7 @@ import {
     RegistryPage
 } from 'pages';
 import { PropTypes } from 'prop-types';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
 import { Shortcuts } from 'react-shortcuts';
@@ -44,6 +44,7 @@ import {
     MOVEMENTS,
     OUTPUTS, 
     REQUESTS,
+    NODE,
     TREE,
     urlFundTree,
     URL_ENTITY,
@@ -59,6 +60,22 @@ import { MAP_URL } from './map/MapPage';
 // import FundOpenPage from './fund_open/FundOpenPage';
 
 let _gameRunner = null;
+
+const IntegrationPanel = ({
+    integrationFunction, 
+    id,
+    children
+}) => {
+    const elementRef = useRef(null);
+    useEffect(() => {
+        if(integrationFunction && elementRef.current){
+            integrationFunction(elementRef.current);
+        }
+    },[elementRef]);
+
+    if(integrationFunction){return <div ref={elementRef} id={id}/>}
+    return <>{children}</>
+}
 
 class Layout extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -169,6 +186,7 @@ class Layout extends AbstractReactComponent {
                 stopPropagation={false}
                 className="main-shortcuts"
             >
+                <IntegrationPanel id="integration-header" integrationFunction={window.renderIntegrationHeader}/>
                 <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
                     <div
                         onClick={() => {
@@ -186,9 +204,12 @@ class Layout extends AbstractReactComponent {
                             <Route path={`${URL_FUND}/:id/v/:versionId`}>
                                 <Switch>
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
                                     <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
@@ -198,9 +219,12 @@ class Layout extends AbstractReactComponent {
                             <Route path={`${URL_FUND}/:id`}>
                                 <Switch>
                                     <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
+                                    <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                     <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                     <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                    <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                     <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
+                                    <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
                                     <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
                                     <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
@@ -239,9 +263,9 @@ class Layout extends AbstractReactComponent {
                     <Login />
                     <AppRouter />
                 </div>
-                {typeof window.versionNumber != 'undefined' && (
-                    <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>
-                )}
+                <IntegrationPanel id="integration-footer" integrationFunction={window.renderIntegrationFooter}>
+                    {window.versionNumber && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}
+                </IntegrationPanel>
             </Shortcuts>
         );
     }
