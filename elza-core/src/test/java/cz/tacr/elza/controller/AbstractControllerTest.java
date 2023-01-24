@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,6 +210,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
     protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
     protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/assignable/{assignable}";
+    @Deprecated
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
@@ -412,9 +414,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
-    //FUND
+    // FUND
     protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
+    protected static final String FUND_DELETE_STRUCTURE_DATA = FUND_CONTROLLER_URL + "/fund/{id}/structuredObject";
 
     //ACCESSPOINTS
     protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
@@ -431,6 +434,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     public static final String SCOPE_GLOBAL = "GLOBAL";
+    public static final String SCOPE_COPY = "COPY";
 
     @Value("${local.server.port}")
     protected int port;
@@ -3143,15 +3147,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání hodnoty strukturovaného datového typu.
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return smazaná entita
+     * @param fundVersionId    identifikátor verze AS
+     * @param structureDataIds seznam identifikátorů hodnot strukturovaného datového typu
+     * @return seznam identifikátorů smazaných entit
      */
-    protected ArrStructureDataVO deleteStructureData(final Integer fundVersionId,
-                                                     final Integer structureDataId) {
-        return delete(spec -> spec.pathParameter("structureDataId", structureDataId)
-                .pathParameter("fundVersionId", fundVersionId), DELETE_STRUCTURE_DATA)
-                .as(ArrStructureDataVO.class);
+    protected List<Integer> deleteStructureData(final Integer fundVersionId,
+                                                final List<Integer> structureDataIds) {
+        return delete(spec -> spec.pathParams("id", fundVersionId).
+                      body(structureDataIds), FUND_DELETE_STRUCTURE_DATA)
+                .as(ArrayList.class);
     }
 
     /**

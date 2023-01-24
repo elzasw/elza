@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.20.0.final using JasperReports Library version 6.20.0-2bc7ab61c56f459e8176eb05c7705e145cd400ad  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -138,6 +138,7 @@
 	</subDataset>
 	<subDataset name="ItemCoords" uuid="99f11d1e-0c0e-4dd3-a896-388b6014c8ed">
 		<parameter name="node" class="cz.tacr.elza.print.Node"/>
+		<parameter name="output" class="cz.tacr.elza.print.Output"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -637,12 +638,28 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
 							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="2bc5262b-fa8b-4cf9-8e36-36e36b522d36">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}.getUuid()]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getDescription()]]></hyperlinkTooltipExpression>
+						</textField>
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
+							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="ed80c859-1de6-4dbe-95da-7fffc3921a01">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.x" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getDescription()]]></hyperlinkTooltipExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -674,11 +691,25 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
 							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
+							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="78a4d976-06fc-4724-95bc-b641c265ec96">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.x" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
 						</textField>
 					</jr:listContents>
@@ -734,9 +765,12 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 					<property name="com.jaspersoft.studio.unit.CONTENTS.height" value="px"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="ItemCoords" uuid="98fe8f2f-843f-4239-af71-f815abe03bad">
+					<datasetRun subDataset="ItemCoords" uuid="14787ab6-f352-413a-b8b6-e1e4d5eadb4e">
 						<datasetParameter name="node">
 							<datasetParameterExpression><![CDATA[$F{node}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="output">
+							<datasetParameterExpression><![CDATA[$P{output}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_POSITION") ))]]></dataSourceExpression>
 					</datasetRun>
@@ -747,7 +781,7 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA["GPS souřadnice uvedeny v elektronické formě pomůcky"]]></textFieldExpression>
-							<hyperlinkReferenceExpression><![CDATA["https://mapview.lightcomp.cz/wkb?"+$F{item}.getBase64Value()]]></hyperlinkReferenceExpression>
+							<hyperlinkReferenceExpression><![CDATA[$P{output}.getExportConfig().getMapviewer().getUrl()+java.net.URLEncoder.encode($F{item}.getBase64Value(), "UTF-8")]]></hyperlinkReferenceExpression>
 							<hyperlinkWhenExpression><![CDATA[true]]></hyperlinkWhenExpression>
 							<hyperlinkTooltipExpression><![CDATA[$F{item}.getSerializedValue()]]></hyperlinkTooltipExpression>
 						</textField>

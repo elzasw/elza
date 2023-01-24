@@ -68,7 +68,7 @@ class FundActionPage extends ArrParentPage {
     async componentDidMount() {
         const {dispatch, match, history} = this.props;
 
-        await super.componentDidMount();
+        await this.resolveUrls();
         dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props);

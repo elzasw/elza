@@ -115,7 +115,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     async componentDidMount() {
         const {dispatch, match, history} = this.props;
-        await super.componentDidMount();
+        await this.resolveUrls();
         dispatch(templatesFetchIfNeeded());
         dispatch(outputFilters.fetchIfNeeded());
         dispatch(structureTypesFetchIfNeeded(null));

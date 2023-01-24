@@ -3,7 +3,7 @@ import './ArrParentPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {i18n} from 'components/shared';
+import {i18n, Loading} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
@@ -102,7 +102,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         throw "no fundId or versionId"
     }
 
-    async componentDidMount() {
+    resolveUrls = async () => {
         const {dispatch, match} = this.props;
         const {id, versionId, nodeId} = match.params;
         dispatch(descItemTypesFetchIfNeeded());
@@ -114,26 +114,70 @@ export default class ArrParentPage extends AbstractReactComponent {
         
         // skip loading data, if fund is currently open
         if(activeFund?.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
-            return;
+            return activeFund;
         }
 
         if (urlFundId) {
             try{
-                const data = await WebApi.getFundDetail(urlFundId)
+                const fund = await WebApi.getFundDetail(urlFundId)
 
                 // select the current version, when it is missing in the path
-                const version = urlVersionId ? data.versions.find((version) => version.id === urlVersionId) : data.versions[0];
-                dispatch(selectFundTab(getFundFromFundAndVersion(data, version)));
-                return;
+                const version = urlVersionId ? fund.versions.find((version) => version.id === urlVersionId) : fund.versions[0];
+                dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
+                return fund;
             }
             catch(e) {
                 console.error("Nepodařilo se získat detail o AS", e);
             };
         }
-        if((!id && !nodeId) && activeFund) {
-            dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund)),"REPLACE"));
+    }
+
+    // Function to determine whether the fundId in the url is the id of the
+    // currently opened(active) fund.
+    // Expects the url formats '/fund/{id}' or '/fund/{id}/v/{versionId}'
+    isCurrentFundActive = () => {
+        const {match} = this.props;
+        const {id, versionId} = match.params;
+        const activeFund = this.getActiveFund(this.props);
+
+        if(!activeFund){
+            return false;
         }
-        // }
+
+        const urlFundId = id ? parseInt(id) : null;
+        const urlVersionId = versionId ? parseInt(versionId) : null;
+
+        if(activeFund.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
+            return true;
+        }
+        return false;
+    }
+
+    // Function to determine whether the nodeId in the url is the id of the
+    // currently opened(active) node.
+    // Expects the url format '/node/{id}'
+    isCurrentNodeActive = () => {
+        const {match} = this.props;
+        const {nodeId} = match.params;
+        const urlNodeId = nodeId != null ? parseInt(nodeId) : null;
+        if(urlNodeId == null){
+            return false;
+        }
+
+        const activeFund = this.getActiveFund(this.props);
+        if(!activeFund?.nodes || activeFund.nodes.activeIndex == null){
+            return false;
+        }
+
+        const activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        if(!activeNode || activeNode.selectedSubNodeId == null){
+            return false;
+        }
+
+        if(activeNode.selectedSubNodeId === urlNodeId){
+            return true;
+        }
+        return false;
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -226,6 +270,13 @@ export default class ArrParentPage extends AbstractReactComponent {
             }
         } else {
             centerPanel = <div>{i18n('global.insufficient.right')}</div>;
+        }
+
+        if(!this.isCurrentFundActive() && !this.isCurrentNodeActive()){
+            leftPanel = undefined;
+            rightPanel = undefined;
+            statusHeader = undefined;
+            centerPanel = <Loading/>
         }
 
         return (

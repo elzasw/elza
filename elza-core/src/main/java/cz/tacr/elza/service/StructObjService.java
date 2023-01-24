@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -249,8 +248,8 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        structObjInternalService.deleteStructObj(structObj, null);
+    public List<Integer> deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs) {
+        return structObjInternalService.deleteStructObj(structObjs, null);
     }
 
     /**
@@ -261,8 +260,8 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj, ArrChange change) {
-        structObjInternalService.deleteStructObj(structObj, change);
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs, ArrChange change) {
+        structObjInternalService.deleteStructObj(structObjs, change);
     }
 
     /**
@@ -587,7 +586,7 @@ public class StructObjService {
      * @param structureDataList strukturovaný typ
      */
     private List<ArrStructuredObject> revalidateStructureData(final List<ArrStructuredObject> structureDataList) {
-        Assert.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
+        Validate.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
 
         for (ArrStructuredObject structureData : structureDataList) {
             structureData.setValue(null);
