@@ -638,12 +638,28 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
 							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="2bc5262b-fa8b-4cf9-8e36-36e36b522d36">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}.getUuid()]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getDescription()]]></hyperlinkTooltipExpression>
+						</textField>
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
+							<reportElement style="Item" x="0" y="0" width="404" height="13" uuid="ed80c859-1de6-4dbe-95da-7fffc3921a01">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.x" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+							<hyperlinkTooltipExpression><![CDATA[$F{item}.getDescription()]]></hyperlinkTooltipExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -675,11 +691,25 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
 							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
 ( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
+							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+						</textField>
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
+							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="78a4d976-06fc-4724-95bc-b641c265ec96">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.x" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
+								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
+							</reportElement>
+							<box topPadding="0"/>
+							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
 						</textField>
 					</jr:listContents>
