@@ -4,6 +4,7 @@ import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.service.AccessPointGeneratorService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
@@ -35,13 +38,22 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public AsyncAccessPointWorker(final AsyncRequest request) {
-        this.request = request;
+    public AsyncAccessPointWorker(final List<AsyncRequest> requests) {
+        if (CollectionUtils.isNotEmpty(requests)) {
+            this.request = requests.get(0);
+        } else {
+            this.request = null;
+        }
     }
 
     @Override
     public AsyncRequest getRequest() {
         return request;
+    }
+
+    @Override
+    public List<AsyncRequest> getRequests() {
+        return Collections.singletonList(request);
     }
 
     @Override

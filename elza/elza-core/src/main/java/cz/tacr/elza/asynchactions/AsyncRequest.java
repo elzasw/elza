@@ -16,6 +16,7 @@ public class AsyncRequest {
     private Integer outputId;
     private Integer accessPointId;
     private Integer userId;
+    private boolean failed = false;
 
     public AsyncRequest(ArrAsyncRequest request) {
         this.requestId = request.getAsyncRequestId();
@@ -90,6 +91,14 @@ public class AsyncRequest {
 
     public Integer getAccessPointId() {
         return accessPointId;
+    }
+
+    public void setFailed(boolean failed) {
+        this.failed = failed;
+    }
+
+    public boolean isFailed() {
+        return failed;
     }
 
     @Override
