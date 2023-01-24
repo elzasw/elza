@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -71,6 +72,9 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
 
     @Query("SELECT COUNT(i) FROM arr_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.structuredObject = :structuredObject")
     Integer countItemsUsingStructObj(@Param("structuredObject") ArrStructuredObject structuredObject);
+
+    @Query("SELECT DISTINCT d.structuredObjectId FROM arr_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.structuredObject IN :structuredObjects")
+    List<Integer> findUsedStructuredObjectIds(@Param("structuredObjects") Collection<ArrStructuredObject> structuredObjects);
 
     @Modifying
     @Query("DELETE FROM arr_structured_item i WHERE i.structuredObject in (SELECT so FROM arr_structured_object so WHERE so.fund = ?1)")

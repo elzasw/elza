@@ -1,12 +1,15 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -70,20 +73,30 @@ public class StructObjInternalService {
      * @param changeOverride přetížená změna
      * @return List<Integer>
      */
-    public List<Integer> deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final List<ArrStructuredObject> structObjs,
-                                @Nullable final ArrChange changeOverride) {
+    public List<Integer> deleteStructObj(final List<ArrStructuredObject> structObjs, @Nullable final ArrChange changeOverride) {
         List<ArrStructuredObject> tempStructObj = new ArrayList<>(); 
         List<ArrStructuredObject> permStructObj = new ArrayList<>();
+        List<String> sortValues = new ArrayList<>();
         List<Integer> deletedIds = new ArrayList<>();
 
-        // vytvoření 2 seznamů podle typu objektu
+        ArrFund fund = structObjs.get(0).getFund();
+        RulStructuredType structuredType = structObjs.get(0).getStructuredType();
+
+        // vytvoření 2 seznamů podle stavu objektu
         for (ArrStructuredObject structObj : structObjs) {
             if (structObj.getDeleteChange() != null) {
                 throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
             }
+            if (structObj.getFundId() != fund.getFundId()) {
+                throw new BusinessException("Strukturovaný datá musí patřit ke stejnému fondu", BaseCode.INVALID_STATE);
+            }
+            if (structObj.getStructuredTypeId() != structuredType.getStructuredTypeId()) {
+                throw new BusinessException("Strukturovaná data musí být stejného typu", BaseCode.INVALID_STATE);
+            }
             if (structObj.getState() == State.TEMP) {
                 tempStructObj.add(structObj);
             } else {
+                sortValues.add(structObj.getSortValue());
                 permStructObj.add(structObj);
             }
         }
@@ -103,42 +116,36 @@ public class StructObjInternalService {
             ArrChange change = changeOverride == null
                     ? arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA)
                     : changeOverride;
-            for (ArrStructuredObject structObj : permStructObj) {
-                // check usage
-                Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
-                if (count > 0) {
-                    throw new BusinessException("Existují návazné jednotky popisu, objekt nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
-                            .level(Level.WARNING)
-                            .set("count", count)
-                            .set("id", structObj.getStructuredObjectId());
-                }
 
-                structObj.setDeleteChange(change);
-                ArrStructuredObject savedStructObj = structObjRepository.save(structObj);
-
-                // check duplicates for deleted item
-                // find potentially duplicated items
-                List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                        .findValidByStructureTypeAndFund(savedStructObj.getStructuredType(),
-                                                         savedStructObj.getFund(),
-                                                         savedStructObj.getSortValue(),
-                                                         savedStructObj);
-                for (ArrStructuredObject pd : potentialDuplicates) {
-                    if (pd.getState().equals(State.ERROR)) {
-                        structObjService.addToValidate(pd);
-                    }
-                }
-    
-                notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                        structObj.getStructuredType().getCode(),
-                        null,
-                        null,
-                        null,
-                        Collections.singletonList(structObj.getStructuredObjectId())));
-                deletedIds.add(savedStructObj.getStructuredObjectId());
+            // kontrolujeme použití
+            List<Integer> userStructObjIds = new ArrayList<>(); 
+            ObjectListIterator.forEachPage(permStructObj, 
+                                           page -> userStructObjIds.addAll(structureItemRepository.findUsedStructuredObjectIds(page)));
+            if (!userStructObjIds.isEmpty()) {
+                throw new BusinessException("Existují návazné jednotky popisu, objekt(y) nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                        .level(Level.WARNING)
+                        .set("count", userStructObjIds.size())
+                        .set("ids", userStructObjIds);
             }
-        }
 
+            for (ArrStructuredObject structObj : permStructObj) {
+                structObj.setDeleteChange(change);
+                deletedIds.add(structObj.getStructuredObjectId());
+            }
+            structObjRepository.saveAll(permStructObj);
+
+            // hledáme duplikáty
+            List<ArrStructuredObject> structuredObjectsDup = new ArrayList<>();
+            ObjectListIterator
+                .forEachPage(sortValues, 
+                             page -> structuredObjectsDup.addAll(structObjRepository.findErrorByStructureTypeAndFund(structuredType, fund, page)));
+            structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                                                                          structuredType.getCode(),
+                                                                          null, null, null,
+                                                                          deletedIds));
+        }
         return deletedIds;
     }
 
