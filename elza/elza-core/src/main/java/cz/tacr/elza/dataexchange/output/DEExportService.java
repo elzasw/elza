@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -230,15 +231,25 @@ public class DEExportService {
     
             // find all children arr_data_record_ref.record_id from list of access point ids
             if (CollectionUtils.isNotEmpty(recordIds)) {
-                ObjectListIterator.forEachPage(recordIds, page -> 
-                                               accessPointIds.addAll(apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page)));
+                ObjectListIterator.forEachPage(recordIds, page -> {
+                    List<Map> resultMap = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page);
+                    for (Map result : resultMap) {
+                        Integer recordId = (Integer) result.get("recordId");
+                        Integer accessPointId = (Integer) result.get("accessPointId");
+                        if (recordId == null) {
+                            throw new BusinessException("Entita has unresolved reference(s)", BaseCode.INVALID_STATE)
+                                .set("accessPointId", accessPointId);
+                        }
+                        accessPointIds.add(recordId);
+                    }
+                });
             }
 
             // check all access points
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 ObjectListIterator.forEachPage(accessPointIds, page -> {
                     if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
-                        throw new BusinessException("Entity(es) has been deleted.", BaseCode.INVALID_STATE)
+                        throw new BusinessException("Entity(es) has been deleted", BaseCode.INVALID_STATE)
                             .set("IDs", stateRepository.findDeletedAccessPointIdsByAccessPointIds(page));
                     }
                 });

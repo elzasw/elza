@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -81,13 +82,13 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
             + "WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
 
-    @Query("SELECT d.recordId FROM ApItem i "
+    @Query("SELECT d.recordId AS recordId, p.accessPointId AS accessPointId FROM ApItem i "
            + "JOIN i.part p "
            + "JOIN i.data d "
-           + "RIGHT JOIN arr_data_record_ref ref ON ref.dataId = d.dataId "
+           + "JOIN arr_data_record_ref ref ON ref.dataId = d.dataId "
            + "WHERE p.accessPointId IN :apIds AND p.deleteChange IS NULL AND i.deleteChange IS NULL")
-    List<Integer> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("apIds") Collection<Integer> apIds);
-    
+    List<Map> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("apIds") Collection<Integer> apIds);
+
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.binding = :binding AND i.deleteChange IS NULL")
     List<ApItem> findUnbindedItemByBinding(@Param("binding") ApBinding binding);
 }
