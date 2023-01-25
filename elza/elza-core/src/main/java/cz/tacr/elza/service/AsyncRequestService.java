@@ -24,6 +24,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import cz.tacr.elza.asynchactions.AsQueue;
+import cz.tacr.elza.asynchactions.AsyncAccessPointWorker;
 import cz.tacr.elza.asynchactions.IRequestQueue;
 import cz.tacr.elza.asynchactions.NodeQueuePriorityComparator;
 import org.apache.commons.collections4.CollectionUtils;
@@ -56,7 +57,6 @@ import cz.tacr.elza.asynchactions.NodePriorityComparator;
 import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ThreadLoadInfo;
 import cz.tacr.elza.asynchactions.TimeRequestInfo;
-import cz.tacr.elza.bulkaction.AsyncAccessPointWorker;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;

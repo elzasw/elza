@@ -1,10 +1,11 @@
-package cz.tacr.elza.bulkaction;
+package cz.tacr.elza.asynchactions;
 
-import cz.tacr.elza.asynchactions.AsyncRequest;
-import cz.tacr.elza.asynchactions.AsyncRequestEvent;
-import cz.tacr.elza.asynchactions.IAsyncWorker;
-import cz.tacr.elza.service.AccessPointGeneratorService;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import cz.tacr.elza.service.AccessPointGeneratorService;
 
 @Component
 @Scope("prototype")
@@ -40,6 +39,7 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
 
     public AsyncAccessPointWorker(final List<AsyncRequest> requests) {
         if (CollectionUtils.isNotEmpty(requests)) {
+            Validate.isTrue(requests.size() == 1, "Only single request processing is supported by this worker");
             this.request = requests.get(0);
         } else {
             this.request = null;
