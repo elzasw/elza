@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     public AsyncBulkActionWorker(final List<AsyncRequest> requests) {
         if (CollectionUtils.isNotEmpty(requests)) {
+            Validate.isTrue(requests.size() == 1, "Only single request processing is supported by this worker");
             this.request = requests.get(0);
         } else {
             this.request = null;
