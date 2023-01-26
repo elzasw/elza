@@ -82,7 +82,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
             + "WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
 
-    @Query("SELECT DISTINCT new cz.tacr.elza.dataexchange.output.RefRecordsFromIds(d.recordId, p.accessPointId) FROM ApItem i "
+    @Query("SELECT new cz.tacr.elza.dataexchange.output.RefRecordsFromIds(d.recordId, d.bindingId, p.accessPointId) FROM ApItem i "
            + "JOIN i.part p "
            + "JOIN i.data d "
            + "JOIN arr_data_record_ref ref ON ref.dataId = d.dataId "
