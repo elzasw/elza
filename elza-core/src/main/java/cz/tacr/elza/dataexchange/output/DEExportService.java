@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -228,17 +227,16 @@ public class DEExportService {
             // find all arr_data_record_ref.record_id from arr_item from fund(s)
             List<Integer> recordIds = itemRepository.findArrDataRecordRefRecordIdsByFundVersionIds(fundVersionIds);
             Set<Integer> accessPointIds = new HashSet<>(recordIds);
-    
+
             // find all children arr_data_record_ref.record_id from list of access point ids
             if (CollectionUtils.isNotEmpty(recordIds)) {
                 ObjectListIterator.forEachPage(recordIds, page -> {
-                    List<Map> resultMap = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page);
-                    for (Map result : resultMap) {
-                        Integer recordId = (Integer) result.get("recordId");
-                        Integer accessPointId = (Integer) result.get("accessPointId");
+                    List<RefRecordsFromIds> results = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page);
+                    for (RefRecordsFromIds result : results) {
+                        Integer recordId = result.getRecordId();
                         if (recordId == null) {
                             throw new BusinessException("Entita has unresolved reference(s)", BaseCode.INVALID_STATE)
-                                .set("accessPointId", accessPointId);
+                                .set("accessPointId", result.getAccessPointId());
                         }
                         accessPointIds.add(recordId);
                     }
