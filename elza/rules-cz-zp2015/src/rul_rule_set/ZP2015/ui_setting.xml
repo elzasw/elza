@@ -11,6 +11,11 @@
             <tree>
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
+                <item type="ZP2015_OTHER_ID" maxCount="1">
+                    <spec type="ZP2015_OTHERID_OLDSIG2" />
+                    <spec type="ZP2015_OTHERID_OLDSIG" />
+                    <spec type="ZP2015_OTHERID_CJ" />
+                </item>
             </tree>
             <accordion-left separator="_">
                 <item type="ZP2015_TITLE" />
@@ -18,6 +23,7 @@
                 <item type="ZP2015_OTHER_ID" maxCount="1">
                     <spec type="ZP2015_OTHERID_OLDSIG2" />
                     <spec type="ZP2015_OTHERID_OLDSIG" />
+                    <spec type="ZP2015_OTHERID_CJ" />
                 </item>
             </accordion-left>
             <accordion-right>
