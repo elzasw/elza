@@ -236,6 +236,7 @@ public class DEExportService {
                         Integer recordId = result.getRecordId();
                         if (recordId == null) {
                             throw new BusinessException("Entita has unresolved reference(s)", BaseCode.INVALID_STATE)
+                                .set("bindingId", result.getBindingId())
                                 .set("accessPointId", result.getAccessPointId());
                         }
                         accessPointIds.add(recordId);
