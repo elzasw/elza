@@ -29,7 +29,7 @@ export const processNodeNavigation = (data, versionId) =>
                     // root
                     parentNode = createFundRoot(selectFund);
                 }
-                dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false));
+                dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false, undefined, undefined, true));
                 return false;
             } else {
                 return true;
