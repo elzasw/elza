@@ -43,7 +43,7 @@
             <width>150</width>
         </ns6:item-type>          
         <!-- Počet archiválií -->
-        <ns6:item-type code="ZP2015_UNIT_TYPE">
+        <ns6:item-type code="ZP2015_UNIT_COUNT">
             <show-default>true</show-default>
             <width>80</width>
         </ns6:item-type>
