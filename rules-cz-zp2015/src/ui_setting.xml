@@ -32,16 +32,21 @@
             <show-default>true</show-default>
             <width>100</width>
         </ns6:item-type>
-        <!-- Typ archiválie -->
-        <ns6:item-type code="ZP2015_UNIT_TYPE">
-            <show-default>true</show-default>
-            <width>150</width>
-        </ns6:item-type>          
         <!-- Typ složky -->
         <ns6:item-type code="ZP2015_FOLDER_TYPE">
             <show-default>true</show-default>
             <width>100</width>
         </ns6:item-type>     
+        <!-- Typ archiválie -->
+        <ns6:item-type code="ZP2015_UNIT_TYPE">
+            <show-default>true</show-default>
+            <width>150</width>
+        </ns6:item-type>          
+        <!-- Počet archiválií -->
+        <ns6:item-type code="ZP2015_UNIT_TYPE">
+            <show-default>true</show-default>
+            <width>80</width>
+        </ns6:item-type>
         <!-- Ukládací jednotka -->
         <ns6:item-type code="ZP2015_STORAGE_ID">
             <show-default>true</show-default>
@@ -50,12 +55,12 @@
         <!-- Pořadí uložení -->
         <ns6:item-type code="ZP2015_ITEM_ORDER">
             <show-default>true</show-default>
-            <width>100</width>
+            <width>80</width>
         </ns6:item-type>
         <!-- Jiná označení -->
         <ns6:item-type code="ZP2015_OTHER_ID">
             <show-default>true</show-default>
-            <width>100</width>
+            <width>120</width>
         </ns6:item-type>
         <!-- Obsah, regest -->
         <ns6:item-type code="ZP2015_TITLE">
@@ -70,7 +75,7 @@
         <!-- Role entit -->
         <ns6:item-type code="ZP2015_ENTITY_ROLE">
             <show-default>true</show-default>
-            <width>150</width>
+            <width>180</width>
         </ns6:item-type>
     </grid-view>
     <structure-type-settings code="STRUCT_TYPE_ZP2015_PACKET">
