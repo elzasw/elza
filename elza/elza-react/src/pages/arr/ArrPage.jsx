@@ -108,15 +108,34 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
+        super.componentDidMount()
         const {dispatch, match} = this.props;
 
+        // get currently selected fund and node from store
         const activeFund = this.getActiveFund(this.props);
+        const activeVersionId = getFundVersion(activeFund);
         const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
+
+        // case when fund id is missing
+        let selectedNodeInfo;
+        let urlFundId;
+        const urlVersionId = match.params.versionId ? parseInt(match.params.versionId) : undefined;
+        const urlNodeId = match?.params?.nodeId;
+
+        if(match.params.id == undefined){
+            if(!match.params.nodeId){
+                throw "chybi node id"
+            }
+            selectedNodeInfo = await WebApi.selectNode(match.params.nodeId);
+            urlFundId = selectedNodeInfo.fund.id;
+        } else {
+            urlFundId = parseInt(match.params.id);
+        }
 
         // select already opened node
         if(activeFund 
-            && match?.params?.id === activeFund.id.toString() 
-            && match?.params?.versionId === getFundVersion(activeFund)
+            && urlFundId === activeFund.id 
+            && urlVersionId === activeVersionId
             && (
                 match?.params?.nodeId === activeNode?.selectedSubNodeId
                 || match?.params?.nodeId == undefined
@@ -127,16 +146,25 @@ class ArrPage extends ArrParentPage {
         }
 
         // wait for fund from ArrParentPage
-        let fund;
-        if(match.params.id){
-            fund = await this.resolveUrls()
-        }
+        await this.resolveUrlsRaw(urlFundId, urlVersionId)
 
-        this.selectNodeFromUrl(fund);
+        if(selectedNodeInfo){
+            // directly select node with info 
+            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId));
+        } else {
+            this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
+        }
     }
 
     componentDidUpdate(prevProps) {
         const {match} = this.props;
+        this.trySetFocus(this.props);
+
+        const urlNodeId = match?.params?.nodeId;
+        const urlVersionId = match?.params?.versionId ? parseInt(match.params.versionId) : null;
+
+        const activeFund = this.getActiveFund(this.props);
+        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
         // select active node form active fund
         if(match?.params?.nodeId == undefined){
@@ -145,28 +173,21 @@ class ArrPage extends ArrParentPage {
         }
         // select node by id present in url
         if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
-            this.selectNodeFromUrl();
+            this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
             return;
         }
     }
 
-    async selectNodeFromUrl(fund) {
-        const {match, dispatch} = this.props;
+    async selectNodeFromUrl(activeNode, nodeId, versionId) {
+        const {dispatch} = this.props;
 
-        const urlNodeId = match?.params?.nodeId ? parseInt(match.params.nodeId) : null;
-        const urlVersionId = match?.params?.versionId ? parseInt(match.params.versionId) : null;
-
-        if (urlNodeId != null) {
-            const activeFund = this.getActiveFund(this.props);
-            const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
-
+        if (nodeId != null) {
             // select node from url only when it is not already selected (url inserted into address bar)
-            if(activeNode?.selectedSubNodeId !== urlNodeId){
-                const data = await WebApi.selectNode(urlNodeId);
-                dispatch(processNodeNavigation(data, urlVersionId));
+            if(activeNode?.selectedSubNodeId.toString() !== nodeId){
+                const data = await WebApi.selectNode(nodeId);
+                dispatch(processNodeNavigation(data, versionId));
             }
         }
-        this.trySetFocus(this.props);
     }
 
     selectNodeFromStore = () => {
@@ -245,7 +266,7 @@ class ArrPage extends ArrParentPage {
                     const node = activeFund.fundTree.nodes[0];
                     if(node){
                         const parentNode = createFundRoot(activeFund);
-                        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+                        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true, undefined, undefined, true));
                     }
                 }
             }
@@ -293,11 +314,15 @@ class ArrPage extends ArrParentPage {
         }
     };
 
+    // funkce reagujici na akci SET_FOCUS - TODO fix
     trySetFocus(props) {
         const {focus, selectedTabKey} = props;
         if (this.state.tabs !== null && canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 3)) {
                 let selectedTab = this.state.tabs[selectedTabKey];
+
+                if(!selectedTab){return;}
+
                 if (!selectedTab.focus && !selectedTab.ref) {
                     //Pokud tab nemá zadánu funkci pro focus ani ref
                     focusWasSet();
@@ -619,7 +644,7 @@ class ArrPage extends ArrParentPage {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, undefined, undefined, undefined, true));
     }
 
     handleShowVisiblePolicies(activeFund) {
