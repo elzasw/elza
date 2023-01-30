@@ -94,6 +94,9 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -282,6 +285,9 @@ public class ArrangementController {
     @Autowired
     private ArrangementFormService formService;
     
+    @Autowired
+    private StaticDataService staticDataService;
+
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1993,19 +1999,22 @@ public class ArrangementController {
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
+        
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType itemType = sdp.getItemTypeById(descItemTypeId);
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(versionId, node.getId(), node.getVersion()));
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null : ruleService.getItemSpecById(newDescItemSpecId);
+        RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null : sdp.getItemSpecById(newDescItemSpecId);
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService
-                .placeDescItemValues(fundVersion, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
+                .placeDescItemValues(fundVersion, itemType, nodesDO, newDescItemSpec, specifications, text,
+                                     replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
