@@ -218,7 +218,7 @@ public class FundController implements FundsApi {
     public ResponseEntity<List<Integer>> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
-        List<Integer> deletedIds = structureService.deleteStructObj(structObjList);
+        List<Integer> deletedIds = structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
 
         return ResponseEntity.ok(deletedIds);
     }
