@@ -1,21 +1,25 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
@@ -49,7 +53,7 @@ import cz.tacr.elza.service.UserService;
 @RequestMapping("/api/v1")
 public class FundController implements FundsApi {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(FundController.class);
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -85,26 +89,26 @@ public class FundController implements FundsApi {
     @Transactional
     public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
         // Kontrola a vytvoření AS
-        Assert.hasText(createFund.getName(), "Musí být vyplněn název");
-        Assert.notNull(createFund.getInstitutionIdentifier(), "Identifikátor instituce musí být vyplněn");
-        Assert.notNull(createFund.getRuleSetCode(), "Identifikátor pravidel musí být vyplněn");
-        Assert.notNull(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
-        Assert.notEmpty(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
+        Validate.isTrue(StringUtils.isNotBlank(createFund.getName()), "Musí být vyplněn název");
+        Validate.notNull(createFund.getInstitutionIdentifier(), "Identifikátor instituce musí být vyplněn");
+        Validate.notNull(createFund.getRuleSetCode(), "Identifikátor pravidel musí být vyplněn");
+        Validate.notNull(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
+        Validate.notEmpty(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
 
         StaticDataProvider sdp = staticDataService.getData();
 
         // prepare ruleset
         RuleSet ruleSet = sdp.getRuleSetByCode(createFund.getRuleSetCode());
-        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s kódem " + createFund.getRuleSetCode());
+        Validate.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s kódem " + createFund.getRuleSetCode());
 
         // prepare institution
         ParInstitution institution = arrangementService.getInstitution(createFund.getInstitutionIdentifier());
-        Assert.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund
+        Validate.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund
                 .getInstitutionIdentifier());
 
         // prepare collection of scopes
         List<ApScope> scopes = scopeRepository.findByCodes(createFund.getScopes());
-        Assert.isTrue(scopes.size() == createFund.getScopes().size(),
+        Validate.isTrue(scopes.size() == createFund.getScopes().size(),
                       "Některá oblast archivních entit nebyla nalezena");
 
         ArrFund newFund = arrangementService
@@ -160,10 +164,28 @@ public class FundController implements FundsApi {
 
     @Override
     public ResponseEntity<FundDetail> getFund(@PathVariable("id") String id) {
-        Assert.notNull(id, "Musí být zadáno id AS");
+        Validate.notNull(id, "Musí být zadáno id AS");
         UserDetail userDetail = userService.getLoggedUserDetail();
-        return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.getFund(Integer.valueOf(id)),
+        ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
+        return ResponseEntity.ok(factoryVo.createFundDetail(fund,
                                                             userDetail));
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> importFundData(@PathVariable("id") String id,
+                                               @Valid @RequestPart(value = "importType", required = true) String importType,
+                                               @Valid @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
+        Validate.notNull(id, "Musí být zadáno id AS");
+
+        ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
+        try (InputStream is = dataFile.getInputStream()) {
+            arrangementService.importFundData(fund, importType, is);
+            return ResponseEntity.ok(null);
+        } catch (Exception e) {
+            logger.error("Failed to import data", e);
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
     }
 
     @Override
