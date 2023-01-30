@@ -245,7 +245,12 @@ public class ArrangementService {
      * @return konkrétní verze
      * @throws ObjectNotFoundException objekt nenalezen
      */
-    public ArrFundVersion getFundVersion(@NotNull Integer fundVersionId) {
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN
+    })
+    public ArrFundVersion getFundVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) @NotNull Integer fundVersionId) {
         return fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
     }
@@ -258,7 +263,10 @@ public class ArrangementService {
      * @throws ObjectNotFoundException objekt nenalezen
      */
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN
+    })
     public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
         return fundRepository.findById(fundId)
                 .orElseThrow(fund(fundId));

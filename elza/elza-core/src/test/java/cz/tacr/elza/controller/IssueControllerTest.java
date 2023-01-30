@@ -308,7 +308,12 @@ public class IssueControllerTest extends AbstractControllerTest {
         permissionVO.setFund(fund1);
         permissionVO.setPermission(Permission.FUND_ISSUE_ADMIN);
 
-        addUserPermission(adminUserVO.getId(), Arrays.asList(permissionVO));
+        UsrPermissionVO permissionVO2 = new UsrPermissionVO();
+        fund1.setId(fundId);
+        permissionVO2.setFund(fund1);
+        permissionVO2.setPermission(Permission.FUND_RD);
+
+        addUserPermission(adminUserVO.getId(), Arrays.asList(permissionVO, permissionVO2));
 
         return adminUserVO;
     }
