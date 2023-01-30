@@ -243,10 +243,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                              final boolean forceUpdate) {
-        Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
+        Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Validate.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
@@ -1637,40 +1637,54 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     /**
      * Nastavení textu hodnotám atributu.
-     * @param version              verze stromu
-     * @param descItemType         typ atributu
-     * @param newItemSpecification pokud se jedná o atribut se specifikací ->  specifikace, která bude nastavena
-     * @param specifications       seznam specifikací, ve kterých se má hledat hodnota
-     * @param text                 text, který nahradí text v celém textu
-     * @param allNodes             vložit u všech JP
+     * 
+     * @param version
+     *            verze stromu
+     * @param itemType
+     *            typ atributu
+     * @param newItemSpecification
+     *            pokud se jedná o atribut se specifikací -> specifikace, která bude
+     *            nastavena
+     * @param specifications
+     *            seznam specifikací, ve kterých se má hledat hodnota
+     * @param text
+     *            text, který nahradí text v celém textu
+     * @param allNodes
+     *            vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                    final RulItemType descItemType,
+                                    final ItemType itemType,
                                     final Collection<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
                                     final Set<RulItemSpec> specifications, final String text,
                                     final boolean allNodes) {
-        Assert.hasText(text, "Musí být vyplněn text");
-        Assert.isTrue(!descItemType.getUseSpecification() || newItemSpecification != null, "Neplatný stav specifikace");
-        if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
-            throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", "specifications");
+        Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+        if (itemType.hasSpecifications()) {
+            if(newItemSpecification == null) {
+                throw new BusinessException("Missing new specification.", BaseCode.PROPERTY_NOT_EXIST);
+            }
+            if(CollectionUtils.isEmpty(specifications)) {
+                throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", "specifications");
+            }
         }
-
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
         List<ArrDescItem> descItems;
         if (allNodes) {
-            descItems = descItemType.getUseSpecification() ?
+            // TODO: use StaticDataProvider
+            descItems = itemType.hasSpecifications()
+                    ?
                 descItemRepository
-                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
-                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+                            .findOpenByFundAndTypeAndSpec(version.getFund(), itemType.getEntity(), specifications)
+                    : descItemRepository.findOpenByFundAndType(version.getFund(), itemType.getEntity());
         } else {
-            descItems = descItemType.getUseSpecification() ?
+            // TODO: use StaticDataProvider
+            descItems = itemType.hasSpecifications() ?
                     descItemRepository
-                        .findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
-                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+                            .findOpenByNodesAndTypeAndSpec(nodes, itemType.getEntity(), specifications)
+                    : descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
         }
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
@@ -1690,8 +1704,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
         //takovým nodům nenastavujeme novou hodnotu se specifikací
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if (descItemType.getUseSpecification() && BooleanUtils.isNotTrue(descItemType.getRepeatable()) && nodes.size() > 0) {
-            List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+        if (itemType.hasSpecifications() && BooleanUtils.isNotTrue(itemType.getEntity().getRepeatable()) && nodes
+                .size() > 0) {
+            List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
             ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
@@ -1714,56 +1729,57 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
             ArrData data;
-            switch (descItemType.getDataType().getCode()) {
-                case "FORMATTED_TEXT":
-                case "TEXT":
+            switch (itemType.getDataType()) {
+            case FORMATTED_TEXT:
+            case TEXT:
                     ArrDataText dataText = new ArrDataText();
                     dataText.setTextValue(text);
                     data = dataText;
                     break;
-                case "STRING":
+                case STRING:
                     ArrDataString itemString = new ArrDataString();
                     itemString.setStringValue(text);
                     data = itemString;
                     break;
-                case "INT":
+                case INT:
                     ArrDataInteger itemInteger = new ArrDataInteger();
                     itemInteger.setIntegerValue(Integer.valueOf(text));
                     data = itemInteger;
                     break;
-                case "UNITID":
+                case UNITID:
                     ArrDataUnitid itemUnitid = new ArrDataUnitid();
                     itemUnitid.setUnitId(text);
                     data = itemUnitid;
                     break;
-                case "UNITDATE":
+                case UNITDATE:
                     ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
                     data = itemUnitdate;
                     break;
-                case "RECORD_REF":
+                case RECORD_REF:
                     ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
                     ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
                     break;
-                case "BIT":
+                case BIT:
                     ArrDataBit itemBit = new ArrDataBit();
                     itemBit.setBitValue(Boolean.valueOf(text));
                     data = itemBit;
                     break;
-                case "URI-REF":
+                case URI_REF:
                     ArrDataUriRef itemUriRef = new ArrDataUriRef();
                     itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
                     break;
                 default:
-                    throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
+                    throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(),
+                            BaseCode.INVALID_STATE);
             }
 
             ArrDescItem newDescItem = new ArrDescItem();
             newDescItem.setData(data);
             newDescItem.setNode(dbNode);
-            newDescItem.setItemType(descItemType);
+            newDescItem.setItemType(itemType.getEntity());
             newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());

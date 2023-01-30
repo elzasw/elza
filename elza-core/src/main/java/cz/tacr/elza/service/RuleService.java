@@ -76,6 +76,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -706,6 +707,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(missing)) {
             ObjectListIterator.forEachPage(missing,
                                            page -> nodeConformityMissingRepository.deleteAll(page));
+            nodeConformityMissingRepository.flush();
         }
 
         List<ArrNodeConformityError> errors = ObjectListIterator
@@ -713,6 +715,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(errors)) {
             ObjectListIterator.forEachPage(errors,
                                            page -> nodeConformityErrorRepository.deleteAll(page));
+            nodeConformityErrorRepository.flush();
         }
 
         ObjectListIterator.forEachPage(infos,
@@ -726,11 +729,32 @@ public class RuleService {
     /**
      * Mazání uzlů podle seznamu id.
      * 
+     * Metoda akceptuje velké množství uzlů a zajistí stránkování.
+     * 
      * @param unusedNodes
      */
     public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
         List<ArrNodeConformity> deleteInfos = ObjectListIterator
                 .findIterable(nodeIds, page -> nodeConformityRepository.findByNodeIds(page));
+
+        deleteConformityInfo(deleteInfos);
+    }
+
+    /**
+     * Mazání dle seznamu item
+     * 
+     * Metoda akceptuje velké množství item a zajistí stránkování.
+     * 
+     * @param unusedNodes
+     */
+    public void deleteConformityByItems(List<ArrItem> arrItemList) {
+        List<ArrNodeConformity> deleteInfos = ObjectListIterator
+                .findIterable(arrItemList, page -> {
+                    List<Integer> itemIds = page.stream().map(ArrItem::getItemId).collect(Collectors.toList());
+                    List<ArrNodeConformityError> nodeErrors = nodeConformityErrorRepository.findByItemIds(itemIds);
+                    return nodeErrors.stream().map(ArrNodeConformityError::getNodeConformity)
+                            .collect(Collectors.toList());
+                });
 
         deleteConformityInfo(deleteInfos);
     }

@@ -27,6 +27,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     }
 
     componentDidMount() {
+        super.componentDidMount()
         this.resolveUrls()
     }
 

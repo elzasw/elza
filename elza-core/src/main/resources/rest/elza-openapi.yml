@@ -130,6 +130,32 @@ paths:
           description: Neplatné údaje pro úpravu AS
         404:
           description: AS neexistuje
+  /fund/{id}/import:
+    put:
+      summary: Import dat k AS
+      operationId: importFundData
+      tags:
+        - funds
+      parameters:
+        - name: id
+          description: Identifikátor AS
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Doplnění způsobu importu
+        content:
+          'multipart/form-data':
+            schema:
+              $ref: '#/components/schemas/ImportFundData'
+      responses:
+        200:
+          description: Potvrzení o úspěšném importu
+        404:
+          description: Fund neexistuje
+        406:
+          description: Chybný formát vstupního souboru 
   /fund/{id}/structuredObject:
     delete:
       summary: Smazání seznamu hodnot strukturovaného datového typu
@@ -924,3 +950,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AutoValue"
+    ImportFundData:
+      type: object
+      properties:
+        importType:
+          description: Druh importu
+          type: string
+        dataFile:
+          type: string
+          description: File to upload
+          format: binary
+      required:
+        - importType
+        - dataFile

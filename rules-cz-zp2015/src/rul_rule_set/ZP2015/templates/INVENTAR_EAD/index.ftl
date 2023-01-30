@@ -308,7 +308,7 @@
     <!-- Identifikátor z číselníku archivů -->
     <ead:agencycode localtype="CZ_MVCR_INSTITUTION_ID">${output.fund.institution.code}</ead:agencycode>
     <!-- Jméno archivu -->
-    <ead:agencyname>${output.fund.institution.record.preferredPart.value}</ead:agencyname>
+    <ead:agencyname>${output.fund.institution.record.preferredPart.getSingleItem("NM_MAIN").serializedValue}</ead:agencyname>
   </ead:maintenanceagency>
 
   <#-- 2.6. Druh archivní pomůcky, control/localcontrol -->

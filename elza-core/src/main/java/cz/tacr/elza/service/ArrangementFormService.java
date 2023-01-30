@@ -31,12 +31,12 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -44,6 +44,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
@@ -247,13 +248,26 @@ public class ArrangementFormService {
 	 * @return
 	 */
 	private List<ArrDescItem> updateDescItems(final ArrFundVersion fundVersion,
-											  final ArrNode node,
+                                              ArrNode node,
 											  final Integer nodeVersion,
 											  final List<ArrDescItem> createItems,
 											  final List<ArrDescItem> updateItems,
 											  final List<ArrDescItem> deleteItems) {
+	    // urceni typu zmeny
+        Type changeType = ArrChange.Type.BATCH_CHANGE_DESC_ITEM;
+        if (CollectionUtils.isNotEmpty(createItems)) {
+            if (CollectionUtils.isEmpty(deleteItems) && CollectionUtils.isEmpty(updateItems)) {
+                changeType = Type.ADD_DESC_ITEM;
+            }
+        } else if (CollectionUtils.isNotEmpty(updateItems)) {
+            if (CollectionUtils.isEmpty(deleteItems)) {
+                changeType = Type.UPDATE_DESC_ITEM;
+            }
+        } else if(CollectionUtils.isNotEmpty(deleteItems)) {
+            changeType = Type.DELETE_DESC_ITEM;
+        }
 
-		ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(changeType, node);
 
 		if (!node.getFundId().equals(fundVersion.getFundId())) {
 			throw new SystemException("Nesedí verze JP s AS", ArrangementCode.INVALID_VERSION);
@@ -261,31 +275,39 @@ public class ArrangementFormService {
 
 		// uložení uzlu (kontrola optimistických zámků)
 		node.setVersion(nodeVersion);
-		descriptionItemService.saveNode(node, change);
+        node = descriptionItemService.saveNode(node, change);
 
 		List<ArrDescItem> result = new ArrayList<>();
-		List<ArrDescItem> createdItems = null;
-		List<ArrDescItem> updatedItems = null;
-		List<ArrDescItem> deletedItems = null;
+
+        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
+                .getFundVersionId());
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-            deletedItems = descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true, false);
-			result.addAll(deletedItems);
+            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true,
+                                                                        false,
+                                                                        changeContext));
 		}
 
 		if (CollectionUtils.isNotEmpty(updateItems)) {
-			updatedItems = descriptionItemService.updateDescriptionItems(updateItems, fundVersion, change, false);
-			result.addAll(updatedItems);
+            for (ArrDescItem updateDescItem : updateItems) {
+                ArrDescItem updatedItem = descriptionItemService.updateValueAsNewVersion(fundVersion, change,
+                                                                                         updateDescItem, changeContext,
+                                                               false);
+                result.add(updatedItem);
+            }
 		}
 
 		if (CollectionUtils.isNotEmpty(createItems)) {
-			createdItems = descriptionItemService.createDescriptionItems(createItems, node, fundVersion, change);
-			result.addAll(createdItems);
+            for (ArrDescItem descItem : createItems) {
+                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem, node,
+                                                                                              fundVersion, change,
+                                                                                              changeContext);
+                result.add(createdItem);
+            }
 		}
 
-		// validace uzlu
-		ruleService.conformityInfo(fundVersion.getFundVersionId(), Collections.singletonList(node.getNodeId()),
-				NodeTypeOperation.SAVE_DESC_ITEM, createdItems, updatedItems, deletedItems);
+        // validace uzl
+        changeContext.flush();
 
 		return result;
 	}

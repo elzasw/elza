@@ -196,7 +196,7 @@ public class StructureController {
                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
-        structureService.deleteStructObj(Collections.singletonList(structObj));
+        structureService.deleteStructObj(fundVersion.getFundId(), Collections.singletonList(structObj));
         return ArrStructureDataVO.newInstance(structObj);
     }
 

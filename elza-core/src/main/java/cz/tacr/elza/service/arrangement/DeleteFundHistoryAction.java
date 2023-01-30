@@ -1,5 +1,24 @@
 package cz.tacr.elza.service.arrangement;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -62,23 +81,6 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
 /**
  * Action to delete fund history
@@ -237,6 +239,9 @@ public class DeleteFundHistoryAction {
                 arrDataList.add(data);
             }
         }
+        // drop ArrNodeConformityError for given items
+        ruleService.deleteConformityByItems(arrItemList);
+        
         iterateAction(arrItemList, itemRepository::deleteAll);
         em.flush();
 
@@ -395,7 +400,7 @@ public class DeleteFundHistoryAction {
         iterateAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
 
         // delete node conformity
-        iterateAction(nodeIds, ruleService::deleteByNodeIdIn);
+        ruleService.deleteByNodeIdIn(nodeIds);
 
         // delete attached extensions
         iterateAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);

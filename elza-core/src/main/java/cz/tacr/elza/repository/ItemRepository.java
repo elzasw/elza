@@ -52,7 +52,7 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
             + "WHERE (i.deleteChange IS NOT NULL OR oio.deleteChange IS NOT NULL OR sis.deleteChange IS NOT NULL) AND (dif = :fund OR oif = :fund OR sif = :fund)")
     List<ArrItem> findHistoricalByFund(@Param("fund") ArrFund fund);
 
-    @Query("SELECT data.recordId FROM arr_fund_version fv "
+    @Query("SELECT DISTINCT data.recordId FROM arr_fund_version fv "
            + "LEFT JOIN arr_node n ON n.fund = fv.fund "
            + "LEFT JOIN arr_level l ON l.node = n "
            + "LEFT JOIN arr_desc_item d ON d.node = l.node "
