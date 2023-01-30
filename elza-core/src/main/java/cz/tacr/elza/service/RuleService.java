@@ -706,6 +706,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(missing)) {
             ObjectListIterator.forEachPage(missing,
                                            page -> nodeConformityMissingRepository.deleteAll(page));
+            nodeConformityMissingRepository.flush();
         }
 
         List<ArrNodeConformityError> errors = ObjectListIterator
@@ -713,6 +714,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(errors)) {
             ObjectListIterator.forEachPage(errors,
                                            page -> nodeConformityErrorRepository.deleteAll(page));
+            nodeConformityErrorRepository.flush();
         }
 
         ObjectListIterator.forEachPage(infos,
