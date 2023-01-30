@@ -68,7 +68,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
             throws DeleteStructuredObjectFailed {
         try {
             ArrStructuredObject structObj = findStructObj(deleteStructuredObj.getId(), deleteStructuredObj.getUuid());
-            structObjService.deleteStructObj(Collections.singletonList(structObj));
+            structObjService.deleteStructObj(structObj.getFundId(), Collections.singletonList(structObj));
         } catch (Exception e) {
             logger.error("Failed to delete structured object: {}", e.getMessage(), e);
             throw prepareDeleteException("Failed to delete structured object.", deleteStructuredObj, e);

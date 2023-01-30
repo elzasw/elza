@@ -23,6 +23,10 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import cz.tacr.elza.asynchactions.AsQueue;
+import cz.tacr.elza.asynchactions.AsyncAccessPointWorker;
+import cz.tacr.elza.asynchactions.IRequestQueue;
+import cz.tacr.elza.asynchactions.NodeQueuePriorityComparator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +57,6 @@ import cz.tacr.elza.asynchactions.NodePriorityComparator;
 import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ThreadLoadInfo;
 import cz.tacr.elza.asynchactions.TimeRequestInfo;
-import cz.tacr.elza.bulkaction.AsyncAccessPointWorker;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -276,7 +279,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 .orElseThrow(bulkAction(bulkActionId));
 
         ArrBulkActionRun.State originalState = bulkActionRun.getState();
-        
+
         if(originalState.equals(ArrBulkActionRun.State.FINISHED)||
         		originalState.equals(ArrBulkActionRun.State.ERROR)||
         		originalState.equals(ArrBulkActionRun.State.INTERRUPTED)
@@ -285,8 +288,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         	return;
         }
 
-        if (!originalState.equals(ArrBulkActionRun.State.WAITING) && 
-        		!originalState.equals(ArrBulkActionRun.State.PLANNED) && 
+        if (!originalState.equals(ArrBulkActionRun.State.WAITING) &&
+        		!originalState.equals(ArrBulkActionRun.State.PLANNED) &&
         		!originalState.equals(ArrBulkActionRun.State.RUNNING)) {
             throw new IllegalArgumentException("Nelze přerušit hromadnou akci ve stavu " + originalState + "!");
         }
@@ -490,7 +493,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         /**
          * Fronta čekajících požadavků.
          */
-        final RequestQueue<AsyncRequest> queue;
+        final IRequestQueue<AsyncRequest> queue;
 
         /**
          * Seznam přeskočených požadavků na smazání.
@@ -509,7 +512,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         AsyncExecutor(final AsyncTypeEnum type,
                       final ThreadPoolTaskExecutor executor,
-                      final RequestQueue<AsyncRequest> queue,
+                      final IRequestQueue<AsyncRequest> queue,
                       final PlatformTransactionManager txManager,
                       final ArrAsyncRequestRepository asyncRequestRepository,
                       final ApplicationContext appCtx,
@@ -668,7 +671,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             });
         }
 
-        private void countRequest() {
+        public void countRequest() {
             lastHourRequests.add(new TimeRequestInfo());
             lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
         }
@@ -679,7 +682,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 logger.error("Selhání requestu {}", request, error);
                 countRequest();
                 processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
-                deleteRequest(worker.getRequest());
+                deleteRequests(worker.getRequests());
                 scheduleNext();
             }
         }
@@ -690,7 +693,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 logger.debug("Dokončení requestu {}", request);
                 countRequest();
                 processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
-                deleteRequest(worker.getRequest());
+                deleteRequests(worker.getRequests());
                 scheduleNext();
             }
         }
@@ -758,20 +761,20 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         }
 
         @Nullable
-        protected AsyncRequest selectNext() {
+        protected List<AsyncRequest> selectNext() {
             Map<Integer, Integer> fundVersionCount = calcFundVersionsPerWorkers();
 
-            AsyncRequest next;
-            AsyncRequest selected = null;
+            List<AsyncRequest> next;
+            List<AsyncRequest> selected = null;
             List<AsyncRequest> backToQueue = new ArrayList<>();
-            while ((next = queue.poll()) != null) {
-                Integer fundVersionId = next.getFundVersionId();
+            while (CollectionUtils.isNotEmpty((next = queue.poll()))) {
+                Integer fundVersionId = next.get(0).getFundVersionId();
                 Integer count = fundVersionCount.getOrDefault(fundVersionId, 0);
                 if (count < maxPerFundVersion) {
                     selected = next;
                     break;
                 } else {
-                    backToQueue.add(next);
+                    backToQueue.addAll(next);
                 }
             }
 
@@ -798,12 +801,12 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return fundVersionCount;
         }
 
-        private void scheduleNext() {
+        public void scheduleNext() {
             while (!queue.isEmpty() && isEmptyWorker() && running.get()) {
-                AsyncRequest request = selectNext();
-                if (request != null) {
-                    IAsyncWorker worker = appCtx.getBean(workerClass(), request);
-                    logger.debug("Naplánování requestu: {}", request);
+                List<AsyncRequest> requests = selectNext();
+                if (CollectionUtils.isNotEmpty(requests)) {
+                    IAsyncWorker worker = appCtx.getBean(workerClass(), requests);
+                    logger.debug("Naplánování requestů: {}", requests);
                     processing.add(worker);
                     executor.submit(worker);
                 } else {
@@ -895,7 +898,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         /**
          * Vyřešení přeskočených požadavků - je třeba je smazat z DB.
          */
-        private void resolveSkipped() {
+        public void resolveSkipped() {
             if (skipped.size() > 0) {
                 logger.debug("Přeskočeny požadavky z fronty {}: {}, {}", getType(), skipped.size(), skipped.stream()
                         .map(AsyncRequest::getRequestId)
@@ -1003,7 +1006,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private static class AsyncNodeExecutor extends AsyncExecutor {
 
         AsyncNodeExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
-            super(AsyncTypeEnum.NODE, executor, RequestQueue.of(new PriorityQueue<>(1000, new NodePriorityComparator()), AsyncRequest::getNodeId), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.NODE, executor, AsQueue.of(new PriorityQueue<>(1000, new NodeQueuePriorityComparator()), AsyncRequest::getNodeId, AsyncRequest::getFundVersionId, AsyncRequest::isFailed, new NodePriorityComparator()), txManager, asyncRequestRepository, appCtx, maxPerFund);
         }
 
         @Override
@@ -1029,6 +1032,26 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
                     return true;
                 }
+            }
+        }
+
+        @Override
+        public void onFail(IAsyncWorker worker, final Throwable error) {
+            synchronized (lockQueue) {
+                AsyncRequest request = worker.getRequest();
+                logger.error("Selhání requestu {}", request, error);
+                countRequest();
+                processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
+                if (worker.getRequests().size() > 1) {
+                    for (AsyncRequest r : worker.getRequests()) {
+                        r.setFailed(true);
+                        enqueueInner(r);
+                    }
+                    resolveSkipped();
+                } else {
+                    deleteRequests(worker.getRequests());
+                }
+                scheduleNext();
             }
         }
     }

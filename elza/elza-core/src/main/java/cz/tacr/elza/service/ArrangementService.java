@@ -7,6 +7,9 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,9 +35,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -47,11 +55,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import com.google.common.collect.Iterables;
 
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -69,6 +78,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -77,6 +87,9 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -93,6 +106,7 @@ import cz.tacr.elza.domain.ArrRefTemplate;
 import cz.tacr.elza.domain.ArrRefTemplateMapSpec;
 import cz.tacr.elza.domain.ArrRefTemplateMapType;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
@@ -231,7 +245,12 @@ public class ArrangementService {
      * @return konkrétní verze
      * @throws ObjectNotFoundException objekt nenalezen
      */
-    public ArrFundVersion getFundVersion(@NotNull Integer fundVersionId) {
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN
+    })
+    public ArrFundVersion getFundVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) @NotNull Integer fundVersionId) {
         return fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
     }
@@ -243,7 +262,12 @@ public class ArrangementService {
      * @return konkrétní AP
      * @throws ObjectNotFoundException objekt nenalezen
      */
-    public ArrFund getFund(@NotNull Integer fundId) {
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL,
+            UsrPermission.Permission.FUND_ISSUE_ADMIN
+    })
+    public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
         return fundRepository.findById(fundId)
                 .orElseThrow(fund(fundId));
     }
@@ -515,7 +539,7 @@ public class ArrangementService {
         UserDetail userDetail = userService.getLoggedUserDetail();
         if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(userIds) && ObjectUtils.isEmpty(groupIds)) {
-                Assert.isTrue(false, "Nebyl vybrán správce");
+                Validate.isTrue(false, "Nebyl vybrán správce");
             }
 
             // Kontrola, zda daní uživatelé a skupiny mají oprávnění zakládat AS
@@ -733,7 +757,7 @@ public class ArrangementService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         ArrFund fund = version.getFund();
 
@@ -819,9 +843,9 @@ public class ArrangementService {
                                                        final RulItemType descItemType,
                                                        final ArrLevel level,
                                                        final ArrChange change) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        Assert.notNull(level, "Musí být vyplněno");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Validate.notNull(level, "Musí být vyplněno");
 
         isValidAndOpenVersion(version);
 
@@ -870,8 +894,8 @@ public class ArrangementService {
      * @return true pokud patří uzel do verze, jinak false
      */
     public boolean validLevelInVersion(final ArrLevel level, final ArrFundVersion version) {
-        Assert.notNull(level, "Musí být vyplněno");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(level, "Musí být vyplněno");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
         Integer lockChange = version.getLockChange() == null
                 ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
 
@@ -886,7 +910,10 @@ public class ArrangementService {
      * 
      * @param uuid
      * @return
+     * 
+     * @see ArrangementInternalService.findNodeByUuid
      */
+    @Deprecated
     public ArrNode findNodeByUUID(String uuid) {
         return nodeRepository.findOneByUuid(uuid);
     }
@@ -986,8 +1013,8 @@ public class ArrangementService {
      * @return seznam id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsByFulltext(final ArrFundVersion version, final Integer nodeId, final String searchValue, final Depth depth) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(depth, "Hloubka musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(depth, "Hloubka musí být vyplněna");
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
@@ -1013,7 +1040,7 @@ public class ArrangementService {
      */
     public Set<Integer> findNodeIdsByLuceneQuery(final ArrFundVersion version, final Integer nodeId,
                                                  final String searchValue, final Depth depth) throws InvalidQueryException {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         if (StringUtils.isBlank(searchValue)) {
             return levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
@@ -1047,9 +1074,9 @@ public class ArrangementService {
      */
     public Set<Integer> findNodeIdsBySearchParams(final ArrFundVersion version, final Integer nodeId,
                                                   final List<SearchParam> searchParams, final Depth depth) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(depth, "Musí být vyplněno");
-        Assert.notEmpty(searchParams, "Musí existovat vyhledávající parametr");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(depth, "Musí být vyplněno");
+        Validate.notEmpty(searchParams, "Musí existovat vyhledávající parametr");
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
@@ -1123,7 +1150,7 @@ public class ArrangementService {
     @Transactional(Transactional.TxType.REQUIRED)
     public ArrLevel lockLevel(ArrNodeVO nodeVO, ArrFundVersion fundVersion) {
         Integer nodeId = nodeVO.getId();
-        Assert.notNull(nodeId, "Node id must be set");
+        Validate.notNull(nodeId, "Node id must be set");
         ArrNode node = em.getReference(ArrNode.class, nodeId);
         em.lock(node, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
         return levelRepository.findByNode(node, fundVersion.getLockChange());
@@ -1196,8 +1223,8 @@ public class ArrangementService {
      */
     public List<TreeNodeFulltext> createTreeNodeFulltextList(final Collection<Integer> nodeIds,
                                                              final ArrFundVersion version) {
-        Assert.notNull(nodeIds, "Musí být vyplněno");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(nodeIds, "Musí být vyplněno");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNodeVO> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
 
@@ -1259,8 +1286,8 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ArrFundRegisterScope addScopeToFund(final ArrFund fund,
                                                @AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope) {
-        Assert.notNull(fund, "AS musí být vyplněn");
-        Assert.notNull(scope, "Scope musí být vyplněn");
+        Validate.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(scope, "Scope musí být vyplněn");
 
         ArrFundRegisterScope faRegisterScope = fundRegisterScopeRepository.findByFundAndScope(fund, scope);
         if (faRegisterScope != null) {
@@ -1318,9 +1345,9 @@ public class ArrangementService {
     public ArrangementController.ValidationItems getValidationNodes(final ArrFundVersion fundVersion,
                                                                     final Integer indexFrom,
                                                                     final Integer indexTo) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(indexFrom, "Musí být vyplněno");
-        Assert.notNull(indexTo, "Musí být vyplněno");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(indexFrom, "Musí být vyplněno");
+        Validate.notNull(indexTo, "Musí být vyplněno");
 
         if (indexFrom < 0 || indexFrom >= indexTo) {
             throw new IllegalArgumentException("Neplatné vstupní parametry");
@@ -1418,10 +1445,10 @@ public class ArrangementService {
     public ArrangementController.ValidationItems findErrorNode(final ArrFundVersion fundVersion,
                                                                final Integer nodeId,
                                                                final Integer direction) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        Assert.notNull(direction, "Směr musí být vyplněn");
-        Assert.isTrue(direction != 0, "Směr musí být rozdílný od 0");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Validate.notNull(direction, "Směr musí být vyplněn");
+        Validate.isTrue(direction != 0, "Směr musí být rozdílný od 0");
 
         FoundNode foundNode = new FoundNode(nodeId);
         List<Integer> nodes = createErrorTree(fundVersion, foundNode);
@@ -2013,6 +2040,117 @@ public class ArrangementService {
                 return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
             default:
                 throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
+        }
+    }
+
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+    public void importFundData(final @AuthParam(type = AuthParam.Type.FUND) ArrFund fund,
+                               @Valid String importType, InputStream is) {
+        if ("CSV".equals(importType)) {
+            importFundDataCsv(fund, is);
+        }
+
+        logger.error("Required importType is not supported: {}", importType);
+
+    }
+
+    private void importFundDataCsv(ArrFund fund, InputStream is) {
+        // create change
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
+
+        CSVFormat csvf = CSVFormat.EXCEL;
+        try (InputStreamReader isr = new InputStreamReader(new BOMInputStream(is), "UTF-8");
+                CSVParser parser = csvf.parse(isr)) {
+
+            MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
+                    .getFundVersionId());
+
+            ObjectListIterator.forEachPage((Iterable<CSVRecord>) parser, recs -> {
+                importFundBatch(fundVersion, change, recs, changeContext);
+            });
+
+            changeContext.flush();
+
+        } catch (IOException e) {
+            logger.error("Failed to read input file", e);
+            throw new BusinessException("Failed to process", e, BaseCode.IMPORT_FAILED);
+        }
+
+    }
+
+    // Future improvment: use batch updates
+    private void importFundBatch(ArrFundVersion fundVersion, ArrChange change, Collection<CSVRecord> recs,
+                                 MultipleItemChangeContext changeContext) {
+        StaticDataProvider sdp = this.staticDataService.getData();
+        List<ArrDescItem> createdItems = new ArrayList<>();
+        // prepare import data
+        for (CSVRecord rec : recs) {
+            Iterator<String> dataIter = rec.iterator();
+            String nodeId = dataIter.next();
+            ArrNode node;
+            if (UuidUtils.isUUID(nodeId)) {
+                node = arrangementInternalService.findNodeByUuid(nodeId);
+            } else {
+                node = nodeRepository.getOne(Integer.valueOf(nodeId));
+            }
+            // save node
+            node = descriptionItemService.saveNode(node, change);
+
+            while (dataIter.hasNext()) {
+                String itemTypeCode = dataIter.next();
+                ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+                RulItemSpec itemSpec = null;
+                if (itemType.hasSpecifications()) {
+                    if (!dataIter.hasNext()) {
+                        throw new BusinessException("Missing specification for itemType: " + itemTypeCode,
+                                BaseCode.IMPORT_FAILED);
+                    }
+                    String itemSpecCode = dataIter.next();
+                    itemSpec = itemType.getItemSpecByCode(itemSpecCode);
+                }
+                ArrData data;
+                // prepare data
+                switch (itemType.getDataType()) {
+                case ENUM:
+                    data = new ArrDataNull();
+                    break;
+                case URI_REF: {
+                    ArrDataUriRef dataUriRef = new ArrDataUriRef();
+                    String url = dataIter.next();
+                    String descr = dataIter.next();
+                    dataUriRef.setSchema(ArrDataUriRef.createSchema(url));
+                    dataUriRef.setUriRefValue(url);
+                    dataUriRef.setDescription(descr);
+                    data = dataUriRef;
+                }
+                    break;
+                case STRING: {
+                    ArrDataString dataStr = new ArrDataString();
+                    String str = dataIter.next();
+                    dataStr.setStringValue(str);
+                    data = dataStr;
+                }
+                    break;
+                default:
+                    throw new BusinessException("Import of data type '" + itemType.getDataType().getCode()
+                            + "' for itemType: " + itemTypeCode + " is not implemented.",
+                            BaseCode.IMPORT_FAILED);
+                }
+                
+                ArrDescItem descItem = new ArrDescItem();
+                descItem.setCreateChange(change);
+                descItem.setData(data);
+                descItem.setNode(node);
+                descItem.setItemType(itemType.getEntity());
+                descItem.setItemSpec(itemSpec);
+
+                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem, node,
+                                                                                              fundVersion, change,
+                                                                                              changeContext);
+                createdItems.add(createdItem);
+            }
         }
     }
 

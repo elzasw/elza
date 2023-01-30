@@ -138,7 +138,7 @@ public class SealUnitId extends BulkActionDFS {
             fixedValue.setItem(descItem);
             fixedValue.setCreateChange(getChange());
 
-            usedValueRepository.save(fixedValue);
+            fixedValue = usedValueRepository.save(fixedValue);
         } else {
             // check that descItem match current frozen value
             if (!fixedValue.getItemId().equals(descItem.getItemId())) {

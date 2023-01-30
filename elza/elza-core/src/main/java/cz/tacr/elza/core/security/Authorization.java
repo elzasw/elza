@@ -19,9 +19,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.api.interfaces.IApAccessPoint;
 import cz.tacr.elza.api.interfaces.IApScope;
-import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IWfIssueList;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
@@ -401,29 +401,29 @@ public class Authorization {
 		case FUND:
 			if (value instanceof Integer) {
 				return (Integer) value;
-			} else if (value instanceof IArrFund) {
-				return ((IArrFund) value).getFund().getFundId();
+            } else if (value instanceof ArrFundGetter) {
+                return ((ArrFundGetter) value).getFund().getFundId();
 			}
 			break;
 		case FUND_VERSION:
 			if (value instanceof Integer) {
-				return fundVersionRepository.getOneCheckExist((Integer) value).getFund().getFundId();
-			} else if (value instanceof IArrFund) {
-				return ((IArrFund) value).getFund().getFundId();
+                return fundVersionRepository.getOneCheckExist((Integer) value).getFundId();
+            } else if (value instanceof ArrFundGetter) {
+                return ((ArrFundGetter) value).getFund().getFundId();
 			}
 			break;
 		case ISSUE_LIST:
 			if (value instanceof Integer) {
 				return issueListRepository.findFundIdByIssueListId((Integer) value);
-			} else if (value instanceof IArrFund) {
-				return ((IArrFund) value).getFund().getFundId();
+            } else if (value instanceof ArrFundGetter) {
+                return ((ArrFundGetter) value).getFund().getFundId();
 			}
 			break;
 		case ISSUE:
 			if (value instanceof Integer) {
 				return issueListRepository.findFundIdByIssueId((Integer) value);
-			} else if (value instanceof IArrFund) {
-				return ((IArrFund) value).getFund().getFundId();
+            } else if (value instanceof ArrFundGetter) {
+                return ((ArrFundGetter) value).getFund().getFundId();
 			}
 			break;
 		case COMMENT:

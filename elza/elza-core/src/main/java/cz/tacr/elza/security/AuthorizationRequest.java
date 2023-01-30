@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -114,6 +115,10 @@ public class AuthorizationRequest {
 		return or(perm, fundVersion.getFundId());
 	}
 	
+    public AuthorizationRequest or(Permission perm, ArrFund fund) {
+        return or(perm, fund.getFundId());
+    }
+
 	/**
 	 * Generic check
 	 * @param perm
@@ -174,5 +179,4 @@ public class AuthorizationRequest {
 		}
 		return false;
 	}
-
 }

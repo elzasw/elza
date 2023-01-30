@@ -3,22 +3,19 @@ package cz.tacr.elza.service.output;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.cxf.common.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +52,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
@@ -99,7 +95,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private SchemaManager schemaManager;
 
@@ -107,8 +103,13 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     private final AsyncRequest request;
 
-    public AsyncOutputGeneratorWorker(final AsyncRequest request) {
-        this.request = request;
+    public AsyncOutputGeneratorWorker(final List<AsyncRequest> requests) {
+        if (CollectionUtils.isNotEmpty(requests)) {
+            Validate.isTrue(requests.size() == 1, "Only single request processing is supported by this worker");
+            this.request = requests.get(0);
+        } else {
+            this.request = null;
+        }
     }
 
     @Override
@@ -136,6 +137,11 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     @Override
+    public List<AsyncRequest> getRequests() {
+        return Collections.singletonList(request);
+    }
+
+    @Override
     public Long getBeginTime() {
         return beginTime;
     }
@@ -151,7 +157,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     /**
      * Generování výstupu
-     * 
+     *
      * @param outputId
      * @param userId
      */
@@ -242,7 +248,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         outputParams.setTemplate(template);
         outputParams.setTemplateDir(templateDir);
     }
-    
+
     /**
      * Handle exception raised during output processing. Must be called in transaction.
      */

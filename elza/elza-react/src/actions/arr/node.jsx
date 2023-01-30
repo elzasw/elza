@@ -76,6 +76,7 @@ export function fundSelectSubNode(
     ensureItemVisible = false,
     subNodeIndex = null,
     selectSibling = false,
+    redirect = false,
 ) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
@@ -140,9 +141,9 @@ export function fundSelectSubNode(
             nodeIndex = indexById(childNodes, subNodeId) + viewStartIndex;
         }
 
-        dispatch(routerNavigate(urlFundNode(fund.id, getFundVersion(fund), subNodeId)));
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, nodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
+        redirect && dispatch(routerNavigate(urlFundNode(fund.id, getFundVersion(fund), subNodeId)));
     }
 }
 

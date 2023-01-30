@@ -857,7 +857,7 @@ class FundDataGrid extends AbstractReactComponent {
             parentNode = createFundRoot(fund);
         }
 
-        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, true, null, true));
+        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, true, null, true, undefined, undefined, true));
     }
 
     handleFulltextChange(value) {
@@ -904,7 +904,7 @@ class FundDataGrid extends AbstractReactComponent {
             parentNode = createFundRoot(fund);
         }
 
-        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true));
+        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true, undefined, undefined, true));
     }
 
     handleToggleExtendedSearch() {

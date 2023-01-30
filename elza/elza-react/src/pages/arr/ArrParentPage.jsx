@@ -102,34 +102,46 @@ export default class ArrParentPage extends AbstractReactComponent {
         throw "no fundId or versionId"
     }
 
-    resolveUrls = async () => {
-        const {dispatch, match} = this.props;
-        const {id, versionId, nodeId} = match.params;
+    componentDidMount(){
+        const {dispatch} = this.props;
+        // TODO - zvazit umisteni
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(fundsFetchIfNeeded());
+    }
 
-        const urlFundId = id ? parseInt(id) : null;
+    resolveUrls = async () => {
+        const {match} = this.props;
+        const {id, versionId} = match.params;
+        if(id == undefined){
+            throw "Missing fund id"
+        }
+        const urlFundId = parseInt(id);
         const urlVersionId = versionId ? parseInt(versionId) : null;
+
+        await this.resolveUrlsRaw(urlFundId, urlVersionId);
+    }
+
+    resolveUrlsRaw = async (fundId, versionId) => {
+        const {dispatch} = this.props;
         const activeFund = this.getActiveFund(this.props);
         
         // skip loading data, if fund is currently open
-        if(activeFund?.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
+        if(activeFund?.id === fundId && getFundVersion(activeFund) == versionId){
             return activeFund;
         }
 
-        if (urlFundId) {
-            try{
-                const fund = await WebApi.getFundDetail(urlFundId)
+        try{
+            const fund = await WebApi.getFundDetail(fundId)
 
-                // select the current version, when it is missing in the path
-                const version = urlVersionId ? fund.versions.find((version) => version.id === urlVersionId) : fund.versions[0];
-                dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
-                return fund;
-            }
-            catch(e) {
-                console.error("Nepodařilo se získat detail o AS", e);
-            };
+            // select the current version, when it is missing in the path
+            const version = versionId ? fund.versions.find((version) => version.id === versionId) : fund.versions[0];
+            dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
+            return fund;
         }
+        catch(e) {
+            console.error("Nepodařilo se získat detail o AS", e, fundId);
+            throw `Nepodařilo se získat detail o AS - ${fundId}`;
+        };
     }
 
     // Function to determine whether the fundId in the url is the id of the

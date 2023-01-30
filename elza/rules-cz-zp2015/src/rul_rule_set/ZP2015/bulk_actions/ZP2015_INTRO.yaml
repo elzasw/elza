@@ -38,7 +38,7 @@ actions:
           fromType: CORP_STRUCTURE
           toItem: CORP_STRUCTURE
     - !DateRange
-      # Extra EJ - kdekoliv
+      # Rozsah datace
       excludeWhen:
         someOf:
           # Nesmí být nastaven jako pevné spojení s jinou
@@ -158,8 +158,12 @@ actions:
         distinct: true
 
     # Počet JP v pomůcce
-    - !NodeCount
-        outputType: ZP2015_UNIT_COUNT_SUM
+    - !NodeCount 
+      excludeWhen:
+        someOf:
+          # Nesmí být nastaven jako pevné spojení s jinou
+          - itemType: ZP2015_INVALID_RECORD
+      outputType: ZP2015_UNIT_COUNT_SUM
 
     - !UnitCount
         outputType: ZP2015_UNIT_COUNT_TABLE
