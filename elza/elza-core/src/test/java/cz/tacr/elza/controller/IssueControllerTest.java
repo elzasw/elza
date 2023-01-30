@@ -78,6 +78,14 @@ public class IssueControllerTest extends AbstractControllerTest {
         UsrUserVO userVO3 = createUser("user3", ap);
         UsrUserVO userVO4 = createUser("user4", ap);
 
+        // Pridani zakl. opravneni uzivatelum
+        UsrPermissionVO usePermVO = new UsrPermissionVO();
+        usePermVO.setPermission(Permission.FUND_RD_ALL);
+        addUserPermission(userVO1.getId(), Arrays.asList(usePermVO));
+        addUserPermission(userVO2.getId(), Arrays.asList(usePermVO));
+        addUserPermission(userVO3.getId(), Arrays.asList(usePermVO));
+        addUserPermission(userVO4.getId(), Arrays.asList(usePermVO));
+
         try {
 
             Integer issueListId1 = runAsUser(adminUserVO.getUsername(), () -> {
