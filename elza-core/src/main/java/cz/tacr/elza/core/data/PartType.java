@@ -1,7 +1,8 @@
 package cz.tacr.elza.core.data;
 
-import cz.tacr.elza.domain.RulPartType;
 import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.domain.RulPartType;
 
 public class PartType {
 

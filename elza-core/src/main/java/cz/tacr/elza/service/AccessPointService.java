@@ -22,6 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
@@ -284,6 +286,9 @@ public class AccessPointService {
 
     @Autowired
     private RevisionItemService revisionItemService;
+
+    @Autowired
+    private EntityManager em;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -3445,5 +3450,14 @@ public class AccessPointService {
                 BaseCode.INVALID_STATE)
                         .set("accessPointId", apState.getAccessPointId())
                         .set("error", sb.toString());
+    }
+
+    /**
+     * Lock AccessPoint for write access
+     * 
+     * @param accessPoint
+     */
+    public void lockWrite(ApAccessPoint accessPoint) {
+        em.lock(accessPoint, LockModeType.WRITE);
     }
 }
