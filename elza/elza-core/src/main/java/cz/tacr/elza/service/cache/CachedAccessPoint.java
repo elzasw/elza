@@ -1,11 +1,21 @@
 package cz.tacr.elza.service.cache;
 
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.Validate;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 
 public class CachedAccessPoint {
 
@@ -24,6 +34,12 @@ public class CachedAccessPoint {
     private ApState apState;
 
     private List<CachedPart> parts;
+
+    /**
+     * Optional field with list of prepared ApParts (based on CachedPart)
+     */
+    @JsonIgnore
+    private List<ApPart> apParts;
 
     private List<CachedBinding> bindings;
 
@@ -129,5 +145,32 @@ public class CachedAccessPoint {
             replacedAPIds = new ArrayList<>();
         }
         replacedAPIds.add(id);        
+    }
+
+    public List<ApPart> getApParts() {
+        if (apParts != null) {
+            return apParts;
+        }
+        if (CollectionUtils.isEmpty(parts)) {
+            return Collections.emptyList();
+        }
+        // should not happen
+        Validate.isTrue(false);
+        return null;
+    }
+
+    public void setApParts(final List<ApPart> apParts) {
+        this.apParts = apParts;
+    }
+
+    public Map<Integer, List<ApItem>> getApItemMap() {
+        if (parts == null) {
+            return Collections.emptyMap();
+        }
+        Map<Integer, List<ApItem>> result = new HashMap<>();
+        for(CachedPart part: parts) {
+            result.put(part.getPartId(), part.getItems());
+        }
+        return result;
     }
 }

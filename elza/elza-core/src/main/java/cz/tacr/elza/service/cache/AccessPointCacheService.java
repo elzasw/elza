@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -591,10 +592,31 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         Map<Integer, ApItem> itemMap =  new HashMap<>();
         
         if (cap.getParts() != null) {
-            // restore parts        	
+            // restore parts
+            List<ApPart> apParts = new ArrayList<>(cap.getParts().size());
         	
             for (CachedPart part : cap.getParts()) {
-                ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+                // ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+                ApPart apPart = new ApPart();
+                apPart.setAccessPoint(ap);
+                apPart.setCreateChange(entityManager.getReference(ApChange.class, part.getCreateChangeId()));
+                if (part.getDeleteChangeId() != null) {
+                    apPart.setDeleteChange(entityManager.getReference(ApChange.class, part.getDeleteChangeId()));
+                }
+                apPart.setErrorDescription(part.getErrorDescription());
+
+                ApKeyValue keyValue = part.getKeyValue();
+                if (keyValue != null) {
+                    ApScope scope = entityManager.getReference(ApScope.class, keyValue.getScopeId());
+                    keyValue.setScope(scope);
+                }
+                apPart.setKeyValue(keyValue);
+                apPart.setLastChange(entityManager.getReference(ApChange.class, part.getLastChangeId()));
+                apPart.setPartId(part.getPartId());
+                apPart.setPartType(sdp.getPartTypeByCode(part.getPartTypeCode()));
+                apPart.setState(part.getState());
+
+                apParts.add(apPart);
                 partMap.put(part.getPartId(), apPart);
 
                 if (part.getItems() != null) {
@@ -635,6 +657,18 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                     part.setItems(items);
                 }
             }
+            // restore parent part
+            for (CachedPart part : cap.getParts()) {
+                if (part.getParentPartId() != null) {
+                    ApPart apPart = partMap.get(part.getPartId());
+                    ApPart apParentPart = partMap.get(part.getParentPartId());
+                    apPart.setParentPart(apParentPart);
+                }
+            }
+
+            cap.setApParts(apParts);
+        } else {
+            cap.setApParts(Collections.emptyList());
         }
 
         List<CachedBinding> cachedBindings = cap.getBindings();
