@@ -1,7 +1,14 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
@@ -22,13 +29,6 @@ import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Interní servisní třída pro práci se strukturovanými datovými typy.
@@ -79,19 +79,26 @@ public class StructObjInternalService {
         List<String> sortValues = new ArrayList<>();
         List<Integer> deletedIds = new ArrayList<>();
 
-        ArrFund fund = structObjs.get(0).getFund();
-        RulStructuredType structuredType = structObjs.get(0).getStructuredType();
+        ArrStructuredObject firstStructObj = structObjs.get(0);
+        ArrFund fund = firstStructObj.getFund();
+        RulStructuredType structuredType = firstStructObj.getStructuredType();
 
         // vytvoření 2 seznamů podle stavu objektu
         for (ArrStructuredObject structObj : structObjs) {
             if (structObj.getDeleteChange() != null) {
                 throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
             }
-            if (structObj.getFundId() != fund.getFundId()) {
-                throw new BusinessException("Strukturovaný datá musí patřit ke stejnému fondu", BaseCode.INVALID_STATE);
+            if (!structObj.getFundId().equals(fund.getFundId())) {
+                throw new BusinessException("All structured objects have to be from same fund", BaseCode.INVALID_STATE)
+                        .set("fundId", fund.getFundId())
+                        .set("structuredObjectId", structObj.getStructuredObjectId())
+                        .set("structObjFundId", structObj.getFundId());
             }
-            if (structObj.getStructuredTypeId() != structuredType.getStructuredTypeId()) {
-                throw new BusinessException("Strukturovaná data musí být stejného typu", BaseCode.INVALID_STATE);
+            if (!structObj.getStructuredTypeId().equals(structuredType.getStructuredTypeId())) {
+                throw new BusinessException("All structured object have to have same type", BaseCode.INVALID_STATE)
+                        .set("structuredTypeId", structuredType.getStructuredTypeId())
+                        .set("structuredObjectId", structObj.getStructuredObjectId())
+                        .set("otherStructuredTypeId", structObj.getStructuredTypeId());
             }
             if (structObj.getState() == State.TEMP) {
                 tempStructObj.add(structObj);
