@@ -2177,4 +2177,7 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         </createIndex>
 	</changeSet>
 
+	<changeSet id="20230131215000" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+	</changeSet>
 </databaseChangeLog>

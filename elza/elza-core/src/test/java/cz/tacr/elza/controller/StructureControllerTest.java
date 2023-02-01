@@ -217,6 +217,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         return structureItem;
     }
 
+    /**
+     * Check existence of structure type and extensions
+     * 
+     * @param fundVersion
+     */
     private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
         // find structure types
         List<RulStructureTypeVO> structureTypes = findStructureTypes();

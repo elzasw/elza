@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -77,6 +76,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteAccessPoint(String id, @Valid DeleteAccessPointDetail deleteAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+        accessPointService.lockWrite(accessPoint);
         ApState apState = accessPointService.getStateInternal(accessPoint);
         ApAccessPoint replacedBy = null;
         boolean copyAll = false;
@@ -163,6 +163,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> changeStateRevision(Integer id, RevStateChange revStateChange) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
 
         RevStateApproval revNextState = RevStateApproval.valueOf(revStateChange.getState().getValue());
         Integer nextTypeId = revStateChange.getTypeId();
@@ -178,6 +179,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteRevisionPart(Integer id, Integer partId) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
 
         revisionService.deletePart(state, partId);
         return ResponseEntity.ok().build();
@@ -242,6 +244,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> setPreferNameRevision(Integer id, Integer partId) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
         revisionService.setPreferName(state, partId);
         return ResponseEntity.ok().build();
     }

@@ -1,20 +1,20 @@
 package cz.tacr.elza.asynchactions;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.Validate;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.Validate;
+
 public class NodeQueue<E> implements Iterable<E> {
 
     private final Queue<E> originalQueue;
     private final Integer fundVersion;
 
-    private NodeQueue(final Queue<E> originalQueue,
+    public NodeQueue(final Queue<E> originalQueue,
                       final Integer fundVersion) {
         Validate.notNull(originalQueue);
         Validate.notNull(fundVersion);
