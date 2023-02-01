@@ -83,8 +83,9 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     @Override
     public void run() {
+        // Prepare action
         try {
-            new TransactionTemplate(transactionManager).execute(status -> {
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                 beginTime = System.currentTimeMillis();
                 ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
                 bulkAction = bulkActionHelperService.prepareToRun(bulkActionRun);
@@ -95,14 +96,12 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
                 bulkActionRun.setDateStarted(new Date());
                 bulkActionRun.setState(ArrBulkActionRun.State.RUNNING);
                 bulkActionHelperService.updateAction(bulkActionRun);
-                return null;
             });
         } catch (Throwable e) {
             logger.error("Failed to start action: {}", this, e);
             try {
-                new TransactionTemplate(transactionManager).execute(status -> {
+                new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                     handleException(e);
-                    return null;
                 });
             } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
@@ -110,18 +109,17 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             }
         }
 
+        // Run action
         try {
-            new TransactionTemplate(transactionManager).execute(status -> {
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                 executeInTransaction();
                 logger.info("Bulk action succesfully finished: {}", this);
-                return null;
             });
         } catch (Throwable e) {
             logger.error("Bulk action failed, action: " + this + ", error: ", e);
             try {
-                new TransactionTemplate(transactionManager).execute(status -> {
+                new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                     handleException(e);
-                    return null;
                 });
             } catch (Throwable eI) {
                 logger.error("Failed to handle exception: ", eI);
@@ -129,7 +127,6 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             }
 
         }
-        //return this;
     }
 
     private void executeInTransaction() {
