@@ -3458,6 +3458,6 @@ public class AccessPointService {
      * @param accessPoint
      */
     public void lockWrite(ApAccessPoint accessPoint) {
-        em.lock(accessPoint, LockModeType.WRITE);
+        em.lock(accessPoint, LockModeType.PESSIMISTIC_WRITE);
     }
 }
