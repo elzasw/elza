@@ -64,6 +64,7 @@
 	</variable>
 	<variable name="titleList" class="java.lang.Iterable">
 		<variableExpression><![CDATA[org.apache.commons.collections4.IterableUtils.chainedIterable(
+	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_CATALOGUING_RECORD_TEXT")),
 	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ),
 	$F{node}.getParentNode()!=null?
 	$F{node}.getParentNode().getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
