@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,16 +33,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import cz.tacr.elza.asynchactions.AsQueue;
 import cz.tacr.elza.asynchactions.AsyncAccessPointWorker;
 import cz.tacr.elza.asynchactions.AsyncExecutor;
-import cz.tacr.elza.asynchactions.AsyncNodeWorker;
+import cz.tacr.elza.asynchactions.AsyncNodeExecutor;
 import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.AsyncWorkerVO;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
-import cz.tacr.elza.asynchactions.NodePriorityComparator;
-import cz.tacr.elza.asynchactions.NodeQueuePriorityComparator;
 import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
@@ -460,59 +456,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return false;
         }
 
-    }
-
-    private static class AsyncNodeExecutor extends AsyncExecutor {
-
-        AsyncNodeExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
-            super(AsyncTypeEnum.NODE, executor, AsQueue.of(new PriorityQueue<>(1000, new NodeQueuePriorityComparator()), AsyncRequest::getNodeId, AsyncRequest::getFundVersionId, AsyncRequest::isFailed, new NodePriorityComparator()), txManager, asyncRequestRepository, appCtx, maxPerFund);
-        }
-
-        @Override
-        protected Class<? extends IAsyncWorker> workerClass() {
-            return AsyncNodeWorker.class;
-        }
-
-        @Override
-        protected boolean skip(final AsyncRequest request) {
-            AsyncRequest existAsyncRequest = queue.findById(request.getNodeId());
-            if (existAsyncRequest == null) {
-                // neexistuje ve frontě, chceme přidat
-                return false;
-            } else {
-                Integer priorityExists = existAsyncRequest.getPriority();
-                Integer priorityAdding = request.getPriority();
-                if (priorityAdding > priorityExists) {
-                    // nově přidáváná položka má lepší prioritu; mažeme aktuální z fronty a vložíme novou
-                    queue.remove(existAsyncRequest);
-                    deleteRequest(existAsyncRequest);
-                    return false;
-                } else {
-                    // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
-                    return true;
-                }
-            }
-        }
-
-        @Override
-        public void onFail(IAsyncWorker worker, final Throwable error) {
-            synchronized (lockQueue) {
-                AsyncRequest request = worker.getRequest();
-                logger.error("Selhání requestu {}", request, error);
-                countRequest();
-                processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
-                if (worker.getRequests().size() > 1) {
-                    for (AsyncRequest r : worker.getRequests()) {
-                        r.setFailed(true);
-                        enqueueInner(r);
-                    }
-                    resolveSkipped();
-                } else {
-                    deleteRequests(worker.getRequests());
-                }
-                scheduleNext();
-            }
-        }
     }
 
     private static class AsyncOutputExecutor extends AsyncExecutor {

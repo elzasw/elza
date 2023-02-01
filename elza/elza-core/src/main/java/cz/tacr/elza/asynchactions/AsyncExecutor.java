@@ -182,7 +182,10 @@ public abstract class AsyncExecutor {
      * @return počet vláken
      */
     public int getWorkers() {
-        return executor.getPoolSize();
+        // Vrátíme větší z hodnot
+        // - corePoolSize je nastavená hodnota
+        // - poolSize je aktuální hodnota
+        return Math.max(executor.getCorePoolSize(), executor.getPoolSize());
     }
 
     private void afterTx(final Runnable task) {
