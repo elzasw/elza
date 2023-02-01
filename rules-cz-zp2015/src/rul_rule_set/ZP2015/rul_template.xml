@@ -67,4 +67,11 @@
         <directory>INVENTAR_EAD</directory>
         <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
     </template>
+    <template code="ZP2015_STARSI_POMUCKA_1958_EAD" output-type="STARSI_POMUCKA_1958_JASPER" 
+              mime-type="application/xml" extension="xml">
+        <name>Publikace do EAD</name>
+        <engine>FREEMARKER</engine>
+        <directory>INVENTAR_EAD</directory>
+        <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
+    </template>
 </templates>
