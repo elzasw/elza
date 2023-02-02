@@ -11,7 +11,7 @@
             <tree>
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
-                <item type="ZP2015_OTHER_ID" max-count="2">
+                <item type="ZP2015_OTHER_ID" max-count="2" separator="_">
                     <spec type="ZP2015_OTHERID_CJ" />
                     <spec type="ZP2015_OTHERID_DOCID" />                    
                     <spec type="ZP2015_OTHERID_OLDSIG2" />                    
