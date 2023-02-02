@@ -160,17 +160,27 @@ class ArrPage extends ArrParentPage {
         const {match} = this.props;
         this.trySetFocus(this.props);
 
+        const urlFundId = match?.params?.id ? parseInt(match.params.id) : null;
         const urlNodeId = match?.params?.nodeId;
         const urlVersionId = match?.params?.versionId ? parseInt(match.params.versionId) : null;
 
         const activeFund = this.getActiveFund(this.props);
+        const activeVersionId = getFundVersion(activeFund);
         const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
         // select active node form active fund
-        if(match?.params?.nodeId == undefined){
+        if(activeFund 
+            && urlFundId === activeFund.id 
+            && urlVersionId === activeVersionId
+            && (
+                match?.params?.nodeId === activeNode?.selectedSubNodeId
+                || match?.params?.nodeId == undefined
+            )
+        ){
             this.selectNodeFromStore();
             return;
         }
+
         // select node by id present in url
         if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
