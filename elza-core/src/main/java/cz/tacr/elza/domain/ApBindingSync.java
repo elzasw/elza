@@ -27,6 +27,8 @@ public class ApBindingSync {
     @JoinColumn(name = "externalSystemId", nullable = false)
     private ApExternalSystem apExternalSystem;
 
+    private Integer page;
+
     public Integer getBindingSyncId() {
         return bindingSyncId;
     }
@@ -49,5 +51,13 @@ public class ApBindingSync {
 
     public void setApExternalSystem(ApExternalSystem apExternalSystem) {
         this.apExternalSystem = apExternalSystem;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer page) {
+        this.page = page;
     }
 }
