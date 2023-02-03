@@ -2,8 +2,6 @@ package cz.tacr.elza.asynchactions.nodevalid;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang.Validate;
-
 import cz.tacr.elza.asynchactions.IAsyncRequest;
 
 /**
@@ -21,15 +19,13 @@ public class NodeQueuePriorityComparator implements Comparator<NodeQueue> {
             // simply compare fundVersionId
             return n1.getFundVersion().compareTo(n2.getFundVersion());
         }
-        Integer priotiry1 = r1.getPriority();
-        Integer priotiry2 = r2.getPriority();
-        if (priotiry1 == null || priotiry2 == null) {
-            Validate.isTrue(false);
-        }
-        if (priotiry1.equals(priotiry2)) {
+        int priotiry1 = r1.getPriority();
+        int priotiry2 = r2.getPriority();
+
+        if (priotiry1 == priotiry2) {
             return r1.getRequestId().compareTo(r2.getRequestId());
         } else {
-            return priotiry2.compareTo(priotiry1);
+            return priotiry2 < priotiry1 ? -1 : 1;
         }
     }
 }
