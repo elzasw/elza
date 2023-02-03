@@ -35,4 +35,8 @@ public class NodeValidationRequest extends AsyncRequestBase {
         return nodeId;
     }
 
+    @Override
+    public String toString() {
+        return getType() + "(" + getCurrentId() + ") p=" + priority + ", fv=" + fundVersionId + ", reqId=" + requestId;
+    }
 }

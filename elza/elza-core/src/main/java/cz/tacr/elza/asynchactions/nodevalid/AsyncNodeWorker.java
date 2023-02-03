@@ -26,8 +26,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import cz.tacr.elza.asynchactions.IAsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -69,13 +69,13 @@ public class AsyncNodeWorker implements IAsyncWorker {
     @Autowired
     private EventBus eventBus;
 
-    private AsyncRequest request;
+    private IAsyncRequest request;
 
-    private final List<AsyncRequest> requests;
+    private final List<IAsyncRequest> requests;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public AsyncNodeWorker(final List<AsyncRequest> requests) {
+    public AsyncNodeWorker(final List<IAsyncRequest> requests) {
         running.set(true);
         this.requests = requests;
         if (CollectionUtils.isNotEmpty(requests)) {
@@ -92,7 +92,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
                      Thread.currentThread().getId(), beginTime);
         try {
             if (CollectionUtils.isNotEmpty(requests)) {
-                for (AsyncRequest request : requests) {
+                for (IAsyncRequest request : requests) {
                     Integer fundVersionId = request.getFundVersionId();
                     Long requestId = request.getRequestId();
                     Integer nodeId = request.getCurrentId();
@@ -137,12 +137,12 @@ public class AsyncNodeWorker implements IAsyncWorker {
     }
 
     @Override
-    public AsyncRequest getRequest() {
+    public IAsyncRequest getRequest() {
         return request;
     }
 
     @Override
-    public List<AsyncRequest> getRequests() {
+    public List<IAsyncRequest> getRequests() {
         return requests;
     }
 
@@ -164,7 +164,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
         }
     }
 
-    private ArrFundVersion getFundVersion(AsyncRequest request) {
+    private ArrFundVersion getFundVersion(IAsyncRequest request) {
         return fundVersionRepository.findById(request.getFundVersionId())
                 .orElseThrow(() -> new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId: " + request.getFundVersionId()));
     }
