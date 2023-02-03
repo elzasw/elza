@@ -453,7 +453,7 @@ public abstract class AsyncExecutor {
             IAsyncRequest ar = readRequest(request);
             requests.add(ar);
         }
-
+        enqueue(requests);
     }
 
     protected void enqueueInner(final IAsyncRequest request) {
