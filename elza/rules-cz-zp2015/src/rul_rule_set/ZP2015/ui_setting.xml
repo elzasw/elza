@@ -8,7 +8,7 @@
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
-            <tree>
+            <tree separator="; ">
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
@@ -20,7 +20,7 @@
                     <spec type="ZP2015_OTHERID_OLDSIG" />
                 </item>
             </tree>
-            <accordion-left separator="_">
+            <accordion-left separator="; ">
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">

@@ -2180,4 +2180,10 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 	<changeSet id="20230131215000" author="ppyt">
 		<delete tableName="ap_cached_access_point" />
 	</changeSet>
+
+	<changeSet id="20230202093500" author="sergey.iryupin">
+        <addColumn tableName="ap_binding_sync">
+            <column name="page" type="int" />
+        </addColumn>
+	</changeSet>
 </databaseChangeLog>
