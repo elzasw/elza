@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface IAsyncWorker extends Runnable {
 
-    AsyncRequest getRequest();
+    IAsyncRequest getRequest();
 
     Long getBeginTime();
 
@@ -12,6 +12,6 @@ public interface IAsyncWorker extends Runnable {
 
     void terminate();
 
-    List<AsyncRequest> getRequests();
+    List<? extends IAsyncRequest> getRequests();
 
 }

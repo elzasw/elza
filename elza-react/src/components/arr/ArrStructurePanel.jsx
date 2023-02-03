@@ -493,7 +493,12 @@ class ArrStructurePanel extends AbstractReactComponent {
             const items = [];
             error.requiredItemTypeIds.forEach(id => {
                 const descItem = objectById(descItemTypes, id);
-                items.push(<li>{descItem.name}</li>);
+
+                if(!descItem){
+                    console.error(`Nenalezen prvek popisu s id: ${id}`)
+                }
+
+                items.push(<li>{descItem?.name || id}</li>);
             });
             parts.push(
                 <div className="error-list error-item">

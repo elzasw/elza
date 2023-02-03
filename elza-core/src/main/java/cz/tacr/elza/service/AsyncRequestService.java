@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,14 +32,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import cz.tacr.elza.asynchactions.AsyncAccessPointWorker;
 import cz.tacr.elza.asynchactions.AsyncExecutor;
-import cz.tacr.elza.asynchactions.AsyncNodeExecutor;
 import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.AsyncWorkerVO;
+import cz.tacr.elza.asynchactions.IAsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.RequestQueue;
+import cz.tacr.elza.asynchactions.ap.AsyncAccessPointExecutor;
+import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -142,13 +142,35 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     /**
+     * Internal method to save request to DB and prepare memory object.
+     * 
+     * @param request
+     */
+    private void dispatchRequest(ArrAsyncRequest request) {
+        request = asyncRequestRepository.save(request);
+
+        AsyncExecutor executor = getExecutor(request.getType());
+        executor.enqueue(request);
+    }
+
+    private void dispatchRequests(AsyncTypeEnum type, List<ArrAsyncRequest> reqList) {
+        if (CollectionUtils.isEmpty(reqList)) {
+            return;
+        }
+
+        Iterable<ArrAsyncRequest> saveReqList = asyncRequestRepository.saveAll(reqList);
+
+        getExecutor(type).enqueue(saveReqList);
+
+    }
+
+    /**
      * Přídání výstupu do fronty na zpracování
      */
     @Transactional
     public void enqueue(ArrFundVersion fundVersion, ArrOutput output, Integer userId) {
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1, userId);
-        asyncRequestRepository.save(request);
-        getExecutor(request.getType()).enqueue(new AsyncRequest(request));
+        dispatchRequest(request);
     }
 
     /**
@@ -159,8 +181,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                         final ArrBulkActionRun bulkActionRun) {
         eventPublishBulkAction(bulkActionRun);
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, bulkActionRun, 1);
-        asyncRequestRepository.save(request);
-        getExecutor(request.getType()).enqueue(new AsyncRequest(request));
+        dispatchRequest(request);
     }
 
     /**
@@ -179,18 +200,14 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     public void enqueue(final ArrFundVersion fundVersion,
                         final List<ArrNode> nodeList,
                         final Integer priority) {
-        List<ArrAsyncRequest> dbReqList = new ArrayList<>(nodeList.size());
+        List<ArrAsyncRequest> reqList = new ArrayList<>(nodeList.size());
+        int pri = (priority == null) ? 1 : priority;
         for (ArrNode node : nodeList) {
-            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, priority == null ? 1 : priority);
-            dbReqList.add(request);
+            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, pri);
+            reqList.add(request);
         }
-        Iterable<ArrAsyncRequest> saveReqList = asyncRequestRepository.saveAll(dbReqList);
 
-        List<AsyncRequest> requests = new ArrayList<>(nodeList.size());
-        for (ArrAsyncRequest request : saveReqList) {
-            requests.add(new AsyncRequest(request));
-        }
-        getExecutor(AsyncTypeEnum.NODE).enqueue(requests);
+        dispatchRequests(AsyncTypeEnum.NODE, reqList);
     }
 
     @Transactional
@@ -201,15 +218,17 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueue(final Collection<Integer> accessPointIds,
                         final Integer priority) {
-        if (CollectionUtils.isNotEmpty(accessPointIds)) {
-            List<AsyncRequest> requests = new ArrayList<>(accessPointIds.size());
-            for (Integer accessPointId : accessPointIds) {
-                ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId), priority == null ? 1 : priority);
-                asyncRequestRepository.save(request);
-                requests.add(new AsyncRequest(request));
-            }
-            getExecutor(AsyncTypeEnum.AP).enqueue(requests);
+        if (CollectionUtils.isEmpty(accessPointIds)) {
+            return;
         }
+        int pri = priority == null ? 1 : priority;
+        List<ArrAsyncRequest> requests = new ArrayList<>(accessPointIds.size());
+        for (Integer accessPointId : accessPointIds) {
+            ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId),
+                                                             pri);
+            requests.add(request);
+        }
+        dispatchRequests(AsyncTypeEnum.AP, requests);
     }
 
     private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
@@ -292,7 +311,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     @Override
     public void onApplicationEvent(final AsyncRequestEvent event) {
-        AsyncRequest request = event.getAsyncRequest();
+        IAsyncRequest request = event.getAsyncRequest();
         if (event.success()) {
             getExecutor(request.getType()).onSuccess(event.getWorker());
         } else {
@@ -317,7 +336,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         Map<Integer, FundStatisticsVO> map = new HashMap<>();
         AsyncExecutor asyncExecutor = getExecutor(type);
         asyncExecutor.doLockQueue(() -> {
-            for (final AsyncRequest request : asyncExecutor.getCurrentRequests()) {
+            for (final IAsyncRequest request : asyncExecutor.getCurrentRequests()) {
                 Integer fundVersionId = request.getFundVersionId();
                 if (fundVersionId != null) {
                     FundStatisticsVO fundStatistics = map.get(fundVersionId);
@@ -337,7 +356,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private List<AsyncWorkerVO> convertWorkerList(Collection<IAsyncWorker> workers) {
         List<AsyncWorkerVO> runningVOList = new ArrayList<>();
         for (IAsyncWorker worker : workers) {
-            AsyncRequest request = worker.getRequest();
+            IAsyncRequest request = worker.getRequest();
             AsyncWorkerVO workerVO = new AsyncWorkerVO(request.getFundVersionId(), request.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), request.getCurrentId());
             runningVOList.add(workerVO);
         }
@@ -433,7 +452,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         private final BulkActionRunRepository bulkActionRepository;
 
         AsyncBulkExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final BulkActionRunRepository bulkActionRepository) {
-            super(AsyncTypeEnum.BULK, executor, RequestQueue.of(new LinkedList<>()), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.BULK, executor, new RequestQueue<>(), txManager, asyncRequestRepository, appCtx,
+                    maxPerFund);
             this.bulkActionRepository = bulkActionRepository;
         }
 
@@ -456,6 +476,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return false;
         }
 
+        @Override
+        protected IAsyncRequest readRequest(ArrAsyncRequest request) {
+            return new AsyncRequest(request);
+        }
+
     }
 
     private static class AsyncOutputExecutor extends AsyncExecutor {
@@ -463,7 +488,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         private final OutputRepository outputRepository;
 
         AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final OutputRepository outputRepository) {
-            super(AsyncTypeEnum.OUTPUT, executor, RequestQueue.of(new LinkedList<>()), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.OUTPUT, executor, new RequestQueue<>(), txManager, asyncRequestRepository, appCtx,
+                    maxPerFund);
             this.outputRepository = outputRepository;
         }
 
@@ -485,38 +511,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return AsyncOutputGeneratorWorker.class;
         }
 
-    }
-
-    private static class AsyncAccessPointExecutor extends AsyncExecutor {
-
-        AsyncAccessPointExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx) {
-            super(AsyncTypeEnum.AP, executor, RequestQueue.of(new LinkedList<>(), AsyncRequest::getAccessPointId), txManager, asyncRequestRepository, appCtx, Integer.MAX_VALUE);
-        }
-
         @Override
-        protected Class<? extends IAsyncWorker> workerClass() {
-            return AsyncAccessPointWorker.class;
+        protected IAsyncRequest readRequest(ArrAsyncRequest request) {
+            return new AsyncRequest(request);
         }
 
-        @Override
-        protected boolean skip(final AsyncRequest request) {
-            AsyncRequest existAsyncRequest = queue.findById(request.getAccessPointId());
-            if (existAsyncRequest == null) {
-                // neexistuje ve frontě, chceme přidat
-                return false;
-            } else {
-                Integer priorityExists = existAsyncRequest.getPriority();
-                Integer priorityAdding = request.getPriority();
-                if (priorityAdding > priorityExists) {
-                    // nově přidáváná položka má lepší prioritu; mažeme aktuální z fronty a vložíme novou
-                    queue.remove(existAsyncRequest);
-                    deleteRequest(existAsyncRequest);
-                    return false;
-                } else {
-                    // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
-                    return true;
-                }
-            }
-        }
     }
 }

@@ -1,9 +1,7 @@
 package cz.tacr.elza.service.cam;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -494,7 +492,7 @@ public class CamService {
     	String userName;
     	String userId;
     	String prefName;
-    	if(user==null) {
+    	if ( user == null) {
     		userName = "admin";
     		userId = "0";
     		prefName = "Admin";
@@ -503,7 +501,7 @@ public class CamService {
     		userId = Integer.toString(user.getUserId());
     		prefName = accessPointService.findPreferredPartDisplayName(user.getAccessPoint());
     	}
-    	if(userInfo==null) { 
+    	if (userInfo == null) { 
     		return userName; 
     	}
 
@@ -517,53 +515,50 @@ public class CamService {
      * 
      * @param code
      */
-    @Transactional
     synchronized public void synchronizeAccessPointsForExternalSystem(final String code) {
-        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(code);
-
-        ApBindingSync apBindingSync = bindingSyncRepository.findByApExternalSystem(externalSystem);
-        if (apBindingSync == null) {
-            apBindingSync = createApBindingSync(externalSystem);
-        }
-        
-        String lastTransaction;
-
+        BindingSyncInfo bindingSync = externalSystemService.getBindingSync(code, TRANSACTION_UUID);
         try {
-        	List<EntityRecordRevInfoXml> entityRecordRevInfoXmls;
-            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(apBindingSync.getLastTransaction(), externalSystem);
+            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
+
+            // Musí být uloženo po přečtení plné dávky dat.
+            String lastTransaction = updatesFromXml.getInf().getTo().getValue();
+
             if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
-                entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
-                lastTransaction = updatesFromXml.getInf().getTo().getValue();
-            } else {
-                entityRecordRevInfoXmls = new ArrayList<>();
-                lastTransaction = updatesFromXml.getInf().getTo().getValue();
+                List<EntityRecordRevInfoXml> entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
+                externalSystemService.prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, lastTransaction, null);
+            } else {                
                 int count = updatesFromXml.getInf().getCnt().getValue().intValue();
-                log.debug("Total entity count for update: {}, last transaction: {}", count, lastTransaction);
+                Integer lastPage = bindingSync.getPage();
                 int page = 1;
+                // V situaci, kdy byl proces prvního čtení zastaven page != null
+                if (lastPage != null) {
+                    page = lastPage + 1;
+                    count -= lastPage * PAGE_SIZE;
+                }
+                log.debug("Total entity count for update: {}, last transaction: {}", count, lastTransaction);
 
                 while (count > 0) {
                 	log.debug("Requesting entity info, page: {}, pageSize: {}", page, PAGE_SIZE);
-                	
-                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(apBindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, externalSystem);
-                    entityRecordRevInfoXmls.addAll(updatesXml.getRevisions());
 
+                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(bindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, bindingSync.getExternalSystemId());
+
+                    // Při zpracování poslední stránky musíme uložit lastTransaction
+                    String updateTransaction = count > PAGE_SIZE? bindingSync.getLastTransaction() : lastTransaction;
+                    externalSystemService.prepareApsForSync(bindingSync.getId(), updatesXml.getRevisions(), updateTransaction, page);
+
+                    count -= PAGE_SIZE;
                     page++;
-                    count = count - PAGE_SIZE;
                 }
             }
-            prepareApsForSync(externalSystem, entityRecordRevInfoXmls);
         } catch (ApiException e) {
         	if (e.getCode() == 404) {
         		// Transaction not found, check if autorestart is enabled
-        		log.error("Transaction not found, transaction={}, resetting transaction.", apBindingSync.getLastTransaction(), e);
-        		lastTransaction =  TRANSACTION_UUID;
+        		log.error("Transaction not found, transaction={}, resetting transaction.", bindingSync.getLastTransaction(), e);
+        		externalSystemService.resetTransaction(bindingSync.getId(), TRANSACTION_UUID);
         	} else {
         		throw prepareSystemException(e);
         	}
         }
-        
-        apBindingSync.setLastTransaction(lastTransaction);
-        bindingSyncRepository.save(apBindingSync);
 
         // kontrola datové struktury
         if (checkDb) {
@@ -572,128 +567,12 @@ public class CamService {
         }
     }
 
-    /**
-     * Prepare entities for synchronization
-     * 
-     * @param externalSystem
-     * @param entityRecordRevInfoXmls entity info list 
-     */
-    private void prepareApsForSync(ApExternalSystem externalSystem,
-    		List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
-        if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
-            return;
-        }
-        log.debug("Preparing APs for synchronization from external system, count: {}", entityRecordRevInfoXmls.size());
-                
-        // Prepare keys
-        List<String> keyList = new ArrayList<>(entityRecordRevInfoXmls.size());
-        Map<String, EntityRecordRevInfoXml> recordCodesMap = new HashMap<>();
-        Function<EntityRecordRevInfoXml, String> idGetter;
-        if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
-            idGetter = (x) -> x.getEuid().getValue();
-        } else {
-            idGetter = (x) -> Long.toString(x.getEid().getValue());
-        }
-        for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
-        	String id = idGetter.apply(entityRecordRevInfoXml);
-        	keyList.add(id);
-            EntityRecordRevInfoXml prevInfo = recordCodesMap.put(id, entityRecordRevInfoXml);
-            Validate.isTrue(prevInfo==null, "Record with same key already process, %s", id);
-        }
-        
-        List<ApBinding> bindings = externalSystemService.findBindings(keyList, externalSystem);
-        final Map<String, ApBinding> bindingMap = bindings.stream()
-                .collect(Collectors.toMap(p -> p.getValue(), p -> p));
-
-        Map<Integer, ApBindingState> bindingStateMap;
-        if (bindings.size() > 0) {
-            List<ApBindingState> bindingStateList = externalSystemService.findBindingStates(bindings);
-            bindingStateMap = bindingStateList.stream()
-                    .collect(Collectors.toMap(p -> p.getBindingId(), p -> p));
-        } else {
-            bindingStateMap = Collections.emptyMap();
-        }
-
-        int recNo = 0;
-        
-        UsrUser user = userService.getLoggedUser();
-        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>();
-        for (String recordCode : keyList) {
-        	recNo++;
-        	if(log.isDebugEnabled()) {
-        		if(recNo%100 == 0) {
-        			log.debug("Prepared records for sync: [{}-{}]", ((recNo+99)/100-1)*100+1, recNo);
-        		}
-        	}
-        	
-            ApBinding binding = bindingMap.get(recordCode);
-            ApAccessPoint ap = null;
-            if (binding == null) {
-                // prepare binding for CAM Complete
-                if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                	// we are creating all bindings at once 
-                	// - will be flush to the DB at the end of this method
-                    binding = externalSystemService.createApBinding(recordCode, externalSystem, false);
-                }
-            } else {
-                ApBindingState bindingState = bindingStateMap.get(binding.getBindingId());
-                EntityRecordRevInfoXml xmlRecordInfo = recordCodesMap.get(recordCode);
-                if (bindingState != null) {
-                    ap = bindingState.getAccessPoint();
-                    // kontrola uuid revizi, pokud se rovná extRevizion(), pak aktualizace není potřeba
-                    String uuidRev = xmlRecordInfo.getRev().getValue();
-                    if (bindingState.getExtRevision().equals(uuidRev)) {
-                        continue;
-                    }
-                }
-                // entita mohla být smazána, hledáme ji jinak
-                if (ap == null) {
-                    String uuid = xmlRecordInfo.getEuid().getValue();
-                    ap = apAccessPointRepository.findAccessPointByUuid(uuid);
-                }
-            }
-            // update or add new items from CAM_COMPLETE
-            if (ap != null || externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
-                if (ap != null) {
-                    extSyncsQueue.setAccessPoint(ap);
-                    extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
-                } else {
-                    extSyncsQueue.setState(ExtAsyncQueueState.IMPORT_NEW);
-                }
-                extSyncsQueue.setBinding(binding);
-                extSyncsQueue.setExternalSystem(externalSystem);
-                extSyncsQueue.setDate(OffsetDateTime.now());
-                extSyncsQueue.setUser(user);
-                extSyncsQueueItems.add(extSyncsQueue);
-            }
-        }
-        if (!extSyncsQueueItems.isEmpty()) {
-            extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
-            // flush all items to the DB
-            extSyncsQueueItemRepository.flush();
-        }
-    	if(log.isDebugEnabled()) {
-    		if(recNo%100 != 0) {
-    			log.debug("Prepared records for sync: [{}-{}]", ((recNo+99)/100-1)*100+1, recNo);
-    		}
-    	}
-        log.debug("APs prepared for synchronization from external system");
-    }
-
     static public Function<EntityXml, String> getEntityIdGetter(final ApExternalSystem externalSystem) {
         if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
             return (x) -> x.getEuid().getValue();
         } else {
             return (x) -> Long.toString(x.getEid().getValue());
         }
-    }
-
-    private ApBindingSync createApBindingSync(final ApExternalSystem externalSystem) {
-        ApBindingSync apBindingSync = new ApBindingSync();
-        apBindingSync.setApExternalSystem(externalSystem);
-        apBindingSync.setLastTransaction(TRANSACTION_UUID);
-        return bindingSyncRepository.save(apBindingSync);
     }
 
     private AbstractException prepareSystemException(ApiException e) {
