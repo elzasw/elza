@@ -1,4 +1,4 @@
-package cz.tacr.elza.asynchactions;
+package cz.tacr.elza.asynchactions.ap;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import cz.tacr.elza.asynchactions.AsyncRequest;
+import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.service.AccessPointGeneratorService;
 
 @Component
@@ -99,7 +102,7 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
     public void terminate() {
         while (running.get()) {
             try {
-                logger.info("Čekání na dokončení validace JP: {}", request.getNodeId());
+                logger.info("Čekání na dokončení validace AP: {}", request.getAccessPointId());
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 // Nothing to do with this -> simply finish

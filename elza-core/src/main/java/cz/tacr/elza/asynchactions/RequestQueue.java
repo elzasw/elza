@@ -1,19 +1,20 @@
 package cz.tacr.elza.asynchactions;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.Validate;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Zaobalovací třída pro frontu požadavků. Umožňuje rychlý přístup k položce podle identifikátoru, který lze
@@ -23,22 +24,29 @@ import java.util.function.Function;
  */
 public class RequestQueue<E> implements IRequestQueue<E> {
 
-    private final Queue<E> originalQueue;
+    private final Queue<E> originalQueue = new LinkedList<>();
     private final Function<E, Integer> calcId;
     private final Map<Integer, E> idMap = new HashMap<>();
 
-    private RequestQueue(final Queue<E> originalQueue,
-                         final Function<E, Integer> calcId) {
-        Validate.notNull(originalQueue);
+    /**
+     * Rozšířené obalení fronty požadavků - možnost rychlého přístupu k položce
+     * fronty podle identifikátoru metodou
+     * {@link RequestQueue#findById(java.lang.Integer)}
+     *
+     * @param calcId
+     *            funkce pro nápočet identifikátoru
+     */
+    public RequestQueue(final Function<E, Integer> calcId) {
         Validate.notNull(calcId);
-        this.originalQueue = originalQueue;
         this.calcId = calcId;
         init();
     }
 
-    private RequestQueue(final Queue<E> originalQueue) {
-        Validate.notNull(originalQueue);
-        this.originalQueue = originalQueue;
+    /**
+     * Standartní obalení fronty požadavků.
+     *
+     */
+    public RequestQueue() {
         this.calcId = null;
     }
 
@@ -48,31 +56,6 @@ public class RequestQueue<E> implements IRequestQueue<E> {
                 idMap.put(calcId.apply(e), e);
             }
         }
-    }
-
-    /**
-     * Rozšířené obalení fronty požadavků - možnost rychlého přístupu k položce fronty podle identifikátoru metodou
-     * {@link RequestQueue#findById(java.lang.Integer)}
-     *
-     * @param queue původní implnentace fronty
-     * @param calcId funkce pro nápočet identifikátoru
-     * @param <E> generičnost
-     * @return obalená fronta
-     */
-    public static <E> RequestQueue<E> of(final Queue<E> queue,
-                                         final Function<E, Integer> calcId) {
-        return new RequestQueue<>(queue, calcId);
-    }
-
-    /**
-     * Standartní obalení fronty požadavků.
-     *
-     * @param queue původní implnentace fronty
-     * @param <E> generičnost
-     * @return obalená fronta
-     */
-    public static <E> RequestQueue<E> of(final Queue<E> queue) {
-        return new RequestQueue<>(queue);
     }
 
     @Override
