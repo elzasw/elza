@@ -1,4 +1,4 @@
-package cz.tacr.elza.asynchactions;
+package cz.tacr.elza.asynchactions.nodevalid;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -26,6 +26,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.google.common.eventbus.EventBus;
 
+import cz.tacr.elza.asynchactions.AsyncRequest;
+import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
@@ -92,7 +95,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
                 for (AsyncRequest request : requests) {
                     Integer fundVersionId = request.getFundVersionId();
                     Long requestId = request.getRequestId();
-                    Integer nodeId = request.getNodeId();
+                    Integer nodeId = request.getCurrentId();
                     this.request = request;
 
                     long nodeBeginTime = System.currentTimeMillis();
@@ -223,7 +226,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
     public void terminate() {
         while (running.get()) {
             try {
-                logger.info("Čekání na dokončení validace JP: {}", request.getNodeId());
+                logger.info("Čekání na dokončení validace JP: {}", request.getCurrentId());
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 // Nothing to do with this -> simply finish

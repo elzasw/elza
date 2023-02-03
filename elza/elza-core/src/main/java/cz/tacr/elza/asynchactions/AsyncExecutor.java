@@ -84,12 +84,12 @@ public abstract class AsyncExecutor {
     /**
      * Fronta čekajících požadavků.
      */
-    protected final IRequestQueue<AsyncRequest> queue;
+    protected final IRequestQueue<IAsyncRequest> queue;
 
     /**
      * Seznam přeskočených požadavků na smazání.
      */
-    final List<AsyncRequest> skipped = new ArrayList<>();
+    final List<IAsyncRequest> skipped = new ArrayList<>();
 
     /**
      * Seznam probíhajících zpracování.
@@ -102,12 +102,12 @@ public abstract class AsyncExecutor {
     final int maxPerFundVersion;
 
     public AsyncExecutor(final AsyncTypeEnum type,
-                  final ThreadPoolTaskExecutor executor,
-                  final IRequestQueue<AsyncRequest> queue,
-                  final PlatformTransactionManager txManager,
-                  final ArrAsyncRequestRepository asyncRequestRepository,
-                  final ApplicationContext appCtx,
-                  final int maxPerFundVersion) {
+                         final ThreadPoolTaskExecutor executor,
+                         final IRequestQueue<IAsyncRequest> queue,
+                         final PlatformTransactionManager txManager,
+                         final ArrAsyncRequestRepository asyncRequestRepository,
+                         final ApplicationContext appCtx,
+                         final int maxPerFundVersion) {
         this.executor = executor;
         this.type = type;
         this.queue = queue;
@@ -219,7 +219,7 @@ public abstract class AsyncExecutor {
     private void restoreAndRun() {
         tx(() -> {
             logger.info("Obnovení databázové fronty {}", getType());
-            List<AsyncRequest> results = new ArrayList<>();
+            List<IAsyncRequest> results = new ArrayList<>();
             int p = 0;
             List<ArrAsyncRequest> requests;
             int MAX = 1000;
@@ -232,7 +232,8 @@ public abstract class AsyncExecutor {
                         logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request
                                 .getAsyncRequestId());
                     } else {
-                        results.add(new AsyncRequest(request));
+                        IAsyncRequest ar = readRequest(request);
+                        results.add(ar);
                     }
                 }
                 p++;
@@ -250,17 +251,25 @@ public abstract class AsyncExecutor {
         });
     }
 
+    /**
+     * Read DB request and prepare executor specific request
+     * 
+     * @param request
+     * @return
+     */
+    protected abstract IAsyncRequest readRequest(ArrAsyncRequest request);
+
     public AsyncTypeEnum getType() {
         return this.type;
     }
 
-    protected void deleteRequest(AsyncRequest request) {
+    protected void deleteRequest(IAsyncRequest request) {
         deleteRequests(Collections.singletonList(request));
     }
 
-    protected void deleteRequests(Collection<AsyncRequest> requests) {
+    protected void deleteRequests(Collection<? extends IAsyncRequest> requests) {
         tx(() -> {
-            for (AsyncRequest request : requests) {
+            for (IAsyncRequest request : requests) {
                 logger.debug("Mazání requestu z DB: {}", request);
                 asyncRequestRepository.deleteByRequestId(request.getRequestId());
             }
@@ -274,7 +283,7 @@ public abstract class AsyncExecutor {
 
     public void onFail(IAsyncWorker worker, final Throwable error) {
         synchronized (lockQueue) {
-            AsyncRequest request = worker.getRequest();
+            IAsyncRequest request = worker.getRequest();
             logger.error("Selhání requestu {}", request, error);
             countRequest();
             processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
@@ -285,7 +294,7 @@ public abstract class AsyncExecutor {
 
     public void onSuccess(IAsyncWorker worker) {
         synchronized (lockQueue) {
-            AsyncRequest request = worker.getRequest();
+            IAsyncRequest request = worker.getRequest();
             logger.debug("Dokončení requestu {}", request);
             countRequest();
             processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
@@ -297,10 +306,10 @@ public abstract class AsyncExecutor {
     public void terminate(Integer currentId) {
         List<IAsyncWorker> terminateWorkers = new ArrayList<>();
         synchronized (lockQueue) {
-            Iterator<AsyncRequest> iterator = queue.iterator();
-            List<AsyncRequest> removed = new ArrayList<>();
+            Iterator<? extends IAsyncRequest> iterator = queue.iterator();
+            List<IAsyncRequest> removed = new ArrayList<>();
             while (iterator.hasNext()) {
-                AsyncRequest request = iterator.next();
+                IAsyncRequest request = iterator.next();
                 if (currentId.equals(request.getCurrentId())) {
                     iterator.remove();
                     removed.add(request);
@@ -310,14 +319,14 @@ public abstract class AsyncExecutor {
                 deleteRequests(removed);
             }
             for (IAsyncWorker worker : processing) {
-                AsyncRequest request = worker.getRequest();
+                IAsyncRequest request = worker.getRequest();
                 if (currentId.equals(request.getCurrentId())) {
                     terminateWorkers.add(worker);
                 }
             }
         }
         for (IAsyncWorker worker : terminateWorkers) {
-            AsyncRequest request = worker.getRequest();
+            IAsyncRequest request = worker.getRequest();
             logger.debug("Ukončuji {} request: {}", getType(), request.getRequestId());
             worker.terminate();
         }
@@ -326,10 +335,10 @@ public abstract class AsyncExecutor {
     public void terminateFund(Integer fundVersionId) {
         List<IAsyncWorker> terminateWorkers = new ArrayList<>();
         synchronized (lockQueue) {
-            Iterator<AsyncRequest> iterator = queue.iterator();
-            List<AsyncRequest> removed = new ArrayList<>();
+            Iterator<? extends IAsyncRequest> iterator = queue.iterator();
+            List<IAsyncRequest> removed = new ArrayList<>();
             while (iterator.hasNext()) {
-                AsyncRequest next = iterator.next();
+                IAsyncRequest next = iterator.next();
                 if (fundVersionId.equals(next.getFundVersionId())) {
                     iterator.remove();
                     removed.add(next);
@@ -339,14 +348,14 @@ public abstract class AsyncExecutor {
                 deleteRequests(removed);
             }
             for (IAsyncWorker worker : processing) {
-                AsyncRequest request = worker.getRequest();
+                IAsyncRequest request = worker.getRequest();
                 if (fundVersionId.equals(request.getFundVersionId())) {
                     terminateWorkers.add(worker);
                 }
             }
         }
         for (IAsyncWorker worker : terminateWorkers) {
-            AsyncRequest request = worker.getRequest();
+            IAsyncRequest request = worker.getRequest();
             logger.debug("Ukončuji {} request: {}", getType(), request.getRequestId());
             worker.terminate();
         }
@@ -356,13 +365,14 @@ public abstract class AsyncExecutor {
         return processing.size() < getWorkers();
     }
 
+    // TODO: what is it
     @Nullable
-    protected List<AsyncRequest> selectNext() {
+    protected List<? extends IAsyncRequest> selectNext() {
         Map<Integer, Integer> fundVersionCount = calcFundVersionsPerWorkers();
 
-        List<AsyncRequest> next;
-        List<AsyncRequest> selected = null;
-        List<AsyncRequest> backToQueue = new ArrayList<>();
+        List<? extends IAsyncRequest> next;
+        List<? extends IAsyncRequest> selected = null;
+        List<IAsyncRequest> backToQueue = new ArrayList<>();
         while (CollectionUtils.isNotEmpty((next = queue.poll()))) {
             Integer fundVersionId = next.get(0).getFundVersionId();
             Integer count = fundVersionCount.getOrDefault(fundVersionId, 0);
@@ -385,7 +395,7 @@ public abstract class AsyncExecutor {
     protected Map<Integer, Integer> calcFundVersionsPerWorkers() {
         Map<Integer, Integer> fundVersionCount = new HashMap<>();
         for (IAsyncWorker asyncWorker : processing) {
-            AsyncRequest request = asyncWorker.getRequest();
+            IAsyncRequest request = asyncWorker.getRequest();
             Integer fundVersionId = request.getFundVersionId();
             Integer count = fundVersionCount.get(fundVersionId);
             if (count == null) {
@@ -399,7 +409,7 @@ public abstract class AsyncExecutor {
 
     public void scheduleNext() {
         while (!queue.isEmpty() && isEmptyWorker() && running.get()) {
-            List<AsyncRequest> requests = selectNext();
+            List<? extends IAsyncRequest> requests = selectNext();
             if (CollectionUtils.isNotEmpty(requests)) {
                 IAsyncWorker worker = appCtx.getBean(workerClass(), requests);
                 logger.debug("Naplánování requestů: {}", requests);
@@ -422,11 +432,31 @@ public abstract class AsyncExecutor {
      *
      * @param request požadavek na zpracování
      */
-    public void enqueue(final AsyncRequest request) {
-        enqueue(Collections.singleton(request));
+    public void enqueue(final IAsyncRequest request) {
+        enqueue(Collections.singletonList(request));
     }
 
-    protected void enqueueInner(final AsyncRequest request) {
+    /**
+     * Vložení do fronty požadavku z DB
+     * 
+     * @param request
+     */
+    public void enqueue(ArrAsyncRequest request) {
+        IAsyncRequest ar = readRequest(request);
+        enqueue(ar);
+    }
+
+    public void enqueue(Iterable<ArrAsyncRequest> reqList) {
+        // prepare logical objects
+        List<IAsyncRequest> requests = new ArrayList<>();
+        for (ArrAsyncRequest request : reqList) {
+            IAsyncRequest ar = readRequest(request);
+            requests.add(ar);
+        }
+
+    }
+
+    protected void enqueueInner(final IAsyncRequest request) {
         if (request.getType() != getType()) {
             throw new IllegalStateException("Neplatný typ požadavku");
         }
@@ -445,7 +475,7 @@ public abstract class AsyncExecutor {
      * @param request požadavek na zpracování
      * @return true - ano, přeskočit
      */
-    protected boolean skip(final AsyncRequest request) {
+    protected boolean skip(final IAsyncRequest request) {
         return false;
     }
 
@@ -478,11 +508,11 @@ public abstract class AsyncExecutor {
      *
      * @param requests požadavky na zpracování
      */
-    public void enqueue(final Collection<AsyncRequest> requests) {
+    public void enqueue(final Collection<IAsyncRequest> requests) {
         // přidáváme až po úspěšném dokončení probíhající transakce
         afterTx(() -> {
             synchronized (lockQueue) {
-                for (AsyncRequest asyncRequest : requests) {
+                for (IAsyncRequest asyncRequest : requests) {
                     enqueueInner(asyncRequest);
                 }
                 resolveSkipped();
@@ -497,7 +527,7 @@ public abstract class AsyncExecutor {
     public void resolveSkipped() {
         if (skipped.size() > 0) {
             logger.debug("Přeskočeny požadavky z fronty {}: {}, {}", getType(), skipped.size(), skipped.stream()
-                    .map(AsyncRequest::getRequestId)
+                    .map(IAsyncRequest::getRequestId)
                     .collect(Collectors.toList()));
             deleteRequests(skipped);
             skipped.clear();
@@ -548,18 +578,19 @@ public abstract class AsyncExecutor {
     /**
      * Zpracovává se (nebo je ve frontě) něco z verze archivní pomůcky.
      *
-     * @param fundVersionId id verze archivní pomůcky
-     * @return true - je zpracováno něco z verze archivní pomůcky
+     * @param fundVersionId
+     *            id verze archivní pomůcky
+     * @return true - je zpracováno něco z verze fondu
      */
     public boolean isProcessing(final Integer fundVersionId) {
         synchronized (lockQueue) {
-            for (AsyncRequest request : queue) {
+            for (IAsyncRequest request : queue) {
                 if (fundVersionId.equals(request.getFundVersionId())) {
                     return true;
                 }
             }
             for (IAsyncWorker worker : processing) {
-                AsyncRequest request = worker.getRequest();
+                IAsyncRequest request = worker.getRequest();
                 if (fundVersionId.equals(request.getFundVersionId())) {
                     return true;
                 }
@@ -568,10 +599,10 @@ public abstract class AsyncExecutor {
         }
     }
 
-    public List<AsyncRequest> getCurrentRequests() {
+    public List<IAsyncRequest> getCurrentRequests() {
         synchronized (lockQueue) {
-            List<AsyncRequest> ret = new ArrayList<>(queue.size());
-            for (AsyncRequest request : queue) {
+            List<IAsyncRequest> ret = new ArrayList<>(queue.size());
+            for (IAsyncRequest request : queue) {
                 ret.add(request);
             }
             return ret;
