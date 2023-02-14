@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
@@ -22,7 +25,6 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
-import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -39,18 +41,17 @@ import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemString;
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 /**
  * Implementace respozitory pro aprecord.
  *
- * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Component
 public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCustom {
@@ -89,7 +90,9 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Root<ApAccessPoint> accessPointSubquery = subquery.from(ApAccessPoint.class);
         Root<ApState> apStateSubquery = subquery.from(ApState.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointRoot, apStateRoot, builder, query::orderBy, true, searchTypeName, searchTypeUsername);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates,
+                                                       accessPointRoot, apStateRoot, builder,
+                                                       query::orderBy, true, searchTypeName, searchTypeUsername);
         Predicate conditionSubquery = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointSubquery, apStateSubquery, builder, null, false, searchTypeName, searchTypeUsername);
 
         subquery.select(accessPointSubquery.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
@@ -124,9 +127,18 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Root<ApAccessPoint> accessPoint = query.from(ApAccessPoint.class);
         Root<ApState> apState = query.from(ApState.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPoint, apState, builder, null, false, searchTypeName, searchTypeUsername);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds,
+                                                       approvalStates, accessPoint, apState,
+                                                       builder, null,
+                                                       // only pref part
+                                                       false,
+                                                       searchTypeName, searchTypeUsername);
 
-        query.select(builder.countDistinct(accessPoint));
+        // Distinct could be neeeded in some cases
+        // we should switch to: builder.countDistinct...
+        Expression<Long> count = builder.count(accessPoint);
+
+        query.select(count);
         if (condition != null) {
             query.where(condition);
         }
@@ -137,14 +149,22 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
     /**
      * Prepares predicate for AP search. Only necessary entities will be joined.
      *
-     * @param searchValue if present APs with partial match in name or description are returned
-     * @param apTypeIds   if not empty APs with same type are returned
-     * @param scopeIds    APs with same scope are returned, cannot be empty
-     * @param accessPoint query root or entity join of AP
-     * @param cb          JPA query builder
+     * @param searchValue
+     *            if present APs with partial match in name or description are
+     *            returned
+     * @param apTypeIds
+     *            if not empty APs with same type are returned
+     * @param scopeIds
+     *            APs with same scope are returned, cannot be empty
+     * @param accessPoint
+     *            query root or entity join of AP
+     * @param cb
+     *            JPA query builder
+     * @param onlyPrefferedName
+     *            exact match
      * @return AP predicate which can be used as where condition.
      */
-    public static Predicate prepareApSearchPredicate(@Nullable final String searchValue,
+    public static Predicate prepareApSearchPredicate(@Nullable String searchValue,
                                                      @Nullable final Collection<Integer> apTypeIds,
                                                      final Collection<Integer> scopeIds,
                                                      @Nullable final Collection<ApState.StateApproval> approvalStates,
@@ -155,8 +175,14 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                      final boolean onlyPrefferedName,
                                                      @Nullable SearchType searchTypeName,
                                                      @Nullable SearchType searchTypeUsername) {
-        searchTypeName = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-        searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+        searchValue = StringUtils.trimToNull(searchValue);
+        if (searchValue == null) {
+            searchTypeName = SearchType.DISABLED;
+            searchTypeUsername = SearchType.DISABLED;
+        } else {
+            searchTypeName = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
+            searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+        }
 
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
@@ -169,7 +195,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         // add name join
         Path<String> accessPointName = null;
         Path<String> userName = null;
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE
+                || accessPointNameCallback != null) {
             Join<ApAccessPoint, ApPart> nameJoin = accessPoint.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.LEFT);
             Predicate nameFkCond = cb.equal(accessPoint.get(ApAccessPoint.FIELD_PREFFERED_PART),
                     nameJoin.get(ApPart.PART_ID));
@@ -207,7 +234,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Predicate nameLikeCond = null;
         Predicate usernameLikeCond = null;
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
-            String searchNameExp = StringUtils.trimToNull(searchValue);
+            String searchNameExp = searchValue;
             if (searchNameExp != null && !onlyPrefferedName) {
                 switch (searchTypeName) {
                     case FULLTEXT:
@@ -219,11 +246,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                     default:
                         break;
                 }
-                // add description join
-                // Join<ApAccessPoint, ApDescription> descJoin = apJoin.join(ApAccessPoint.DESCRIPTIONS, JoinType.LEFT);
-                // Predicate descFkCond = cb.equal(apJoin.get(ApAccessPoint.ACCESS_POINT_ID), descJoin.get(ApDescription.ACCESS_POINT_ID));
-                // Predicate activeDescCond = descJoin.get(ApDescription.DELETE_CHANGE_ID).isNull();
-                // descJoin.on(cb.and(descFkCond, activeDescCond));
 
                 // add like condition to where
                 nameLikeCond = cb.like(cb.lower(accessPointName), searchNameExp);
@@ -231,7 +253,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         }
 
         if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
-            String searchUsernameExp = StringUtils.trimToNull(searchValue);
+            String searchUsernameExp = searchValue;
             if (searchUsernameExp != null && !onlyPrefferedName) {
                 switch (searchTypeUsername) {
                     case FULLTEXT:
@@ -246,8 +268,12 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                 usernameLikeCond = cb.like(cb.lower(userName), searchUsernameExp);
             }
         }
-        if(nameLikeCond != null && usernameLikeCond == null) conjunctions.add(nameLikeCond);
-        if(nameLikeCond == null && usernameLikeCond != null) conjunctions.add(usernameLikeCond);
+        if (nameLikeCond != null && usernameLikeCond == null) {
+            conjunctions.add(nameLikeCond);
+        }
+        if (nameLikeCond == null && usernameLikeCond != null) {
+            conjunctions.add(usernameLikeCond);
+        }
         if(nameLikeCond != null && usernameLikeCond != null) {
             conjunctions.add(cb.or(nameLikeCond, usernameLikeCond));
         }
@@ -261,6 +287,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             conjunctions.add(apState.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIds));
         }
 
+        // add states
         if (CollectionUtils.isNotEmpty(approvalStates)) {
             conjunctions.add(apState.get(ApState.FIELD_STATE_APPROVAL).in(approvalStates));
         }
