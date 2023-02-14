@@ -132,13 +132,13 @@ paths:
           description: AS neexistuje
   /fund/{id}/import:
     put:
-      summary: Import dat k AS
+      summary: Import additional data to the existing fund.
       operationId: importFundData
       tags:
         - funds
       parameters:
         - name: id
-          description: Identifikátor AS
+          description: Fund ID. Might be ID or fund UUID.
           in: path
           required: true
           schema:
@@ -954,7 +954,7 @@ components:
       type: object
       properties:
         importType:
-          description: Druh importu
+          description: "Import type. Only 'CSV' is supported."
           type: string
         dataFile:
           type: string
