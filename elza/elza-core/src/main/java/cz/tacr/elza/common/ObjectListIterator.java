@@ -1,6 +1,7 @@
 package cz.tacr.elza.common;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,23 +25,20 @@ public class ObjectListIterator<T> implements Iterator<List<T>> {
      */
     private static int maxIterationSize = 1500;
 
-    private List<T> list;
+    private Iterator<T> iterator;
     private int maximalIterationSize = maxIterationSize;
-    private int index = 0;
 
     public ObjectListIterator(final Collection<T> list) {
-        this.list = new ArrayList<>(list);
+        this.iterator = list.iterator();
     }
 
     private ObjectListIterator(final Iterable<T> iterable) {
-        // TODO: redo to not create extra list
-        this.list = new ArrayList<>();
-        iterable.forEach(e -> list.add(e));
+        this.iterator = iterable.iterator();
     }
 
     public ObjectListIterator(final int maximalIterationSize, final Collection<T> list) {
         this.maximalIterationSize = maximalIterationSize;
-        this.list = new ArrayList<>(list);
+        this.iterator = list.iterator();
     }
 
     public static void setMaxBatchSize(int maxBatchSize) {
@@ -53,7 +51,7 @@ public class ObjectListIterator<T> implements Iterator<List<T>> {
 
     @Override
     public boolean hasNext() {
-        return this.index < this.list.size();
+        return iterator.hasNext();
     }
 
     /**
@@ -63,10 +61,12 @@ public class ObjectListIterator<T> implements Iterator<List<T>> {
      */
     @Override
     public List<T> next() {
-        int size = Math.min(this.maximalIterationSize, this.list.size() - this.index);
-        List<T> result = new ArrayList<>(size);
-        result.addAll(this.list.subList(this.index, this.index + size));
-        this.index += this.maximalIterationSize;
+        int index = 0;
+        List<T> result = new ArrayList<>(maximalIterationSize);
+        while (iterator.hasNext() && index < maximalIterationSize) {
+            result.add(iterator.next());
+            index++;
+        }
         return result;
     }
 
