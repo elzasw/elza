@@ -103,6 +103,7 @@ class DescItemFileRef extends AbstractReactComponent {
                         onChange={onChange}
                         onBlur={onBlur}
                         footer={footer}
+                        disabled={locked}
                     />
                 </ItemTooltipWrapper>
             </div>
