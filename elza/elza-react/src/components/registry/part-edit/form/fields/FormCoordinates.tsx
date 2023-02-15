@@ -17,6 +17,7 @@ import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemCoordinatesVO } from 'api/ApItemCoordinatesVO';
 import { CommonFieldProps } from './types';
+import { wktFromTypeAndData } from 'components/Utils';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -49,8 +50,14 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                     const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
                     const isDeleted = updatedItem?.changeType === "DELETED";
 
-                    const handleChange = (e: any) => {
+                    const handleBlur = (e: any) => {
                         props.input.onBlur(e)
+
+                        // convert value with point coordinates to wkt when possible
+                        // if not, keeps current value
+                        const value = wktFromTypeAndData("POINT", e.target.value);
+                        form.change(`${name}.updatedItem`, {...updatedItem, value})
+
                         handleValueUpdate(form, props);
                     }
 
@@ -89,7 +96,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
 
                                 input={{
                                     ...props.input,
-                                    onBlur: handleChange // inject modified onChange handler
+                                    onBlur: handleBlur // inject modified onBlur handler
                                 }}
                                 disabled={disabled}
                                 renderComponent={FormInput}
