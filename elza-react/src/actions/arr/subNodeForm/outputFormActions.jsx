@@ -5,10 +5,10 @@
 import { WebApi } from 'actions/index';
 import { indexById } from 'stores/app/utils';
 import { outputIncreaseNodeVersion } from '../outputActions';
-import { ItemFormActions } from './itemFormActions';
+import { ItemFormActions, OUTPUT_AREA } from './itemFormActions';
 
 export class OutputFormActions extends ItemFormActions {
-    static AREA = 'OUTPUT';
+    static AREA = OUTPUT_AREA;
 
     constructor() {
         super(OutputFormActions.AREA);

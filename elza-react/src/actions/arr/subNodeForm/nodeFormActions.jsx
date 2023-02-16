@@ -8,7 +8,7 @@ import NodeRequestController from 'websocketController';
 import { increaseNodeVersion } from '../node';
 import { fundNodeInfoReceive } from '../nodeInfo';
 import { fundSubNodeInfoReceive } from '../subNodeInfo';
-import { ItemFormActions } from './itemFormActions';
+import { ItemFormActions, NODE_AREA } from './itemFormActions';
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
@@ -16,7 +16,7 @@ const CACHE_SIZE2 = CACHE_SIZE / 2;
 
 //var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 export class NodeFormActions extends ItemFormActions {
-    static AREA = 'NODE';
+    static AREA = NODE_AREA;
 
     constructor() {
         super(NodeFormActions.AREA);
