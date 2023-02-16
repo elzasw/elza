@@ -16,8 +16,10 @@ import { getMapFromList } from '../../../shared/utils';
 import { DataTypeCode, ItemAvailabilityNumToEnumMap } from 'stores/app/accesspoint/itemFormUtils';
 import { getFocusDescItemLocation } from 'stores/app/arr/subNodeFormUtils';
 import { increaseNodeVersion } from '../node';
-import { StructureFormActions } from './structureFormActions';
-import { OutputFormActions } from './outputFormActions';
+
+export const STRUCTURE_AREA = 'STRUCTURE';
+export const OUTPUT_AREA = 'OUTPUT';
+export const NODE_AREA = 'NODE';
 
 export class ItemFormActions {
     constructor(area) {
@@ -321,7 +323,7 @@ export class ItemFormActions {
                         // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
                         this.updateItemTypesTypes(json);
 
-                        if (this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA) {
+                        if (this.area === OUTPUT_AREA || this.area === STRUCTURE_AREA) {
                             dispatch(
                                 this._fundSubNodeFormDescItemResponse(
                                     versionId,
@@ -331,7 +333,7 @@ export class ItemFormActions {
                                     'UPDATE',
                                 ),
                             );
-                            if (this.area === StructureFormActions.AREA) {
+                            if (this.area === STRUCTURE_AREA) {
                                 dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
                             }
                         } else {
@@ -359,7 +361,7 @@ export class ItemFormActions {
                             this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'),
                         );
                         dispatch(statusSaved());
-                        if (this.area === StructureFormActions.AREA) {
+                        if (this.area === STRUCTURE_AREA) {
                             dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
                         }
                     });
@@ -568,7 +570,7 @@ export class ItemFormActions {
                     dispatch(
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'),
                     );
-                    if (this.area === StructureFormActions.AREA) {
+                    if (this.area === STRUCTURE_AREA) {
                         const parentId = subNodeForm.data.parent.id;
                         dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, false));
                     }
@@ -710,7 +712,7 @@ export class ItemFormActions {
                     dispatch(
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'),
                     );
-                    if (this.area === StructureFormActions.AREA) {
+                    if (this.area === STRUCTURE_AREA) {
                         const parentId = subNodeForm.data.parent.id;
                         dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
                     }
@@ -887,7 +889,7 @@ export class ItemFormActions {
                             'DELETE_DESC_ITEM_TYPE',
                         ),
                     );
-                    if (this.area === StructureFormActions.AREA) {
+                    if (this.area === STRUCTURE_AREA) {
                         dispatch(this._fundSubNodeFormFetch(versionId, subNodeForm.data.parent.id, routingKey, true));
                     }
                 });

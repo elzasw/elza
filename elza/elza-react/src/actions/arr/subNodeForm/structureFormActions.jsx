@@ -3,10 +3,10 @@
  */
 
 import { WebApi } from 'actions/index';
-import { ItemFormActions } from './itemFormActions';
+import { ItemFormActions, STRUCTURE_AREA } from './itemFormActions';
 
 export class StructureFormActions extends ItemFormActions {
-    static AREA = 'STRUCTURE';
+    static AREA = STRUCTURE_AREA;
 
     constructor() {
         super(StructureFormActions.AREA);
