@@ -1,6 +1,6 @@
 import * as types from '../../../actions/constants/ActionTypes';
 import subNodeForm from './subNodeForm.jsx';
-import {outputFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {outputFormActions} from 'actions/arr/subNodeForm';
 import {consolidateState} from '../../../components/Utils.jsx';
 import {OutputState} from '../../../typings/Outputs';
 

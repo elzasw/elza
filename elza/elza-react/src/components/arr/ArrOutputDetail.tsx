@@ -11,7 +11,7 @@ import {
 } from '../../actions/arr/fundOutput.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
+import {outputFormActions} from 'actions/arr/subNodeForm';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import OutputInlineForm from 'components/arr/OutputInlineForm';
 import * as PropTypes from 'prop-types';
