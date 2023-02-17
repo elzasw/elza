@@ -43,9 +43,13 @@ mvn exec:exec -Pnpm-install
 mvn spring-boot:run
 ```
 
-* Spuštění serveru pro frontend (v adresáři elza-react)
+* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS do v16) 
 ```
 mvn exec:exec -Pfrontend-dev
+```
+* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS v17+) 
+```
+mvn exec:exec -Pfrontend-dev-legacy
 ```
 
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
