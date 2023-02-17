@@ -6,6 +6,7 @@
   "scripts": {
     "start:cra": "react-scripts start",
     "start": "rescripts start",
+    "dev-legacy": "rescripts --openssl-legacy-provider start",
     "dev": "rescripts start",
     "build": "cross-env CI=false rescripts build",
     "initialize": "npm install",
