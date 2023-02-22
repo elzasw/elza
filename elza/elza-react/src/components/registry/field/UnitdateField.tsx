@@ -6,6 +6,7 @@ import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
 import {i18n} from "../../shared";
 import { showYesNoDialog, YesNoDialogResult } from 'components/shared/dialog';
+import ItemTooltipWrapper from 'components/arr/nodeForm/ItemTooltipWrapper';
 
 const validateUnitDateInput = (input: Datace) => {
     const validationInput = {...input};
@@ -142,22 +143,9 @@ type Props = {
 };
 
 const UnitdateField: ForwardRefExoticComponent<Props> = forwardRef(({name, ...rest}, ref) => {
-    return <OverlayTrigger
-        placement={'right'}
-        overlay={
-            <Tooltip id={`${name}-tooltip`}>
-                <b>Formát datace</b><br/>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br/>Rok:
-                1968<br/>Měsíc: 8.1968<br/>Den: 21.8.1968<br/>Hodiny, minuty, sekundy: 21.8.1968
-                2:43 <i>nebo</i> 21.8.1968 8:23:31<br/><b>Intervaly</b><br/>Roky: 1968-1969<br/>Kombinace:
-                8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1969<br/><b>Odhad</b><br/>Definuje se uzavřením hodnoty do kulatých nebo
-                hranatých závorek:<br/>Např.: [16.8.1977] <i>nebo</i> [1990]-1992<br/>Při použití znaku "/" pro oddělení intervalu jsou od i do
-                chápány jako odhad:<br/>Např.: 1985/1990<br/><b>Záporná datace</b><br/>Definuje se prefixem: <b>-</b> [znaménko minus]<br/>Např.:
-                -200 <i>nebo</i> -5000-1.st.<br/>
-            </Tooltip>
-        }
-    >
+    return <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format" style={{width: '100%'}}>
         <FormInput {...rest} ref={ref}/>
-    </OverlayTrigger>;
+    </ItemTooltipWrapper>
 });
 
 export default UnitdateField;
