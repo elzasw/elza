@@ -746,7 +746,8 @@ when
       "ZP2015_ATTACHMENT",
       // Role entit jsou možné vždy
       "ZP2015_ENTITY_ROLE",
-      "ZP2015_TITLE_PUBLIC"
+      "ZP2015_TITLE_PUBLIC",
+      "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE"
       ) )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
