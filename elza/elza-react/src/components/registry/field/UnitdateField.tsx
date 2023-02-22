@@ -1,14 +1,11 @@
-import React, {FC} from 'react';
+import React, {forwardRef, ForwardRefExoticComponent} from 'react';
 import moment from "moment";
 import {Datace} from "../../shared/datace/datace-types";
 import {parse} from "components/shared/datace/datace";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
 import {i18n} from "../../shared";
-
-type Props = {
-    name: string;
-};
+import { showYesNoDialog, YesNoDialogResult } from 'components/shared/dialog';
 
 const validateUnitDateInput = (input: Datace) => {
     const validationInput = {...input};
@@ -90,7 +87,61 @@ function validate(v?: string) {
     }
 }
 
-const UnitdateField: FC<Props> = ({name, ...rest}) => {
+export const convertToEstimate = (value: string) => {
+    const {from, to, c, estimate} = parse(value) || {};
+
+    // from and to are century and one or both are not marked as estimate
+    if (from?.c && to?.c && (!from?.estimate || !to?.estimate)){
+        const parts = value.replace("[","").replace("]","").split("-");
+        return `${parts[0]}/${parts[1]}`;
+    }
+    // from is century and is not marked as estimate
+    else if(from?.c && !from?.estimate){
+        const parts = value.split("-");
+        return `[${parts[0]}]-${parts[1]}`;
+    }
+    // to is century and is not marked as estimate
+    else if (to?.c && !to?.estimate){
+        const parts = value.split("-");
+        return `${parts[0]}-[${parts[1]}]`;
+    }
+    // is century and is not marked as estimate
+    else if (c && !estimate){
+        return `[${value}]`;
+    }
+
+    return value;
+}
+
+/**
+* Shows a confirmation dialog, when the value meets the right criteria (century not formatted as estimate). 
+* If confirmed, converts the value to an estimate format.
+* If canceled, returns undefined.
+*/
+export const convertToEstimateWithConfirmation = async (value: string, dispatch: any) => {
+    const {from, to, c, estimate} = parse(value) || {};
+    const getResult = async () => await dispatch(showYesNoDialog(i18n("field.unitdate.convertToEstimate.message"), i18n("field.unitdate.convertToEstimate.title")));
+
+    if(
+        (from?.c && !from?.estimate)
+            || (to?.c && !to?.estimate)
+            || (c && !estimate)
+    ){
+        const result = await getResult();
+        if(result === YesNoDialogResult.CANCEL){return undefined;}
+        if(result === YesNoDialogResult.YES){
+            const newValue = convertToEstimate(value)
+            return newValue
+        }
+    }
+    return value;
+}
+
+type Props = {
+    name: string;
+};
+
+const UnitdateField: ForwardRefExoticComponent<Props> = forwardRef(({name, ...rest}, ref) => {
     return <OverlayTrigger
         placement={'right'}
         overlay={
@@ -105,8 +156,8 @@ const UnitdateField: FC<Props> = ({name, ...rest}) => {
             </Tooltip>
         }
     >
-        <FormInput {...rest}/>
+        <FormInput {...rest} ref={ref}/>
     </OverlayTrigger>;
-};
+});
 
 export default UnitdateField;
