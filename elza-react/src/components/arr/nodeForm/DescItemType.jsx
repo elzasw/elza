@@ -401,9 +401,7 @@ class DescItemType extends AbstractReactComponent {
                     if(newValue){
                         value.value = newValue;
                     } else {
-                        console.log("#### desc item", descItem)
                         const refObject = this.refObjects[descItem.formKey]
-                        console.log("#### ref object", refObject, this.refObjects)
                         if(refObject){
                             refObject.focus();
                         }
