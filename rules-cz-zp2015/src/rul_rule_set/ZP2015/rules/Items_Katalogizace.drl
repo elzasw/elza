@@ -22,3 +22,11 @@ when
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
+
+rule "Umožnění vložení katalogizačního záznamu (text)"
+no-loop
+when
+    $itemType: RulItemTypeExt( code in ("ZP2015_CATALOGUING_RECORD_TEXT") )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
