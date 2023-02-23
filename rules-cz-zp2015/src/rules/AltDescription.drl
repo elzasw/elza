@@ -43,3 +43,13 @@ when
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
+
+// Povolení všech jazyků
+rule "Povolení všech jazyků (ZP2015_LANGUAGE)"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LANGUAGE")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
