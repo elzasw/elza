@@ -50,9 +50,9 @@ import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -101,7 +101,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         /**
          * Return field definition
-         * 
+         *
          * @param fields
          * @param name
          * @return
@@ -154,7 +154,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
 
         /**
-         * 
+         *
          * @param query
          * @param fieldName
          *            Final field name
@@ -336,7 +336,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     /**
      * Return prepared query
-     * 
+     *
      * @param queryBuilder
      * @param searchFilterVO
      * @param fcf

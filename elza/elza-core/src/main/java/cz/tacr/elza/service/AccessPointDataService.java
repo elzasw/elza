@@ -2,8 +2,8 @@ package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Geometry;

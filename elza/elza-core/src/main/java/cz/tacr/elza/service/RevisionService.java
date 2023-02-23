@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -205,7 +205,7 @@ public class RevisionService {
         StaticDataProvider sdp = staticDataService.createProvider();
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
-        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize  
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize
         // ApRevision revision = createRevision(prevRevision, change);
         // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
         //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
@@ -233,7 +233,7 @@ public class RevisionService {
 
     /**
      * Create new revision based on previous revision
-     * 
+     *
      * @param prevRevision
      * @param change
      * @return
@@ -259,10 +259,10 @@ public class RevisionService {
 
     /**
      * Create new revision part
-     * 
+     *
      * Part is not based on standard part. All items will receive new
      * objectId(s).
-     * 
+     *
      * @param state
      * @param revision
      * @param apPartFormVO
@@ -555,7 +555,7 @@ public class RevisionService {
 
     /**
      * Update revPart
-     * 
+     *
      * @param apState
      * @param revision
      * @param revPart
@@ -693,11 +693,11 @@ public class RevisionService {
 
     /**
      * Update part revision
-     * 
+     *
      * Method will update existing revision or will create new revision.
-     * 
+     *
      * Items are mapped to original items using objectId
-     * 
+     *
      * @param apState
      * @param revision
      * @param apPart
@@ -729,7 +729,7 @@ public class RevisionService {
                 Validate.isTrue(itemVO.getOrigObjectId() == null);
 
                 if (itemVO.getObjectId() == null) {
-                    // new -> add                    
+                    // new -> add
                     Validate.isTrue(itemVO.getId() == null);
 
                     createItems.add(itemVO);
@@ -846,7 +846,7 @@ public class RevisionService {
     }
 
     /**
-     * 
+     *
      * @param accessPoint
      * @param revParts
      * @param revItems
@@ -969,7 +969,7 @@ public class RevisionService {
                 newStateApproval.equals(StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());
         }
         // původně nová nebo k doplnění
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {

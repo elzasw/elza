@@ -4,7 +4,7 @@ import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * Má vyplněnu nějakou hodnotu.
@@ -15,7 +15,7 @@ import javax.persistence.EntityManager;
 public class UndefinedDescItemCondition implements HibernateDescItemCondition {
 
     @Override
-    public javax.persistence.Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId,
+    public jakarta.persistence.Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId,
                                                         final Integer lockChangeId) {
         StringBuffer sb = new StringBuffer()
                 .append("select distinct n.node_id ") // zajímají nás id nodů
@@ -31,7 +31,7 @@ public class UndefinedDescItemCondition implements HibernateDescItemCondition {
             sb.append("and l.create_change_id < :lockChangeId and (l.delete_change_id is null or l.delete_change_id > :lockChangeId) "); // v uzavřené verzi
         }
 
-        javax.persistence.Query query = entityManager.createNativeQuery(sb.toString());
+        jakarta.persistence.Query query = entityManager.createNativeQuery(sb.toString());
         if (lockChangeId != null) {
             query.setParameter("lockChangeId", lockChangeId);
         }

@@ -4,7 +4,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ArrItemBitVO extends ArrItemVO {
 

@@ -11,7 +11,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemAccessPointRefVO extends ApItemVO {
 

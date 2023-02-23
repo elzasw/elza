@@ -2,29 +2,20 @@ package cz.tacr.elza.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
-import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.Facet;
-import org.hibernate.search.annotations.FacetEncodingType;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.NumericField;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.engine.backend.types.Projectable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,11 +32,11 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
  * řešen pomocí node_id.
  *
  */
-@AnalyzerDef(name = "customanalyzer",
-        tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
-        filters = {
-                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-        })
+//@AnalyzerDef(name = "customanalyzer",
+//        tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
+//        filters = {
+//                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+//        })
 @Indexed(interceptor = DescItemIndexingInterceptor.class)
 @Entity(name = "arr_desc_item")
 @Table
@@ -116,7 +107,7 @@ public class ArrDescItem extends ArrItem {
 	}
 
     @Override
-    @Field(name = FIELD_NODE_ID, analyze = Analyze.NO, store = Store.YES)
+    @GenericField(name = FIELD_NODE_ID,  projectable = Projectable.YES)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return nodeId;
@@ -124,7 +115,7 @@ public class ArrDescItem extends ArrItem {
 
     @JsonIgnore
     @Override
-    @Field(name = FIELD_FUND_ID, analyze = Analyze.NO, store = Store.YES)
+    @GenericField(name = FIELD_FUND_ID,   projectable = Projectable.YES)
     @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
@@ -132,8 +123,7 @@ public class ArrDescItem extends ArrItem {
     }
 
 	@JsonIgnore
-	@Field(name = FULLTEXT_ATT)
-    @Analyzer(definition = "customanalyzer")
+	@FullTextField(name = FULLTEXT_ATT)
     public String getFulltextValue() {
 		if (data == null) {
             return null;
@@ -146,42 +136,37 @@ public class ArrDescItem extends ArrItem {
     }
 
 	@JsonIgnore
-	@Field(name = INTGER_ATT, store = Store.YES)
-    @NumericField
+	@GenericField(name = INTGER_ATT, projectable = Projectable.YES)
     public Integer getValueInt() {
         return indexData.getValueInt();
     }
 
 	@JsonIgnore
-	@Field(name = DECIMAL_ATT, store = Store.YES)
-    @NumericField
+	@GenericField(name = DECIMAL_ATT, projectable = Projectable.YES)
     public Double getValueDouble() {
         return indexData.getValueDouble();
     }
 
     @JsonIgnore
-    @Field(name = DATE_ATT, store = Store.YES)
-    @NumericField
+    @GenericField(name = DATE_ATT, projectable = Projectable.YES)
     public Date getValueDate() {
         return indexData.getValueDate();
     }
 
     @JsonIgnore
-    @Field(name = BOOLEAN_ATT, store = Store.YES)
+    @GenericField(name = BOOLEAN_ATT, projectable = Projectable.YES)
     public Boolean isValue() {
         return indexData.isValue();
     }
 
 	@JsonIgnore
-	@Field(name = NORMALIZED_FROM_ATT, store = Store.YES)
-    @NumericField
+	@GenericField(name = NORMALIZED_FROM_ATT, projectable = Projectable.YES)
     public Long getNormalizedFrom() {
         return indexData.getNormalizedFrom();
     }
 
 	@JsonIgnore
-	@Field(name = NORMALIZED_TO_ATT, store = Store.YES)
-    @NumericField
+	@GenericField(name = NORMALIZED_TO_ATT, projectable = Projectable.YES)
     public Long getNormalizedTo() {
         return indexData.getNormalizedTo();
     }
@@ -192,15 +177,14 @@ public class ArrDescItem extends ArrItem {
 	 * @return
 	 */
 	@JsonIgnore
-    @Field(name = FIELD_DESC_ITEM_TYPE_ID)
+    @GenericField(name = FIELD_DESC_ITEM_TYPE_ID)
 	//@FieldBridge(impl = IntegerBridge.class)
 	public Integer getDescItemTypeId() {
 		return itemTypeId;
 	}
 
 	@JsonIgnore
-	@Field(name = SPECIFICATION_ATT)
-	@Analyzer(definition = "customanalyzer")
+	@GenericField(name = SPECIFICATION_ATT)
 	public Integer getSpecification() {
 		return itemSpecId;
 	}

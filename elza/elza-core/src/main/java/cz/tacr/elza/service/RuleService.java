@@ -21,11 +21,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -266,7 +266,7 @@ public class RuleService {
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     /**
-     * 
+     *
      * @param faLevelId
      * @param fundVersionId
      * @param asyncRequestId
@@ -374,7 +374,7 @@ public class RuleService {
         List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
         List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
         if (conformityInfo != null) {
-            // we can skip reading errors if prev state was ok            
+            // we can skip reading errors if prev state was ok
             if (State.OK != conformityInfo.getState()) {
                 List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
                 confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
@@ -395,7 +395,7 @@ public class RuleService {
         conformityInfo.setState(validationResults.isEmpty()?
                 ArrNodeConformity.State.OK:ArrNodeConformity.State.ERR);
         conformityInfo = nodeConformityRepository.save(conformityInfo);
-        
+
         // process errors
         for (DataValidationResult validationResult : validationResults) {
             // policy type has to be set
@@ -433,7 +433,7 @@ public class RuleService {
                                                    ArrNodeConformity conformityInfo) {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
-        
+
         for (int i = 0; i < confPrevErrors.size(); i++) {
             ArrNodeConformityError error = confPrevErrors.get(i);
             // compare existing DB object
@@ -460,7 +460,7 @@ public class RuleService {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
         Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
-        
+
         for(int i=0; i<confPrevMissing.size(); i++) {
             ArrNodeConformityMissing missing = confPrevMissing.get(i);
             // compare existing DB object
@@ -473,7 +473,7 @@ public class RuleService {
             }
 
         }
-        
+
         ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
         missing.setNodeConformity(conformityInfo);
         missing.setItemType(validationResult.getType());
@@ -691,7 +691,7 @@ public class RuleService {
     /**
      * Smaže všechny vybrané stavy.
      *
-     * 
+     *
      * @param infos stavy ke smazání
      */
     private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
@@ -725,7 +725,7 @@ public class RuleService {
 
     /**
      * Mazání uzlů podle seznamu id.
-     * 
+     *
      * @param unusedNodes
      */
     public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
@@ -737,7 +737,7 @@ public class RuleService {
 
     /**
      * Mazání uzlů podle fondu.
-     * 
+     *
      * @param fund
      */
     public void deleteByNodeFund(ArrFund fund) {
@@ -1285,10 +1285,10 @@ public class RuleService {
 
     /**
      * Run access point validation
-     * 
+     *
      * Method reads current AP state from DB.
      * Method is not using cache.
-     * 
+     *
      * @param accessPoint
      * @return
      */
@@ -1575,7 +1575,7 @@ public class RuleService {
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
                 String parentGeoType = findEntityGeoType(parentGeoId);
-                boolean parentExtinct = isParentExtinct(parentGeoId);                
+                boolean parentExtinct = isParentExtinct(parentGeoId);
                 if (country == null) {
                     country = findEntityCountry(parentGeoId);
                 }
@@ -1943,7 +1943,7 @@ public class RuleService {
 
     /**
      * Return export filter
-     * 
+     *
      * @param exportFilterId
      * @return
      */

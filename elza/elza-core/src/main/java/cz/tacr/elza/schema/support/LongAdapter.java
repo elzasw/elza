@@ -1,9 +1,9 @@
 
 package cz.tacr.elza.schema.support;
 
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 
 public class LongAdapter extends XmlAdapter<String, Long> {

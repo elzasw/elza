@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import org.apache.commons.lang3.Validate;
 
-import javax.persistence.*;
-import javax.persistence.criteria.Fetch;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.Fetch;
 
 @Entity(name="arr_async_request")
 @Table

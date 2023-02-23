@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -87,10 +87,10 @@ public class RevisionItemService {
 
     /**
      * Create new items
-     * 
+     *
      * Items are mapped to existing one using
      * objectId and origObjectId.
-     * 
+     *
      * @param part
      * @param createItems
      * @param change
@@ -217,7 +217,7 @@ public class RevisionItemService {
 
     /**
      * Merge items to updated parts
-     * 
+     *
      * @param accessPoint
      * @param change
      * @param revParts
@@ -297,7 +297,7 @@ public class RevisionItemService {
                     Validate.notNull(currItem, "Source item not found, objectId: %s", origObjectId);
                     currItem.setDeleteChange(revItem.getCreateChange());
                     itemsList.add(currItem);
-                    
+
                     // Add to binding map
                     updatedItems.put(currItem.getItemId(), newItem);
                 }
@@ -316,11 +316,11 @@ public class RevisionItemService {
         // Save new items
         dataRepository.saveAll(dataList);
         itemRepository.saveAll(itemsList);
-        
+
         accessPointItemService.changeBindingItemsItems(updatedItems, bindingItemList);
-        
+
         bindingItemRepository.flush();
-        // delete items 
+        // delete items
         accessPointItemService.deleteItems(deletedItems, change);
         bindingItemRepository.flush();
 
@@ -418,7 +418,7 @@ public class RevisionItemService {
 
     /**
      * Update revItem with new value
-     * 
+     *
      * @param change
      * @param revItem
      * @param drr

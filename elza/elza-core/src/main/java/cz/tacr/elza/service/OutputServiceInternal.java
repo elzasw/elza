@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -116,7 +116,7 @@ public class OutputServiceInternal {
     private final RevertingChangesService revertingChangesService;
 
     private final OutputRestrictionScopeRepository outputRestrictionScopeRepository;
-    
+
     private final TemplateRepository templateRepository;
 
     private final ApStateRepository stateRepository;
@@ -309,7 +309,7 @@ public class OutputServiceInternal {
 
     /**
      * Add request for output generation.
-     * 
+     *
      * @param userId
      */
     @Transactional(TxType.MANDATORY)
@@ -603,25 +603,25 @@ public class OutputServiceInternal {
      * Create output templates
      * @param outputContext
      * @param templateIds
-     * @return 
+     * @return
      */
 	public List<ArrOutputTemplate> createOutputTemplates(ArrOutput output, Collection<Integer> templateIds) {
 		List<RulTemplate> templates = templateRepository.findAllById(templateIds);
-    	
+
     	Validate.isTrue(templateIds.size()==templates.size(), "Incorrect templateId");
-    	
+
     	List<ArrOutputTemplate> outputTemplates = new ArrayList<>();
-    	
+
     	for(RulTemplate template: templates) {
 
         	ArrOutputTemplate outputTemplate = new ArrOutputTemplate();
         	outputTemplate.setOutput(output);
         	outputTemplate.setTemplate(template);
-                        
+
             outputTemplates.add(outputTemplate);
     	}
     	List<ArrOutputTemplate> saved = outputTemplateRepository.saveAll(outputTemplates);
-		
+
     	return saved;
 	}
 
@@ -636,7 +636,7 @@ public class OutputServiceInternal {
 
     /**
      * Odstraneni vysledku
-     * 
+     *
      * @param output
      */
     public void deleteOutputResults(ArrOutput output) {

@@ -27,11 +27,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.saml.SAMLAuthenticationProvider;
 import org.springframework.security.saml.SAMLBootstrap;
 import org.springframework.security.saml.SAMLDiscovery;
@@ -90,7 +90,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 1)
 @ConditionalOnProperty(prefix = "elza.saml", name = "entity-id")
-public class SamlSecurity extends WebSecurityConfigurerAdapter {
+public class SamlSecurity {
 
     @Autowired
     private SamlProperties samlProperties;
@@ -328,7 +328,7 @@ public class SamlSecurity extends WebSecurityConfigurerAdapter {
     public SAMLWebSSOHoKProcessingFilter samlWebSSOHoKProcessingFilter() throws Exception {
         SAMLWebSSOHoKProcessingFilter samlWebSSOHoKProcessingFilter = new SAMLWebSSOHoKProcessingFilter();
         samlWebSSOHoKProcessingFilter.setAuthenticationSuccessHandler(successRedirectHandler());
-        samlWebSSOHoKProcessingFilter.setAuthenticationManager(authenticationManager());
+        //samlWebSSOHoKProcessingFilter.setAuthenticationManager(authenticationManager()); TODO pasek
         samlWebSSOHoKProcessingFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
         return samlWebSSOHoKProcessingFilter;
     }
@@ -337,7 +337,7 @@ public class SamlSecurity extends WebSecurityConfigurerAdapter {
     @Bean
     public SAMLProcessingFilter samlWebSSOProcessingFilter() throws Exception {
         SAMLProcessingFilter samlWebSSOProcessingFilter = new SAMLProcessingFilter();
-        samlWebSSOProcessingFilter.setAuthenticationManager(authenticationManager());
+        //samlWebSSOProcessingFilter.setAuthenticationManager(authenticationManager()); TODO pasek
         samlWebSSOProcessingFilter.setAuthenticationSuccessHandler(successRedirectHandler());
         samlWebSSOProcessingFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
         return samlWebSSOProcessingFilter;
@@ -477,8 +477,9 @@ public class SamlSecurity extends WebSecurityConfigurerAdapter {
     //    return super.authenticationManagerBean();
     //}
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .httpBasic()
                 .authenticationEntryPoint(samlEntryPoint());
@@ -487,14 +488,16 @@ public class SamlSecurity extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(samlFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(samlFilter(), CsrfFilter.class);
         http
-                .authorizeRequests()
-                .antMatchers("/").permitAll()
-                .antMatchers("/saml/**").permitAll()
-                .antMatchers("/res/**").permitAll();
+                .authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/"),
+                        new AntPathRequestMatcher("/saml/**"),
+                        new AntPathRequestMatcher("/res/**")).permitAll();
+        return http.build();
     }
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
+    @Bean
+    protected AuthenticationManager samlAuthenticationManager(final AuthenticationManagerBuilder builder) throws Exception {
         builder.authenticationProvider(samlAuthenticationProvider());
+        return builder.build();
     }
 }

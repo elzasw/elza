@@ -3,7 +3,7 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 
 /**
@@ -36,7 +36,7 @@ public class ApPart implements AccessPointPart {
 
     @Column
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO pasek
     private String errorDescription;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPartType.class)

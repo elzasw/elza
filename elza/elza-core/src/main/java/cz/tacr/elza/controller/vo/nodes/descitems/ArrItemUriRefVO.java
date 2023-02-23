@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ArrItemUriRefVO extends ArrItemVO {
 

@@ -69,8 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -169,7 +169,7 @@ public class DeleteFundHistoryAction {
 
     @Autowired
     ArrangementService arrangementService;
-    
+
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 

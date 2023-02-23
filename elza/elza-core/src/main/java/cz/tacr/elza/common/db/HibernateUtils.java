@@ -2,7 +2,7 @@ package cz.tacr.elza.common.db;
 
 import java.io.Serializable;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Hibernate;
@@ -60,7 +60,7 @@ public class HibernateUtils {
 
     /**
      * Returns currently running transaction for given entity manager.
-     * 
+     *
      * @throws RuntimeException
      *             When given entity manager does not have active transaction.
      */
@@ -90,7 +90,7 @@ public class HibernateUtils {
     /**
      * Return the persistent instance with the given identifier, assuming that the
      * instance exists. This method might return a proxied instance.
-     * 
+     *
      * @param detachIfNotLoaded
      *            When true and entity is not loaded in persistent context returned
      *            reference (proxy) will be detached.

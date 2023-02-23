@@ -2,7 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -98,7 +98,7 @@ public class StartupService implements SmartLifecycle {
 
     /**
      * Service should start automatically by default
-     * 
+     *
      * It is possible to disable autoStart, used by tests
      */
     @Value("${elza.startupService.autoStart:true}")

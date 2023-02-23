@@ -2,11 +2,11 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
 

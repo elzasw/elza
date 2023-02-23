@@ -19,9 +19,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -494,7 +494,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /**
      * Return list of IDs of structured objects with restriction definitions
-     * 
+     *
      * @param node
      * @return List<Integer>
      */
@@ -538,9 +538,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return filter.apply(node);
     }
 
-    private void processRule(FilterRule rule, 
-                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
-                             StructObjectInfo soi, 
+    private void processRule(FilterRule rule,
+                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType,
+                             StructObjectInfo soi,
                              ApplyFilter filter) {
 
         if (!rule.canApply(soi)) {

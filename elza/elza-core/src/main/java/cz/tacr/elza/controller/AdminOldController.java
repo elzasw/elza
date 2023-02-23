@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.connector.CamConnector;
@@ -219,11 +219,11 @@ public class AdminOldController {
                 ByteBuffer mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
                 // Java 8 - compatibility
                 // - position cannot be address using ByteBuffer
-                // Causing exception: 
+                // Causing exception:
                 //   java.lang.NoSuchMethodError: java.nio.ByteBuffer.position(I)Ljava/nio/ByteBuffer;
                 Buffer buffer = mappedBuffer;
                 buffer.position((int) channel.size());
-                
+
                 int count = 0;
                 byte[] lineArray = new byte[0];
                 for (long i = channel.size() - 1; i >= 0; i--) {

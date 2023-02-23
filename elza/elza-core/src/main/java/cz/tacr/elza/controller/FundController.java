@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;

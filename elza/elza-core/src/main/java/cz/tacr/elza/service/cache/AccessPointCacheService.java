@@ -15,10 +15,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -108,7 +108,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
-    
+
     @Autowired
     private StaticDataService staticDataService;
 
@@ -175,7 +175,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 int count = 0;
                 List<Integer> apIds = new ArrayList<>(syncApBatchSize);
                 while (uncachedAPs.next()) {
-                    Object obj = uncachedAPs.get(0);
+                    Object obj = uncachedAPs.get();
 
                     apIds.add((Integer) obj);
                     count++;
@@ -246,7 +246,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     /**
      * Synchronizace záznamů v databázi.
-     * 
+     *
      * @param offset
      * @return Number of processed items
      */
@@ -256,7 +256,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         List<Integer> apIds = new ArrayList<>(syncApBatchSize);
         int count = 0;
         while (uncachedAPs.next()) {
-            Object obj = uncachedAPs.get(0);
+            Object obj = uncachedAPs.get();
 
             apIds.add((Integer) obj);
             count++;
@@ -294,7 +294,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             logger.error("Some ID is multiple times in the query");
         }
 
-        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);        
+        List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);
         // Prepare map
         final Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
                 .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, ap -> createCachedAccessPoint(ap)));
@@ -368,11 +368,11 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
-    	
+
         //flush a batch of updates and release memory:
         this.entityManager.flush();
         this.entityManager.clear();
-    
+
         synchronized (this){
 			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 			if (oldApCachedAccessPoint != null) {
@@ -465,7 +465,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 }
                 part.addIndex(index);
             }
-        }        
+        }
     }
 
     private void createCachedBindingMap(List<ApAccessPoint> accessPointList,
@@ -526,7 +526,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public List<CachedAccessPoint> findCachedAccessPoints(Collection<Integer> accessPointIds) {
-        List<CachedAccessPoint> cachedAccessPoints = new ArrayList<>(accessPointIds.size()); 
+        List<CachedAccessPoint> cachedAccessPoints = new ArrayList<>(accessPointIds.size());
         List<ApCachedAccessPoint> apCachedAccessPoints = cachedAccessPointRepository.findByAccessPointIds(accessPointIds);
         for (ApCachedAccessPoint apCachedAccessPoint : apCachedAccessPoints) {
             CachedAccessPoint cachedAccessPoint = null;
@@ -540,9 +540,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     /**
      * Deserializace entity
-     * 
+     *
      * Must be called inside transaction
-     * 
+     *
      * @param data
      * @return
      */
@@ -576,15 +576,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 state.setReplacedBy(entityManager.getReference(ApAccessPoint.class, state.getReplacedById()));
             }
         }
-        
+
         StaticDataProvider sdp = staticDataService.getData();
 
         Map<Integer, ApPart> partMap =  new HashMap<>();
         Map<Integer, ApItem> itemMap =  new HashMap<>();
-        
+
         if (cap.getParts() != null) {
-            // restore parts        	
-        	
+            // restore parts
+
             for (CachedPart part : cap.getParts()) {
                 ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
                 partMap.put(part.getPartId(), apPart);
@@ -592,10 +592,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 if (part.getItems() != null) {
                 	// Copy items to new list and sort
                 	List<ApItem> items = new ArrayList<>(part.getItems().size());
-                	
+
                     for (ApItem item : part.getItems()) {
                     	itemMap.put(item.getItemId(), item);
-                    	
+
                         item.setPart(apPart);
                         item.setCreateChange(entityManager.getReference(ApChange.class, item.getCreateChangeId()));
                         if (item.getDeleteChangeId() != null) {
@@ -682,18 +682,18 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             if(part.getDeleteChangeId()!=null) {
                 ApChange deleteChange = entityManager.getReference(ApChange.class, part.getDeleteChangeId());
                 part.setDeleteChange(deleteChange);
-                
+
             }
             part.setErrorDescription(cachedPart.getErrorDescription());
             part.setKeyValue(cachedPart.getKeyValue());
             //part.setParentPart(part);
             //part.setPartType(cachedPart.getPartTypeCode());
             part.setState(cachedPart.getState());
-            
+
         }*/
     }
 
-    private void restoreLinks(ApBinding b, List<ApBindingItem> bil, 
+    private void restoreLinks(ApBinding b, List<ApBindingItem> bil,
     		Map<Integer, ApPart> partMap, Map<Integer, ApItem> itemMap) {
         for (ApBindingItem bi : bil) {
             bi.setBinding(b);
@@ -705,7 +705,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             if (bi.getItemId() != null) {
             	ApItem item = itemMap.get(bi.getItemId());
             	Validate.notNull(item, "Referenced item not found, itemId: %s", bi.getItemId());
-            	
+
                 bi.setItem(item);
             }
             if (bi.getPartId() != null) {
@@ -777,7 +777,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             	if (item.getDeleteChangeId() != null || item.getDeleteChange() != null) {
                     Validate.isTrue(false,
                             "Deleted item cannot be cached, accessPointId=%s",
-                            cachedAccessPoint.getAccessPointId());            		
+                            cachedAccessPoint.getAccessPointId());
             	}
             	if (!itemIds.add(item.getItemId())) {
                     Validate.isTrue(false,
@@ -803,7 +803,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                             cachedAccessPoint.getAccessPointId(),
                             prefPart.getPartId());
         }
-        
+
         // Validate bindings
         List<CachedBinding> bindings = cachedAccessPoint.getBindings();
         if(bindings!=null) {
@@ -811,12 +811,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         		ApBindingState bs = binding.getBindingState();
         		if(bs==null) {
                     Validate.notNull(bs, "Binding without BindingState, accessPointId=%s",
-                            cachedAccessPoint.getAccessPointId());        			
+                            cachedAccessPoint.getAccessPointId());
         		}
         		if(bs.getDeleteChangeId()!=null||bs.getDeleteChange()!=null) {
                     Validate.isTrue(false,
                             "Deleted bindingState cannot be cached, accessPointId=%s",
-                            cachedAccessPoint.getAccessPointId());        			
+                            cachedAccessPoint.getAccessPointId());
         		}
         		// check items and parts
         		List<ApBindingItem> bindingItems = binding.getBindingItemList();
@@ -834,12 +834,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                                 "BindigItem is referencing non existing item, accessPointId=%s, binding.itemId: %s",
                                                 bi.getItemId(),
                                                 cachedAccessPoint.getAccessPointId());
-        					} 
+        					}
         				} else {
         					if(bi.getItem()!=null) {
         						Validate.isTrue(false, "BindigItem is referencing item without id, accessPointId=%s",
-        								cachedAccessPoint.getAccessPointId());        							
-        					}        					
+        								cachedAccessPoint.getAccessPointId());
+        					}
         				}
         				if(bi.getPartId()!=null) {
         					if(!partIds.contains(bi.getPartId())) {
@@ -849,8 +849,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         				} else {
         					if(bi.getPart()!=null) {
         						Validate.isTrue(false, "BindigItem is referencing part without id, accessPointId=%s",
-        								cachedAccessPoint.getAccessPointId());        							
-        					}        					
+        								cachedAccessPoint.getAccessPointId());
+        					}
         				}
         			}
         		}

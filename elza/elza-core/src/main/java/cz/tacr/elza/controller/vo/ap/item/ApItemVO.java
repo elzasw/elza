@@ -8,8 +8,8 @@ import cz.tacr.elza.domain.ChangeType;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.EntityManager;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * @since 18.07.2018
@@ -142,7 +142,7 @@ public abstract class ApItemVO {
 
     /**
      * Comparison of values ApItemVO and ApItem
-     * 
+     *
      * @param apItem
      * @return true if equals
      */
@@ -150,12 +150,12 @@ public abstract class ApItemVO {
 
     /**
      * Comparison of base fields: position, typeId, specId
-     * 
+     *
      * @param apItem
      * @return true if equals in three fields
      */
     public boolean equalsBase(@NotNull AccessPointItem apItem) {
-        return Objects.equals(position, apItem.getPosition()) 
+        return Objects.equals(position, apItem.getPosition())
                 && Objects.equals(typeId, apItem.getItemTypeId())
                 && Objects.equals(specId, apItem.getItemSpecId());
     }

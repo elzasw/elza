@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -125,7 +125,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         ctx.setPageSize(size);
 
         QueryBuilder queryBuilder = ctx.getQueryBuilder();
-        
+
         Query textQuery;
         if(text!=null) {
             textQuery = createTextQuery(text, queryBuilder);
@@ -173,7 +173,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         /*List<ArrFundToNodeList> result = fundNodeMap.entrySet().stream().map(entry -> {
             return new ArrFundToNodeList(entry.getKey(), entry.getValue().stream().collect(toList()));
         }).collect(toList());*/
-        
+
         return result;
     }
 
@@ -635,43 +635,43 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     /*
     private List<Facet> countItemsByFundId(final String text, final Collection<Integer> fundIds) {
-    
+
         if (StringUtils.isBlank(text) || CollectionUtils.isEmpty(fundIds)) {
             return Collections.emptyList();
         }
-    
+
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
-    
+
         QueryBuilder queryBuilder = ctx.getQueryBuilder();
-    
+
         Query changeQuery = createChangeQuery(queryBuilder, null);
         Query textQuery = createTextQuery(text, queryBuilder);
         Query fundIdQuery = createFundIdsQuery(fundIds, queryBuilder);
         // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
-    
+
         Query query = queryBuilder.bool()
                 .must(changeQuery)
                 .must(textQuery)
                 .must(fundIdQuery)
                 // .must(validDescItemInVersionQuery)
                 .createQuery();
-    
+
         // FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID, ArrDescItem.NODE_ID, ArrDescItem.FUND_ID);
         FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID);
-    
+
         List<Object[]> resultList = fullTextQuery.getResultList();
-    
+
         final String fundFacet = "fund_facet";
-    
+
         FacetManager facetManager = fullTextQuery.getFacetManager();
-    
+
         facetManager.enableFaceting(queryBuilder.facet().name(fundFacet).onField(ArrDescItem.FIELD_FUND_ID_STRING)
                 .discrete()
                 .includeZeroCounts(false)
                 .orderedBy(FacetSortOrder.COUNT_DESC)
                 // .maxFacetCount(20)
                 .createFacetingRequest());
-    
+
         return facetManager.getFacets(fundFacet);
     }*/
 

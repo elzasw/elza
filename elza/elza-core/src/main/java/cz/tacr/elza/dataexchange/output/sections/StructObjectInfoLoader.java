@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 

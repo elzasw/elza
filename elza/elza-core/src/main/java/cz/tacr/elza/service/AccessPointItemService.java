@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -81,7 +81,7 @@ public class AccessPointItemService {
 
     /**
      * Record ref and its value
-     * 
+     *
      *
      */
     public static class ReferencedEntities {
@@ -92,7 +92,7 @@ public class AccessPointItemService {
 
         /**
          * External entity identifier
-         * 
+         *
          * Stored in binding
          */
         String entityIdentifier;
@@ -224,14 +224,14 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-    
+
             RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-    
+
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             ArrData data = updateItem.createDataEntity(em);
             ApItem newItem = item.copy();
             item.setDeleteChange(change);
-    
+
             newItem.setCreateChange(change);
             newItem.setData(data);
             if (itemType.getUseSpecification() != null && itemType.getUseSpecification()) {
@@ -260,12 +260,12 @@ public class AccessPointItemService {
                 }
                 newItem.setItemSpec(null);
             }
-    
+
             dataToSave.add(data);
-    
+
             itemsDb.add(newItem);
             existsItems.add(newItem);
-    
+
             Integer oldPosition = item.getPosition();
             Integer newPosition = updateItem.getPosition();
             Validate.notNull(newPosition);
@@ -308,7 +308,7 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-    
+
             item.setDeleteChange(change);
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             List<ApItem> itemsToShift = findItemsGE(existsItems, item.getPosition());
@@ -440,10 +440,10 @@ public class AccessPointItemService {
 
     /**
      * Nastaveni vazby ne pripojene AP z puvodniho ArrDataRecordRef
-     * 
+     *
      * Jako vedlejsi efekt funkce kontroluje existenci nastaveni vazby
      * na AP nebo na Binding na AP
-     * 
+     *
      * @param data
      * @param createItem
      * @param bindingItemList
@@ -489,7 +489,7 @@ public class AccessPointItemService {
 
     /**
      * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
-     * 
+     *
      * @param itemsMap
      *            mapa zmen
      * @param bindingItemList
@@ -654,7 +654,7 @@ public class AccessPointItemService {
 
     /**
      * Method will create external item and save all connected items
-     * 
+     *
      * @param part
      * @param data
      * @param itemType
@@ -683,10 +683,10 @@ public class AccessPointItemService {
 
     /**
      * Update existing item with new value
-     * 
+     *
      * Updated item is flushed to the DB. It is up to caller
      * to sync cache and revalidate AP
-     * 
+     *
      * @param change
      * @param apItem
      * @param drr

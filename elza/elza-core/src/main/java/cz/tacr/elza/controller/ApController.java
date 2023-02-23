@@ -17,8 +17,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -506,7 +506,7 @@ public class ApController {
 
     /**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
-     * 
+     *
      * @param accessPointId
      * @return seznam stavů
      */
@@ -915,9 +915,9 @@ public class ApController {
 
     /**
      * Úprava části přístupového bodu.
-     * 
+     *
      * V případě revize:
-     * 
+     *
      * <ul>
      * <li>1. Zalozeni noveho itemu
      * id = null
@@ -930,7 +930,7 @@ public class ApController {
      * <li>3. Vymazani itemu
      * item neprijde
      * </ul>
-     * 
+     *
      * @param accessPointId
      *            identifikátor přístupového bodu (PK)
      * @param partId
@@ -1247,7 +1247,7 @@ public class ApController {
 
         ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
-        
+
         ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
 
         EntityXml entity;
@@ -1261,7 +1261,7 @@ public class ApController {
 
     /**
      * Zápis přistupového bodu do externího systému
-     * 
+     *
      * Metoda zapíš nový AP nebo aktualizuje stávající.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -1295,7 +1295,7 @@ public class ApController {
                     RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        // kontrola přístupových práv a možností synchronizace 
+        // kontrola přístupových práv a možností synchronizace
         accessPointService.hasPermissionToSynchronizeFromExternaSystem(state);
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
@@ -1423,7 +1423,7 @@ public class ApController {
      * @param itemId
      */
     @Transactional
-    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
+    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE)
     public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
         externalSystemService.deleteQueueItem(itemId);
     }

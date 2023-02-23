@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,7 +208,7 @@ public class ExternalSystemService {
 
     /**
      * Smazání záznamu z tabulky ExtSyncsQueueItem
-     * 
+     *
      * @param extSyncItemId
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
@@ -291,7 +291,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se změnil externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -301,7 +301,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se vytvořil externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -311,7 +311,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se smazal externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -337,7 +337,7 @@ public class ExternalSystemService {
 
     /**
      * Create binding based on external system code
-     * 
+     *
      * @param scope
      * @param value
      * @param externalSystemCode
@@ -357,10 +357,10 @@ public class ExternalSystemService {
 
     /**
      * Create AP Binding in DB (saveAndFlush)
-     * 
+     *
      * Method will flush new binding immediately to the DB
      * to prevent duplicated bindings.
-     * 
+     *
      * @param value
      *            Binding value
      * @param apExternalSystem
@@ -387,7 +387,7 @@ public class ExternalSystemService {
 
     /**
      * Create new binding state
-     * 
+     *
      * @param binding
      * @param accessPoint
      * @param apChange
@@ -428,7 +428,7 @@ public class ExternalSystemService {
 
     /**
      * Create new binding state based on current state
-     * 
+     *
      * @param oldbindingState
      * @param apChange
      * @param state
@@ -522,9 +522,9 @@ public class ExternalSystemService {
 
     /**
      * Return active binding state
-     * 
+     *
      * Binding is also fetched.
-     * 
+     *
      * @param accessPoint
      * @param externalSystem
      * @return

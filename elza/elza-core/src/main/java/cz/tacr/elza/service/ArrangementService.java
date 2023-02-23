@@ -27,12 +27,12 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -154,7 +154,7 @@ public class ArrangementService {
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
     @Autowired
-    protected FundRegisterScopeRepository fundRegisterScopeRepository;    
+    protected FundRegisterScopeRepository fundRegisterScopeRepository;
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
@@ -218,7 +218,7 @@ public class ArrangementService {
 
     @Autowired
     private StaticDataService staticDataService;
-    
+
     @Autowired
     private DataCoordinatesRepository dataCoordinatesRepository;
 
@@ -263,7 +263,7 @@ public class ArrangementService {
 
     /**
      * Načtení uzlu na základě id s kontrolou verzí.
-     * 
+     *
      * @param nodeId
      * @param version
      * @return konkrétní uzel
@@ -279,7 +279,7 @@ public class ArrangementService {
 
     /**
      * Načtení uzlů na základě seznamu id.
-     * 
+     *
      * @param nodeIds
      * @return seřazený seznam
      */
@@ -385,7 +385,7 @@ public class ArrangementService {
 
     /**
      * Aktualizuje seznamu ApScope pro ArrFund
-     * 
+     *
      * @param fund
      * @param newApScopes
      * @return
@@ -399,7 +399,7 @@ public class ArrangementService {
                 .stream().collect(Collectors.toMap(s -> s.getScope().getScopeId(), s -> s));
 
         List<ArrFundRegisterScope> result = new ArrayList<>(newApScopes.size());
-        List<ArrFundRegisterScope> createdScopes = new ArrayList<>();        
+        List<ArrFundRegisterScope> createdScopes = new ArrayList<>();
 
         for (ApScope newScope : newApScopes) {
             ArrFundRegisterScope currScope = scopesById.remove(newScope.getScopeId());
@@ -408,7 +408,7 @@ public class ArrangementService {
                 ArrFundRegisterScope createdScope = new ArrFundRegisterScope();
                 createdScope.setFund(fund);
                 createdScope.setScope(newScope);
-                createdScopes.add(createdScope);                
+                createdScopes.add(createdScope);
             } else {
                 // scope exists
                 result.add(currScope);
@@ -419,14 +419,14 @@ public class ArrangementService {
             // delete unused
             fundRegisterScopeRepository.deleteAll(scopesById.values());
         }
-        result.addAll(fundRegisterScopeRepository.saveAll(createdScopes));        
-        
-        return result; 
+        result.addAll(fundRegisterScopeRepository.saveAll(createdScopes));
+
+        return result;
     }
 
     /**
      * Aktualizace seznamu User pro ArrFund
-     * 
+     *
      * @param fund
      * @param userIds
      */
@@ -450,9 +450,9 @@ public class ArrangementService {
     }
 
     /**
-     * 
+     *
      * Aktualizace seznamu Group pro ArrFund
-     * 
+     *
      * @param fund
      * @param groupIds
      */
@@ -494,7 +494,7 @@ public class ArrangementService {
      * @param scopes
      *            Seznam oblastí, může být null
      * @param userIds
-     * @param groupIds 
+     * @param groupIds
      * @return nová archivní pomůcka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
@@ -655,7 +655,7 @@ public class ArrangementService {
 
     /**
      * Create node object
-     * 
+     *
      * Object is not saved.
      *
      * @param fund
@@ -846,7 +846,7 @@ public class ArrangementService {
                 if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
-            	
+
                 descriptionItemService.deleteDescriptionItem(descItem, version,
                         change, false, changeContext);
             }
@@ -883,7 +883,7 @@ public class ArrangementService {
 
     /**
      * Vyhledání ArrNode podle uuid
-     * 
+     *
      * @param uuid
      * @return
      */
@@ -899,11 +899,11 @@ public class ArrangementService {
      * @param additionalFundToNodeList
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, 
+    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue,
                                                            final Collection<ArrFund> fundList,
                                                            final List<ArrFundToNodeList> additionalFundToNodeList) {
 
-        // TODO: find all nodes in Lucene - has to be grouped by folder  
+        // TODO: find all nodes in Lucene - has to be grouped by folder
         QueryResults<ArrDescItemInfo> foundItems = nodeRepository.findFundIdsByFulltext(searchValue, fundList,
                                                                                         null, null);
 
@@ -1551,7 +1551,7 @@ public class ArrangementService {
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull(fundVersion.getFund());
         asyncRequestService.enqueue(fundVersion, nodes);
     }
-    
+
     /**
      * Provede přidání do front uzly, které nemají záznam v arr_node_conformity. Obvykle to jsou
      * uzly, které se validovaly během ukončení aplikačního serveru.
@@ -1619,7 +1619,7 @@ public class ArrangementService {
 
     /**
      * Získání seznamu id ApScope podle fondu
-     * 
+     *
      * @param arrFund
      * @return Set<ApScope>
      */
@@ -1641,13 +1641,13 @@ public class ArrangementService {
         FindFundsResult fundsResult = new FindFundsResult();
         List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(fulltext, fundList, max, from);
         fundFulltextSession().set(fundToNodeList);
-    
+
         if (!fundToNodeList.isEmpty()) {
             List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
             Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
                     .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
             Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
-    
+
             for (ArrFundToNodeList fundCount : fundToNodeList) {
                 Fund result = new Fund();
                 ArrFund fund = fundMap.get(fundCount.getFundId());

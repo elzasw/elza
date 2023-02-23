@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -173,8 +173,8 @@ public class ItemService {
 
     /**
      * Kontrola délky řetězce
-     * 
-     * @param rulItemType 
+     *
+     * @param rulItemType
      * @param data
      */
     public void checkItemLengthLimit(RulItemType rulItemType, ArrData data) {
@@ -186,7 +186,7 @@ public class ItemService {
         }
     }
 
-    private void checkRecordRef(FundContext fundContext, 
+    private void checkRecordRef(FundContext fundContext,
                                 ArrDataRecordRef dataRecordRef,
                                 RulItemType rulItemType,
                                 RulItemSpec rulItemSpec) {
@@ -202,7 +202,7 @@ public class ItemService {
         }
         Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
-        // kontrola typu třídy 
+        // kontrola typu třídy
         if (!apTypeIdTree.contains(apState.getApTypeId())) {
             log.error("Class of archival entity is incorrect, dataId: {}, accessPointId: {}, rulItemType: {}, rulItemSpec: {}, apTypeId: {}",
                       dataRecordRef.getDataId(),

@@ -2,7 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;

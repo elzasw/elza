@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.domain.ArrDao;

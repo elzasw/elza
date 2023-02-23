@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.collections4.CollectionUtils;
@@ -272,7 +272,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         StaticDataProvider sdp = staticDataService.getData();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("select ap.* from ap_access_point ap" + 
+        sb.append("select ap.* from ap_access_point ap" +
                 " join ap_state aps ON aps.access_point_id = ap.access_point_id" +
                 " where aps.delete_change_id is null and ap.access_point_id in (");
         sb.append("select p.access_point_id from ap_part p");

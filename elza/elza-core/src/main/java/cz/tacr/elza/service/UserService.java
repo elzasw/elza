@@ -16,11 +16,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -102,7 +101,7 @@ public class UserService {
     static {
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put("bcrypt", new BCryptPasswordEncoder());
-        encoders.put("scrypt", new SCryptPasswordEncoder());
+        encoders.put("scrypt", SCryptPasswordEncoder.defaultsForSpringSecurity_v5_8());
         encoder = new DelegatingPasswordEncoder("bcrypt", encoders);
     }
 
@@ -419,7 +418,7 @@ public class UserService {
      *
      * @param nodeIds identifikátory JP
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public void deletePermissionByNodeIds(final Collection<Integer> nodeIds) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return;
@@ -863,7 +862,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public UsrUser changeUser(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
-                              @Nullable final Integer accessPointId,  
+                              @Nullable final Integer accessPointId,
                               @NotNull @NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap) {
         Validate.notNull(valuesMap);
@@ -1247,7 +1246,7 @@ public class UserService {
 	 *            identifikátor entity, ke které se ověřuje oprávnění
 	 * @return má oprávnění?
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
@@ -1267,7 +1266,7 @@ public class UserService {
 	 *            typ oprávnění
 	 * @return má oprávnění?
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
 		UserDetail userDetail = getLoggedUserDetail();
 		if (userDetail == null) {
@@ -1386,7 +1385,7 @@ public class UserService {
 
     /**
      * Načtení objektu uživatele dle id pro vnitřní použití.
-     * 
+     *
      * @param userId
      * @return objekt nebo null
      */
@@ -1678,7 +1677,7 @@ public class UserService {
      *
      * @return množina id scope na které ma uživatel právo
      */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public Set<Integer> getUserScopeIds() {
         return getUserPermission()
                 .stream()
@@ -1691,7 +1690,7 @@ public class UserService {
 	/**
 	 * Authorize request or throw exception
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
 		UserDetail userDetail = getLoggedUserDetail();
         if (userDetail != null && authRequest.matches(userDetail)) {
@@ -1740,7 +1739,7 @@ public class UserService {
 	 *            Can be null
 	 * @param newFund
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
 	public void addFundAdminPermissions(Integer userId, Integer groupId, ArrFund newFund) {
 		UsrUser user = null;
 		UsrGroup group = null;
@@ -1898,9 +1897,9 @@ public class UserService {
 
     /**
      * Method to create admin detail
-     * 
+     *
      * This is temporary method and will be removed in future
-     * 
+     *
      * @return
      */
     private UserDetail createAdminUserDetail() {
@@ -1941,7 +1940,7 @@ public class UserService {
 
     /**
      * Create securoty context for admin
-     * 
+     *
      * @return
      */
     public SecurityContext createSecurityContextSystem() {
