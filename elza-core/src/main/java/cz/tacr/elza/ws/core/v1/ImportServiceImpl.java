@@ -9,11 +9,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +52,8 @@ import cz.tacr.elza.service.cam.SyncEntityRequest;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatus;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
+
+import javax.activation.DataHandler;
 
 @Component
 @javax.jws.WebService(serviceName = "CoreService", portName = "ImportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
@@ -196,7 +196,7 @@ public class ImportServiceImpl implements ImportService {
             List<ApAccessPoint> updateAps = new ArrayList<>();
 
             Map<String, ApAccessPoint> existingApMap = existingAps.stream().collect(Collectors.toMap(ApAccessPoint::getUuid, Function.identity()));
-            
+
             newEntities = new ArrayList<>(entities.size() - existingAps.size());
             for (EntityXml entityXml : entities) {
                 String uuid = CamHelper.getEntityUuid(entityXml);
@@ -204,7 +204,7 @@ public class ImportServiceImpl implements ImportService {
                 if (existingAp == null) {
                     newEntities.add(entityXml);
                 } else {
-                    SyncEntityRequest syncReq = new SyncEntityRequest(existingAp, entityXml);                    
+                    SyncEntityRequest syncReq = new SyncEntityRequest(existingAp, entityXml);
                     updateAps.add(existingAp);
                     updateEntitiesLookup.put(existingAp.getAccessPointId(), syncReq);
                 }
@@ -283,7 +283,7 @@ public class ImportServiceImpl implements ImportService {
             camService.updateAccessPoints(procCtx, updateEntities);
         }
 
-        logger.info("Imported entities in CAM format, count: {}, create: {}, update: {}", 
+        logger.info("Imported entities in CAM format, count: {}, create: {}, update: {}",
                     entities.size(), newEntities.size(), updateEntities == null? 0 : updateEntities.size());
     }
 
@@ -309,7 +309,7 @@ public class ImportServiceImpl implements ImportService {
                 }
 
                 EntityXml entity = syncEntity.getEntityXml();
-                String replacedBy = entity.getReid()!=null?Long.toString(entity.getReid().getValue()):null; 
+                String replacedBy = entity.getReid()!=null?Long.toString(entity.getReid().getValue()):null;
                 externalSystemService.createBindingState(bindingState,
                                                          apChange,
                                                          entity.getEns().name(),

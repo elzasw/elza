@@ -10,7 +10,7 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemCoordinatesVO extends ApItemVO {
 

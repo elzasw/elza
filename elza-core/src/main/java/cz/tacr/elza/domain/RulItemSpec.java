@@ -1,18 +1,18 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -57,7 +57,7 @@ public class RulItemSpec {
 
     @Column(nullable = false)
     @Lob
-    @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
+    //@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType") TODO pasek
     private String description;
 
 	@Column(length = StringLength.LENGTH_1000)
@@ -164,7 +164,7 @@ public class RulItemSpec {
 
     /**
      * Nastaví druh povinnosti vyplnění na minimálně danou hladinu
-     * 
+     *
      * @param type
      */
     public void setMinType(final Type type) {

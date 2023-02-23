@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -698,7 +698,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * Vytvoření hodnoty atributu s daty.
      *
      * Metoda neprovádí aktualizaci cache
-     * 
+     *
      * @param descItem
      *            hodnota atributu
      * @param fundVersion
@@ -780,7 +780,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      *
      * Interní metoda, již nekontroluje oprávnění.
-     * 
+     *
      * @param descItem
      *            hodnota atributu
      * @param version
@@ -898,7 +898,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             if (!force && descItem.getReadOnly()!=null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
-        	
+
             ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter,
                                                             changeContext);
 
@@ -1414,7 +1414,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
-		
+
 		if(!forceUpdate) {
 			// check if not read-only
 			if(descItemCurr.getReadOnly()!=null&&descItemCurr.getReadOnly()) {
@@ -1463,7 +1463,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrDescItem descItemNew = prepareNewDescItem(descItemDB, dataNew, change);
 
-        // create new item based on source        
+        // create new item based on source
         descItemNew.setPosition(newPosition);
         // set data and specification
         descItemNew.setItemSpec(itemSpec);
@@ -1680,7 +1680,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
-        	
+
             deleteDescriptionItem(descItem, version, change, false, changeContext);
             changeContext.flushIfNeeded();
         }
@@ -2114,7 +2114,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
-            	
+
                 deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
 

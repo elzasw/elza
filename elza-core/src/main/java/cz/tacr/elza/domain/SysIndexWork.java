@@ -2,13 +2,13 @@ package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_250;
 
@@ -21,7 +21,7 @@ public class SysIndexWork {
 
     @Id
     @GeneratedValue
-    @Access(AccessType.PROPERTY) // required to read id without fetch from db    
+    @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Long indexWorkId;
 
     @Column(length = LENGTH_250, nullable = false)

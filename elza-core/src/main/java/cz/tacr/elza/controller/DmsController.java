@@ -12,10 +12,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -67,13 +67,13 @@ public class DmsController {
 
     @Autowired
     private OutputResultRepository outputResultRepository;
-    
+
     @Autowired
     private OutputRepository outputRepository;
 
     @Autowired
     private FundRepository fundRepository;
-    
+
     @Autowired
     private NodeRepository nodeRepository;
 
@@ -369,14 +369,14 @@ public class DmsController {
         Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         ArrOutput output = outputRepository.findByOutputId(outputId);
 		List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
-        
+
         // check number of files
         List<ArrOutputFile> outputFiles = new ArrayList<>();
-        
+
 		for(ArrOutputResult outputResult: outputResults) {
         	outputFiles.addAll(outputResult.getOutputFiles());
         }
-        
+
         ServletOutputStream out = response.getOutputStream();
 
         File fileForDownload = null;
@@ -407,9 +407,9 @@ public class DmsController {
             }
 
         }
-    	
+
     }
-    
+
     /**
      * Stažení souboru
      * @param response http odpověd
@@ -424,10 +424,10 @@ public class DmsController {
         Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
         ArrOutput output = result.getOutput();
-        
+
         // check number of files
         List<ArrOutputFile> outputFiles = result.getOutputFiles();
-        
+
         ServletOutputStream out = response.getOutputStream();
 
         File fileForDownload = null;
@@ -561,9 +561,9 @@ public class DmsController {
     public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
     	ArrOutput output = outputRepository.findByOutputId(outputId);
     	// List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
-    	
+
     	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
-    	
+
         return new FilteredResultVO<>(outputFiles,
                 (entity) -> ArrOutputFileVO.newInstance(entity),
                 outputFiles.size());

@@ -12,12 +12,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -25,6 +26,7 @@ import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.UserService;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Autentikační třída pro API.
@@ -36,10 +38,10 @@ import cz.tacr.elza.service.UserService;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 2)
-public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
+public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
-	
+
     @Autowired
     private UserService userService;
 
@@ -54,10 +56,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
-    
+
     @Autowired
     private Optional<SsoHeaderProperties> optionalSsoHeaderProperties;
-    
+
     private SessionRegistry sessionRegistry = null;
 
     @Bean
@@ -68,12 +70,17 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         return sessionRegistry;
     }
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
-        builder.authenticationProvider(new PasswordAutheticationProvider(userService));
-        if (optionalSsoHeaderProperties.isPresent()) {
-        	builder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
-        }
+//    @Override TODO pasek
+//    protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
+//        builder.authenticationProvider(new PasswordAutheticationProvider(userService));
+//        if (optionalSsoHeaderProperties.isPresent()) {
+//        	builder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
+//        }
+//    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
@@ -81,21 +88,20 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
     }
 
-    @Bean("applicationAuthenticationManager")
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-    	return super.authenticationManagerBean();
-    }
-    
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
+//    @Bean("applicationAuthenticationManager")
+//    @Override
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//    	return super.authenticationManagerBean();
+//    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.headers().frameOptions().sameOrigin();
-        http.authorizeRequests()
-                .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/**").authenticated();
-        http.authorizeRequests()
-                .antMatchers("/services").permitAll()
-                .antMatchers("/services/**").authenticated()
+        http.authorizeRequests().requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated();
+        http.authorizeRequests().requestMatchers(
+        new AntPathRequestMatcher("/services")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
                 .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);
         http.csrf().disable();
         http.sessionManagement()
@@ -107,14 +113,15 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 .logout().permitAll().logoutSuccessHandler(apiLogoutSuccessHandler);
         http.formLogin().successHandler(authenticationSuccessHandler);
         http.formLogin().failureHandler(authenticationFailureHandler);
-        
+
         configureSsoHeaderFilter(http);
+        return http.build();
     }
 
 	private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
 		if (optionalSsoHeaderProperties.isPresent()) {
 			SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
-			filter.setAuthenticationManager(authenticationManagerBean());
+			//filter.setAuthenticationManager(authenticationManagerBean()); TODO pasek
 			filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
 			filter.setAuthenticationFailureHandler(authenticationFailureHandler);
 			http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);

@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 
+import jakarta.persistence.EntityManager;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -76,7 +76,7 @@ public class DescItemTypeFilter {
      * @return id nodů se seznamem id hodnot
      */
     public Map<Integer, Set<Integer>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder,
-            final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
+                                                        final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
         Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
         Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
         Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
@@ -188,10 +188,10 @@ public class DescItemTypeFilter {
      *
      * @param hibernateQueries
      */
-    private Set<Integer> processHibernateQueries(final List<javax.persistence.Query> hibernateQueries) {
+    private Set<Integer> processHibernateQueries(final List<jakarta.persistence.Query> hibernateQueries) {
         Set<Integer> nodeIds = null;
         if (!hibernateQueries.isEmpty()) {
-            for (javax.persistence.Query q : hibernateQueries){
+            for (jakarta.persistence.Query q : hibernateQueries){
                 List<Integer> resultList = q.getResultList();
 
                 if (nodeIds == null) {
@@ -244,7 +244,7 @@ public class DescItemTypeFilter {
      */
     private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
         List<Query> luceneQueries = new LinkedList<>();
-        List<javax.persistence.Query> hibernateQueries = new LinkedList<>();
+        List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
         FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
 
         if (sortConditions(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
@@ -257,7 +257,7 @@ public class DescItemTypeFilter {
     /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
     private boolean sortConditions(final List<DescItemCondition> descItemConditions, final QueryBuilder queryBuilder, final EntityManager entityManager,
             final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
-            final List<javax.persistence.Query> hibernateQueries) {
+            final List<jakarta.persistence.Query> hibernateQueries) {
         for (DescItemCondition condition : descItemConditions) {
             if (condition instanceof LuceneDescItemCondition) {
                 LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;

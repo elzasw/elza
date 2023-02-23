@@ -28,12 +28,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.constraints.NotNull;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.IOUtils;
@@ -341,7 +341,7 @@ public class PackageService {
      *  soubor s názvem a verzí balíčku
      */
     private static final String PACKAGE_XML = "package.xml";
-    
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -485,7 +485,7 @@ public class PackageService {
 
     @Autowired
     private ExportFilterRepository exportFilterRepository;
-        
+
     @Autowired
     private UserService userService;
 
@@ -506,7 +506,7 @@ public class PackageService {
     	// check authorization
         TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
         transactionTemplate.executeWithoutResult(ts -> {
-            AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.ADMIN);        	
+            AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.ADMIN);
         	userService.authorizeRequest(authRequest);
         });
         // stop services - outside transaction
@@ -519,7 +519,7 @@ public class PackageService {
     }
 
     public void importPackageInternal(final File file, boolean startTasks) {
-        
+
         // read package and do basic checks
         PackageContext pkgCtx = new PackageContext(resourcePathResolver);
 
@@ -737,7 +737,7 @@ public class PackageService {
 
     /**
      * Automatické načítání balíčků v adresáři /dpkg
-     * 
+     *
      * @param path
      */
     @Transactional
@@ -821,7 +821,7 @@ public class PackageService {
 
     /**
      * Získání objektu PackageInfoWrapper ze souboru PACKAGE_XML z archivu
-     * 
+     *
      * @param path
      * @return
      * @throws IOException
@@ -3001,7 +3001,7 @@ public class PackageService {
 
     /**
      * Create package info from DB object
-     * 
+     *
      * @param rulPackage
      * @return
      */

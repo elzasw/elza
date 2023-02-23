@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -221,7 +221,7 @@ public class IssueController {
 
     /**
      * Odebrání existujícího protokolu
-     * 
+     *
      * @param issueListId identifikátor protokolu
      */
     @RequestMapping(value = "/issue_lists/{issueListId}", method = RequestMethod.DELETE)

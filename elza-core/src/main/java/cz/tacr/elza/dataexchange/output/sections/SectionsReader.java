@@ -3,7 +3,7 @@ package cz.tacr.elza.dataexchange.output.sections;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.Authorization;

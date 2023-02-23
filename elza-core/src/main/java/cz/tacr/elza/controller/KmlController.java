@@ -3,8 +3,8 @@ package cz.tacr.elza.controller;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
 import cz.tacr.elza.exception.SystemException;

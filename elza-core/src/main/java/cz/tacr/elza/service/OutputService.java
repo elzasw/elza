@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -139,7 +139,7 @@ public class OutputService {
 
     @Autowired
     ArrangementInternalService arrangementInternalService;
-    
+
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
 
@@ -312,7 +312,7 @@ public class OutputService {
             } while (outputRepository.existsByName(newNameWithNum));
             newName = newNameWithNum;
         }
-        
+
         // read current templates
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(originalOutput);
         List<Integer> templateIds;
@@ -388,7 +388,7 @@ public class OutputService {
         RulOutputType type = outputTypeRepository.findById(outputTypeId)
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
-        
+
         ArrChange change = arrangementInternalService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
@@ -405,7 +405,7 @@ public class OutputService {
         // save output templates
         List<ArrOutputTemplate> outputTemplates;
 		if (CollectionUtils.isNotEmpty(templateIds)) {
-			outputTemplates = outputServiceInternal.createOutputTemplates(savedOutput, templateIds);			
+			outputTemplates = outputServiceInternal.createOutputTemplates(savedOutput, templateIds);
         } else {
         	outputTemplates = null;
         }
@@ -1589,7 +1589,7 @@ public class OutputService {
 
     /**
      * Send output to connected system
-     * 
+     *
      * @param output
      */
     @Transactional
@@ -1606,7 +1606,7 @@ public class OutputService {
 
     /**
      * Add template to output
-     * 
+     *
      * @param fundId
      * @param output
      * @param templateId
@@ -1615,7 +1615,7 @@ public class OutputService {
     @AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
 	public ArrOutputTemplateVO addOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
 			ArrOutput output, Integer templateId) {
-		
+
     	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
 
     	ArrOutputTemplate ot = new ArrOutputTemplate();
@@ -1644,13 +1644,13 @@ public class OutputService {
 	@AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
 	public void deleteOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
 			ArrOutput output, Integer templateId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());        
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
 
         outputTemplateRepository.deleteByOutputIdAndTemplateId(output.getOutputId(), templateId);
-        
-        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, 
+
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES,
         		fundVersion, output.getOutputId()));
-        
+
 	}
 
 }

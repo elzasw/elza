@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Tuple;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.ScrollMode;
@@ -57,7 +57,7 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
 
         try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
             while (results.next()) {
-                Tuple tuple = (Tuple) results.get(0);
+                Tuple tuple = (Tuple) results.get();
                 Object entityId = tuple.get(0);
                 Object entity = tuple.get(1);
 
@@ -96,7 +96,7 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
     /**
      * Creates query condition which is used as conjunction with id search. Default
      * implementation returns null.
-     * 
+     *
      * @param criteriaQuery
      */
     protected Predicate createQueryCondition(CriteriaQuery<Tuple> criteriaQuery,

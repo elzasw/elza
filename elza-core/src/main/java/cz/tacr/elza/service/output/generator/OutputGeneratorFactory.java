@@ -1,6 +1,6 @@
 package cz.tacr.elza.service.output.generator;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class OutputGeneratorFactory {
     private final ApplicationContext applicationContext;
 
     private final ApIndexRepository indexRepository;
-    
+
     private final AccessPointCacheService accessPointCacheService;
 
     private ElzaLocale elzaLocale;

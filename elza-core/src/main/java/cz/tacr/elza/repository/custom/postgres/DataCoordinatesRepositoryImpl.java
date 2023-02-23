@@ -1,7 +1,7 @@
 package cz.tacr.elza.repository.custom.postgres;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;

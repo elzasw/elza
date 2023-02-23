@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity(name = "ap_binding_item")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })

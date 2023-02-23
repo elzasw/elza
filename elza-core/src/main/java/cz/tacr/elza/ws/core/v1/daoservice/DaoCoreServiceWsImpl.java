@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -158,7 +158,7 @@ public class DaoCoreServiceWsImpl {
             }
             repoCode = repoCodes.iterator().next();
         }
-        
+
         if(daoImport.getDaoPackages()!=null&&daoImport.getDaoLinks()!=null&&
         		!CollectionUtils.isEmpty(daoImport.getDaoLinks().getDaoLink())) {
             final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
@@ -238,7 +238,7 @@ public class DaoCoreServiceWsImpl {
         }
 
         // Auto create new levels
-        // Daos with DaoType.LEVEL 
+        // Daos with DaoType.LEVEL
         List<ArrDao> daos = impCtx.getDaos();
         List<ArrDaoLink> daoLinks = daoLinkRepository.findActiveByDaos(daos);
         Map<Integer, ArrDaoLink> daoLinkMap = daoLinks.stream()
@@ -320,7 +320,7 @@ public class DaoCoreServiceWsImpl {
 
     /**
      * Update existing Dao
-     * 
+     *
      * @param impCtx
      * @param xmlDaoPackage
      * @param daoPackage
@@ -332,7 +332,7 @@ public class DaoCoreServiceWsImpl {
                     BaseCode.SYSTEM_ERROR);
         }
         //@TODO: Do batch info update
-        
+
         createDaos(impCtx, xmlDaoPackage.getDaos(), daoPackage);
     }
 
@@ -341,7 +341,7 @@ public class DaoCoreServiceWsImpl {
 
         ArrFundVersion fundVersion = impCtx.getFundVersion(daoPackage.getFundIdentifier());
 
-        //@TODO: Rewrite to use daoService for batch info processing 
+        //@TODO: Rewrite to use daoService for batch info processing
         ArrDaoBatchInfo arrDaoBatchInfo;
         final DaoBatchInfo daoBatchInfo = daoPackage.getDaoBatchInfo();
         if (daoBatchInfo != null) {
@@ -395,7 +395,7 @@ public class DaoCoreServiceWsImpl {
     /**
      * Založí se DaoLink bez notifikace, pokud již link existuje, tak se zruší a
      * založí se nový (arr_change).
-     * 
+     *
      * @param impCtx
      *
      * @param daoLink
@@ -452,9 +452,9 @@ public class DaoCoreServiceWsImpl {
 
     /**
      * Create/update levels for daos
-     * 
+     *
      * @param impCtx
-     * 
+     *
      * @param fund
      * @param levelDaos
      * @param daoNodeUuidMap
@@ -484,9 +484,9 @@ public class DaoCoreServiceWsImpl {
 
     /**
      * Automatické založení úrovní
-     * 
+     *
      * @param impCtx
-     * 
+     *
      * @param lis
      * @param levelDaos
      * @param daoLinkMap
@@ -575,7 +575,7 @@ public class DaoCoreServiceWsImpl {
         // attach to the parent
         for (ArrDao dao : daosWithoutLevel) {
         	String uuid = daoNodeUuidMap.get(dao.getDaoId());
-        	
+
         	ArrDaoLink daoLink = prepareDaoLevel(fundVersion, parentLevel, change, dao, uuid);
             daoLinks.add(daoLink);
         }
@@ -584,7 +584,7 @@ public class DaoCoreServiceWsImpl {
 
     /**
      * Update daoLink and dao level according scenario
-     * 
+     *
      * @param daoLink
      * @param change
      * @param fundVersion
@@ -610,7 +610,7 @@ public class DaoCoreServiceWsImpl {
             // scenario not found -> select first one (if any)
             scenario = CollectionUtils.isNotEmpty(scenarios) ? scenarios.get(0) : null;
         } else {
-            // 
+            //
             logger.debug("Scenario was found (daoId={}): {}", dao.getDaoId(), scenario);
         }
         MultipleItemChangeContext itemChangeContext = impCtx.getItemsChangeContext(fundVersion);
@@ -627,16 +627,16 @@ public class DaoCoreServiceWsImpl {
      * @param uuid
      * @return
      */
-    private ArrDaoLink prepareDaoLevel(ArrFundVersion fundVersion, ArrLevel parentLevel, 
+    private ArrDaoLink prepareDaoLevel(ArrFundVersion fundVersion, ArrLevel parentLevel,
     								   ArrChange change, ArrDao dao, String uuid) {
         logger.debug("Preparing DAO level, fundId: {}, daoId: {}", fundVersion.getFundId().toString(), dao.getDaoId());
 
         Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
-        
+
         ArrNode parentNode = parentLevel.getNode();
 
         ArrNode linkNode = null;
-        ArrLevel linkNodeLevel = null;            
+        ArrLevel linkNodeLevel = null;
         if(uuid!=null) {
             // check if node and level exists
             ArrNode node = arrangementInternalService.findNodeByUuid(uuid);
@@ -644,7 +644,7 @@ public class DaoCoreServiceWsImpl {
             	linkNode = node;
                 // check if has active level
                 ArrLevel level = fundLevelService.findLevelByNode(node);
-                if (level != null) {                        
+                if (level != null) {
                     linkNodeLevel = level;
                 }
             }
@@ -664,7 +664,7 @@ public class DaoCoreServiceWsImpl {
         		if(CollectionUtils.isNotEmpty(descItems)) {
         			descriptionItemService.deleteDescriptionItems(descItems, linkNode, fundVersion, change, false, true);
         		}
-        		
+
         		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);
             }
         } else {
@@ -739,10 +739,10 @@ public class DaoCoreServiceWsImpl {
 
                 /*
                 for (Folder folder : fg.getFolder()) {
-                
+
                     ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(dbDao,
                                                                                            folder);
-                
+
                     if (folder.getFiles() != null) {
                         for (File file : folder.getFiles().getFile()) {
                             daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
@@ -760,7 +760,7 @@ public class DaoCoreServiceWsImpl {
 
     /**
      * Synchronize files
-     * 
+     *
      * @param impCtx
      * @param dbDao
      * @param xmlFileList
@@ -849,12 +849,12 @@ public class DaoCoreServiceWsImpl {
 
         ArrDaoPackage daoPackage = arrDao.getDaoPackage();
         ArrFund fund = daoPackage.getFund();
-        
+
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fund.getFundId());
 
         daoService.deleteDaosWithoutLinks(fundVersion, Collections.singletonList(arrDao));
 
-        /* TODO: Maji se automaticky mazat daoPackage?            
+        /* TODO: Maji se automaticky mazat daoPackage?
         // check if whole package can be deleted and delete it
         List<ArrDao> daos = daoService.findDaosByPackage(fund.getFundId(), daoPackage, null,
                                                          null,
@@ -874,7 +874,7 @@ public class DaoCoreServiceWsImpl {
             throw new ObjectNotFoundException("Balíček digitalizátů s ID=" + packageIdentifier + " nenalezen",
                     DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
         }
-        
+
         ArrFund fund = arrDaoPackage.getFund();
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
 

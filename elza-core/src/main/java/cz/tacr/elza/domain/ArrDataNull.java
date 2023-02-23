@@ -1,7 +1,7 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.Validate;
 
@@ -43,6 +43,6 @@ public class ArrDataNull extends ArrData {
 
     @Override
     protected void validateInternal() {
-        // nothing to check        
+        // nothing to check
     }
 }

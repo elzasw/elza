@@ -17,9 +17,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
+import jakarta.transaction.Transactional;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
@@ -87,10 +86,10 @@ public class DmsService {
 
     @Autowired
     ArrangementInternalService arrangementInternalService;
-    
+
     @Autowired
     private EventNotificationService eventNotificationService;
-    
+
     /**
      * Uloží DMS soubor se streamem a publishne event
      *
@@ -225,7 +224,7 @@ public class DmsService {
         Validate.notNull(dmsFile, "Soubor musí být vyplněn");
 
         Path dmsFilePath = resourcePathResolver.getDmsDir().resolve(dmsFile.getFileId().toString());
-        //File outputFile = 
+        //File outputFile =
         if (!Files.exists(dmsFilePath)) {
             logger.error("File not exist, fileId: {}, filePath: {}", dmsFile.getFileId(), dmsFilePath);
             throw new SystemException("Požadovaný soubor neexistuje")
@@ -320,7 +319,7 @@ public class DmsService {
 
     /**
      * Smazání seznam souborů po commitu
-     * 
+     *
      * @param files seznam souborů ke smazání
      */
     public void deleteFilesAfterCommit(List<ArrOutputFile> files) {
@@ -330,7 +329,7 @@ public class DmsService {
 
     /**
      * Smazání seznam souborů po commitu
-     * 
+     *
      * @param fileIds seznam id souborů ke smazání
      */
     public void deleteFilesAfterCommitByIds(List<Integer> fileIds) {
@@ -479,9 +478,9 @@ public class DmsService {
 	 * @param output
 	 * @return
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
 	@AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
-	public List<ArrOutputFile> findOutputFiles(@AuthParam(type = AuthParam.Type.FUND) Integer fundId, 
+	public List<ArrOutputFile> findOutputFiles(@AuthParam(type = AuthParam.Type.FUND) Integer fundId,
 			ArrOutput output) {
 		return outputFileRepository.findByOutputResultOutput(output);
 	}

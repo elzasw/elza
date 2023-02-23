@@ -14,13 +14,13 @@ import org.apache.lucene.search.Query;
 public class FilterQueries {
 
     private List<Query> luceneQueries = new LinkedList<>();
-    private List<javax.persistence.Query> hibernateQueries = new LinkedList<>();
+    private List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
 
     /**
      * @param luceneQueries
      * @param hibernateQueries
      */
-    public FilterQueries(final List<Query> luceneQueries, final List<javax.persistence.Query> hibernateQueries) {
+    public FilterQueries(final List<Query> luceneQueries, final List<jakarta.persistence.Query> hibernateQueries) {
         this.luceneQueries = luceneQueries;
         this.hibernateQueries = hibernateQueries;
     }
@@ -29,7 +29,7 @@ public class FilterQueries {
         return luceneQueries;
     }
 
-    public List<javax.persistence.Query> getHibernateQueries() {
+    public List<jakarta.persistence.Query> getHibernateQueries() {
         return hibernateQueries;
     }
 }

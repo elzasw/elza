@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity(name = "ap_scope_relation")
 @Table

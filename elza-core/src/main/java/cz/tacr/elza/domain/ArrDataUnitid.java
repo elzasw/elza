@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -27,7 +27,7 @@ public class ArrDataUnitid extends ArrData {
     /**
      * value of the unitid
      */
-    // attribute has name unitid and not value 
+    // attribute has name unitid and not value
     // because operator TREAT in JPQL needs
     // unique names (tested with Hibernate 5.2)
     // see LockedValueRepository and query findByFundAndItemTypeAndValue

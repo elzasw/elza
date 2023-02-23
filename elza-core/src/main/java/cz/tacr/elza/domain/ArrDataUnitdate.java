@@ -3,10 +3,10 @@ package cz.tacr.elza.domain;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -182,7 +182,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 	@Override
     protected boolean isEqualValueInternal(ArrData srcData) {
 	    ArrDataUnitdate src = (ArrDataUnitdate)srcData;
-	    
+
 	    if(!Objects.equal(valueFrom, src.valueFrom)||
 	       !Objects.equal(valueFromEstimated, src.valueFromEstimated)||
 	       !Objects.equal(valueTo, src.valueTo)||

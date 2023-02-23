@@ -19,18 +19,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.ColumnResult;
-import javax.persistence.ConstructorResult;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Id;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.SqlResultSetMapping;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -280,7 +280,7 @@ public class RevertingChangesService {
         Validate.isTrue(fundVersion.getLockChange() == null, "Nelze prováděn změny v uzavřené verzi");
         Validate.notNull(fromChange, "Změna od musí být vyplněna");
         Validate.notNull(toChange, "Změna do musí být vyplněna");
-        
+
         StopWatch sw = new StopWatch("revertChanges");
 
         ArrFund fund = fundVersion.getFund();
@@ -289,7 +289,7 @@ public class RevertingChangesService {
 
         sw.start("revertChangesValidateAction");
         // provede validaci prováděného revertování
-        revertChangesValidateAction(fromChange, toChange, fundId, nodeId);        
+        revertChangesValidateAction(fromChange, toChange, fundId, nodeId);
         sw.stop();
 
         sw.start("stopConformityInfFundVersions");
@@ -302,7 +302,7 @@ public class RevertingChangesService {
         Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
         Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
         sw.stop();
-        
+
         sw.start("deleteConformityInfo");
         {
             Query deleteEntityQuery = createConformityDeleteForeignEntityQuery(fund, node, /*toChange,*/ "arr_node_conformity_error");
@@ -497,10 +497,10 @@ public class RevertingChangesService {
         if (CollectionUtils.isNotEmpty(deleteNodeIds)) {
             eventNotificationService.publishEvent(new EventIdsInVersion(EventType.DELETE_NODES, fundVersion.getFundVersionId(),
                     deleteNodeIds.toArray(new Integer[deleteNodeIds.size()])));
-        }        
+        }
 
         if (node == null) {
-            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID, 
+            eventNotificationService.publishEvent(new EventFunds(EventType.FUND_INVALID,
             		Collections.singleton(fundId), Collections.singleton(fundVersion.getFundVersionId())));
         } else {
         	eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
@@ -513,7 +513,7 @@ public class RevertingChangesService {
         sw.start("startNodeValidation");
         arrangementService.startNodeValidation(fundVersion);
         sw.stop();
-        
+
         // log results
         if(logger.isDebugEnabled()) {
         	logger.debug("revertChanges - progress\n{}", sw.prettyPrint());
@@ -913,7 +913,7 @@ public class RevertingChangesService {
     }
 
     private void asyncRequestDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
-        
+
         String hql = "DELETE FROM arr_async_request r" +
                 " WHERE r.structuredObject IN (" +
                 " SELECT so FROM arr_structured_object so" +
@@ -996,7 +996,7 @@ public class RevertingChangesService {
 
     /**
      * Vytvoreni dotazy zjistujiciho zmenene node do dane change
-     * 
+     *
      * @param fund
      * @param node
      * @param change

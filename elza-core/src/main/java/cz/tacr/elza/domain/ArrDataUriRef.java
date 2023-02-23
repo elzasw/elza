@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.net.URI;
 
 @Entity

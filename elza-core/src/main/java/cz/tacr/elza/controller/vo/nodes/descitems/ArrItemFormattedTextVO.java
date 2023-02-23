@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;

@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.ArrDataText;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemTextVO extends ApItemVO {
 

@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -145,7 +145,7 @@ public abstract class ArrItemVO {
 
     /**
      * Check if value is undefined
-     * 
+     *
      * @return Return true if undefined flag is set to TRUE
      */
     public boolean isUndefined() {

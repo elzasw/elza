@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.ArrDataText;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemFormattedTextVO extends ApItemVO {
 

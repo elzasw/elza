@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.ArrDataBit;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemBitVO extends ApItemVO {
 

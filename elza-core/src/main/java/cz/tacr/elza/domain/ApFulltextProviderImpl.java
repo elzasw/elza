@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.hibernate.Transaction;
 import org.slf4j.Logger;

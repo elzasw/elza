@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.search.MassIndexer;
@@ -52,11 +52,11 @@ public class AdminService {
         reindexInternal();
     }
 
-    /** 
+    /**
      * Volání reindexu bez kontroly práv
-     * 
+     *
      * Volání s časovačem, ve výchozím stavu: 0 0 4 ? * SAT
-     * co znamená: každou sobotu ve 04:00 
+     * co znamená: každou sobotu ve 04:00
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {

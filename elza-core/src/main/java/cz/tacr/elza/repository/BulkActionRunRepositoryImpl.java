@@ -3,8 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;

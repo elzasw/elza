@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "db_hibernate_sequences")

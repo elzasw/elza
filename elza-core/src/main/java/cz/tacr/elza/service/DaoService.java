@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -134,7 +134,7 @@ public class DaoService {
     public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  @Nullable final ArrNode node, final Integer index, final Integer maxResults) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Pageable pageable = PageRequest.of(index, maxResults);  
+        Pageable pageable = PageRequest.of(index, maxResults);
         if (node == null) {
             return daoRepository.findDettachedByFund(fundVersion.getFund(), pageable).toList();
         } else {
@@ -155,11 +155,11 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
                                           final ArrDaoPackage daoPackage,
-                                          final Integer index, final Integer maxResults, 
+                                          final Integer index, final Integer maxResults,
                                           final boolean unassigned) {
         Validate.notNull(fundId, "Verze AS musí být vyplněna");
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
-        Pageable pageable = PageRequest.of(index, maxResults);  
+        Pageable pageable = PageRequest.of(index, maxResults);
         if (unassigned) {
             return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
         } else {
@@ -242,7 +242,7 @@ public class DaoService {
      * Vytvoří změnu o zrušení vazby a nastaví ji na arrDaoLink.
      * Akci provede jen pokud je link platný a nemá dosud vyplněnou změnu o zrušení
      * vazby.
-     * 
+     *
      * Vysokoúrovňová funkce, v případě typu level odstraňuje i úroveň
      *
      * @param daoLink
@@ -250,7 +250,7 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-    						  @Nullable ArrChange change, 
+    						  @Nullable ArrChange change,
                               final ArrDaoLink daoLink) {
 
         final ArrDao dao = daoLink.getDao();
@@ -272,7 +272,7 @@ public class DaoService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, 
+    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
     		ArrChange deleteChange, final ArrNode node) {
         List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(Collections.singletonList(node
                 .getNodeId()));
@@ -286,7 +286,7 @@ public class DaoService {
         return daoLinks;
     }
 
-    private ArrDaoLink deleteDaoLink(final ArrFundVersion fundVersion, 
+    private ArrDaoLink deleteDaoLink(final ArrFundVersion fundVersion,
     								 @Nullable ArrChange deleteChange, final ArrDaoLink daoLink, boolean notify) {
 
         // kontrola, že ještě existuje
@@ -336,13 +336,13 @@ public class DaoService {
      * Odeslaný.
      * Zneplatní všechny nebo nic.
      * Po zneplatnněí DAO zruší jejich návazné linky a pošle notifikace.
-     * 
+     *
      * @param fundVersion
      *
      * @param arrDaos
      *            seznam dao pro zneplatnění
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR,
     		UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.ADMIN})
     public void deleteDaosWithoutLinks(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, final List<ArrDao> arrDaos) {
 
@@ -362,7 +362,7 @@ public class DaoService {
 
     /**
      * Delete dao files from DB
-     * 
+     *
      * @param daoFiles
      */
     public void deleteDaoFiles(Collection<ArrDaoFile> daoFiles) {
@@ -370,9 +370,9 @@ public class DaoService {
 
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR,
     		UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.ADMIN})
-    public void deleteDaoPackageWithCascade(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, 
+    public void deleteDaoPackageWithCascade(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
     									    ArrDaoPackage arrDaoPackage) {
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
@@ -385,7 +385,7 @@ public class DaoService {
         }
 
         Set<Integer> nodeIds = new HashSet<>();
-        
+
         ArrChange change = null;
 
         for (ArrDao arrDao : arrDaos) {
@@ -432,15 +432,15 @@ public class DaoService {
 
     /**
      * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.
-     * 
+     *
      * @param fundVersion
      *
      * @param arrDaos
      *            seznam dao pro zneplatnění
-     * 
+     *
      * @param notify
      *            priznak pro poslani notifikaci
-     * 
+     *
      */
     @AuthMethod(permission = { Permission.FUND_ARR_ALL, Permission.FUND_ARR })
     public void deleteDaos(@AuthParam(type = AuthParam.Type.FUND) ArrFundVersion fundVersion,
@@ -451,7 +451,7 @@ public class DaoService {
         for (ArrDao arrDao : arrDaos) {
             arrDao.setValid(false);
             daoRepository.save(arrDao);
-            
+
             ArrChange change = null;
 
             // zrušit linky a poslat notifikace
@@ -472,11 +472,11 @@ public class DaoService {
      * Získání url na dao.
      * @param dao dao
      * @param daoLink Optional DAO Link
-     * @param viewDaoUrl 
+     * @param viewDaoUrl
      * @return url
      */
-    public String getDaoUrl(final ArrDao dao, 
-    						final ArrDaoLink daoLink, 
+    public String getDaoUrl(final ArrDao dao,
+    						final ArrDaoLink daoLink,
     						final String viewDaoUrl) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
                 .add("code", dao.getCode())
@@ -487,7 +487,7 @@ public class DaoService {
         		.add("nodeUuid", daoLink.getNode().getUuid());
         } else {
         	params.add("nodeId", "")
-    			.add("nodeUuid", "");        	
+    			.add("nodeUuid", "");
         }
         return ElzaTools.bindingUrlParams(viewDaoUrl, params);
     }
@@ -545,7 +545,7 @@ public class DaoService {
 
     /**
      * Create DAO link
-     * 
+     *
      * @param fundVersionId
      * @param daoId
      * @param nodeId
@@ -598,7 +598,7 @@ public class DaoService {
 
     /**
      * Vraci seznam DAO vcetne DaoPackage
-     * 
+     *
      * @param repository
      * @param daoCodes
      * @return
@@ -617,7 +617,7 @@ public class DaoService {
 
     /**
      * Return list of files for list of daos
-     * 
+     *
      * @param daos
      * @return
      */
