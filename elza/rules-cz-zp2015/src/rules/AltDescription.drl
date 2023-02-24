@@ -19,8 +19,30 @@ no-loop
 when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_LANGUAGE", 
-        "ZP2015_TITLE", 
-        "ZP2015_NOTE"))
+        "ZP2015_TITLE",
+		"ZP2015_FORMAL_TITLE",
+        "ZP2015_UNIT_DATE_TEXT",
+        "ZP2015_UNIT_HIST",
+        "ZP2015_UNIT_ARR",
+        "ZP2015_UNIT_CONTENT",
+        "ZP2015_UNIT_SOURCE",
+        "ZP2015_FUTURE_UNITS",
+        "ZP2015_UNIT_ACCESS",
+        "ZP2015_UNIT_INFO_RIGHTS",
+        "ZP2015_UNIT_COPY_RIGHTS",
+        "ZP2015_UNIT_CURRENT_STATUS",
+        "ZP2015_COPY_SOURCE",
+        "ZP2015_RELATED_UNITS",
+        "ZP2015_EXISTING_COPY",
+        "ZP2015_NOTE",
+        "ZP2015_ARRANGEMENT_INFO",
+        "ZP2015_ARRANGE_RULES",
+        "ZP2015_STORAGE_COND",
+        "ZP2015_SIZE",
+        "ZP2015_ITEM_MAT",
+        "ZP2015_PART",
+        "ZP2015_WRITING",
+        "ZP2015_EDITION"))
 then
   $itemType.setRepeatable(false);
 end
@@ -47,7 +69,29 @@ rule "Vždy možné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
-		"ZP2015_NOTE"))
+		"ZP2015_FORMAL_TITLE",
+        "ZP2015_UNIT_DATE_TEXT",
+        "ZP2015_UNIT_HIST",
+        "ZP2015_UNIT_ARR",
+        "ZP2015_UNIT_CONTENT",
+        "ZP2015_UNIT_SOURCE",
+        "ZP2015_FUTURE_UNITS",
+        "ZP2015_UNIT_ACCESS",
+        "ZP2015_UNIT_INFO_RIGHTS",
+        "ZP2015_UNIT_COPY_RIGHTS",
+        "ZP2015_UNIT_CURRENT_STATUS",
+        "ZP2015_COPY_SOURCE",
+        "ZP2015_RELATED_UNITS",
+        "ZP2015_EXISTING_COPY",
+        "ZP2015_NOTE",
+        "ZP2015_ARRANGEMENT_INFO",
+        "ZP2015_ARRANGE_RULES",
+        "ZP2015_STORAGE_COND",
+        "ZP2015_SIZE",
+        "ZP2015_ITEM_MAT",
+        "ZP2015_PART",
+        "ZP2015_WRITING",
+        "ZP2015_EDITION"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
