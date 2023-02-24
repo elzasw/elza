@@ -812,11 +812,11 @@ then
 end
 
 
-// PP_005 Zneplatněný záznam možný pro složky a jednotlivosti
-rule "PP_005_01 Zneplatněný záznam možný pro složky a jednotlivosti - prvek popisu"
+// PP_005 Zneplatněný záznam možný pro složky, jednotlivosti a části jednotlivostí
+rule "PP_005_01 Zneplatněný záznam možný pro složky, jednotlivosti a části jednotlivostí - prvek popisu"
 no-loop
 when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in (
         // Zneplatněný záznam
         "ZP2015_INVALID_RECORD"
@@ -825,10 +825,10 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "PP_005_02 Zneplatněný záznam možný pro složky a jednotlivosti - specifikace"
+rule "PP_005_02 Zneplatněný záznam možný pro složky, jednotlivosti a části jednotlivostí - specifikace"
 no-loop
 when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in (
         // Zneplatněný záznam
         "ZP2015_INVALID_RECORD"
