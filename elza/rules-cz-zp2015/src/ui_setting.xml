@@ -14,6 +14,13 @@
         <!-- slovenština -->
         <favorite-item>LNG_slo</favorite-item>
     </favorite-item-specs>
+    <favorite-item-specs code="ZP2015_ARCHDESC_LANG">
+        <!-- němčina -->
+        <favorite-item>LNG_ger</favorite-item>
+        <!-- angličtina -->
+        <favorite-item>LNG_eng</favorite-item>
+    </favorite-item-specs>
+
 
     <!-- Výchozí prvky pro tabulkové zobrazení -->
     <grid-view>
