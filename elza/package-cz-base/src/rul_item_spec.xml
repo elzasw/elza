@@ -938,6 +938,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_per">
         <name>(novo)perština</name>
@@ -948,6 +949,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_abk">
         <name>abcházština</name>
@@ -957,6 +959,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_afr">
         <name>afrikánština</name>
@@ -967,6 +970,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_akk">
         <name>akkadština</name>
@@ -977,6 +981,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_alb">
         <name>albánština</name>
@@ -987,6 +992,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gsw">
         <name>alsaština</name>
@@ -997,6 +1003,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_amh">
         <name>amharština</name>
@@ -1007,6 +1014,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_eng">
         <name>angličtina</name>
@@ -1017,6 +1025,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ara">
         <name>arabština</name>
@@ -1027,6 +1036,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_arc">
         <name>aramejština</name>
@@ -1037,6 +1047,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_arm">
         <name>arménština</name>
@@ -1047,6 +1058,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_asm">
         <name>asámština</name>
@@ -1057,6 +1069,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0as">
         <name>assyrština</name>
@@ -1067,6 +1080,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_aze">
         <name>azerbajdžánština</name>
@@ -1077,6 +1091,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ba">
         <name>babylonština</name>
@@ -1087,6 +1102,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bur">
         <name>barmština</name>
@@ -1096,6 +1112,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_baq">
         <name>baskičtina</name>
@@ -1105,6 +1122,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bak">
         <name>baškirština</name>
@@ -1115,6 +1133,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bel">
         <name>běloruština</name>
@@ -1125,6 +1144,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ben">
         <name>bengálština</name>
@@ -1135,6 +1155,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dzo">
         <name>bhútánština</name>
@@ -1144,6 +1165,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bih">
         <name>Bihárštiina (maithilština)</name>
@@ -1154,6 +1176,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_afa">
         <name>blíže neurčený afroasijský jazyk</name>
@@ -1163,6 +1186,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tut">
         <name>blíže neurčený altajský jazyk</name>
@@ -1172,6 +1196,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_aav">
         <name>blíže neurčený austroasijský jazyk</name>
@@ -1181,6 +1206,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_map">
         <name>blíže neurčený austronéský jazyk</name>
@@ -1190,6 +1216,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bat">
         <name>blíže neurčený baltský jazyk</name>
@@ -1200,6 +1227,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dra">
         <name>blíže neurčený drávidský jazyk</name>
@@ -1209,6 +1237,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_esx">
         <name>blíže neurčený eskymácko-aleutský jazyk</name>
@@ -1218,6 +1247,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gem">
         <name>blíže neurčený germánský jazyk</name>
@@ -1228,6 +1258,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ni">
         <name>blíže neurčený indiánský jazyk</name>
@@ -1237,6 +1268,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_inc">
         <name>blíže neurčený indoárijský jazyk</name>
@@ -1247,6 +1279,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ine">
         <name>blíže neurčený indoevropský jazyk</name>
@@ -1256,6 +1289,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_iir">
         <name>blíže neurčený indoíránský jazyk</name>
@@ -1266,6 +1300,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0nz">
         <name>blíže neurčený izolovaný jazyk</name>
@@ -1275,6 +1310,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ccs">
         <name>blíže neurčený kartvelský jazyk</name>
@@ -1284,6 +1320,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cel">
         <name>blíže neurčený keltský jazyk</name>
@@ -1294,6 +1331,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_crs">
         <name>blíže neurčený kreolský jazyk</name>
@@ -1303,6 +1341,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_xgn">
         <name>blíže neurčený mongolský jazyk</name>
@@ -1313,6 +1352,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mun">
         <name>blíže neurčený mundský jazyk</name>
@@ -1323,6 +1363,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nic">
         <name>blíže neurčený nigerokonžský jazyk</name>
@@ -1332,6 +1373,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_roa">
         <name>blíže neurčený románský jazyk</name>
@@ -1342,6 +1384,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sem">
         <name>blíže neurčený semitský jazyk</name>
@@ -1352,6 +1395,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ccn">
         <name>blíže neurčený severokavkazský jazyk</name>
@@ -1361,6 +1405,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sla">
         <name>blíže neurčený slovanský jazyk</name>
@@ -1371,6 +1416,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tai">
         <name>blíže neurčený tajsko-kadajský jazyk</name>
@@ -1380,6 +1426,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sit">
         <name>blíže neurčený tibetskočínský jazyk</name>
@@ -1389,6 +1436,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_trk">
         <name>blíže neurčený turkický jazyk</name>
@@ -1399,6 +1447,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0uj">
         <name>blíže neurčený umělý jazyk</name>
@@ -1408,6 +1457,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_urj">
         <name>blíže neurčený uralský jazyk</name>
@@ -1417,6 +1467,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_brx">
         <name>bodo</name>
@@ -1426,6 +1477,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bos">
         <name>bosenština</name>
@@ -1436,6 +1488,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bre">
         <name>bretonština</name>
@@ -1446,6 +1499,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bul">
         <name>bulharština</name>
@@ -1456,6 +1510,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cze">
         <name>čeština</name>
@@ -1466,6 +1521,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_chi">
         <name>čínština</name>
@@ -1475,6 +1531,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dan">
         <name>dánština</name>
@@ -1485,6 +1542,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_doi">
         <name>dógrí</name>
@@ -1495,6 +1553,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nds">
         <name>dolnoněmčina</name>
@@ -1505,6 +1564,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_egy">
         <name>egyptština</name>
@@ -1514,6 +1574,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_epo">
         <name>esperanto</name>
@@ -1523,6 +1584,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_est">
         <name>estonština</name>
@@ -1532,6 +1594,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fao">
         <name>faerština</name>
@@ -1542,6 +1605,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fin">
         <name>finština</name>
@@ -1551,6 +1615,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fre">
         <name>francouzština</name>
@@ -1561,6 +1626,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fry">
         <name>fríština</name>
@@ -1571,6 +1637,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gag">
         <name>gagauzština</name>
@@ -1581,6 +1648,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_glg">
         <name>galicijština</name>
@@ -1591,6 +1659,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kal">
         <name>grónština</name>
@@ -1600,6 +1669,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_geo">
         <name>gruzínština</name>
@@ -1609,6 +1679,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_guj">
         <name>gudžarátština</name>
@@ -1619,6 +1690,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hau">
         <name>hauština</name>
@@ -1629,6 +1701,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_zkz">
         <name>hazarština</name>
@@ -1639,6 +1712,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hin">
         <name>hindština</name>
@@ -1649,6 +1723,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dut">
         <name>holandština (nizozemština)</name>
@@ -1659,6 +1734,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hit">
         <name>chetitština</name>
@@ -1669,6 +1745,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hrv">
         <name>chorvatština</name>
@@ -1679,6 +1756,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ido">
         <name>ido</name>
@@ -1688,6 +1766,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ind">
         <name>indonéština</name>
@@ -1697,6 +1776,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ina">
         <name>interlingua</name>
@@ -1706,6 +1786,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ile">
         <name>interlingue</name>
@@ -1715,6 +1796,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gle">
         <name>irština</name>
@@ -1725,6 +1807,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ice">
         <name>islandština</name>
@@ -1735,6 +1818,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ita">
         <name>italština</name>
@@ -1745,6 +1829,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_jpn">
         <name>japonština</name>
@@ -1754,6 +1839,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_yid">
         <name>jidiš</name>
@@ -1764,6 +1850,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0jd">
         <name>judendeutsch</name>
@@ -1774,6 +1861,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kan">
         <name>kannadština (též kannarština)</name>
@@ -1783,6 +1871,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kas">
         <name>kašmírština</name>
@@ -1793,6 +1882,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_csb">
         <name>kašubština</name>
@@ -1803,6 +1893,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cat">
         <name>katalánština</name>
@@ -1813,6 +1904,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
 	<item-spec code="LNG_kaz">
 		<name>kazaština</name>
@@ -1823,6 +1915,7 @@
 		<item-type-assign code="NM_LANG"/>
 		<item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
 	</item-spec>
     <item-spec code="LNG_khm">
         <name>khmérština</name>
@@ -1832,6 +1925,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kok">
         <name>konkánština</name>
@@ -1842,6 +1936,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cop">
         <name>koptština</name>
@@ -1851,6 +1946,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kor">
         <name>korejština</name>
@@ -1860,6 +1956,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cos">
         <name>korsičtina</name>
@@ -1870,6 +1967,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_crh">
         <name>krymská tatarština</name>
@@ -1880,6 +1978,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kur">
         <name>kurdština</name>
@@ -1890,6 +1989,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kir">
         <name>kyrgyzština</name>
@@ -1900,6 +2000,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lao">
         <name>laoština</name>
@@ -1909,6 +2010,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lat">
         <name>latina</name>
@@ -1919,6 +2021,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lit">
         <name>litevština</name>
@@ -1929,6 +2032,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_liv">
         <name>livština</name>
@@ -1938,6 +2042,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lav">
         <name>lotyština</name>
@@ -1948,6 +2053,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ltz">
         <name>lucemburština</name>
@@ -1958,6 +2064,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dsb">
         <name>lužická srbština dolní (dolnolužičtina)</name>
@@ -1968,6 +2075,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hsb">
         <name>lužická srbština horní (hornolužičtina)</name>
@@ -1978,6 +2086,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hun">
         <name>maďarština</name>
@@ -1987,6 +2096,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mac">
         <name>makedonština</name>
@@ -1997,6 +2107,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mal">
         <name>malajalámština</name>
@@ -2006,6 +2117,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_may">
         <name>malajština</name>
@@ -2015,6 +2127,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mlt">
         <name>maltština</name>
@@ -2025,6 +2138,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mni">
         <name>manípurština</name>
@@ -2034,6 +2148,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mar">
         <name>maráthština</name>
@@ -2044,6 +2159,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mol">
         <name>moldavština</name>
@@ -2054,6 +2170,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mon">
         <name>mongolština</name>
@@ -2064,6 +2181,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ger">
         <name>němčina</name>
@@ -2074,6 +2192,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nor">
         <name>norština</name>
@@ -2084,6 +2203,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_oci">
         <name>okcitánština</name>
@@ -2094,6 +2214,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nep">
         <name>pahárské jazyky (nepálština)</name>
@@ -2104,6 +2225,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pan">
         <name>pandžábština</name>
@@ -2114,6 +2236,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pus">
         <name>paštština</name>
@@ -2124,6 +2247,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pol">
         <name>polština</name>
@@ -2134,6 +2258,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_por">
         <name>portugalština</name>
@@ -2144,6 +2269,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_roh">
         <name>rétorománština</name>
@@ -2154,6 +2280,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rom">
         <name>romština</name>
@@ -2164,6 +2291,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rum">
         <name>rumunština</name>
@@ -2174,6 +2302,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ru">
         <name>rusínština</name>
@@ -2184,6 +2313,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rus">
         <name>ruština</name>
@@ -2194,6 +2324,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gre">
         <name>řečtina</name>
@@ -2204,6 +2335,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_san">
         <name>sanskrt</name>
@@ -2214,6 +2346,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sat">
         <name>santalština</name>
@@ -2224,6 +2357,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_snd">
         <name>sindština</name>
@@ -2234,6 +2368,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sin">
         <name>sinhálština</name>
@@ -2244,6 +2379,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gla">
         <name>skotská gaelština</name>
@@ -2254,6 +2390,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_slo">
         <name>slovenština</name>
@@ -2264,6 +2401,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_slv">
         <name>slovinština</name>
@@ -2274,6 +2412,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0sl">
         <name>slovio</name>
@@ -2283,6 +2422,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0sc">
         <name>srbochorvatština</name>
@@ -2293,6 +2433,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_srp">
         <name>srbština</name>
@@ -2303,6 +2444,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hbo">
         <name>stará hebrejština</name>
@@ -2313,6 +2455,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_peo">
         <name>stará perština</name>
@@ -2323,6 +2466,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_chu">
         <name>staroslověnština, církevní slovanština</name>
@@ -2333,6 +2477,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pal">
         <name>střední perština</name>
@@ -2343,6 +2488,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sux">
         <name>sumerština</name>
@@ -2353,6 +2499,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_swa">
         <name>svahilština</name>
@@ -2362,6 +2509,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_spa">
         <name>španělština</name>
@@ -2372,6 +2520,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_swe">
         <name>švédština</name>
@@ -2382,6 +2531,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tgk">
         <name>tádžičtina</name>
@@ -2392,6 +2542,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tam">
         <name>tamilština</name>
@@ -2401,6 +2552,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tat">
         <name>tatarština</name>
@@ -2411,6 +2563,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tel">
         <name>telugština</name>
@@ -2420,6 +2573,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tha">
         <name>thajština</name>
@@ -2429,6 +2583,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tib">
         <name>tibetština</name>
@@ -2438,6 +2593,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tur">
         <name>turečtina</name>
@@ -2448,6 +2604,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tuk">
         <name>turkménština</name>
@@ -2458,6 +2615,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_uig">
         <name>ujgurština</name>
@@ -2468,6 +2626,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ukr">
         <name>ukrajinština</name>
@@ -2478,6 +2637,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_urd">
         <name>urdština</name>
@@ -2488,6 +2648,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ori">
         <name>urijština</name>
@@ -2498,6 +2659,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_uzb">
         <name>uzbečtina</name>
@@ -2508,6 +2670,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_wel">
         <name>velština</name>
@@ -2518,6 +2681,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_vie">
         <name>vietnamština</name>
@@ -2527,6 +2691,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_vol">
         <name>volapük</name>
@@ -2536,6 +2701,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="NT_OFFICIAL">
         <name>úřední</name>
