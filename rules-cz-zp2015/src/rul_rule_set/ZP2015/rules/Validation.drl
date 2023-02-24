@@ -60,7 +60,7 @@ when
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
 	not ( DescItem(type in ( "ZP2015_UNIT_DATE" ) ) from $items )
 	// zneplatněný záznam
-	not ( DescItem(type in ( "ZP2015_INVALID_RECORD" ) ) from $items )
+	not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
 end
