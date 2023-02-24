@@ -34,11 +34,19 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+rule "Doporučené prvky popisu"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in (
+		"ZP2015_TITLE"))
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
 rule "Vždy možné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
-        "ZP2015_TITLE",
 		"ZP2015_NOTE"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
