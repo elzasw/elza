@@ -289,4 +289,12 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+        <item-type code="ZP2015_ARCHDESC_LANG" data-type="ENUM">
+        <name>Jazyk archivního popisu</name>
+        <shortcut>Jazyk popisu</shortcut>
+        <description>Jazyk archivního popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
 </item-types>
