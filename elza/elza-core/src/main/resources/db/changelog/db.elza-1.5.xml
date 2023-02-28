@@ -2186,4 +2186,10 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
             <column name="page" type="int" />
         </addColumn>
 	</changeSet>
+
+	<changeSet id="20230227233000" author="ppy">
+        <createIndex indexName="ap_last_update_idx" tableName="ap_access_point" unique="false">
+            <column name="last_update" type="timestamp" />
+        </createIndex>
+	</changeSet>
 </databaseChangeLog>

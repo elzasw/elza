@@ -122,6 +122,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
@@ -309,6 +310,7 @@ public class AccessPointService {
                                                         @Nullable final Collection<Integer> apTypeIds,
                                                         final Integer firstResult,
                                                         final Integer maxResults,
+                                                        final OrderBy orderBy,
                                                         @Nullable final ArrFund fund,
                                                         @Nullable final Integer scopeId,
                                                         @Nullable final Collection<StateApproval> approvalStates,
@@ -317,7 +319,10 @@ public class AccessPointService {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
+        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults,
+                                                                      orderBy,
+                                                                      scopeIdsForSearch, approvalStates, searchTypeName,
+                                                                      searchTypeUsername);
     }
 
 
@@ -340,7 +345,9 @@ public class AccessPointService {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
+        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch,
+                                                                           approvalStates, searchTypeName,
+                                                                           searchTypeUsername);
     }
 
     /**
@@ -2679,19 +2686,19 @@ public class AccessPointService {
         Set<Integer> scopeList = new HashSet<>();
         scopeList.add(scopeId);
         scopeList.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(Collections.singleton(scopeId)));
-        List<ApState> stateList = apAccessPointRepository.findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max, scopeList, null , null, null);
+        // TODO: add query for number of results
 
-//        ApStateSpecification stateSpecification = new ApStateSpecification(filter);
-//        PageRequest pageRequest = new PageRequest(from, max);
-//        Page<ApState> pageResult = stateRepository.findAll(stateSpecification, pageRequest);
+        List<ApState> apStates = apAccessPointRepository
+                .findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max,
+                                                // TODO: sort only for smaller number of records
+                                                OrderBy.PREF_NAME,
+                                                scopeList, null, null, null);
 
-        final List<ApAccessPoint> accessPoints = stateList.stream()
-                .map(ApState::getAccessPoint)
-                .collect(Collectors.toList());
-
+        Collection<ApAccessPoint> accessPoints = apStates.stream()
+                .map(ApState::getAccessPoint).collect(Collectors.toList());
         final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
 
-        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size(), nameMap);
+        return searchFilterFactory.createArchiveEntityResultListVO(apStates, apStates.size(), nameMap);
     }
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {

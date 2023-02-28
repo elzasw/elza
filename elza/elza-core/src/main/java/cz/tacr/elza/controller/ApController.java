@@ -112,6 +112,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -303,7 +304,12 @@ public class ApController {
                                                                                        states, searchTypeNameFinal,
                                                                                        searchTypeUsernameFinal);
 
-            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, fund,
+            OrderBy orderBy = OrderBy.LAST_CHANGE;
+            if (foundRecordsCount < 1000) {
+                orderBy = OrderBy.PREF_NAME;
+            }
+            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy,
+                                                                             fund,
                                                                              scopeId, states, searchTypeNameFinal,
                                                                              searchTypeUsernameFinal);
 
