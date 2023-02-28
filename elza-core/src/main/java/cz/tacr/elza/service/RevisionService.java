@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -643,6 +644,16 @@ public class RevisionService {
                                             .set("revItemId", revItem.getItemId());
                         }
                     }
+                    // return to original item
+                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
+                        if (origItem == null) {
+                            // source item not found
+                            throw new BusinessException("ApItem not found, objectId: " + objectId,
+                                    BaseCode.ID_NOT_EXIST)
+                                            .set("objectId", objectId);
+                        }
+                        // simply skip value -> it will be deleted
+                    } else
                     // modifying current item
                     if (itemVO.equalsValue(revItem)) {
                         // no change -> don't delete
