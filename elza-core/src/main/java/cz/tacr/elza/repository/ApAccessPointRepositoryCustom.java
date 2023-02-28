@@ -7,13 +7,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.domain.ApState;
 import org.hibernate.ScrollableResults;
+
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 
 
 /**
@@ -23,26 +21,39 @@ import org.hibernate.ScrollableResults;
  */
 public interface ApAccessPointRepositoryCustom {
 
+    public enum OrderBy {
+        LAST_CHANGE,
+        PREF_NAME
+    };
+
     /**
-     * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
-     * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
+     * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole
+     * (record, charateristics, comment),
+     * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný
+     * řetězec je null, nevyhodnocuje se.
      *
-     * @param searchRecord hledaný řetězec, může být null
-     * @param apTypeIds typ záznamu
-     * @param firstResult index prvního záznamu, začíná od 0
-     * @param maxResults počet výsledků k vrácení
-     * @param scopeIds id tříd, do který spadají rejstříky
+     * @param searchRecord
+     *            hledaný řetězec, může být null
+     * @param apTypeIds
+     *            typ záznamu
+     * @param firstResult
+     *            index prvního záznamu, začíná od 0
+     * @param maxResults
+     *            počet výsledků k vrácení
+     * @param scopeIds
+     *            id tříd, do který spadají rejstříky
+     * @return Return list of states and prefetched ApAccessPoints
      */
     List<ApState> findApAccessPointByTextAndType(
-            @Nullable String searchRecord,
-            @Nullable Collection<Integer> apTypeIds,
-            Integer firstResult,
-            Integer maxResults,
-            @Nullable Set<Integer> scopeIds,
-            @Nullable Collection<ApState.StateApproval> approvalStates,
-            @Nullable SearchType searchTypeName,
-            @Nullable SearchType searchTypeUsername);
-
+                                                 @Nullable String searchRecord,
+                                                 @Nullable Collection<Integer> apTypeIds,
+                                                 Integer firstResult,
+                                                 Integer maxResults,
+                                                 OrderBy orderBy,
+                                                 Set<Integer> scopeIds,
+                                                 @Nullable Collection<ApState.StateApproval> approvalStates,
+                                                 @Nullable SearchType searchTypeName,
+                                                 @Nullable SearchType searchTypeUsername);
 
     /**
      * Celkový počet záznamů v DB pro funkci {@link #findApAccessPointByTextAndType(String, Collection, Integer, Integer, ApAccessPoint, Set, Boolean)}
