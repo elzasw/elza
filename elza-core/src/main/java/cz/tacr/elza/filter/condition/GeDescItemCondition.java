@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -17,9 +17,9 @@ public class GeDescItemCondition<T> extends AbstractDescItemConditionWithValue<T
     }
 
     @Override
-    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-        Assert.notNull(queryBuilder);
+    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
+        Assert.notNull(factory);
 
-        return queryBuilder.range().onField(getAttributeName()).above(getValue()).createQuery();
+        return factory.range().field(getAttributeName()).greaterThan(getValue()).toPredicate();
     }
 }

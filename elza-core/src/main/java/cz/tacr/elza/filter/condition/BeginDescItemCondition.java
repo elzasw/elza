@@ -1,8 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.util.Assert;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Začíná na.
@@ -17,9 +16,7 @@ public class BeginDescItemCondition<T> extends AbstractDescItemConditionWithValu
     }
 
     @Override
-    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-        Assert.notNull(queryBuilder);
-
-        return queryBuilder.keyword().wildcard().onField(getAttributeName()).matching(getValue() + "*").createQuery();
+    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
+        return  factory.wildcard().field(getAttributeName()).matching(getValue() + "*").toPredicate();
     }
 }
