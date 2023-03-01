@@ -105,14 +105,14 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
         if (orderBy == OrderBy.LAST_CHANGE) {
             // ordered by lastUpdate
-            query.orderBy(builder.asc(apJoin.get(ApAccessPoint.FIELD_LAST_UPDATE)));
+            query.orderBy(builder.desc(apJoin.get(ApAccessPoint.FIELD_LAST_UPDATE)));
         } else {
             Root<ApIndex> indexRoot = query.from(ApIndex.class);
             whereConds.add(builder.equal(indexRoot.get(ApIndex.PART_ID),
                                          apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
             whereConds.add(builder.equal(indexRoot.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
-            query.orderBy(builder.asc(indexRoot.get(ApIndex.VALUE)),
-                          builder.asc(apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)));
+            query.orderBy(builder.desc(indexRoot.get(ApIndex.VALUE)),
+                          builder.desc(apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)));
         }
         query.where(whereConds.toArray(new Predicate[whereConds.size()]));
 

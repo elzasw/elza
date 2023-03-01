@@ -2188,8 +2188,16 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 	</changeSet>
 
 	<changeSet id="20230227233000" author="ppy">
+	    <sql dbms="postgresql">UPDATE ap_access_point ap SET last_update = src.change_date FROM (
+          SELECT ap.access_point_id, MIN(ac.change_date) as change_date FROM ap_access_point ap 
+          JOIN ap_state as2 on as2.access_point_id = ap.access_point_id 
+          JOIN ap_change ac on ac.change_id = as2.create_change_id 
+          WHERE ap.last_update is null
+          GROUP BY ap.access_point_id
+         ) src WHERE src.access_point_id=ap.access_point_id</sql>
+        <addNotNullConstraint tableName="ap_access_point" columnName="last_update"/>
         <createIndex indexName="ap_last_update_idx" tableName="ap_access_point" unique="false">
             <column name="last_update" type="timestamp" />
-        </createIndex>
+        </createIndex>        
 	</changeSet>
 </databaseChangeLog>
