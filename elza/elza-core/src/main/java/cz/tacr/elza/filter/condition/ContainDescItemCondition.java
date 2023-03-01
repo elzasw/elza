@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -17,10 +17,9 @@ public class ContainDescItemCondition<T> extends AbstractDescItemConditionWithVa
     }
 
     @Override
-    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-        Assert.notNull(queryBuilder);
+    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
+        Assert.notNull(factory);
 
-        return queryBuilder.keyword().wildcard().onField(getAttributeName()).matching("*" + getValue() + "*").
-                createQuery();
+        return factory.wildcard().field(getAttributeName()).matching("*" + getValue() + "*").toPredicate();
     }
 }

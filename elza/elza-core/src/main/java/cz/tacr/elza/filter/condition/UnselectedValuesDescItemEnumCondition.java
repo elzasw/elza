@@ -2,8 +2,8 @@ package cz.tacr.elza.filter.condition;
 
 import java.util.List;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 
 /**
@@ -25,9 +25,9 @@ public class UnselectedValuesDescItemEnumCondition extends SelectedValuesDescIte
    }
 
    @Override
-   public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-       Query query = super.createLuceneQuery(queryBuilder);
+   public SearchPredicate createLucenePredicate(final SearchPredicateFactory factory) {
+       SearchPredicate predicate = super.createLucenePredicate(factory);
 
-       return queryBuilder.bool().must(query).not().createQuery();
+       return factory.bool().mustNot(predicate).toPredicate();
    }
 }

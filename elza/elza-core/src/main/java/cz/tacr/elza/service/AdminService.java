@@ -8,9 +8,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.hibernate.search.MassIndexer;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.Search;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -60,15 +60,13 @@ public class AdminService {
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
-
+        SearchSession session = Search.session(entityManager);
         if (isIndexingRunning()) {
             return;
         }
-
-        MassIndexer createIndexer = fullTextEntityManager.createIndexer();
-        createIndexer.progressMonitor(indexerProgressMonitor);
-        indexerStatus = createIndexer.start();
+        MassIndexer massIndexer = session.massIndexer();
+        massIndexer.monitor(indexerProgressMonitor);
+        indexerStatus = massIndexer.start().toCompletableFuture();
     }
 
     /**

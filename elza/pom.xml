@@ -27,7 +27,7 @@
 
         <cxf.version>3.3.7</cxf.version>
         <hibernate.version>6.1.7.Final</hibernate.version>
-        <hibernate.lucene.version>5.5.5</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
+        <hibernate.lucene.version>6.6.0</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
             byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
         <spring.boot.version>3.0.2</spring.boot.version>
@@ -235,10 +235,11 @@
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-<!--            <dependency> TODO pasek-->
-<!--                <groupId>org.hibernate</groupId>-->
-<!--                <artifactId>hibernate-search-orm</artifactId>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
 <!--            <dependency>-->
 <!--                <groupId>org.hibernate</groupId>-->
 <!--                <artifactId>hibernate-search-serialization-avro</artifactId>-->
