@@ -109,6 +109,8 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             }
         }
 
+        // prepare sec context
+        SecurityContext originalSecCtx = SecurityContextHolder.getContext();
         // Run action
         try {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
@@ -125,19 +127,23 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
                 logger.error("Failed to handle exception: ", eI);
                 throw eI;
             }
-
+        } finally {
+            SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
+            if (emptyContext.equals(originalSecCtx)) {
+                SecurityContextHolder.clearContext();
+            } else {
+                SecurityContextHolder.setContext(originalSecCtx);
+            }
         }
     }
 
     private void executeInTransaction() {
-        // prepare sec context
-        SecurityContext originalSecCtx = SecurityContextHolder.getContext();
+        // set active user
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         SecurityContext ctx = userService.createSecurityContext(bulkActionRun.getUserId());
         SecurityContextHolder.setContext(ctx);
 
         try {
-
             // prepare context object
             ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
 
@@ -150,12 +156,6 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             bulkActionHelperService.onFinished(bulkActionRun);
 
         } finally {
-            SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
-            if (emptyContext.equals(originalSecCtx)) {
-                SecurityContextHolder.clearContext();
-            } else {
-                SecurityContextHolder.setContext(originalSecCtx);
-            }
             eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
         }
     }

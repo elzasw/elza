@@ -71,7 +71,7 @@ public class EventNotificationService implements IEventNotificationService {
             committedEvents.clear();
         }
 
-        //prozatím nejpreve odešleme událost do kontextu aplikace a poté až klientovi
+        //prozatím nejprve odešleme událost do kontextu aplikace a poté až klientovi
         eventBus.post(new EventChangeMessage(valuesCopy));
         valuesCopy.forEach(eventDispatcher::dispatchEvent);
     }
