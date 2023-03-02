@@ -1175,17 +1175,34 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "TA_003 Pokud je na složce uveden typ archiválie je nutné uvést počet"
+rule "TA_003_01 Pokud je na logické složce uveden typ archiválie, je POVINNÉ uvést počet"
 no-loop
 when 
     $activeLevel: ActiveLevel( )
     // jedna se o logickou slozku
-    DescItem(type=="ZP2015_FOLDER_TYPE") from $activeLevel.ownDescItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
     // ma uveden typ archivalie
     DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
+    // výjimka pro zneplatněný záznam
+    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
+end
+
+rule "TA_003_02 Pokud je na logické složce uveden typ archiválie, je MOŽNÉ uvést počet - zneplatněný záznam"
+no-loop
+when 
+    $activeLevel: ActiveLevel( )
+    // jedna se o logickou slozku
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
+    // ma uveden typ archivalie
+    DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
+    // jedná se o zneplatněný záznam
+    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 
