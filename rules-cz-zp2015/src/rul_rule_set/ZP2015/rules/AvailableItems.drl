@@ -1135,7 +1135,7 @@ end
 //---------------------------------------------------
 
 // TA_001 U složky s typem EJ se uvádí její druh EJ a počet
-rule "TA_001_01 U složky s typem EJ se uvádí její druh EJ a počet"
+rule "TA_001_01 U složky s typem EJ se uvádí její druh EJ a počet - povinně"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1148,7 +1148,7 @@ then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
-rule "TA_001_02 U složky s typem EJ se uvádí její druh EJ a počet - zneplatněný záznam - možné"
+rule "TA_001_02 U složky s typem EJ se uvádí její druh EJ a počet - zneplatněný záznam - doporučené"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1156,9 +1156,9 @@ when
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
     // výjimka pro zneplatněný záznam
     DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE") )
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT") )
 then
-    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "TA_002 Pod množstevní složkou lze uvést u podřízené složky druh archiválií a počet"
@@ -1190,7 +1190,7 @@ then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
-rule "TA_003_02 Pokud je na logické složce uveden typ archiválie, je MOŽNÉ uvést počet - zneplatněný záznam"
+rule "TA_003_02 Pokud je na logické složce uveden typ archiválie, je DOPORUČENÉ uvést počet - zneplatněný záznam"
 no-loop
 when 
     $activeLevel: ActiveLevel( )
@@ -1202,7 +1202,7 @@ when
     DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
 then
-    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 
