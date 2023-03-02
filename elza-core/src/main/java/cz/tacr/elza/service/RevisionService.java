@@ -633,6 +633,17 @@ public class RevisionService {
                     notDeletedApItems.add(origItem);
                 }
                 if(revItem!=null) {
+                    // return to original item
+                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
+                        if (origItem == null) {
+                            // source item not found
+                            throw new BusinessException("ApItem not found, objectId: " + objectId,
+                                    BaseCode.ID_NOT_EXIST)
+                                            .set("objectId", objectId);
+                        }
+                        // simply skip item -> revItem will be deleted
+                        continue;
+                    }
                     if(itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
                         if (!itemVO.getId().equals(revItem.getItemId())) {
@@ -644,16 +655,6 @@ public class RevisionService {
                                             .set("revItemId", revItem.getItemId());
                         }
                     }
-                    // return to original item
-                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
-                        if (origItem == null) {
-                            // source item not found
-                            throw new BusinessException("ApItem not found, objectId: " + objectId,
-                                    BaseCode.ID_NOT_EXIST)
-                                            .set("objectId", objectId);
-                        }
-                        // simply skip value -> it will be deleted
-                    } else
                     // modifying current item
                     if (itemVO.equalsValue(revItem)) {
                         // no change -> don't delete
@@ -663,6 +664,11 @@ public class RevisionService {
                         createItems.add(itemVO);
                     }
                 } else {
+                    // keep original item if not updated
+                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
+                        // simply skip item 
+                        continue;
+                    }
                     // origItem exists but not revItem
                     // -> new revItem has to be created
                     // ID should match
