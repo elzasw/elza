@@ -76,7 +76,6 @@
             <group code="01_BASE">
                 <name>Pořádání</name>
                 <type code="ZP2015_ARRANGEMENT_TYPE" width="2"/>
-                <type code="ZP2015_ALTERNATIVE_DESCRIPTION_INLINE" width="0"/>
                 <type code="ZP2015_ARCHDESC_LANG" width="2"/>
                 <type code="ZP2015_OUTPUT_TYPE" width="2"/>
             </group>
@@ -242,6 +241,7 @@
                 <type code="ZP2015_ATTACHMENT" width="2"/>
                 <type code="ZP2015_ITEM_LINK" width="0"/>
                 <type code="ZP2015_UNIT_COUNT_ITEM" width="2"/>
+                <type code="ZP2015_ALTERNATIVE_DESCRIPTION_INLINE" width="0"/>
                 <!-- Prvky pro vystup -->
                 <type code="ZP2015_DATE_RANGE" width="2"/>
                 <type code="ZP2015_UNIT_COUNT_TABLE" width="3"/>
