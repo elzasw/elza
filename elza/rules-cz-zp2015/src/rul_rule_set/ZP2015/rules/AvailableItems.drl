@@ -6284,13 +6284,24 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "PP_009 Změna povinnosti prvků v důsledku existence zneplatněného záznamu"
+rule "PP_009_001 Změna povinnosti prvků v důsledku existence zneplatněného záznamu"
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
     // pokud je zneplatneny zaznam
     DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
-    $itemType: RulItemTypeExt( )
+    $itemType: RulItemTypeExt( code not in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID") )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "PP_009_002 Změna povinnosti prvků v důsledku existence zneplatněného záznamu"
+no-loop
+salience -300
+when  $activeLevel: ActiveLevel( )
+    // pokud je zneplatneny zaznam
+    DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID")  )
+then
+    $itemType.setMaxType(RulItemType.Type.POSSIBLE);
 end
