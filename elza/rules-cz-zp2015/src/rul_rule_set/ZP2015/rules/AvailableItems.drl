@@ -232,28 +232,14 @@ then
 end
 
 // HP_006 Složka musí mít uveden typ složky
-rule "HP_006_01 Složka musí mít uveden typ složky"
+rule "HP_006 Složka musí mít uveden typ složky"
 no-loop
 when
     $activeLevel : ActiveLevel( parent!=null  )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
-    // pokud neni zneplatneny zaznam
-    not ( DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
-end
-
-rule "HP_006_02 Složka musí mít uveden typ složky - zneplatněná, typ je možný"
-no-loop
-when
-    $activeLevel : ActiveLevel( parent!=null  )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
-    // pokud neni zneplatneny zaznam
-    DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
-then
-    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 rule "HP_007 Složka může být vždy typu logická"
@@ -424,8 +410,6 @@ when
           DescItem(type=="ZP2015_STORAGE_ID") from $level.descItems )
     // pevné spojení
     not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
-    // zneplatněný záznam
-    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // pokud je ulozeno v DA, potom je ukl.jednotka volitelna
     not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
@@ -458,8 +442,6 @@ when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.ownDescItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_LOGICAL") ) ) from $activeLevel.ownDescItems
-    // zneplatněný záznam
-    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // nemá uložení výše
     not DescItem(type=="ZP2015_STORAGE_ID" && inherited ) from $activeLevel.descItems
     // složka s dodatečnými EJ (obyvkle složka manip.seznamu)
@@ -512,8 +494,6 @@ when
     not DescItem(type in ("ZP2015_AIP_ID") ) from $activeLevel.descItems
     // nemá uložení výše
     not DescItem(type=="ZP2015_STORAGE_ID" && inherited ) from $activeLevel.descItems
-    // není zneplatněný záznam
-    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_STORAGE_ID") )
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
@@ -594,8 +574,6 @@ when
     not DescItem(type=="ZP2015_STORAGE_ID" && inherited ) from $activeLevel.descItems
     // jedná se o kartotéční zásuvku
     DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KTT_BOX") ) ) from $activeLevel.ownDescItems    
-    // není zneplatněný záznam
-    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
@@ -659,8 +637,6 @@ when
     not DescItem(type in ("ZP2015_AIP_ID") ) from $activeLevel.descItems
     // nemá uložení výše
     not DescItem(type=="ZP2015_STORAGE_ID" && inherited ) from $activeLevel.descItems
-    // není zneplatněný záznam
-    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code in ("ZP2015_STORAGE_ID") )
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
@@ -1135,31 +1111,17 @@ end
 //---------------------------------------------------
 
 // TA_001 U složky s typem EJ se uvádí její druh EJ a počet
-rule "TA_001_01 U složky s typem EJ se uvádí její druh EJ a počet - povinně"
+rule "TA_001 U složky s typem EJ se uvádí její druh EJ a počet - povinně"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     // ma nastaven typ slozky - slozka jednotlivosti
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
-    // výjimka pro zneplatněný záznam
-    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT") )
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
-rule "TA_001_02 U složky s typem EJ se uvádí její druh EJ a počet - zneplatněný záznam - doporučené"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    // ma nastaven typ slozky - slozka jednotlivosti
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $activeLevel.ownDescItems
-    // výjimka pro zneplatněný záznam
-    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT") )
-then
-    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
-end
 
 rule "TA_002 Pod množstevní složkou lze uvést u podřízené složky druh archiválií a počet"
 no-loop
@@ -1175,7 +1137,7 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "TA_003_01 Pokud je na logické složce uveden typ archiválie, je POVINNÉ uvést počet"
+rule "TA_003 Pokud je na logické složce uveden typ archiválie, je POVINNÉ uvést počet"
 no-loop
 when 
     $activeLevel: ActiveLevel( )
@@ -1183,26 +1145,9 @@ when
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
     // ma uveden typ archivalie
     DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
-    // výjimka pro zneplatněný záznam
-    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
-end
-
-rule "TA_003_02 Pokud je na logické složce uveden typ archiválie, je DOPORUČENÉ uvést počet - zneplatněný záznam"
-no-loop
-when 
-    $activeLevel: ActiveLevel( )
-    // jedna se o logickou slozku
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
-    // ma uveden typ archivalie
-    DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
-    // jedná se o zneplatněný záznam
-    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
-then
-    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 
@@ -1362,26 +1307,14 @@ end
 
 
 // TA_006 Druh archiválie - povinně u jednotlivosti a části jednotlivosti
-rule "TA_006_01 Druh archiválie - povinně u jednotlivosti a části jednotlivosti"
+rule "TA_006 Druh archiválie - povinně u jednotlivosti a části jednotlivosti"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
-    not ( DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems )
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
 then
     $itemType.setMinType(RulItemType.Type.REQUIRED);
-end
-
-rule "TA_006_02 Druh archiválie - u jednotlivosti a části jednotlivosti u zneplatněného záznamu"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_INVALID_RECORD" ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
-then
-    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 
@@ -6349,4 +6282,15 @@ when $itemType: RulItemTypeExt( code in (
      $itemSpec: RulItemSpecExt( ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "PP_009 Změna povinnosti prvků v důsledku existence zneplatněného záznamu"
+no-loop
+salience -300
+when  $activeLevel: ActiveLevel( )
+    // pokud je zneplatneny zaznam
+    DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    $itemType: RulItemTypeExt( )
+then
+    $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
 end
