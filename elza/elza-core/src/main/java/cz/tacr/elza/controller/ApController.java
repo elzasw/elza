@@ -95,6 +95,7 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -1285,9 +1286,10 @@ public class ApController {
     @Transactional
     @RequestMapping(value = {"/external/save/{accessPointId}",
     		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
-    public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
+    public Integer saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        ExtSyncsQueueItem item = camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        return item.getExtSyncsQueueItemId();
     }
 
     /**
