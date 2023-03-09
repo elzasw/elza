@@ -43,6 +43,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
@@ -63,7 +64,6 @@ import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.service.cam.BindingSyncInfo;
-import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -242,9 +242,27 @@ public class ExternalSystemService {
      * 
      * @param extSyncItemId
      */
-    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public void deleteQueueItem(final Integer extSyncItemId) {
-        extSyncsQueueItemRepository.deleteById(extSyncItemId);
+        Optional<ExtSyncsQueueItem> queueItem = extSyncsQueueItemRepository.findById(extSyncItemId);
+
+        if (queueItem.isPresent()) {
+
+            ExtSyncsQueueItem item = queueItem.get();
+            UsrUser loggedUser = userService.getLoggedUser();
+
+            // smazat záznam může pouze Admin nebo autor
+            if (!userService.hasPermission(Permission.ADMIN)) {
+                if (loggedUser == null || !Objects.equals(loggedUser.getUserId(), item.getUserId())) {
+                    throw new SystemException("Uživatel nemá oprávnění na vymazávání přístupového bodu ve frontě", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", item.getAccessPointId())
+                    .set("userId", item.getUserId());
+                }
+            }
+
+            if (queueItem.get().getState() != ExtAsyncQueueState.EXPORT_START) {
+                extSyncsQueueItemRepository.deleteById(extSyncItemId);
+            }
+        }
     }
 
     /**
@@ -604,7 +622,6 @@ public class ExternalSystemService {
         int recNo = 0;
 
         UsrUser user = userService.getLoggedUser();
-        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>();
         for (String recordCode : keyList) {
             recNo++;
             if (log.isDebugEnabled()) {
@@ -641,24 +658,11 @@ public class ExternalSystemService {
             }
             // update or add new items from CAM_COMPLETE
             if (ap != null || externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
-                if (ap != null) {
-                    extSyncsQueue.setAccessPoint(ap);
-                    extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
-                } else {
-                    extSyncsQueue.setState(ExtAsyncQueueState.IMPORT_NEW);
-                }
-                extSyncsQueue.setBinding(binding);
-                extSyncsQueue.setExternalSystem(externalSystem);
-                extSyncsQueue.setDate(OffsetDateTime.now());
-                extSyncsQueue.setUser(user);
-                extSyncsQueueItems.add(extSyncsQueue);
+                createExtSyncsQueueItem(ap, externalSystem, binding, null,
+                                        ap != null? ExtAsyncQueueState.UPDATE : ExtAsyncQueueState.IMPORT_NEW,
+                                        OffsetDateTime.now(),
+                                        user);
             }
-        }
-        if (!extSyncsQueueItems.isEmpty()) {
-            extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
-            // flush all items to the DB
-            extSyncsQueueItemRepository.flush();
         }
         if (log.isDebugEnabled()) {
             if (recNo%100 != 0) {
@@ -671,7 +675,7 @@ public class ExternalSystemService {
         // aktualizace dat
         bindingSync.setLastTransaction(lastTransaction);
         bindingSync.setPage(page);
-        bindingSyncRepository.save(bindingSync);
+        bindingSyncRepository.saveAndFlush(bindingSync);
     }
 
     @Transactional
@@ -714,4 +718,34 @@ public class ExternalSystemService {
         return ObjectListIterator.findIterable(bindings,
                                                bs -> bindingStateRepository.findByBindings(bs));
     }
+
+    /**
+     * Vytvoření záznamu ve frontě zpracování
+     * 
+     * @param accessPoint
+     * @param apExternalSystem
+     * @param stateMessage
+     * @param state
+     * @param date
+     * @param user
+     * @return
+     */
+    public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
+                                                     final ApExternalSystem apExternalSystem,
+                                                     final ApBinding binding, 
+                                                     final String stateMessage,
+                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
+                                                     final OffsetDateTime date,
+                                                     final UsrUser user) {
+         ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
+         extSyncsQueueItem.setAccessPoint(accessPoint);
+         extSyncsQueueItem.setExternalSystem(apExternalSystem);
+         extSyncsQueueItem.setBinding(binding);
+         extSyncsQueueItem.setStateMessage(stateMessage);
+         extSyncsQueueItem.setState(state);
+         extSyncsQueueItem.setDate(date);
+         extSyncsQueueItem.setUser(user);
+
+         return extSyncsQueueItemRepository.save(extSyncsQueueItem);
+     }
 }
