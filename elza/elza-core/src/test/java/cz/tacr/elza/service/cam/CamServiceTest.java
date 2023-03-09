@@ -144,11 +144,11 @@ public class CamServiceTest extends AbstractControllerTest {
             Map<String, ApBinding> bindings = new HashMap<>();
             bindings.put(binding1.getValue(), binding1);
             bindings.put(binding2.getValue(), binding2);
-            			
-			camService.importNew(externalSystem, IMPORT_ENTITIES, bindings);
+
+			camService.importNew(externalSystem.getExternalSystemId(), IMPORT_ENTITIES, bindings);
         	return null;
         });
-        
+
         // check results
         tt = new TransactionTemplate(transactionManager).execute(a -> {
         	ApAccessPoint ap1 = accessPointService.getAccessPointByUuid(EXT_UUID_1);        	
