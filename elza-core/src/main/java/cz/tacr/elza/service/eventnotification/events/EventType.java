@@ -37,6 +37,15 @@ public enum EventType {
     ACCESS_POINT_UPDATE(EventId.class),
     ACCESS_POINT_RESTORE(EventId.class),
 
+    // přidání archivní entity do fronty ke zpracování
+    ACCESS_POINT_EXPORT_NEW(EventApQueue.class),
+    // zahájení zpracování archivní entity z fronty
+    ACCESS_POINT_EXPORT_STARTED(EventApQueue.class),
+    // zpracování archivní entity z fronty skončilo chybou
+    ACCESS_POINT_EXPORT_FAILED(EventApQueue.class),
+    // zpracování archivní entity z fronty bylo úspěšně dokončeno
+    ACCESS_POINT_EXPORT_COMPETED(EventApQueue.class),
+
     /**
      * Asi drive pouzivano pro notifikaci o zkopirovanem atributu
      * 
