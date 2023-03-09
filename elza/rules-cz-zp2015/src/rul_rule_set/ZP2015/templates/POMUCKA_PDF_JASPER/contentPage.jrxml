@@ -669,10 +669,9 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 		<band height="13">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE") != null]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" pattern="">
-				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#99FF66" uuid="c1830022-f0bc-4009-87d1-6ef681e84e7a">
-					<printWhenExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE") != null]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#99FF66" uuid="c1830022-f0bc-4009-87d1-6ef681e84e7a"/>
 				<textElement markup="html">
 					<font isItalic="true" pdfEncoding="Cp1250"/>
 				</textElement>
@@ -682,16 +681,26 @@ $P{rootShortDetailFormatter}.format($F{node})]]></variableExpression>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[// má typ arch. a není již obsažen v ukl. jedmotce
-StringUtils.isNotBlank($V{unitType})&&(
-	!$V{isJednotlivost}||
-	($F{node}.getItems(java.util.Collections.singletonList("ZP2015_STORAGE_ID")).size()!=1)||
-	($F{node}.getItems(java.util.Collections.singletonList("ZP2015_UNIT_TYPE")).size()!=1) ||
-	!$F{node}.getSingleItem("ZP2015_STORAGE_ID").getSerializedValue().startsWith( $F{node}.getSingleItem("ZP2015_UNIT_TYPE").getSpecification().getShortcut() ) 
+StringUtils.isNotBlank($V{unitType})&&
+(
+	$V{isFolder}||
+	($V{isJednotlivost}&&
+	  // preskoceni pokud je neevid. jednotlivost
+	  ($F{node}.getItemsWithSpec("ZP2015_UNIT_TYPE","ZP2015_UNIT_TYPE_OTHER").size()==0)
+	  // pokud obsahuje jednu UJ a jeden typ arch, porovname na shodu oznaceni
+	  &&!(
+	    ($F{node}.getItems(java.util.Collections.singletonList("ZP2015_STORAGE_ID")).size()==1)
+   	    &&($F{node}.getItems(java.util.Collections.singletonList("ZP2015_UNIT_TYPE")).size()==1) 
+	    // preskoceni pokud zacina ukl. jednotka typem
+	    &&(
+	    	$F{node}.getSingleItem("ZP2015_STORAGE_ID").getSerializedValue().startsWith( $F{node}.getSingleItem("ZP2015_UNIT_TYPE").getSpecification().getShortcut() ) ||
+ 	        $F{node}.getSingleItem("ZP2015_STORAGE_ID").getSerializedValue().startsWith( $F{node}.getSingleItem("ZP2015_UNIT_TYPE").getSpecification().getName() )
+          )          
+       )
+  	) // konec jednotlivosti
 )]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" pattern="">
-				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#99FF66" uuid="059a67c2-2b3d-4e0c-817f-f093ae803c13">
-					<printWhenExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_FORMAL_TITLE") != null]]></printWhenExpression>
-				</reportElement>
+				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#99FF66" uuid="059a67c2-2b3d-4e0c-817f-f093ae803c13"/>
 				<textElement markup="html">
 					<font isItalic="false" pdfEncoding="Cp1250"/>
 				</textElement>
