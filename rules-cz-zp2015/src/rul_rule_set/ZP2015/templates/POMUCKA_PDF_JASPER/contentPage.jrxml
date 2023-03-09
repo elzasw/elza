@@ -414,6 +414,9 @@
 	<variable name="isJednotlivost" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ITEM").size() > 0]]></variableExpression>
 	</variable>
+	<variable name="isCastJednotlivosti" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_PART").size() > 0]]></variableExpression>
+	</variable>
 	<variable name="isSeries" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_SERIES").size() > 0]]></variableExpression>
 	</variable>
@@ -698,13 +701,23 @@ StringUtils.isNotBlank($V{unitType})&&
           )          
        )
   	) // konec jednotlivosti
+	||($V{isCastJednotlivosti}
+		// neni část jednotlivosti
+	  &&($F{node}.getItemsWithSpec("ZP2015_UNIT_TYPE","ZP2015_UNIT_TYPE_PART").size()==0)
+  		// kartotéční zásuvka
+  	  &&($F{node}.getItemsWithSpec("ZP2015_UNIT_TYPE","ZP2015_UNIT_TYPE_KTT_BOX").size()==0)
+   		// kartotéční lístek
+  	  &&($F{node}.getItemsWithSpec("ZP2015_UNIT_TYPE","ZP2015_UNIT_TYPE_KTT_ITEM").size()==0)
+	) // konec casti jednotlivosti
 )]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#99FF66" uuid="059a67c2-2b3d-4e0c-817f-f093ae803c13"/>
 				<textElement markup="html">
 					<font isItalic="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{unitType}+($V{isEJ}?"; EJ":"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{isCastJednotlivosti}?
+($F{node}.getItems(java.util.Collections.singletonList("ZP2015_UNIT_TYPE")).get(0).getSpecification().getName())
+:($V{unitType}+($V{isEJ}?"; EJ":""))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="13">
