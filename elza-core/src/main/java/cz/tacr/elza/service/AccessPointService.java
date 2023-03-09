@@ -151,6 +151,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventApQueue;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.merge.PartWithSubParts;
 
@@ -2054,28 +2055,32 @@ public class AccessPointService {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_RESTORE);
     }
 
-    public void publishAccessPointItemQueueAddEvent(final ExtSyncsQueueItem item) {
-        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_NEW);
+    public void publishExtQueueAddEvent(final ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_NEW);
     }
 
-    public void publishAccessPointRequestProcessStartedEvent(final ExtSyncsQueueItem item) {
-        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_STARTED);
+    public void publishExtQueueProcessStartedEvent(final ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_STARTED);
     }
 
-    public void publishAccessPointRequestProcessCompletedEvent(final ExtSyncsQueueItem item) {
-        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_COMPETED);
+    public void publishExtQueueProcessCompletedEvent(final ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_COMPETED);
     }
 
-    public void publishAccessPointRequestProcessFailedEvent(final ExtSyncsQueueItem item) {
-        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_FAILED);
+    public void publishExtQueueProcessFailedEvent(final ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_FAILED);
     }
 
     private void publishAccessPointEvent(final ApAccessPoint accessPoint, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, accessPoint.getAccessPointId()));
     }
 
-    private void publishAccessPointEvent(final ExtSyncsQueueItem item, final EventType type) {
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, item.getAccessPointId(), item.getExtSyncsQueueItemId(), item.getExternalSystemId()));
+    private void publishQueueEvent(final ExtSyncsQueueItem item, final EventType type) {
+        EventApQueue eaq = new EventApQueue(type,
+                item.getAccessPointId(),
+                item.getExtSyncsQueueItemId(),
+                item.getExternalSystemId());
+        eventNotificationService.publishEvent(eaq);
     }
 
     /**

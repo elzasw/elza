@@ -413,13 +413,13 @@ public class CamService {
                 item.setState(state);
                 switch (state) {
                 case EXPORT_START:
-                    accessPointService.publishAccessPointRequestProcessStartedEvent(item);
+                    accessPointService.publishExtQueueProcessStartedEvent(item);
                     break;
                 case EXPORT_OK:
-                    accessPointService.publishAccessPointRequestProcessCompletedEvent(item);
+                    accessPointService.publishExtQueueProcessCompletedEvent(item);
                     break;
                 case ERROR:
-                    accessPointService.publishAccessPointRequestProcessFailedEvent(item);
+                    accessPointService.publishExtQueueProcessFailedEvent(item);
                     break;
                 }
             }
@@ -996,7 +996,7 @@ public class CamService {
                                                       ExtAsyncQueueState.EXPORT_NEW, 
                                                       OffsetDateTime.now(), 
                                                       user);
-        accessPointService.publishAccessPointItemQueueAddEvent(item);
+        accessPointService.publishExtQueueAddEvent(item);
         return item;
     }
 

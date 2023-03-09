@@ -8,7 +8,10 @@ public class EventApQueue extends AbstractEventSimple {
     
     private Integer externalSystemId;
 
-    public EventApQueue(EventType eventType, Integer accessPointId, Integer itemQueueId, Integer externalSystemId) {
+    public EventApQueue(EventType eventType,
+                        Integer accessPointId,
+                        Integer itemQueueId,
+                        Integer externalSystemId) {
         super(eventType);
         this.accessPointId = accessPointId;
         this.itemQueueId = itemQueueId;
