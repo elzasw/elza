@@ -387,7 +387,7 @@ no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
     $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", specCode=="ZP2015_LEVEL_PART") ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $parentDescItems
     $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.REQUIRED);
