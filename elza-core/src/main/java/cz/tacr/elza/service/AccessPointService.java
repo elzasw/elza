@@ -2036,6 +2036,8 @@ public class AccessPointService {
         return newState;
     }
 
+    // Methods for publishing events over Websocket
+
     public void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_CREATE);
     }
@@ -2052,8 +2054,28 @@ public class AccessPointService {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_RESTORE);
     }
 
+    public void publishAccessPointItemQueueAddEvent(final ExtSyncsQueueItem item) {
+        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_NEW);
+    }
+
+    public void publishAccessPointRequestProcessStartedEvent(final ExtSyncsQueueItem item) {
+        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_STARTED);
+    }
+
+    public void publishAccessPointRequestProcessCompletedEvent(final ExtSyncsQueueItem item) {
+        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_COMPETED);
+    }
+
+    public void publishAccessPointRequestProcessFailedEvent(final ExtSyncsQueueItem item) {
+        publishAccessPointEvent(item, EventType.ACCESS_POINT_EXPORT_FAILED);
+    }
+
     private void publishAccessPointEvent(final ApAccessPoint accessPoint, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, accessPoint.getAccessPointId()));
+    }
+
+    private void publishAccessPointEvent(final ExtSyncsQueueItem item, final EventType type) {
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, item.getAccessPointId(), item.getExtSyncsQueueItemId(), item.getExternalSystemId()));
     }
 
     /**

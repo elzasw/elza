@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +13,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 
 @Repository
 public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQueueItem, Integer>, ExtSyncsQueueItemRepositoryCustom{
@@ -20,8 +23,13 @@ public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQ
     int countByState(@Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
     */
 
+    ExtSyncsQueueItem findFirstByStateOrderByExtSyncsQueueItemId(ExtAsyncQueueState state);
+
     @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.state = :state ORDER BY i.extSyncsQueueItemId")
-    Page<ExtSyncsQueueItem> findByState(@Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state, Pageable pageable);
+    Page<ExtSyncsQueueItem> findByState(@Param("state") ExtAsyncQueueState state, Pageable pageable);
+
+    @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.state IN :states ORDER BY i.extSyncsQueueItemId")
+    Page<ExtSyncsQueueItem> findByStates(@Param("states") Collection<ExtAsyncQueueState> states, Pageable pageable);
 
     @Query("SELECT COUNT(i) FROM ext_syncs_queue_item i WHERE i.accessPoint = :accessPoint AND i.externalSystem = :extSystem AND i.state = :state")
     int countByAccesPointAndExternalSystemAndState(@Param("accessPoint") ApAccessPoint accessPoint, @Param("extSystem") ApExternalSystem extSystem, @Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
