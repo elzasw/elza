@@ -1,0 +1,77 @@
+elza:
+  data:
+      url: jdbc:postgresql://localhost/vyv_elza
+      user: postgres
+      pass: postgres
+  map:
+      layers:
+        - name: GR_ZM25
+          url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
+          type: WMS
+          initial: false
+          layer: GR_ZM25
+        - name: GR_ORTFOTORGB
+          url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
+          type: WMS
+          initial: false
+          layer: GR_ORTFOTORGB
+  security:
+  #  sso-header:
+  #    user-header: X-SSO-User
+  #    allowDefaultUser:false
+  #workingDir: C:/Elza/work
+
+  # Nastavení času spuštění pro reindexaci:
+  #
+  # Povinná pole pro časovač:
+  # <second> <minute> <hour> <day-of-month> <month> <day-of-week>
+  #
+  # Speciální znaky ve výrazu:
+  # * událost musí nastat každou jednotku času, například každou minutu nebo sekundu
+  # ? používá se pro pole <day-of-month> a <day-of-week>, znamená zanedbávat hodnotu pole
+  # - určuje rozsah hodnot, např. 1-5 <minute> = 1,2,3,4,5, FRI-SUN = FRI,SAT,SUM
+  # , určuje seznam hodnot, např. 10,15,20 <minute>
+  # / určuje přírůstkové hodnoty, např. 5/15 <minute> = 5,20,35,50
+  # více podrobností na odkazu https://www.baeldung.com/cron-expressions
+  #
+  # hodnoty pro dny v týdnu <day-of-week>, pondělí-neděle:
+  # MON, TUE, WED, THU, FRI, SAT, SUN
+  #
+  # Takové nastavení, například: 0 0 4 ? * SAT
+  # znamená: každou sobotu ve 04:00
+  #
+  #reindex:
+  #  cron: 0 0 4 ? * SAT
+
+  #attachment:
+  #  mimeDefs:
+  #    - mimeType: application/msword
+  #      editable: false
+  #      generators:
+  #        - outputMimeType: application/pdf
+  #          command: cmd /c copy {2} {6}
+  #    - mimeType: text/plain
+  #      editable: true
+  #      generators:
+  #        - outputMimeType: application/pdf
+  #          command: "\"c:\\Program Files (x86)\\LibreOffice 5\\program\\soffice.exe\" --headless --convert-to pdf {2}"
+  #          outputFileName: "{0}.pdf"
+
+spring:
+  app:
+      buildType: DEV
+  jpa:
+      properties:
+          hibernate:
+              # PostgreSQL
+              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+              # H2
+              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+              # MySQL
+              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+              # Oracle
+              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+              # MSSQL
+              #dialect: org.hibernate.dialect.SQLServer2008Dialect
+
+multipart.maxFileSize: 10000000
