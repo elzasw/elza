@@ -55,22 +55,36 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
 }) => {
     const dispatch = useThunkDispatch<AppState>();
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
-    const {item} = field.input.value;
-    const updatedItem = field.input.value.updatedItem as ApItemAccessPointRefVO;
-    const prevValue = item ? getDisplayValue(item as ApItemAccessPointRefVO, itemType) : undefined;
+    const field = useField<RevisionItem<ApItemAccessPointRefVO>>(`${name}`);
+    const {item, updatedItem} = field.input.value;
+    const prevValue = item ? getDisplayValue(item, itemType) : undefined;
 
     const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
     const isDeleted = updatedItem?.changeType === "DELETED";
 
     const handleEditItem = async () => {
-        const fieldValue = await dispatch(handleSelectAccessPointRef(updatedItem as ApItemAccessPointRefVO, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
-        form.change(`${name}.updatedItem`, fieldValue)
+        if(!updatedItem){ throw Error("No updated item to edit."); }
+        const fieldValue = await dispatch(handleSelectAccessPointRef(updatedItem, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
+        const newUpdatedItem: ApItemAccessPointRefVO = {...fieldValue, changeType: "UPDATED"}
+        form.change(`${name}.updatedItem`, newUpdatedItem)
         handleValueUpdate(form);
     }
     
     const handleRevert = () => {
-        form.change(`${name}.updatedItem`, item)
+        if(!updatedItem){ throw Error("No updated item to revert."); }
+        if(!item){ throw Error("No original item to revert to."); }
+
+        const newUpdatedItem: ApItemAccessPointRefVO = {
+            ...updatedItem, 
+            changeType: "ORIGINAL",
+            value: item?.value, 
+            accessPoint: item?.accessPoint,
+            specId: item?.specId,
+            externalUrl: item?.externalUrl,
+            externalName: item?.externalName,
+        };
+
+        form.change(`${name}.updatedItem`, newUpdatedItem);
         handleValueUpdate(form);
     }
 
@@ -99,7 +113,11 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
                     isDeleted={isDeleted}
                 >
                     <div style={{display: "flex"}}>
-                        <Form.Control style={{flexShrink: 1}} value={getDisplayValue(updatedItem, itemType)} disabled={true} />
+                        <Form.Control 
+                            style={{flexShrink: 1}} 
+                            value={getDisplayValue(updatedItem, itemType)} 
+                            disabled={true} 
+                        />
                         <Button
                             disabled={disabled}
                             variant={'action'}
@@ -114,7 +132,8 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
     );
 }
 
-const getDisplayValue = (apItem: ApItemAccessPointRefVO, itemType: RulDescItemTypeExtVO) => {
+const getDisplayValue = (apItem: ApItemAccessPointRefVO | undefined, itemType: RulDescItemTypeExtVO) => {
+    if(!apItem){return undefined;}
     const apItemName = apItem.accessPoint?.name || apItem.externalName;
 
     if (itemType.useSpecification && apItem.specId) {

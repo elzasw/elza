@@ -32,9 +32,9 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     const fieldName = `${name}.updatedItem.value`;
     const dispatch = useThunkDispatch<AppState>()
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemCoordinatesVO>>(`${name}`);
     const {updatedItem, item} = field.input.value;
-    const prevValue = (item as ApItemCoordinatesVO | undefined)?.value;
+    const prevValue = item?.value;
 
     const handleImport = async () => {
         const fieldValue = await dispatch(importCoordinateFile());
@@ -61,8 +61,19 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                         handleValueUpdate(form, props);
                     }
 
+                    const handleChange = (e: any) => {
+                        if(updatedItem?.changeType === "ORIGINAL"){
+                            form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                        }
+                        props.input.onChange(e)
+                    }
+
                     const handleRevert = () => {
-                        form.change(`${name}.updatedItem`, item)
+                        if(!updatedItem){ throw Error("No updated item to revert."); }
+                        if(!item){ throw Error("No original item to revert to."); }
+
+                        const newUpdatedItem: ApItemCoordinatesVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                        form.change(`${name}.updatedItem`, newUpdatedItem);
                         handleValueUpdate(form, props);
                     }
 
@@ -96,6 +107,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
 
                                 input={{
                                     ...props.input,
+                                    onChange: handleChange,
                                     onBlur: handleBlur // inject modified onBlur handler
                                 }}
                                 disabled={disabled}
