@@ -32,6 +32,7 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
             }
 
             const handleChange = (e: any) => {
+                if(isNaN(e.target.value)){return;}
                 if(updatedItem?.changeType === "ORIGINAL"){
                     form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
                 }
@@ -62,7 +63,7 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
             return <RevisionFieldExample
                 label={label}
                 prevValue={prevValue?.toString()}
-                value={props.input.value}
+                value={props.input.value.toString()}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={ isDeleted ? undefined : handleDelete}
