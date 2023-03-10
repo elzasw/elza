@@ -16,7 +16,7 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemUriRefVO>>(`${name}`);
     const {item, updatedItem} = field.input.value;
 
     const descriptionField = useField(`${name}.updatedItem.description`);
@@ -38,7 +38,11 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     }
 
     const handleRevert = () => {
-        form.change(`${name}.updatedItem`, item)
+        if(!updatedItem){ throw Error("No updated item to revert."); }
+        if(!item){ throw Error("No original item to revert to."); }
+
+        const newUpdatedItem: ApItemUriRefVO = {...updatedItem, value: item?.value, description: item?.description, changeType: "ORIGINAL"};
+        form.change(`${name}.updatedItem`, newUpdatedItem);
         handleValueUpdate(form);
     }
 
@@ -59,7 +63,7 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
         <Col xs={10}>
             <RevisionFieldExample
                 label={label}
-                prevValue={getValue(item as ApItemUriRefVO)}
+                prevValue={getValue(item)}
                 value={getValue({
                     description: descriptionField.input.value,
                     value: valueField.input.value,
@@ -75,9 +79,15 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                         label="Název"
                     >
                         {(props) => {
-                            const handleChange = (e: any) => {
+                            const handleBlur = (e: any) => {
                                 props.input.onBlur(e)
                                 handleValueUpdate(form, props);
+                            }
+                            const handleChange = (e: any) => {
+                                if(updatedItem?.changeType === "ORIGINAL"){
+                                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                                }
+                                props.input.onChange(e)
                             }
 
 
@@ -86,7 +96,8 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                                 {...props as any}
                                 input={{
                                     ...props.input,
-                                    onBlur: handleChange // inject modified onChange handler
+                                    onChange: handleChange,
+                                    onBlur: handleBlur // inject modified onChange handler
                                 }}
                                 disabled={disabled}
                                 maxLength={250}
@@ -102,9 +113,15 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                         validate={validate}
                     >
                         {(props) => {
-                            const handleChange = (e: any) => {
+                            const handleBlur = (e: any) => {
                                 props.input.onBlur(e)
                                 handleValueUpdate(form, props);
+                            }
+                            const handleChange = (e: any) => {
+                                if(updatedItem?.changeType === "ORIGINAL"){
+                                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                                }
+                                props.input.onChange(e)
                             }
 
                             return <div style={{display: "flex", flexGrow: 2, flexDirection: "column"}}>
@@ -112,7 +129,8 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                                 {...props as any}
                                 input={{
                                     ...props.input,
-                                    onBlur: handleChange // inject modified onChange handler
+                                    onChange: handleChange,
+                                    onBlur: handleBlur // inject modified onChange handler
                                 }}
                                 disabled={disabled}
                                 maxLength={1000}

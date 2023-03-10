@@ -15,9 +15,9 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemIntVO>>(`${name}`);
     const {updatedItem, item} = field.input.value;
-    const prevValue = (item as ApItemIntVO | undefined)?.value;
+    const prevValue = item?.value;
 
     return <Field
         name={`${name}.updatedItem.value`}
@@ -26,13 +26,24 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
             const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
             const isDeleted = updatedItem?.changeType === "DELETED";
 
-            const handleChange = (e: any) => {
+            const handleBlur = (e: any) => {
                 props.input.onBlur(e)
                 handleValueUpdate(form, props);
             }
 
+            const handleChange = (e: any) => {
+                if(updatedItem?.changeType === "ORIGINAL"){
+                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                }
+                props.input.onChange(e)
+            }
+
             const handleRevert = () => {
-                form.change(`${name}.updatedItem`, item)
+                if(!updatedItem){ throw Error("No updated item to revert."); }
+                if(!item){ throw Error("No original item to revert to."); }
+
+                const newUpdatedItem: ApItemIntVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                form.change(`${name}.updatedItem`, newUpdatedItem);
                 handleValueUpdate(form, props);
             }
 
@@ -61,7 +72,8 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
                     {...props as any}
                     input={{
                         ...props.input,
-                        onBlur: handleChange // inject modified onChange handler
+                        onChange: handleChange,
+                        onBlur: handleBlur // inject modified onChange handler
                     }}
                     disabled={disabled}
                     renderComponent={FormInput}
