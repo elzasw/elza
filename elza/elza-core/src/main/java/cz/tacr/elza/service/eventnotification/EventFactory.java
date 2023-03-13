@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -118,14 +119,16 @@ public class EventFactory {
                                                   final ArrFundVersion version,
                                                   final ArrLevel staticLevel,
                                                   final ArrLevel addLevel) {
-        Assert.notNull(eventType, "Typ eventu musí být vyplněn");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
-        Assert.notNull(addLevel, "Level musí být vyplněn");
+        Validate.notNull(eventType, "Typ eventu musí být vyplněn");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(staticLevel, "Referenční level musí být vyplněn");
+        Validate.notNull(addLevel, "Level musí být vyplněn");
 
         NodeInfo staticParentNode = staticLevel.getNodeParent() == null? null : createNodeInfo(staticLevel.getNodeParent());
 
-        return new EventAddNode(eventType, version.getFundVersionId(), createNodeInfo(staticLevel), staticParentNode, createNodeInfo(addLevel));
+        return new EventAddNode(eventType, version.getFundVersionId(),
+                createNodeInfo(staticLevel), staticParentNode,
+                createNodeInfo(addLevel));
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +40,7 @@ import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.ws.core.v1.DaoService;
+import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoImport;
 import cz.tacr.elza.ws.types.v1.DaoLinks;
@@ -46,6 +48,7 @@ import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.DaoPackages;
 import cz.tacr.elza.ws.types.v1.DaoType;
 import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
@@ -90,10 +93,6 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         createDigitalRepo();
         daoServiceClient = createDaoServiceClient();
-
-        // create AS
-        fundInfo = createFund(FUND_NAME, FUND_CODE);
-        fundVersion = getOpenVersion(fundInfo);
     }
 
     @After
@@ -105,6 +104,10 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
     @Test
     public void importTestAttach() throws ApiException {
+        // create AS
+        fundInfo = createFund(FUND_NAME, FUND_CODE);
+        fundVersion = getOpenVersion(fundInfo);
+
         // prepare dao package
         DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1,
                                                  DaoType.ATTACHMENT,
@@ -155,6 +158,9 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
     @Test
     public void importTestLevel() throws ApiException {
+        // create AS
+        fundInfo = createFund(FUND_NAME, FUND_CODE);
+        fundVersion = getOpenVersion(fundInfo);
 
         // import DAO
         Items daoItems = createDaoItems(TEXT_VALUE_XY);
@@ -241,6 +247,9 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
     @Test
     public void importTestLevelWithScenarios() throws ApiException {
+        // create AS
+        fundInfo = createFund(FUND_NAME, FUND_CODE);
+        fundVersion = getOpenVersion(fundInfo);
 
         // import DAO
         Items daoItems = createDaoScenarios(TEXT_VALUE_XY);
@@ -353,6 +362,58 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
+    }
+
+    // shodne s vyse, jen maximalni interakce pres WS
+    @Test
+    public void importTestLevelWithScenariosWS() throws ApiException {
+        String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
+                + WebServiceConfig.FUND_SERVICE_URL;
+        FundService fundServiceClient = WebServiceClientFactory.createFundService(address, "admin", "admin");
+
+        cz.tacr.elza.ws.types.v1.Fund fundCreate = new cz.tacr.elza.ws.types.v1.Fund();
+        fundCreate.setFundName("Test fund XYZ");
+        fundCreate.setRulesetCode("SIMPLE-DEV");
+        fundCreate.setInstitutionIdentifier("in1");
+        fundCreate.setDateRange("date range");
+        fundCreate.setInternalCode(FUND_CODE);
+        fundCreate.setFundNumber("100");
+
+        FundIdentifiers fundCreated = fundServiceClient.createFund(fundCreate);
+
+        Assert.assertNotNull(fundCreated);
+        assertTrue(Integer.valueOf(fundCreated.getId()) >= 1);
+        Assert.assertNotNull(UUID.fromString(fundCreated.getUuid()));
+
+        // import DAO
+        Items daoItems = createDaoScenarios(TEXT_VALUE_XY);
+        // prepare dao package
+        DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1,
+                                                 DaoType.LEVEL,
+                                                 "Testovaci DAO", daoItems);
+        DaoImport daoImport = createDaoImport(daoPackage);
+
+        daoServiceClient._import(daoImport);
+
+        helperTestService.waitForWorkers();
+
+        ArrFundVersionVO fundVersion = getOpenVersion(Integer.valueOf(fundCreated.getId()));
+
+        // read data from levelcache
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        // result has to contain to nodes
+        assertEquals(treeData.getNodes().size(), 2);
+        // first node has no mark
+        Iterator<TreeNodeVO> nodeIt = treeData.getNodes().iterator();
+        TreeNodeVO firstNode = nodeIt.next();
+        String[] refMark = firstNode.getReferenceMark();
+        assertTrue(refMark == null || refMark.length == 0);
+        TreeNodeVO secondNode = nodeIt.next();
+        String[] refMark2 = secondNode.getReferenceMark();
+        assertEquals(refMark2.length, 1);
+        assertEquals(refMark2[0], "1");
     }
 
     private ArrItemTextVO checkExistsTextVO(List<ArrItemVO> descItems, String itemTypeCode, String textValue) {
