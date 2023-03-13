@@ -53,6 +53,13 @@ public enum EventType {
      */
     //COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
+    /**
+     * Nodes data were changed
+     * 
+     * Typically: items were added/deleted/updated
+     * 
+     * Do not use this event for node structure changes
+     */
     NODES_CHANGE(EventIdsInVersion.class),
 
     // při použití UNDO, kde se reálně entity JP můžou mazat
