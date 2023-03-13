@@ -23,8 +23,7 @@
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
     .setItemSeparator(", ")
    	.setSpecSeparator(": ")
-	.addValue("ZP2015_OTHER_ID")
-]]></defaultValueExpression>
+	.addValue("ZP2015_OTHER_ID")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="parentNameFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
@@ -309,7 +308,59 @@
 				<reportElement positionType="Float" x="1" y="110" width="542" height="20" isRemoveLineWhenBlank="true" uuid="bfc2b9c8-5b72-4fc0-a92c-0c1e8251f434">
 					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{otherId})]]></printWhenExpression>
 				</reportElement>
+				<textElement>
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$V{otherId}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="413" y="35" width="78" height="15" forecolor="#787878" uuid="a07acb37-612b-40c7-a1f6-b1d37d0b7235">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" ukl. j.:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="142" y="35" width="78" height="15" forecolor="#787878" uuid="19a04ecf-4987-4dc7-9ec4-3758879fe0d2">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["poř. č.:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="35" width="78" height="15" forecolor="#787878" uuid="4c0b0ea0-8ff7-4d85-9ce6-25c2d48264d3">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<printWhenExpression><![CDATA[$F{node}.hasItem("ZP2015_INV_CISLO")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["inv. č.:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
