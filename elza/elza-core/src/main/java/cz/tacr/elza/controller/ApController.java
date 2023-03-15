@@ -125,6 +125,7 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
@@ -812,7 +813,12 @@ public class ApController {
             extSystem = srcBindings.get(0).getApExternalSystem();
         }
 
-        accessPointService.replace(replacedState, replacementState, extSystem);
+        MultipleApChangeContext mcc = new MultipleApChangeContext();
+
+        accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+        for (Integer apId : mcc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
     }
 
     /**
