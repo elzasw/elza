@@ -818,8 +818,7 @@ public class CamService {
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(extSyncsQueueItem.getAccessPointId());
         ApState state = accessPointService.getStateInternal(accessPoint);
-        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint,
-                                                                                               externalSystem);
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
         UsrUser user = userService.getUserInternal(extSyncsQueueItem.getUserId());
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
         batchUpdate.setInf(createBatchInfo(externalSystem, user));
@@ -832,8 +831,7 @@ public class CamService {
             // TODO: try to prepare update without downloading current entity
             EntityXml entity = camConnector.getEntity(bindingState.getBinding().getValue(), externalSystem);
             // update existing item
-            xmlBuilder = createEntityUpdateBuilder(accessPoint, bindingState, entity,
-                                                                           externalSystem);
+            xmlBuilder = createEntityUpdateBuilder(accessPoint, bindingState, entity, externalSystem);
         }
         if (xmlBuilder == null) {
             return null;
