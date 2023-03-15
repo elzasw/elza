@@ -1302,6 +1302,12 @@ public class ApController {
     @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
+
+        // TODO: Split one large transaction into multiple transactions
+        //  1. read data from db
+        //  2. download data from ext. system
+        //  3. update data in DB
+
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
@@ -1326,7 +1332,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, false);
+        camService.synchronizeAccessPoint(procCtx, binding, entity, false);
     }
 
     private AbstractException prepareSystemException(ApiException e) {

@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ItemEntityRefXml;
-import cz.tacr.cam.schema.cam.ItemRefXml;
 import cz.tacr.cam.schema.cam.ItemStringXml;
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
@@ -82,7 +83,7 @@ public class CamServiceTest extends AbstractControllerTest {
     static public final EntitiesXml IMPORT_ENTITIES = new EntitiesXml();
     // prepare test data
     static {
-    	EntityXml ent1 = createEntity(EXT_ID_1, EXT_UUID_1, "ent1");    	
+        EntityXml ent1 = createEntity(EXT_ID_1, EXT_UUID_1, "ent1");
     	IMPORT_ENTITIES.getList().add(ent1);
     	// ent2 
     	EntityXml ent2 = createEntity(EXT_ID_2, EXT_UUID_2, "ent2");
@@ -145,7 +146,16 @@ public class CamServiceTest extends AbstractControllerTest {
             bindings.put(binding1.getValue(), binding1);
             bindings.put(binding2.getValue(), binding2);
 
-			camService.importNew(externalSystem.getExternalSystemId(), IMPORT_ENTITIES, bindings);
+            Map<String, EntityXml> entXmlMap = IMPORT_ENTITIES.getList().stream().collect(Collectors.toMap(ie -> String
+                    .valueOf(ie.getEid().getValue()), Function.identity()));
+            EntityXml ent1 = entXmlMap.get(String.valueOf(EXT_ID_1));
+            assertNotNull(ent1);
+            EntityXml ent2 = entXmlMap.get(String.valueOf(EXT_ID_2));
+            assertNotNull(ent2);
+
+            ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+            camService.synchronizeAccessPoint(procCtx, binding1, ent1, true);
+            camService.synchronizeAccessPoint(procCtx, binding2, ent2, true);
         	return null;
         });
 
