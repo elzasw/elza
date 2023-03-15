@@ -51,6 +51,7 @@ import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
+import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -70,6 +71,7 @@ import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncProgressVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -96,6 +98,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -482,6 +485,24 @@ public class ApController {
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
             vo = apFactory.createVO(vo, revision, apState.getAccessPoint());
+        }
+        // read status of data in export/import queue
+        if (CollectionUtils.isNotEmpty(vo.getBindings())) {
+            // read upload settings
+            for (ApBindingVO b : vo.getBindings()) {
+                List<ExtSyncsQueueItem> queueItems = externalSystemService.getQueueItems(apState.getAccessPointId(), b
+                        .getExternalSystemId(), ExtAsyncQueueState.EXPORT_NEW, ExtAsyncQueueState.EXPORT_START);
+                // expecting zero or one item
+                for (ExtSyncsQueueItem queueItem : queueItems) {
+                    if (queueItem.getState() == ExtAsyncQueueState.EXPORT_NEW) {
+                        b.setSyncProgress(SyncProgressVO.UPLOAD_PENDING);
+                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                    } else if (queueItem.getState() == ExtAsyncQueueState.EXPORT_START) {
+                        b.setSyncProgress(SyncProgressVO.UPLOAD_STARTED);
+                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                    }
+                }
+            }
         }
 
         return vo;

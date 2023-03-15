@@ -766,4 +766,10 @@ public class ExternalSystemService {
 
          return extSyncsQueueItemRepository.findByStates(Arrays.asList(states), pageable);
      }
+
+     public List<ExtSyncsQueueItem> getQueueItems(Integer accessPointId, Integer externalSystemId,
+                                                  ExtAsyncQueueState... states) {
+         return extSyncsQueueItemRepository.findByApExtSystAndState(accessPointId, externalSystemId, Arrays.asList(
+                                                                                                                   states));
+     }
  }

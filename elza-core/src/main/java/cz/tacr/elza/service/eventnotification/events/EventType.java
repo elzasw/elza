@@ -44,7 +44,7 @@ public enum EventType {
     // zpracování archivní entity z fronty skončilo chybou
     ACCESS_POINT_EXPORT_FAILED(EventApQueue.class),
     // zpracování archivní entity z fronty bylo úspěšně dokončeno
-    ACCESS_POINT_EXPORT_COMPETED(EventApQueue.class),
+    ACCESS_POINT_EXPORT_COMPLETED(EventApQueue.class),
 
     /**
      * Asi drive pouzivano pro notifikaci o zkopirovanem atributu
