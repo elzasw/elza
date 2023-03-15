@@ -54,7 +54,6 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
 
     @Query("SELECT s1" +
             " FROM ap_state s1" +
-            //" JOIN FETCH s1.scope " + // bug #8348
             " WHERE s1.accessPoint.accessPointId IN :accessPointIds" +
             " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     List<ApState> findLastByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
