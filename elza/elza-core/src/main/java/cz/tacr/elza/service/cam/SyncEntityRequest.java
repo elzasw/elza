@@ -15,6 +15,8 @@ public class SyncEntityRequest {
 
     ApBindingState bindingState;
 
+    ApBinding binding;
+
     public SyncEntityRequest(final ApAccessPoint accessPoint, final EntityXml entityXml) {
         this.accessPoint = accessPoint;
         this.entityXml = entityXml;
@@ -42,5 +44,13 @@ public class SyncEntityRequest {
 
     public EntityXml getEntityXml() {
         return entityXml;
+    }
+
+    public ApBinding getBinding() {
+        return binding;
+    }
+
+    public void setBinding(ApBinding binding) {
+        this.binding = binding;
     }
 }

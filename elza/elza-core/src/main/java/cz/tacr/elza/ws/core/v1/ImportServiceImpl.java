@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -232,6 +233,8 @@ public class ImportServiceImpl implements ImportService {
             for (ApBindingState bindingState : bindingStates) {
                 SyncEntityRequest syncRequest = updateEntitiesLookup.remove(bindingState.getAccessPointId());
                 syncRequest.setBindingState(bindingState);
+                // set binding - force to fetch binding from DB
+                syncRequest.setBinding(bindingState.getBinding());
                 updateEntitiesCandidates.add(syncRequest);
             }
             updateEntities = prepareUpdatableEntities(updateEntitiesCandidates, procCtx);
@@ -278,8 +281,22 @@ public class ImportServiceImpl implements ImportService {
         }
 
         camService.createAccessPoints(procCtx, newEntities);
+
         if (updateEntities != null && updateEntities.size() > 0) {
-            camService.updateAccessPoints(procCtx, updateEntities);
+            for (SyncEntityRequest syncReq : updateEntities) {
+                Validate.notNull(syncReq.getBinding());
+
+                camService.synchronizeAccessPoint(procCtx,
+                                                  syncReq.getBinding(),
+                                                  syncReq.getEntityXml(), false);
+            }
+
+            // kontrola datové struktury
+            /*
+            if (checkDb) {
+                entityManager.flush();
+                accessPointService.checkConsistency();
+            }*/
         }
 
         logger.info("Imported entities in CAM format, count: {}, create: {}, update: {}", 

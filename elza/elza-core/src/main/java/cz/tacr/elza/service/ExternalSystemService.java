@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,12 +15,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -748,4 +752,18 @@ public class ExternalSystemService {
 
          return extSyncsQueueItemRepository.save(extSyncsQueueItem);
      }
-}
+
+     /**
+      * Return list of first items to process in given states
+      * 
+      * @param pageSize
+      * @param states
+      * @return
+      */
+     @Transactional(value = TxType.MANDATORY)
+     public Iterable<ExtSyncsQueueItem> getNextItems(int pageSize, ExtAsyncQueueState... states) {
+         Pageable pageable = PageRequest.of(0, pageSize);
+
+         return extSyncsQueueItemRepository.findByStates(Arrays.asList(states), pageable);
+     }
+ }
