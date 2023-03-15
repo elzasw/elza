@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,4 +40,9 @@ public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQ
 
     @Modifying
     int deleteByBinding(ApBinding binding);
+
+    @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.accessPointId = :accessPointId AND i.externalSystemId = :extSystemId AND i.state IN :states ORDER BY i.extSyncsQueueItemId")
+    List<ExtSyncsQueueItem> findByApExtSystAndState(@Param("accessPointId") Integer accessPointId,
+                                                    @Param("extSystemId") Integer externalSystemId,
+                                                    @Param("states") Collection<ExtAsyncQueueState> asList);
 }

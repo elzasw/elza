@@ -46,6 +46,10 @@ public class ApBindingVO {
 
     private SyncStateVO syncState;
 
+    private SyncProgressVO syncProgress;
+
+    private String syncLastUploadError;
+
     private List<ApBindingItemVO> bindingItemList;
 
     public Integer getId() {
@@ -144,6 +148,22 @@ public class ApBindingVO {
 
     public void setDetailUrlExtReplacedBy(final String detailUrlExtReplacedBy) {
         this.detailUrlExtReplacedBy = detailUrlExtReplacedBy;
+    }
+
+    public String getSyncLastUploadError() {
+        return syncLastUploadError;
+    }
+
+    public void setSyncLastUploadError(String syncLastUploadError) {
+        this.syncLastUploadError = syncLastUploadError;
+    }
+
+    public SyncProgressVO getSyncProgress() {
+        return syncProgress;
+    }
+
+    public void setSyncProgress(SyncProgressVO syncProgress) {
+        this.syncProgress = syncProgress;
     }
 
     /**
