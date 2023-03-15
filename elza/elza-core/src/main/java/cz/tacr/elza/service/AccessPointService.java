@@ -461,16 +461,24 @@ public class AccessPointService {
             if (mergeAp) {
                 validationMergePossibility(replacedByState);
             }
-            replace(apState, replacedByState, extSystem);
+            
+            MultipleApChangeContext macc = new MultipleApChangeContext();
+            
+            replace(apState, replacedByState, extSystem, macc);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
             if (mergeAp) {
                 mergeParts(accessPoint, replacedBy, change);
                 // vygenerování indexů
-                updateAndValidate(replacedBy.getAccessPointId());        
+                updateAndValidate(replacedBy.getAccessPointId());
+                // je třeba aktualizovat ap cache
+                macc.add(replacedBy.getAccessPointId());
             }
 
+            for (Integer apId: macc.getModifiedApIds()) {
+                accessPointCacheService.createApCachedAccessPoint(apId);
+            }
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
     }
@@ -940,15 +948,16 @@ public class AccessPointService {
      * 
      * @param replacedState
      * @param replacementState
-     * @param apExternalSystem
-     *            source of entity
+     * @param apExternalSystem source of entity
+     * @param macc
      */
     public void replace(final ApState replacedState,
                         final ApState replacementState,
-                        @Nullable final ApExternalSystem apExternalSystem) {
+                        @Nullable final ApExternalSystem apExternalSystem,
+                        MultipleApChangeContext macc) {
 
         // replace in access points (items)
-        replaceInAps(replacedState, replacementState, apExternalSystem);
+        replaceInAps(replacedState, replacementState, apExternalSystem, macc);
 
         // replace in arrangement
         replaceInArrItems(replacedState, replacementState);
@@ -1025,11 +1034,11 @@ public class AccessPointService {
         }
     }
 
-    private void replaceInAps(ApState replacedState, ApState replacementState,
-                              @Nullable ApExternalSystem apExternalSystem) {
-        logger.debug("Replacing in Aps ({}->{}), items: {}", replacedState.getAccessPointId(),
-                     replacementState.getAccessPointId());
-
+    private void replaceInAps(ApState replacedState,
+                              ApState replacementState,
+                              @Nullable ApExternalSystem apExternalSystem,
+                              MultipleApChangeContext macc) {
+        logger.debug("Replacing in Aps ({}->{})", replacedState.getAccessPointId(), replacementState.getAccessPointId());
 
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
@@ -1039,7 +1048,7 @@ public class AccessPointService {
         if (CollectionUtils.isNotEmpty(apItems)) {
             ObjectListIterator.forEachPage(apItems,
                                            apItemPage -> replaceInItems(apItemPage, replaced, replacement,
-                                                                        apExternalSystem));
+                                                                        apExternalSystem, macc));
         }
 
         Set<Integer> resolvedByObjectId = new HashSet<>();
@@ -1056,7 +1065,7 @@ public class AccessPointService {
                 replaceInRevision(revItem, revision, replaced, replacement);
             }
         }
-
+        
     }
 
     /**
@@ -1066,20 +1075,22 @@ public class AccessPointService {
      * @param replaced
      * @param replacement
      * @param apExternalSystem
+     * @param macc
      */
     private void replaceInItems(Collection<ApItem> apItems,
                                 ApAccessPoint replaced,
                                 ApAccessPoint replacement,
-                                ApExternalSystem apExternalSystem) {
+                                ApExternalSystem apExternalSystem,
+                                MultipleApChangeContext macc) {
         logger.debug("Replacing in items ({}->{}), items: {}", replaced.getAccessPointId(),
                      replacement.getAccessPointId(),
                      apItems.size());
         // number of items has to be lower than batch size
         Validate.isTrue(apItems.size() <= ObjectListIterator.getMaxBatchSize());
 
-        Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId())
-                .collect(Collectors.toSet());
-        // check revisions
+        Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId()).collect(Collectors.toSet());
+
+        // get states for changing access points
         List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, ApState> stateByApId = apStates.stream()
                 .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
@@ -1101,6 +1112,7 @@ public class AccessPointService {
                 .collect(Collectors.toMap(ApBindingItem::getItemId, Function.identity()));
         Map<Integer, ApItem> itemUpdateMapping = new HashMap<>();
 
+        // get revisions
         List<ApRevision> revisions = revisionRepository.findAllByStateIn(apStates);
         Map<Integer, ApRevision> revisionByApId = revisions.stream()
                 .collect(Collectors.toMap(r -> r.getState().getAccessPointId(), Function.identity()));
@@ -1132,15 +1144,15 @@ public class AccessPointService {
                 // direct item update
                 ApItem updatedItem = replaceInApItem(apItem, apState, replaced, replacement);
                 itemUpdateMapping.put(apItem.getItemId(), updatedItem);
+                macc.add(apItem.getPart().getAccessPointId());
             }
         }
 
         List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
                                                                                      bindingItemsByItemId.values());
-        // refresh AP cache
+        // prepare to refresh AP cache
         for (ApBindingItem modBinding : modifiedBindings) {
-            accessPointCacheService.createApCachedAccessPoint(modBinding.getItem().getPart()
-                    .getAccessPointId());
+            macc.add(modBinding.getItem().getPart().getAccessPointId());
         }
     }
 
@@ -1148,15 +1160,11 @@ public class AccessPointService {
      * 
      * @param apItem
      * @param apState
-     * @param bindingItems
-     *            Collection of binding items. Collection might contain also other
-     *            bindings for items.
      * @param replaced
      * @param replacement
      * @return
      */
-    private ApItem replaceInApItem(ApItem apItem, ApState apState,
-                                   ApAccessPoint replaced, ApAccessPoint replacement) {
+    private ApItem replaceInApItem(ApItem apItem, ApState apState, ApAccessPoint replaced, ApAccessPoint replacement) {
         Validate.isTrue(apItem.getDeleteChange() == null);
         ArrData data = HibernateUtils.unproxy(apItem.getData());
         Validate.isTrue(data instanceof ArrDataRecordRef);
@@ -1172,7 +1180,6 @@ public class AccessPointService {
         ApItem updatedItem = apItemService.updateItem(change, apItem, drr);
 
         generateSync(apState, apItem.getPart());
-        accessPointCacheService.createApCachedAccessPoint(apItem.getPart().getAccessPointId());
 
         return updatedItem;
     }
@@ -2008,8 +2015,11 @@ public class AccessPointService {
         // set preferred part
         copyState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(accessPoint.getPreferredPartId()));
 
+        // prepare to update cache
+        MultipleApChangeContext macc = new MultipleApChangeContext();
+        
         if (replaceOrigin) {
-            replace(state, copyState, null);
+            replace(state, copyState, null, macc);
             deleteAccessPoint(state, accessPoint, change);
         }
 
@@ -2019,7 +2029,11 @@ public class AccessPointService {
         }
 
         ApAccessPoint copyAccessPoint = validate(copyState.getAccessPoint(), copyState, true);
-        accessPointCacheService.createApCachedAccessPoint(copyAccessPoint.getAccessPointId());
+        macc.add(copyAccessPoint.getAccessPointId());
+
+        for (Integer apId : macc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
 
         return copyAccessPoint;
     }
@@ -2818,7 +2832,7 @@ public class AccessPointService {
      * 
      */
     public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
-        logger.debug("Validate stateId={}, accessPointId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), accessPoint.getVersion());
+        logger.debug("Validate stateId={}, accessPointId={}, scopeId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), apState.getScopeId(), accessPoint.getVersion());
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
         accessPoint = updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
 
