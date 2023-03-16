@@ -203,7 +203,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[StringUtils.left($V{levelName}, 500)]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement x="0" y="44" width="455" height="44" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
