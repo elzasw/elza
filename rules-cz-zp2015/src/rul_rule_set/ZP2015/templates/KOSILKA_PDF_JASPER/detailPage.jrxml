@@ -211,7 +211,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[$F{node}.getParent()!=null]]></printWhenExpression>
 				</reportElement>
-				<box topPadding="3" bottomPadding="3"/>
+				<box topPadding="4" bottomPadding="3"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
@@ -221,7 +221,7 @@
 				<reportElement x="1" y="0" width="142" height="50" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
-				<box leftPadding="1" rightPadding="2">
+				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="1.0"/>
@@ -233,10 +233,10 @@
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItemValue("NM_MAIN")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="142" y="0" width="403" height="50" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
+				<reportElement x="142" y="0" width="338" height="50" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
-				<box leftPadding="2" rightPadding="55">
+				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="2">
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
@@ -359,7 +359,7 @@
 				<textFieldExpression><![CDATA[$F{node}.hasItem("ZP2015_UNIT_ID")?"ref. ozn.:":($F{node}.hasItem("ZP2015_INV_CISLO")?"inv. č.:":"poř. č.:")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="496" y="0" width="49" height="49" uuid="5f11f881-f5d7-4570-96f9-d5f58f4d4f33">
+				<reportElement x="490" y="0" width="55" height="55" uuid="5f11f881-f5d7-4570-96f9-d5f58f4d4f33">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
