@@ -204,7 +204,7 @@
 				<textFieldExpression><![CDATA[StringUtils.left($V{levelName}, 500)]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="50" width="455" height="38" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef">
+				<reportElement x="0" y="44" width="455" height="44" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -218,8 +218,9 @@
 				<textFieldExpression><![CDATA[StringUtils.left($P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) ), 240)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="1" y="0" width="142" height="50" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
+				<reportElement x="1" y="0" width="142" height="44" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="3">
 					<topPen lineWidth="0.0"/>
@@ -233,9 +234,10 @@
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItemValue("NM_MAIN")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="142" y="0" width="311" height="50" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
+				<reportElement x="142" y="0" width="311" height="44" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="0">
 					<bottomPen lineWidth="1.0"/>
