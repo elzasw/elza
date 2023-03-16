@@ -1168,6 +1168,8 @@ var messages = {
     "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
+    "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
+    "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",
