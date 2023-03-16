@@ -218,7 +218,7 @@
 				<textFieldExpression><![CDATA[StringUtils.left($P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) ), 240)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="1" y="20" width="142" height="30" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
+				<reportElement x="1" y="0" width="142" height="50" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
 				<box leftPadding="1" rightPadding="2">
@@ -233,10 +233,10 @@
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItemValue("NM_MAIN")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="142" y="20" width="401" height="30" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
+				<reportElement x="142" y="0" width="403" height="50" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
-				<box leftPadding="2">
+				<box leftPadding="2" rightPadding="55">
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
@@ -295,17 +295,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_UNIT_DATE")]]></textFieldExpression>
 			</textField>
-			<componentElement>
-				<reportElement positionType="Float" x="343" y="0" width="200" height="20" uuid="93ba2a27-d258-49e0-a4b9-24670846d87d">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="PDF417" drawText="false" checksumRequired="false" rotation="None">
-					<jr:codeExpression><![CDATA["f:"+(($P{fund}.getFundNumber()!=null)?$P{fund}.getFundNumber():"")+",r:"+$V{refNumber}+",u:"+$F{node}.getUuid()]]></jr:codeExpression>
-				</jr:barbecue>
-			</componentElement>
 			<textField textAdjust="ScaleFont">
 				<reportElement x="0" y="88" width="545" height="24" uuid="bfc2b9c8-5b72-4fc0-a92c-0c1e8251f434">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -333,7 +322,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{node}.hasValue("ZP2015_ITEM_ORDER")?"ukl. j. / poř. ul.:":"ukl. j.:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{node}.hasItem("ZP2015_ITEM_ORDER")?"ukl. j. / poř. ul.:":"ukl. j.:"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="FixRelativeToBottom" x="180" y="184" width="78" height="15" forecolor="#787878" uuid="19a04ecf-4987-4dc7-9ec4-3758879fe0d2">
@@ -369,6 +358,19 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.hasItem("ZP2015_UNIT_ID")?"ref. ozn.:":($F{node}.hasItem("ZP2015_INV_CISLO")?"inv. č.:":"poř. č.:")]]></textFieldExpression>
 			</textField>
+			<componentElement>
+				<reportElement x="496" y="0" width="49" height="49" uuid="5f11f881-f5d7-4570-96f9-d5f58f4d4f33">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[StringUtils.left("u:"+$F{node}.getUuid()
+  +(($P{fund}.getInstitution()!=null)?(",i:"+$P{fund}.getInstitution().getCode()):"")
+  +(($P{fund}.getFundNumber()!=null)?(",f:"+$P{fund}.getFundNumber()):"")
+  +(StringUtils.isNotBlank($V{refNumber})?(",r:"+$V{refNumber}):"")
+,100 )]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
 		</band>
 	</detail>
 </jasperReport>
