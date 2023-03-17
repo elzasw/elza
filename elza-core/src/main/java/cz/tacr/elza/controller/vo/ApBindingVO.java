@@ -245,7 +245,12 @@ public class ApBindingVO {
                 		if(bindedItem==null) {
                 			otherLocalChange = true;
                     	} else {
-                    		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
+                            boolean synced = syncChangeId >= item.getCreateChangeId();
+                            bindedItem.setSync(synced);
+                            if (!synced) {
+                                // set parent as modified
+                                bindedParts.get(item.getPartId()).setSync(synced);
+                            }
                     	}
                 	}            		
             	}
@@ -326,7 +331,13 @@ public class ApBindingVO {
                 		if(bindedItem==null) {
                             otherLocalChange = true;
                     	} else {
-                    		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
+                            boolean synced = syncChangeId >= item.getCreateChangeId();
+                            bindedItem.setSync(synced);
+                            if (!synced) {
+                                // set parent as modified
+                                bindedParts.get(item.getPartId()).setSync(synced);
+                            }
+
                     	}
                 	}            		
             	}
