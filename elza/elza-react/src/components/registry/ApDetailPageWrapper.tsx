@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState, useRef, PropsWithChildren } from 'react';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
@@ -35,6 +35,7 @@ import Icon from 'components/shared/icon/FontIcon';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
 import { SyncProgress } from 'api/ApBindingVO';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
+import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -156,6 +157,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const websocket = useWebsocket();
     const bindings = detail.data?.bindings || [];
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (id) {
@@ -178,6 +180,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_COMPLETED]: ({ accessPointId }) => {
                 if(accessPointId.toString() === id.toString()){
+                    setExportState(ExportState.COMPLETED);
+                    refreshDetail(id, true, false);
+                }
+            },
+            [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId }) => {
+                if(accessPointId.toString() === id.toString()){
+                    dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), i18n("ap.push-to-ext.failed.message")))
                     setExportState(ExportState.COMPLETED);
                     refreshDetail(id, true, false);
                 }
