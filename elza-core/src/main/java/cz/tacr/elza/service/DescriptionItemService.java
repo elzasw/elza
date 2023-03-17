@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1770,6 +1771,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     ArrDataUriRef itemUriRef = new ArrDataUriRef();
                     itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
+                    break;
+                case DECIMAL:
+                    ArrDataDecimal itemDecimal = new ArrDataDecimal();
+                    itemDecimal.setValue(new BigDecimal(text));
+                    data = itemDecimal;
                     break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(),
