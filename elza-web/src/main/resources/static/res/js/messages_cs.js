@@ -1120,6 +1120,7 @@ var messages = {
     "ap.binding.replaced": "nahrazená",
 
     "ap.binding.action.synchronize": "Aktualizace údajů z ext. systému",
+    "ap.binding.action.synchronize.confirmation": "Opravdu chcete aktualizovat záznam entity z externího systému? Případné změny neopakovatelných částí záznamu entity budou přepsány.",
     "ap.binding.action.update": "Zápis změn do ext. systému",
     "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
     "ap.binding.action.take-rel-entities": "Převzetí napojených entit",

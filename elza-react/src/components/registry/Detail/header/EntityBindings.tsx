@@ -18,6 +18,7 @@ import { AppState, RefTablesState } from 'typings/store';
 import { SyncIcon } from "../sync-icon";
 import './DetailHeader.scss';
 import {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
+import { showConfirmDialog } from 'components/shared/dialog';
 
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
@@ -53,17 +54,20 @@ export const EntityBindings:FC<{
 
     if(!item || item?.bindings.length === 0 || externalSystems.length === 0){return <></>}
 
-    const handleSynchronize = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.synchronize'),
-                WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
+    const handleSynchronize = async (binding: ApBindingVO) => {
+        const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
+        if(result){
+            dispatch(
+                showAsyncWaiting(
+                    null,
+                    getProcessingMessage('ap.binding.processing.synchronize'),
+                    WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
+                    () => {
+                        onInvalidateDetail && onInvalidateDetail();
+                    },
+                ),
+            );
+        }
     };
 
     const handleUpdate = (binding: ApBindingVO) => {
