@@ -857,6 +857,9 @@ public class ApController {
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.updateAndValidate(accessPointId);
+        if (accessPointService.isRevalidaceRequired(state.getStateApproval(), stateChange.getState())) {
+            ruleService.revalidateNodes(accessPointId);
+        }
         accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
