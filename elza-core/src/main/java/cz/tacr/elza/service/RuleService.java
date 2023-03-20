@@ -100,6 +100,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -690,6 +691,25 @@ public class RuleService {
 
         if (!updateNodes.isEmpty()) {
             asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
+        }
+    }
+
+    /**
+     * Provádění validaci nody, které mají odkaz na ApAccessPoint
+     * 
+     * @param accessPointId
+     */
+    public void revalidateNodes(final Integer accessPointId) {
+        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
+        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
+                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
+                                               Collectors.mapping(i -> i.getNodeId(), 
+                                                                  Collectors.toList())));
+        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
+            List<ArrNode> nodes = new ArrayList<>();
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            asyncRequestService.enqueue(version, nodes, null);
         }
     }
 

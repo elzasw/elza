@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 
 /**
  * Respozitory pro nody.
@@ -89,7 +90,20 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
      * @return vrací seznam uzlů, které nemají žádnou vazbu na conformity info
      */
     @Query("SELECT n FROM arr_node n JOIN arr_level l ON l.node = n " +
-     "LEFT JOIN arr_node_conformity nc ON nc.node = n " +
+            "LEFT JOIN arr_node_conformity nc ON nc.node = n " +
     		"WHERE n.fund = :fund AND l.deleteChange IS NULL AND nc IS NULL")
     List<ArrNode> findByNodeConformityIsNull(@Param(value= "fund") ArrFund fund);
+    
+    /**
+     * @return vrací seznam dvojic nodeId a fundVersionId podle accessPointId
+     */
+    @Query("SELECT new cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo(d.nodeId, fv.fundVersionId) " + 
+            "FROM arr_item i " +
+            "JOIN arr_data_record_ref rf ON i.dataId = rf.dataId " +
+            "JOIN arr_desc_item d ON i.itemId = d.itemId " +
+            "JOIN arr_node n ON n.nodeId = d.nodeId " +
+            "JOIN arr_level l ON n.nodeId = l.nodeId AND l.deleteChange is null " +
+            "JOIN arr_fund_version fv ON n.fund = fv.fund AND fv.lockChange IS NULL " +
+            "WHERE i.deleteChange IS NULL AND rf.recordId = :accessPointId")
+    List<NodeIdFundVersionIdInfo> findNodeIdFundversionIdByAccessPointId(@Param(value = "accessPointId") Integer accessPointId);
 }

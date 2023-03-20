@@ -61,6 +61,7 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
@@ -2819,6 +2820,10 @@ public class AccessPointService {
 
         logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
         validate(apState.getAccessPoint(), apState, successfulGeneration);
+    }
+
+    public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
+        return (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) && state != newState;
     }
 
     /**
