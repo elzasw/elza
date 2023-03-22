@@ -61,7 +61,6 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
@@ -2769,15 +2768,16 @@ public class AccessPointService {
 
     public String importCoordinates(FileType fileType, Resource body) {
         try {
-            String content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
+            String content;
             switch (fileType) {
                 case KML:
-                    content = content.substring(1, content.length() - 1);
-                    return "\"" + apDataService.convertCoordinatesFromKml(content) + "\"";
+                    return "\"" + apDataService.convertCoordinatesFromKml(body.getInputStream()) + "\"";
                 case GML:
+                    content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
                     content = content.substring(1, content.length() - 1);
                     return "\"" + apDataService.convertCoordinatesFromGml(content) + "\"";
                 case WKT:
+                    content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
                     return content;
                 default:
                     throw new IllegalStateException("Nepovolený typ souboru pro import souřadnic");
