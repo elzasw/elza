@@ -239,7 +239,8 @@
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="0">
+				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="1">
+					<leftPen lineWidth="1.0"/>
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
@@ -383,12 +384,12 @@
 				</reportElement>
 				<box topPadding="5" leftPadding="3" bottomPadding="2" rightPadding="0">
 					<bottomPen lineWidth="1.0"/>
-					<rightPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="20" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()):"") + ((StringUtils.isNotBlank($P{fund}.getMark()))?("\n"+$P{fund}.getMark()):"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null&&StringUtils.isBlank($P{fund}.getMark()))?($P{fund}.getFundNumber()):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="FixRelativeToBottom" x="143" y="0" width="77" height="15" forecolor="#787878" uuid="431ec498-bb9b-4a8d-83a8-f06b31c99ab5">
@@ -406,6 +407,37 @@
 					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getMark()))?"NAD č. / zn.:":"NAD č.:"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont">
+				<reportElement x="143" y="0" width="77" height="24" uuid="e1ef9b85-2ca2-4da3-85c0-c27e15e10186">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotBlank($P{fund}.getMark())]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="4" leftPadding="2" bottomPadding="1" rightPadding="0">
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()):"")]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont">
+				<reportElement x="143" y="24" width="77" height="20" uuid="ec376245-9299-446a-b461-79b03ea00e03">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box topPadding="1" leftPadding="2" bottomPadding="2" rightPadding="1">
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="10" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[((StringUtils.isNotBlank($P{fund}.getMark()))?($P{fund}.getMark()):"")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
