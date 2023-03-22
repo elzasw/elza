@@ -1,16 +1,23 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
-
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Geometry;
+import org.geotools.kml.KML;
+import org.geotools.kml.KMLConfiguration;
+import org.geotools.xsd.Parser;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -97,8 +104,20 @@ public class AccessPointDataService {
         return apChangeRepository.save(change);
     }
 
-    public String convertCoordinatesFromKml(String coordinates) {
-        return dataCoordinatesRepository.convertCoordinatesFromKml(coordinates);
+    public String convertCoordinatesFromKml(InputStream inputStream) {
+        try {
+            Parser parser = new Parser(new KMLConfiguration());
+            SimpleFeature sf = (SimpleFeature) parser.parse(inputStream);
+            for (Property property : sf.getValue()) {
+                if (property.getType().getName().getURI().equals(KML.Geometry.getLocalPart())) {
+                    return property.getValue().toString();
+                }
+            }
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            logger.error("", e);
+            throw new IllegalStateException("Chyba při importu souřadnic ze souboru", e);
+        }
+        return null;
     }
 
     public String convertCoordinatesFromGml(String coordinates) {
@@ -117,7 +136,7 @@ public class AccessPointDataService {
         return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
     }
 
-    public byte[] convertGeometryToWKB(Geometry geometry) {
+    public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
 
