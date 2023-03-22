@@ -1464,7 +1464,9 @@ public class ApController {
      * @return Souřadnice převedené do řetězce
      */
     @Transactional
-    @RequestMapping(value = "/import/coordinates", method = RequestMethod.POST)
+    @RequestMapping(value = "/import/coordinates",
+            consumes = {"*/*"},
+            method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
         return accessPointService.importCoordinates(fileType, body);
