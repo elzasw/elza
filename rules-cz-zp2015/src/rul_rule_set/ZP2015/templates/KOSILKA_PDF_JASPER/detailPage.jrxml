@@ -192,7 +192,7 @@
 		<band height="230" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField textAdjust="ScaleFont" isBlankWhenNull="false">
-				<reportElement x="0" y="112" width="545" height="72" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
+				<reportElement x="0" y="111" width="545" height="49" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -201,10 +201,10 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[StringUtils.left($V{levelName}, 500)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[StringUtils.left($V{levelName}, 384)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="0" y="44" width="455" height="44" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef">
+				<reportElement x="0" y="44" width="455" height="67" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -215,7 +215,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[StringUtils.left($P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) ), 240)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[StringUtils.left($P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) ), 384)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
 				<reportElement x="1" y="0" width="142" height="44" uuid="1214b24f-1050-4901-b0cf-cbfdc0e188e9">
@@ -234,7 +234,7 @@
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getSingleItemValue("NM_MAIN")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="142" y="0" width="311" height="44" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
+				<reportElement x="220" y="0" width="233" height="44" uuid="828cb4fa-00ee-4483-b24d-71b099ac1994">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -246,7 +246,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[""+(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()+": "):"") + $P{fund}.getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
 				<reportElement positionType="FixRelativeToBottom" x="390" y="184" width="153" height="46" uuid="245e0d02-e397-4b16-8589-9421950c556b">
@@ -299,14 +299,14 @@
 				<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_UNIT_DATE")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="ScaleFont">
-				<reportElement x="0" y="88" width="545" height="24" uuid="bfc2b9c8-5b72-4fc0-a92c-0c1e8251f434">
+				<reportElement x="0" y="160" width="545" height="24" uuid="bfc2b9c8-5b72-4fc0-a92c-0c1e8251f434">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{otherId})]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font pdfEncoding="Cp1250"/>
+					<font size="12" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[StringUtils.left($V{otherId}, 240)]]></textFieldExpression>
 			</textField>
@@ -375,6 +375,38 @@
 ,100 )]]></jr:codeExpression>
 				</jr:QRCode>
 			</componentElement>
+			<textField textAdjust="ScaleFont">
+				<reportElement x="143" y="0" width="77" height="44" uuid="ba335d6b-2a90-4aa1-a615-1adb69b7c8c5">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box topPadding="5" leftPadding="3" bottomPadding="2" rightPadding="0">
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()):"") + ((StringUtils.isNotBlank($P{fund}.getMark()))?("\n"+$P{fund}.getMark()):"")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="FixRelativeToBottom" x="143" y="0" width="77" height="15" forecolor="#787878" uuid="431ec498-bb9b-4a8d-83a8-f06b31c99ab5">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box leftPadding="2">
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getMark()))?"č. NAD/zn.:":"č. NAD:"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
