@@ -243,7 +243,7 @@
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
@@ -383,9 +383,9 @@
 				</reportElement>
 				<box topPadding="5" leftPadding="3" bottomPadding="2" rightPadding="0">
 					<bottomPen lineWidth="1.0"/>
-					<rightPen lineWidth="0.0"/>
+					<rightPen lineWidth="1.0"/>
 				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle">
+				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()):"") + ((StringUtils.isNotBlank($P{fund}.getMark()))?("\n"+$P{fund}.getMark()):"")]]></textFieldExpression>
@@ -405,7 +405,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getMark()))?"č. NAD/zn.:":"č. NAD:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getMark()))?"NAD č. / zn.:":"NAD č.:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
