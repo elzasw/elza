@@ -140,9 +140,8 @@ const importCoordinateFile = ():ThunkAction<any> =>
             i18n('ap.coordinate.import.title'),
             <ImportCoordinateModal
                 onSubmit={async (formData) => {
-                    const data = await readFileAsBinaryString(formData.file)
                     try {
-                        const fieldValue = await WebApi.importApCoordinates(data!, formData.format);
+                        const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
                         console.log(fieldValue);
                         resolve(fieldValue);
                     } catch (error) {
@@ -156,13 +155,3 @@ const importCoordinateFile = ():ThunkAction<any> =>
                 />
         ))
 )
-
-const readFileAsBinaryString = (file: File) => {
-    return new Promise<string | ArrayBuffer | null>((resolve)=>{
-        const reader = new FileReader();
-        reader.onload = async () => {
-            resolve(reader.result);
-        };
-        reader.readAsBinaryString(file);
-    })
-}
