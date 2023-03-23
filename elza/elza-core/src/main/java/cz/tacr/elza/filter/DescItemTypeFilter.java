@@ -10,7 +10,6 @@ import java.util.Set;
 
 
 import jakarta.persistence.EntityManager;
-import org.apache.lucene.search.Query;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -88,7 +87,7 @@ public class DescItemTypeFilter {
         FilterQueries filterQueries = createFilterQuries(sectionConditions, factory, entityManager, fundId, lockChangeId);
 
         Map<Integer, Set<Integer>> nodeIdToDescItemIds = processLucenePredicates(searchSession, factory,
-                fundId, filterQueries.getLuceneQueries());
+                fundId, filterQueries.getLucenePredicates());
 
         Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
 
@@ -212,17 +211,24 @@ public class DescItemTypeFilter {
             boolStep.must(createDescItemTypePredicate(factory));
             boolStep.must(createFundIdSearchPredicate(factory, fundId));
 
-            lucenePredicates.forEach(boolStep::must);
+            for (SearchPredicate searchPredicate : lucenePredicates) {
+                boolStep.must(searchPredicate);
+            }
 
-            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_ITEM_ID).getResultList();
+            List<List<?>> rows = searchSession.search(ArrDescItem.class)
+                    .select(f -> f.composite(f.field(ArrDescItem.FIELD_NODE_ID), f.field(ArrDescItem.FIELD_ITEM_ID)))
+                    .where(boolStep.toPredicate()).fetchAllHits();
+
+            //List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_ITEM_ID).getResultList();
 
             nodeIdToDescItemIds = new HashMap<>(rows.size());
-            for (Object row: rows) {
-                Object[] rowArray = (Object[]) row;
-                Integer nodeId = (Integer) rowArray[0];
-                Integer descItemId = (Integer) rowArray[1];
-                Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
-                descItemIds.add(descItemId);
+            for (List<?> row: rows) {
+                if (row.size() >= 2) {
+                    Integer nodeId = (Integer) row.get(0);
+                    Integer descItemId = (Integer) row.get(1);
+                    Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
+                    descItemIds.add(descItemId);
+                }
             }
         }
         return nodeIdToDescItemIds;
@@ -233,11 +239,11 @@ public class DescItemTypeFilter {
      * @param sectionConditions
      */
     private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final SearchPredicateFactory factory, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
-        List<Query> luceneQueries = new LinkedList<>();
+        List<SearchPredicate> lucenePredicates = new LinkedList<>();
         List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
-        FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
+        FilterQueries filterQueries = new FilterQueries(lucenePredicates, hibernateQueries);
 
-        if (sortConditions(sectionConditions, factory, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
+        if (sortConditions(sectionConditions, factory, entityManager, fundId, lockChangeId, lucenePredicates, hibernateQueries)) {
             return new FilterQueries(Collections.emptyList(), Collections.emptyList());
         }
 
@@ -246,12 +252,12 @@ public class DescItemTypeFilter {
 
     /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
     private boolean sortConditions(final List<DescItemCondition> descItemConditions, final SearchPredicateFactory factory, final EntityManager entityManager,
-            final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
+            final Integer fundId, final Integer lockChangeId, final List<SearchPredicate> lucenePredicates,
             final List<jakarta.persistence.Query> hibernateQueries) {
         for (DescItemCondition condition : descItemConditions) {
             if (condition instanceof LuceneDescItemCondition) {
                 LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
-                luceneQueries.add(luceneCondition.createLuceneQuery(factory));
+                lucenePredicates.add(luceneCondition.createLucenePredicate(factory));
             } else if (condition instanceof SelectsNothingCondition) {
                 return true;
             } else {
