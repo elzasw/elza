@@ -68,7 +68,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         CopyAccessPointDetail copyAccessPointDetail = new CopyAccessPointDetail();
         copyAccessPointDetail.setScope(SCOPE_GLOBAL);
-        copyAccessPointDetail.setReplaceOrigin(true);
+        copyAccessPointDetail.setReplace(true);
         copyAccessPointDetail.setSkipItems(skipItems);
 
         EntityRef entityRef = accesspointsApi.copyAccessPoint(ap.getUuid(), copyAccessPointDetail);

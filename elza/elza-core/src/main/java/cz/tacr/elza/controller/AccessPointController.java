@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AutoValue;
 import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
@@ -24,7 +23,6 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -34,23 +32,24 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyItem;
-import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.RevisionService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @RestController
 @RequestMapping("/api/v1")
 public class AccessPointController implements AccesspointsApi {
 
     @Autowired
-    AccessPointService accessPointService;
-    
-    @Autowired
-    StaticDataService staticDataService; 
+    AccessPointCacheService apCacheService;
 
     @Autowired
-    ApIndexRepository indexRepository;
+    AccessPointService accessPointService;
+
+    @Autowired
+    StaticDataService staticDataService; 
 
     @Autowired
     RevisionService revisionService;
@@ -63,12 +62,10 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<EntityRef> copyAccessPoint(String id, @Valid CopyAccessPointDetail copyAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         ApScope scope = accessPointService.getApScope(copyAccessPointDetail.getScope());
-        ApAccessPoint copyAccessPoint = accessPointService.copyAccessPoint(accessPoint, scope, copyAccessPointDetail.getReplaceOrigin(), 
+        ApAccessPoint copyAccessPoint = accessPointService.copyAccessPoint(accessPoint, scope, copyAccessPointDetail.getReplace(), 
                                                                            copyAccessPointDetail.getSkipItems());
-        EntityRef entityRef = new EntityRef();
-        entityRef.setId(copyAccessPoint.getUuid());
-        List<ApIndex> indexes = indexRepository.findByPartId(copyAccessPoint.getPreferredPartId());
-        entityRef.setNote(ApFactory.findDisplayIndexValue(indexes));
+        CachedAccessPoint cachedAccessPoint = apCacheService.findCachedAccessPoint(copyAccessPoint.getAccessPointId());
+        EntityRef entityRef = apCacheService.createEntityRef(cachedAccessPoint);
         return ResponseEntity.ok(entityRef);
     }
 
