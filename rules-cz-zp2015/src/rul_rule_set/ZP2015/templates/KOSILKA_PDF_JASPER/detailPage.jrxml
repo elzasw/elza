@@ -238,14 +238,17 @@
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 				</reportElement>
-				<box topPadding="3" leftPadding="3" bottomPadding="3" rightPadding="1">
+				<box topPadding="1" leftPadding="0" bottomPadding="1" rightPadding="0">
 					<leftPen lineWidth="1.0"/>
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<paragraph leftIndent="2" rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 			</textField>
@@ -254,8 +257,11 @@
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
+					<property name="com.jaspersoft.studio.unit.spacingBefore" value="px"/>
 				</reportElement>
-				<box topPadding="4" leftPadding="3" bottomPadding="3">
+				<box topPadding="0" leftPadding="0" bottomPadding="0">
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -263,6 +269,7 @@
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="20" isBold="true" pdfEncoding="Cp1250"/>
+					<paragraph leftIndent="2" rightIndent="2" spacingBefore="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{storageId}]]></textFieldExpression>
 			</textField>
@@ -413,14 +420,17 @@
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotBlank($P{fund}.getMark())]]></printWhenExpression>
 				</reportElement>
-				<box topPadding="4" leftPadding="2" bottomPadding="1" rightPadding="0">
+				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="14" isBold="true" pdfEncoding="Cp1250"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+					<paragraph leftIndent="2" rightIndent="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($P{fund}.getFundNumber()!=null)?($P{fund}.getFundNumber()):"")]]></textFieldExpression>
 			</textField>
@@ -434,8 +444,8 @@
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>
-				<textElement verticalAlignment="Middle">
-					<font size="10" isBold="false" pdfEncoding="Cp1250"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[((StringUtils.isNotBlank($P{fund}.getMark()))?($P{fund}.getMark()):"")]]></textFieldExpression>
 			</textField>
