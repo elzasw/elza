@@ -36,11 +36,6 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     const {updatedItem, item} = field.input.value;
     const prevValue = item?.value;
 
-    const handleImport = async () => {
-        const fieldValue = await dispatch(importCoordinateFile());
-        form.change(fieldName, fieldValue)
-    }
-
     return <Row>
         <Col>
             <Field
@@ -87,6 +82,15 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                             })
                         }
                         handleValueUpdate(form);
+                    }
+
+                    const handleImport = async () => {
+                        const value = await dispatch(importCoordinateFile());
+                        form.change(`${name}.updatedItem`, {
+                            ...updatedItem,
+                            changeType: "UPDATED",
+                            value
+                        })
                     }
 
                     return <RevisionFieldExample
