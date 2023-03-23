@@ -22,7 +22,7 @@ public class ArrDataUriRef extends ArrData {
     private String schema;
 
     @Basic
-    @Column(name="value", nullable = false, length = 2000)
+    @Column(name="uri_ref_value", nullable = false, length = 2000)
     private String uriRefValue;
 
     @Basic

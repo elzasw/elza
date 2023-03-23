@@ -379,7 +379,7 @@
                                  constraintName="fk_sys_external_system" referencedColumnNames="external_system_id"
                                  referencedTableName="sys_external_system"/>
     </changeSet>
-    
+
     <changeSet id="20200825163900" author="fantis">
         <preConditions onFail="MARK_RAN">
             <tableExists tableName="ap_external_id"/>
@@ -595,7 +595,7 @@
         <dropTable tableName="ap_rule_system" />
     </changeSet>
 
-    <changeSet id="20200731143500" author="sergey.iryupin">        
+    <changeSet id="20200731143500" author="sergey.iryupin">
     	<sql dbms="postgresql">UPDATE arr_fund f SET fund_number = t1.value
 			FROM (SELECT f.fund_id, dai.value AS value FROM arr_fund f
 			JOIN arr_fund_version v ON v.fund_id = f.fund_id
@@ -742,12 +742,12 @@
                 <constraints primaryKey="true" primaryKeyName="pk_arr_output_template"/>
             </column>
 			<column name="output_id" type="int">
-				<constraints foreignKeyName="fk_arr_output_template_output_id" 
+				<constraints foreignKeyName="fk_arr_output_template_output_id"
 							 referencedTableName="arr_output"
 							 referencedColumnNames="output_id" />
 			</column>
             <column name="template_id" type="int">
-				<constraints foreignKeyName="fk_arr_output_template_template_id" 
+				<constraints foreignKeyName="fk_arr_output_template_template_id"
 							 referencedTableName="rul_template"
 							 referencedColumnNames="template_id" />
             </column>
@@ -771,7 +771,7 @@
             <column name="output_id" type="int" />
         </createIndex>
 	</changeSet>
-    
+
     <changeSet id="20200826124400" author="slapa">
         <dropColumn tableName="ap_binding_item" columnName="cam_identifier" />
     </changeSet>
@@ -781,7 +781,7 @@
         <column name="user_id" type="int" />
       </addColumn>
     </changeSet>
-    
+
     <changeSet id="20200907122400" author="fantis">
         <createTable tableName="ap_key_value">
             <column name="key_value_id" type="int">
@@ -840,7 +840,7 @@
     <changeSet id="20200908143800" author="fantis">
         <addUniqueConstraint columnNames="key_type, value, scope_id" constraintName="UNIQUE_key_value" tableName="ap_key_value"/>
     </changeSet>
-    
+
     <changeSet id="20200909112000" author="fantis">
         <addColumn tableName="rul_extension_rule">
             <column name="compatibility_rul_package" type="int"/>
@@ -999,17 +999,17 @@
         <column name="scenario" type="nvarchar(250)" />
       </addColumn>
     </changeSet>
-    
+
     <changeSet id="20201114011400" author="ppyt" dbms="postgresql">
       <preConditions onFail="MARK_RAN" onError="MARK_RAN">
        <dbms type="postgresql"/>
-       <sqlCheck expectedResult="arr_output_result_output_definition_id_key">select constraint_name from information_schema.constraint_column_usage 
+       <sqlCheck expectedResult="arr_output_result_output_definition_id_key">select constraint_name from information_schema.constraint_column_usage
               where table_name = 'arr_output_result' and constraint_name = 'arr_output_result_output_definition_id_key'</sqlCheck>
       </preConditions>
       <dropUniqueConstraint tableName="arr_output_result" constraintName="arr_output_result_output_definition_id_key"/>
     </changeSet>
     <changeSet id="20201114011401" author="ppyt">
-      <sql>UPDATE db_hibernate_sequences SET next_val =(select (coalesce(max(state_id), 0)+20) as v from ap_state) 
+      <sql>UPDATE db_hibernate_sequences SET next_val =(select (coalesce(max(state_id), 0)+20) as v from ap_state)
            where sequence_name = 'ap_state|state_id'</sql>
     </changeSet>
     <changeSet id="20201211004001" author="ppyt">
@@ -1043,7 +1043,7 @@
         <sql>update arr_fund set mark=trim(mark) where mark is not null</sql>
         <sql>update arr_fund set unitdate=trim(unitdate) where unitdate is not null</sql>
     </changeSet>
-    
+
     <changeSet id="20210210161000" author="ppyt">
         <!-- Oprava v datech z duvodu chybneho mazani partu -->
         <sql>UPDATE ap_part p SET delete_change_id = (select p2.delete_change_id FROM ap_part p2 WHERE p.parent_part_id=p2.part_id) WHERE p.delete_change_id is null AND p.parent_part_id is not null</sql>
@@ -1056,7 +1056,7 @@
         <dropIndex indexName="ap_binding_item_value_idx" tableName="ap_binding_item" />
         <dropIndex indexName="ap_binding_item_part_idx" tableName="ap_binding_item" />
         <dropIndex indexName="ap_binding_item_item_idx" tableName="ap_binding_item" />
-        
+
         <addColumn tableName="ap_binding_item">
             <column name="create_change_id" type="int">
                 <constraints nullable="true"
@@ -1071,12 +1071,12 @@
                              referencedColumnNames="change_id"/>
             </column>
         </addColumn>
-        
+
         <!-- Copy last state -->
         <sql dbms="postgresql">UPDATE ap_binding_item bi SET create_change_id = bs2.create_change_id, delete_change_id = bs2.delete_change_id
-           FROM (SELECT MAX(bs.create_change_id) AS create_change_id, MAX(bs.delete_change_id) AS delete_change_id, bs.binding_id FROM ap_binding_state bs GROUP BY bs.binding_id) bs2 
+           FROM (SELECT MAX(bs.create_change_id) AS create_change_id, MAX(bs.delete_change_id) AS delete_change_id, bs.binding_id FROM ap_binding_state bs GROUP BY bs.binding_id) bs2
            WHERE bi.binding_id = bs2.binding_id</sql>
-           
+
         <addNotNullConstraint tableName="ap_binding_item" columnName="create_change_id" columnDataType="int"/>
 
         <createIndex indexName="ap_binding_item_value_idx" tableName="ap_binding_item" unique="false">
@@ -1092,12 +1092,12 @@
             <column name="item_id" type="int"/>
             <column name="delete_change_id" type="int"/>
         </createIndex>
-        
+
         <addForeignKeyConstraint baseColumnNames="part_id" baseTableName="ap_binding_item"
                                  constraintName="FK_AP_BINDING_ITEM_PART" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="part_id" referencedTableName="ap_part"/>
-                                 
+
         <addForeignKeyConstraint baseColumnNames="item_id" baseTableName="ap_binding_item"
                                  constraintName="FK_AP_BINDING_ITEM_ITEM" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
@@ -1107,22 +1107,22 @@
                                  constraintName="FK_AP_BINDING_ITEM_CREATE_CHANGE_ID" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="change_id" referencedTableName="ap_change"/>
-        
+
         <addForeignKeyConstraint baseColumnNames="delete_change_id" baseTableName="ap_binding_item"
                                  constraintName="FK_AP_BINDING_ITEM_DELETE_CHANGE_ID" deferrable="false"
                                  initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
                                  referencedColumnNames="change_id" referencedTableName="ap_change"/>
     </changeSet>
-    
+
     <!-- Oprava poskozenych ap_item po migraci z verze 1.x - chybi specifikace u enum (tyka se formy jmena).
          Oprava nastavi poskozene/prazdne item jako smazane.
          -->
     <changeSet id="20210225021900" author="ppyt">
       <sql>update ap_item set delete_change_id = create_change_id where item_id in (
              select ai.item_id from ap_item ai
-             join arr_data d on d.data_id = ai.data_id 
-             join rul_data_type rdt on rdt.data_type_id  = d.data_type_id 
-             join rul_item_type rit on ai.item_type_id = rit.item_type_id 
+             join arr_data d on d.data_id = ai.data_id
+             join rul_data_type rdt on rdt.data_type_id  = d.data_type_id
+             join rul_item_type rit on ai.item_type_id = rit.item_type_id
              where rdt.code  = 'ENUM' and ai.item_spec_id is null and ai.delete_change_id is null)
       </sql>
     </changeSet>
@@ -1131,45 +1131,45 @@
       <!-- Presun item do prvni casti daneho typu -->
       <sql dbms="postgresql">update ap_item i set part_id = si.target_part_id from (
         select min(p.part_id) target_part_id, ai.item_id from ap_part p
-        join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
-        join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+        join rul_part_type rpt on rpt.part_type_id = p.part_type_id
+        join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id
         join ap_item ai on ai.part_id = p2.part_id
         where rpt.code in ('PT_BODY') and p.delete_change_id is null
-        group by ai.item_id ) si 
+        group by ai.item_id ) si
         where si.item_id = i.item_id
       </sql>
       <!-- Zneplatneni puvodni casti -->
       <sql>delete from ap_index where part_id in (select p2.part_id from ap_part p
-          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
-          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id
           where rpt.code in ('PT_BODY') and p.delete_change_id is null
           group by p2.part_id
           )
       </sql>
       <sql>delete from ap_key_value where key_value_id in (select p2.part_id from ap_part p
-          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
-          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id
           where rpt.code in ('PT_BODY') and p.delete_change_id is null
           group by p2.part_id
           )
       </sql>
       <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id from (
           select p2.part_id from ap_part p
-          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
-          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id
           where rpt.code in ('PT_BODY') and p.delete_change_id is null
-          group by p2.part_id) si 
-          where p.part_id = si.part_id      
+          group by p2.part_id) si
+          where p.part_id = si.part_id
       </sql>
     </changeSet>
-    
+
     <changeSet id="20210318032824" author="ppyt">
         <dropIndex tableName="arr_structured_object" indexName="arr_structured_object_uuid_unique_idx"/>
         <addUniqueConstraint tableName="arr_structured_object"
-                    constraintName="arr_structured_object_uuid_unique" 
-        			columnNames="uuid, fund_id, structured_type_id, delete_change_id" />  
-    </changeSet>    
-    
+                    constraintName="arr_structured_object_uuid_unique"
+        			columnNames="uuid, fund_id, structured_type_id, delete_change_id" />
+    </changeSet>
+
     <changeSet id="20210228150900" author="fantis">
         <createTable tableName="ap_cached_access_point">
             <column name="cached_access_point_id" type="int">
@@ -1210,7 +1210,7 @@
             </column>
         </addColumn>
         <!-- Vyplňování polí create_change_id -->
-        <sql>UPDATE arr_file f SET create_change_id = (SELECT fv.create_change_id FROM arr_fund_version fv 
+        <sql>UPDATE arr_file f SET create_change_id = (SELECT fv.create_change_id FROM arr_fund_version fv
         	WHERE f.fund_id = fv.fund_id AND fv.lock_change_id IS NULL)
         </sql>
         <addNotNullConstraint tableName="arr_file" columnName="create_change_id" columnDataType="int" />
@@ -1254,7 +1254,7 @@ where no.level_id = l.level_id
 	</changeSet>
 
     <changeSet id="20210413151500" author="sergey.iryupin">
-    	<sql dbms="postgresql">UPDATE ap_binding SET value = CONCAT('missing_value_', CAST(binding_id AS text)) 
+    	<sql dbms="postgresql">UPDATE ap_binding SET value = CONCAT('missing_value_', CAST(binding_id AS text))
     						   WHERE value IS NULL</sql>
         <addNotNullConstraint tableName="ap_binding" columnName="value" columnDataType="nvarchar(50)"/>
     </changeSet>
@@ -1277,7 +1277,7 @@ where no.level_id = l.level_id
   			WHERE s.delete_change_id IS NULL)</sql>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
 	</changeSet>
-    
+
     <changeSet id="20210430094500" author="fantis">
         <createTable tableName="rul_output_filter">
             <column name="output_filter_id" type="int">
@@ -1352,10 +1352,10 @@ where no.level_id = l.level_id
     </changeSet>
 
     <changeSet id="20210507142500" author="sergey.iryupin">
-    	<modifyDataType columnName="type"  
-            newDataType="nvarchar(50)"  
+    	<modifyDataType columnName="type"
+            newDataType="nvarchar(50)"
             tableName="ap_external_system" />
-        <dropNotNullConstraint columnName="access_point_id" 
+        <dropNotNullConstraint columnName="access_point_id"
         	columnDataType="int"
         	tableName="ext_syncs_queue_item" />
         <addColumn tableName="ext_syncs_queue_item">
@@ -1436,20 +1436,20 @@ where no.level_id = l.level_id
        JOIN ap_binding_state bis2 ON bis.binding_id = bis2.binding_id
        WHERE bis.delete_Change_Id IS NULL and bis2.delete_change_id is null
              and bis.binding_state_id > bis2.binding_state_id)</sql>
-      <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_binding_pidx 
-                               ON ap_binding_state(binding_id) 
+      <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_binding_pidx
+                               ON ap_binding_state(binding_id)
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
 
     <changeSet id="20210824171100" author="ppyt">
-    <sql dbms="postgresql">update ap_binding_item abi 
+    <sql dbms="postgresql">update ap_binding_item abi
     set delete_change_id = create_change_id
     where abi.part_id in (
     select p.part_id from ap_part p
     left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
     where i.item_id is null and p.delete_change_id is null
     ) and abi.delete_change_id is null</sql>
-    <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id 
+    <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id
     where p.part_id in (
     select p.part_id from ap_part p
     left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
@@ -1460,23 +1460,23 @@ where no.level_id = l.level_id
     <!-- Oprava nekonzistence zjistene v SOA Plzen, odstranene pref. oznaceni avsak platna entita-->
     <changeSet id="20210903120100" author="ppyt">
     <sql dbms="postgresql">update ap_state s set delete_change_id = src.delete_change_id
-    from (select s.state_id, p.delete_change_id from ap_state s 
-          join ap_access_point ap on ap.access_point_id = s.access_point_id 
-          join ap_part p on ap.preferred_part_id = p.part_id 
+    from (select s.state_id, p.delete_change_id from ap_state s
+          join ap_access_point ap on ap.access_point_id = s.access_point_id
+          join ap_part p on ap.preferred_part_id = p.part_id
           where s.delete_change_id is null and p.delete_change_id is not null) src
-    where s.state_id = src.state_id</sql>    
+    where s.state_id = src.state_id</sql>
     <sql dbms="postgresql">
     update ap_state s set delete_change_id = create_change_id where
     s.state_id in (
     select s.state_id from ap_access_point ap
     join ap_state s on s.access_point_id = ap.access_point_id
     where preferred_part_id is null and s.delete_change_id is null
-    )</sql>     
+    )</sql>
     </changeSet>
 
     <changeSet id="20210903154200" author="ppyt">
-        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_data_pidx 
-                               ON ap_item(data_id) 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_data_pidx
+                               ON ap_item(data_id)
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
 
@@ -1516,44 +1516,44 @@ where no.level_id = l.level_id
      <!-- Oprava vztahu mezi pristupovymi body -->
      <changeSet id="20211013001500" author="ppyt">
        <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in (
-       select distinct p.access_point_id from arr_data_record_ref drr 
-       join ap_item i on i.data_id = drr.data_id 
-       join ap_part p on p.part_id = i.part_id 
-       join ap_binding bi on bi.binding_id = drr.binding_id 
-       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       select distinct p.access_point_id from arr_data_record_ref drr
+       join ap_item i on i.data_id = drr.data_id
+       join ap_part p on p.part_id = i.part_id
+       join ap_binding bi on bi.binding_id = drr.binding_id
+       join ap_binding_state bs on bs.binding_id = bi.binding_id
        where drr.record_id is null and bs.delete_change_id is null
        )</sql>
        <sql dbms="postgresql">update arr_data_record_ref rr set record_id = src.access_point_id
        from (
-       select distinct drr.data_id,bs.access_point_id  from arr_data_record_ref drr 
-       join ap_binding bi on bi.binding_id = drr.binding_id 
-       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       select distinct drr.data_id,bs.access_point_id  from arr_data_record_ref drr
+       join ap_binding bi on bi.binding_id = drr.binding_id
+       join ap_binding_state bs on bs.binding_id = bi.binding_id
        where drr.record_id is null and bs.delete_change_id is null
-       ) src where src.data_id = rr.data_id       
+       ) src where src.data_id = rr.data_id
        </sql>
      </changeSet>
 
     <changeSet id="20211018082800" author="sergey.iryupin">
     	<sql dbms="postgresql">update ext_syncs_queue_item set state = 'IMPORT_OK' where state='OK'</sql>
 	</changeSet>
-	
+
 	<changeSet id="20211021095500" author="sergey.iryupin">
-      	<sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in 
+      	<sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in
 			(select access_point_id from ap_state where ap_type_id in
-				(select ap_type_id from ap_type where code in 
+				(select ap_type_id from ap_type where code in
 					('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE')))</sql>
 		<sql dbms="postgresql">update ap_state set ap_type_id = (select ap_type_id from ap_type where code = 'TERM_GENERAL')
-  				where ap_type_id in (select ap_type_id from ap_type where code in 
+  				where ap_type_id in (select ap_type_id from ap_type where code in
 					('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE'))</sql>
 		<sql dbms="postgresql">delete from rul_item_aptype where ap_type_id in
-					(select ap_type_id from ap_type where code in 
+					(select ap_type_id from ap_type where code in
 						('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE'))</sql>
-		<sql dbms="postgresql">delete from ap_type where code in 
+		<sql dbms="postgresql">delete from ap_type where code in
 			('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE')</sql>
 	</changeSet>
 
     <changeSet id="20211022133000" author="sergey.iryupin">
-        <sql dbms="postgresql">CREATE INDEX ap_binding_state_access_point_pidx 
+        <sql dbms="postgresql">CREATE INDEX ap_binding_state_access_point_pidx
 			ON ap_binding_state(access_point_id)
 			WHERE delete_change_id IS NULL;
 			DROP INDEX ap_binding_state_access_point_idx</sql>
@@ -1567,9 +1567,9 @@ where no.level_id = l.level_id
             FROM (SELECT external_system_id, binding_id FROM ap_binding) b
             WHERE a.binding_id = b.binding_id;</sql>
         <addNotNullConstraint tableName="ap_binding_state"
-            columnName="external_system_id"  
-            columnDataType="int"/> 
-        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_access_point_idx 
+            columnName="external_system_id"
+            columnDataType="int"/>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_access_point_idx
             ON ap_binding_state(access_point_id,external_system_id)
 			WHERE delete_change_id IS NULL;</sql>
         <sql dbms="postgresql">DROP INDEX ap_binding_state_access_point_pidx</sql>
@@ -1629,26 +1629,26 @@ where no.level_id = l.level_id
 		<delete tableName="ap_cached_access_point" />
     </changeSet>
     <changeSet id="20211215115000" author="ppyt">
-        <sql dbms="postgresql">CREATE INDEX ap_binding_item_binding_pidx 
+        <sql dbms="postgresql">CREATE INDEX ap_binding_item_binding_pidx
 			ON ap_binding_item(binding_id, delete_change_id)
 			WHERE delete_change_id IS NULL</sql>
     </changeSet>
     <!-- Oprava nekonzistence v DB, prazdne party bez item -->
     <changeSet id="20211218223400" author="ppyt">
-       <sql>delete from ap_binding_item where part_id in (select p.part_id from ap_part p 
-          left join ap_item i on i.part_id = p.part_id 
+       <sql>delete from ap_binding_item where part_id in (select p.part_id from ap_part p
+          left join ap_item i on i.part_id = p.part_id
           where p.delete_change_id is null and i.delete_change_id is null
-          group by p.part_id 
-          having count(i.item_id)=0)       
+          group by p.part_id
+          having count(i.item_id)=0)
        </sql>
-       <sql>delete from ap_part where part_id in (select p.part_id from ap_part p 
-          left join ap_item i on i.part_id = p.part_id 
+       <sql>delete from ap_part where part_id in (select p.part_id from ap_part p
+          left join ap_item i on i.part_id = p.part_id
           where p.delete_change_id is null and i.delete_change_id is null
-          group by p.part_id 
-          having count(i.item_id)=0)       
+          group by p.part_id
+          having count(i.item_id)=0)
        </sql>
     </changeSet>
-    
+
     <changeSet id="20220115003800" author="ppyt">
         <addColumn tableName="ap_external_system">
             <column name="publish_only_approved" type="boolean"/>
@@ -1668,11 +1668,11 @@ where no.level_id = l.level_id
       <sql dbms="postgresql">update arr_data set data_type_id = (select data_type_id from rul_data_type where code = 'INT')
          where data_id in (
            select ai.data_id as data_id from rul_item_type rit
-           join ap_item ai on ai.item_type_id = rit.item_type_id 
+           join ap_item ai on ai.item_type_id = rit.item_type_id
            where rit.code = 'NM_SUP_DIFF'
            )
       </sql>
-      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in 
+      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in
           (select distinct p.access_point_id from rul_item_type rit
            join ap_item ai on ai.item_type_id = rit.item_type_id
            join ap_part p on p.part_id = ai.part_id
@@ -1889,9 +1889,9 @@ where l.level_id &lt; l2.level_id and l.delete_change_id is null and l2.delete_c
 )
 update arr_level l
 set "position" = no.row_num from new_order no
-where no.level_id = l.level_id and "position" &lt;&gt; no.row_num 
+where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
         </sql>
-        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_level_parent_position_idx 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_level_parent_position_idx
             ON arr_level(node_id_parent, "position")
 			WHERE delete_change_id IS NULL AND node_id_parent IS NOT NULL;</sql>
     </changeSet>
@@ -1941,16 +1941,16 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 
 	<changeSet id="20220518122100" author="sergey.iryupin">
 		<sql dbms="postgresql">DELETE FROM arr_node_conformity_error WHERE node_conformity_id IN (
-			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
-			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id
 			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
 		<sql dbms="postgresql">DELETE FROM arr_node_conformity_missing WHERE node_conformity_id IN (
-			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
-			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id
 			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
 		<sql dbms="postgresql">DELETE FROM arr_node_conformity WHERE node_conformity_id IN (
-			SELECT nc2.node_conformity_id FROM arr_node_conformity nc 
-			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id 
+			SELECT nc2.node_conformity_id FROM arr_node_conformity nc
+			JOIN arr_node_conformity nc2 ON nc.node_id = nc2.node_id AND nc.fund_version_id = nc2.fund_version_id
 			WHERE nc.node_conformity_id &lt; nc2.node_conformity_id)</sql>
 		<addUniqueConstraint
 			tableName="arr_node_conformity"
@@ -1966,22 +1966,22 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 
     <!-- Odstraneni nevymazanych casti revizi -->
 	<changeSet id="20220526103500" author="ppyt">
-		<sql dbms="postgresql">update ap_rev_item ri set delete_change_id = src.delete_change_id 
-          from ( 
+		<sql dbms="postgresql">update ap_rev_item ri set delete_change_id = src.delete_change_id
+          from (
             select r.delete_change_id, ri.item_id from ap_revision r
-            join ap_rev_part rp on rp.revision_id = r.revision_id 
-            join ap_rev_item ri on ri.part_id = rp.part_id 
-            where r.delete_change_id is not null 
+            join ap_rev_part rp on rp.revision_id = r.revision_id
+            join ap_rev_item ri on ri.part_id = rp.part_id
+            where r.delete_change_id is not null
                   and ri.delete_change_id is null
-            ) src 
+            ) src
          where ri.item_id = src.item_id</sql>
 		<sql dbms="postgresql">update ap_rev_part rp set delete_change_id = src.delete_change_id
-           from ( 
+           from (
              select r.delete_change_id, rp.part_id from ap_revision r
-             join ap_rev_part rp on rp.revision_id = r.revision_id  
-             where r.delete_change_id is not null 
+             join ap_rev_part rp on rp.revision_id = r.revision_id
+             where r.delete_change_id is not null
                    and rp.delete_change_id is null
-             ) src 
+             ) src
            where rp.part_id = src.part_id</sql>
     </changeSet>
 
@@ -1998,46 +1998,46 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
     			WHERE isp.code IN ('ZP2015_ENTITY_ROLE_1', 'ZP2015_ENTITY_ROLE_4', 'ZP2015_ENTITY_ROLE_13', 'ZP2015_ENTITY_ROLE_14',
 				    'ZP2015_ENTITY_ROLE_35', 'ZP2015_ENTITY_ROLE_51', 'ZP2015_ENTITY_ROLE_54', 'ZP2015_ENTITY_ROLE_55',
 				    'ZP2015_ENTITY_ROLE_59'));</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_11')
 				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1');</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_11')
 				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1');</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_31')
 				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_4');</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_31')
 				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_4');</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_39')
 				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_13','ZP2015_ENTITY_ROLE_14'));</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_39')
 				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_13','ZP2015_ENTITY_ROLE_14'));</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_32')
 				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_35');</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_32')
 				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_35');</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_58')
 				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_59');</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_58')
 				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_59');</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_52')
 				WHERE item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_51');</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_52')
 				WHERE item_spec_id = (select item_spec_id from rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_51');</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_53')
 				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_54','ZP2015_ENTITY_ROLE_55'));</sql>
-		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_node_conformity_missing SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_53')
 				WHERE item_spec_id IN (SELECT item_spec_id FROM rul_item_spec WHERE code IN ('ZP2015_ENTITY_ROLE_54','ZP2015_ENTITY_ROLE_55'));</sql>
 		<sql dbms="postgresql">DELETE from rul_item_aptype WHERE item_spec_id IN (
@@ -2057,13 +2057,13 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
 	<changeSet id="20220714134700" author="ppyt">
 		<sql dbms="postgresql">UPDATE ap_part p SET key_value_id = null WHERE p.part_id in (
 		   SELECT p.part_id FROM ap_part p WHERE p.access_point_id IN (
-              SELECT ap.access_point_id FROM ap_access_point ap 
+              SELECT ap.access_point_id FROM ap_access_point ap
               LEFT JOIN ap_state s ON s.access_point_id = ap.access_point_id AND s.delete_change_id IS NULL
               WHERE s.state_id is null
             ) AND p.key_value_id IS NOT null)</sql>
 		<sql dbms="postgresql">DELETE FROM ap_key_value where key_value_id IN (
-			SELECT akv.key_value_id FROM ap_key_value akv 
-			LEFT JOIN ap_part p ON p.key_value_id = akv.key_value_id 
+			SELECT akv.key_value_id FROM ap_key_value akv
+			LEFT JOIN ap_part p ON p.key_value_id = akv.key_value_id
 			WHERE p.part_id IS NULL)</sql>
 	</changeSet>
 	<!-- Obnovení role_1 -->
@@ -2077,25 +2077,25 @@ where no.level_id = l.level_id and "position" &lt;&gt; no.row_num
           (SELECT package_id FROM rul_package WHERE code = 'ZP2015')
         )</sql>
         <sql>UPDATE db_hibernate_sequences SET next_val = next_val + 21 WHERE sequence_name = 'rul_item_spec|item_spec_id'</sql>
-        <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (select distinct di.node_id from arr_item i 
-join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
-join arr_desc_item di on i.item_id = di.item_id 
+        <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (select distinct di.node_id from arr_item i
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id
+join arr_desc_item di on i.item_id = di.item_id
 join arr_desc_item di2 on di.node_id = di2.node_id
-join arr_item i2 on di2.item_id = i2.item_id 
-join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+join arr_item i2 on di2.item_id = i2.item_id
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id
 where ris.code = 'ZP2015_ENTITY_ROLE_11'
  and i.delete_change_id is null
  and i2.delete_change_id is null
  and ris2.code = 'ZP2015_UNIT_TYPE_TVY'
         )</sql>
-		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id = 
+		<sql dbms="postgresql">UPDATE arr_item SET item_spec_id =
 				(SELECT item_spec_id FROM rul_item_spec WHERE code = 'ZP2015_ENTITY_ROLE_1')
-				WHERE item_id IN (select i.item_id from arr_item i 
-join rul_item_spec ris on i.item_spec_id = ris.item_spec_id 
-join arr_desc_item di on i.item_id = di.item_id 
+				WHERE item_id IN (select i.item_id from arr_item i
+join rul_item_spec ris on i.item_spec_id = ris.item_spec_id
+join arr_desc_item di on i.item_id = di.item_id
 join arr_desc_item di2 on di.node_id = di2.node_id
-join arr_item i2 on di2.item_id = i2.item_id 
-join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id 
+join arr_item i2 on di2.item_id = i2.item_id
+join rul_item_spec ris2 on ris2.item_spec_id = i2.item_spec_id
 where ris.code = 'ZP2015_ENTITY_ROLE_11'
  and i.delete_change_id is null
  and i2.delete_change_id is null
@@ -2127,6 +2127,25 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         </createIndex>
         <delete tableName="ap_cached_access_point" />
 	</changeSet>
+
+    <changeSet id="20230316100502" author="pasek" failOnError="false">
+        <renameColumn tableName="arr_data_string" oldColumnName="value" newColumnName="string_value"/>
+    </changeSet>
+
+    <changeSet id="20230316101502" author="pasek" failOnError="false">
+        <renameColumn tableName="arr_data_text" oldColumnName="value" newColumnName="text_value"/>
+    </changeSet>
+
+    <changeSet id="20230316101702" author="pasek" failOnError="false">
+        <renameColumn tableName="arr_data_unitid" oldColumnName="value" newColumnName="unit_value"/>
+    </changeSet>
+
+    <changeSet id="20230316101902" author="pasek" failOnError="false">
+        <renameColumn tableName="arr_data_uri_ref" oldColumnName="value" newColumnName="uri_ref_value"/>
+    </changeSet>
+    <changeSet id="20230316102102" author="pasek" failOnError="false">
+        <renameColumn tableName="arr_data_bit" oldColumnName="value" newColumnName="bit_value"/>
+    </changeSet>
 
 	<changeSet id="20220929134000" author="sergey.iryupin">
 	    <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20220929134000" />

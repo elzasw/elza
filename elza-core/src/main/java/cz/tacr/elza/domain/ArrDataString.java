@@ -21,7 +21,7 @@ public class ArrDataString extends ArrData {
 
     public static final String STRING_VALUE = "stringValue";
 
-    @Column(name = "value", length = StringLength.LENGTH_1000, nullable = false)
+    @Column(name = "string_value", length = StringLength.LENGTH_1000, nullable = false)
     private String stringValue;
 
 	public ArrDataString() {
