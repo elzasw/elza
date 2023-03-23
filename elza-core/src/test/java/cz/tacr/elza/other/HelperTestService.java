@@ -10,10 +10,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -358,7 +357,7 @@ public class HelperTestService {
 
     // Each package have to be loaded in separate transaction
     // this allows to commit package and reload static data
-    @Transactional(value = TxType.REQUIRES_NEW)
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void loadPackage(String packageCode, String packageDir) {
         RulPackage rulPackage = getPackage(packageCode);
         if (rulPackage == null || rulPackage.getVersion() <= 0) {

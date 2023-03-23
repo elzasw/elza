@@ -3,10 +3,10 @@ package cz.tacr.elza;
 import java.io.File;
 import java.net.URL;
 
-import javax.persistence.EntityManager;
 
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.repository.*;
+import jakarta.persistence.EntityManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

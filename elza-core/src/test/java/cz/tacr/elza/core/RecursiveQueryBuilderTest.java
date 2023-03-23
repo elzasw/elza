@@ -4,9 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.junit.Test;

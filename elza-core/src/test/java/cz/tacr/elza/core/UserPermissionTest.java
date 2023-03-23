@@ -3,7 +3,7 @@ package cz.tacr.elza.core;
 import java.util.List;
 import java.util.UUID;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -71,9 +71,9 @@ public class UserPermissionTest extends AbstractTest {
         ApAccessPoint accessPoint = createApAccessPoint();
         ApState state = createApState(accessPoint, StateApproval.NEW);
 
-        // 1. zakládání a změny nových 
+        // 1. zakládání a změny nových
         UsrUser user1 = createUser("u1", accessPoint);
-        addPermission(user1, UsrPermission.Permission.AP_SCOPE_WR_ALL);        
+        addPermission(user1, UsrPermission.Permission.AP_SCOPE_WR_ALL);
         authorizeAsUser(user1);
 
         // NEW -> TO_APPROVE, TO_AMEND
@@ -120,7 +120,7 @@ public class UserPermissionTest extends AbstractTest {
         addPermission(user3, UsrPermission.Permission.AP_EDIT_CONFIRMED_ALL);
         authorizeAsUser(user3);
 
-        // APPROVED -> APPROVED 
+        // APPROVED -> APPROVED
         state.setStateApproval(StateApproval.APPROVED);
         states = accessPointService.getNextStates(state);
         Assert.assertTrue(states.size() == 1);
