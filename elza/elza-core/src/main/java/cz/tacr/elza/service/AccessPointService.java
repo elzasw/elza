@@ -1953,13 +1953,13 @@ public class AccessPointService {
     /**
      *  Vytvoření kopie ApAccessPoint v ApScope
      * 
-     * @param accessPoint   - kopírovaná entita
-     * @param scope         - nová oblast (může být stejná, pokud jde o náhradu)
-     * @param replaceOrigin - nahradit zkopírovanou entitu novou nebo ne
-     * @param skipItems     - seznam ID prvků popisu, které se nemají kopírovat
+     * @param accessPoint - kopírovaná entita
+     * @param scope       - nová oblast (může být stejná, pokud jde o náhradu)
+     * @param replace     - nahradit zkopírovanou entitu novou nebo ne
+     * @param skipItems   - seznam ID prvků popisu, které se nemají kopírovat
      * @return ApAccessPoint
      */
-    public ApAccessPoint copyAccessPoint(ApAccessPoint accessPoint, ApScope scope, boolean replaceOrigin, List<Integer> skipItems) {
+    public ApAccessPoint copyAccessPoint(ApAccessPoint accessPoint, ApScope scope, boolean replace, List<Integer> skipItems) {
         ApState state = getStateInternal(accessPoint);
         if (!hasPermissionToCopy(state, scope)) {
             throw new SystemException("Uživatel nemá oprávnění na kopírování přístupového bodu do cílové oblasti", BaseCode.INSUFFICIENT_PERMISSIONS)
@@ -2017,9 +2017,10 @@ public class AccessPointService {
 
         // prepare to update cache
         MultipleApChangeContext macc = new MultipleApChangeContext();
-        
-        if (replaceOrigin) {
+
+        if (replace) {
             replace(state, copyState, null, macc);
+            state.setReplacedBy(copyState.getAccessPoint());
             deleteAccessPoint(state, accessPoint, change);
         }
 
