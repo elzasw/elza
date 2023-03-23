@@ -266,8 +266,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // obdoba revertChanges s fail očekáváním
         httpMethod(spec -> spec.pathParam("fundVersionId", fundVersion.getId())
-                        .queryParameter("fromChangeId", lastChangeId)
-                        .queryParameter("toChangeId", firstChangeId),
+                        .queryParam("fromChangeId", lastChangeId)
+                        .queryParam("toChangeId", firstChangeId),
                 REVERT_CHANGES, HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
 
         final Integer secondChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 2).getChangeId();
@@ -844,7 +844,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
-        // 8. přesun seznamu uzlů z různých úrovní pod         
+        // 8. přesun seznamu uzlů z různých úrovní pod
         helperTestService.waitForWorkers();
         moveLevelUnder(fundVersion, newNodes4.get(0), newNodes7.get(0), Arrays.asList(newNodes7.get(1), newNodes4.get(1), newNodes7.get(2)), rootNode);
 
@@ -869,7 +869,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Získání seznamu uzlů
-     * 
+     *
      * @param fundVersionId
      * @param rootNodeId
      * @return
@@ -880,7 +880,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Získání seznamu uzlů se seznamem nasazených uzlů
-     * 
+     *
      * @param fundVersionId
      * @param rootNodeId
      * @param expandedIds
@@ -1043,7 +1043,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Vytvoření AP.
-     * @throws ApiException 
+     * @throws ApiException
      */
     private Fund createdFund() throws ApiException {
         Fund fund = createFund(NAME_AP, "IC1");
@@ -1193,7 +1193,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Test method copyOlderSiblingAttribute
-     * @throws ApiException 
+     * @throws ApiException
      */
     @Test
     public void copyOlderSiblingAttribute() throws InterruptedException, ApiException {
