@@ -1,10 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -20,11 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.base.Functions;
-
-import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.db.QueryResults;
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
@@ -35,60 +28,54 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
-import cz.tacr.elza.drools.model.PartType;
-import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.arr_search.ResponseBuilder;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
 
 @RestController
 public class SearchController implements SearchApi {
-	
+
 	static final Logger log = LoggerFactory.getLogger(SearchController.class);
-	
-	@Autowired
-	AccessPointService apService;
-	
-	@Autowired
-	StaticDataService staticDataService;
-	
-	@Autowired
-	ApPartRepository apPartRepository;
-	
-	@Autowired
-	ApIndexRepository apIndexRepository;
-	
+
+    @Autowired
+    LevelTreeCacheService levelTreeCacheService;
+
     @Autowired
     AccessPointCacheService apCacheService;
+
+    @Autowired
+	StaticDataService staticDataService;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    FundRepository fundRepository;
+
+    @Autowired
+    FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    NodeRepository nodeRepository;
 
     /**
 	 * Maximal count of items in response
 	 */
 	static final int MAX_RESPONSE_COUNT = 10000;
-	
+
 	static final String FIELD_APTYPE = "APTYPE";
 
-	
 	static class ApSearchParams {
 		int firstResult = 0;
 	    int maxResults = 200;
@@ -308,20 +295,8 @@ public class SearchController implements SearchApi {
         rer.setCount((long) searchResult.getRecordCount());
         if (CollectionUtils.isNotEmpty(searchResult.getRecords())) {
             List<EntityRef> rList = searchResult.getRecords().stream().map(entity -> {
-                EntityRef er = new EntityRef();
-                er.setId(entity.getUuid());
-                
-                List<CachedPart> parts = entity.getParts();
-                for (CachedPart part : parts) {
-                    if (part.getPartId().equals(entity.getPreferredPartId())) {
-                        er.setLabel(ApFactory.findDisplayIndexValue(part.getIndices()));
-                    } else {
-                        if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
-                            er.setNote(ApFactory.findDisplayIndexValue(part.getIndices()));
-                        }
-                    }
-                }
-                
+                EntityRef er = apCacheService.createEntityRef(entity);
+
                 if (StringUtils.isBlank(er.getLabel())) {
                     er.setLabel("id=" + entity.getAccessPointId());
                 }
@@ -332,21 +307,6 @@ public class SearchController implements SearchApi {
 		
 		return ResponseEntity.ok(rer);
 	}
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    FundRepository fundRepository;
-
-    @Autowired
-    FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    NodeRepository nodeRepository;
-
-    @Autowired
-    LevelTreeCacheService levelTreeCacheService;
 
     @Override
     @RequestMapping(value = { "/cuni-ais-api/search-arr",
