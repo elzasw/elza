@@ -2,6 +2,13 @@ package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.HEAD;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 import java.io.File;
 import java.io.InputStream;
@@ -519,43 +526,43 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
+        return httpMethod(params, url, DELETE, HttpStatus.OK);
     }
 
     public static Response post(final Function<RequestSpecification, RequestSpecification> params,
                                 final String url,
                                 final HttpStatus status) {
-        return httpMethod(params, url, HttpMethod.POST, status);
+        return httpMethod(params, url, POST, status);
     }
 
     public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
+        return httpMethod(params, url, POST, HttpStatus.OK);
     }
 
     public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
+        return httpMethod(params, url, PUT, HttpStatus.OK);
     }
 
     public static Response putError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.INTERNAL_SERVER_ERROR);
+        return httpMethod(params, url, PUT, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public static Response put(final Function<RequestSpecification, RequestSpecification> params,
                                final String url,
                                final HttpStatus status) {
-        return httpMethod(params, url, HttpMethod.PUT, status);
+        return httpMethod(params, url, PUT, status);
     }
 
     public static Response get(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.GET, HttpStatus.OK);
+        return httpMethod(params, url, GET, HttpStatus.OK);
     }
 
     public static Response getError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
+        return httpMethod(params, url, GET, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public static Response get(final String url) {
-        return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
+        return httpMethod((spec) -> spec, url, GET, HttpStatus.OK);
     }
 
     public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
@@ -582,30 +589,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
         requestSpecification.cookies(cookies);
 
         Response response;
-        switch (method) {
-            case GET:
-                response = requestSpecification.get(url);
-                break;
-            case PUT:
-                response = requestSpecification.put(url);
-                break;
-            case DELETE:
-                response = requestSpecification.delete(url);
-                break;
-            case HEAD:
-                response = requestSpecification.head(url);
-                break;
-            case OPTIONS:
-                response = requestSpecification.options(url);
-                break;
-            case PATCH:
-                response = requestSpecification.patch(url);
-                break;
-            case POST:
-                response = requestSpecification.post(url);
-                break;
-            default:
-                throw new IllegalStateException("Nedefinovaný stav " + method + ".");
+        if (GET.equals(method)) {
+            response = requestSpecification.get(url);
+        } else if (PUT.equals(method)) {
+            response = requestSpecification.put(url);
+        } else if (DELETE.equals(method)) {
+            response = requestSpecification.delete(url);
+        } else if (HEAD.equals(method)) {
+            response = requestSpecification.head(url);
+        } else if (OPTIONS.equals(method)) {
+            response = requestSpecification.options(url);
+        } else if (PATCH.equals(method)) {
+            response = requestSpecification.patch(url);
+        } else if (POST.equals(method)) {
+            response = requestSpecification.post(url);
+        } else {
+            throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
 
         if (status.value() != response.statusCode()) {
@@ -710,7 +709,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param name název AP
      * @return ap
-     * @throws ApiException 
+     * @throws ApiException
      */
     protected Fund createFund(final String name, final String internalCode) throws ApiException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
@@ -732,16 +731,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected FundDetail getFundV1(final Integer id) {
         Response response = get(spec ->
-                spec.pathParameter("id", id), FUND_V1);
+                spec.pathParam("id", id), FUND_V1);
         return response.getBody().as(FundDetail.class);
     }
 
     protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max, final Integer from) {
         Response response = get(spec ->
-                spec.queryParameter("fulltext", fulltext)
-                        .queryParameter("institutionIdentifier", institutionIdentifier)
-                        .queryParameter("max", max)
-                        .queryParameter("from", from), FUNDS_V1);
+                spec.queryParam("fulltext", fulltext)
+                        .queryParam("institutionIdentifier", institutionIdentifier)
+                        .queryParam("max", max)
+                        .queryParam("from", from), FUNDS_V1);
         return response.getBody().as(FindFundsResult.class);
     }
 
@@ -763,7 +762,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrFundVersionVO approveVersion(final Integer versionId) {
         Response response = put(spec -> spec
-                .queryParameter("versionId", versionId), APPROVE_VERSION);
+                .queryParam("versionId", versionId), APPROVE_VERSION);
         return response.getBody().as(ArrFundVersionVO.class);
     }
 
@@ -773,7 +772,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return archivní pomůcky
      */
     protected List<ArrFundVO> getFunds() {
-        Response response = get(spec -> spec.queryParameter("max", 200), FUNDS);
+        Response response = get(spec -> spec.queryParam("max", 200), FUNDS);
         FundListCountResult as = response.getBody().as(FundListCountResult.class);
         return as.getList();
     }
@@ -784,7 +783,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return archivní pomůcka
      */
     protected ArrFundVO getFund(final Integer fundId) {
-        Response response = get(spec -> spec.pathParameters("fundId", fundId), FUND);
+        Response response = get(spec -> spec.pathParams("fundId", fundId), FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -796,7 +795,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return
      */
     protected ArrNodeExtendVO getNodeInfo(final Integer fundVersionId, final Integer nodeId) {
-        Response response = get(spec -> spec.pathParameter("fundVersionId", fundVersionId).pathParameter("nodeId", nodeId), NODE_INFO);
+        Response response = get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("nodeId", nodeId), NODE_INFO);
         return response.getBody().as(ArrNodeExtendVO.class);
     }
 
@@ -965,7 +964,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId id souboru
      */
     protected void deleteFund(final Integer fundId) {
-        delete(spec -> spec.pathParameters("fundId", fundId), DELETE_FUND);
+        delete(spec -> spec.pathParams("fundId", fundId), DELETE_FUND);
     }
 
     /**
@@ -1004,7 +1003,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return výsledek validace
      */
     protected ValidationResult validateUnitDate(final String value) {
-        Response response = get(spec -> spec.queryParameter("value", value), VALIDATE_UNIT_DATE);
+        Response response = get(spec -> spec.queryParam("value", value), VALIDATE_UNIT_DATE);
         return response.getBody().as(ValidationResult.class);
     }
 
@@ -1152,7 +1151,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     	assertNotNull(itemTypeId);
     	assertNotNull(outputId);
     	assertNotNull(outputVersion);
-    	
+
         Response response = put(spec -> spec
                 .body(outputItemVO)
                 .pathParam("fundVersionId", fundVersionId)
@@ -1211,7 +1210,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         Response response = multipart(spec ->
                         spec
-                                .pathParameter("fundVersionId", fundVersionId)
+                                .pathParam("fundVersionId", fundVersionId)
                                 .multiPart("file", importFile)
                                 .params(params)
                 , DESC_ITEM_CSV_IMPORT
@@ -1654,7 +1653,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Seznam uzlu vyhledaneho AS po fulltextovem vyhledani serazeny podle relevance pri vyhledani.
      */
     protected List<TreeNodeVO> fundFulltextNodeList(final Integer fundId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("fundId", fundId), FUND_FULLTEXT_LIST)
+        return Arrays.asList(get(spec -> spec.pathParam("fundId", fundId), FUND_FULLTEXT_LIST)
                 .getBody().as(TreeNodeVO[].class));
     }
 
@@ -1731,8 +1730,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
         return Arrays.asList(get(spec -> spec
-                        .pathParameter("versionId", versionId)
-                        .pathParameter("showAll", true),
+                        .pathParam("versionId", versionId)
+                        .pathParam("showAll", true),
                 VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));
     }
 
@@ -1743,7 +1742,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param versionId verze, která se má validovat
      */
     protected void validateVersionCount(final Integer versionId) {
-        get(spec -> spec.pathParameter("versionId", versionId), VALIDATE_VERSION_COUNT);
+        get(spec -> spec.pathParam("versionId", versionId), VALIDATE_VERSION_COUNT);
     }
 
     /**
@@ -1777,8 +1776,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.DescFormDataNewVO getNodeFormData(final Integer nodeId,
                                                                       final Integer versionId) {
         return get(spec -> spec
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("versionId", versionId),
+                        .pathParam("nodeId", nodeId)
+                        .pathParam("versionId", versionId),
                 NODE_FORM_DATA).getBody().as(ArrangementController.DescFormDataNewVO.class);
     }
 
@@ -1792,8 +1791,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputId,
                                                                           final Integer versionId) {
         return get(spec -> spec
-                        .pathParameter("outputId", outputId)
-                        .pathParameter("versionId", versionId),
+                        .pathParam("outputId", outputId)
+                        .pathParam("versionId", versionId),
                 OUTPUT_FORM_DATA).getBody().as(ArrangementController.OutputFormDataNewVO.class);
     }
 
@@ -1806,8 +1805,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrangementController.NodeFormsDataVO getNodeFormsData(final Integer versionId, final Integer... nodeIds) {
         return get(spec -> spec
-                        .queryParameter("nodeIds", nodeIds)
-                        .pathParameter("versionId", versionId),
+                        .queryParam("nodeIds", nodeIds)
+                        .pathParam("versionId", versionId),
                 NODE_FORMS_DATA).getBody().as(ArrangementController.NodeFormsDataVO.class);
     }
 
@@ -1823,9 +1822,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                                final Integer nodeId,
                                                                                final Integer around) {
         return get(spec -> spec
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("around", around)
-                        .pathParameter("versionId", versionId),
+                        .pathParam("nodeId", nodeId)
+                        .pathParam("around", around)
+                        .pathParam("versionId", versionId),
                 NODE_FORMS_DATA_AROUND).getBody().as(ArrangementController.NodeFormsDataVO.class);
     }
 
@@ -1862,10 +1861,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                          final Integer nodeVersion,
                                                                          final Integer descItemTypeId) {
         return delete(spec -> spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("nodeVersion", nodeVersion)
-                        .pathParameter("descItemTypeId", descItemTypeId),
+                        .pathParam("fundVersionId", fundVersionId)
+                        .pathParam("nodeId", nodeId)
+                        .pathParam("nodeVersion", nodeVersion)
+                        .pathParam("descItemTypeId", descItemTypeId),
                 DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -1882,10 +1881,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                              final Integer outputVersion,
                                                                              final Integer itemTypeId) {
         return delete(spec -> spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputId", outputId)
-                        .pathParameter("outputVersion", outputVersion)
-                        .pathParameter("itemTypeId", itemTypeId),
+                        .pathParam("fundVersionId", fundVersionId)
+                        .pathParam("outputId", outputId)
+                        .pathParam("outputVersion", outputVersion)
+                        .pathParam("itemTypeId", itemTypeId),
                 DELETE_OUTPUT_ITEM_BY_TYPE).getBody().as(ArrangementController.OutputItemResult.class);
     }
 
@@ -1898,7 +1897,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(final Boolean withGroups,
                                                                             final ArrangementController.DescriptionItemParam param) {
         return Arrays.asList(post(spec -> spec
-                .queryParameter("withGroups", withGroups)
+                .queryParam("withGroups", withGroups)
                 .body(param), SCENARIOS).getBody().as(ScenarioOfNewLevelVO[].class));
     }
 
@@ -1915,8 +1914,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
             final Integer descItemTypeId,
             final ArrNodeVO nodeVO) {
         return put(spec -> spec
-                .queryParameter("versionId", versionId)
-                .queryParameter("descItemTypeId", descItemTypeId)
+                .queryParam("versionId", versionId)
+                .queryParam("descItemTypeId", descItemTypeId)
                 .body(nodeVO), COPY_SIBLING).getBody().as(ArrangementController.CopySiblingResult.class);
     }
 
@@ -1999,7 +1998,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return seznam tříd
      */
     protected Response getScopeIdsByVersion(@Nullable final Integer versionId) {
-        return versionId == null ? get(FA_SCOPES) : get(spec -> spec.queryParameter("versionId", versionId), FA_SCOPES);
+        return versionId == null ? get(FA_SCOPES) : get(spec -> spec.queryParam("versionId", versionId), FA_SCOPES);
     }
 
     /**
@@ -2115,7 +2114,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
         params.put("excludeInvalid", true);
 
-        return post(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+        return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**
@@ -2151,7 +2150,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
         params.put("excludeInvalid", true);
 
-        return post(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+        return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**
@@ -2204,10 +2203,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                      final ArrangementController.ReplaceDataBody replaceDataBody) {
 
         put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .queryParameter("descItemTypeId", descItemTypeId)
-                .queryParameter("searchText", searchText)
-                .queryParameter("replaceText", replaceText)
+                .pathParam("versionId", versionId)
+                .queryParam("descItemTypeId", descItemTypeId)
+                .queryParam("searchText", searchText)
+                .queryParam("replaceText", replaceText)
                 .body(replaceDataBody), REPLACE_DATA_VALUES);
 
     }
@@ -2226,9 +2225,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                    final ArrangementController.ReplaceDataBody replaceDataBody) {
 
         put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .queryParameter("descItemTypeId", descItemTypeId)
-                .queryParameter("text", text)
+                .pathParam("versionId", versionId)
+                .queryParam("descItemTypeId", descItemTypeId)
+                .queryParam("text", text)
                 .body(replaceDataBody), PLACE_DATA_VALUES);
     }
 
@@ -2243,8 +2242,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                    final Integer descItemTypeId,
                                    final ArrangementController.ReplaceDataBody replaceDataBody) {
         put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .queryParameter("descItemTypeId", descItemTypeId)
+                .pathParam("versionId", versionId)
+                .queryParam("descItemTypeId", descItemTypeId)
                 .body(replaceDataBody), DELETE_DATA_VALUES);
     }
 
@@ -2307,9 +2306,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final Integer fromIndex,
                                                                   final Integer toIndex) {
         return get(spec -> spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("fromIndex", fromIndex)
-                        .pathParameter("toIndex", toIndex)
+                        .pathParam("fundVersionId", fundVersionId)
+                        .pathParam("fromIndex", fromIndex)
+                        .pathParam("toIndex", toIndex)
                 , VALIDATION).as(ArrangementController.ValidationItems.class);
     }
 
@@ -2347,7 +2346,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected UsrUserVO changePassword(final Integer userId,
                                        final UserController.ChangePassword params) {
         return put(spec -> spec.body(params)
-                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
+                .pathParam("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
     }
 
     /**
@@ -2403,8 +2402,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected UsrUserVO changeActive(final UsrUserVO user,
                                      final Boolean active) {
-        return put(spec -> spec.pathParameter("active", active)
-                .pathParameter("userId", user.getId()), ACTIVE_USER).as(UsrUserVO.class);
+        return put(spec -> spec.pathParam("active", active)
+                .pathParam("userId", user.getId()), ACTIVE_USER).as(UsrUserVO.class);
     }
 
     /**
@@ -2438,7 +2437,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param groupId identifikátor skupiny
      */
     protected void deleteGroup(final Integer groupId) {
-        delete(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP);
+        delete(spec -> spec.pathParam("groupId", groupId), DELETE_GROUP);
     }
 
     /**
@@ -2465,7 +2464,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected UsrGroupVO changeGroup(final Integer groupId,
                                      final GroupController.ChangeGroup params) {
-        return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
+        return put(spec -> spec.body(params).pathParam("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
 
     /**
@@ -2499,7 +2498,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected UsrUserVO getUser(final Integer userId) {
-        return get(spec -> spec.pathParameter("userId", userId), GET_USER).as(UsrUserVO.class);
+        return get(spec -> spec.pathParam("userId", userId), GET_USER).as(UsrUserVO.class);
     }
 
     /**
@@ -2532,7 +2531,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void leaveGroup(final Integer groupId,
                               final Integer userId) {
-        post(spec -> spec.pathParam("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
+        post(spec -> spec.pathParam("groupId", groupId).pathParam("userId", userId), LEAVE_GROUP);
     }
 
     /**
@@ -2571,7 +2570,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId identifikátor AS
      */
     protected void deleteUserFundPermission(final Integer userId, final Integer fundId) {
-        post(spec -> spec.pathParameter("userId", userId).pathParameter("fundId", fundId), DELETE_USER_FUND_PERMISSION);
+        post(spec -> spec.pathParam("userId", userId).pathParam("fundId", fundId), DELETE_USER_FUND_PERMISSION);
     }
 
     /**
@@ -2581,7 +2580,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permissions seznam oprávnění
      */
     protected void addGroupPermission(final Integer groupId, final List<UsrPermissionVO> permissions) {
-        post(spec -> spec.pathParameter("groupId", groupId).body(permissions), ADD_GROUP_PERMISSION);
+        post(spec -> spec.pathParam("groupId", groupId).body(permissions), ADD_GROUP_PERMISSION);
     }
 
     /**
@@ -2591,7 +2590,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param permission seznam oprávnění
      */
     protected void deleteGroupPermission(final Integer groupId, final UsrPermissionVO permission) {
-        post(spec -> spec.pathParameter("groupId", groupId).body(permission), DELETE_GROUP_PERMISSION);
+        post(spec -> spec.pathParam("groupId", groupId).body(permission), DELETE_GROUP_PERMISSION);
     }
 
     /**
@@ -2600,7 +2599,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param groupId identifikátor skupiny
      */
     protected void deleteGroupFundAllPermission(final Integer groupId) {
-        post(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP_FUND_ALL_PERMISSION);
+        post(spec -> spec.pathParam("groupId", groupId), DELETE_GROUP_FUND_ALL_PERMISSION);
     }
 
     /**
@@ -2610,7 +2609,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId  identifikátor AS
      */
     protected void deleteGroupFundPermission(final Integer groupId, final Integer fundId) {
-        post(spec -> spec.pathParameter("groupId", groupId).pathParameter("fundId", fundId), DELETE_GROUP_FUND_PERMISSION);
+        post(spec -> spec.pathParam("groupId", groupId).pathParam("fundId", fundId), DELETE_GROUP_FUND_PERMISSION);
     }
 
     /**
@@ -2629,16 +2628,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
         Response result;
         if (CollectionUtils.isEmpty(specIds)) {
             result = put(spec -> spec
-                    .pathParameter("versionId", versionId)
-                    .queryParameter("descItemTypeId", descItemTypeId)
-                    .queryParameter("fulltext", fulltext)
-                    .queryParameter("max", 200), FILTER_UNIQUE_VALUES);
+                    .pathParam("versionId", versionId)
+                    .queryParam("descItemTypeId", descItemTypeId)
+                    .queryParam("fulltext", fulltext)
+                    .queryParam("max", 200), FILTER_UNIQUE_VALUES);
         } else {
             result = put(spec -> spec
-                    .pathParameter("versionId", versionId)
-                    .queryParameter("descItemTypeId", descItemTypeId)
-                    .queryParameter("fulltext", fulltext)
-                    .queryParameter("max", 200)
+                    .pathParam("versionId", versionId)
+                    .queryParam("descItemTypeId", descItemTypeId)
+                    .queryParam("fulltext", fulltext)
+                    .queryParam("max", 200)
                     .body(specIds), FILTER_UNIQUE_VALUES);
         }
 
@@ -2877,8 +2876,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected RuleController.VisiblePolicyTypes getVisiblePolicy(final Integer nodeId,
                                                                  final Integer fundVersionId) {
-        return get(spec -> spec.pathParameter("nodeId", nodeId)
-                .pathParameter("fundVersionId", fundVersionId), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
+        return get(spec -> spec.pathParam("nodeId", nodeId)
+                .pathParam("fundVersionId", fundVersionId), POLICY_GET).as(RuleController.VisiblePolicyTypes.class);
     }
 
     /**
@@ -2970,10 +2969,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                               final Integer nodeId) {
         String strDate = fromDate.format(FORMATTER);
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                .queryParameter("maxSize", maxSize)
-                .queryParameter("fromDate", strDate)
-                .queryParameter("changeId", changeId)
-                .queryParameter("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
+                .queryParam("maxSize", maxSize)
+                .queryParam("fromDate", strDate)
+                .queryParam("changeId", changeId)
+                .queryParam("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
     }
 
     /**
@@ -2989,9 +2988,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                               final Integer toChangeId,
                               final Integer nodeId) {
         get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                .queryParameter("fromChangeId", fromChangeId)
-                .queryParameter("toChangeId", toChangeId)
-                .queryParameter("nodeId", nodeId), REVERT_CHANGES);
+                .queryParam("fromChangeId", fromChangeId)
+                .queryParam("toChangeId", toChangeId)
+                .queryParam("nodeId", nodeId), REVERT_CHANGES);
     }
 
     /**
@@ -3011,12 +3010,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                             final Integer descItemTypeId,
                                                                             final Integer descItemSpecId,
                                                                             final Integer descItemObjectId) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("nodeVersion", nodeVersion)
-                        .queryParameter("descItemTypeId", descItemTypeId)
-                        .queryParameter("descItemSpecId", descItemSpecId)
-                        .queryParameter("descItemObjectId", descItemObjectId)
+        return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .pathParam("nodeId", nodeId)
+                        .pathParam("nodeVersion", nodeVersion)
+                        .queryParam("descItemTypeId", descItemTypeId)
+                        .queryParam("descItemSpecId", descItemSpecId)
+                        .queryParam("descItemObjectId", descItemObjectId)
                 , SET_NOT_IDENTIFIED_DESCITEM).as(ArrangementController.DescItemResult.class);
     }
 
@@ -3037,12 +3036,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                               final Integer descItemTypeId,
                                                                               final Integer descItemSpecId,
                                                                               final Integer descItemObjectId) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("nodeId", nodeId)
-                        .pathParameter("nodeVersion", nodeVersion)
-                        .queryParameter("descItemTypeId", descItemTypeId)
-                        .queryParameter("descItemSpecId", descItemSpecId)
-                        .queryParameter("descItemObjectId", descItemObjectId)
+        return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .pathParam("nodeId", nodeId)
+                        .pathParam("nodeVersion", nodeVersion)
+                        .queryParam("descItemTypeId", descItemTypeId)
+                        .queryParam("descItemSpecId", descItemSpecId)
+                        .queryParam("descItemObjectId", descItemObjectId)
                 , UNSET_NOT_IDENTIFIED_DESCITEM).as(ArrangementController.DescItemResult.class);
     }
 
@@ -3064,12 +3063,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                                 final Integer outputItemTypeId,
                                                                                 final Integer outputItemSpecId,
                                                                                 final Integer outputItemObjectId) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputId", outputId)
-                        .pathParameter("outputVersion", outputVersion)
-                        .queryParameter("outputItemTypeId", outputItemTypeId)
-                        .queryParameter("outputItemSpecId", outputItemSpecId)
-                        .queryParameter("outputItemObjectId", outputItemObjectId)
+        return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .pathParam("outputId", outputId)
+                        .pathParam("outputVersion", outputVersion)
+                        .queryParam("outputItemTypeId", outputItemTypeId)
+                        .queryParam("outputItemSpecId", outputItemSpecId)
+                        .queryParam("outputItemObjectId", outputItemObjectId)
                 , SET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
     }
 
@@ -3090,12 +3089,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                                   final Integer outputItemTypeId,
                                                                                   final Integer outputItemSpecId,
                                                                                   final Integer outputItemObjectId) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputId", outputId)
-                        .pathParameter("outputVersion", outputVersion)
-                        .queryParameter("outputItemTypeId", outputItemTypeId)
-                        .queryParameter("outputItemSpecId", outputItemSpecId)
-                        .queryParameter("outputItemObjectId", outputItemObjectId)
+        return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                        .pathParam("outputId", outputId)
+                        .pathParam("outputVersion", outputVersion)
+                        .queryParam("outputItemTypeId", outputItemTypeId)
+                        .queryParam("outputItemSpecId", outputItemSpecId)
+                        .queryParam("outputItemObjectId", outputItemObjectId)
                 , UNSET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
     }
 
@@ -3108,7 +3107,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected void setOutputSettings(Integer outputId, OutputSettingsVO settings) {
-        put(spec -> spec.pathParameter("outputId", outputId)
+        put(spec -> spec.pathParam("outputId", outputId)
                         .body(settings),
                 UPDATE_OUTPUT_SETTINGS);
     }
@@ -3122,7 +3121,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
         return post(spec -> spec.body(structureTypeCode)
-                .pathParameter("fundVersionId", fundVersionId), CREATE_STRUCTURE_DATA)
+                .pathParam("fundVersionId", fundVersionId), CREATE_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
 
@@ -3135,8 +3134,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId,
                                                       final Integer structureDataId) {
-        return post(spec -> spec.pathParameter("structureDataId", structureDataId)
-                .pathParameter("fundVersionId", fundVersionId), CONFIRM_STRUCTURE_DATA)
+        return post(spec -> spec.pathParam("structureDataId", structureDataId)
+                .pathParam("fundVersionId", fundVersionId), CONFIRM_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
 
@@ -3149,8 +3148,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrStructureDataVO deleteStructureData(final Integer fundVersionId,
                                                      final Integer structureDataId) {
-        return delete(spec -> spec.pathParameter("structureDataId", structureDataId)
-                .pathParameter("fundVersionId", fundVersionId), DELETE_STRUCTURE_DATA)
+        return delete(spec -> spec.pathParam("structureDataId", structureDataId)
+                .pathParam("fundVersionId", fundVersionId), DELETE_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
 
@@ -3172,12 +3171,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                      final Integer from,
                                                                      final Integer count) {
         return get(spec -> spec
-                        .pathParameter("structureTypeCode", structureTypeCode)
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .queryParameter("search", search)
-                        .queryParameter("assignable", assignable)
-                        .queryParameter("from", from)
-                        .queryParameter("count", count)
+                        .pathParam("structureTypeCode", structureTypeCode)
+                        .pathParam("fundVersionId", fundVersionId)
+                        .queryParam("search", search)
+                        .queryParam("assignable", assignable)
+                        .queryParam("from", from)
+                        .queryParam("count", count)
                 , FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
     }
 
@@ -3214,8 +3213,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId,
                                                                         final String structureTypeCode) {
         return Arrays.asList(get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureTypeCode", structureTypeCode), FIND_FUND_STRUCTURE_EXTENSION)
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureTypeCode", structureTypeCode), FIND_FUND_STRUCTURE_EXTENSION)
                 .as(StructureExtensionFundVO[].class));
     }
 
@@ -3229,8 +3228,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void setFundStructureExtensions(final Integer fundVersionId,
                                               final String structureTypeCode,
                                               final List<String> structureExtensionCodes) {
-        put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureTypeCode", structureTypeCode)
+        put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureTypeCode", structureTypeCode)
                 .body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
     }
 
@@ -3247,9 +3246,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                           final Integer fundVersionId,
                                                                           final Integer itemTypeId,
                                                                           final Integer structureDataId) {
-        return post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("itemTypeId", itemTypeId)
-                .pathParameter("structureDataId", structureDataId)
+        return post(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("itemTypeId", itemTypeId)
+                .pathParam("structureDataId", structureDataId)
                 .body(itemVO), CREATE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
     }
 
@@ -3264,8 +3263,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected StructureController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
                                                                           final Integer fundVersionId,
                                                                           final Boolean createNewVersion) {
-        return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("createNewVersion", createNewVersion)
+        return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("createNewVersion", createNewVersion)
                 .body(itemVO), UPDATE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
     }
 
@@ -3278,7 +3277,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO,
                                                                           final Integer fundVersionId) {
-        return post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
+        return post(spec -> spec.pathParam("fundVersionId", fundVersionId)
                 .body(itemVO), DELETE_STRUCTURE_ITEM).as(StructureController.StructureItemResult.class);
     }
 
@@ -3292,9 +3291,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected StructureController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
                                                                                  final Integer structureDataId,
                                                                                  final Integer itemTypeId) {
-        return delete(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureDataId", structureDataId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_STRUCTURE_ITEMS_BY_TYPE)
+        return delete(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureDataId", structureDataId)
+                .pathParam("itemTypeId", itemTypeId), DELETE_STRUCTURE_ITEMS_BY_TYPE)
                 .as(StructureController.StructureItemResult.class);
     }
 
@@ -3307,8 +3306,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId,
                                                                                 final Integer structureDataId) {
-        return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureDataId", structureDataId), GET_FORM_STRUCTURE_ITEMS)
+        return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureDataId", structureDataId), GET_FORM_STRUCTURE_ITEMS)
                 .as(StructureController.StructureDataFormDataVO.class);
     }
 
@@ -3325,8 +3324,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                final Integer structureDataId,
                                                final Integer count,
                                                final List<Integer> itemTypeIds) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureDataId", structureDataId)
+        post(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureDataId", structureDataId)
                 .body(new StructureController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
     }
 
@@ -3339,8 +3338,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrStructureDataVO getStructureData(final Integer fundVersionId,
                                                   final Integer structureDataId) {
-        return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureDataId", structureDataId), GET_STRUCTURE_DATA)
+        return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureDataId", structureDataId), GET_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
     }
 
@@ -3354,8 +3353,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void setAssignableStructureData(final Integer fundVersionId,
                                               final boolean assignable,
                                               List<Integer> structureDataIds) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("assignable", assignable)
+        post(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("assignable", assignable)
                 .body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
     }
 
@@ -3369,8 +3368,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected void updateStructureDataBatch(final Integer fundVersionId,
                                             final String structureTypeCode,
                                             final StructureController.StructureDataBatchUpdate structureDataBatchUpdate) {
-        post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("structureTypeCode", structureTypeCode)
+        post(spec -> spec.pathParam("fundVersionId", fundVersionId)
+                .pathParam("structureTypeCode", structureTypeCode)
                 .body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
     }
 
@@ -3470,7 +3469,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return protokol
      */
     protected WfIssueListVO getIssueList(Integer issueListId) {
-        return get(spec -> spec.pathParameter("issueListId", issueListId), GET_ISSUE_LIST).as(WfIssueListVO.class);
+        return get(spec -> spec.pathParam("issueListId", issueListId), GET_ISSUE_LIST).as(WfIssueListVO.class);
     }
 
     /**
@@ -3480,7 +3479,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return připomínka
      */
     protected WfIssueVO getIssue(Integer issueId) {
-        return get(spec -> spec.pathParameter("issueId", issueId), GET_ISSUE).as(WfIssueVO.class);
+        return get(spec -> spec.pathParam("issueId", issueId), GET_ISSUE).as(WfIssueVO.class);
     }
 
     /**
@@ -3490,7 +3489,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @returns komentář
      */
     protected WfCommentVO getIssueComment(Integer commentId) {
-        return get(spec -> spec.pathParameter("commentId", commentId), GET_COMMENT).as(WfCommentVO.class);
+        return get(spec -> spec.pathParam("commentId", commentId), GET_COMMENT).as(WfCommentVO.class);
     }
 
     /**
@@ -3532,9 +3531,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     public List<WfIssueListVO> findIssueListByFund(Integer fundId, Boolean open) {
         return Arrays.asList(get(spec -> {
-            spec.pathParameter("fundId", fundId);
+            spec.pathParam("fundId", fundId);
             if (open != null) {
-                spec.queryParameter("open", open);
+                spec.queryParam("open", open);
             }
             return spec;
         }, FIND_ISSUE_LISTS).as(WfIssueListVO[].class));
@@ -3549,12 +3548,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<WfIssueVO> findIssueByIssueList(Integer issueListId, Integer issueStateId, Integer issueTypeId) {
         return Arrays.asList(get(spec -> {
-            spec.pathParameter("issueListId", issueListId);
+            spec.pathParam("issueListId", issueListId);
             if (issueStateId != null) {
-                spec.queryParameter("issueStateId", issueStateId);
+                spec.queryParam("issueStateId", issueStateId);
             }
             if (issueTypeId != null) {
-                spec.queryParameter("issueTypeId", issueTypeId);
+                spec.queryParam("issueTypeId", issueTypeId);
             }
             return spec;
         }, FIND_ISSUES).as(WfIssueVO[].class));
@@ -3567,7 +3566,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return seznam komentářů
      */
     protected List<WfCommentVO> findIssueCommentByIssue(Integer issueId) {
-        return Arrays.asList(get(spec -> spec.pathParameter("issueId", issueId), FIND_COMMENTS).as(WfCommentVO[].class));
+        return Arrays.asList(get(spec -> spec.pathParam("issueId", issueId), FIND_COMMENTS).as(WfCommentVO[].class));
     }
 
     /**
@@ -3579,7 +3578,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected WfIssueListVO updateIssueList(Integer issueListId, WfIssueListVO issueListVO) {
         return put(spec -> spec
-                .pathParameter("issueListId", issueListId)
+                .pathParam("issueListId", issueListId)
                 .body(issueListVO), UPDATE_ISSUE_LIST)
                 .getBody().as(WfIssueListVO.class);
     }
@@ -3593,7 +3592,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected WfIssueVO updateIssue(Integer issueId, WfIssueVO issueVO) {
         return put(spec -> spec
-                .pathParameter("issueId", issueId)
+                .pathParam("issueId", issueId)
                 .body(issueVO), UPDATE_ISSUE)
                 .getBody().as(WfIssueVO.class);
     }
@@ -3605,8 +3604,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void setIssueType(Integer issueId, Integer issueTypeId) {
         post(spec -> spec
-                .pathParameter("issueId", issueId)
-                .queryParameter("issueTypeId", issueTypeId), SET_ISSUE_TYPE);
+                .pathParam("issueId", issueId)
+                .queryParam("issueTypeId", issueTypeId), SET_ISSUE_TYPE);
     }
 
     /**
@@ -3618,7 +3617,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected WfCommentVO updateIssueComment(Integer commentId, WfCommentVO commentVO) {
         return put(spec -> spec
-                .pathParameter("commentId", commentId)
+                .pathParam("commentId", commentId)
                 .body(commentVO), UPDATE_COMMENT)
                 .getBody().as(WfCommentVO.class);
     }
@@ -3631,7 +3630,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrRefTemplateVO createRefTemplate(Integer fundId) {
         return put(spec -> spec
-                .pathParameter("fundId", fundId), CREATE_NODE_TEMPLATE)
+                .pathParam("fundId", fundId), CREATE_NODE_TEMPLATE)
                 .getBody().as(ArrRefTemplateVO.class);
     }
 
@@ -3644,7 +3643,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrRefTemplateVO updateRefTemplate(Integer templateId, ArrRefTemplateEditVO refTemplateEditVO) {
         return post(spec -> spec
-                .pathParameter("templateId", templateId)
+                .pathParam("templateId", templateId)
                 .body(refTemplateEditVO), UPDATE_NODE_TEMPLATE)
                 .getBody().as(ArrRefTemplateVO.class);
     }
@@ -3655,7 +3654,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param templateId identifikátor šablony
      */
     protected void deleteRefTemplate(Integer templateId) {
-        delete(spec -> spec.pathParameter("templateId", templateId), DELETE_NODE_TEMPLATE);
+        delete(spec -> spec.pathParam("templateId", templateId), DELETE_NODE_TEMPLATE);
     }
 
     /**
@@ -3666,7 +3665,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ArrRefTemplateVO> getRefTemplate(Integer fundId) {
         return Arrays.asList(get(spec -> spec
-                .pathParameter("fundId", fundId), GET_NODE_TEMPLATES)
+                .pathParam("fundId", fundId), GET_NODE_TEMPLATES)
                 .getBody().as(ArrRefTemplateVO[].class));
     }
 
@@ -3678,7 +3677,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrRefTemplateMapTypeVO createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         return post(spec -> spec
-                .pathParameter("templateId", templateId)
+                .pathParam("templateId", templateId)
                 .body(refTemplateMapTypeFormVO), CREATE_NODE_TEMPLATE_MAP_TYPE)
                 .getBody().as(ArrRefTemplateMapTypeVO.class);
     }
@@ -3692,8 +3691,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrRefTemplateMapTypeVO updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         return post(spec -> spec
-                .pathParameter("templateId", templateId)
-                .pathParameter("mapTypeId", mapTypeId)
+                .pathParam("templateId", templateId)
+                .pathParam("mapTypeId", mapTypeId)
                 .body(refTemplateMapTypeFormVO), UPDATE_NODE_TEMPLATE_MAP_TYPE)
                 .getBody().as(ArrRefTemplateMapTypeVO.class);
     }
@@ -3706,7 +3705,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {
         delete(spec -> spec.
-                pathParameter("templateId", templateId).
-                pathParameter("mapTypeId", mapTypeId), DELETE_NODE_TEMPLATE_MAP_TYPE);
+                pathParam("templateId", templateId).
+                pathParam("mapTypeId", mapTypeId), DELETE_NODE_TEMPLATE_MAP_TYPE);
     }
 }
