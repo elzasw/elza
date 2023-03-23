@@ -43,13 +43,13 @@ public class UsrAuthentication {
     private AuthType authType;
 
     @Column(length = StringLength.LENGTH_250, nullable = false)
-    private String value;
+    private String authValue;
 
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_AUTHENTICATION_ID = "authenticationId";
     public static final String FIELD_USER = "user";
     public static final String FIELD_AUTH_TYPE = "authType";
-    public static final String FIELD_VALUE = "value";
+    public static final String FIELD_AUTH_VALUE = "authValue";
 
     public Integer getAuthenticationId() {
         return authenticationId;
@@ -75,12 +75,12 @@ public class UsrAuthentication {
         this.authType = authType;
     }
 
-    public String getValue() {
-        return value;
+    public String getAuthValue() {
+        return authValue;
     }
 
-    public void setValue(final String value) {
-        this.value = value;
+    public void setAuthValue(String authValue) {
+        this.authValue = authValue;
     }
 
     /**

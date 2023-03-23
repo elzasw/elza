@@ -27,8 +27,8 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         try (ResultSet rs = stmt.executeQuery("SELECT * FROM arr_data_string")) {
             while (rs.next()) {
                 int dataId = rs.getInt("data_id");
-                String value = rs.getString("value");
-                // delete any leading and trailing whitespace, replace unprintable chars (exclude 0x0D and 0x0A) and delete double spaces  
+                String value = rs.getString("string_value");
+                // delete any leading and trailing whitespace, replace unprintable chars (exclude 0x0D and 0x0A) and delete double spaces
                 String fixedValue = StringNormalize.normalizeString(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataString dataString = new ArrDataString();
@@ -47,8 +47,8 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         try (ResultSet rs = stmt.executeQuery("SELECT * FROM arr_data_text")) {
             while (rs.next()) {
                 int dataId = rs.getInt("data_id");
-                String value = rs.getString("value");
-                // delete any leading and trailing whitespace and replace unprintable chars (exclude 0x0D and 0x0A) 
+                String value = rs.getString("text_value");
+                // delete any leading and trailing whitespace and replace unprintable chars (exclude 0x0D and 0x0A)
                 String fixedValue = StringNormalize.normalizeText(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataText dataText = new ArrDataText();
@@ -67,8 +67,8 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         try (ResultSet rs = stmt.executeQuery("SELECT * FROM arr_data_unitid")) {
             while (rs.next()) {
                 int dataId = rs.getInt("data_id");
-                String value = rs.getString("value");
-                // delete any leading and trailing whitespace 
+                String value = rs.getString("unit_value");
+                // delete any leading and trailing whitespace
                 String fixedValue = StringNormalize.normalizeString(value);
                 if (!value.equals(fixedValue)) {
                     ArrDataUnitid dataUnitid = new ArrDataUnitid();
@@ -87,10 +87,10 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         try (ResultSet rs = stmt.executeQuery("SELECT * FROM arr_data_uri_ref")) {
             while (rs.next()) {
                 int dataId = rs.getInt("data_id");
-                String value = rs.getString("value");
+                String value = rs.getString("uri_ref_value");
                 String schema = rs.getString("schema");
                 String description = rs.getString("description");
-                // delete any leading and trailing whitespace 
+                // delete any leading and trailing whitespace
                 String fixedValue = StringNormalize.normalizeString(value);
                 String fixedSchema = StringNormalize.normalizeString(schema);
                 String fixedDescription = StringNormalize.normalizeString(description);
@@ -112,7 +112,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         dc = (JdbcConnection) db.getConnection();
 
         // fixed ArrDataString
-        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_string SET value = ? WHERE data_id = ?")) {
+        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_string SET string_value = ? WHERE data_id = ?")) {
             List<ArrDataString> dataStrings = prepareArrDataString();
             if (!dataStrings.isEmpty()) {
                 for (ArrDataString dataString : dataStrings) {
@@ -127,7 +127,7 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         }
 
         // fixed ArrDataText
-        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_text SET value = ? WHERE data_id = ?")) {
+        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_text SET text_value = ? WHERE data_id = ?")) {
             List<ArrDataText> dataTexts = prepareArrDataText();
             if (!dataTexts.isEmpty()) {
                 for (ArrDataText dataText : dataTexts) {
@@ -140,9 +140,9 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         } catch (DatabaseException | SQLException e) {
             throw new CustomChangeException("Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
         }
-        
+
         // fixed ArrDataText
-        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_unitid SET value = ? WHERE data_id = ?")) {
+        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_unitid SET unit_value = ? WHERE data_id = ?")) {
             List<ArrDataUnitid> dataUnitids = prepareArrDataUnitid();
             if (!dataUnitids.isEmpty()) {
                 for (ArrDataUnitid dataUnitid : dataUnitids) {
@@ -155,9 +155,9 @@ public class DbChangeSet20220929134000 extends BaseTaskChange {
         } catch (DatabaseException | SQLException e) {
             throw new CustomChangeException("Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
         }
-        
+
         // fixed ArrDataUriRef
-        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_uri_ref SET schema = ?, value = ?, description = ? WHERE data_id = ?")) {
+        try (PreparedStatement prepareSet = dc.prepareStatement("UPDATE arr_data_uri_ref SET schema = ?, uri_ref_value = ?, description = ? WHERE data_id = ?")) {
             List<ArrDataUriRef> dataUriRefs = prepareArrDataUriRef();
             if (!dataUriRefs.isEmpty()) {
                 for (ArrDataUriRef dataUriRef : dataUriRefs) {

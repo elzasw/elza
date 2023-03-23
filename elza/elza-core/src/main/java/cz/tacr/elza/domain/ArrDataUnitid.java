@@ -31,7 +31,7 @@ public class ArrDataUnitid extends ArrData {
     // because operator TREAT in JPQL needs
     // unique names (tested with Hibernate 5.2)
     // see LockedValueRepository and query findByFundAndItemTypeAndValue
-    @Column(name = "value", length = StringLength.LENGTH_250, nullable = false)
+    @Column(name = "unit_value", length = StringLength.LENGTH_250, nullable = false)
     private String unitId;
 
 	public ArrDataUnitid() {

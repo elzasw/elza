@@ -5,6 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="20190612101300" author="slapa">
+        <validCheckSum>ANY</validCheckSum>
         <createTable tableName="usr_authentication">
             <column name="authentication_id" type="int">
                 <constraints primaryKey="true"/>
@@ -18,13 +19,14 @@
             <column name="auth_type" type="char(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="nvarchar(250)">
+            <column name="auth_value" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
     <changeSet id="20190612101301" author="slapa">
-        <sql>INSERT INTO usr_authentication (authentication_id, user_id, auth_type, value) SELECT user_id, user_id, 'PASSWORD', password FROM usr_user</sql>
+        <validCheckSum>ANY</validCheckSum>
+        <sql>INSERT INTO usr_authentication (authentication_id, user_id, auth_type, auth_value) SELECT user_id, user_id, 'PASSWORD', password FROM usr_user</sql>
     </changeSet>
     <changeSet id="20190612101302" author="slapa">
         <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val) SELECT 'usr_authentication|authentication_id', COALESCE(MAX(authentication_id),0)+1 FROM usr_authentication</sql>

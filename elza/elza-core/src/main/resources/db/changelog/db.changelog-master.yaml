@@ -22,3 +22,5 @@ databaseChangeLog:
      file: db/changelog/db.elza-1.4.xml
   - include:
      file: db/changelog/db.elza-1.5.xml
+  - include:
+     file: db/changelog/db.elza-3.0.xml

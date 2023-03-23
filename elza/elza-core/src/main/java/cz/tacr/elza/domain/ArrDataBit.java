@@ -16,7 +16,7 @@ public class ArrDataBit extends ArrData {
     public static final String BIT_VALUE = "bitValue";
 
     @Basic
-    @Column(name="value", nullable=false)
+    @Column(name="bit_value", nullable=false)
     private Boolean bitValue;
 
     public ArrDataBit() {

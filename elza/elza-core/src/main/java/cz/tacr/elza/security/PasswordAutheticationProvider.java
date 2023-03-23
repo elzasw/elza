@@ -38,7 +38,7 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 				throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení");
 			}
 
-			encodePassword = usrAuthentication.getValue();
+			encodePassword = usrAuthentication.getAuthValue();
 			if (!userService.matchesPassword(password, encodePassword, username)) {
 				throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 			}

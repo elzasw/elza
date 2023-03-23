@@ -670,7 +670,7 @@ public class UserService {
             result = new UsrAuthentication();
             result.setUser(user);
             result.setAuthType(UsrAuthentication.AuthType.PASSWORD);
-            result.setValue(defaultPassword);
+            result.setAuthValue(defaultPassword);
         } else {
             result = authenticationRepository.findByUserAndAuthType(user, authType);
         }
@@ -680,7 +680,7 @@ public class UserService {
     public List<UsrAuthentication> findAuthentication(String value, UsrAuthentication.AuthType authType) {
         Validate.notNull(value);
         Validate.notNull(authType);
-        return authenticationRepository.findByValueAndAuthType(value, authType);
+        return authenticationRepository.findByAuthValueAndAuthType(value, authType);
     }
 
     public List<UsrAuthentication> findAuthentications(UsrUser user) {
@@ -980,9 +980,9 @@ public class UserService {
         authentication.setUser(user);
         authentication.setAuthType(authType);
         if (authType == UsrAuthentication.AuthType.PASSWORD) {
-            authentication.setValue(encodePassword(value));
+            authentication.setAuthValue(encodePassword(value));
         } else {
-            authentication.setValue(value);
+            authentication.setAuthValue(value);
         }
     }
 
@@ -1003,7 +1003,7 @@ public class UserService {
                 throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
             }
 
-            if (!matchesPassword(oldPassword, authentication.getValue(), user.getUsername())) {
+            if (!matchesPassword(oldPassword, authentication.getAuthValue(), user.getUsername())) {
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }
@@ -1037,7 +1037,7 @@ public class UserService {
         if (authentication == null) {
             throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
         }
-        authentication.setValue(encodePassword(newPassword));
+        authentication.setAuthValue(encodePassword(newPassword));
         authenticationRepository.save(authentication);
         changeUserEvent(user);
         return user;

@@ -21,7 +21,7 @@ public class ArrDataText extends ArrData {
 
     public static final String TEXT_VALUE = "textValue";
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "text_value", nullable = false)
     @Lob
     //@Type(type = "org.hibernate.type.TextType") TODO pasek
     private String textValue;
