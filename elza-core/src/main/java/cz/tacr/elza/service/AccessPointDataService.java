@@ -3,6 +3,8 @@ package cz.tacr.elza.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.List;
+
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.xml.parsers.ParserConfigurationException;
@@ -107,10 +109,22 @@ public class AccessPointDataService {
     public String convertCoordinatesFromKml(InputStream inputStream) {
         try {
             Parser parser = new Parser(new KMLConfiguration());
-            SimpleFeature sf = (SimpleFeature) parser.parse(inputStream);
-            for (Property property : sf.getValue()) {
+            SimpleFeature simpleFeature = (SimpleFeature) parser.parse(inputStream);
+            for (Property property : simpleFeature.getValue()) {
+                // if file created by https://www.freemaptools.com/kml-file-creator.htm
                 if (property.getType().getName().getURI().equals(KML.Geometry.getLocalPart())) {
                     return property.getValue().toString();
+                }
+                // if file created by https://earth.google.com/
+                if (property.getType().getName().getURI().equals(KML.Feature.getLocalPart())) {
+                    List<SimpleFeature> simpleFeatures = (List<SimpleFeature>) property.getValue();
+                    for (SimpleFeature sf : simpleFeatures) {
+                        for (Property p : sf.getValue()) {
+                            if (p.getType().getName().getURI().equals(KML.Geometry.getLocalPart())) {
+                                return p.getValue().toString();
+                            }
+                        }
+                    }
                 }
             }
         } catch (IOException | SAXException | ParserConfigurationException e) {
