@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
@@ -36,9 +36,9 @@ import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
 import ApExtSearchModal, {TypeModal} from '../../components/registry/modal/ApExtSearchModal';
 import {Area} from 'api/Area';
-import ApPushToExt from '../../components/registry/modal/ApPushToExt';
+import { ApPushToExt } from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
-import {objectById} from '../../shared/utils';
+import {objectById, storeFromArea} from '../../shared/utils';
 import RegistryUsageForm from '../../components/form/RegistryUsageForm';
 import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
 import {StateApproval} from 'api/StateApproval';
@@ -337,17 +337,19 @@ class RegistryPage extends AbstractReactComponent {
                     this,
                     i18n('ap.push-to-ext.title'),
                     <ApPushToExt
-                        onSubmit={data => {
-                            return WebApi.saveAccessPoint(id, data.extSystem);
-                        }}
-                        onSubmitSuccess={() => {
+                        detail={this.props.detail?.data}
+                        onSubmit={async (data) => {
+                            try {
+                                await WebApi.saveAccessPoint(id, data.extSystemCode);
+                            } catch (e) {
+                                throw Error(e);
+                            }
                             dispatch(modalDialogHide());
                             dispatch(goToAe(history, id, true, !select));
+                            return;
                         }}
-                        initialValues={initialValues}
                         extSystems={filteredExtSystems}
-                        />,
-                    MODAL_DIALOG_SIZE.SM,
+                    />,
                 ),
             );
         }
@@ -832,6 +834,7 @@ export default withRouter(connect(state => {
         userDetail,
     } = state;
     return {
+        detail: storeFromArea(state, AREA_REGISTRY_DETAIL),
         extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
         splitter,
         registryDetail,
