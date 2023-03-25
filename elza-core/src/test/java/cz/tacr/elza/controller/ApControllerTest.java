@@ -6,15 +6,20 @@ import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -25,6 +30,7 @@ import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
@@ -41,6 +47,7 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
+import io.restassured.response.Response;
 
 
 /**
@@ -667,4 +674,20 @@ public class ApControllerTest extends AbstractControllerTest {
         return null;
     }
 
+    @Test
+    public void importCoordinatesTest() throws IOException {
+        // from file created by https://www.freemaptools.com/kml-file-creator.htm
+        Resource file = new DefaultResourceLoader().getResource("KML-Orlik-POINT.kml");
+        final String orlikFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
+        Response responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(orlikFile), IMPORT_COORDINATES);
+        String coordinates = responce.asString();
+        assertEquals(coordinates, "\"POINT (14.181221004109831 49.606926490508656)\"");
+        
+        // from file created by https://earth.google.com/
+        file = new DefaultResourceLoader().getResource("KML-London-POINT.kml");
+        final String londonFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
+        responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(londonFile), IMPORT_COORDINATES);
+        coordinates = responce.asString();
+        assertEquals(coordinates, "\"POINT (-0.1263736263736266 51.5067920886456)\"");
+    }
 }

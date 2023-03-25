@@ -1465,7 +1465,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/import/coordinates",
-            consumes = {"*/*"},
+            consumes = "*/*",
             method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
