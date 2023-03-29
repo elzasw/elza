@@ -988,7 +988,7 @@ var messages = {
     "subNodeForm.calculate-user.confirm":
         "Pole již nebude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
     "subNodeForm.calculate-auto.confirm":
-        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
+        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše zamčené",
