@@ -2200,9 +2200,17 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
             <column name="last_update" type="timestamp" />
         </createIndex>        
 	</changeSet>
+
 	<changeSet id="20230315160400" author="ppy">
         <createIndex indexName="ext_syncs_queue_item_ap_idx" tableName="ext_syncs_queue_item" unique="false">
             <column name="access_point_id" type="int" />
         </createIndex>        
-	</changeSet>	
+	</changeSet>
+
+	<changeSet id="20230329091500" author="sergey.iryupin">
+        <sql dbms="postgresql">CREATE INDEX arr_structured_object_error_idx
+        	ON arr_structured_object(structured_type_id, fund_id, delete_change_id, sort_value, state)
+			WHERE delete_change_id IS NULL</sql>
+	</changeSet>
+
 </databaseChangeLog>
