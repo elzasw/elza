@@ -1,4 +1,4 @@
-import { showAsyncWaiting } from 'actions/global/modalDialog';
+import { showAsyncWaiting, modalDialogShow, modalDialogHide } from 'actions/global/modalDialog';
 import * as perms from 'actions/user/Permission';
 import { WebApi } from 'actions/WebApi';
 import { ApAccessPointVO } from 'api/ApAccessPointVO';
@@ -19,6 +19,8 @@ import { SyncIcon } from "../sync-icon";
 import './DetailHeader.scss';
 import {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { ApPushToExt } from 'components/registry/modal/ApPushToExt';
+// import { goToAe } from 'actions/registry/registry';
 
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
@@ -71,16 +73,30 @@ export const EntityBindings:FC<{
     };
 
     const handleUpdate = (binding: ApBindingVO) => {
+        const extSystem = externalSystems.find((extSystem) => extSystem.code === binding.externalSystemCode);
+        if(!extSystem){ throw Error("External system not found.") }
         dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.update'),
-                WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
+            modalDialogShow(
+                this,
+                i18n('ap.push-to-ext.title'),
+                <ApPushToExt
+                    detail={item}
+                    onSubmit={async () => {
+                        try {
+                            await WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode);
+                        } catch (e) {
+                            throw Error(e);
+                        }
+                        dispatch(modalDialogHide());
+                        return;
+                    }}
+                    onClose={()=>{
+                        modalDialogHide();
+                    }}
+                    extSystems={[extSystem]}
+                />,
             ),
-        );
+            );
     };
 
     const handleTakeRelEntities = (binding: ApBindingVO) => {
