@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,9 @@ import cz.tacr.elza.service.StructObjService;
 @Component
 @Scope("prototype")
 public class ItemGeneratorAction extends Action {
-    
+
+    private final static Logger logger = LoggerFactory.getLogger(ItemGeneratorAction.class);
+
     private final ItemGeneratorConfig config;
 
     @Autowired
@@ -122,6 +126,8 @@ public class ItemGeneratorAction extends Action {
 
         @Override
         public void done() {
+            logger.debug("Check if still used this Structured object(s)={}", structObjsToDelete.size());
+
             // check if still used this Structured object
             List<ArrStructuredObject> unusedStructObj = structObjService.getUnusedStructObj(structObjsToDelete);
 
