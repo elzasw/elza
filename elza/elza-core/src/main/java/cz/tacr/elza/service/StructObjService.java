@@ -1350,12 +1350,9 @@ public class StructObjService {
     public void updateStructObj(ArrChange change, ArrStructuredObject structObj, List<ArrStructuredItem> items) {
 
         // drop all old items
-        List<ArrStructuredItem> currItems = structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
-        for (ArrStructuredItem structureItemDB : currItems) {
-            structureItemDB.setDeleteChange(change);
-            ArrStructuredItem save = structureItemRepository.save(structureItemDB);
-        }
+        List<ArrStructuredItem> currItems = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        currItems.forEach(item -> item.setDeleteChange(change));
+        structureItemRepository.saveAll(currItems);
 
         // create new items
         for (ArrStructuredItem newItem : items) {
@@ -1374,7 +1371,6 @@ public class StructObjService {
                                   structObjIds,
                                   null),
                           structObjIds);
-
     }
 
     private void notifyAboutChange(Integer fundId, EventStructureDataChange eventStructObjChange,
@@ -1391,15 +1387,11 @@ public class StructObjService {
     }
 
     public List<ArrStructuredObject> getUnusedStructObj(Collection<ArrStructuredObject> structObjsToDelete) {
-        List<ArrStructuredObject> unusedObjs = new ArrayList<>();
-        // identifikaci strukt. objektů, které se již nepoužívají
-        for (ArrStructuredObject obj : structObjsToDelete) {
-            Integer count = structureItemRepository.countItemsUsingStructObj(obj);
-            if (count == 0) {
-                unusedObjs.add(obj);
-            }
-        }
-        return unusedObjs;
+        List<ArrStructuredObject> unusedStructObjs = new ArrayList<>(structObjsToDelete);
+        List<ArrStructuredObject> usedStructObjs = new ArrayList<>();
+        ObjectListIterator.forEachPage(structObjsToDelete, page -> usedStructObjs.addAll(structureItemRepository.findUsedStructuredObjects(page)));
+        unusedStructObjs.removeAll(usedStructObjs);
+        return unusedStructObjs;
     }
 
 }

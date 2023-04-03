@@ -1,5 +1,5 @@
-import React, { ReactElement, useEffect, useState, useRef } from 'react';
-import { connect } from 'react-redux';
+import React, { ReactElement, useEffect, useState, useRef, PropsWithChildren } from 'react';
+import { connect, useDispatch } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
@@ -32,6 +32,10 @@ import {Api} from '../../api';
 import {RouteComponentProps, withRouter} from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
 import Icon from 'components/shared/icon/FontIcon';
+import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
+import { SyncProgress } from 'api/ApBindingVO';
+import { WebsocketEventType } from 'components/shared/web-socket/enums';
+import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -100,6 +104,25 @@ type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeo
 
 let scrollTop: number | undefined = undefined;
 
+export enum ExportState {
+    PENDING = "PENDING",
+    STARTED = "STARTED",
+    COMPLETED = "COMPLETED",
+}
+
+const WaitingOverlay = ({
+    children,
+}:PropsWithChildren<{}>) => {
+    return <div className="waiting-overlay">
+        <div className="waiting-icon">
+            <Icon glyph="fa-spin fa-circle-o-notch"/>
+        </div>
+        <div>
+            {children}
+        </div>
+    </div>
+}
+
 /**
  * Detail globální archivní entity.
  */
@@ -128,14 +151,71 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [revisionActive, setRevisionActive] = useState<boolean>(false);
+    const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
 
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const websocket = useWebsocket();
+    const bindings = detail.data?.bindings || [];
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (id) {
             refreshDetail(id, false, false);
         }
-    }, []);
+    }, [id, refreshDetail]);
+
+    // show accesspoint export message on websocket message
+    useEffect(()=>{
+        const eventMap = {
+            [WebsocketEventType.ACCESS_POINT_EXPORT_NEW]: ({ accessPointId }) => {
+                if(accessPointId.toString() === id.toString()){
+                    setExportState(ExportState.PENDING);
+                }
+            },
+            [WebsocketEventType.ACCESS_POINT_EXPORT_STARTED]: ({ accessPointId }) => {
+                if(accessPointId.toString() === id.toString()){
+                    setExportState(ExportState.STARTED);
+                }
+            },
+            [WebsocketEventType.ACCESS_POINT_EXPORT_COMPLETED]: ({ accessPointId }) => {
+                if(accessPointId.toString() === id.toString()){
+                    setExportState(ExportState.COMPLETED);
+                    refreshDetail(id, true, false);
+                }
+            },
+            [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId }) => {
+                if(accessPointId.toString() === id.toString()){
+                    dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), i18n("ap.push-to-ext.failed.message")))
+                    setExportState(ExportState.COMPLETED);
+                    refreshDetail(id, true, false);
+                }
+            },
+        }
+
+        const listener = websocket?.addListener((message:any) => { // TODO create websocket message types
+            const handler = eventMap[message.eventType];
+            if(handler){ handler(message) }
+        })
+
+        return () => {
+            websocket?.removeListener(listener);
+        }
+    },[id, websocket])
+
+    // show accesspoint export message on bindings state
+    useEffect(() => {
+        const stateMap = {
+            [SyncProgress.UPLOAD_PENDING]: ExportState.PENDING,
+            [SyncProgress.UPLOAD_STARTED]: ExportState.STARTED,
+        }
+        bindings.forEach(({syncProgress}) => {
+            const state = stateMap[syncProgress];
+            if(state){
+                setExportState(state);
+            }
+        })
+    },[bindings])
 
     useEffect(() => {
         fetchViewSettings();
@@ -296,7 +376,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         );
     };
 
-    const bindings = createBindings(detail.data);
+    const bindingsMaps = createBindings(detail.data);
     const groupPartsByType = (data: RevisionPart[]) => {
         return data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
             const typeId = value.part?.typeId || value.updatedPart?.typeId;
@@ -335,6 +415,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     return (
         <div className={'detail-page-wrapper'} ref={containerRef}>
+            {exportState !== "COMPLETED" && <WaitingOverlay>
+                {
+                    exportState === ExportState.PENDING 
+                        ? i18n("ap.push-to-ext.pending.message") 
+                        : i18n("ap.push-to-ext.started.message")
+                }
+            </WaitingOverlay>}
             <div key="1" className="layout-scroll">
                 <DetailHeader
                     item={detail.data!}
@@ -381,7 +468,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         editMode={canEdit()}
                                         part={revisionParts[0]}
                                         onEdit={handleEdit}
-                                        bindings={bindings}
+                                        bindings={bindingsMaps}
                                         onAdd={() => handleAdd(partType)}
                                         partValidationErrors={getSectionValidationErrors(revisionParts)}
                                         itemTypeSettings={apViewSettingRule?.itemTypes || []}
@@ -411,7 +498,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
                                     onRevert={handleRevert}
-                                    bindings={bindings}
+                                    bindings={bindingsMaps}
                                     onAdd={() => handleAdd(partType)}
                                     onAddRelated={onAddRelated}
                                     partValidationErrors={getSectionValidationErrors(revisionParts)}

@@ -4,8 +4,9 @@ $emptyColWidth: 8000px;
 $noselected-background: $shade-0;
 $focus-background: $shade-1;
 $selected-index-background: $shade-2;
-$selected-background: #EAECF5;
-$selected-both-background: #DEE2F5;
+$selected-background: $accent-color;
+$selected-both-background: $accent-color-alt;
+$selected-fg-color: $accent-color-fg;
 $header-background: $shade-2;
 $header-height: 24px;
 
@@ -106,6 +107,7 @@ $header-height: 24px;
             tr {
                 &.selected {
                     background: $selected-background;
+                    color: $selected-fg-color;
 
                     td.col-fixed {
                         .cell-container {
@@ -124,6 +126,7 @@ $header-height: 24px;
                 }
                 &.selected.selected-index {
                     background: $selected-both-background;
+                    color: $selected-fg-color;
 
                     td.col-fixed {
                         .cell-container {
@@ -145,7 +148,7 @@ $header-height: 24px;
                     }
 
                     &.cell-focus {
-                        outline: 1px solid $contrast-color;
+                        outline: 1px solid currentColor;
                         outline-offset: -2px;
                     }
 

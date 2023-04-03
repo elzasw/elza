@@ -660,7 +660,7 @@ public class FundLevelService {
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
             UsrPermission.Permission.FUND_ARR_NODE })
-    public ArrLevel addLevelUnder(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+    public ArrLevel addLevelUnder(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                   @AuthParam(type = AuthParam.Type.NODE) final ArrNode staticNodeParent,
                                   @Nullable final String scenarionName,
                                   @Nullable final DesctItemProvider desctItemProvider,
@@ -671,10 +671,10 @@ public class FundLevelService {
         if (change == null) {
             change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
         }
-        final ArrLevel baseLevel = arrangementService.lockNode(staticNodeParent, version, change);
+        final ArrLevel baseLevel = arrangementService.lockNode(staticNodeParent, fundVersion, change);
         Validate.notNull(baseLevel, "Referenční level musí být vyplněn");
 
-        List<ArrLevel> levels = addLevelUnder(version, baseLevel, 1,
+        List<ArrLevel> levels = addLevelUnder(fundVersion, baseLevel, 1,
                                               uuid != null ? Collections.singletonList(uuid) : null,
                                               change);
         Validate.notEmpty(levels, "Level musí být vyplněn");
@@ -685,29 +685,46 @@ public class FundLevelService {
         if (StringUtils.isNotBlank(scenarionName)) {
             scenario = descriptionItemService
                     .getDescriptionItamsOfScenario(scenarionName, baseLevel,
-                                                   AddLevelDirection.CHILD.getDirectionLevel(), version);
+                                                   AddLevelDirection.CHILD.getDirectionLevel(), fundVersion);
         } else {
             scenario = null;
         }
 
-        createItemsForNewLevel(version, AddLevelDirection.CHILD,
-                               baseLevel, newLevel, change, scenario,
+        createItemsForNewLevel(fundVersion, baseLevel, newLevel, change, scenario,
                                null, desctItemProvider);
+
+        // send notification about new level
+        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                                                                              baseLevel, newLevel));
+
         return newLevel;
     }
 
 
     /**
-     * Vloží nový uzel do stromu. Podle směru zjistí pozici, posune případné sourozence a vloží uzel.
+     * Vloží nový uzel do stromu. Podle směru zjistí pozici, posune případné
+     * sourozence a vloží uzel.
      *
-     * @param version           verze stromu
-     * @param staticNode        Statický uzel (za/před/pod který přidáváme)
-     * @param staticNodeParent  Rodič statického uzlu (za/před/pod který přidáváme)
-     * @param direction         směr přidávání
-     * @param scenarionName     Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
-     * @param descItemCopyTypes id typů atributu, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
-     * @param count             počet přidaných úrovní (pokud je null, přidáme jeden)
-     * @param uuids             seznam UUID pro nové uzly, může být null
+     * Metoda pošle notifikaci o přidání uzlu.
+     * 
+     * @param version
+     *            verze stromu
+     * @param staticNode
+     *            Statický uzel (za/před/pod který přidáváme)
+     * @param staticNodeParent
+     *            Rodič statického uzlu (za/před/pod který přidáváme)
+     * @param direction
+     *            směr přidávání
+     * @param scenarionName
+     *            Název scénáře, ze kterého se mají převzít výchozí hodnoty
+     *            atributů.
+     * @param descItemCopyTypes
+     *            id typů atributu, které budou zkopírovány z uzlu přímo nadřazeným
+     *            nad přidaným uzlem (jeho mladší sourozenec).
+     * @param count
+     *            počet přidaných úrovní (pokud je null, přidáme jeden)
+     * @param uuids
+     *            seznam UUID pro nové uzly, může být null
      */
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
@@ -828,7 +845,6 @@ public class FundLevelService {
      *            might be null
      */
     private void createItemsForNewLevel(ArrFundVersion fundVersion,
-                                        AddLevelDirection direction,
                                         ArrLevel baseLevel,
                                         ArrLevel newLevel,
                                         ArrChange change,
@@ -850,9 +866,6 @@ public class FundLevelService {
                                    NodeTypeOperation.CREATE_NODE, null, null, null);
 
         entityManager.flush(); //aktualizace verzí v nodech
-        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), fundVersion,
-                                                                              baseLevel, newLevel));
-
     }
 
     private List<ArrDescItem> createItemsForNewLevel(FundContext fundContext,
@@ -1261,7 +1274,11 @@ public class FundLevelService {
         // create/update node cache
         nodeCacheService.syncNodes(Collections.singletonList(linkNode.getNodeId()));
 		
-		createItemsForNewLevel(fundVersion, AddLevelDirection.CHILD, parentLevel, newLevel, change, null, null, descItemProvider);
+        createItemsForNewLevel(fundVersion, parentLevel, newLevel, change, null, null, descItemProvider);
+
+        // send notification about new level
+        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                                                                              parentLevel, newLevel));
     	
 		return newLevel;
 	}

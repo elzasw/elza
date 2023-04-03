@@ -11,6 +11,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.concurrent.DelegatingSecurityContextCallable;
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
@@ -51,6 +53,8 @@ import cz.tacr.elza.service.UserService;
 @Aspect
 @Component
 public class Authorization {
+
+    static private Logger logger = LoggerFactory.getLogger(Authorization.class);
 
 	/**
 	 * Brief method info
@@ -135,6 +139,11 @@ public class Authorization {
 		AuthMethod declaredAnnotation = methodInfo.getMethod().getDeclaredAnnotation(AuthMethod.class);
 
 		UserDetail userDetail = userService.getLoggedUserDetail();
+        if (userDetail == null) {
+            // user is not logged
+            logger.error("User is not logged, no security context");
+            throw createAccessDeniedException(declaredAnnotation.permission());
+        }
 
 		for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 

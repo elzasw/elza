@@ -1,5 +1,6 @@
 package cz.tacr.elza.core;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -162,6 +163,7 @@ public class UserPermissionTest extends AbstractTest {
         accessPoint.setAccessPointId(1);
         accessPoint.setUuid(UUID.randomUUID().toString());
         accessPoint.setState(ApStateEnum.OK);
+        accessPoint.setLastUpdate(LocalDateTime.now());
         return accessPointRepository.save(accessPoint);
     }
 

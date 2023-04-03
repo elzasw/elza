@@ -7,6 +7,7 @@ import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemVO } from 'api/ApItemVO';
 import { CommonFieldProps } from './types';
+import { ApItemEnumVO } from 'api/ApItemEnumVO';
 
 export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
     itemSpecIds?: number[];
@@ -23,7 +24,7 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemEnumVO>>(`${name}`);
     const {item, updatedItem} = field.input.value;
 
     return <Field
@@ -35,12 +36,19 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
             const prevValue = item?.specId != null ? getSpecName(item.specId) : undefined
 
             const handleChange = (e: any) => { 
+                if(updatedItem?.changeType === "ORIGINAL"){
+                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                }
                 props.input.onChange(e)
                 handleValueUpdate(form);
             }
 
             const handleRevert = () => {
-                form.change(`${name}.updatedItem`, item)
+                if(!updatedItem){ throw Error("No updated item to revert."); }
+                if(!item){ throw Error("No original item to revert to."); }
+
+                const newUpdatedItem: ApItemEnumVO = {...updatedItem, specId: item?.specId, changeType: "ORIGINAL"};
+                form.change(`${name}.updatedItem`, newUpdatedItem);
                 handleValueUpdate(form);
             }
 

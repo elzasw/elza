@@ -221,6 +221,35 @@
                 </plugins>
             </build>
         </profile>
+        <!-- Nutne kvuli kompatibilite s NodeJS v18+ a Webpack 4.  -->
+        <!-- Po dokonceni migrace na Webpack 5 lze odstranit.  -->
+        <profile>
+            <id>frontend-dev-legacy</id>
+            <build>
+                <plugins>
+                    <!-- Frontend webpack dev server -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>dev-legacy</argument>
+                            </arguments>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>exec-npm-run-dev</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>npm-install</id>
             <build>

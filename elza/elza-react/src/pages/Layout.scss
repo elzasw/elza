@@ -16,6 +16,8 @@ $shade-7: #999;
 $contrast-color: #333;
 $shade-9: #555;
 
+$shade-0-opacity-50: #fff8;
+
 $border-color: #ddd;
 
 $accent-color: #66afe9;
@@ -48,10 +50,13 @@ $shade-7: darken($shade-0, 50%);
 $contrast-color: #333;
 $shade-9: lighten($contrast-color, 10%);
 
+$shade-0-opacity-50: #fff8;
+
 $border-color: rgba(#000, 0.2);
 $primary-border: 1px solid $border-color;
 
 $accent-color: mix(#66afe9, $shade-7, 60%);
+$accent-color-alt: darken($accent-color, 7%);
 $accent-color-fg: white;
 
 /* $color-red: mix($shade-7, #f00, 40%); */
@@ -82,10 +87,13 @@ $color-link: mix(#66afe9, $fg-color, 50%);
     --contrast-color-fg: #fff;
     --shade-9: #{$shade-9};
 
+    --shade-0-opacity-50: #{$shade-0-opacity-50};
+
     --primary-border: #{$primary-border};
     --border-color: #{$border-color};
 
     --accent-color: #{$accent-color};
+    --accent-color-alt: #{$accent-color-alt};
     --accent-color-fg: #{$accent-color-fg};
 
     --color-red: #{$color-red};
@@ -120,9 +128,12 @@ $shade-7: lighten($shade-0, 60%);
 $contrast-color: darken($shade-0, 2%);
 $shade-9: lighten($contrast-color, 10%);
 
+$shade-0-opacity-50: #0008;
+
 $border-color: rgba(#fff, 0.2);
 $primary-border: 1px solid $border-color;
 $accent-color: #226fac;
+$accent-color-alt: lighten($accent-color, 10%);
 // $accent-color: mix(teal, $shade-2, 60%);
 $accent-color-fg: $fg-color;
 
@@ -156,10 +167,13 @@ $color-link: $accent-color-fg;
     --contrast-color: #{$contrast-color};
     --shade-9: #{$shade-9};
 
+    --shade-0-opacity-50: #{$shade-0-opacity-50};
+
     --primary-border: #{$primary-border};
     --border-color: #{$border-color};
 
     --accent-color: #{$accent-color};
+    --accent-color-alt: #{$accent-color-alt};
     --accent-color-fg: #{$accent-color-fg};
 
     --color-red: #{$color-red};

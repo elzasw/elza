@@ -2,10 +2,10 @@ import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {decorateValue} from './DescItemUtils';
 import DescItemLabel from './DescItemLabel';
-import ItemTooltipWrapper from './ItemTooltipWrapper';
 
 import './DescItemUnitdate.scss';
 import {CLS_CALCULABLE} from "../../../constants";
+import UnitdateField from 'components/registry/field/UnitdateField';
 
 /**
  * Input prvek pro desc item - typ UNITDATE.
@@ -46,21 +46,19 @@ class DescItemUnitdate extends AbstractReactComponent {
 
         return (
             <div className="desc-item-value desc-item-value-parts">
-                <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format" style={{width: '100%'}}>
-                    <input
-                        {...decorateValue(
-                            this,
-                            descItem.hasFocus,
-                            descItem.error.value,
-                            locked || descItem.undefined,
-                            cls,
-                        )}
-                        ref={ref => (this.focusEl = ref)}
-                        type="text"
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value || ''}
-                        onChange={this.handleValueChange}
-                    />
-                </ItemTooltipWrapper>
+                <UnitdateField 
+                    {...decorateValue(
+                        this,
+                        descItem.hasFocus,
+                        descItem.error.value,
+                        locked || descItem.undefined,
+                        cls,
+                    )}
+                    ref={ref => (this.focusEl = ref)}
+                    type="text"
+                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value || ''}
+                    onChange={this.handleValueChange}
+                />
             </div>
         );
     }

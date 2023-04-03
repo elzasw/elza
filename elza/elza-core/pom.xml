@@ -281,6 +281,37 @@
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
         </dependency>
+        <!-- QR code support -->
+        <dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+		    <version>3.5.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.zxing</groupId>
+		    <artifactId>javase</artifactId>
+		    <version>3.5.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>net.sf.barcode4j</groupId>
+		    <artifactId>barcode4j</artifactId>
+		    <version>2.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-svg-dom</artifactId>
+		    <version>1.16</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-svggen</artifactId>
+		    <version>1.16</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-bridge</artifactId>
+		    <version>1.16</version>
+		</dependency>		
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>

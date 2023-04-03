@@ -1,9 +1,10 @@
 package cz.tacr.elza.service.eventnotification.events;
 
+import java.util.Arrays;
+
 /**
  * Událost, která která nastala nad entitama konkrétní verze stromu.
  *
- * @author Martin Šlapa
  * @since 12.2.2016
  */
 public class EventIdsInVersion extends EventVersion {
@@ -24,5 +25,13 @@ public class EventIdsInVersion extends EventVersion {
 
     public void setEntityIds(final Integer... entityId) {
         this.entityIds = entityId;
+    }
+
+    @Override
+    public String toString() {
+        String entIds = Arrays.toString(entityIds);
+        return "EventIdsInVersion{" +
+                "fundVersionId=" + getVersionId() +
+                ", entityIds=" + entIds + "}";
     }
 }

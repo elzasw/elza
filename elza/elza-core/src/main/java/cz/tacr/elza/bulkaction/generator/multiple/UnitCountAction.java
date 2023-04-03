@@ -89,6 +89,8 @@ public class UnitCountAction extends Action {
 	private ArrFundVersion fundVersion;
 	private ArrChange change;
 
+    private Consumer<LevelWithItems> counterForSkippedLevels;
+
     //DateRangeAction dateRangeAction;
 
 	@Autowired
@@ -179,6 +181,9 @@ public class UnitCountAction extends Action {
 			// Check if node stopped
 			if (skipSubtree != null) {
 				if (isInTree(skipSubtree, level)) {
+                    if (counterForSkippedLevels != null) {
+                        counterForSkippedLevels.accept(level);
+                    }
 					return;
 				}
 				// reset limit
@@ -264,8 +269,9 @@ public class UnitCountAction extends Action {
         };
     }
 
-    public void setSkipSubtree(LevelWithItems level) {
+    public void setSkipSubtree(LevelWithItems level, Consumer<LevelWithItems> useDetailCounter) {
 		this.skipSubtree = level;
+        this.counterForSkippedLevels = useDetailCounter;
 	}
 
 	/**

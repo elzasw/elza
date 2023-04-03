@@ -24,14 +24,12 @@ import './AbstractDescItem.scss';
 import {convertValue, validate} from '../../../stores/app/arr/subNodeForm';
 import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
-import {validateUnitDate} from '../../registry/field/UnitdateField';
+import {validateUnitDate, convertToEstimateWithConfirmation} from '../../registry/field/UnitdateField';
 import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
 import {registerField, unregisterField} from "../text-fragments";
 import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
 import ImportCoordinateModal from "../../registry/Detail/coordinate/ImportCoordinateModal";
-import { parse } from 'components/shared/datace/datace';
-import { showYesNoDialog, YesNoDialogResult } from 'components/shared/dialog';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -389,48 +387,25 @@ class DescItemType extends AbstractReactComponent {
         this.props.onChangeSpec(descItemIndex, specId);
     }
 
-    interceptValue = async (value, rulDataType) => {
+    interceptValue = async (value, rulDataType, descItemIndex) => {
         const {dispatch} = this.props;
+        const { descItemType } = this.state;
+        const descItem = descItemType.descItems[descItemIndex];
 
         if(rulDataType.code === 'UNITDATE'){
             try {
-                let newValue = value.value;
-                const {from, to, c, estimate} = parse(newValue) || {};
-                const validated = validateUnitDate(newValue);
-
-                const getResult = async () => await dispatch(showYesNoDialog(i18n("field.unitdate.convertToEstimate.message"), i18n("field.unitdate.convertToEstimate.title")));
+                const validated = validateUnitDate(value.value);
 
                 if(validated.valid){
-                    if (from?.c && to?.c && (!from?.estimate || !to?.estimate)){
-                        const result = await getResult();
-                        if(result === YesNoDialogResult.YES){
-                            const parts = newValue.replace("[","").replace("]","").split("-");
-                            value.value = `${parts[0]}/${parts[1]}`;
+                    const newValue = await convertToEstimateWithConfirmation(value.value, dispatch)
+                    if(newValue){
+                        value.value = newValue;
+                    } else {
+                        const refObject = this.refObjects[descItem.formKey]
+                        if(refObject){
+                            refObject.focus();
                         }
-                        else if(result === YesNoDialogResult.CANCEL){return;}
-                    }
-                    else if(from?.c && !from?.estimate){
-                        const result = await getResult();
-                        if(result === YesNoDialogResult.YES){
-                            const parts = newValue.split("-");
-                            value.value = `[${parts[0]}]-${parts[1]}`;
-                        }
-                        else if(result === YesNoDialogResult.CANCEL){return;}
-                    }
-                    else if (to?.c && !to?.estimate){
-                        const result = await getResult();
-                        if(result === YesNoDialogResult.YES){
-                            const parts = newValue.split("-");
-                            value.value = `${parts[0]}-[${parts[1]}]`;
-                        }
-                        else if(result === YesNoDialogResult.CANCEL){return;}
-                    }
-                    else if (c && !estimate){
-                        const result = await getResult();
-                        if(result === YesNoDialogResult.YES){
-                            value.value = `[${newValue}]`;
-                        } 
-                        else if(result === YesNoDialogResult.CANCEL){return;}
+                        return;
                     }
                 }
             } catch (e) { }
@@ -447,7 +422,7 @@ class DescItemType extends AbstractReactComponent {
         const {onBlur, onChange, rulDataType} = this.props;
         let {value, error} = this.state;
 
-        const newValue = await this.interceptValue(value, rulDataType);
+        const newValue = await this.interceptValue(value, rulDataType, descItemIndex);
         if(!newValue && newValue !== value){return;} // Cancel the value change when null
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
@@ -997,17 +972,12 @@ class DescItemType extends AbstractReactComponent {
                 i18n('ap.coordinate.import.title'),
                 <ImportCoordinateModal
                     onSubmit={async formData => {
-                        const reader = new FileReader();
-                        reader.onload = async () => {
-                            const data = reader.result;
-                            try {
-                                const fieldValue = await WebApi.importApCoordinates(data, formData.format);
-                                this.setState({coordinatesUpload: fieldValue});
-                            } catch (e) {
-                                //notification.error({message: 'Nepodařilo se importovat souřadnice'});
-                            }
-                        };
-                        reader.readAsBinaryString(formData.file);
+                        try {
+                            const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
+                            this.setState({coordinatesUpload: fieldValue});
+                        } catch (e) {
+                            //notification.error({message: 'Nepodařilo se importovat souřadnice'});
+                        }
                     }}
                     onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
                 />,

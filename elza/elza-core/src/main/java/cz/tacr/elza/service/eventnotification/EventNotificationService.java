@@ -44,7 +44,7 @@ public class EventNotificationService implements IEventNotificationService {
     @Override
     public void publishEvent(final AbstractEventSimple event) {
         Validate.notNull(event);
-        logger.debug("Publish event: {}", event.getEventType());
+        logger.debug("Publish event: {}, {}", event.getEventType(), event.toString());
 
         AfterTransactionListener listener = null;
         for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
@@ -71,7 +71,7 @@ public class EventNotificationService implements IEventNotificationService {
             committedEvents.clear();
         }
 
-        //prozatím nejpreve odešleme událost do kontextu aplikace a poté až klientovi
+        //prozatím nejprve odešleme událost do kontextu aplikace a poté až klientovi
         eventBus.post(new EventChangeMessage(valuesCopy));
         valuesCopy.forEach(eventDispatcher::dispatchEvent);
     }

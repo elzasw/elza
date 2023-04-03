@@ -86,6 +86,7 @@ import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
@@ -376,6 +377,7 @@ public class EntityDBDispatcher {
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
+        MultipleApChangeContext mcc = new MultipleApChangeContext(); 
 
         readBindingItems(prevBindingState.getBinding(), accessPoint);
         // check if exists subparts without binding
@@ -441,7 +443,7 @@ public class EntityDBDispatcher {
                 if (replacedBindingState.isPresent()) {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
-                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem());
+                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
                     state.setReplacedBy(replacedBy);
                     break;
                 }
@@ -478,7 +480,10 @@ public class EntityDBDispatcher {
         }
 
         accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
-        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+        mcc.add(accessPoint.getAccessPointId());
+        for (Integer apId : mcc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
 
         this.procCtx = null;
     }

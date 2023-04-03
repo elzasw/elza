@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -632,6 +633,17 @@ public class RevisionService {
                     notDeletedApItems.add(origItem);
                 }
                 if(revItem!=null) {
+                    // return to original item
+                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
+                        if (origItem == null) {
+                            // source item not found
+                            throw new BusinessException("ApItem not found, objectId: " + objectId,
+                                    BaseCode.ID_NOT_EXIST)
+                                            .set("objectId", objectId);
+                        }
+                        // simply skip item -> revItem will be deleted
+                        continue;
+                    }
                     if(itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
                         if (!itemVO.getId().equals(revItem.getItemId())) {
@@ -652,6 +664,11 @@ public class RevisionService {
                         createItems.add(itemVO);
                     }
                 } else {
+                    // keep original item if not updated
+                    if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
+                        // simply skip item 
+                        continue;
+                    }
                     // origItem exists but not revItem
                     // -> new revItem has to be created
                     // ID should match

@@ -41,6 +41,12 @@
         <engine>JASPER</engine>
         <directory>STITKY_PDF_JASPER</directory>
     </template>
+    <template code="ZP2015_KOSILKA_PDF_JASPER" output-type="ZP2015_STITKY" 
+              mime-type="application/pdf" extension="pdf">
+        <name>Košilka (PDF)</name>
+        <engine>JASPER</engine>
+        <directory>KOSILKA_PDF_JASPER</directory>
+    </template>
     <template code="ZP2015_KARTA_PDF_JASPER" output-type="ZP2015_STITKY" 
               mime-type="application/pdf" extension="pdf">
         <name>Karta (PDF)</name>

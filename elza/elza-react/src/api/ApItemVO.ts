@@ -33,5 +33,5 @@ export interface ApItemVO {
     /**
     * Typ zmeny v revizi
     */
-    changeType?: "DELETED" | "NEW" | "UPDATED";
+    changeType?: "DELETED" | "NEW" | "UPDATED" | "ORIGINAL";
 }
