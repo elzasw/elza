@@ -9,7 +9,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.search.hcore.util.impl.HibernateHelper;
+import org.hibernate.proxy.HibernateProxy;
 
 /**
  * Helper class for Hibernate.
@@ -30,7 +30,12 @@ public class HibernateUtils {
         if (object == null) {
             return null;
         }
-        return (T) HibernateHelper.unproxy(object);
+
+        if (object instanceof HibernateProxy) {
+            object = ((HibernateProxy)object).getHibernateLazyInitializer().getImplementation();
+        }
+
+        return (T) object;
     }
 
     /**
