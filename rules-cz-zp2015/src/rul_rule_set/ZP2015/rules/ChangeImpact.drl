@@ -74,8 +74,8 @@ rule "Pokud v SaveDescriptionItems provedu přidání významného PP, tak dopad
 when
     descItem : DescItem(type in ("ZP2015_UNIT_DATE", 
          "ZP2015_LANGUAGE", "ZP2015_ARRANGER",
-         "ZP2015_UNIT_CURRENT_STATUS", "ZP2015_LANGUAGE",
-         "ZP2015_UNIT_SOURCE"
+         "ZP2015_UNIT_CURRENT_STATUS",
+         "ZP2015_UNIT_SOURCE", "ZP2015_INVALID_RECORD"
          ), 
     	change in ( DescItemChange.CREATE, DescItemChange.DELETE)
     	)

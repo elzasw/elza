@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,8 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
  */
 @Service
 public class StructObjInternalService {
+
+    private final static Logger logger = LoggerFactory.getLogger(StructObjInternalService.class);
 
     private final StructuredItemRepository structureItemRepository;
     private final StructuredObjectRepository structObjRepository;
@@ -83,6 +87,8 @@ public class StructObjInternalService {
         ArrFund fund = firstStructObj.getFund();
         RulStructuredType structuredType = firstStructObj.getStructuredType();
 
+        logger.debug("Creating two lists according to objects status");
+
         // vytvoření 2 seznamů podle stavu objektu
         for (ArrStructuredObject structObj : structObjs) {
             if (structObj.getDeleteChange() != null) {
@@ -108,14 +114,20 @@ public class StructObjInternalService {
             }
         }
 
+        logger.debug("Two lists were created: temp.size={}, permanent.size={}", tempStructObj.size(), permStructObj.size());
+
         // vymazání 'temporary' objektů
-        for (ArrStructuredObject structObj : tempStructObj) {
-            structureItemRepository.deleteByStructuredObject(structObj);
-            dataRepository.deleteByStructuredObject(structObj);
-            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
-            structObjRepository.delete(structObj);
-            changeRepository.delete(change);
-            deletedIds.add(structObj.getStructuredObjectId());
+        if (!tempStructObj.isEmpty()) {
+            for (ArrStructuredObject structObj : tempStructObj) {
+                structureItemRepository.deleteByStructuredObject(structObj);
+                dataRepository.deleteByStructuredObject(structObj);
+                ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
+                structObjRepository.delete(structObj);
+                changeRepository.delete(change);
+                deletedIds.add(structObj.getStructuredObjectId());
+            }
+
+            logger.debug("Removed {} temporary objects", tempStructObj.size());
         }
 
         // vymazání 'permanent' objektů
@@ -141,12 +153,16 @@ public class StructObjInternalService {
             }
             structObjRepository.saveAll(permStructObj);
 
+            logger.debug("Removed {} permanent objects", permStructObj.size());
+
             // hledáme duplikáty
             List<ArrStructuredObject> structuredObjectsDup = new ArrayList<>();
             ObjectListIterator
                 .forEachPage(sortValues, 
                              page -> structuredObjectsDup.addAll(structObjRepository.findErrorByStructureTypeAndFund(structuredType, fund, page)));
             structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+
+            logger.debug("Processed {} duplicates objects", structuredObjectsDup.size());
 
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                                                                           structuredType.getCode(),

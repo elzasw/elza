@@ -1,11 +1,43 @@
 package cz.tacr.elza.controller.factory;
 
-import cz.tacr.cam.client.controller.vo.*;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.cam.client.controller.vo.QueryAndDef;
+import cz.tacr.cam.client.controller.vo.QueryBaseCondDef;
+import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.client.controller.vo.QueryIndexCondDef;
+import cz.tacr.cam.client.controller.vo.QueryParamsDef;
+import cz.tacr.cam.client.controller.vo.QueryPartCondDef;
+import cz.tacr.cam.client.controller.vo.QueryValueCondDef;
 import cz.tacr.cam.schema.cam.FoundEntityInfoXml;
 import cz.tacr.cam.schema.cam.HightlightPosXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.cam.schema.cam.ResultLookupXml;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.AeState;
+import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityVO;
+import cz.tacr.elza.controller.vo.Area;
+import cz.tacr.elza.controller.vo.ExtensionFilterVO;
+import cz.tacr.elza.controller.vo.HighlightVO;
+import cz.tacr.elza.controller.vo.RelationFilterVO;
+import cz.tacr.elza.controller.vo.ResultLookupVO;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -15,17 +47,6 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 @Service
 public class SearchFilterFactory {
@@ -357,22 +378,24 @@ public class SearchFilterFactory {
         return highlight;
     }
 
-    public ArchiveEntityResultListVO createArchiveEntityResultListVO(List<ApState> apStateList, Integer totalElements, Map<Integer, ApIndex> nameMap) {
+    public ArchiveEntityResultListVO createArchiveEntityResultListVO(List<ApState> apList, Integer totalElements,
+                                                                     Map<Integer, ApIndex> nameMap) {
+        List<ArchiveEntityVO> dataList;
+        if (CollectionUtils.isNotEmpty(apList)) {
+            dataList = new ArrayList<>(apList.size());
+
+            for (ApState aps : apList) {
+                ApIndex nameIndex = nameMap.getOrDefault(aps.getAccessPointId(), null);
+                dataList.add(createArchiveEntityVO(aps, nameIndex));
+            }
+        } else {
+            dataList = Collections.emptyList();
+        }
+
         ArchiveEntityResultListVO archiveEntityVOListResult = new ArchiveEntityResultListVO();
         archiveEntityVOListResult.setTotal(totalElements);
-        archiveEntityVOListResult.setData(createArchiveEntityVOList(apStateList, nameMap));
+        archiveEntityVOListResult.setData(dataList);
         return archiveEntityVOListResult;
-    }
-
-    private List<ArchiveEntityVO> createArchiveEntityVOList(List<ApState> apStateList, Map<Integer, ApIndex> nameMap) {
-        List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(apStateList)) {
-            for (ApState apState : apStateList) {
-                ApIndex nameIndex = nameMap.getOrDefault(apState.getAccessPointId(), null);
-                archiveEntityVOList.add(createArchiveEntityVO(apState, nameIndex));
-            }
-        }
-        return archiveEntityVOList;
     }
 
     private ArchiveEntityVO createArchiveEntityVO(ApState apState, ApIndex nameIndex) {

@@ -161,7 +161,11 @@ public class ExtSyncsQueueItem {
 
         EXPORT_NEW("K odeslání"),
 
+        EXPORT_START("Začít odesílání"),
+
         EXPORT_OK("Odesláno"),
+
+        EXPORT_CANCEL("Odesílání přerušeno"),
 
         ERROR("Chyba");
 

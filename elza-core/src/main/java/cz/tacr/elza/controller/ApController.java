@@ -51,6 +51,7 @@ import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
+import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -70,6 +71,7 @@ import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncProgressVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -95,6 +97,8 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -112,6 +116,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -120,6 +125,7 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
@@ -303,7 +309,12 @@ public class ApController {
                                                                                        states, searchTypeNameFinal,
                                                                                        searchTypeUsernameFinal);
 
-            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, fund,
+            OrderBy orderBy = OrderBy.LAST_CHANGE;
+            if (foundRecordsCount < 1000) {
+                orderBy = OrderBy.PREF_NAME;
+            }
+            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy,
+                                                                             fund,
                                                                              scopeId, states, searchTypeNameFinal,
                                                                              searchTypeUsernameFinal);
 
@@ -475,6 +486,24 @@ public class ApController {
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
             vo = apFactory.createVO(vo, revision, apState.getAccessPoint());
+        }
+        // read status of data in export/import queue
+        if (CollectionUtils.isNotEmpty(vo.getBindings())) {
+            // read upload settings
+            for (ApBindingVO b : vo.getBindings()) {
+                List<ExtSyncsQueueItem> queueItems = externalSystemService.getQueueItems(apState.getAccessPointId(), b
+                        .getExternalSystemId(), ExtAsyncQueueState.EXPORT_NEW, ExtAsyncQueueState.EXPORT_START);
+                // expecting zero or one item
+                for (ExtSyncsQueueItem queueItem : queueItems) {
+                    if (queueItem.getState() == ExtAsyncQueueState.EXPORT_NEW) {
+                        b.setSyncProgress(SyncProgressVO.UPLOAD_PENDING);
+                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                    } else if (queueItem.getState() == ExtAsyncQueueState.EXPORT_START) {
+                        b.setSyncProgress(SyncProgressVO.UPLOAD_STARTED);
+                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                    }
+                }
+            }
         }
 
         return vo;
@@ -784,7 +813,12 @@ public class ApController {
             extSystem = srcBindings.get(0).getApExternalSystem();
         }
 
-        accessPointService.replace(replacedState, replacementState, extSystem);
+        MultipleApChangeContext mcc = new MultipleApChangeContext();
+
+        accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+        for (Integer apId : mcc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
     }
 
     /**
@@ -823,6 +857,9 @@ public class ApController {
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.updateAndValidate(accessPointId);
+        if (accessPointService.isRevalidaceRequired(state.getStateApproval(), stateChange.getState())) {
+            ruleService.revalidateNodes(accessPointId);
+        }
         accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
@@ -1279,9 +1316,10 @@ public class ApController {
     @Transactional
     @RequestMapping(value = {"/external/save/{accessPointId}",
     		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
-    public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
+    public Integer saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        ExtSyncsQueueItem item = camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        return item.getExtSyncsQueueItemId();
     }
 
     /**
@@ -1294,6 +1332,12 @@ public class ApController {
     @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
+
+        // TODO: Split one large transaction into multiple transactions
+        //  1. read data from db
+        //  2. download data from ext. system
+        //  3. update data in DB
+
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
@@ -1318,7 +1362,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, false);
+        camService.synchronizeAccessPoint(procCtx, binding, entity, false);
     }
 
     private AbstractException prepareSystemException(ApiException e) {
@@ -1420,7 +1464,9 @@ public class ApController {
      * @return Souřadnice převedené do řetězce
      */
     @Transactional
-    @RequestMapping(value = "/import/coordinates", method = RequestMethod.POST)
+    @RequestMapping(value = "/import/coordinates",
+            consumes = "*/*",
+            method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
         return accessPointService.importCoordinates(fileType, body);

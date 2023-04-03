@@ -43,9 +43,13 @@ mvn exec:exec -Pnpm-install
 mvn spring-boot:run
 ```
 
-* Spuštění serveru pro frontend (v adresáři elza-react)
+* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS do v16) 
 ```
 mvn exec:exec -Pfrontend-dev
+```
+* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS v17+) 
+```
+mvn exec:exec -Pfrontend-dev-legacy
 ```
 
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
@@ -83,6 +87,9 @@ Uživatelské rozhranní najdete na adrese http://localhost:3000.
 
 Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
 ![IntelliJ Idea](idea.png)
+
+Pro spuštění se speciální konfigurací lze použít parametry:  `--spring.config.location=classpath:/elza.yaml,file:./config-small/elza.yaml`
+První elza.yaml se načte přímo z aplikace a druhý z cesty.
 
 ### Sestavení instalátoru aplikace
 * Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is-unicode.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.

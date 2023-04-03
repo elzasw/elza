@@ -65,10 +65,12 @@ const url = new URLParse(serverContextPath + '/stomp');
 
 const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
 
-const wsUrl = wsProtocol + '//' + url.host + url.pathname;
+export const wsUrl = wsProtocol + '//' + url.host + url.pathname;
 console.log('Websocekt URL', wsUrl);
 
-class websocket {
+export class websocket {
+    listeners = [];
+
     constructor(url, eventMap) {
         this.nextReceiptId = 0;
         this.pendingRequests = {};
@@ -126,6 +128,16 @@ class websocket {
         this.stompClient.send(url, headers, data);
     };
 
+    addListener = (listener) => {
+        this.listeners.push(listener);
+        return listener;
+    }
+
+    removeListener = (listener) => {
+        const listenerIndex = this.listeners.findIndex((_listener) => _listener === listener);
+        this.listeners.splice(listenerIndex, 1);
+    }
+
     onConnect = frame => {
         store.dispatch(webSocketConnect());
         console.info('Websocket connected');
@@ -165,6 +177,10 @@ class websocket {
         var body = JSON.parse(frame.body);
         const eventType = body.eventType;
         console.info('WEBSOCKET MESSAGE:', body);
+
+        this.listeners.forEach((listener) => {
+            listener(body);
+        })
 
         if (this.eventMap[eventType]) {
             this.eventMap[eventType](body);

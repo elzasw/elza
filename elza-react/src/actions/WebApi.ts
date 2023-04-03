@@ -2221,11 +2221,12 @@ export class WebApiCls {
     }
 
     importApCoordinates(body: ArrayBuffer | Blob | string, fileType: CoordinateFileType = CoordinateFileType.KML) {
-        return AjaxUtils.ajaxPost(
+        return AjaxUtils.ajaxCallRaw(
             WebApiCls.apUrl + '/import/coordinates',
             {
                 fileType,
             },
+            "POST",
             body,
         );
     }

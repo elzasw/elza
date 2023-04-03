@@ -247,6 +247,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'FORMATTED_TEXT':
             case 'UNITID':
             case 'INT':
+            case 'DECIMAL':
             case 'DATE':
             case 'UNITDATE':
             case 'RECORD_REF':
@@ -404,8 +405,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
             let operationInputs = [];
 
-            console.log("bulk modification form", operationType, allValueItems)
-
             switch (operationType) {
                 case 'setSpecification':
                     operationInputs.push(
@@ -435,7 +434,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         <Field
                             key={'findText'}
                             name="findText"
-                            type="text"
+                            type={dataType.code === "TEXT" ? "textarea" : "text"}
                             component={FormInputField}
                             label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
                             disabled={submitting}
@@ -445,7 +444,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         <Field
                             key={'replaceText'}
                             name="replaceText"
-                            type="text"
+                            type={dataType.code === "TEXT" ? "textarea" : "text"}
                             component={FormInputField}
                             label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
                             disabled={submitting}
@@ -550,7 +549,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             <Field
                                 key="replaceText"
                                 name="replaceText"
-                                type="text"
+                                type={dataType.code === "TEXT" ? "textarea" : "text"}
                                 component={FormInputField}
                                 label={i18n('arr.fund.bulkModifications.replace.replaceText')}
                                 disabled={submitting}

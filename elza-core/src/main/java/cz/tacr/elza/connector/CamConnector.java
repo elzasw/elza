@@ -65,9 +65,21 @@ public class CamConnector {
     }
 
     public EntityXml getEntity(final String archiveEntityId,
+                               final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getEntityApi(externalSystemId).getEntityByIdWithHttpInfo(archiveEntityId);
+        return unmarshal(EntityXml.class, fileApiResponse);
+    }
+
+    public EntityXml getEntity(final String archiveEntityId,
                                final ApExternalSystem externalSystem) throws ApiException {
         ApiResponse<File> fileApiResponse = getEntityApi(externalSystem).getEntityByIdWithHttpInfo(archiveEntityId);
         return unmarshal(EntityXml.class, fileApiResponse);
+    }
+
+    public EntitiesXml getEntities(final List<String> archiveEntityIds,
+                                   final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getExportApi(externalSystemId).exportSnapshotsWithHttpInfo(archiveEntityIds);
+        return unmarshal(EntitiesXml.class, fileApiResponse);
     }
 
     public EntitiesXml getEntities(final List<String> archiveEntityIds,
@@ -136,6 +148,10 @@ public class CamConnector {
         }
     }
 
+    public CamInstance get(Integer apExternalSystemId) {
+        return get(externalSystemService.getExternalSystemInternal(apExternalSystemId));
+    }
+
     public CamInstance get(ApExternalSystem apExternalSystem) {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
@@ -171,8 +187,16 @@ public class CamConnector {
         return get(apExternalSystem).getEntityApi();
     }
 
+    private EntityApi getEntityApi(Integer apExternalSystemId) {
+        return get(apExternalSystemId).getEntityApi();
+    }
+
     private ExportApi getExportApi(ApExternalSystem apExternalSystem) {
         return get(apExternalSystem).getExportApi();
+    }
+
+    private ExportApi getExportApi(Integer apExternalSystemId) {
+        return get(apExternalSystemId).getExportApi();
     }
 
     private BatchUpdatesApi getBatchUpdatesApi(ApExternalSystem apExternalSystem) {
@@ -180,6 +204,6 @@ public class CamConnector {
     }
 
     private UpdatesApi getUpdatesApi(Integer apExternalSystemId) {
-        return get(externalSystemService.getExternalSystemInternal(apExternalSystemId)).getUpdatesApi();
+        return get(apExternalSystemId).getUpdatesApi();
     }
 }
