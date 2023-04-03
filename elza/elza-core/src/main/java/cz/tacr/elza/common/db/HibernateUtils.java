@@ -53,7 +53,10 @@ public class HibernateUtils {
         if (!Hibernate.isInitialized(object)) {
             throw new IllegalStateException("Unitialized entity, class = " + object.getClass().getName());
         }
-        return (T) HibernateHelper.unproxy(object);
+        if (object instanceof HibernateProxy) {
+            object = ((HibernateProxy)object).getHibernateLazyInitializer().getImplementation();
+        }
+        return (T) object;
     }
 
     /**
