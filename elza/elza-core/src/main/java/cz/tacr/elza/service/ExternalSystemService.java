@@ -571,11 +571,13 @@ public class ExternalSystemService {
             bindingSync = new ApBindingSync();
             bindingSync.setApExternalSystem(externalSystem);
             bindingSync.setLastTransaction(transactionUuid);
+            bindingSync.setCount(0);
             bindingSync = bindingSyncRepository.save(bindingSync);
         }
         return new BindingSyncInfo(bindingSync.getBindingSyncId(), 
                                    externalSystem.getExternalSystemId(), 
-                                   bindingSync.getLastTransaction(), bindingSync.getPage());
+                                   bindingSync.getLastTransaction(), bindingSync.getToTransaction(), 
+                                   bindingSync.getPage(), bindingSync.getCount());
     }
 
     /**
@@ -584,10 +586,14 @@ public class ExternalSystemService {
      * @param bindingSyncId
      * @param entityRecordRevInfoXmls entity info list
      * @param lastTransaction
+     * @param toTransaction
      * @param page
+     * @param count
      */
     @Transactional
-    public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls, String lastTransaction, Integer page) {
+    public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls, 
+                                  String lastTransaction, String toTransaction, 
+                                  Integer page, Integer count) {
         if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
             return;
         }
@@ -678,7 +684,9 @@ public class ExternalSystemService {
 
         // aktualizace dat
         bindingSync.setLastTransaction(lastTransaction);
+        bindingSync.setToTransaction(toTransaction);
         bindingSync.setPage(page);
+        bindingSync.setCount(count);
         bindingSyncRepository.saveAndFlush(bindingSync);
     }
 

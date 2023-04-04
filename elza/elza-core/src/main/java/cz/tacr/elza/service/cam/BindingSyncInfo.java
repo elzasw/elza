@@ -8,13 +8,19 @@ public class BindingSyncInfo {
 
     private final String lastTransaction;
 
+    private final String toTransaction;
+
     private final Integer page;
 
-    public BindingSyncInfo(int id, int externalSystemId, String lastTransaction, Integer page) {
+    private final Integer count;
+
+    public BindingSyncInfo(int id, int externalSystemId, String lastTransaction, String toTransaction, Integer page, Integer count) {
         this.id = id;
         this.externalSystemId = externalSystemId;
         this.lastTransaction = lastTransaction;
+        this.toTransaction = toTransaction;
         this.page = page;
+        this.count = count;
     }
 
     public int getId() {
@@ -29,7 +35,15 @@ public class BindingSyncInfo {
         return lastTransaction;
     }
 
+    public String getToTransaction() {
+        return toTransaction;
+    }
+
     public Integer getPage() {
         return page;
+    }
+
+    public Integer getCount() {
+        return count;
     }
 }
