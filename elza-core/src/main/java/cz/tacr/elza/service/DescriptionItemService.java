@@ -777,59 +777,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
 
     /**
-     * Smaže hodnotu atributu.
-     *
-     *
-     * Interní metoda, již nekontroluje oprávnění.
-     * 
-     * @param descItem
-     *            hodnota atributu
-     * @param version
-     *            verze archivní pomůcky
-     * @param change
-     *            změna operace
-     * @param moveAfter
-     *            posunout hodnoty po?
-     * @param changeContext
-     * @return smazaná hodnota atributu
-     */
-    ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
-                                             final ArrFundVersion version,
-                                             final ArrChange change,
-                                              final boolean moveAfter, BatchChangeContext changeContext) {
-        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(change, "Změna musí být vyplněna");
-
-        // pro mazání musí být verze otevřená
-        checkFundVersionLock(version);
-
-        descItem.setDeleteChange(change);
-        ArrDescItem retDescItem = descItemRepository.save(descItem);
-
-        if (moveAfter) {
-            // načtení hodnot, které je potřeba přesunout výš
-            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                    descItem.getItemType(),
-                    descItem.getNode(),
-                    descItem.getPosition());
-
-            copyDescItemsWithData(change, descItems, -1, version, changeContext);
-        }
-
-        changeContext.addRemovedItem(descItem);
-
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
-                descItem.getDescItemObjectId(), changeContext);
-
-        deleteAnonymousStructObject(retDescItem, change);
-
-        changeContext.addRemovedItem(descItem);
-
-        return retDescItem;
-    }
-
-    /**
      * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
      *
      * @param retDescItem hodnota atributu
@@ -907,6 +854,59 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         return results;
+    }
+
+    /**
+     * Smaže hodnotu atributu.
+     *
+     *
+     * Interní metoda, již nekontroluje oprávnění.
+     * 
+     * @param descItem
+     *            hodnota atributu
+     * @param version
+     *            verze archivní pomůcky
+     * @param change
+     *            změna operace
+     * @param moveAfter
+     *            posunout hodnoty po?
+     * @param changeContext
+     * @return smazaná hodnota atributu
+     */
+    public ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
+                                             final ArrFundVersion version,
+                                             final ArrChange change,
+                                              final boolean moveAfter, BatchChangeContext changeContext) {
+        Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notNull(change, "Změna musí být vyplněna");
+
+        // pro mazání musí být verze otevřená
+        checkFundVersionLock(version);
+
+        descItem.setDeleteChange(change);
+        ArrDescItem retDescItem = descItemRepository.save(descItem);
+
+        if (moveAfter) {
+            // načtení hodnot, které je potřeba přesunout výš
+            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                    descItem.getItemType(),
+                    descItem.getNode(),
+                    descItem.getPosition());
+
+            copyDescItemsWithData(change, descItems, -1, version, changeContext);
+        }
+
+        changeContext.addRemovedItem(descItem);
+
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
+                descItem.getDescItemObjectId(), changeContext);
+
+        deleteAnonymousStructObject(retDescItem, change);
+
+        changeContext.addRemovedItem(descItem);
+
+        return retDescItem;
     }
 
     /**

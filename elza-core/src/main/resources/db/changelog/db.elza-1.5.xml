@@ -2213,4 +2213,12 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 			WHERE delete_change_id IS NULL</sql>
 	</changeSet>
 
+	<changeSet id="20230404153100" author="sergey.iryupin">
+		<addColumn tableName="ap_binding_sync">
+			<column name="to_transaction" type="nvarchar(36)" />
+			<column name="count" type="int" />
+		</addColumn>
+		<sql dbms="postgresql">UPDATE ap_binding_sync SET page = NULL</sql>
+	</changeSet>
+
 </databaseChangeLog>
