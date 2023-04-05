@@ -589,7 +589,7 @@ public class CamService {
                 log.debug("Received entity revisions, page: {}, count: {}", page, updatesXml.getRevisions().size());
 
                 // při zpracování poslední stránky musíme upravit hodnoty
-                if (count <= 0) {
+                if (count <= 0 || updatesXml.getRevisions().isEmpty() || updatesXml.getRevisions().size() < PAGE_SIZE) {
                     lastTransaction = toTransaction;
                     toTransaction = null;
                     page = null;

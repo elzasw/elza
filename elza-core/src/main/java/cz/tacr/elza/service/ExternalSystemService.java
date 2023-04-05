@@ -571,7 +571,6 @@ public class ExternalSystemService {
             bindingSync = new ApBindingSync();
             bindingSync.setApExternalSystem(externalSystem);
             bindingSync.setLastTransaction(transactionUuid);
-            bindingSync.setCount(0);
             bindingSync = bindingSyncRepository.save(bindingSync);
         }
         return new BindingSyncInfo(bindingSync.getBindingSyncId(), 
