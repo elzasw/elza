@@ -82,6 +82,7 @@ public class ItemGeneratorAction extends Action {
         private ItemType trgItemType;
         private StructType structType;
 
+        private List<ArrDescItem> descItemsToDelete = new ArrayList<>();
         private Set<ArrStructuredObject> structObjsToDelete = new HashSet<>();
 
         public DeleteAction(DeleteItem deleteConfig) {
@@ -118,15 +119,17 @@ public class ItemGeneratorAction extends Action {
                 for (ArrDescItem item : itemList) {
                     ArrDataStructureRef data = HibernateUtils.unproxy(item.getData());
                     structObjsToDelete.add(data.getStructuredObject());
+                    descItemsToDelete.add(item);
                 }
-                ArrNode node = itemList.get(0).getNode();
-                descriptionItemService.deleteDescriptionItems(itemList, node, fundVersion, change, false, false);
             }
         }
 
         @Override
         public void done() {
-            logger.debug("Check if still used this Structured object(s)={}", structObjsToDelete.size());
+            logger.debug("Deleting descItems.size={} and structObjs.size={}", descItemsToDelete.size(), structObjsToDelete.size());
+            
+            // vymazání vybraných descItems
+            descriptionItemService.deleteDescriptionItems(descItemsToDelete, fundVersion, change, false, false);
 
             // check if still used this Structured object
             List<ArrStructuredObject> unusedStructObj = structObjService.getUnusedStructObj(structObjsToDelete);

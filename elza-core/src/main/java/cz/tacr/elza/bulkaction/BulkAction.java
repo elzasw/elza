@@ -255,10 +255,10 @@ public abstract class BulkAction {
     public void deleteDescItems(List<ArrDescItem> items, final boolean moveAfter) {
         ArrNode node = items.get(0).getNode();
         if(multipleItemChangeContext==null) {
-            descriptionItemService.deleteDescriptionItems(items, node, getFundVersion(), getChange(),
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(),
                                                           moveAfter, false);
         } else {
-            descriptionItemService.deleteDescriptionItems(items, node, getFundVersion(), getChange(),
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(),
                                                           moveAfter, false, multipleItemChangeContext);
             multipleItemChangeContext.flushIfNeeded();
         }
