@@ -1972,17 +1972,18 @@ public class AccessPointService {
         ApState copyState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
 
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
-        List<ApItem> itemsFrom = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> sourceItems = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
-        // filter items
+        // filter skipped items
         if (!CollectionUtils.isEmpty(skipItems)) {
-            itemsFrom = itemsFrom.stream().filter(i -> !skipItems.contains(i.getItemId())).collect(Collectors.toList());
+            sourceItems = sourceItems.stream().filter(i -> !skipItems.contains(i.getItemId())).collect(Collectors.toList());
         }
-        Map<Integer, List<ApItem>> partIdItemsFromMap = itemsFrom.stream().collect(Collectors.groupingBy(ApItem::getPartId));
+        // group copied items per parent
+        Map<Integer, List<ApItem>> partIdItemsFromMap = sourceItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
         // filter parts
         if (!CollectionUtils.isEmpty(skipItems)) {
             // part ids that remain after filter
-            Set<Integer> partIds = partIdItemsFromMap.keySet();
+            Set<Integer> partIds = new HashSet<>(partIdItemsFromMap.keySet());
             // save part(s) without items, but with references to part(s) with items
             Set<Integer> parentPartIds = partsFrom.stream()
                     .filter(p -> partIds.contains(p.getPartId()) && p.getParentPartId() != null)
