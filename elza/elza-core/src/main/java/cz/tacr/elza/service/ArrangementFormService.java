@@ -283,7 +283,7 @@ public class ArrangementFormService {
                 .getFundVersionId());
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true,
+            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, fundVersion, change, true,
                                                                         false,
                                                                         changeContext));
 		}
@@ -292,7 +292,7 @@ public class ArrangementFormService {
             for (ArrDescItem updateDescItem : updateItems) {
                 ArrDescItem updatedItem = descriptionItemService.updateValueAsNewVersion(fundVersion, change,
                                                                                          updateDescItem, changeContext,
-                                                               false);
+                                                                                         false);
                 result.add(updatedItem);
             }
 		}
