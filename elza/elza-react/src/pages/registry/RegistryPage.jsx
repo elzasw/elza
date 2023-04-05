@@ -48,6 +48,7 @@ import { showConfirmDialog } from 'components/shared/dialog';
 import { Api } from 'api';
 import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
+import { ApCopyModal } from 'components/registry/modal/ap-copy';
 
 /**
  * Stránka rejstříků.
@@ -354,6 +355,28 @@ class RegistryPage extends AbstractReactComponent {
             );
         }
     };
+
+    handleApCopy = () => {
+        const { dispatch, detail, history } = this.props;
+        if(!detail){throw Error("No accesspoint detail.")}
+        dispatch(
+            modalDialogShow(
+                this,
+                // i18n('ap.push-to-ext.title'),
+                "Kopie archivni entity",
+                <ApCopyModal
+                    onSubmit={async (data) => {
+                        const id = detail.id;
+                        const result = await Api.accesspoints.copyAccessPoint(id, data);
+                        dispatch(modalDialogHide())
+                        dispatch(goToAe(history, result.data.id, true, true));
+                        return;
+                    }}
+                    detail={detail.data}
+                />,
+            ),
+        );
+    }
 
     handleScopeManagement = () => {
         this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists />));
@@ -674,6 +697,14 @@ class RegistryPage extends AbstractReactComponent {
                             <Icon glyph="fa-cloud-upload" />
                             <div>
                                 <span className="btnText">{i18n('ap.push-to-ext')}</span>
+                            </div>
+                        </Button>,
+                    );
+                    itemActions.push(
+                        <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
+                            <Icon glyph="fa-copy" />
+                            <div>
+                                <span className="btnText">{"Kopie archivni entity"}</span>
                             </div>
                         </Button>,
                     );
