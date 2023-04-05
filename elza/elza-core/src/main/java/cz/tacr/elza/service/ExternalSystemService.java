@@ -593,11 +593,8 @@ public class ExternalSystemService {
     public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls, 
                                   String lastTransaction, String toTransaction, 
                                   Integer page, Integer count) {
-        if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
-            return;
-        }
         log.debug("Preparing APs for synchronization from external system, count: {}", entityRecordRevInfoXmls.size());
-                
+
         // Prepare keys
         ApBindingSync bindingSync = bindingSyncRepository.getOneCheckExist(bindingSyncId);
         ApExternalSystem externalSystem = bindingSync.getApExternalSystem();
@@ -617,8 +614,7 @@ public class ExternalSystemService {
         }
         
         List<ApBinding> bindings = findBindings(keyList, externalSystem);
-        final Map<String, ApBinding> bindingMap = bindings.stream()
-                .collect(Collectors.toMap(p -> p.getValue(), p -> p));
+        final Map<String, ApBinding> bindingMap = bindings.stream().collect(Collectors.toMap(p -> p.getValue(), p -> p));
 
         Map<Integer, ApBindingState> bindingStateMap;
         if (bindings.size() > 0) {
@@ -638,7 +634,7 @@ public class ExternalSystemService {
                     log.debug("Prepared records for sync: [{}-{}]", ((recNo+99)/100-1)*100+1, recNo);
                 }
             }
-            
+
             ApBinding binding = bindingMap.get(recordCode);
             ApAccessPoint ap = null;
             if (binding == null) {
