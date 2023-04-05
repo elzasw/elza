@@ -798,7 +798,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param descItemsToDelete
      *            hodnoty atributů k ostranění
-     * @param node
      * @param fundVersion
      *            verze AS
      * @param change
@@ -807,10 +806,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            Flag to recalculate position of subsequent items
      *            If all items of same type are deleted position does
      *            not have to be recalculated
+     * @param force           
      * @return smazané hodnoty atributů
      */
     public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
-                                                    final ArrNode node,
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange change,
                                                     final boolean moveAfter,
@@ -820,16 +819,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Validate.notNull(change);
 
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
-        List<ArrDescItem> ret = deleteDescriptionItems(descItemsToDelete, node, fundVersion, change,
-                                                       moveAfter, force, changeContext);
+        List<ArrDescItem> results = deleteDescriptionItems(descItemsToDelete, fundVersion, change, moveAfter, force, changeContext);
 
         changeContext.flush();
 
-        return ret;
+        return results;
     }
 
     public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
-                                                    final ArrNode node,
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange change,
                                                     final boolean moveAfter,
@@ -843,12 +840,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem descItem : deleteDescItems) {
-            if (!force && descItem.getReadOnly()!=null && descItem.getReadOnly()) {
+            if (!force && descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
-        	
-            ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter,
-                                                            changeContext);
+
+            ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter, changeContext);
 
             results.add(deletedItem);
         }
@@ -899,8 +895,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         changeContext.addRemovedItem(descItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
-                descItem.getDescItemObjectId(), changeContext);
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId(), changeContext);
 
         deleteAnonymousStructObject(retDescItem, change);
 
