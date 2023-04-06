@@ -31,7 +31,9 @@ salience 100
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
-        "ZP2015_SCALE", 
+        "ZP2015_SCALE",
+        // ZP5.2.6 Souřadnice - tvar a souřadnice
+        "ZP2015_POSITION",
         // ZP5.2.2 Název autorského díla
         "ZP2015_ITEM_TITLE_REF",
         "ZP2015_ENTITY_ROLE"))
