@@ -60,6 +60,10 @@ body {
 
     &:read-only {
         background-color: $shade-0;
+
+        &:disabled {
+            background-color: $shade-1;
+        }
     }
 }
 
