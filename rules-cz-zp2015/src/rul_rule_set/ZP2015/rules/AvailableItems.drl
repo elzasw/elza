@@ -31,11 +31,57 @@ salience 100
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
+        // ZP5.2.2 Název autorského díla
+        "ZP2015_ITEM_TITLE_REF",
+        // ZP5.2.3 Způsob a forma dochování
+        "ZP2015_STORAGE_COND",
+        // ZP5.2.4 Rozměry, hmotnost, velikost, množství
+        "ZP2015_SIZE",
+        // ZP5.2.4 Šířka / Průměr
+        "ZP2015_SIZE_WIDTH",
+        // ZP5.2.4 Výška
+        "ZP2015_SIZE_HEIGHT",
+        // ZP5.2.4 Hloubka
+        "ZP2015_SIZE_DEPTH",
+        // ZP5.2.4 Jednotka pro rozměry
+        "ZP2015_SIZE_UNITS",
+        // ZP5.2.4 Hmotnost
+        "ZP2015_WEIGHT",
+        // ZP5.2.4 Množství (velikost dat, kusy, listy, strany)
+        "ZP2015_AMOUNT",
+        // ZP5.2.5 Měřítko
         "ZP2015_SCALE",
         // ZP5.2.6 Souřadnice - tvar a souřadnice
         "ZP2015_POSITION",
-        // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE_REF",
+        // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
+        "ZP2015_ITEM_MAT",        
+        // ZP5.2.8 Technika záznamu
+        "ZP2015_ITEM_MAT_TECHNIKA",
+        // ZP5.2.8 Adjustace nosiče záznamu
+        "ZP2015_ITEM_MAT_ADJUSTACE",
+        // ZP5.2.8 Nosič záznamu
+        "ZP2015_ITEM_MAT_NOSIC",
+        // ZP5.2.8 Látka záznamu
+        "ZP2015_ITEM_MAT_LATKA_ZAZNAMU",
+        // ZP5.2.10 Jazyk
+        "ZP2015_LANGUAGE",
+        // ZP5.7.1 Opis, nápis, exerque
+        "ZP2015_EXERQUE",
+        // ZP5.7.2 Popis obrazu v poli typáře či otisku
+        "ZP2015_PAINTING_CHAR",
+        // ZP5.7.3 Koroborace dokumentu, k němuž byl popisovaný otisk připojen
+        "ZP2015_CORROBORATION",
+        // ZP5.7.4 Počet otisků původní a současný
+        "ZP2015_IMPRINT_COUNT",
+        // ZP5.7.5 Pořadí otisku
+        "ZP2015_IMPRINT_ORDER",
+        // ZP5.11.1 Legenda
+        "ZP2015_LEGEND",
+        // ZP5.13.1 Délka filmového záznamu
+        "ZP2015_MOVIE_LENGTH",
+        // ZP5.14.1 Délka zvukového záznamu
+        "ZP2015_RECORD_LENGTH",
+        // ZP5.3-5.23 Role entit
         "ZP2015_ENTITY_ROLE"))
 then
     $itemType.setIndefinable(true);
