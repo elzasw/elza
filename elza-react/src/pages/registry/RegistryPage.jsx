@@ -362,8 +362,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                // i18n('ap.push-to-ext.title'),
-                "Kopie archivni entity",
+                i18n('ap.copy.title'),
                 <ApCopyModal
                     onSubmit={async (data) => {
                         const id = detail.id;
@@ -704,7 +703,7 @@ class RegistryPage extends AbstractReactComponent {
                         <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
                             <Icon glyph="fa-copy" />
                             <div>
-                                <span className="btnText">{"Kopie archivni entity"}</span>
+                                <span className="btnText">{i18n("ap.copy.title")}</span>
                             </div>
                         </Button>,
                     );

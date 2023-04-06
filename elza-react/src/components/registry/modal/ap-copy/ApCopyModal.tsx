@@ -52,13 +52,15 @@ interface ItemProps {
     item: ApItemVO;
     checked: boolean;
     disabled: boolean;
-    onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    onChange: (event: ChangeEvent<HTMLInputElement> | React.MouseEvent) => void;
 }
 const Item = ({item, checked, disabled, onChange}: ItemProps) => {
     const {descItemTypes} = useSelector((state: AppState) => state.refTables);
     const itemType = descItemTypes.itemsMap[item.typeId];
 
-    return <div className={classNames({"item":true, "muted": checked})} >
+    // console.log("#### item type", itemType)
+
+    return <div className={classNames({"item":true, "muted": checked})}>
         <input 
             type="checkbox" 
             checked={!checked} 
@@ -66,7 +68,7 @@ const Item = ({item, checked, disabled, onChange}: ItemProps) => {
             onChange={onChange}
             style={{marginRight: "10px"}}
         />
-        <div style={{lineHeight: "1em"}}>
+        <div style={{lineHeight: "1em", cursor: "pointer"}} onClick={onChange}>
             <div style={{fontSize: "0.9em"}}>
                 <b>{itemType.name}</b>
             </div>
@@ -175,13 +177,13 @@ export const ApCopyModal = ({
         {({submitting, handleSubmit, form, valid}) => {
             return <>
                 <Modal.Body className="ap-copy-modal">
-                    <FormScope name="scope" label="Oblast" items={scopesData.scopes}/>
+                    <FormScope name="scope" label={i18n("ap.copy.scope")} items={scopesData.scopes}/>
                     <div style={{marginTop: "10px"}}>
                         <Field<boolean> name="replace">
                             {(props) => {
                                 return <div style={{display: "flex", alignItems: "center"}}>
                                     <FormInput type="checkbox" {...props.input} checked={props.input.value} />
-                                    <span>Zneplatnit puvodni entitu a nahradit novou</span>
+                                    <span>{i18n("ap.copy.replace")}</span>
                                 </div>
                             }}
                         </Field>
@@ -190,7 +192,8 @@ export const ApCopyModal = ({
                     <Field<number[]> name="skipParts">{({input: skipPartsInput}) => {
                         const partsArray = skipPartsInput.value;
 
-                        const handleChangePart = (id: number) => (e: ChangeEvent) => {
+                        const handleChangePart = (id: number) => (e: ChangeEvent | React.MouseEvent) => {
+                            console.log("#### handle change part", e)
                             const index = partsArray.indexOf(id);
                             if(index < 0){
                                 partsArray.push(id);
@@ -206,7 +209,7 @@ export const ApCopyModal = ({
                             {({input: skipItemsInput}) => {
                                 const itemsArray = skipItemsInput.value;
 
-                                const handleChangeItem = (id: number) => (e:React.ChangeEvent) => {
+                                const handleChangeItem = (id: number) => (e:React.ChangeEvent | React.MouseEvent) => {
                                     const index = itemsArray.indexOf(id);
                                     if(index < 0){
                                         itemsArray.push(id);
@@ -216,6 +219,13 @@ export const ApCopyModal = ({
                                     }
                                     skipItemsInput.onChange(e);
                                     form.change("skipItems", itemsArray);
+                                }
+
+                                const getSkippedItemsInArray = (items?: ApItemVO[] | null) => {
+                                    if(!items){return [];}
+                                    return items.filter((item) => {
+                                        return itemsArray.findIndex((itemId) => itemId === item.id) >= 0;
+                                    })
                                 }
 
                                 return <div className="list">
@@ -232,16 +242,24 @@ export const ApCopyModal = ({
                                             </div>
                                             <div>
                                                 {parts.map((part)=>{
+                                                    const isEveryRelatedPartSkipped = part.relatedParts?.filter((relatedPart) => {
+                                                        const isRelatedPartSkipped = partsArray.findIndex((partId) => partId === relatedPart.id) >= 0;
+                                                        const isEveryRelatedPartItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
+
+                                                        return isRelatedPartSkipped || isEveryRelatedPartItemSkipped;
+                                                    }).length === part.relatedParts?.length;
+
+                                                    const isEveryItemSkipped = getSkippedItemsInArray(part.items).length === part.items?.length && isEveryRelatedPartSkipped;
                                                     const isPartSkipped = partsArray.indexOf(part.id) >= 0;
+
                                                     return <div 
                                                         key={part.id} 
-                                                        className={classNames({"part": true, "muted": isPartSkipped})}
+                                                        className={classNames({"part": true, "muted": isPartSkipped || isEveryItemSkipped})}
                                                     >
-                                                        <div className="title">
+                                                        <div className="title" onClick={handleChangePart(part.id)}>
                                                             <input 
                                                                 type="checkbox" 
                                                                 checked={!isPartSkipped} 
-                                                                onChange={handleChangePart(part.id)}
                                                                 style={{marginRight: "10px"}}
                                                             />
                                                             <b>{part.value}</b>
@@ -260,17 +278,17 @@ export const ApCopyModal = ({
                                                                 })}
                                                             </div>
                                                             {part.relatedParts?.map((relatedPart)=>{
+                                                                const isEveryItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
                                                                 const isRelatedPartSkipped = partsArray.indexOf(relatedPart.id) >= 0 || isPartSkipped;
 
                                                                 return <div 
                                                                     key={relatedPart.id} 
-                                                                    className={classNames({"related-part":true, "muted": isRelatedPartSkipped})}
+                                                                    className={classNames({"related-part":true, "muted": isRelatedPartSkipped || isEveryItemSkipped})}
                                                                 >
-                                                                    <div className="title">
+                                                                    <div className="title" onClick={handleChangePart(relatedPart.id)}>
                                                                         <input 
                                                                             type="checkbox" 
                                                                             checked={!isRelatedPartSkipped} 
-                                                                            onChange={handleChangePart(relatedPart.id)}
                                                                             style={{marginRight: "10px"}}
                                                                             disabled={isPartSkipped}
                                                                         />
