@@ -45,7 +45,7 @@ export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
                     <div>{`${i18n("ap.detail.replacingEntities")}: `}</div>
                     {entities?.map((entity) => {
                         return <div>
-                            <Link style={{color: "#33afff"}} to={getArchiveEntityUrl(entity.id)}> {`${entity.id}: ${i18n("ap.detail.replacedEntity.noName")}`} </Link>
+                            <Link style={{color: "#33afff"}} to={getArchiveEntityUrl(entity.id)}> {`${entity.id}: ${entity.name || i18n("ap.detail.replacedEntity.noName")}`} </Link>
                         </div>
                     })
                 }
