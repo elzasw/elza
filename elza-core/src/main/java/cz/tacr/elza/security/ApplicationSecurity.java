@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -179,6 +180,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         return Base64.getMimeDecoder().decode(keyValue);
     }
 
+    @ConditionalOnProperty(prefix = "elza.security.o-auth2", name = "key-url")
     @Bean
     public JwtDecoder getjwtDecoder() {
         URL tokenKeyUrl = toURL(optionalOAuth2Props.get().getKeyUrl());
