@@ -1269,7 +1269,6 @@ public class AccessPointService {
     @Transactional(TxType.MANDATORY)
     public ApState createAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope,
                                      final ApType type,
-                                     @Nullable final SysLanguage language,
                                      final ApPartFormVO apPartFormVO) {
         Validate.notNull(scope, "Třída musí být vyplněna");
         Validate.notNull(type, "Typ musí být vyplněn");
@@ -1831,6 +1830,17 @@ public class AccessPointService {
     public ApType getType(final Integer typeId) {
         return apTypeRepository.findById(typeId)
                 .orElseThrow(() -> new ObjectNotFoundException("Typ neexistuje", BaseCode.ID_NOT_EXIST).setId(typeId));
+    }
+
+    /**
+     * Získání typu.
+     *
+     * @param typeId
+     *            identifikátor typu
+     * @return typ
+     */
+    public ApType getType(final String code) {
+        return apTypeRepository.findApTypeByCode(code);
     }
 
     /**
