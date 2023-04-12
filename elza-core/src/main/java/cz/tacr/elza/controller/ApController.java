@@ -405,9 +405,8 @@ public class ApController {
 
         ApScope scope = accessPointService.getApScope(scopeId);
         ApType type = accessPointService.getType(typeId);
-        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
-        ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
+        ApState apState = accessPointService.createAccessPoint(scope, type, accessPoint.getPartForm());
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
         if (cachedAccessPoint != null) {
             return apFactory.createVO(cachedAccessPoint);

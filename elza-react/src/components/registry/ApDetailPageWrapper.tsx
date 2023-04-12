@@ -62,7 +62,7 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     return bindingsMaps;
 }
 
-function sortPart(items: RulPartTypeVO[], data: ApViewSettingRule | undefined) {
+export function sortPart(items: RulPartTypeVO[], data: ApViewSettingRule | undefined) {
     const parts = [...items];
     if (data && data.partsOrder) {
         parts.sort((a, b) => {

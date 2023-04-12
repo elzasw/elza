@@ -662,7 +662,7 @@ public class DaoCoreServiceWsImpl {
         		// remove previous items
         		List<ArrDescItem> descItems = descriptionItemServiceInternal.getDescItems(linkNode);
         		if(CollectionUtils.isNotEmpty(descItems)) {
-        			descriptionItemService.deleteDescriptionItems(descItems, linkNode, fundVersion, change, false, true);
+        			descriptionItemService.deleteDescriptionItems(descItems, fundVersion, change, false, true);
         		}
         		
         		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);

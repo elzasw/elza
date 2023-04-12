@@ -529,7 +529,7 @@ var messages = {
     "arr.fundAction.state.interrupted": "Přerušeno",
     "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
-    
+
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
@@ -831,7 +831,7 @@ var messages = {
 
     "arr.history.change.title.unknown": "neznámý",
     "arr.history.change.title.CREATE_AS": "vytvoření AS",
-    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",    
+    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
     "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
     "arr.history.change.title.ADD_LEVEL": "založení JP",
     "arr.history.change.title.MOVE_LEVEL": "přesun JP",
@@ -843,7 +843,7 @@ var messages = {
     "arr.history.change.title.ADD_DESC_ITEM": "založení atributu",
     "arr.history.change.title.DELETE_DESC_ITEM": "zrušení atributu",
     "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
-    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",    
+    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
     "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA": "založení strukturovaného typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": "hromadné založení strukt. typu",
@@ -865,7 +865,7 @@ var messages = {
     "arr.history.change.title.REPLACE_REGISTER": "náhrada přístupového bodu",
     "arr.history.change.title.REPLACE_PARTY": "party replace",
     "arr.history.change.title.GENERATE_OUTPUT": "generování výstupu",
-    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",    
+    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",
     "arr.history.change.title.CHANGE_SCENARIO_ITEMS": "změna záznamu podle scénářů",
     "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
     "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
@@ -1140,6 +1140,10 @@ var messages = {
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
 
+    "ap.copy.title": "Kopie archivní entity",
+    "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
+    "ap.copy.scope": "Oblast",
+
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
     "ap.detail.delete": "Smazat",
@@ -1160,6 +1164,7 @@ var messages = {
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
     "ap.detail.replacingEntities": "Nahrazuje entity",
+    "ap.detail.replacedEntity.noName": "Bez názvu",
     "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",

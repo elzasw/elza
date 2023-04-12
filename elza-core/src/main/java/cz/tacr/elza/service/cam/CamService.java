@@ -552,37 +552,52 @@ public class CamService {
     synchronized public void synchronizeAccessPointsForExternalSystem(final String code) {
         BindingSyncInfo bindingSync = externalSystemService.getBindingSync(code, TRANSACTION_UUID);
         try {
-            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
-
-            // Musí být uloženo po přečtení plné dávky dat.
-            String lastTransaction = updatesFromXml.getInf().getTo().getValue();
-
-            if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
-                List<EntityRecordRevInfoXml> entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
-                externalSystemService.prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, lastTransaction, null);
-            } else {                
-                int count = updatesFromXml.getInf().getCnt().getValue().intValue();
+            String lastTransaction = bindingSync.getLastTransaction();
+            UpdatesFromXml updatesFromXml = null;
+            String toTransaction = null;
+            Integer count = null;
+            Integer page = 0;
+            if (bindingSync.getToTransaction() == null || bindingSync.getPage() == null || bindingSync.getCount() == null) {
+                // get next updates and count of changes
+                updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
+                
+                if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
+                    // We received all updated items
+                    List<EntityRecordRevInfoXml> entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
+                    externalSystemService.prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, updatesFromXml.getInf().getTo().getValue(), null, null, null);
+                } else {
+                    // Musí být uloženo po přečtení plné dávky dat.
+                    toTransaction = updatesFromXml.getInf().getTo().getValue();
+                    count = updatesFromXml.getInf().getCnt().getValue().intValue();
+                }
+            } else {
+                toTransaction = bindingSync.getToTransaction();
+                count = bindingSync.getCount();
+                // Lot of changes -> have to read with pagination                
                 Integer lastPage = bindingSync.getPage();
-                int page = 1;
-                // V situaci, kdy byl proces prvního čtení zastaven page != null
-                if (lastPage != null) {
-                    page = lastPage + 1;
-                    count -= lastPage * PAGE_SIZE;
+                page = (lastPage != null)? lastPage :  0;
+            }
+            log.debug("Total entity count for update: {}, last transaction: {}", count, toTransaction);
+
+            while (count != null && count > 0) {
+                page++;
+
+                log.debug("Requesting entity info, page: {}, pageSize: {}", page, PAGE_SIZE);                
+                UpdatesXml updatesXml = camConnector.getUpdatesFromTo(lastTransaction, toTransaction, page, PAGE_SIZE, bindingSync.getExternalSystemId());
+
+                count -= updatesXml.getRevisions().size();
+                log.debug("Received entity revisions, page: {}, count: {}", page, updatesXml.getRevisions().size());
+
+                // při zpracování poslední stránky musíme upravit hodnoty
+                if (count <= 0 || updatesXml.getRevisions().size() < PAGE_SIZE) {
+                    lastTransaction = toTransaction;
+                    toTransaction = null;
+                    page = null;
+                    count = null;
                 }
-                log.debug("Total entity count for update: {}, last transaction: {}", count, lastTransaction);
 
-                while (count > 0) {
-                	log.debug("Requesting entity info, page: {}, pageSize: {}", page, PAGE_SIZE);
+                externalSystemService.prepareApsForSync(bindingSync.getId(), updatesXml.getRevisions(), lastTransaction, toTransaction, page, count);
 
-                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(bindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, bindingSync.getExternalSystemId());
-
-                    // Při zpracování poslední stránky musíme uložit lastTransaction
-                    String updateTransaction = count > PAGE_SIZE? bindingSync.getLastTransaction() : lastTransaction;
-                    externalSystemService.prepareApsForSync(bindingSync.getId(), updatesXml.getRevisions(), updateTransaction, page);
-
-                    count -= PAGE_SIZE;
-                    page++;
-                }
             }
         } catch (ApiException e) {
         	if (e.getCode() == 404) {
