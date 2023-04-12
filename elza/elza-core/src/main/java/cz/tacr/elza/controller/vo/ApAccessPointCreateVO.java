@@ -20,11 +20,6 @@ public class ApAccessPointCreateVO {
     private Integer scopeId;
 
     /**
-     * Kód jazyka jména přístupového bodu.
-     */
-    private String languageCode;
-
-    /**
      * Identifikátor přístupového bodu
      */
     @Nullable
@@ -49,14 +44,6 @@ public class ApAccessPointCreateVO {
 
     public void setScopeId(final Integer scopeId) {
         this.scopeId = scopeId;
-    }
-
-    public String getLanguageCode() {
-        return languageCode;
-    }
-
-    public void setLanguageCode(final String languageCode) {
-        this.languageCode = languageCode;
     }
 
     public Integer getAccessPointId() {
