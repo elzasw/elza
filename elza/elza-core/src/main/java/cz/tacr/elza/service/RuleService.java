@@ -1324,8 +1324,7 @@ public class RuleService {
 
         boolean isPartPreferred = form.getAccessPointId() == null || (partForm.getPartId() != null && preferredPartId != null && preferredPartId.equals(partForm.getPartId()));
 
-        Part part = new Part(null, partForm.getParentPartId(), PartType.fromValue(partForm.getPartTypeCode()),
-                modelItems, parentPart, isPartPreferred);
+        Part part = new Part(null, PartType.fromValue(partForm.getPartTypeCode()), modelItems, parentPart, isPartPreferred);
 
         ModelAvailable modelAvailable = new ModelAvailable(ae, part, modelItems, modelItemTypes);
 
