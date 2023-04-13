@@ -7,17 +7,15 @@ import java.util.List;
 public class Part {
 
     private Integer id;
-    private Integer parentPartId;
     private PartType type;
     private List<AbstractItem> items;
     private Part parent;
     private boolean childrenRel;
     private boolean preferred;
 
-    public Part(final Integer id, final Integer parentPartId, final PartType type, final List<AbstractItem> items,
+    public Part(final Integer id, final PartType type, final List<AbstractItem> items,
                 final Part parent, final boolean preferred) {
         this.id = id;
-        this.parentPartId = parentPartId;
         this.type = type;
         this.items = items;
         this.parent = parent;
@@ -34,7 +32,10 @@ public class Part {
     }
 
     public Integer getParentPartId() {
-        return parentPartId;
+        if (parent == null) {
+            return null;
+        }
+        return parent.getId();
     }
 
     public List<AbstractItem> getItems() {
