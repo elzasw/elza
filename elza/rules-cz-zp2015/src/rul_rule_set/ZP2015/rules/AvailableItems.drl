@@ -43,12 +43,6 @@ when
         "ZP2015_SIZE_HEIGHT",
         // ZP5.2.4 Hloubka
         "ZP2015_SIZE_DEPTH",
-        // ZP5.2.4 Jednotka pro rozměry
-        "ZP2015_SIZE_UNITS",
-        // ZP5.2.4 Hmotnost
-        "ZP2015_WEIGHT",
-        // ZP5.2.4 Množství (velikost dat, kusy, listy, strany)
-        "ZP2015_AMOUNT",
         // ZP5.2.5 Měřítko
         "ZP2015_SCALE",
         // ZP5.2.6 Souřadnice - tvar a souřadnice
