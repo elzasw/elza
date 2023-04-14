@@ -196,6 +196,7 @@
                 <type code="ZP2015_SIZE_UNITS" width="1"/>
                 <type code="ZP2015_WEIGHT" width="1"/>
                 <type code="ZP2015_AMOUNT" width="1"/>
+                <type code="ZP2015_SIZE_OTHER" width="2"/>
                 <type code="ZP2015_MOVIE_LENGTH" width="1"/>
                 <type code="ZP2015_RECORD_LENGTH" width="1"/>
                 <!-- ZP5.2.5 Měřítko -->
