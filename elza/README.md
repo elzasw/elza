@@ -63,6 +63,15 @@ ENDPOINT=http://localhost:8080
 ``` 
 `ENDPOINT` - kam bude komunikovat proxy pro vývoj klienta
 
+
+Pokud server neběží v rootu (běží např na /elza) je možné přenastavit adresu v souboru .rescriptsrc:
+        } else {
+            config.output.publicPath = '/elza';  // Doplněný prefix
+            return config;
+        }
+Současně je nutné pro vývoj upravit v souboru public/index.html a to změnit: var serverContextPath = "/elza";
+
+
 ### Release sestavení a spuštění war v Tomcat
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
 Podrobnosti o nastavení viz sekce 'Databázové připojení'.
