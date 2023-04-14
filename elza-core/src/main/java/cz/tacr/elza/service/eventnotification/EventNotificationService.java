@@ -19,7 +19,6 @@ import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
-import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
@@ -113,37 +112,10 @@ public class EventNotificationService implements IEventNotificationService {
                     transformToNodesEvent((EventVersion) event);
                     break;
 
-                case PARTY_CREATE:
-                    transformToPartiesEvent((EventId) event);
-                    break;
-
                 default:
                     uncommittedEvents.add(event);
                     break;
             }
-        }
-
-        /**
-         * Metoda grupuje požadované události.
-         *
-         * @param event událost
-         */
-        private void transformToPartiesEvent(final EventId event) {
-            EventId partiesEvent = null;
-            for (AbstractEventSimple eventSimple : uncommittedEvents) {
-                if (eventSimple.getEventType().equals(EventType.PARTIES_CREATE)) {
-                    partiesEvent = (EventId) eventSimple;
-                    break;
-                }
-            }
-
-            // pokud ještě neexistuje
-            if (partiesEvent == null) {
-                partiesEvent = new EventId(EventType.PARTIES_CREATE, event.getIds());
-                uncommittedEvents.add(partiesEvent);
-            }
-
-            partiesEvent.getIds().addAll(event.getIds());
         }
 
         /**
