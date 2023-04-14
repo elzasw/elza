@@ -41,7 +41,7 @@ rule "mozne specifikace"
 no-loop
 when
   RulItemTypeExt(code == "ZP2015_SIZE" && type in (RulItemType.Type.POSSIBLE, RulItemType.Type.RECOMMENDED, RulItemType.Type.REQUIRED))
-  $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER") )
+  $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") )
   $itemSpec : RulItemSpecExt( ) from $itemType.rulItemSpecList
 then
   $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
