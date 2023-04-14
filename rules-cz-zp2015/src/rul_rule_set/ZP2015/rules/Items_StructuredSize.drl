@@ -116,7 +116,6 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
-
 rule "snizeni povinnosti pro ZP2015_SIZE"
 no-loop
 salience -100
@@ -126,4 +125,13 @@ when
                                 )            
 then
   $itemTypeOld.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "změna povinnosti PP Jiné rozměry podle nastavení specifikace"
+no-loop
+salience -300
+when 
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+then
+    $itemType.setTypeMaxFromSpecs();
 end
