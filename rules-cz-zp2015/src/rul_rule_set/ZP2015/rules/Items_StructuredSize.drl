@@ -101,6 +101,20 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
+rule "Jine rozmery - mapy a atlasy - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // zrcadlo (šířka)
+        "ZP2015_SIZE_MAP_WIDTH",
+        // zrcadlo (výška)
+        "ZP2015_SIZE_MAP_HEIGHT"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
+end
 
 
 rule "snizeni povinnosti pro ZP2015_SIZE"
