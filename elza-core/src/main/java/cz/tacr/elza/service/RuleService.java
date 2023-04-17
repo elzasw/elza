@@ -709,7 +709,7 @@ public class RuleService {
             ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
             List<ArrNode> nodes = new ArrayList<>();
             nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
-            asyncRequestService.enqueue(version, nodes, null);
+            asyncRequestService.enqueue(version, nodes);
         }
     }
 
@@ -840,6 +840,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
+        // TODO: Limit itemTypes to itemTypes defined in given RuleSet
 		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);

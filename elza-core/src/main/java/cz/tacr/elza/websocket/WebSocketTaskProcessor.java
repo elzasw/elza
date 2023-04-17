@@ -1,16 +1,24 @@
 package cz.tacr.elza.websocket;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.simp.SimpMessageType;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.support.MessageHandlingRunnable;
 
 /**
- * Třída umožňuje přidání požadavků pro zpracování pro jednu konkrétní klient session.
+ * Třída umožňuje přidání požadavků pro zpracování z jednoho konkrétního klienta
+ * (session).
  *
- * Task processor for one WebSocket. Thread of processor will wait for new tasks.
+ * Task processor for one WebSocket. Thread of processor will wait for new
+ * tasks.
  * Incoming tasks are stored in queue. Add and block methods are thread-safe.
  */
 public class WebSocketTaskProcessor implements Runnable {
@@ -43,18 +51,52 @@ public class WebSocketTaskProcessor implements Runnable {
 	 */
 	public synchronized boolean add(MessageHandlingRunnable task) {
 		if (blocked) {
+            LOG.debug("Cannot add message, queue is blocked");
 			return false;
 		}
+        /*
+        if (LOG.isDebugEnabled()) {
+            logMessage("Adding message", task);
+        }*/
+
 		taskQueue.add(task);
 		notifyAll();
 		return true;
 	}
 
-	/**
-	 * Returns last task from queue. Current thread will wait while queue is empty.
-	 *
-	 * @return Task or null when processor is blocked.
-	 */
+    private void logMessage(String message, MessageHandlingRunnable task) {
+        Message<?> msg = task.getMessage();
+        Object payload = null;
+        MessageHeaders headers = null;
+        SimpMessageType msgType = null;
+        MessageHandler msh = task.getMessageHandler();
+        StompCommand stompCommand = null;
+        if (msg != null) {
+            payload = msg.getPayload();
+            headers = msg.getHeaders();
+            if (headers != null) {
+                msgType = (SimpMessageType) headers.get("simpMessageType");
+                stompCommand = (StompCommand) headers.get("stompCommand");
+            }
+            // convert payload to readable string
+            if (SimpMessageType.MESSAGE.equals(msgType)) {
+                if (payload != null && payload instanceof byte[]) {
+                    byte payloadArr[] = (byte[]) payload;
+                    payload = new String(payloadArr, StandardCharsets.UTF_8);
+                }
+            }
+        }
+        LOG.debug(message + ", handler: {}, headers: {}, payload: {}",
+                  msh.toString(),
+                  (msgType != null) ? (msgType + ((stompCommand != null) ? ("(" + stompCommand + ")") : "")) : headers,
+                  payload);
+    }
+
+    /**
+     * Returns last task from queue. Current thread will wait while queue is empty.
+     *
+     * @return Task or null when processor is blocked.
+     */
 	private synchronized MessageHandlingRunnable dequeue() throws InterruptedException {
 		while (taskQueue.isEmpty() && !blocked) {
 			wait();
@@ -73,6 +115,11 @@ public class WebSocketTaskProcessor implements Runnable {
 				if (mhr == null) {
 					return;
 				}
+
+                if (LOG.isDebugEnabled()) {
+                    logMessage("Processing message", mhr);
+                }
+
 				mhr.run();
 			}
 		} catch (Exception e) {
