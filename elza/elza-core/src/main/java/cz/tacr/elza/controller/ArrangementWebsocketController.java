@@ -88,7 +88,7 @@ public class ArrangementWebsocketController {
 		Validate.notNull(nodeVersion);
 		Validate.notNull(descItemVO);
 
-		// why is it here?
+        // authorize request as logged used
 		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
 		        .getHeader("simpUser");
 		SecurityContext sc = new SecurityContextImpl();

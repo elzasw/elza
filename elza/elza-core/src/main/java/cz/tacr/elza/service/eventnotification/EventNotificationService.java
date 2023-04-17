@@ -91,7 +91,11 @@ public class EventNotificationService implements IEventNotificationService {
 
 
     /**
-     * Listener udržující připravená data, která v případě úspěšné transakce budou připravena k odeslání.
+     * Listener udržující připravená data, která v případě úspěšné transakce budou
+     * připravena k odeslání.
+     * 
+     * Priorita odeslání zpráv je nastavena na 0. Toto umožňuje odeslat ostatní
+     * zprávy dříve či později.
      */
     private class AfterTransactionListener extends TransactionSynchronizationAdapter {
 
@@ -163,8 +167,15 @@ public class EventNotificationService implements IEventNotificationService {
         }
 
         @Override
+        public int getOrder() {
+            // Zprávy o změnách jsou odesílány s prioritou 0
+            // Výsledek volání přes WS je odesílán vždy s nejvyšší prioritou
+            return 0;
+        }
+
+        @Override
         public void afterCommit() {
-            logger.debug("Publishing events in afterCommit: {}", uncommittedEvents.size());
+            logger.debug("AfterCommit: Publishing events: {}", uncommittedEvents.size());
 
             commitEvents(uncommittedEvents);
         }
