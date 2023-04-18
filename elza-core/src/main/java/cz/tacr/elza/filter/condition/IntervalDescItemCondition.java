@@ -1,8 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -18,13 +17,13 @@ public class IntervalDescItemCondition<T extends Interval<IV>, IV> extends Abstr
     }
 
     @Override
-    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
-        Assert.notNull(factory);
+    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+        Assert.notNull(queryBuilder);
 
         Interval<IV> interval = getValue();
         IV from = interval.getFrom();
         IV to = interval.getTo();
 
-        return factory.range().field(getAttributeName()).between(from, to).toPredicate();
+        return queryBuilder.range().onField(getAttributeName()).from(from).to(to).createQuery();
     }
 }

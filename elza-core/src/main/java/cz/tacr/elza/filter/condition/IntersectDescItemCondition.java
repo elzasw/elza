@@ -1,8 +1,9 @@
 package cz.tacr.elza.filter.condition;
 
 import org.apache.commons.lang3.Validate;
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.util.Assert;
 
 /**
  * Spadá částečně do období.
@@ -17,16 +18,18 @@ public class IntersectDescItemCondition<T extends Interval<IV>, IV> extends Abst
     }
 
     @Override
-    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
-        Validate.notNull(factory);
+    public Query createLuceneQuery(QueryBuilder queryBuilder) {
+        Validate.notNull(queryBuilder);
 
         Interval<IV> interval = getValue();
         IV from = interval.getFrom();
         IV to = interval.getTo();
 
-        SearchPredicate predicate1 = factory.range().field(getAttributeNameFrom()).atMost(to).toPredicate();
-        SearchPredicate predicate2 = factory.range().field(getAttributeNameTo()).atLeast(from).toPredicate();
-
-        return factory.bool().must(predicate1).must(predicate2).toPredicate();
+        // (StartA <= EndB) and (EndA >= StartB)
+        // see https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+        Query fromQuery1 = queryBuilder.range().onField(getAttributeNameFrom()).below(to).createQuery();
+        Query fromQuery2 = queryBuilder.range().onField(getAttributeNameTo()).above(from).createQuery();
+        
+        return queryBuilder.bool().must(fromQuery1).must(fromQuery2).createQuery();
     }
 }
