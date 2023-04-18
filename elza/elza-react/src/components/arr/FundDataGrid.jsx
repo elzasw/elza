@@ -697,27 +697,13 @@ class FundDataGrid extends AbstractReactComponent {
                 }
             }
 
-            // Získání seznam specifikací
-            const refTypeX = {
-                ...refType,
-                descItemSpecs: [
-                    {
-                        id: FILTER_NULL_VALUE,
-                        name: i18n('arr.fund.filterSettings.value.empty'),
-                    },
-                    ...refType.descItemSpecs,
-                ],
-            };
-            let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
-            specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
-            let valuesIds = data.values.ids;
             const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
             if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(
                         versionId,
                         refType.id,
-                        specsIds,
+                        data.specIds,
                         data.operationType,
                         data.findText,
                         replaceText,
@@ -725,7 +711,7 @@ class FundDataGrid extends AbstractReactComponent {
                         nodes,
                         selectionType,
                         data.replaceValueId,
-                        valuesIds,
+                        [],
                     ),
                 );
             }

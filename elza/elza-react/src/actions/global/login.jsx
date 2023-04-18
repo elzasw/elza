@@ -1,15 +1,15 @@
 import * as types from 'actions/constants/ActionTypes';
-import {_WebApi, WebApi} from 'actions/index.jsx';
+import { _WebApi, WebApi } from 'actions/index.jsx';
 import { continueRequests } from "../../api";
-import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
-import {routerNavigate} from 'actions/router.jsx';
+import { userDetailChange, userDetailRequest } from 'actions/user/userDetail.jsx';
+import { routerNavigate } from 'actions/router.jsx';
 
 /**
  * Checks if user is logged on server by requesting userDetail.
  * If yes, saves the returned detail to store.
  * If not, resets store to default.
  */
-export function checkUserLogged(callback = () => {}) {
+export function checkUserLogged(callback = () => { }) {
     return (dispatch, getState) => {
         const state = getState();
         dispatch(userDetailRequest());
@@ -92,10 +92,12 @@ export function login(username, password) {
 /**
  * Disconnects websockets, logs out the user and changes the state to logged-out.
  */
-export function logout() {
+export function logout(redirect = false) {
     return dispatch => {
         window.ws.disconnect();
-        dispatch(routerNavigate('/'));
+        if (redirect) {
+            dispatch(routerNavigate('/'));
+        }
         dispatch({
             type: types.LOGOUT,
             reset: true,

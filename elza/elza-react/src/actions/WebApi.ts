@@ -1940,12 +1940,12 @@ export class WebApiCls {
     }
 
     findStructureData(
-        fundVersionId,
+        fundVersionId: number,
         structureTypeCode,
-        search = null,
-        assignable = true,
-        from = 0,
-        count = DEFAULT_LIST_SIZE,
+        search:string | null = null,
+        assignable:boolean = true,
+        from:number = 0,
+        count:number = DEFAULT_LIST_SIZE,
     ) {
         return AjaxUtils.ajaxGet(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureTypeCode + '/search',

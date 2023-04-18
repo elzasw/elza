@@ -1,6 +1,7 @@
 package cz.tacr.elza.websocket;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.SimpMessageType;
@@ -27,7 +28,12 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {
 
     @Autowired
+    @Qualifier("clientInboundChannelExecutor")
     private WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor;
+
+    @Autowired
+    @Qualifier("clientOutboundChannelExecutor")
+    private WebSocketThreadPoolTaskExecutor clientOutboundChannelExecutor;
 
     @Bean
     public TaskScheduler heartbeatTaskScheduler() {
@@ -36,7 +42,10 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
     @Override
     public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
-        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor));
+        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
+                clientInboundChannelExecutor));
+        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
+                clientOutboundChannelExecutor));
         registration.setSendBufferSizeLimit(512 * 1024);
         registration.setMessageSizeLimit(512 * 1024);
         super.configureWebSocketTransport(registration);
