@@ -64,7 +64,7 @@ public class SingleItemChangeContext implements BatchChangeContext {
         int validationPriority = 10;
         ruleService.conformityInfo(fundVersionId, Collections.singletonList(nodeId),
                                    NodeTypeOperation.SAVE_DESC_ITEM, createdDescItems, updatedDescItems, null, validationPriority);
-                // sockety
+        // publish event over socket (lower priority)
         EventChangeDescItem event = new EventChangeDescItem(fundVersionId,
                 descItemObjectId,
                 nodeId, nodeVersion);

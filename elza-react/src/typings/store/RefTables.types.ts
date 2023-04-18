@@ -1,7 +1,7 @@
 import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { ApTypeVO } from '../../api/ApTypeVO';
 import { BaseRefTableStore } from '../BaseRefTableStore';
-import {RulPartTypeVO} from '../../api/RulPartTypeVO';
+import { RulPartTypeVO } from '../../api/RulPartTypeVO';
 
 export interface Scope {
     versionId: number;
@@ -36,6 +36,22 @@ export interface VisiblePolicyRefItem {
     ruleSetId: number;
 }
 
+export interface StructureType {
+    id: number;
+    name: string;
+    code: string;
+    anonymous: boolean;
+}
+
+export interface StructureTypes {
+    data?: [{
+        data: StructureType[];
+        isFetching: boolean;
+        isDirty: boolean;
+        versionId: number;
+    }]
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<RulDescItemTypeExtVO>;
@@ -51,7 +67,7 @@ export interface RefTablesState {
     rulDataTypes: BaseRefTableStore<unknown>;
     ruleSet: unknown;
     scopesData: ScopesData;
-    structureTypes: unknown;
+    structureTypes: StructureTypes;
     templates: unknown;
     visiblePolicyTypes: BaseRefTableStore<VisiblePolicyRefItem>;
 }

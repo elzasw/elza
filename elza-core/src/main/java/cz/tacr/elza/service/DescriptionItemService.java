@@ -97,7 +97,6 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.arrangement.SingleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
@@ -1056,19 +1055,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ((ArrDataStructureRef) dataNew).setStructuredObject(copyStructuredObject);
         }
         return dataRepository.save(dataNew);
-    }
-
-    /**
-     * Vypropagovani zmeny hodnoty atributu - sockety.
-     *
-     * @param version  verze archivní pomůcky
-     * @param descItem hodnota atributu
-     */
-    private void publishChangeDescItem(final ArrFundVersion version, final ArrDescItem descItem) {
-        notificationService.publishEvent(
-                                         new EventChangeDescItem(version.getFundVersionId(),
-                                                 descItem.getDescItemObjectId(), descItem.getNode().getNodeId(),
-                                                 descItem.getNode().getVersion()));
     }
 
     /**

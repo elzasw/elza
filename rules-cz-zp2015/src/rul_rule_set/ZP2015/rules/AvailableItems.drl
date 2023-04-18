@@ -43,12 +43,6 @@ when
         "ZP2015_SIZE_HEIGHT",
         // ZP5.2.4 Hloubka
         "ZP2015_SIZE_DEPTH",
-        // ZP5.2.4 Jednotka pro rozměry
-        "ZP2015_SIZE_UNITS",
-        // ZP5.2.4 Hmotnost
-        "ZP2015_WEIGHT",
-        // ZP5.2.4 Množství (velikost dat, kusy, listy, strany)
-        "ZP2015_AMOUNT",
         // ZP5.2.5 Měřítko
         "ZP2015_SCALE",
         // ZP5.2.6 Souřadnice - tvar a souřadnice
@@ -128,6 +122,7 @@ when
         "ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
         "ZP2015_COLL_EXTENT_LENGTH", "ZP2015_DESCRIPTION_DATE","ZP2015_PUBLISHED",
         "ZP2015_WRITING",
+        "ZP2015_INVALID_RECORD",
         // nastaveni pro ulozeni
         "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
         "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX", "ZP2015_ITEM_LINK"
