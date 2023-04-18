@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 
 /**
  * Neobsahuje.
@@ -17,9 +17,9 @@ public class NotContainDescItemCondition<T> extends ContainDescItemCondition<T>{
     }
 
     @Override
-    public SearchPredicate createLucenePredicate(SearchPredicateFactory factory) {
-        SearchPredicate predicate = super.createLucenePredicate(factory);
+    public Query createLuceneQuery(QueryBuilder queryBuilder) {
+        Query query = super.createLuceneQuery(queryBuilder);
 
-        return factory.bool().mustNot(predicate).toPredicate();
+        return queryBuilder.bool().must(query).not().createQuery();
     }
 }

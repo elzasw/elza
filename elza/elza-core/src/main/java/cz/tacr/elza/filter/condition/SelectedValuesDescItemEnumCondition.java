@@ -2,9 +2,9 @@ package cz.tacr.elza.filter.condition;
 
 import java.util.List;
 
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
 
@@ -34,15 +34,14 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
     }
 
     @Override
-    public SearchPredicate createLucenePredicate(final SearchPredicateFactory factory) {
-
-        BooleanPredicateClausesStep<?> boolStep = factory.bool();
+    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+        BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
 
         values.forEach(v -> {
-            SearchPredicate predicate = factory.wildcard().field(attributeName).matching(v.toLowerCase()).toPredicate();
-            boolStep.should(predicate);
+            Query query = queryBuilder.keyword().wildcard().onField(attributeName).matching(v.toLowerCase()).createQuery();
+            booleanJunction.should(query);
         });
 
-        return boolStep.toPredicate();
+        return booleanJunction.createQuery();
     }
 }

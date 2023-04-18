@@ -4,9 +4,9 @@ import cz.tacr.elza.domain.ArrDescItem;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
-import org.hibernate.search.engine.backend.document.DocumentElement;
-import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
-import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
+import org.hibernate.search.bridge.FieldBridge;
+import org.hibernate.search.bridge.LuceneOptions;
+import org.hibernate.search.bridge.StringBridge;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +25,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.node;
  * @since 18. 1. 2016
  */
 @Component
-public class ParentNodeIdsBridge implements TypeBridge<ArrDescItem> {
+public class ParentNodeIdsBridge implements StringBridge, FieldBridge , ApplicationContextAware {
 
     @Autowired
     private static NodeRepository nodeRepository;
@@ -41,8 +41,12 @@ public class ParentNodeIdsBridge implements TypeBridge<ArrDescItem> {
                 .orElseThrow(node(nodeId)).toString();
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        nodeRepository = applicationContext.getBean(NodeRepository.class);
+    }
 
-
+    @Override
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         ArrDescItem descItem = (ArrDescItem) value;
         Integer nodeId = descItem.getNode().getNodeId();
@@ -50,14 +54,4 @@ public class ParentNodeIdsBridge implements TypeBridge<ArrDescItem> {
         Field field = new StringField(name, fieldValue, luceneOptions.getStore());
         document.add( field );
     }
-
-    @Override
-    public void write(DocumentElement documentElement, ArrDescItem descItem, TypeBridgeWriteContext typeBridgeWriteContext) {
-        String name = "";
-        Integer nodeId = descItem.getNode().getNodeId();
-        String fieldValue = nodeId.toString();
-        Field field = new StringField(name, fieldValue, luceneOptions.getStore());
-        document.add( field );
-    }
-
 }

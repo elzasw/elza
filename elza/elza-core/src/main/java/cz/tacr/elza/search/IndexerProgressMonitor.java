@@ -3,7 +3,7 @@ package cz.tacr.elza.search;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.search.mapper.pojo.massindexing.impl.PojoMassIndexingLoggingMonitor;
+import org.hibernate.search.batchindexing.impl.SimpleIndexingProgressMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * Monitor stavu indexování.
  */
 @Component
-public class IndexerProgressMonitor extends PojoMassIndexingLoggingMonitor {
+public class IndexerProgressMonitor extends SimpleIndexingProgressMonitor {
 
     @Autowired
     private ClientEventDispatcher eventDispatcher;

@@ -2,28 +2,30 @@ package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.ArrayUtil;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.RamUsageEstimator;
-import org.hibernate.search.engine.backend.document.DocumentElement;
-import org.hibernate.search.engine.backend.document.IndexFieldReference;
-import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
-import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
+import org.hibernate.search.bridge.LuceneOptions;
+import org.hibernate.search.bridge.MetadataProvidingFieldBridge;
+import org.hibernate.search.bridge.StringBridge;
+import org.hibernate.search.bridge.spi.FieldMetadataBuilder;
+import org.hibernate.search.bridge.spi.FieldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -49,9 +51,8 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
-import org.springframework.core.io.FileSystemResource;
 
-public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccessPoint> {
+public class ApCachedAccessPointClassBridge implements StringBridge, MetadataProvidingFieldBridge {
 
     private final static Logger log = LoggerFactory.getLogger(ApCachedAccessPointClassBridge.class);
 
@@ -74,11 +75,7 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
     public static final String NM_MAIN = "nm_main";
     public static final String NM_MINOR = "nm_minor";
 
-    static Properties names = null;
-    private Map<String, IndexFieldReference<String>> fields;
-
-    public ApCachedAccessPointClassBridge(Map<String, IndexFieldReference<String>> fields) {
-        this.fields = fields;
+    public ApCachedAccessPointClassBridge() {
         log.debug("Creating ApCachedAccessPointClassBridge");
     }
 
@@ -89,8 +86,45 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
         ApCachedAccessPointClassBridge.settingsService = settingsService;
     }
 
+    @Override
+    public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
+        ApCachedAccessPoint apCachedAccessPoint = (ApCachedAccessPoint) value;
 
-    private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
+                String.class, Number.class, Boolean.class, Iterable.class,
+                LocalDate.class, LocalDateTime.class));
+
+        try {
+            // TODO: use cache service to deserialize
+            CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
+            // do not index APs without state or deleted APs
+            ApState apState = cachedAccessPoint.getApState();
+            if (apState == null || apState.getDeleteChangeId() != null) {
+                return;
+            }
+
+            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document,
+                           luceneOptions);
+            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document,
+                           luceneOptions);
+            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
+
+            if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
+                for (CachedPart part : cachedAccessPoint.getParts()) {
+                    addItemFields(name, part, cachedAccessPoint, document, luceneOptions);
+                    addIndexFields(name, part, cachedAccessPoint, document, luceneOptions);
+                }
+            }
+
+        } catch (IOException e) {
+            throw new SystemException("Nastal problém při deserializaci objektu", e);
+        }
+    }
+
+    private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getItems())) {
             StaticDataProvider sdp = StaticDataProvider.getInstance();
 
@@ -123,29 +157,30 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
                 }
 
                 if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, name);
+                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
 
                     if (itemSpec != null) {
                         addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(),
-                                value.toLowerCase(), document, name);
+                                value.toLowerCase(), document, luceneOptions, name);
                     }
                 }
 
                 // indexování polí s více než 32766 znaky
                 if (dataType == DataType.TEXT) {
-                    document.addValue(toLuceneName(name + SEPARATOR + itemType.getCode().toLowerCase(), ApCachedAccessPointClassBinder.NOT_ANALYZED), value);
+                    TextField field = new TextField(name + SEPARATOR + itemType.getCode().toLowerCase(), value, Store.YES);
+                    document.add(field);
                 } else {
-                    addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, name);
+                    addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
                 }
 
                 if (itemSpec != null) {
-                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, name);
+                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
                 }
             }
         }
     }
 
-    private void addIndexFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
+    private void addIndexFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getIndices())) {
             for (ApIndex index : part.getIndices()) {
                 if (index.getIndexType().equals(DISPLAY_NAME)) {
@@ -153,13 +188,13 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
                     fieldName.append(SEPARATOR).append(INDEX);
 
                     if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, name);
+                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions, name);
                         addSortField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, index
                                 .getValue().toLowerCase(), document);
                     }
 
-                    addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, name);
-                    addField(name + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, name);
+                    addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions, name);
+                    addField(name + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions, name);
                 }
             }
         }
@@ -167,27 +202,32 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
 
     /**
      * Pridani pole pro razeni
-     *
+     * 
      * @param name
      * @param value
      * @param document
      */
-    private void addSortField(String name, String value, DocumentElement document) {
+    private void addSortField(String name, String value, Document document) {
         String valueTrans = removeDiacritic(value);
-        document.addValue(toLuceneName(name, ApCachedAccessPointClassBinder.STORED_SORTABLE), valueTrans);
-
+        //?? Pole je nutne pridat ve dvou formatech¨
+        // TODO: Proc?
+        document.add(new StringField(name, valueTrans, Field.Store.YES));
+        document.add(new SortedDocValuesField(name, new BytesRef(valueTrans)));
     }
 
-    private void addStringField(String name, String value, DocumentElement document) {
-        document.addValue(toLuceneName(name, ApCachedAccessPointClassBinder.NOT_ANALYZED), value);
+    private void addStringField(String name, String value, Document document, LuceneOptions luceneOptions) {
+        StringField field = new StringField(name, value, Store.YES);
+        document.add(field);
     }
 
-    private void addField(String name, String value, DocumentElement document, String prefixName) {
+    private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
         // Pridani raw hodnoty fieldu (bez tranliterace - NOT_ANALYZED)
-        document.addValue(toLuceneName(name, ApCachedAccessPointClassBinder.NOT_ANALYZED), value);
+        Field field = new Field(name, value, luceneOptions.getStore(), Field.Index.NOT_ANALYZED, luceneOptions.getTermVector());
+        document.add(field);
 
         if (isFieldForTransliteration(name, prefixName)) {
-            document.addValue(toLuceneName(name + SEPARATOR + TRANS, ApCachedAccessPointClassBinder.ANALYZED), value);
+            Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
+            document.add(transField);
         }
     }
 
@@ -195,7 +235,7 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
         char[] chars = new char[512];
         final int maxSizeNeeded = 4 * value.length();
         if (chars.length < maxSizeNeeded) {
-            chars = new char[ArrayUtil.oversize(maxSizeNeeded, Character.BYTES)];
+            chars = new char[ArrayUtil.oversize(maxSizeNeeded, RamUsageEstimator.NUM_BYTES_CHAR)];
         }
         ASCIIFoldingFilter.foldToASCII(value.toCharArray(), 0, chars, 0, value.length());
 
@@ -247,106 +287,12 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
     }
 
     @Override
-    public void write(DocumentElement document, ApCachedAccessPoint apCachedAccessPoint, TypeBridgeWriteContext typeBridgeWriteContext) {
-
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class,
-                LocalDate.class, LocalDateTime.class));
-        String name = "data";
-        try {
-            // TODO: use cache service to deserialize
-            CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            // do not index APs without state or deleted APs
-            ApState apState = cachedAccessPoint.getApState();
-            if (apState == null || apState.getDeleteChangeId() != null) {
-                return;
-            }
-
-            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
-            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
-            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
-
-            if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
-                for (CachedPart part : cachedAccessPoint.getParts()) {
-                    addItemFields(name, part, cachedAccessPoint, document);
-                    addIndexFields(name, part, cachedAccessPoint, document);
-                }
-            }
-
-        } catch (IOException e) {
-            throw new SystemException("Nastal problém při deserializaci objektu", e);
-        }
+    public String objectToString(Object object) {
+        return (String) object;
     }
 
-    public static String toLuceneName(String fieldName) {
-        return toLuceneName(fieldName, null);
+    @Override
+    public void configureFieldMetadata(String name, FieldMetadataBuilder builder) {
+        builder.field(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, FieldType.STRING).sortable(true);
     }
-
-    /**
-     * Stěžejní funkce, která dělaá mapování z dynamických logických jmen na lucene statické názvy "data_1 až data_50"
-     * Může i zakládát nové mapování.
-     */
-    public static String toLuceneName(String fieldName, String typeSuffix) {
-        try {
-            if (names == null) {
-                //načtení ze souboru u lucene indexu
-                names = readConfigFromFile();
-            }
-
-            String luceneName = names.getProperty(fieldName);
-            if (luceneName == null) {
-                if (typeSuffix == null) {
-                    //pro případ, že se ptám do indexu před tím než byl naindexován, v indexu tedy není ani jeden záznam
-                    //a není mapování - nikdy by nemělo reálně nastat
-                    return "data_0" + ApCachedAccessPointClassBinder.NOT_ANALYZED;
-                }
-                //založení nového mapování, uložení do souboru
-                synchronized (ApCachedAccessPoint.class) {
-                    for (int i = 0; i < ApCachedAccessPointClassBinder.MAX_FIELDS; i++) {
-                        String name = "data_" + i + typeSuffix;
-                        if (!names.containsValue(name)) {
-                            //první volné jméno
-                            names.put(fieldName, name);
-                            luceneName = name;
-                            break;
-                        }
-                    }
-                    //uložení do souboru u lucene indexu
-                    saveConfigToFile(names);
-                }
-            }
-            return luceneName;
-        } catch (Exception ex) {
-            throw new RuntimeException("Chyba při mapování lucene polí", ex);
-        }
-    }
-
-    private static Properties readConfigFromFile() throws IOException {
-
-        Properties properties = new Properties();
-
-        String mappingFile = getMappingFile();
-        FileSystemResource resource = new FileSystemResource(mappingFile);
-        if (resource.exists()) {
-            properties.load(new FileInputStream(mappingFile));
-        }
-        return properties;
-    }
-
-    private static void saveConfigToFile(Properties properties) throws IOException {
-        String mappingFile = getMappingFile();
-        FileOutputStream fos = new FileOutputStream(mappingFile);
-        properties.store(fos, "Mapování lucene poli");
-        fos.close();
-    }
-
-    private static String getMappingFile() {
-        //hibernate.search.backend.directory.root + "AeRecordCache"
-        String dir = System.getProperty("user.dir") + "/" + ApCachedAccessPoint.class.getSimpleName() + "/mapping.txt";
-        return dir;
-    }
-
 }

@@ -1,5 +1,9 @@
 package cz.tacr.elza.filter.condition;
 
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.springframework.util.Assert;
+
 import jakarta.persistence.EntityManager;
 
 /**

@@ -3,8 +3,7 @@ package cz.tacr.elza.filter.condition;
 import java.util.List;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.query.dsl.QueryBuilder;
 
 /**
  * Podmínka na výběr podle specifikací které nebyly vybrány.
@@ -25,9 +24,9 @@ public class UnselectedSpecificationsDescItemEnumCondition extends SelectedSpeci
    }
 
    @Override
-   public SearchPredicate createLucenePredicate(final SearchPredicateFactory factory) {
-       SearchPredicate predicate = super.createLucenePredicate(factory);
+   public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+       Query query = super.createLuceneQuery(queryBuilder);
 
-       return factory.bool().mustNot(predicate).toPredicate();
+       return queryBuilder.bool().must(query).not().createQuery();
    }
 }
