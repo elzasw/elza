@@ -56,7 +56,7 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user"); // direct message for subscribed user
         registry.enableSimpleBroker("/topic")
-                .setHeartbeatValue(new long[] { 10000, 10000 })
+                .setHeartbeatValue(new long[] { 20000, 20000 })
                 .setTaskScheduler(heartbeatTaskScheduler());
     }
 
