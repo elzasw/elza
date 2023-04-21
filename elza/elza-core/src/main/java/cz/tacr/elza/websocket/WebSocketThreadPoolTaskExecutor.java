@@ -99,7 +99,7 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
         SimpMessageType messageType = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
 		synchronized (this) {
-            LOG.debug("Executing message ({}-{}) for WebSocket session: {}, handler: {}", 
+            LOG.debug("Executing message ({}, {}) for WebSocket session: {}, handler: {}",
                       this.getThreadNamePrefix(),
                       messageType, sessionId,
                       mhr.getClass().toString());
