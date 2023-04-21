@@ -56,7 +56,16 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user"); // direct message for subscribed user
         registry.enableSimpleBroker("/topic")
-                .setHeartbeatValue(new long[] { 20000, 20000 })
+                // Hearth beat interval
+                // 30000 - write interval for outgoing channel 
+                //       - timeout for inbound channel is 3*30000 = 90s
+                //       - heart beat is sent 30s after last activity (other then heart beat)
+                // 10000 - default frequency for hearbeat packet (scheduler)
+                // Recommended values for client:
+                // 20000 - frequency of incomming heart beat from client to server
+                //      - packet is sent each 20s, calculated as max of (20000 and 10000)
+                // 45000 - client side max ttl for incomming packets is 2*45000 = 90s 
+                .setHeartbeatValue(new long[] { 30000, 10000 })
                 .setTaskScheduler(heartbeatTaskScheduler());
     }
 
