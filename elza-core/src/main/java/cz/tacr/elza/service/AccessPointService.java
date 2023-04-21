@@ -3060,7 +3060,7 @@ public class AccessPointService {
         extSyncsQueueItemVO.setAccessPointId(extSyncsQueueItem.getAccessPoint().getAccessPointId());
         extSyncsQueueItemVO.setAccessPointName(name);
         extSyncsQueueItemVO.setScopeId(scopeId);
-        extSyncsQueueItemVO.setState(ExtAsyncQueueState.fromValue(extSyncsQueueItem.getState().name()));
+        extSyncsQueueItemVO.setState(ExtAsyncQueueState.fromValue(extSyncsQueueItem.getState()));
         extSyncsQueueItemVO.setStateMessage(extSyncsQueueItem.getStateMessage());
         extSyncsQueueItemVO.setDate(extSyncsQueueItem.getDate().toLocalDateTime());
         return extSyncsQueueItemVO;
