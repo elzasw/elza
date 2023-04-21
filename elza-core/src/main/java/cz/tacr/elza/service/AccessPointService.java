@@ -1963,14 +1963,14 @@ public class AccessPointService {
     /**
      *  Vytvoření kopie ApAccessPoint v ApScope
      * 
-     * @param accessPoint - kopírovaná entita
+     * @param srcAccessPoint - kopírovaná entita
      * @param scope       - nová oblast (může být stejná, pokud jde o náhradu)
      * @param replace     - nahradit zkopírovanou entitu novou nebo ne
      * @param skipItems   - seznam ID prvků popisu, které se nemají kopírovat
      * @return ApAccessPoint
      */
-    public ApAccessPoint copyAccessPoint(ApAccessPoint accessPoint, ApScope scope, boolean replace, List<Integer> skipItems) {
-        ApState state = getStateInternal(accessPoint);
+    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace, List<Integer> skipItems) {
+        ApState state = getStateInternal(srcAccessPoint);
         if (!hasPermissionToCopy(state, scope)) {
             throw new SystemException("Uživatel nemá oprávnění na kopírování přístupového bodu do cílové oblasti", BaseCode.INSUFFICIENT_PERMISSIONS)
                 .set("accessPointId", state.getAccessPointId())
@@ -1978,18 +1978,27 @@ public class AccessPointService {
                 .set("targetScopeId", scope.getScopeId());
         }
 
-        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState copyState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
+        this.logger.debug("Copying access point: {}", srcAccessPoint.getAccessPointId());
 
-        List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
-        List<ApItem> sourceItems = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
+        ApState trgState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
+
+        List<ApPart> partsFrom = partService.findPartsByAccessPoint(srcAccessPoint);
+        List<ApItem> sourceItems = itemRepository.findValidItemsByAccessPoint(srcAccessPoint);
+        List<ApPart> newParts = new ArrayList<>();
 
         // filter skipped items
+        Set<Integer> skipItemsSet;
         if (!CollectionUtils.isEmpty(skipItems)) {
-            sourceItems = sourceItems.stream().filter(i -> !skipItems.contains(i.getItemId())).collect(Collectors.toList());
+            skipItemsSet = new HashSet<>(skipItems);
+        } else {
+            skipItemsSet = Collections.emptySet();
         }
-        // group copied items per parent
-        Map<Integer, List<ApItem>> partIdItemsFromMap = sourceItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
+        // group source items per parent
+        Map<Integer, List<ApItem>> partIdItemsFromMap = sourceItems.stream()
+                .filter(i -> !skipItemsSet.contains(i.getItemId()))
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+        
         // filter parts
         if (!CollectionUtils.isEmpty(skipItems)) {
             // part ids that remain after filter
@@ -2000,6 +2009,7 @@ public class AccessPointService {
                     .map(p -> p.getParentPartId())
                     .collect(Collectors.toSet());
             partIds.addAll(parentPartIds);
+
             partsFrom = partsFrom.stream().filter(p -> partIds.contains(p.getPartId())).collect(Collectors.toList());
         }
 
@@ -2007,47 +2017,57 @@ public class AccessPointService {
         Map<Integer, ApPart> fromIdToPartMap = new HashMap<>();
         for (ApPart part : partsFrom) {
             if (part.getParentPart() == null) {
-                ApPart copyPart = copyPart(part, copyState.getAccessPoint(), null, change);
+                ApPart copyPart = copyPart(part, trgState.getAccessPoint(), null, change);
                 fromIdToPartMap.put(part.getPartId(), copyPart);
+                newParts.add(copyPart);
             }
         }
 
         // copying the remaining parts and all items
         for (ApPart part : partsFrom) {
             if (part.getParentPart() != null) {
-                ApPart copyPart = copyPart(part, copyState.getAccessPoint(), fromIdToPartMap.get(part.getParentPartId()), change);
+                ApPart copyPart = copyPart(part, trgState.getAccessPoint(), fromIdToPartMap.get(part.getParentPartId()), change);
                 fromIdToPartMap.put(part.getPartId(), copyPart);
+                newParts.add(copyPart);
             }
             for (ApItem item : partIdItemsFromMap.get(part.getPartId())) {
-                copyItem(item, fromIdToPartMap.get(part.getPartId()), change, item.getPosition());
+                ApPart toPart = fromIdToPartMap.get(part.getPartId());
+                copyItem(item, toPart, change, item.getPosition());
             }
         }
 
         // set preferred part
-        copyState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(accessPoint.getPreferredPartId()));
+        trgState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(srcAccessPoint.getPreferredPartId()));
+
+        logger.debug("Copied parts({}) and items.", fromIdToPartMap.size());
 
         // prepare to update cache
         MultipleApChangeContext macc = new MultipleApChangeContext();
 
         if (replace) {
-            replace(state, copyState, null, macc);
-            state.setReplacedBy(copyState.getAccessPoint());
-            deleteAccessPoint(state, accessPoint, change);
+            replace(state, trgState, null, macc);
+            state.setReplacedBy(trgState.getAccessPoint());
+            deleteAccessPoint(state, srcAccessPoint, change);
         }
 
         // create indexes
         for (ApPart part : partsFrom) {
-            updatePartValue(copyState, fromIdToPartMap.get(part.getPartId()));
+            updatePartValue(trgState, fromIdToPartMap.get(part.getPartId()));
         }
 
-        ApAccessPoint copyAccessPoint = validate(copyState.getAccessPoint(), copyState, true);
-        macc.add(copyAccessPoint.getAccessPointId());
+        ApAccessPoint trgAccessPoint = validate(trgState.getAccessPoint(), trgState, true);
+        macc.add(trgAccessPoint.getAccessPointId());
+
+        logger.debug("Copy accessPoint, creating items in cache: {}.", macc.getModifiedApIds().size());
 
         for (Integer apId : macc.getModifiedApIds()) {
             accessPointCacheService.createApCachedAccessPoint(apId);
         }
 
-        return copyAccessPoint;
+        logger.debug("AccessPoint copied, source: {}, target: {}.", srcAccessPoint.getAccessPointId(),
+                     trgAccessPoint.getAccessPointId());
+
+        return trgAccessPoint;
     }
 
     public ApState copyState(ApState oldState, ApChange change) {
