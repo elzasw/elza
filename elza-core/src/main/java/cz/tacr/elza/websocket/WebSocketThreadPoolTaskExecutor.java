@@ -99,7 +99,10 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
         SimpMessageType messageType = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
 		synchronized (this) {
-            LOG.debug("Executing message () for WebSocket session: {}", messageType, sessionId);
+            LOG.debug("Executing message ({}-{}) for WebSocket session: {}, handler: {}", 
+                      this.getThreadNamePrefix(),
+                      messageType, sessionId,
+                      mhr.getClass().toString());
 
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
@@ -110,10 +113,14 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             case CONNECT:
             case CONNECT_ACK:
             case HEARTBEAT:
-                processor.addPriority(mhr);
+                if (!processor.addPriority(mhr)) {
+                    throw new IllegalStateException("Cannot add priority message to the processor, id:" + sessionId);
+                }
                 break;
             default:
-                processor.add(mhr);
+                if (!processor.add(mhr)) {
+                    throw new IllegalStateException("Cannot add message to the processor, id:" + sessionId);
+                }
             }
 		}
 	}
