@@ -66,7 +66,8 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 		if (processor == null) {
-            throw new IllegalStateException("WebSocket session does not exist, cannot be stopped, id:" + sessionId);
+            LOG.error("WebSocket session does not exist, id: {}. Cannot be stopped.", sessionId);
+            return;
 		}
 		processor.block();
 	}
@@ -84,7 +85,8 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.remove(sessionId);
 		if (processor == null) {
-			throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
+            LOG.error("WebSocket session does not exist, id: {}. Cannot be removed.", sessionId);
+            return;
 		}
 		processor.block();
 	}
@@ -106,7 +108,8 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
-				throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
+                LOG.error("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
+                return;
 			}
             // send heartbeat as priority/first message
             switch (messageType) {
@@ -114,12 +117,14 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             case CONNECT_ACK:
             case HEARTBEAT:
                 if (!processor.addPriority(mhr)) {
-                    throw new IllegalStateException("Cannot add priority message to the processor, id:" + sessionId);
+                    LOG.error("Cannot add priority message to the processor, sessionId: {}. Message is not processed.",
+                              sessionId);
                 }
                 break;
             default:
                 if (!processor.add(mhr)) {
-                    throw new IllegalStateException("Cannot add message to the processor, id:" + sessionId);
+                    LOG.error("Cannot add message to the processor, sessionId: {}. Message is not processed.",
+                              sessionId);
                 }
             }
 		}
