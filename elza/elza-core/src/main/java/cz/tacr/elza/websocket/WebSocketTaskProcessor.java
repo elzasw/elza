@@ -1,8 +1,8 @@
 package cz.tacr.elza.websocket;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ public class WebSocketTaskProcessor implements Runnable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WebSocketTaskProcessor.class);
 
-	private final Queue<MessageHandlingRunnable> taskQueue = new LinkedList<>();
+    private final Deque<MessageHandlingRunnable> taskQueue = new LinkedList<>();
 
 	private boolean blocked = false;
 
@@ -54,15 +54,28 @@ public class WebSocketTaskProcessor implements Runnable {
             LOG.debug("Cannot add message, queue is blocked");
 			return false;
 		}
-        /*
-        if (LOG.isDebugEnabled()) {
-            logMessage("Adding message", task);
-        }*/
 
 		taskQueue.add(task);
 		notifyAll();
 		return true;
 	}
+
+    /**
+     * Adds priority task to queue. All waiting threads will be notified.
+     * Message will be as first in the queue
+     *
+     * @return False if task cannot be added (processor is blocked) otherwise true.
+     */
+    public synchronized boolean addPriority(MessageHandlingRunnable task) {
+        if (blocked) {
+            LOG.debug("Cannot add message, queue is blocked");
+            return false;
+        }
+
+        taskQueue.addFirst(task);
+        notifyAll();
+        return true;
+    }
 
     private void logMessage(String message, MessageHandlingRunnable task) {
         Message<?> msg = task.getMessage();

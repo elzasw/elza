@@ -29,5 +29,25 @@ public enum ExtAsyncQueueState {
         return valueOf(v);
     }
 
+    public static ExtAsyncQueueState fromValue(cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState state) {
+        switch (state) {
+        case ERROR:
+            return ERROR;
+        case UPDATE:
+            return UPDATE;
+        case EXPORT_OK:
+            return EXPORT_OK;
+        case EXPORT_NEW:
+            return EXPORT_NEW;
+        case EXPORT_START:
+            // state is not propagated to the client
+            return EXPORT_NEW;
+        case IMPORT_NEW:
+            return IMPORT_NEW;
+        case IMPORT_OK:
+            return IMPORT_OK;
+        }
+        return null;
+    }
 
 }

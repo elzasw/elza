@@ -2220,5 +2220,38 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 		</addColumn>
 		<sql dbms="postgresql">UPDATE ap_binding_sync SET page = NULL</sql>
 	</changeSet>
-
+	<changeSet id="20230424184200" author="ppy">
+	  <!-- Oprava nahrazenych zaznamu -->
+	  <sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id IN  (
+          SELECT s.access_point_id FROM ap_state s 
+          JOIN ap_binding_state bs ON bs.access_point_id = s.access_point_id AND bs.delete_change_id IS NULL
+          WHERE s.delete_change_id IS NULL AND s.replaced_by IS NOT NULL)
+	  </sql>
+	  <sql dbms="postgresql">UPDATE ap_state s SET delete_change_id = bs.create_change_id FROM ap_binding_state bs
+          WHERE bs.access_point_id = s.access_point_id AND 
+	            bs.delete_change_id IS NULL AND 
+	  		    s.delete_change_id IS NULL AND 
+	            s.replaced_by IS NOT NULL
+	  </sql>
+	  <!-- Odstraneni jiz neplatnych key value pro zneplatnene zaznamy -->
+	  <sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id IN (
+           SELECT s.access_point_id FROM ap_state s
+           JOIN (SELECT access_point_id, MAX(create_change_id) AS create_change_id FROM ap_state s GROUP BY access_point_id) src ON s.access_point_id = src.access_point_id AND s.create_change_id = src.create_change_id AND s.delete_change_id IS NOT NULL
+           JOIN ap_part ap ON ap.access_point_id = s.access_point_id 
+           WHERE ap.key_value_id IS NOT NULL)
+	  </sql>
+	  <sql dbms="postgresql">UPDATE ap_part SET key_value_id = null WHERE part_id IN (
+           SELECT ap.part_id FROM ap_state s
+		   JOIN (select access_point_id, max(create_change_id) as create_change_id from ap_state s group by access_point_id) src on s.access_point_id = src.access_point_id and s.create_change_id = src.create_change_id and s.delete_change_id is not null
+		   JOIN ap_part ap ON ap.access_point_id = s.access_point_id 
+           WHERE ap.key_value_id IS NOT NULL)
+	  </sql>
+	</changeSet>
+	<changeSet id="20230424184201" author="ppy">
+	  <sql dbms="postgresql">DELETE FROM ap_key_value WHERE key_value_id IN (
+           SELECT akv.key_value_id FROM ap_key_value akv 
+           LEFT JOIN ap_part ap ON ap.key_value_id = akv.key_value_id WHERE ap.part_id IS NULL
+           )
+	  </sql>
+    </changeSet>
 </databaseChangeLog>

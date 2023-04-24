@@ -915,25 +915,28 @@ public class CamService {
             SecurityContextHolder.setContext(secCtx);
 
             ApBinding binding;
-            ApBindingState bindingState;
             if(queueItem.getAccessPointId()!=null) {
-                bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(queueItem.getAccessPoint(),
-                                                                                         externalSystem);
+                ApBindingState bindingState = bindingStateRepository
+                        .findByAccessPointAndExternalSystem(queueItem.getAccessPoint(), externalSystem);
                 if (bindingState == null) {
                     if (queueItem.getBinding() != null) {
                         // this is quite weird case
                         // accessPoint and binding is set but bindingState does not exists
                         // can it happened? May by we can treat this case as an error?
+                        log.info("Synchronization request with accessPointId: {}, bindingId: {} without bindingState.",
+                                 queueItem.getAccessPointId(),
+                                 queueItem.getBindingId());
+
                         binding = queueItem.getBinding();
                     } else {
                         throw new BusinessException("Missing bindingState for accessPoint",
                                 BaseCode.DB_INTEGRITY_PROBLEM)
                             .set("queueItemId", queueItem.getExtSyncsQueueItemId());
                     }
+                } else {
+                    binding = bindingState.getBinding();
                 }
-                binding = bindingState.getBinding();
             } else {
-                bindingState = null;
                 binding = queueItem.getBinding();
                 if (binding == null) {
                     throw new BusinessException("Missing binding for queueItem", BaseCode.DB_INTEGRITY_PROBLEM)
