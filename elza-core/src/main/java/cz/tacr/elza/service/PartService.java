@@ -335,6 +335,7 @@ public class PartService {
      *            Flag if part is preferred name
      * @return
      */
+    // TODO: Check logic when async==true
     public boolean updatePartValue(ApPart apPart,
                                    GroovyResult result,
                                    ApState state,
@@ -345,11 +346,6 @@ public class PartService {
         ApAccessPoint accessPoint = state.getAccessPoint();
         Validate.notNull(accessPoint);
 
-        boolean oldPreferredPart = false;
-        if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
-            oldPreferredPart = true;
-        }
-
         boolean success = true;
         Map<String, String> indexMap = result.getIndexes();
 
@@ -358,11 +354,14 @@ public class PartService {
             throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
         }
 
-        GroovyKeyValue keyValue = result.getKeyValue();
+        ApKeyValue dbKeyValue = apPart.getKeyValue();
+        boolean wasPreferredPart = (dbKeyValue != null && PT_PREFER_NAME.equals(dbKeyValue.getKeyType()));
+
+
         String keyType = null;
-
-        if (keyValue != null) {
-
+        if (result.getKeyValue() != null && state.getDeleteChange() != null) {
+            // has new keyValue and not deleted AP
+            GroovyKeyValue keyValue = result.getKeyValue();
             keyType = StringUtils.stripToNull(keyValue.getKey());
             if (keyType == null) {
                 throw new SystemException("Neplatný typ ApKeyValue").set("keyType", keyType);
@@ -378,22 +377,20 @@ public class PartService {
             value = value.toLowerCase();
 
             try {
-                if (apPart.getKeyValue() != null) {
-                    ApKeyValue apKeyValue = apPart.getKeyValue();
-
-                    if ((!apKeyValue.getKeyType().equals(keyType) ||
-                            !apKeyValue.getValue().equals(value) ||
-                            !apKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
+                if (dbKeyValue != null) {
+                    if ((!dbKeyValue.getKeyType().equals(keyType) ||
+                            !dbKeyValue.getValue().equals(value) ||
+                            !dbKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
                             && (!checkKeyValueUnique(keyType, value, scope, async) ||
                             !keyValueLock.addIfExists(keyType, value, scope.getScopeId()))) {
                         value = value + DUPLICITA + accessPointId;
                         success = false;
                     }
 
-                    apKeyValue.setKeyType(keyType);
-                    apKeyValue.setValue(value);
-                    apKeyValue.setScope(scope);
-                    keyValueRepository.save(apKeyValue);
+                    dbKeyValue.setKeyType(keyType);
+                    dbKeyValue.setValue(value);
+                    dbKeyValue.setScope(scope);
+                    dbKeyValue = keyValueRepository.save(dbKeyValue);
                 } else {
                     if (!checkKeyValueUnique(keyType, value, scope, async) ||
                             !keyValueLock.addIfExists(keyType, value, scope.getScopeId())) {
@@ -401,13 +398,13 @@ public class PartService {
                         success = false;
                     }
 
-                    ApKeyValue apKeyValue = new ApKeyValue();
-                    apKeyValue.setKeyType(keyType);
-                    apKeyValue.setValue(value);
-                    apKeyValue.setScope(scope);
-                    apKeyValue = keyValueRepository.save(apKeyValue);
+                    dbKeyValue = new ApKeyValue();
+                    dbKeyValue.setKeyType(keyType);
+                    dbKeyValue.setValue(value);
+                    dbKeyValue.setScope(scope);
+                    dbKeyValue = keyValueRepository.save(dbKeyValue);
 
-                    apPart.setKeyValue(apKeyValue);
+                    apPart.setKeyValue(dbKeyValue);
                     partRepository.save(apPart);
                 }
             } finally {
@@ -416,14 +413,15 @@ public class PartService {
 
 
         } else {
-            ApKeyValue apKeyValue = apPart.getKeyValue();
-            if (apKeyValue != null) {
+            // drop old key value
+            if (dbKeyValue != null) {
                 apPart.setKeyValue(null);
-                partRepository.save(apPart);
-                keyValueRepository.delete(apKeyValue);
+                apPart = partRepository.saveAndFlush(apPart);
+                keyValueRepository.delete(dbKeyValue);
             }
         }
 
+        // store indexes
         Map<String, ApIndex> apIndexMapByType = indexRepository.findByPartId(apPart.getPartId()).stream()
                 .collect(Collectors.toMap(ApIndex::getIndexType, Function.identity()));
 
@@ -447,15 +445,16 @@ public class PartService {
             ApIndex apIndex = apIndexMapByType.remove(indexType);
 
             if (indexType.equals(DISPLAY_NAME)) {
-                if ((oldPreferredPart && !value.equals(apIndex.getValue()))
+                if ((wasPreferredPart && !value.equals(apIndex.getValue()))
                         || (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))
-                        || (preferredPart && !oldPreferredPart)) {
+                        || (preferredPart && !wasPreferredPart)) {
                     //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
                     checkReferredRecords(accessPoint);
                 }
             }
 
-            if (!success && keyType.equals(PT_PREFER_NAME) && (indexType.equals(DISPLAY_NAME) || indexType.equals(DISPLAY_NAME_LOWER))) {
+            if (!success && PT_PREFER_NAME.equals(keyType)
+                    && (indexType.equals(DISPLAY_NAME) || indexType.equals(DISPLAY_NAME_LOWER))) {
                 value = value + DUPLICITA + accessPointId;
             }
 
