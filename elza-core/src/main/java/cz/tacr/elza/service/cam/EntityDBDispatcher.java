@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -445,15 +444,15 @@ public class EntityDBDispatcher {
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
                     accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
                     state.setReplacedBy(replacedBy);
-                    break;
                 }
             }
-            accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            // delete AP
+            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         case ERS_INVALID:
             // odstranění entity, která v CAM označena jako neplatná
-            accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         default:

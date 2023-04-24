@@ -3,10 +3,14 @@ package cz.tacr.elza.websocket;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.support.MessageHandlingRunnable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.util.Assert;
 
 /**
  * Třída umožňuje rozřazovat požadavky na základě klient session do konkrétních {@link WebSocketTaskProcessor},
@@ -16,6 +20,8 @@ import org.springframework.util.Assert;
  * thread per WebSocket connection. This algorithm is based on serial nature of WebSocket.
  */
 public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketThreadPoolTaskExecutor.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -36,7 +42,9 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 * @throws IllegalArgumentException WebSocket session id cannot be null.
 	 */
 	public synchronized void addSession(String sessionId) {
-		Assert.notNull(sessionId, "WebSocket session id cannot be null");
+        Validate.notNull(sessionId, "WebSocket session id cannot be null");
+        LOG.debug("Adding WebSocket session: {}", sessionId);
+
 		WebSocketTaskProcessor processor = new WebSocketTaskProcessor();
 		if (webSocketTaskProcessors.put(sessionId, processor) != null) {
 			throw new IllegalStateException("WebSocket session is already registered, id:" + sessionId);
@@ -53,10 +61,13 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 * @throws IllegalArgumentException WebSocket session id cannot be null.
 	 */
 	public synchronized void stopSessionExecution(String sessionId) {
-		Assert.notNull(sessionId, "WebSocket session id cannot be null");
+        Validate.notNull(sessionId, "WebSocket session id cannot be null");
+        LOG.debug("Stop WebSocket session execution: {}", sessionId);
+
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 		if (processor == null) {
-			throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
+            LOG.error("WebSocket session does not exist, id: {}. Cannot be stopped.", sessionId);
+            return;
 		}
 		processor.block();
 	}
@@ -69,10 +80,13 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 * @throws IllegalArgumentException WebSocket session id cannot be null.
 	 */
 	public synchronized void removeSession(String sessionId) {
-		Assert.notNull(sessionId, "WebSocket session id cannot be null");
+        Validate.notNull(sessionId, "WebSocket session id cannot be null");
+        LOG.debug("Remove WebSocket session: {}", sessionId);
+
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.remove(sessionId);
 		if (processor == null) {
-			throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
+            LOG.error("WebSocket session does not exist, id: {}. Cannot be removed.", sessionId);
+            return;
 		}
 		processor.block();
 	}
@@ -83,15 +97,36 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	@Override
 	public void execute(Runnable task) {
 		MessageHandlingRunnable mhr = (MessageHandlingRunnable) task;
-		String sessionId = SimpMessageHeaderAccessor.getSessionId(mhr.getMessage().getHeaders());
+        Message<?> message = mhr.getMessage();
+        String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
+        SimpMessageType messageType = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
 		synchronized (this) {
-			// System.out.println("Processing session id " + sessionId + ", " + mhr);
+            LOG.debug("Executing message ({}, {}) for WebSocket session: {}, handler: {}",
+                      this.getThreadNamePrefix(),
+                      messageType, sessionId,
+                      mhr.getClass().toString());
+
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
-				throw new IllegalStateException("WebSocket session does not exist, id:" + sessionId);
+                LOG.error("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
+                return;
 			}
-			// Add might fail but it's safe to ignore because processor was blocked during handled exception.
-			processor.add(mhr);
+            // send heartbeat as priority/first message
+            switch (messageType) {
+            case CONNECT:
+            case CONNECT_ACK:
+            case HEARTBEAT:
+                if (!processor.addPriority(mhr)) {
+                    LOG.error("Cannot add priority message to the processor, sessionId: {}. Message is not processed.",
+                              sessionId);
+                }
+                break;
+            default:
+                if (!processor.add(mhr)) {
+                    LOG.error("Cannot add message to the processor, sessionId: {}. Message is not processed.",
+                              sessionId);
+                }
+            }
 		}
 	}
 }

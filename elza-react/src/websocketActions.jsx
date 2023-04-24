@@ -79,7 +79,7 @@ export class websocket {
         this.eventMap = eventMap;
     }
 
-    connect = (heartbeatOut = 20000, heartbeatIn = 20000) => {
+    connect = (heartbeatOut = 20000, heartbeatIn = 45000) => {
         if (Stomp) {
             this.stompClient = Stomp.client(this.url);
             this.stompClient.debug = null;

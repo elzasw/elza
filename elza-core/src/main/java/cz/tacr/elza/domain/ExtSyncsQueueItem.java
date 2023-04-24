@@ -1,9 +1,20 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-
-import javax.persistence.*;
 import java.time.OffsetDateTime;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ext_syncs_queue_item")
 public class ExtSyncsQueueItem {
@@ -161,11 +172,9 @@ public class ExtSyncsQueueItem {
 
         EXPORT_NEW("K odeslání"),
 
-        EXPORT_START("Začít odesílání"),
+        EXPORT_START("Odesílání"),
 
         EXPORT_OK("Odesláno"),
-
-        EXPORT_CANCEL("Odesílání přerušeno"),
 
         ERROR("Chyba");
 
