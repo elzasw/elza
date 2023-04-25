@@ -11,6 +11,8 @@ import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +65,8 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @Service
 public class GroovyService {
+
+    private static final Logger log = LoggerFactory.getLogger(GroovyService.class);
 
     private static GroovyService _self;
 
@@ -318,6 +322,8 @@ public class GroovyService {
                     // identifikátorů z lokálních AP
                     intValue = dataTmp.getBinding().getBindingId() * -1;
                 } else {
+                    log.error("Empty RecordRef, dataId: ", dataTmp.getDataId());
+
                     throw new SystemException("RecordRef without any data, dataId: " + dataTmp.getDataId(),
                             BaseCode.DB_INTEGRITY_PROBLEM)
                                     .set("dataId", dataTmp.getDataId());

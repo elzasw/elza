@@ -359,7 +359,7 @@ public class PartService {
 
 
         String keyType = null;
-        if (result.getKeyValue() != null && state.getDeleteChange() != null) {
+        if (result.getKeyValue() != null && state.getDeleteChange() == null) {
             // has new keyValue and not deleted AP
             GroovyKeyValue keyValue = result.getKeyValue();
             keyType = StringUtils.stripToNull(keyValue.getKey());
@@ -488,7 +488,6 @@ public class PartService {
                 logger.warn("Archivní entita id " + accessPoint.getAccessPointId() + " má referenci sama na sebe!");
             }
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
-                ObjectListIterator.forEachPage(accessPointIds, accessPointRepository::updateToInit);
                 asyncRequestService.enqueue(accessPointIds);
             }
         }
