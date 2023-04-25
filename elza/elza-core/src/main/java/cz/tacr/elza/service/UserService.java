@@ -1956,4 +1956,22 @@ public class UserService {
         secCtx.setAuthentication(auth);
         return secCtx;
     }
+
+    public interface UserStats {
+
+        int getActiveUserCount();
+
+    }
+
+    public UserStats getStats() {
+        int activeUserCount = userRepository.countActive();
+        return new UserStats() {
+
+            @Override
+            public int getActiveUserCount() {
+                return activeUserCount;
+            }
+
+        };
+    }
 }

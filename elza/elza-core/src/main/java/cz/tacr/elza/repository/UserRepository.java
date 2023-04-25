@@ -4,10 +4,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Respozitory pro {@link UsrUser}.
@@ -81,4 +86,12 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 			" WHERE s1.accessPoint = :accessPoint" +
 			" AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
 	UsrUser findAccessPointOwner(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    /**
+     * Return number of valid levels
+     * 
+     * @return
+     */
+    @Query("SELECT COUNT (u) FROM usr_user u WHERE u.active = true")
+    int countActive();
 }
