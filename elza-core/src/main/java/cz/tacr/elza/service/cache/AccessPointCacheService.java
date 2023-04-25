@@ -59,6 +59,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
@@ -659,6 +660,29 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                         	Validate.notNull(itemSpec, "Item specification not found, itemSpecId: %s", item.getItemSpecId());
                        		item.setItemSpec(itemSpec);
                         }
+
+                        ArrData data = item.getData();
+                        if (data != null) {
+                            // restore data
+                            switch (data.getType()) {
+                            case RECORD_REF:
+                                ArrDataRecordRef dataRR = (ArrDataRecordRef) data;
+                                if (dataRR.getBindingId() != null) {
+                                    dataRR.setBinding(entityManager.getReference(ApBinding.class,
+                                                                                 dataRR.getBindingId()));
+                                }
+                                if (dataRR.getRecordId() != null) {
+                                    dataRR.setRecord(entityManager.getReference(ApAccessPoint.class,
+                                                                                dataRR.getRecordId()));
+                                }
+                                break;
+                            case FILE_REF:
+                                throw new IllegalStateException("FileRefs are not supported for APs");
+                            case STRUCTURED:
+                                throw new IllegalStateException("StructObjs are not supported for APs");
+                            }
+                        }
+
                         items.add(item);
                     }
                     // sort items
