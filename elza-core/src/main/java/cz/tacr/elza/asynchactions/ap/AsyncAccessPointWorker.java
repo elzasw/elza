@@ -71,6 +71,8 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
                 return null;
             });
         } catch (Throwable t) {
+            logger.error("Failed to process access point, id: {}, request: {}", accessPointId, request, t);
+
             new TransactionTemplate(transactionManager).execute(status -> {
                 handleException(t);
                 return null;

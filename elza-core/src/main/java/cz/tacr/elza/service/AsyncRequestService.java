@@ -312,10 +312,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Override
     public void onApplicationEvent(final AsyncRequestEvent event) {
         IAsyncRequest request = event.getAsyncRequest();
+        AsyncExecutor executor = getExecutor(request.getType());
         if (event.success()) {
-            getExecutor(request.getType()).onSuccess(event.getWorker());
+            executor.onSuccess(event.getWorker());
         } else {
-            getExecutor(request.getType()).onFail(event.getWorker(), event.getError());
+            executor.onFail(event.getWorker(), event.getError());
         }
     }
 

@@ -282,22 +282,24 @@ public abstract class AsyncExecutor {
     }
 
     public void onFail(IAsyncWorker worker, final Throwable error) {
+        IAsyncRequest request = worker.getRequest();
+        logger.error("Selhání requestu {}", request, error);
+
         synchronized (lockQueue) {
-            IAsyncRequest request = worker.getRequest();
-            logger.error("Selhání requestu {}", request, error);
             countRequest();
-            processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
+            processing.removeIf(r -> r.getRequest().getRequestId().equals(request.getRequestId()));
             deleteRequests(worker.getRequests());
             scheduleNext();
         }
     }
 
     public void onSuccess(IAsyncWorker worker) {
+        IAsyncRequest request = worker.getRequest();
+        logger.debug("Dokončení requestu {}", request);
+
         synchronized (lockQueue) {
-            IAsyncRequest request = worker.getRequest();
-            logger.debug("Dokončení requestu {}", request);
             countRequest();
-            processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
+            processing.removeIf(r -> r.getRequest().getRequestId().equals(request.getRequestId()));
             deleteRequests(worker.getRequests());
             scheduleNext();
         }
