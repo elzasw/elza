@@ -11,8 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler;
-import org.springframework.web.socket.messaging.SubProtocolWebSocketHandler.Stats;
 
 import cz.tacr.elza.controller.vo.AdminInfo;
 import cz.tacr.elza.controller.vo.LoggedUser;
@@ -48,9 +46,6 @@ public class AdminController implements AdminApi {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    SubProtocolWebSocketHandler webSocketHandler;
-
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     public ResponseEntity<AdminInfo> getAdminInfo() {
         AdminInfo ai = new AdminInfo();
@@ -73,8 +68,6 @@ public class AdminController implements AdminApi {
 
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     public ResponseEntity<LoggedUsers> getAdminLoggedUsers() {
-        
-        Stats stats = webSocketHandler.getStats();
 
         LoggedUsers lus = new LoggedUsers();
         List<Principal> sessions = clientOutboundChannelExecutor.getPrincipals();
