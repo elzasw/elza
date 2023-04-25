@@ -2202,4 +2202,31 @@ public class ArrangementService {
             return nodeId;
         }
     }
+
+    public interface ArrangementStats {
+
+        int getFundCount();
+
+        int getLevelCount();
+
+    };
+
+    public ArrangementStats getStats() {
+        long fundCount = fundRepository.count();
+        int levelCount = levelRepository.countValid();
+
+        return new ArrangementStats() {
+
+            @Override
+            public int getFundCount() {
+                return (int) fundCount;
+            }
+
+            @Override
+            public int getLevelCount() {
+                return levelCount;
+            }
+
+        };
+    }
 }

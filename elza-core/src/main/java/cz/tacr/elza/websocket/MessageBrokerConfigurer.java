@@ -104,14 +104,14 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
         @Override
         public void afterConnectionEstablished(final WebSocketSession session) throws Exception {
-            executor.addSession(session.getId());
+            executor.addSession(session);
             super.afterConnectionEstablished(session);
         }
 
         @Override
         public void afterConnectionClosed(final WebSocketSession session, final CloseStatus closeStatus) throws Exception {
             super.afterConnectionClosed(session, closeStatus);
-            executor.removeSession(session.getId());
+            executor.removeSession(session);
         }
     }
 }

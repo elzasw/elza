@@ -3545,4 +3545,22 @@ public class AccessPointService {
     public void lockWrite(ApAccessPoint accessPoint) {
         em.lock(accessPoint, LockModeType.PESSIMISTIC_WRITE);
     }
+
+    public interface AccessPointStats {
+        int getValidAccessPointCount();
+    };
+
+    public AccessPointStats getStats() {
+
+        Integer validAps = this.apStateRepository.countValid();
+
+        return new AccessPointStats() {
+
+            @Override
+            public int getValidAccessPointCount() {
+                return validAps;
+            }
+            
+        };
+    }
 }

@@ -113,4 +113,12 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
     @Query("SELECT COUNT (s) FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.comment IS NOT NULL")
     Integer countCommentsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
+    /**
+     * Return number of valid accesspoints
+     * 
+     * @return
+     */
+    @Query("SELECT COUNT (s) FROM ap_state s WHERE s.deleteChange IS NULL")
+    Integer countValid();
+
 }

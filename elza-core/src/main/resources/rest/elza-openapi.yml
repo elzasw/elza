@@ -536,8 +536,58 @@ paths:
       responses:
         200:
           description: Potvrzení o úspěšném stvoření
+  /admin/info:
+    get:
+      summary: Základní statistické údaje
+      operationId: getAdminInfo
+      tags:
+        - admin
+      responses:
+        200:
+          description: Basic administration info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminInfo"          
+  /admin/info/logged-users:
+    get:
+      summary: Seznam přihlášených uživatelů
+      operationId: getAdminLoggedUsers
+      tags:
+        - admin
+      responses:
+        200:
+          description: List of logged users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoggedUsers"          
 components:
   schemas:
+    AdminInfo:
+      type: object
+      description: Basic statistics about Elza instance
+      properties:
+        funds:
+          description: Number of funds
+          type: integer
+          format: int32
+        levels:
+          description: Number of valid levels
+          type: integer
+          format: int32
+        accessPoints:
+          description: Number of valid access points
+          type: integer
+          format: int32
+        users:        
+          description: Number of users
+          type: integer
+          format: int32
+        loggedUsers:        
+          description: Number of logged users
+          type: integer
+          format: int32
     CreateFund:
       required:
         - name
@@ -586,10 +636,30 @@ components:
             format: int32
         scopes:
           description: Seznam oblastí entit
-          type: array
+          type: arrays
           items:
             type: string
           minItems: 1
+    LoggedUser:
+      type: object
+      description: Přihlášený uživatel
+      properties:
+        user:
+          description: Uživatelské jméno
+          type: string
+    LoggedUsers:
+      type: object
+      description: Seznam přihlášených uživatelů
+      properties:
+        users:
+          description: Seznam uživatelů 
+          type: array
+          items:
+            $ref: '#/components/schemas/LoggedUser'
+        totalCount:
+          description: Celkový počet přihlášených uživatelů
+          type: integer
+          format: int32
     UpdateFund:
       type: object
       description: Změny archivního souboru
