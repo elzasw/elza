@@ -1,7 +1,12 @@
 package cz.tacr.elza.websocket;
 
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -11,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.support.MessageHandlingRunnable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.socket.WebSocketSession;
 
 /**
  * Třída umožňuje rozřazovat požadavky na základě klient session do konkrétních {@link WebSocketTaskProcessor},
@@ -27,6 +33,8 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
     private final Map<String, WebSocketTaskProcessor> webSocketTaskProcessors = new HashMap<>();
 
+    private final Map<String, WebSocketSession> sessions = new HashMap<>();
+
 	public WebSocketThreadPoolTaskExecutor() {
 		setMaxPoolSize(Integer.MAX_VALUE); // maximum possible threads
 		setKeepAliveSeconds(60); // keep alive thread for 60 seconds
@@ -41,14 +49,16 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 * @throws IllegalStateException WebSocket session is already registered.
 	 * @throws IllegalArgumentException WebSocket session id cannot be null.
 	 */
-	public synchronized void addSession(String sessionId) {
+    public synchronized void addSession(WebSocketSession session) {
+        String sessionId = session.getId();
         Validate.notNull(sessionId, "WebSocket session id cannot be null");
         LOG.debug("Adding WebSocket session: {}", sessionId);
 
 		WebSocketTaskProcessor processor = new WebSocketTaskProcessor();
 		if (webSocketTaskProcessors.put(sessionId, processor) != null) {
-			throw new IllegalStateException("WebSocket session is already registered, id:" + sessionId);
+            throw new IllegalStateException("WebSocket session is already registered, id:" + sessionId);
 		}
+        sessions.put(sessionId, session);
 		super.execute(processor);
 	}
 
@@ -79,7 +89,8 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 * @throws IllegalStateException WebSocket session does not exist.
 	 * @throws IllegalArgumentException WebSocket session id cannot be null.
 	 */
-	public synchronized void removeSession(String sessionId) {
+    public synchronized void removeSession(WebSocketSession session) {
+        String sessionId = session.getId();
         Validate.notNull(sessionId, "WebSocket session id cannot be null");
         LOG.debug("Remove WebSocket session: {}", sessionId);
 
@@ -88,6 +99,7 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             LOG.error("WebSocket session does not exist, id: {}. Cannot be removed.", sessionId);
             return;
 		}
+        sessions.remove(sessionId);
 		processor.block();
 	}
 
@@ -129,4 +141,12 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             }
 		}
 	}
+
+    public List<Principal> getPrincipals() {
+        Set<Principal> result = new HashSet<>();
+        sessions.forEach((sId, wss) -> {
+            result.add(wss.getPrincipal());
+        });
+        return new ArrayList<>(result);
+    }
 }

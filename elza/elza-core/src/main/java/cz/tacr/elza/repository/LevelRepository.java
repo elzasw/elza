@@ -1,19 +1,20 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.repository.vo.ItemChange;
-import cz.tacr.elza.service.arrangement.DeleteFundHistory;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 
 /**
  * Repozitory pro práci s hierarchickým stromem (level) AP.
@@ -106,4 +107,12 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Modifying
     @Query("UPDATE arr_level SET createChange = :change WHERE createChange.changeId IN :changeIds")
     void updateCreateChangeByChangeIds(@Param("changeIds") Collection<Integer> changeIds, @Param("change") ArrChange change);
+
+    /**
+     * Return number of valid levels
+     * 
+     * @return
+     */
+    @Query("SELECT COUNT (l) FROM arr_level l WHERE l.deleteChange IS NULL")
+    int countValid();
 }
