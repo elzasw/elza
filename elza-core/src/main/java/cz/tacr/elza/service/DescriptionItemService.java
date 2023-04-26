@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,7 +97,6 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.arrangement.SingleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
@@ -776,6 +776,82 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
 
     /**
+     * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
+     *
+     * @param retDescItem hodnota atributu
+     * @param change      změna, která se má použít pro vymazání
+     */
+    private void deleteAnonymousStructObject(final ArrDescItem retDescItem, final ArrChange change) {
+        ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
+        RulStructuredType structuredType = itemType.getEntity().getStructuredType();
+        if (structuredType != null) {
+            if (structuredType.getAnonymous()) {
+                ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
+                structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
+            }
+        }
+    }
+
+    /**
+     * Odstraní požadované hodnoty atributů.
+     *
+     * @param descItemsToDelete
+     *            hodnoty atributů k ostranění
+     * @param fundVersion
+     *            verze AS
+     * @param change
+     *            změna
+     * @param moveAfter
+     *            Flag to recalculate position of subsequent items
+     *            If all items of same type are deleted position does
+     *            not have to be recalculated
+     * @param force           
+     * @return smazané hodnoty atributů
+     */
+    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
+                                                    final ArrFundVersion fundVersion,
+                                                    final ArrChange change,
+                                                    final boolean moveAfter,
+                                                    final boolean force) {
+        Validate.notNull(fundVersion);
+        Validate.notEmpty(descItemsToDelete);
+        Validate.notNull(change);
+
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        List<ArrDescItem> results = deleteDescriptionItems(descItemsToDelete, fundVersion, change, moveAfter, force, changeContext);
+
+        changeContext.flush();
+
+        return results;
+    }
+
+    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
+                                                    final ArrFundVersion fundVersion,
+                                                    final ArrChange change,
+                                                    final boolean moveAfter,
+                                                    final boolean force,
+                                                    final BatchChangeContext changeContext) {
+        List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
+        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
+
+        Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
+                        "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
+
+        List<ArrDescItem> results = new ArrayList<>();
+        for (ArrDescItem descItem : deleteDescItems) {
+            if (!force && descItem.getReadOnly() != null && descItem.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+
+            ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter, changeContext);
+
+            results.add(deletedItem);
+        }
+
+        return results;
+    }
+
+    /**
      * Smaže hodnotu atributu.
      *
      *
@@ -792,7 +868,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param changeContext
      * @return smazaná hodnota atributu
      */
-    ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
+    public ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion version,
                                              final ArrChange change,
                                               final boolean moveAfter, BatchChangeContext changeContext) {
@@ -818,94 +894,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         changeContext.addRemovedItem(descItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
-                descItem.getDescItemObjectId(), changeContext);
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId(), changeContext);
 
         deleteAnonymousStructObject(retDescItem, change);
 
         changeContext.addRemovedItem(descItem);
 
         return retDescItem;
-    }
-
-    /**
-     * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
-     *
-     * @param retDescItem hodnota atributu
-     * @param change      změna, která se má použít pro vymazání
-     */
-    private void deleteAnonymousStructObject(final ArrDescItem retDescItem, final ArrChange change) {
-        ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
-        RulStructuredType structuredType = itemType.getEntity().getStructuredType();
-        if (structuredType != null) {
-            if (structuredType.getAnonymous()) {
-                ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
-                structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
-            }
-        }
-    }
-
-    /**
-     * Odstraní požadované hodnoty atributů.
-     *
-     * @param descItemsToDelete
-     *            hodnoty atributů k ostranění
-     * @param node
-     * @param fundVersion
-     *            verze AS
-     * @param change
-     *            změna
-     * @param moveAfter
-     *            Flag to recalculate position of subsequent items
-     *            If all items of same type are deleted position does
-     *            not have to be recalculated
-     * @return smazané hodnoty atributů
-     */
-    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
-                                                    final ArrNode node,
-                                                    final ArrFundVersion fundVersion,
-                                                    final ArrChange change,
-                                                    final boolean moveAfter,
-                                                    final boolean force) {
-        Validate.notNull(fundVersion);
-        Validate.notEmpty(descItemsToDelete);
-        Validate.notNull(change);
-
-        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
-        List<ArrDescItem> ret = deleteDescriptionItems(descItemsToDelete, node, fundVersion, change,
-                                                       moveAfter, force, changeContext);
-
-        changeContext.flush();
-
-        return ret;
-    }
-
-    public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
-                                                    final ArrNode node,
-                                                    final ArrFundVersion fundVersion,
-                                                    final ArrChange change,
-                                                    final boolean moveAfter,
-                                                    final boolean force,
-                                                    final BatchChangeContext changeContext) {
-        List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
-        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
-
-        Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
-                        "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
-
-        List<ArrDescItem> results = new ArrayList<>();
-        for (ArrDescItem descItem : deleteDescItems) {
-            if (!force && descItem.getReadOnly()!=null && descItem.getReadOnly()) {
-                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
-            }
-        	
-            ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter,
-                                                            changeContext);
-
-            results.add(deletedItem);
-        }
-
-        return results;
     }
 
     /**
@@ -1060,19 +1055,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ((ArrDataStructureRef) dataNew).setStructuredObject(copyStructuredObject);
         }
         return dataRepository.save(dataNew);
-    }
-
-    /**
-     * Vypropagovani zmeny hodnoty atributu - sockety.
-     *
-     * @param version  verze archivní pomůcky
-     * @param descItem hodnota atributu
-     */
-    private void publishChangeDescItem(final ArrFundVersion version, final ArrDescItem descItem) {
-        notificationService.publishEvent(
-                                         new EventChangeDescItem(version.getFundVersionId(),
-                                                 descItem.getDescItemObjectId(), descItem.getNode().getNodeId(),
-                                                 descItem.getNode().getVersion()));
     }
 
     /**
@@ -1770,6 +1752,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     ArrDataUriRef itemUriRef = new ArrDataUriRef();
                     itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
+                    break;
+                case DECIMAL:
+                    ArrDataDecimal itemDecimal = new ArrDataDecimal();
+                    itemDecimal.setValue(new BigDecimal(text));
+                    data = itemDecimal;
                     break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(),

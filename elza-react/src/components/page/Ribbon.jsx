@@ -5,18 +5,18 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux';
-import {IndexLinkContainer, LinkContainer} from 'react-router-bootstrap';
-import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components/shared';
-import {Dropdown, Button as BootstrapButton} from 'react-bootstrap';
-import {Button} from '../ui';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
-import {logout} from 'actions/global/login.jsx';
+import { connect } from 'react-redux';
+import { IndexLinkContainer, LinkContainer } from 'react-router-bootstrap';
+import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
+import { Dropdown, Button as BootstrapButton } from 'react-bootstrap';
+import { Button } from '../ui';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import { logout } from 'actions/global/login.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {userPasswordChange} from 'actions/admin/user.jsx';
-import {routerNavigate} from 'actions/router.jsx';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { userPasswordChange } from 'actions/admin/user.jsx';
+import { routerNavigate } from 'actions/router.jsx';
 import PasswordForm from '../admin/PasswordForm';
 import {
     URL_ENTITY,
@@ -62,7 +62,7 @@ class Ribbon extends AbstractReactComponent {
     componentDidMount() {
         const theme = localStorage.getItem("theme") || "light";
         document.getElementsByTagName('body')[0].className = theme;
-        this.setState({theme})
+        this.setState({ theme })
 
         this.trySetFocus();
     }
@@ -72,7 +72,7 @@ class Ribbon extends AbstractReactComponent {
     }
 
     trySetFocus = (props = this.props) => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, null, 'ribbon')) {
@@ -91,7 +91,7 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handleLogout = () => {
-        this.props.dispatch(logout()).then(() => {
+        this.props.dispatch(logout(true)).then(() => {
             const logoutUrl = window.logoutUrl;
             if (logoutUrl) {
                 location.assign(logoutUrl);
@@ -115,14 +115,14 @@ class Ribbon extends AbstractReactComponent {
 
     handleChangeTheme = () => {
         const body = document.getElementsByTagName('body')[0];
-        if(body.className.indexOf("light") >= 0){
-            this.setState({theme: "dark"})
+        if (body.className.indexOf("light") >= 0) {
+            this.setState({ theme: "dark" })
             body.className = body.className.replace("light", "dark");
-            localStorage.setItem("theme","dark")
+            localStorage.setItem("theme", "dark")
         } else {
-            this.setState({theme: "light"})
+            this.setState({ theme: "light" })
             body.className = body.className.replace("dark", "light");
-            localStorage.setItem("theme","light")
+            localStorage.setItem("theme", "light")
         }
     }
 
@@ -135,7 +135,7 @@ class Ribbon extends AbstractReactComponent {
             primarySection,
             fundId,
             versionId,
-            status: {saveCounter},
+            status: { saveCounter },
             showUser,
         } = this.props;
 
@@ -213,7 +213,7 @@ class Ribbon extends AbstractReactComponent {
         if (this.props.arr) {
             const arrParts = [];
             if (userDetail.hasRdPage(fundId)) {
-                
+
                 // právo na čtení
                 arrParts.push(
                     <IndexLinkContainer key="ribbon-btn-arr-index" to={urlFundTree(fundId, versionId)}>
@@ -342,13 +342,13 @@ class Ribbon extends AbstractReactComponent {
                         perms.USER_CONTROL_ENTITITY,
                         perms.GROUP_CONTROL_ENTITITY,
                     ) && (
-                        <LinkContainer key="ribbon-btn-admin" to="/admin">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-cog" />
-                                <span className="btnText">{i18n('ribbon.action.admin')}</span>
-                            </Button>
-                        </LinkContainer>
-                    )}
+                            <LinkContainer key="ribbon-btn-admin" to="/admin">
+                                <Button variant={'default'}>
+                                    <Icon glyph="fa-cog" />
+                                    <span className="btnText">{i18n('ribbon.action.admin')}</span>
+                                </Button>
+                            </LinkContainer>
+                        )}
                 </RibbonGroup>,
             );
         }
@@ -376,7 +376,7 @@ class Ribbon extends AbstractReactComponent {
                                 {userDetail.username} <Icon glyph="fa-user" />
                             </Dropdown.Toggle>
 
-                            <Dropdown.Menu popperConfig={{strategy: 'fixed'}}>
+                            <Dropdown.Menu popperConfig={{ strategy: 'fixed' }}>
                                 {userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
                                     <Dropdown.Item
                                         key="pass-change"
@@ -390,7 +390,7 @@ class Ribbon extends AbstractReactComponent {
                                 {
                                     <>
                                         <Dropdown.Item eventKey="3" onClick={this.handleChangeTheme}>
-                                            {this.state.theme === "dark" ? <Icon glyph="fa-check-square"/> : <Icon glyph="fa-square-o"/>} {i18n("ribbon.action.darkTheme")}
+                                            {this.state.theme === "dark" ? <Icon glyph="fa-check-square" /> : <Icon glyph="fa-square-o" />} {i18n("ribbon.action.darkTheme")}
                                         </Dropdown.Item>
                                         <Dropdown.Divider key="divider" />
                                     </>
@@ -408,15 +408,15 @@ class Ribbon extends AbstractReactComponent {
                                 </span>
                             </div>
                         )}
-                        </div>
+                    </div>
                 )}
-                </div>
+            </div>
         );
     }
 }
 
 function mapStateToProps(state) {
-    const {focus, login, userDetail, status, arrRegion} = state;
+    const { focus, login, userDetail, status, arrRegion } = state;
     return {
         serializedFilter: arrRegion.funds?.[arrRegion.activeIndex]?.fundDataGrid?.serializedFilter,
         focus,
@@ -426,4 +426,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(Ribbon);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(Ribbon);

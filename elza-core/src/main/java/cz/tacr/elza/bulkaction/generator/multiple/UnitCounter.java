@@ -131,7 +131,7 @@ public class UnitCounter {
         if (excludeWhen != null) {
             if (excludeWhen.isTrue(level)) {
                 // set as skip
-                unitCountAction.setSkipSubtree(level);
+                unitCountAction.setSkipSubtree(level, null);
                 return;
             }
         }
@@ -141,11 +141,6 @@ public class UnitCounter {
             if (!when.isTrue(level)) {
                 return;
             }
-        }
-
-        // stop further processing if set
-        if (config.isStopProcessing()) {
-            unitCountAction.setSkipSubtree(level);
         }
 
         // read default count from extra item
@@ -162,6 +157,8 @@ public class UnitCounter {
             }
         }
 
+        Consumer<LevelWithItems> lastUsedDetailCounter = null;
+
         // prepare output
         if (itemType != null) {
             for (ArrDescItem item : level.getDescItems()) {
@@ -177,25 +174,35 @@ public class UnitCounter {
                     count = vCnt;
                 }
                 // get mapping
-                Consumer<LevelWithItems> nextAction = null;
+                Consumer<LevelWithItems> detailCountAction = null;
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level, value, count);
                     } else {
-                        nextAction = unitCountAction.addValue(level, value, count);
+                        detailCountAction = unitCountAction.addValue(level, value, count);
                     }
                 }
 
-                if (nextAction != null) {
-                    nextAction.accept(level);
+                if (detailCountAction != null) {
+                    detailCountAction.accept(level);
+
+                    lastUsedDetailCounter = detailCountAction;
                 }
             }
         }
 
         // StructObj mapping
         if (srcStructObjType != null) {
-            countStructObjs(srcStructObjType, level, unitCountAction);
+            Consumer<LevelWithItems> usedDetailCounter = countStructObjs(srcStructObjType, level, unitCountAction);
+            if (usedDetailCounter != null) {
+                lastUsedDetailCounter = usedDetailCounter;
+            }
+        }
+
+        // stop further processing if set
+        if (config.isStopProcessing()) {
+            unitCountAction.setSkipSubtree(level, lastUsedDetailCounter);
         }
     }
 
@@ -204,30 +211,45 @@ public class UnitCounter {
      * 
      * @param itemType
      * @param Level.get
+     * @return
      */
-    private void countStructObjs(@Nonnull ItemType itemType, LevelWithItems level,
+    private Consumer<LevelWithItems> countStructObjs(@Nonnull ItemType itemType, LevelWithItems level,
                                 UnitCountAction unitCountAction) {
 
         // List<ArrDescItem> descItems = level.getDescItems();
         List<ArrDescItem> descItems = level.getInheritedDescItems(itemType);
         if (CollectionUtils.isEmpty(descItems)) {
-            return;
+            return null;
         }
+        Consumer<LevelWithItems> lastUsedDetailCounter = null;
         for (ArrDescItem item : descItems) {
             // fetch valid items from packet
             ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
             Integer packetId = dataStructObjRef.getStructuredObjectId();
-            countStructObj(packetId, level, unitCountAction);
+            Consumer<LevelWithItems> detailCounter = countStructObj(packetId, level, unitCountAction);
+            if (detailCounter != null) {
+                lastUsedDetailCounter = detailCounter;
+            }
         }
+        return lastUsedDetailCounter;
     }
 
-    private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
+    /**
+     * Count structured object
+     * 
+     * @param packetId
+     * @param level
+     * @param unitCountAction
+     * @return Return detail counter to be applied on the level
+     */
+    private Consumer<LevelWithItems> countStructObj(Integer packetId, LevelWithItems level,
+                                                    UnitCountAction unitCountAction) {
         if (unitCountAction.isCountedObject(packetId)) {
-            Consumer<LevelWithItems> nextAction = unitCountAction.getCountedAction(packetId);
-            if (nextAction != null) {
-                nextAction.accept(level);
+            Consumer<LevelWithItems> detailCounter = unitCountAction.getCountedAction(packetId);
+            if (detailCounter != null) {
+                detailCounter.accept(level);
             }
-            return;
+            return detailCounter;
         }
 
         // TODO: Do filtering in DB
@@ -239,26 +261,28 @@ public class UnitCounter {
                 // find mapping
                 String value = objectMapping.get(structObjItem.getItemSpecId());
                 if (value != null) {
-                    Consumer<LevelWithItems> nextAction;
+                    Consumer<LevelWithItems> detailCounter;
                     if (unitCountAction.isLocal()) {
                         unitCountAction.createDescItem(level, value, 1);
-                        nextAction = null;
+                        detailCounter = null;
                     } else {
-                        nextAction = unitCountAction.addValue(level, value, 1);
+                        detailCounter = unitCountAction.addValue(level, value, 1);
                     }
 
                     // mark as counted
-                    unitCountAction.addCountedObject(packetId, nextAction);
+                    unitCountAction.addCountedObject(packetId, detailCounter);
                     // run extra action
-                    if (nextAction != null) {
-                        nextAction.accept(level);
+                    if (detailCounter != null) {
+                        detailCounter.accept(level);
                     }
                     // only first mapping is used and then return
                     // if there are multiple structObjItems matching
                     // given itemType only first one is counted
-                    return;
+                    return detailCounter;
                 }
             }
         }
+
+        return null;
     }
 }

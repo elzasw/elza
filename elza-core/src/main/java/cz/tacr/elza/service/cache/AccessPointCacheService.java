@@ -40,6 +40,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -381,7 +383,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         this.entityManager.flush();
         this.entityManager.clear();
     
-        synchronized (this){
+        synchronized (this) {
 			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 			if (oldApCachedAccessPoint != null) {
 				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
@@ -521,6 +523,23 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cachedBinding.setValue(binding.getValue());
         cachedBinding.setBindingState(bindingState);
         return cachedBinding;
+    }
+
+    public EntityRef createEntityRef(CachedAccessPoint accessPoint) {
+        EntityRef entityRef = new EntityRef();
+        entityRef.setId(accessPoint.getUuid());
+        
+        List<CachedPart> parts = accessPoint.getParts();
+        for (CachedPart part : parts) {
+            if (part.getPartId().equals(accessPoint.getPreferredPartId())) {
+                entityRef.setLabel(ApFactory.findDisplayIndexValue(part.getIndices()));
+            } else {
+                if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
+                    entityRef.setNote(ApFactory.findDisplayIndexValue(part.getIndices()));
+                }
+            }
+        }
+        return entityRef;
     }
 
     @Transactional

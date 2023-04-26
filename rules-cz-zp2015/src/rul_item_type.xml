@@ -933,6 +933,16 @@
         <use-specification>true</use-specification>
     </item-type>
 
+    <!-- Jiné rozměry -->
+    <item-type code="ZP2015_SIZE_OTHER" data-type="DECIMAL">
+        <name>Jiné rozměry</name>
+        <shortcut>Jiné rozměry</shortcut>
+        <description>ZP5.2.4 Jiné rozměry - specifikace a hodnota</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
     <!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
     <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
         <name>Technika záznamu</name>

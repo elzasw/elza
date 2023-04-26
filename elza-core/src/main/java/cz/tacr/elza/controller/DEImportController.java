@@ -106,6 +106,8 @@ public class DEImportController {
 
             }
             if (previousPhase == ImportPhase.SECTIONS && importPosition != null) {
+                // TODO: consider using other notification fo resetting node structure,
+                //       e.g.: ADD_LEVEL_UNDER
                 eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE,
                         importPosition.getFundVersion().getFundVersionId(), importPosition.getParentLevel().getNodeId()));
                 return false;

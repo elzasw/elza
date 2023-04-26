@@ -26,26 +26,26 @@ export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
     }
 
     return (
-        <TooltipTrigger 
+        <TooltipTrigger
             style={{width: "auto"}}
             onMouseEnter={handleMouseEnter}
-            content={ 
-            fetching 
+            content={
+            fetching
                 ? <div style={{
-                    width: "30px", 
-                    height: "30px", 
-                    display:"flex", 
-                    alignItems: "center", 
+                    width: "30px",
+                    height: "30px",
+                    display:"flex",
+                    alignItems: "center",
                     justifyContent: "center"}}
                 >
                     <Icon glyph="fa-spinner" className="fa-spin"/>
 
-                </div> 
+                </div>
                 : <div>
                     <div>{`${i18n("ap.detail.replacingEntities")}: `}</div>
                     {entities?.map((entity) => {
                         return <div>
-                            <Link style={{color: "#33afff"}} to={getArchiveEntityUrl(entity.id)}> {entity.name} </Link>
+                            <Link style={{color: "#33afff"}} to={getArchiveEntityUrl(entity.id)}> {`${entity.id}: ${entity.name || i18n("ap.detail.replacedEntity.noName")}`} </Link>
                         </div>
                     })
                 }

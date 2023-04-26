@@ -23,6 +23,7 @@ public class MessageProcessingExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(MessageProcessingExceptionHandler.class);
 
     @Autowired
+    @Qualifier("clientInboundChannelExecutor")
     private transient WebSocketThreadPoolTaskExecutor executor;
 
     @Autowired

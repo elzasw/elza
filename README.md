@@ -63,6 +63,15 @@ ENDPOINT=http://localhost:8080
 ``` 
 `ENDPOINT` - kam bude komunikovat proxy pro vývoj klienta
 
+
+Pokud server neběží v rootu (běží např na /elza) je možné přenastavit adresu v souboru .rescriptsrc:
+        } else {
+            config.output.publicPath = '/elza';  // Doplněný prefix
+            return config;
+        }
+Současně je nutné pro vývoj upravit v souboru public/index.html a to změnit: var serverContextPath = "/elza";
+
+
 ### Release sestavení a spuštění war v Tomcat
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
 Podrobnosti o nastavení viz sekce 'Databázové připojení'.
@@ -87,6 +96,9 @@ Uživatelské rozhranní najdete na adrese http://localhost:3000.
 
 Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
 ![IntelliJ Idea](idea.png)
+
+Pro spuštění se speciální konfigurací lze použít parametry:  `--spring.config.location=classpath:/elza.yaml,file:./config-small/elza.yaml`
+První elza.yaml se načte přímo z aplikace a druhý z cesty.
 
 ### Sestavení instalátoru aplikace
 * Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is-unicode.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.

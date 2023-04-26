@@ -6,9 +6,9 @@ export interface RevisionPart {
     updatedPart?: ApPartVO;
 }
 
-export interface RevisionItem {
-    item?: ApItemVO;
-    updatedItem?: ApItemVO;
+export interface RevisionItem<T extends ApItemVO = ApItemVO> {
+    item?: T;
+    updatedItem?: T;
     typeId: number;
     "@class": string;
 }

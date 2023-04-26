@@ -958,16 +958,18 @@ public class UserService {
 
         user = userRepository.save(user);
 
-        for (Map.Entry<UsrAuthentication.AuthType, String> entry : valuesMap.entrySet()) {
-            UsrAuthentication.AuthType authType = entry.getKey();
-            String value = entry.getValue();
-            if (StringUtils.isEmpty(value)) {
-                throw new BusinessException("Hodnota musí být vyplněna", BaseCode.PROPERTY_IS_INVALID)
-                        .set("type", authType);
+        if (valuesMap != null) {
+            for (Map.Entry<UsrAuthentication.AuthType, String> entry : valuesMap.entrySet()) {
+                UsrAuthentication.AuthType authType = entry.getKey();
+                String value = entry.getValue();
+                if (StringUtils.isEmpty(value)) {
+                    throw new BusinessException("Hodnota musí být vyplněna", BaseCode.PROPERTY_IS_INVALID)
+                            .set("type", authType);
+                }
+                UsrAuthentication authentication = new UsrAuthentication();
+                updateAuth(user, authType, value, authentication);
+                authenticationRepository.save(authentication);
             }
-            UsrAuthentication authentication = new UsrAuthentication();
-            updateAuth(user, authType, value, authentication);
-            authenticationRepository.save(authentication);
         }
 
         createUserEvent(user);

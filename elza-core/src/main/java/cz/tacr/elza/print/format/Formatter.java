@@ -1,8 +1,11 @@
 package cz.tacr.elza.print.format;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.Node;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.item.Item;
@@ -20,18 +23,42 @@ public class Formatter {
 	 */
 	List<FormatAction> actions = new ArrayList<>();
 
+    LinkedList<ConditionalFormatAction> conFormActionsStack = new LinkedList<>();
+
 	/**
 	 * Add formatting action
 	 * @param action
 	 * @return Return this formatter
 	 */
-	Formatter addAction(FormatAction action) {
-		actions.add(action);
+    protected Formatter addAction(FormatAction action) {
+        ConditionalFormatAction cfa = getActiveConditionalAction();
+        if (cfa != null) {
+            cfa.addAction(action);
+        } else {
+            actions.add(action);
+        }
 		return this;
 	}
 
+    private ConditionalFormatAction getActiveConditionalAction() {
+        return conFormActionsStack.peek();
+    }
+
+    private void pushConditionalAction(ConditionalFormatAction cfa) {
+        conFormActionsStack.push(cfa);
+    }
+
+    private void popConditionalAction() {
+        conFormActionsStack.pop();
+        return;
+    }
+
     protected FormatContext createFormatCtx() {
         return new FormatContext();
+    }
+
+    public Formatter addStaticValue(String value) {
+        return addAction(new StaticValueFormatter(value));
     }
 
 	/**
@@ -208,6 +235,34 @@ public class Formatter {
      */
     public Formatter setSpecName(String code, String name) {
         return addAction(new SetSpecName(code, name));
+    }
+
+    public Formatter when(Expression expr) {
+        When when = new When(expr);
+        addAction(when);
+        pushConditionalAction(when);
+        return this;
+    }
+
+    public Formatter otherwise() {
+        ConditionalFormatAction cfa = conFormActionsStack.peek();
+        if (cfa == null) {
+            throw new BusinessException("Keyword 'otherwise' can be used only after keyword 'when'",
+                    BaseCode.INVALID_STATE);
+        }
+        if (cfa instanceof When) {
+            When when = (When) cfa;
+            when.otherwise();
+        } else {
+            throw new BusinessException("Keyword 'otherwise' can be used only after keyword 'when'",
+                    BaseCode.INVALID_STATE);
+        }
+        return this;
+    }
+
+    public Formatter end() {
+        popConditionalAction();
+        return this;
     }
 
     /**

@@ -529,7 +529,7 @@ var messages = {
     "arr.fundAction.state.interrupted": "Přerušeno",
     "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
-    
+
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
@@ -618,10 +618,10 @@ var messages = {
     "arr.fund.bulkModifications.operationType.setSpecification": "Nahradit specifikaci za jinou",
     "arr.fund.bulkModifications.operationType.setEnum": "Nahradit hodnotu za jinou",
     "arr.fund.bulkModifications.operationType.delete": "Odstranit celý prvek popisu",
-    "arr.fund.bulkModifications.itemsArea.page": "Všechny JP na stránce ({0})",
-    "arr.fund.bulkModifications.itemsArea.all": "Všechny JP v AS",
-    "arr.fund.bulkModifications.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
-    "arr.fund.bulkModifications.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
+    "arr.fund.bulkModifications.itemsArea.page": "Všechny na stránce",
+    "arr.fund.bulkModifications.itemsArea.all": "Všechny v archivním souboru",
+    "arr.fund.bulkModifications.itemsArea.selected": "Zaškrtnuté na stránce",
+    "arr.fund.bulkModifications.itemsArea.unselected": "Odškrtnuté na stránce",
     "arr.fund.bulkModifications.specs": "Aplikovat na specifikace",
     "arr.fund.bulkModifications.values": "Aplikovat na hodnoty",
     "arr.fund.bulkModifications.warn": "Opravdu chcete provést akci nad celým AS?",
@@ -831,7 +831,7 @@ var messages = {
 
     "arr.history.change.title.unknown": "neznámý",
     "arr.history.change.title.CREATE_AS": "vytvoření AS",
-    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",    
+    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
     "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
     "arr.history.change.title.ADD_LEVEL": "založení JP",
     "arr.history.change.title.MOVE_LEVEL": "přesun JP",
@@ -843,7 +843,7 @@ var messages = {
     "arr.history.change.title.ADD_DESC_ITEM": "založení atributu",
     "arr.history.change.title.DELETE_DESC_ITEM": "zrušení atributu",
     "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
-    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",    
+    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
     "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA": "založení strukturovaného typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": "hromadné založení strukt. typu",
@@ -865,7 +865,7 @@ var messages = {
     "arr.history.change.title.REPLACE_REGISTER": "náhrada přístupového bodu",
     "arr.history.change.title.REPLACE_PARTY": "party replace",
     "arr.history.change.title.GENERATE_OUTPUT": "generování výstupu",
-    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",    
+    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",
     "arr.history.change.title.CHANGE_SCENARIO_ITEMS": "změna záznamu podle scénářů",
     "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
     "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
@@ -988,7 +988,7 @@ var messages = {
     "subNodeForm.calculate-user.confirm":
         "Pole již nebude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
     "subNodeForm.calculate-auto.confirm":
-        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
+        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše zamčené",
@@ -1120,6 +1120,7 @@ var messages = {
     "ap.binding.replaced": "nahrazená",
 
     "ap.binding.action.synchronize": "Aktualizace údajů z ext. systému",
+    "ap.binding.action.synchronize.confirmation": "Opravdu chcete aktualizovat záznam entity z externího systému? Případné změny neopakovatelných částí záznamu entity budou přepsány.",
     "ap.binding.action.update": "Zápis změn do ext. systému",
     "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
     "ap.binding.action.take-rel-entities": "Převzetí napojených entit",
@@ -1138,6 +1139,10 @@ var messages = {
     "ap.binding.extState.ERS_INVALID": "neplatná",
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
+
+    "ap.copy.title": "Kopie archivní entity",
+    "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
+    "ap.copy.scope": "Oblast",
 
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
@@ -1159,6 +1164,7 @@ var messages = {
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
     "ap.detail.replacingEntities": "Nahrazuje entity",
+    "ap.detail.replacedEntity.noName": "Bez názvu",
     "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",
@@ -1168,6 +1174,16 @@ var messages = {
     "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
+    "ap.push-to-ext.multipleSyncs.message": "Nahrání do externího systému není možné pro entity, které mají napojen více než jeden externí systém.",
+    "ap.push-to-ext.readOnly.message": "Externí systém napojený k vybrané entitě je určen pouze pro čtení.",
+    "ap.push-to-ext.unsyncedEntities.title": "Odesílaný záznam odkazuje na jiné entity, které nejsou zapsány v cílovém externím systému. ",
+    "ap.push-to-ext.unsyncedEntities.message": "Po potvrzení akce nedojde k odeslání všech vztahů. Záznam zůstane ve stavu Lokální změna nebo může dojít k celkové chybě odeslání.\nPro dosažení aktivní synchronizace je nutné odeslání všech souvisejících entit. Po jejich odeslání je třeba opětovně zapsat tuto entitu do externího systému.",
+    "ap.push-to-ext.unsyncedEntities.listTitle": "Dotčené části záznamu entity:",
+    "ap.push-to-ext.selectedExtSystem.message": "Přejete si zapsat entitu <b>{0}</b> do externího systemu <b>{1}</b>?",
+    "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
+    "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
+    "ap.push-to-ext.failed.title": "Chyba při odesílání entity",
+    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Synchronizace s externími systémy",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",

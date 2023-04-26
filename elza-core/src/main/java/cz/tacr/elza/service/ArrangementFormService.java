@@ -283,7 +283,7 @@ public class ArrangementFormService {
                 .getFundVersionId());
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, node, fundVersion, change, true,
+            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, fundVersion, change, true,
                                                                         false,
                                                                         changeContext));
 		}
@@ -292,7 +292,7 @@ public class ArrangementFormService {
             for (ArrDescItem updateDescItem : updateItems) {
                 ArrDescItem updatedItem = descriptionItemService.updateValueAsNewVersion(fundVersion, change,
                                                                                          updateDescItem, changeContext,
-                                                               false);
+                                                                                         false);
                 result.add(updatedItem);
             }
 		}
@@ -313,13 +313,15 @@ public class ArrangementFormService {
 	}
 
 	/**
-	 * Update description item and return form data
-	 *
-	 * @param fundVersion
-	 * @param nodeVersion
-	 * @param descItemVO
-	 * @param createVersion
-	 */
+     * Update description item and return form data
+     * 
+     * Method is called from WebSocket Controller
+     *
+     * @param fundVersion
+     * @param nodeVersion
+     * @param descItemVO
+     * @param createVersion
+     */
 	@Transactional
 	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
@@ -328,6 +330,11 @@ public class ArrangementFormService {
 							   ArrItemVO descItemVO,
 							   boolean createVersion,
 							   StompHeaderAccessor requestHeaders) {
+
+        // There is list of actions after transaction
+        // - send response to client (highest priority)
+        // - send node change notification
+        // - post node validation request - after above notifications are submitted
 
 		// alternative way of authorization - not finished
 		/*

@@ -113,7 +113,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assert.assertFalse(nodes.isEmpty());
         TreeNodeVO next = nodes.iterator().next();
 
-        post((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
+        post((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
 
 		while (true) {
             logger.info("Čekání na dokončení asynchronních operací...");

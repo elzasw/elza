@@ -182,10 +182,10 @@ public class ApBuilder {
             itemList = Collections.emptyList();
         }
 
-        Integer parentPartId = revPart.getParentPartId();
-        Part result = new Part(null, parentPartId,
-                PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
-                itemList, null, preferred);
+        Part parentPart = getParentPart(revPart);
+        Part result = new Part(revPart.getPartId(), 
+                               PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
+                               itemList, parentPart, preferred);
         this.parts.add(result);
         this.revPartIdMap.put(revPart.getPartId(), result);
         return result;
@@ -201,8 +201,9 @@ public class ApBuilder {
 
         Integer parentPartId = part.getParentPartId();
         boolean preferred = part.getPartId().equals(preferredPartId);
-        Part result = new Part(part.getPartId(), parentPartId, PartType.fromValue(part.getPartTypeCode()),
-                abstractItemList, null, preferred);
+        Part result = new Part(part.getPartId(), 
+                               PartType.fromValue(part.getPartTypeCode()), 
+                               abstractItemList, partIdMap.get(parentPartId), preferred);
         this.parts.add(result);
         this.partIdMap.put(part.getPartId(), result);
         return result;
@@ -219,16 +220,16 @@ public class ApBuilder {
 
         Integer parentPartId = apPart.getParentPartId();
         boolean preferred = apPart.getPartId().equals(preferredPartId);
-        Part result = new Part(apPart.getPartId(), parentPartId,
-                PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
-                abstractItemList, null, preferred);
+        Part result = new Part(apPart.getPartId(),
+                               PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
+                               abstractItemList, partIdMap.get(parentPartId), preferred);
         this.parts.add(result);
         this.partIdMap.put(result.getId(), result);
         return result;
     }
 
     public void setAccessPoint(CachedAccessPoint cachedAcessPoint) {
-        
+
         id = cachedAcessPoint.getAccessPointId();
         preferredPartId = cachedAcessPoint.getPreferredPartId();
 
@@ -239,7 +240,6 @@ public class ApBuilder {
         }
 
         fillParentParts();
-        
     }
 
     public void setAccessPoint(ApState apState, List<ApPart> apParts, List<ApItem> itemList) {
@@ -357,7 +357,7 @@ public class ApBuilder {
                     part = createPart(revPart, items, false);
                 } else 
                 // is new main part
-                if(revPart.getRevParentPartId()==null) {
+                if (revPart.getRevParentPartId() == null) {
                     part = createPart(revPart, items, false);
                 } else {
                     part = null;
@@ -376,13 +376,12 @@ public class ApBuilder {
                 }
             }
         }
-        
+
         // create sub parts
         for (ApRevPart revPart : subpartsToCreate) {
             List<ApRevItem> items = itemPartMap.get(revPart.getPartId());
             createPart(revPart, items, false);
         }
-
     }
 
     private void updatePart(Part part, List<ApRevItem> revItems) {
@@ -394,12 +393,12 @@ public class ApBuilder {
             Integer origObjectId = revItem.getOrigObjectId();
             //
             List<AbstractItem> itemList = part.getItems();
-            if(origObjectId!=null) {
+            if (origObjectId != null) {
                 // item is updated
                 AbstractItem prevItem = objectIdItemMap.remove(origObjectId);
                 itemList.remove(prevItem);
 
-                if(revItem.isDeleted()) {
+                if (revItem.isDeleted()) {
                     // deleted - nothing to add
                     continue;
                 }
@@ -407,7 +406,18 @@ public class ApBuilder {
             // add new item
             itemList.add(createItem(revItem));
         }
+    }
 
+    private Part getParentPart(ApRevPart revPart) {
+        Integer parentPartId = revPart.getParentPartId();
+        Integer revParentPartId = revPart.getRevParentPartId(); 
+        if (parentPartId != null) {
+            return partIdMap.get(parentPartId);
+        }
+        if (revParentPartId != null) {
+            return revPartIdMap.get(revParentPartId);
+        }
+        return null;
     }
 
     public Part getPartByRevPartId(Integer revPartId) {
