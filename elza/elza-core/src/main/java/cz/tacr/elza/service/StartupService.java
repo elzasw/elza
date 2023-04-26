@@ -275,8 +275,14 @@ public class StartupService implements SmartLifecycle {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                asyncRequestService.start();
-                arrangementService.startNodeValidation();
+                try {
+                    asyncRequestService.start();
+                    arrangementService.startNodeValidation();
+                } catch (Throwable t) {
+                    logger.error("Unexpected error in after commit initialization", t);
+                } finally {
+                    logger.info("After commit initialization finished.");
+                }
             }
         });
 
