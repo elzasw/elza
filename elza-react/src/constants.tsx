@@ -147,6 +147,7 @@ export enum CoordinateFileType {
 export const CLS_CALCULABLE = 'calculable';
 
 export const TREE = 'tree';
+export const NODE = 'node';
 export const GRID = 'grid';
 export const MOVEMENTS = 'movements';
 export const OUTPUTS = 'outputs';
@@ -191,7 +192,7 @@ export const urlFundBase = (fundId: number, versionId?: number) => {
         : urlFundWithVersion(fundId, versionId);
 }
 
-export const urlNode = (nodeId: number | undefined) => {
+export const urlNode = (nodeId: number | string | undefined) => {
     if (nodeId == null) {
         console.log("url fund tree")
         return URL_FUND_TREE;
@@ -204,12 +205,16 @@ const fundSub = (fundId: number, versionId: number | undefined, sub: string, sub
     return subId == null ? url : url + '/' + subId;
 }
 
+export const urlFundNode = (fundId: number, versionId?: number, nodeId?: number) => {
+    return fundSub(fundId, versionId, `${NODE}/${nodeId}`);
+}
+
 export const urlFundTree = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, TREE);
 }
 
-export const urlFundGrid = (fundId: number, versionId?: number) => {
-    return fundSub(fundId, versionId, GRID);
+export const urlFundGrid = (fundId: number, versionId?: number, filter?: string) => {
+    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter="+filter : ""}`;
 }
 
 export const urlFundMovements = (fundId: number, versionId?: number) => {

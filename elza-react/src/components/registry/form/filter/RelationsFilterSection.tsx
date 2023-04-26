@@ -24,6 +24,7 @@ type OwnProps = {
     nameFormSection?: string; // název pro FormSection
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
     scopeId?: number;
+    rulSetsIds?: number[];
 }
 
 type Props = {
@@ -37,6 +38,7 @@ const RelationsFilterSection = ({
     nameFormSection = "", 
     name = 'ap.ext-search.section.relations',
     scopeId,
+    rulSetsIds,
 }: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
@@ -47,11 +49,13 @@ const RelationsFilterSection = ({
             relApi={relApi}
             disabled={submitting}
             scopeId={scopeId}
+            rulSetsIds={rulSetsIds}
         />
     </FormSection>
 };
 
 interface RelFilterProps {
+    itemSpec?: RulDescItemSpecExtVO;
     itemType: RulDescItemTypeExtVO;
     obj: any;
 }
@@ -59,7 +63,7 @@ interface RelFilterProps {
 const renderRelFilter = (index: number, disabled: boolean, item: RelFilterProps, remove: () => void) => {
     return <Row className="rel-filter mb-1" key={index}>
         <Col xs={10}>
-            {item.itemType && <span className="type">{item.itemType.name}</span>}
+            {item.itemType && <span className="type">{item.itemType.name}</span>}{item.itemSpec && <span className="type">: {item.itemSpec.name}</span>}
             {item.obj && <span className="value">{item.obj.name}</span>}
         </Col>
         <Col xs={2} className="remove">
@@ -75,15 +79,17 @@ interface RelFilterFieldProps extends WrappedFieldArrayProps<string> {
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
     scopeId?: number;
+    rulSetsIds?: number[];
 }
 
-const RelFilters: React.FC<RelFilterFieldProps> = memo(({
+const RelFilters: React.FC<RelFilterFieldProps> = ({
     fields, 
     disabled = false, 
     meta, 
     relApi, 
     dispatch, 
     scopeId,
+    rulSetsIds,
     ...props
 }) => {
         return <>
@@ -92,14 +98,20 @@ const RelFilters: React.FC<RelFilterFieldProps> = memo(({
                     modalDialogShow(
                         this,
                         i18n('ap.ext-search.section.extends.title'),
-                        <RelationFilterModal initialValues={{
-                            area: Area.ALLNAMES,
-                            onlyMainPart: false,
-                            scopeId,
-                        }} relApi={relApi} onSubmit={(data) => {
+                        <RelationFilterModal 
+                            initialValues={{
+                                area: Area.ALLNAMES,
+                                onlyMainPart: false,
+                                scopeId,
+                                itemType: {id: null, name: i18n('ap.ext-search.input.select.all')}
+                            }} 
+                            relApi={relApi} 
+                            onSubmit={(data) => {
                                 fields.push(data);
                                 dispatch(modalDialogHide());
-                            }} />,
+                            }} 
+                            rulSetsIds={rulSetsIds}
+                            />,
                         ),
                 );
             }}><Icon glyph="fa-plus"/></Button>
@@ -113,7 +125,7 @@ const RelFilters: React.FC<RelFilterFieldProps> = memo(({
                 )}
             </div>}
             </>
-});
+};
 
 const mapStateToProps = (state: any, props: any) => {
     const selector = formValueSelector(props.formName);

@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.AutoValue;
+import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
+import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.core.data.ItemType;
@@ -22,6 +24,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.RevStateApproval;
@@ -32,10 +35,15 @@ import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.RevisionService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @RestController
 @RequestMapping("/api/v1")
 public class AccessPointController implements AccesspointsApi {
+
+    @Autowired
+    AccessPointCacheService apCacheService;
 
     @Autowired
     AccessPointService accessPointService;
@@ -51,8 +59,21 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
+    public ResponseEntity<EntityRef> copyAccessPoint(String id, @Valid CopyAccessPointDetail copyAccessPointDetail) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+        ApScope scope = accessPointService.getApScope(copyAccessPointDetail.getScope());
+        ApAccessPoint copyAccessPoint = accessPointService.copyAccessPoint(accessPoint, scope, copyAccessPointDetail.getReplace(), 
+                                                                           copyAccessPointDetail.getSkipItems());
+        CachedAccessPoint cachedAccessPoint = apCacheService.findCachedAccessPoint(copyAccessPoint.getAccessPointId());
+        EntityRef entityRef = apCacheService.createEntityRef(cachedAccessPoint);
+        return ResponseEntity.ok(entityRef);
+    }
+
+    @Override
+    @Transactional
     public ResponseEntity<Void> deleteAccessPoint(String id, @Valid DeleteAccessPointDetail deleteAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+        accessPointService.lockWrite(accessPoint);
         ApState apState = accessPointService.getStateInternal(accessPoint);
         ApAccessPoint replacedBy = null;
         boolean copyAll = false;
@@ -100,6 +121,18 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
+    public ResponseEntity<Void> validateAccessPoint(String id) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+        ApState apState = accessPointService.getStateInternal(accessPoint);
+
+        accessPointService.checkPermissionForEdit(apState);
+        accessPointService.validate(accessPoint, apState, true);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
     public ResponseEntity<Void> createRevision(Integer id) {
         ApState state = accessPointService.getStateInternal(id);
 
@@ -127,6 +160,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> changeStateRevision(Integer id, RevStateChange revStateChange) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
 
         RevStateApproval revNextState = RevStateApproval.valueOf(revStateChange.getState().getValue());
         Integer nextTypeId = revStateChange.getTypeId();
@@ -142,6 +176,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteRevisionPart(Integer id, Integer partId) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
 
         revisionService.deletePart(state, partId);
         return ResponseEntity.ok().build();
@@ -206,6 +241,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> setPreferNameRevision(Integer id, Integer partId) {
         ApState state = accessPointService.getStateInternal(id);
+        accessPointService.lockWrite(state.getAccessPoint());
         revisionService.setPreferName(state, partId);
         return ResponseEntity.ok().build();
     }

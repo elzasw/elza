@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -472,7 +471,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @return mapu všech uzlů stromu (nodeid uzlu --> uzel)
      */
     private Map<Integer, TreeNode> createVersionTreeCache(final ArrFundVersion version) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         Integer rootId = version.getRootNode().getNodeId();
         ArrChange change = version.getLockChange();
@@ -626,7 +625,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
     synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
-        Assert.notNull(version, "Verze AS není vyplněna");
+        Validate.notNull(version, "Verze AS není vyplněna");
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
@@ -648,7 +647,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param fund archivní soubor
      */
     synchronized public void invalidateFundVersion(final ArrFund fund) {
-        Assert.notNull(fund, "AS musí být vyplněn");
+        Validate.notNull(fund, "AS musí být vyplněn");
         for (ArrFundVersion fundVersion: fund.getVersions()) {
             versionCache.remove(fundVersion.getFundVersionId());
         }
@@ -660,7 +659,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param fundVersion verze archivního souboru
      */
     synchronized public void invalidateFundVersion(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion, "Verze AS není vyplněna");
+        Validate.notNull(fundVersion, "Verze AS není vyplněna");
         versionCache.remove(fundVersion.getFundVersionId());
     }
 
@@ -671,7 +670,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      *            verze archivního souboru
      */
     synchronized public void refreshFundVersion(final Integer fundVersionId) {
-        Assert.notNull(fundVersionId, "Verze AS není vyplněna");
+        Validate.notNull(fundVersionId, "Verze AS není vyplněna");
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
@@ -798,8 +797,8 @@ private void processEvent(AbstractEventSimple event) {
                                                            @Nullable final Map<Integer, TitleItemsByType> valuesMapParam,
                                                            final TreeNode subtreeRoot,
                                                            final ArrFundVersion version) {
-        Assert.notNull(treeNodeMap, "Mapa nesmí být null");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(treeNodeMap, "Mapa nesmí být null");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
         // read nodes
@@ -1032,44 +1031,53 @@ private void processEvent(AbstractEventSimple event) {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
         Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(fundVersion);
-        if (versionTreeMap != null) {
-            TreeNode staticNode = versionTreeMap.get(staticId);
-            TreeNode newNode;
-            switch (addLevelType) {
-                case ADD_LEVEL_BEFORE: {
-                    newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
-
-                    LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
-                    int staticNodeIndex = parentChilds.indexOf(staticNode);
-                    parentChilds.add(staticNodeIndex, newNode);
-                    repositionList(parentChilds);
-                    initReferenceMarkLower(parentChilds, newNode);
-                    break;
-                }
-                case ADD_LEVEL_AFTER: {
-                    newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
-
-                    LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
-                    int staticNodeIndex = parentChilds.indexOf(staticNode) + 1;
-                    parentChilds.add(staticNodeIndex, newNode);
-                    repositionList(parentChilds);
-                    initReferenceMarkLower(parentChilds, newNode);
-                    break;
-                }
-                case ADD_LEVEL_UNDER: {
-                    newNode = createEmptyTreeNode(newNodeId, staticNode);
-
-                    LinkedList<TreeNode> parentChilds = staticNode.getChilds();
-                    parentChilds.addLast(newNode);
-                    repositionList(parentChilds);
-                    initReferenceMarkAndDepth(newNode, newNode.getPosition());
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException("Neplatny typ přidání nodu " + addLevelType);
-            }
-            versionTreeMap.put(newNode.getId(), newNode);
+        if (versionTreeMap == null) {
+            // tree for fund version not found, what should we do?
+            // simply return
+            return;
         }
+        // check if node already in the tree
+        // it means that tree was constructed including this new level
+        TreeNode newNode = versionTreeMap.get(newNodeId);
+        if (newNode != null) {
+            return;
+        }
+
+        TreeNode staticNode = versionTreeMap.get(staticId);
+        switch (addLevelType) {
+        case ADD_LEVEL_BEFORE: {
+            newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
+
+            LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+            int staticNodeIndex = parentChilds.indexOf(staticNode);
+            parentChilds.add(staticNodeIndex, newNode);
+            repositionList(parentChilds);
+            initReferenceMarkLower(parentChilds, newNode);
+            break;
+        }
+        case ADD_LEVEL_AFTER: {
+            newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
+
+            LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+            int staticNodeIndex = parentChilds.indexOf(staticNode) + 1;
+            parentChilds.add(staticNodeIndex, newNode);
+            repositionList(parentChilds);
+            initReferenceMarkLower(parentChilds, newNode);
+            break;
+        }
+        case ADD_LEVEL_UNDER: {
+            newNode = createEmptyTreeNode(newNodeId, staticNode);
+
+            LinkedList<TreeNode> parentChilds = staticNode.getChilds();
+            parentChilds.addLast(newNode);
+            repositionList(parentChilds);
+            initReferenceMarkAndDepth(newNode, newNode.getPosition());
+            break;
+        }
+        default:
+            throw new IllegalArgumentException("Neplatny typ přidání nodu " + addLevelType);
+        }
+        versionTreeMap.put(newNode.getId(), newNode);
     }
 
     /**
@@ -1884,7 +1892,7 @@ private void processEvent(AbstractEventSimple event) {
                                                   final @Nullable TreeNode subtreeRoot,
                                                   final NodeParam param,
                                                   final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
 
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
 
@@ -2371,7 +2379,7 @@ private void processEvent(AbstractEventSimple event) {
      * @return id všech nodů ve verzi
      */
     public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFundVersion version, final Integer nodeId, final Depth depth) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(version, "Verze AS musí být vyplněna");
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
@@ -2389,7 +2397,7 @@ private void processEvent(AbstractEventSimple event) {
             return nodeIds;
         }
 
-        Assert.notNull(depth, "Hlouba není vyplněna");
+        Validate.notNull(depth, "Hlouba není vyplněna");
 
         if (depth == Depth.ONE_LEVEL) {
             TreeNode node = versionTreeCache.get(nodeId);

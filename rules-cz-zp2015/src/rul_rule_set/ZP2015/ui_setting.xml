@@ -8,15 +8,27 @@
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
-            <tree>
+            <tree separator="; ">
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
+                <item type="ZP2015_OTHER_ID" max-count="2">
+                    <spec type="ZP2015_OTHERID_CJ" />
+                    <spec type="ZP2015_OTHERID_DOCID" />                    
+                    <spec type="ZP2015_OTHERID_OLDSIG2" />                    
+                    <spec type="ZP2015_OTHERID_SIG_ORIG" />
+                    <spec type="ZP2015_OTHERID_SIG" />
+                    <spec type="ZP2015_OTHERID_OLDSIG" />
+                </item>
             </tree>
-            <accordion-left separator="_">
+            <accordion-left separator="; ">
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
-                <item type="ZP2015_OTHER_ID" maxCount="1">
+                <item type="ZP2015_OTHER_ID" max-count="2">
+                    <spec type="ZP2015_OTHERID_CJ" />
+                    <spec type="ZP2015_OTHERID_DOCID" />                    
                     <spec type="ZP2015_OTHERID_OLDSIG2" />
+                    <spec type="ZP2015_OTHERID_SIG_ORIG" />
+                    <spec type="ZP2015_OTHERID_SIG" />
                     <spec type="ZP2015_OTHERID_OLDSIG" />
                 </item>
             </accordion-left>
@@ -64,6 +76,7 @@
             <group code="01_BASE">
                 <name>Pořádání</name>
                 <type code="ZP2015_ARRANGEMENT_TYPE" width="2"/>
+                <type code="ZP2015_ARCHDESC_LANG" width="2"/>
                 <type code="ZP2015_OUTPUT_TYPE" width="2"/>
             </group>
             <group code="02_GROUP1">
@@ -78,6 +91,7 @@
                 <type code="ZP2015_STORAGE_ID" width="1"/>
                 <type code="ZP2015_AIP_ID" width="1"/>
                 <type code="ZP2015_DAO_ID" width="2"/>
+                <type code="ZP2015_DAO_LINK" width="0"/>
                 <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
                 <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
@@ -143,10 +157,12 @@
                 <type code="ZP2015_FUTURE_UNITS" width="0"/>
                 <!-- 4.4.4 Fyzický stav jednotky popisu a technické požadavky -->
                 <type code="ZP2015_UNIT_CURRENT_STATUS" width="0"/>
+                <type code="ZP2015_UNIT_DAMAGE_TYPE" width="1"/>
                 <!-- 4.5.1 Identifikace předlohy kopie -->
                 <type code="ZP2015_COPY_SOURCE" width="1"/>
                 <!-- 4.5.2 Odkazy na příbuzné dokumenty -->
                 <type code="ZP2015_RELATED_UNITS" width="2"/>
+                <type code="ZP2015_RELATED_UNITS_LINK" width="0"/>
                 <type code="ZP2015_EXISTING_COPY" width="1"/>
                 <!-- 4.7.1 Zpracovatel jednotky popisu -->
                 <type code="ZP2015_ARRANGER" width="2"/>
@@ -180,6 +196,7 @@
                 <type code="ZP2015_SIZE_UNITS" width="1"/>
                 <type code="ZP2015_WEIGHT" width="1"/>
                 <type code="ZP2015_AMOUNT" width="1"/>
+                <type code="ZP2015_SIZE_OTHER" width="2"/>
                 <type code="ZP2015_MOVIE_LENGTH" width="1"/>
                 <type code="ZP2015_RECORD_LENGTH" width="1"/>
                 <!-- ZP5.2.5 Měřítko -->
@@ -206,6 +223,7 @@
                 <type code="ZP2015_SOURCES" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
+                <type code="ZP2015_AP_REF" width="0"/>
                 <!-- Matrika -->
                 <type code="ZP2015_RECORD_TYPE" width="1"/>
                 <type code="ZP2015_GEO_REF" width="0"/>
@@ -224,7 +242,9 @@
                 <type code="ZP2015_ATTACHMENT" width="2"/>
                 <type code="ZP2015_ITEM_LINK" width="0"/>
                 <type code="ZP2015_UNIT_COUNT_ITEM" width="2"/>
+                <type code="ZP2015_ALTERNATIVE_DESCRIPTION_INLINE" width="0"/>
                 <!-- Prvky pro vystup -->
+                <type code="ZP2015_DATE_RANGE" width="2"/>
                 <type code="ZP2015_UNIT_COUNT_TABLE" width="3"/>
             </group>
             <!-- Other items -->

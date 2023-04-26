@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 
 import jakarta.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
@@ -28,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -36,11 +36,12 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ProcessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.AttPagePlaceHolder;
+import cz.tacr.elza.print.OutputContext;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -48,7 +49,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
@@ -87,26 +87,26 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           InstitutionRepository institutionRepository,
                           ApStateRepository apStateRepository,
                           ApBindingRepository bindingRepository,
-                          ApPartRepository partRepository,
                           ApItemRepository itemRepository,
                           ApBindingStateRepository bindingStateRepository,
                           ApIndexRepository indexRepository,
                           EntityManager em,
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository,
-                          AccessPointCacheService accessPointCacheService) {
+                          ExportConfig exportConfig) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
 
         pdfAttProvider = new PdfAttProvider(applicationContext);
-        outputModel = new OutputModel(staticDataService, elzaLocale,
+        outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
-                pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository,
-                indexRepository, daoLinkRepository, accessPointCacheService, em);
+                pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
+                indexRepository, daoLinkRepository, exportConfig, em);
         pdfAttProvider.setOutput(outputModel);
     }
 

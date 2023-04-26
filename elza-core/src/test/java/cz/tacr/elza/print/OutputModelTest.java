@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.AbstractServiceTest;
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
@@ -34,7 +35,6 @@ import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -72,9 +72,6 @@ public class OutputModelTest extends AbstractServiceTest {
     ApBindingRepository bindingRepository;
 
     @Autowired
-    ApPartRepository partRepository;
-
-    @Autowired
     ApItemRepository itemRepository;
 
     @Autowired
@@ -97,6 +94,9 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    ExportConfig exportConfig;
 
     // test output with structObjs
     @Test
@@ -164,11 +164,13 @@ public class OutputModelTest extends AbstractServiceTest {
         ArrDescItem descItemResult2 = createDescItem(itemSVO2, level2.get(0).getNode(), fi.getFundVersionId());
         assertNotNull(descItemResult2);
         helperTestService.waitForWorkers();
-        OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+
+        OutputModel outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, accessPointCacheService, em);
+                daoLinkRepository, exportConfig, em);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

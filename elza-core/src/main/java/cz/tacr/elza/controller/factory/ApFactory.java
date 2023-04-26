@@ -119,8 +119,6 @@ import cz.tacr.elza.service.cache.CachedPart;
 @Service
 public class ApFactory {
 
-    private static final String BRIEF_DESC = "BRIEF_DESC";
-
     private final ApAccessPointRepository apRepository;
 
     private final ApStateRepository stateRepository;
@@ -256,7 +254,15 @@ public class ApFactory {
         ApPart preferredPart = accessPoint.getPreferredPart();
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getIndexValue() : null;
-        return createVO(apState, accessPoint, name);
+
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ApIndex> bodyPartDisplayNames = indexRepository
+                .findPartIndexByAccessPointsAndPartTypeAndIndexType(Collections.singletonList(accessPoint),
+                                                                    sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
+        String description = bodyPartDisplayName != null ? bodyPartDisplayName.getIndexValue() : null;
+
+        return createVO(apState, accessPoint, name, description);
     }
 
     // TODO: odstranit
@@ -308,10 +314,17 @@ public class ApFactory {
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
         String name = preferredPartDisplayName != null ? preferredPartDisplayName.getIndexValue() : null;
 
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ApIndex> bodyPartDisplayNames = indexRepository
+                .findPartIndexByAccessPointsAndPartTypeAndIndexType(Collections.singletonList(ap),
+                                                                    sdp.getDefaultBodyPartType(), DISPLAY_NAME);
+        ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
+        String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
+
         List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
         List<Integer> replacedIds = states.stream().map(s -> s.getAccessPointId()).collect(Collectors.toList());
 
-        ApAccessPointVO apVO = createVO(state, ap, name);
+        ApAccessPointVO apVO = createVO(state, ap, name, description);
         if (!replacedIds.isEmpty()) {
             apVO.setReplacedIds(replacedIds);
         }
@@ -328,9 +341,6 @@ public class ApFactory {
 
             //comments
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
-
-            // description
-            String description = getDescription(parts, items);
 
             // vlastník entity
             UsrUser ownerUser = userRepository.findAccessPointOwner(ap);
@@ -371,9 +381,6 @@ public class ApFactory {
 
             apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
-            if (description != null) {
-                apVO.setDescription(description);
-            }
             apVO.setPreferredPart(preferredPart.getPartId());
             apVO.setLastChange(createVO(lastChange));
             apVO.setOwnerUser(createVO(ownerUser));
@@ -418,7 +425,7 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(final ApState apState,
                                     final ApAccessPoint ap,
-                                    final String name) {
+                                    final String name, final String description) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(ap.getAccessPointId());
@@ -437,6 +444,7 @@ public class ApFactory {
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(name);
+        vo.setDescription(description);
         return vo;
     }
 
@@ -516,59 +524,16 @@ public class ApFactory {
     }
 
     private String getDescription(CachedAccessPoint cachedAccessPoint) {
-        CachedPart body = null;
-        String briefDesc = null;
         StaticDataProvider sdp = staticDataService.getData();
 
         if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
             for (CachedPart part : cachedAccessPoint.getParts()) {
                 if (part.getPartTypeCode().equals(sdp.getDefaultBodyPartType().getCode())) {
-                    body = part;
-                    break;
+                    return findDisplayIndexValue(part);
                 }
             }
         }
-
-        if (body != null) {
-            if (CollectionUtils.isNotEmpty(body.getItems())) {
-                for (ApItem item : body.getItems()) {
-                    ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-                    if (itemType.getCode().equals(BRIEF_DESC)) {
-                        briefDesc = item.getData().getFulltextValue();
-                        break;
-                    }
-                }
-            }
-        }
-        return briefDesc;
-    }
-
-    private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
-        ApPart body = null;
-        String briefDesc = null;
-        StaticDataProvider sdp = staticDataService.getData();
-
-        if (CollectionUtils.isNotEmpty(parts)) {
-            for (ApPart part : parts) {
-                if (part.getPartType().getCode().equals(sdp.getDefaultBodyPartType().getCode())) {
-                    body = part;
-                    break;
-                }
-            }
-        }
-
-        if (body != null && items != null) {
-            List<ApItem> bodyItems = items.get(body.getPartId());
-            if (CollectionUtils.isNotEmpty(bodyItems)) {
-                for (ApItem item : bodyItems) {
-                    if (item.getItemType().getCode().equals(BRIEF_DESC)) {
-                        briefDesc = item.getData().getFulltextValue();
-                        break;
-                    }
-                }
-            }
-        }
-        return briefDesc;
+        return null;
     }
 
     private List<ApPartVO> createPartsVO(List<CachedPart> parts) {
@@ -605,7 +570,7 @@ public class ApFactory {
         apPartVO.setTypeId(rulPartType.getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
         apPartVO.setErrorDescription(part.getErrorDescription());
-        apPartVO.setValue(findDisplayIndexValue(part.getIndices()));
+        apPartVO.setValue(findDisplayIndexValue(part));
         apPartVO.setPartParentId(part.getParentPartId());
         apPartVO.setChangeType(ChangeType.ORIGINAL);
         apPartVO.setItems(CollectionUtils.isNotEmpty(part.getItems()) ? createItemsVO(part.getItems()) : null);
@@ -635,8 +600,13 @@ public class ApFactory {
     }
 
     @Nullable
-    static public String findDisplayIndexValue(List<ApIndex> indices) {
+    public static String findDisplayIndexValue(List<ApIndex> indices) {
         return findIndexValue(indices, DISPLAY_NAME);
+    }
+
+    @Nullable
+    public static String findDisplayIndexValue(CachedPart part) {
+        return findIndexValue(part.getIndices(), DISPLAY_NAME);
     }
 
     public List<ApPartVO> createVO(final List<ApPart> parts,
@@ -707,12 +677,21 @@ public class ApFactory {
                 ap -> indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(ap, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
 
+        StaticDataProvider sdp = staticDataService.getData();
+        // seznam ApIndex může mít ApPart(s) stejného typu ve jednom ApAccessPoint v tomto případě dojde k chybě při převodu na mapu
+        // z tohoto důvodu se používá design Collectors.toMap(keyMapper, valueMapper, (key1, key2) -> key1))
+        Map<Integer, ApIndex> descriptionMap = ObjectListIterator.findIterable(accessPoints,
+                ap -> indexRepository.findPartIndexByAccessPointsAndPartTypeAndIndexType(ap, sdp.getDefaultBodyPartType(), DISPLAY_NAME)).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (key1, key2) -> key1));
+
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
             ApIndex indexName = nameMap.get(accessPointId);
             String name = indexName != null ? indexName.getIndexValue() : null;
-            result.add(createVO(apState, accessPoint, name));
+            indexName = descriptionMap.get(accessPointId);
+            String description = indexName != null ? indexName.getIndexValue() : null;
+            result.add(createVO(apState, accessPoint, name, description));
         }
 
         return result;

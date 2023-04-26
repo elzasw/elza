@@ -15,6 +15,16 @@ public class WebSocketMessageBrokerConfiguration extends DelegatingWebSocketMess
     @Bean
     @Override
     public WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor() {
-        return new WebSocketThreadPoolTaskExecutor();
+        WebSocketThreadPoolTaskExecutor wste = new WebSocketThreadPoolTaskExecutor();
+        wste.setThreadNamePrefix("clientInboundChannel-");
+        return wste;
     }
+
+    @Bean
+    public WebSocketThreadPoolTaskExecutor clientOutboundChannelExecutor() {
+        WebSocketThreadPoolTaskExecutor wste = new WebSocketThreadPoolTaskExecutor();
+        wste.setThreadNamePrefix("clientOutboundChannel-");
+        return wste;
+    }
+
 }

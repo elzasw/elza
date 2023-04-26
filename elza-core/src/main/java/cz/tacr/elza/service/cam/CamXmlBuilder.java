@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -139,7 +142,8 @@ abstract public class CamXmlBuilder {
     }
 
     protected PartsXml createParts(Collection<ApPart> partList,
-                                   Map<Integer, List<ApItem>> itemMap) {
+                                   Map<Integer, List<ApItem>> itemMap,
+                                   Map<Integer, Collection<ApIndex>> indexMap) {
         // if no parts available -> return null
         if (CollectionUtils.isEmpty(partList)) {
             // schema allows empty element prts
@@ -170,7 +174,7 @@ abstract public class CamXmlBuilder {
         }
         
         // if no parts available -> create item without parts
-        List<PartXml> partxmlList = createNewParts(null, adjustedPartList, itemMap);
+        List<PartXml> partxmlList = createNewParts(null, adjustedPartList, itemMap, indexMap);
         // if no parts available -> return null
         if (CollectionUtils.isEmpty(partxmlList)) {
             // schema allows empty element prts
@@ -189,12 +193,13 @@ abstract public class CamXmlBuilder {
      * 
      * @param partList
      * @param itemMap
-     * @param externalSystemTypeCode
+     * @param indexMap
      * @return
      */
     protected List<PartXml> createNewParts(Collection<String> existingParts,
                                            Collection<ApPart> partList,
-                                           Map<Integer, List<ApItem>> itemMap) {
+                                           Map<Integer, List<ApItem>> itemMap,
+                                           @Nullable Map<Integer, Collection<ApIndex>> indexMap) {
         if (CollectionUtils.isEmpty(partList)) {
             return Collections.emptyList();
         }
@@ -220,7 +225,9 @@ abstract public class CamXmlBuilder {
                 continue;
             }
 
-            PartXml partXml = createPart(part, partItems);
+            Collection<ApIndex> partIndexes = (indexMap != null) ? indexMap.get(part.getPartId()) : null;
+
+            PartXml partXml = createPart(part, partItems, partIndexes);
             partXmlList.add(partXml);
             availableParts.add(partXml.getPid().getValue());
 
@@ -387,10 +394,12 @@ abstract public class CamXmlBuilder {
      * 
      * @param apPart
      * @param partItems
+     * @param partIndexes
      * @param externalSystemTypeCode
      * @return
      */
-    private PartXml createPart(ApPart dbPart, List<ApItem> partItems) {
+    private PartXml createPart(ApPart dbPart, List<ApItem> partItems,
+                               @Nullable Collection<ApIndex> partIndexes) {
         Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: ", dbPart.getAccessPointId());
 
         String uuid = getUuidForPart(dbPart);
@@ -409,6 +418,20 @@ abstract public class CamXmlBuilder {
 
         ItemsXml itemsXml = createItems(dbPart, partItems);
         partXml.setItms(itemsXml);
+
+        // Append indexes
+        if (CollectionUtils.isNotEmpty(partIndexes)) {
+            ItemsXml eitems = new ItemsXml();
+            List<Object> eresult = eitems.getItems();
+            for (ApIndex partIndex : partIndexes) {
+                ItemStringXml isx = new ItemStringXml();
+                isx.setT(new CodeXml(partIndex.getIndexType()));
+                isx.setValue(new StringXml(partIndex.getValue()));
+                eresult.add(isx);
+            }
+            partXml.setEits(eitems);
+        }
+
         return partXml;
     }
 

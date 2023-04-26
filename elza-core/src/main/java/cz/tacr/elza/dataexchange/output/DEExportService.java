@@ -230,15 +230,25 @@ public class DEExportService {
 
             // find all children arr_data_record_ref.record_id from list of access point ids
             if (CollectionUtils.isNotEmpty(recordIds)) {
-                ObjectListIterator.forEachPage(recordIds, page ->
-                                               accessPointIds.addAll(apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page)));
+                ObjectListIterator.forEachPage(recordIds, page -> {
+                    List<RefRecordsFromIds> results = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(page);
+                    for (RefRecordsFromIds result : results) {
+                        Integer recordId = result.getRecordId();
+                        if (recordId == null) {
+                            throw new BusinessException("Entita has unresolved reference(s)", BaseCode.INVALID_STATE)
+                                .set("bindingId", result.getBindingId())
+                                .set("accessPointId", result.getAccessPointId());
+                        }
+                        accessPointIds.add(recordId);
+                    }
+                });
             }
 
             // check all access points
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 ObjectListIterator.forEachPage(accessPointIds, page -> {
                     if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
-                        throw new BusinessException("Entity(es) has been deleted.", BaseCode.INVALID_STATE)
+                        throw new BusinessException("Entity(es) has been deleted", BaseCode.INVALID_STATE)
                             .set("IDs", stateRepository.findDeletedAccessPointIdsByAccessPointIds(page));
                     }
                 });

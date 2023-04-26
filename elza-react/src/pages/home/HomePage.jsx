@@ -57,7 +57,8 @@ const FundItem = ({fundDetail, version}) => {
                         </>
                 </div>
                 <div className="fund-label">
-                    {[fundDetail.fundNumber, fundDetail.internalCode].filter((item) => item).join(", ")}
+                    {fundDetail.internalCode || fundDetail.fundNumber}
+                    {/* {[fundDetail.fundNumber, fundDetail.internalCode].filter((item) => item).join(", ")} */}
                     &nbsp;
                 </div>
             </div>

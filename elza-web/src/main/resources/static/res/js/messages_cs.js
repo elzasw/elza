@@ -86,7 +86,7 @@ var messages = {
     "dataType.date.format": null,
     "dataType.text.format": null,
     "dataType.unitdate.format":
-        '<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc.rok: 8.1968<br />Datum: 21.8.1698<br />Datum a čas: 21.8.1968 8:23 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Jednotlivá hodnota: 1968<br />Interval: 21.8.1968 0:00-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek: [16.8.1977]<br />Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad.</div>',
+        '<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc: 8.1968<br />Den: 21.8.1968<br />Hodiny, minuty, sekundy: 21.8.1968 2:43 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Roky: 1968-1969<br />Kombinace: 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:<br />Např.: [16.8.1977] <i>nebo</i> [1990]-1992<br />Při použití znaku "/" pro oddělení intervalu jsou od i do chápány jako odhad:<br />Např.: 1985/1990</div>',
     "dataType.unitid.format": null,
 
 
@@ -250,6 +250,8 @@ var messages = {
     "search.extended.form.unitdate.type.le": "Do (vč.)",
     "search.extended.form.unitdate.type.contains": "Během",
 
+    "global.validation.run": "Spustit validaci",
+    "global.validation.loading": "Načítání výsledku validace",
     "global.validation.required": "Pole je povinné",
     "global.validation.exists": "Již existuje",
     "global.validation.datation.invalid": "Vstupní řetězec není validní.",
@@ -366,6 +368,7 @@ var messages = {
     "ribbon.action.registry.import": "Import ze souboru",
     "ribbon.action.registry.importExt": "Import ze systému",
     "ribbon.action.logout": "Odhlásit",
+    "ribbon.action.darkTheme": "Tmavý motiv",
     "ribbon.action.showFundHistory": "Historie změn",
     "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
     "ribbon.action.ap.ext-search": "Vyhledávání v externím systému",
@@ -526,7 +529,7 @@ var messages = {
     "arr.fundAction.state.interrupted": "Přerušeno",
     "arr.fundAction.state.outdated": "Dokončeno (neplatný)",
     "arr.fundAction.state.unknown": "Neznamý stav",
-    
+
 
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
@@ -615,10 +618,10 @@ var messages = {
     "arr.fund.bulkModifications.operationType.setSpecification": "Nahradit specifikaci za jinou",
     "arr.fund.bulkModifications.operationType.setEnum": "Nahradit hodnotu za jinou",
     "arr.fund.bulkModifications.operationType.delete": "Odstranit celý prvek popisu",
-    "arr.fund.bulkModifications.itemsArea.page": "Všechny JP na stránce ({0})",
-    "arr.fund.bulkModifications.itemsArea.all": "Všechny JP v AS",
-    "arr.fund.bulkModifications.itemsArea.selected": "Jen zaškrtnuté JP na stránce ({0})",
-    "arr.fund.bulkModifications.itemsArea.unselected": "Jen odškrtnuté JP na stránce ({0})",
+    "arr.fund.bulkModifications.itemsArea.page": "Všechny na stránce",
+    "arr.fund.bulkModifications.itemsArea.all": "Všechny v archivním souboru",
+    "arr.fund.bulkModifications.itemsArea.selected": "Zaškrtnuté na stránce",
+    "arr.fund.bulkModifications.itemsArea.unselected": "Odškrtnuté na stránce",
     "arr.fund.bulkModifications.specs": "Aplikovat na specifikace",
     "arr.fund.bulkModifications.values": "Aplikovat na hodnoty",
     "arr.fund.bulkModifications.warn": "Opravdu chcete provést akci nad celým AS?",
@@ -820,13 +823,15 @@ var messages = {
     "arr.node.status.ok": "Ok",
     "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Chyba",
+    "arr.node.status.err.errors": "Chyby",
+    "arr.node.status.err.missing": "Chybějící",
     "arr.node.status.undefined": "Nezvalidovaný",
     "arr.node.noSelection.title": "Není vybrána jednotka popisu",
     "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
 
     "arr.history.change.title.unknown": "neznámý",
     "arr.history.change.title.CREATE_AS": "vytvoření AS",
-    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",    
+    "arr.history.change.title.ADD_NODES_OUTPUT": "připojení JP k výstupu",
     "arr.history.change.title.REMOVE_NODES_OUTPUT": "odpojení JP od výstupu",
     "arr.history.change.title.ADD_LEVEL": "založení JP",
     "arr.history.change.title.MOVE_LEVEL": "přesun JP",
@@ -838,7 +843,7 @@ var messages = {
     "arr.history.change.title.ADD_DESC_ITEM": "založení atributu",
     "arr.history.change.title.DELETE_DESC_ITEM": "zrušení atributu",
     "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
-    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",    
+    "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
     "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA": "založení strukturovaného typu",
     "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": "hromadné založení strukt. typu",
@@ -860,7 +865,7 @@ var messages = {
     "arr.history.change.title.REPLACE_REGISTER": "náhrada přístupového bodu",
     "arr.history.change.title.REPLACE_PARTY": "party replace",
     "arr.history.change.title.GENERATE_OUTPUT": "generování výstupu",
-    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",    
+    "arr.history.change.title.SYNCHRONIZE_JP": "synchronizace JP",
     "arr.history.change.title.CHANGE_SCENARIO_ITEMS": "změna záznamu podle scénářů",
     "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
     "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
@@ -942,7 +947,7 @@ var messages = {
     "arr.structure.modal.updateMultiple.originalValue": "Původní hodnota",
     "arr.structure.conformityInfo.impossible": "Tento prvek popisu není možné evidovat u této struktury.",
 
-    "subNodeForm.descItemGroup.default": "Ostatní",
+    "subNodeForm.descItemGroup.default": "Bez skupiny",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
@@ -983,7 +988,7 @@ var messages = {
     "subNodeForm.calculate-user.confirm":
         "Pole již nebude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
     "subNodeForm.calculate-auto.confirm":
-        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
+        "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funkcí. Opravdu chcete provést akci?",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše zamčené",
@@ -1014,6 +1019,9 @@ var messages = {
     "subNodeDao.dao.files.more": "souborů",
     "subNodeDao.dao.files.one": "soubor",
     "subNodeDao.dao.files.few": "soubory",
+
+    "field.unitdate.convertToEstimate.message": "Byla vložena datace velkého rozsahu, pravděpodobně se jedná o odhad. Má se hodnota označit jako odhad?",
+    "field.unitdate.convertToEstimate.title": "Potvrzení datace",
 
     "registry.noSelection.title": "Není vybráno rejstříkové heslo",
     "registry.noSelection.message": "Prosím vyberte rejstříkové heslo ze seznamu nebo vytvořte nové.",
@@ -1052,7 +1060,7 @@ var messages = {
     "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
     "registry.changeStateRevision": "Změnit vlastnosti revize",
     "registry.mergeRevision": "Potvrzení revize",
-    "registry.allRevisionStates": "Všechny stavy revize",
+    "registry.allRevisionStates": "Vše",
     "registry.revisionState": "Stav revize",
     "registry.revision.state.active": "Revize v přípravě",
     "registry.revision.state.toApprove": "Revize ke schválení",
@@ -1112,6 +1120,7 @@ var messages = {
     "ap.binding.replaced": "nahrazená",
 
     "ap.binding.action.synchronize": "Aktualizace údajů z ext. systému",
+    "ap.binding.action.synchronize.confirmation": "Opravdu chcete aktualizovat záznam entity z externího systému? Případné změny neopakovatelných částí záznamu entity budou přepsány.",
     "ap.binding.action.update": "Zápis změn do ext. systému",
     "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
     "ap.binding.action.take-rel-entities": "Převzetí napojených entit",
@@ -1130,6 +1139,10 @@ var messages = {
     "ap.binding.extState.ERS_INVALID": "neplatná",
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
+
+    "ap.copy.title": "Kopie archivní entity",
+    "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
+    "ap.copy.scope": "Oblast",
 
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
@@ -1151,14 +1164,26 @@ var messages = {
     "ap.detail.lastChange.user.notAvailable": "Uživatel neuveden",
     "ap.detail.replacedBy": "Nahrazující entita",
     "ap.detail.replacingEntities": "Nahrazuje entity",
+    "ap.detail.replacedEntity.noName": "Bez názvu",
     "ap.detail.entityMissing": "Entita neexistuje",
 
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
+
     "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
+    "ap.push-to-ext.multipleSyncs.message": "Nahrání do externího systému není možné pro entity, které mají napojen více než jeden externí systém.",
+    "ap.push-to-ext.readOnly.message": "Externí systém napojený k vybrané entitě je určen pouze pro čtení.",
+    "ap.push-to-ext.unsyncedEntities.title": "Odesílaný záznam odkazuje na jiné entity, které nejsou zapsány v cílovém externím systému. ",
+    "ap.push-to-ext.unsyncedEntities.message": "Po potvrzení akce nedojde k odeslání všech vztahů. Záznam zůstane ve stavu Lokální změna nebo může dojít k celkové chybě odeslání.\nPro dosažení aktivní synchronizace je nutné odeslání všech souvisejících entit. Po jejich odeslání je třeba opětovně zapsat tuto entitu do externího systému.",
+    "ap.push-to-ext.unsyncedEntities.listTitle": "Dotčené části záznamu entity:",
+    "ap.push-to-ext.selectedExtSystem.message": "Přejete si zapsat entitu <b>{0}</b> do externího systemu <b>{1}</b>?",
+    "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
+    "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
+    "ap.push-to-ext.failed.title": "Chyba při odesílání entity",
+    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Synchronizace s externími systémy",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",
@@ -1193,6 +1218,7 @@ var messages = {
     "ap.ext-search.section.cre-ext": "Vznik/Zánik",
     "ap.ext-search.section.relations": "Vztahy",
     "ap.ext-search.section.extends": "Rozšířený filtr",
+    "ap.ext-search.input.select.all": "Vše",
 
     "ap.ext-search.section.extends.title": "Přidat rozšířený filtr",
     "ap.ext-search.section.extends.part": "Část popisu",
@@ -1204,7 +1230,7 @@ var messages = {
     "ap.ext-search.section.relations.spec": "Specifikace",
     "ap.ext-search.section.relations.area": "Oblast hledání",
     "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
-    "ap.ext-search.section.relations.obj": "Návazná archivní entita",
+    "ap.ext-search.section.relations.obj": "Archivní entita",
 
 
     "ap.form.ref.value": "Externí entita [{0}]",

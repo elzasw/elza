@@ -1,5 +1,13 @@
 package cz.tacr.elza.domain.convertor;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.ESTIMATED_TEMPLATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -15,8 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 /**
  * Konvertor pro sprváné zobrazování UnitDate podle formátu.
@@ -357,7 +363,6 @@ public class UnitDateConvertor {
             case CENTURY:
             	int century = (date.getYear()+99) / 100; 
                 result = String.format(CENTURY_TEMPLATE, century);
-                addEstimate = false;
                 break;
             case YEAR:
                 result = String.valueOf(date.getYear());
@@ -587,7 +592,6 @@ public class UnitDateConvertor {
 
             token.dateFrom = LocalDateTime.of((c - 1) * 100 + 1, 1, 1, 0, 0);
             token.dateTo = LocalDateTime.of(c * 100, 12, 31, 23, 59, 59);
-            token.estimate = true;
 
         } catch (NumberFormatException | DateTimeParseException e) {
             throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)

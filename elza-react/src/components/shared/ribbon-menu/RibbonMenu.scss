@@ -15,25 +15,29 @@ $ribbon-sm-btn-height: "calc(100% / #{$ribbon-sm-grp-lines})";
 
 $ribbon-btn-bg: transparent;
 $ribbon-btn-col: inherit;
-$ribbon-btn-hover-bg: #ccc;
+$ribbon-btn-hover-bg: $shade-5;
 $ribbon-btn-focus-bg: $ribbon-btn-hover-bg;
-$ribbon-btn-active-bg: #bbb;
+$ribbon-btn-active-bg: $shade-6;
 
-$ribbon-user-btn-bg: #333;
-$ribbon-user-btn-col: #ddd;
-$ribbon-user-btn-hover-bg: #333;
+$ribbon-user-btn-bg: $contrast-color;
+$ribbon-user-btn-col: $contrast-color-fg;
+$ribbon-user-btn-hover-bg: $contrast-color;
 
-$ribbon-splitter-col: #ddd;
+$ribbon-splitter-col: $shade-4;
 
 .ribbon-menu-container {
     display: flex;
     background: $ribbon-bg;
     height: 100%;
 
+    .accented & {
+        background: $accent-color;
+        color: $accent-color-fg;
+    }
+
     .user-menu-container {
         display: flex;
-        flex-grow: 1;
-        justify-content: flex-end;
+        flex-direction: column;
 
         .user-menu.dropdown{
             height: 50%;
@@ -58,12 +62,12 @@ $ribbon-splitter-col: #ddd;
     }
 
     .ribbon-menu.btn-toolbar{
-        background: $ribbon-bg;
         height: 100%;
         font-size:$ribbon-font-size;
         display:flex;
         margin: 0; //vynuluje margin-left u btn-toolbar, který je react-bootstrap dává defaultně -5px
         flex-wrap: nowrap;
+        flex-grow: 1;
 
         .ribbonGroup {
             display:flex;
@@ -92,7 +96,7 @@ $ribbon-splitter-col: #ddd;
                     z-index:50;
                 }
             }
-            border-right: 1px solid $ribbon-splitter-col;
+            border-right: 1px solid $border-color;
 
             &:last-child{
                 border-right: none;
@@ -250,17 +254,21 @@ $ribbon-splitter-col: #ddd;
             }
             .save-msg-container{
                 position:relative;
-                height:50%;
+                /* height:50%; */
+                display: flex;
+                align-items: flex-end;
+
                 .save-msg{
                     white-space: nowrap;
                     display:inline-block;
-                    position: absolute;
-                    right:2em;
-                    bottom:2%;
-                    color:#888;
-                    text-align: right;
+                    /* position: absolute; */
+                    /* right:2em; */
+                    /* bottom:2%; */
+                    color:$shade-7;
+                    /* text-align: right; */
                     font-size: 1em;
                     font-style: italic;
+
                     .icon{
                         font-size: 1em;
                         margin-right:0.2em;

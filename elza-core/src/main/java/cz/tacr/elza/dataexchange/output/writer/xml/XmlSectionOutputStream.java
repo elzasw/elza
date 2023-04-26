@@ -192,7 +192,6 @@ class XmlSectionOutputStream implements SectionOutputStream {
         structObj.setCmpl(structObjInfo.getComplement());
 
         // convert description items references
-        //TODO: gotzy convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDn());
         convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDp());
 
         try {

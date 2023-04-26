@@ -3,12 +3,15 @@
         <name>Uložení</name>
     </structure-type>
     <structure-type code="ZP2015_ACCESS_COND_TYPE" validValueFromVersion="162" >
-        <name>Druh omezení přístupnosti</name>
+        <name>Omezení</name>
     </structure-type>
     <structure-type code="ZP2015_ACCESS_COND" validValueFromVersion="162" anonymous="true">
         <name>Zvláštní omezení přístupnosti</name>
     </structure-type>
     <structure-type code="ZP2015_ORIGINATOR_STRUCT" validValueFromVersion="149" anonymous="true">
         <name>Agregace původce</name>
+    </structure-type>
+    <structure-type code="ZP2015_ALTERNATIVE_DESCRIPTION" validValueFromVersion="222" anonymous="true">
+        <name>Alternativní popis</name>
     </structure-type>
 </structure-types>

@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import {MODAL_DIALOG_SIZE, urlFundActions} from '../../constants';
+import {MODAL_DIALOG_SIZE, urlFundActions, urlNode, getFundVersion, urlFundNode} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -108,25 +108,108 @@ class ArrPage extends ArrParentPage {
     }
 
     async componentDidMount() {
-        const {match, dispatch, arrRegion} = this.props;
-        await super.componentDidMount();
-        const matchId = match.params.nodeId;
-        const urlNodeId = matchId || null;
-        if (urlNodeId != null) {
-            const activeFund = this.getActiveFund(this.props);
+        super.componentDidMount()
+        const {dispatch, match} = this.props;
 
-            let activeNode = null;
+        // get currently selected fund and node from store
+        const activeFund = this.getActiveFund(this.props);
+        const activeVersionId = getFundVersion(activeFund);
+        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
-            if (activeFund?.nodes?.activeIndex != null) {
-                activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        // case when fund id is missing
+        let selectedNodeInfo;
+        let urlFundId;
+        const urlVersionId = match.params.versionId ? parseInt(match.params.versionId) : undefined;
+        const urlNodeId = match?.params?.nodeId;
+
+        if(match.params.id == undefined){
+            if(!match.params.nodeId){
+                throw "chybi node id"
             }
+            selectedNodeInfo = await WebApi.selectNode(match.params.nodeId);
+            urlFundId = selectedNodeInfo.fund.id;
+        } else {
+            urlFundId = parseInt(match.params.id);
+        }
 
-            if ((activeNode != null && activeNode.selectedSubNodeId.toString() !== urlNodeId) || !activeFund) {
-                const data = await WebApi.selectNode(urlNodeId);
-                processNodeNavigation(dispatch, data, arrRegion);
+        // select already opened node
+        if(activeFund 
+            && urlFundId === activeFund.id 
+            && urlVersionId === activeVersionId
+            && (
+                match?.params?.nodeId === activeNode?.selectedSubNodeId
+                || match?.params?.nodeId == undefined
+            )
+        ){
+            this.selectNodeFromStore();
+            return;
+        }
+
+        // wait for fund from ArrParentPage
+        await this.resolveUrlsRaw(urlFundId, urlVersionId)
+
+        if(selectedNodeInfo){
+            // directly select node with info 
+            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId));
+        } else {
+            this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {match} = this.props;
+        this.trySetFocus(this.props);
+
+        const urlFundId = match?.params?.id ? parseInt(match.params.id) : null;
+        const urlNodeId = match?.params?.nodeId;
+        const urlVersionId = match?.params?.versionId ? parseInt(match.params.versionId) : null;
+
+        const activeFund = this.getActiveFund(this.props);
+        const activeVersionId = getFundVersion(activeFund);
+        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
+
+        // select active node form active fund
+        if(activeFund 
+            && urlFundId === activeFund.id 
+            && urlVersionId === activeVersionId
+            && (
+                match?.params?.nodeId === activeNode?.selectedSubNodeId
+                || match?.params?.nodeId == undefined
+            )
+        ){
+            this.selectNodeFromStore();
+            return;
+        }
+
+        // select node by id present in url
+        if(match?.params?.nodeId !== prevProps.match?.params?.nodeId){
+            this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
+            return;
+        }
+    }
+
+    async selectNodeFromUrl(activeNode, nodeId, versionId) {
+        const {dispatch} = this.props;
+
+        if (nodeId != null) {
+            // select node from url only when it is not already selected (url inserted into address bar)
+            if(activeNode?.selectedSubNodeId.toString() !== nodeId){
+                const data = await WebApi.selectNode(nodeId);
+                dispatch(processNodeNavigation(data, versionId));
             }
         }
-        this.trySetFocus(this.props);
+    }
+
+    selectNodeFromStore = () => {
+        const {dispatch} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+
+        if (activeFund?.nodes && activeFund.nodes.activeIndex !== null) {
+            const node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+            if(node){
+                dispatch(routerNavigate(urlFundNode(activeFund.id, getFundVersion(activeFund), node.selectedSubNodeId)))
+            }
+        }
     }
 
     waitForLoadAS = fce => {
@@ -146,7 +229,7 @@ class ArrPage extends ArrParentPage {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         super.UNSAFE_componentWillReceiveProps(nextProps);
-        const {selectedTabKey} = this.props;
+        const {selectedTabKey, match} = this.props;
         const activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
             this.props.dispatch(structureTypesFetchIfNeeded(activeFund.versionId));
@@ -186,10 +269,16 @@ class ArrPage extends ArrParentPage {
                     this.refFundErrors.fetchNow();
                 }
             }
-            if (activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]) {
-                const node = activeFund.fundTree.nodes[0];
-                const parentNode = createFundRoot(activeFund);
-                this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true));
+
+            // redirect to root node only when not a direct node url
+            if(match?.params?.nodeId == null){
+                if (activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]) {
+                    const node = activeFund.fundTree.nodes[0];
+                    if(node){
+                        const parentNode = createFundRoot(activeFund);
+                        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, parentNode, false, null, true, undefined, undefined, true));
+                    }
+                }
             }
         } else {
             this.setState({fundNodesError: null});
@@ -235,11 +324,15 @@ class ArrPage extends ArrParentPage {
         }
     };
 
+    // funkce reagujici na akci SET_FOCUS - TODO fix
     trySetFocus(props) {
         const {focus, selectedTabKey} = props;
         if (this.state.tabs !== null && canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 3)) {
                 let selectedTab = this.state.tabs[selectedTabKey];
+
+                if(!selectedTab){return;}
+
                 if (!selectedTab.focus && !selectedTab.ref) {
                     //Pokud tab nemá zadánu funkci pro focus ani ref
                     focusWasSet();
@@ -561,7 +654,7 @@ class ArrPage extends ArrParentPage {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, undefined, undefined, undefined, true));
     }
 
     handleShowVisiblePolicies(activeFund) {
@@ -827,8 +920,8 @@ class ArrPage extends ArrParentPage {
         return (
             <div className="issues-panel">
                 <HorizontalSplitter
-                    top={<LecturingTop fund={activeFund} node={node} />}
-                    bottom={<LecturingBottom fund={activeFund} />}
+                    top={<LecturingTop key={activeFund.id} fund={activeFund} node={node} />}
+                    bottom={<LecturingBottom key={activeFund.id} fund={activeFund} />}
                 />
             </div>
         );
@@ -932,7 +1025,7 @@ class ArrPage extends ArrParentPage {
                 key: 'discrepancies',
                 ref: 'fundErrors',
                 name: i18n('arr.panel.title.discrepancies'),
-                render: () => <DiscrepanciesList activeFund={activeFund}/>,
+                render: () => <DiscrepanciesList key={activeFund.id} activeFund={activeFund}/>,
             },
             visiblePolicies: {
                 id: 'visiblePolicies',

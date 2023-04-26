@@ -100,7 +100,7 @@ $finding-tree-toggle-font-size: 11px;
             &.closed {
                 .toggle.btn {
                     top: 0;
-                    color: white;
+                    color: $contrast-color-fg;
                 }
             }
         }

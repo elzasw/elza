@@ -38,73 +38,104 @@ actions:
           fromType: CORP_STRUCTURE
           toItem: CORP_STRUCTURE
     - !DateRange
-      # Extra EJ - kdekoliv
+      # Rozsah datace
       excludeWhen:
         someOf:
           # Nesmí být nastaven jako pevné spojení s jinou
           - itemType: ZP2015_ITEM_LINK    
+          - itemType: ZP2015_INVALID_RECORD
       inputType: ZP2015_UNIT_DATE
       bulkRangeType: ZP2015_UNIT_DATE_BULK
       outputType: ZP2015_DATE_RANGE
+    - !SizeCounter
+      # Výpočet metráže
+      excludeWhen:
+        someOf:
+          # Nesmí být nastaven jako pevné spojení s jinou
+          - itemType: ZP2015_ITEM_LINK
+          - itemType: ZP2015_INVALID_RECORD
+      storageType: ZP2015_STORAGE_ID
+      sizeType: ZP2015_PACKET_METRAGE
+      outputType: ZP2015_UNITS_AMOUNT
+      outputPostfix: " bm"
+      outputPostfixMissing: " bm. UPOZORNĚNÍ: Prvek Metráž UJ není všude vyplněn."
 
     - !TextAggregation
       inputTypes:
+        # ZP4.3.5 Přímý zdroj akvizice
         - ZP2015_UNIT_SOURCE
       outputType: ZP2015_UNIT_SOURCE
-    # ZP4.3.2 Manipulacni seznam ma historii nepovinnou
+      onlyRoots: true
+    
     - !TextAggregation
-        inputTypes:
-            - ZP2015_UNIT_HIST
-        outputType: ZP2015_UNIT_HIST
+      inputTypes:
+        # ZP4.3.2 Manipulacni seznam ma historii nepovinnou
+        - ZP2015_UNIT_HIST
+      outputType: ZP2015_UNIT_HIST
+      onlyRoots: true
 
-    # ZP4.3.3 Způsob uspořádání jednotky popisu
     - !TextAggregation
-        inputTypes:
-            - ZP2015_UNIT_ARR
-        outputType: ZP2015_UNIT_ARR
+      inputTypes:
+        # ZP4.3.3 Způsob uspořádání jednotky popisu
+        - ZP2015_UNIT_ARR
+      outputType: ZP2015_UNIT_ARR
+      onlyRoots: true
+    
+    - !TextAggregation
+      inputTypes:
+        # ZP4.3.4 Tematický popis jednotky popisu
+        - ZP2015_UNIT_CONTENT
+      outputType: ZP2015_UNIT_CONTENT
+      onlyRoots: true
+    
+    - !TextAggregation
+      inputTypes:
+        # ZP4.3.6 Budoucí přírůstky
+        - ZP2015_FUTURE_UNITS
+      outputType: ZP2015_FUTURE_UNITS
+      onlyRoots: true
 
-    # ZP4.3.4 Tematický popis jednotky popisu
     - !TextAggregation
-        inputTypes:
-            - ZP2015_UNIT_CONTENT
-        outputType: ZP2015_UNIT_CONTENT
-
-    # ZP4.3.6 Budoucí přírůstky
+      inputTypes:
+        # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
+        - ZP2015_UNIT_CURRENT_STATUS
+      outputType: ZP2015_UNIT_CURRENT_STATUS
+      onlyRoots: true
+    
     - !TextAggregation
-        inputTypes:
-            - ZP2015_FUTURE_UNITS
-        outputType: ZP2015_FUTURE_UNITS
-
-    # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
-    - !TextAggregation
-        createEmpty: false
-        inputTypes:
-            - ZP2015_RELATED_UNITS
-        outputType: ZP2015_RELATED_UNITS
+      createEmpty: false
+      inputTypes:
+        # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
+        - ZP2015_RELATED_UNITS
+      outputType: ZP2015_RELATED_UNITS
+      onlyRoots: true
 
     # 4.7.1 Zpracovatel jednotky popisu
     - !Copy
-        inputType: ZP2015_ARRANGER
-        distinct: true
+      inputType: ZP2015_ARRANGER
+      distinct: true
 
     # 4.7.1 Informace o zpracování
     - !TextAggregation
-        createEmpty: false
-        inputTypes:
-            - ZP2015_ARRANGEMENT_INFO
-        outputType: ZP2015_ARRANGEMENT_INFO
+      createEmpty: false
+      inputTypes:
+        - ZP2015_ARRANGEMENT_INFO
+      outputType: ZP2015_ARRANGEMENT_INFO
+      onlyRoots: true
 
     # 4.7.2 Pravidla zpracování jednotky popisu
     - !TextAggregation
-        inputTypes:
-            - ZP2015_ARRANGE_RULES
-        outputType: ZP2015_ARRANGE_RULES
+      inputTypes:
+        - ZP2015_ARRANGE_RULES
+      outputType: ZP2015_ARRANGE_RULES
+      onlyRoots: true
 
     # 4.7.3 Datum popisu
     - !TextAggregation
-        inputTypes:
-            - ZP2015_DESCRIPTION_DATE
-        outputType: ZP2015_DESCRIPTION_DATE
+      inputTypes:
+        - ZP2015_DESCRIPTION_DATE
+      outputType: ZP2015_DESCRIPTION_DATE
+      onlyRoots: true
 
    # Agregace původce
    # - !Copy
@@ -116,26 +147,78 @@ actions:
         inputType: ZP2015_LANGUAGE
         distinct: true
 
+    # Agregace charakteru poškození
+    - !Copy
+        inputType: ZP2015_UNIT_DAMAGE_TYPE
+        distinct: true
+
     # Agregace příloh
     - !Copy
         inputType: ZP2015_ATTACHMENT
         distinct: true
 
     # Počet JP v pomůcce
-    - !NodeCount
-        outputType: ZP2015_UNIT_COUNT_SUM
+    - !NodeCount 
+      excludeWhen:
+        someOf:
+          # Nesmí být nastaven jako pevné spojení s jinou
+          - itemType: ZP2015_INVALID_RECORD
+      outputType: ZP2015_UNIT_COUNT_SUM
 
     - !UnitCount
         outputType: ZP2015_UNIT_COUNT_TABLE
         outputColumnUnitName: NAME
         outputColumnUnitCount: COUNT
         outputColumnDateRange: DATE_RANGE
+        outputOrderBy:
+          - columnName: NAME
+            valueOrder:
+              - lio
+              - lip
+              - ukn
+              - rkp
+              - ppr
+              - ind
+              - ele
+              - rep
+              - ktt
+              - pec
+              - raz
+              - otd
+              - kar
+              - fas
+              - map
+              - atl
+              - tvy
+              - gli
+              - kre
+              - fsn
+              - fsd
+              - lfi
+              - sfi
+              - kin
+              - mf
+              - mfis
+              - fal
+              - dfo
+              - kza
+              - zza
+              - tio
+              - tip
+              - poh
+              - pkt
+              - cpa
+              - sto
+              - daj
+              - pnp
+              - pfp
+              - jin
         dateRangeCounter:
           # Extra EJ - kdekoliv
           excludeWhen:
             someOf:
               # Nesmí být nastaven jako pevné spojení s jinou
-              - itemType: ZP2015_ITEM_LINK    
+              - itemType: ZP2015_ITEM_LINK
           inputType: ZP2015_UNIT_DATE
           bulkRangeType: ZP2015_UNIT_DATE_BULK
           outputType: ZP2015_DATE_RANGE
@@ -147,6 +230,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD
              when:
                # Je nastaven typ i pocet
                itemType: ZP2015_EXTRA_UNITS
@@ -197,6 +282,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                all:
                  - itemType: ZP2015_LEVEL_TYPE
@@ -215,6 +302,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                someOf:
                  # Složka s počtem EJ
@@ -284,6 +373,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
@@ -300,6 +391,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_DAO

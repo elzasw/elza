@@ -10,6 +10,8 @@ import {savingApiWrapper} from 'actions/global/status';
 import {fundExtendedView} from './fundExtended';
 import {developerNodeScenariosDirty} from 'actions/global/developer';
 import {fundNodeInfoReceive} from './nodeInfo';
+import { urlNode, urlFundNode, getFundVersion } from '../../constants';
+import { routerNavigate } from 'actions/router';
 
 export function isNodeAction(action) {
     switch (action.type) {
@@ -74,6 +76,7 @@ export function fundSelectSubNode(
     ensureItemVisible = false,
     subNodeIndex = null,
     selectSibling = false,
+    redirect = false,
 ) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
@@ -132,14 +135,15 @@ export function fundSelectSubNode(
             // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
             // je někdy dříve v akordeonu než-li ve stromu
             const node = fund.nodes.nodes[fund.nodes.activeIndex];
-            const viewStartIndex = node.depth === subNodeParentNode.depth ? node.viewStartIndex : 0;
-            const childNodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
+            const viewStartIndex = node?.depth === subNodeParentNode?.depth ? node?.viewStartIndex : 0;
+            const childNodes = fund.nodes.nodes[fund.nodes.activeIndex]?.childNodes;
             // index zacatku plovouciho okna + index polozky v akordeonu = realny index
             nodeIndex = indexById(childNodes, subNodeId) + viewStartIndex;
         }
 
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, nodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
+        redirect && dispatch(routerNavigate(urlFundNode(fund.id, getFundVersion(fund), subNodeId)));
     }
 }
 

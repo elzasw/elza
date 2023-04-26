@@ -1,12 +1,18 @@
 package cz.tacr.elza.print.item.convertors;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.ESTIMATED_TEMPLATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import cz.tacr.elza.api.IUnitdate;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 /**
  * Konvertor pro sprváné zobrazování UnitDate pro tiskový výstup.
@@ -50,6 +56,15 @@ public class UnitDatePrintConvertor {
      */
     public static final String INTERVAL_TEMPLATE = "%s – %s";
 
+    enum DateType {
+        // solo date
+        SOLITARY,
+        // lower part
+        LOWER_BOUNDARY,
+        // upper part
+        UPPER_BOUNDARY
+    };
+
     /**
      * Provede konverzi formátu pro tiskový výstup.
      * 
@@ -63,7 +78,7 @@ public class UnitDatePrintConvertor {
         if (isInterval(format)) {
             return convertInterval(format, unitdate);
         }
-        return convertDate(format, unitdate.getValueFrom(), unitdate.getValueFromEstimated());
+        return convertDate(format, unitdate.getValueFrom(), unitdate.getValueFromEstimated(), DateType.SOLITARY);
     }
 
     /**
@@ -92,8 +107,10 @@ public class UnitDatePrintConvertor {
         }
 
         String template = format.equals(FORMAT_YEAR_YEAR)? INTERVAL_YEAR_TEMPLATE : INTERVAL_TEMPLATE;
-        String dateFrom = convertDate(fmt[0], unitdate.getValueFrom(), unitdate.getValueFromEstimated());
-        String dateTo = convertDate(fmt[1], unitdate.getValueTo(), unitdate.getValueToEstimated());
+        String dateFrom = convertDate(fmt[0], unitdate.getValueFrom(), unitdate.getValueFromEstimated(),
+                                      DateType.LOWER_BOUNDARY);
+        String dateTo = convertDate(fmt[1], unitdate.getValueTo(), unitdate.getValueToEstimated(),
+                                    DateType.UPPER_BOUNDARY);
 
         return String.format(template, dateFrom, dateTo);
     }
@@ -106,10 +123,10 @@ public class UnitDatePrintConvertor {
      * @param estimated
      * @return String
      */
-    public static String convertDate(final String format, final String value, final boolean estimated) {
+    public static String convertDate(final String format, final String value, 
+                                     final boolean estimated, final DateType dateType) {
 
         String result;
-        boolean addEstimate = estimated;
 
         LocalDateTime date;
         try {
@@ -119,8 +136,10 @@ public class UnitDatePrintConvertor {
         }
         switch (format) {
         case CENTURY:
-            result = String.format(CENTURY_TEMPLATE, date.getYear() / 100 + 1);
-            addEstimate = false;
+        {
+            int iDateShift = (dateType == DateType.UPPER_BOUNDARY) ? 0 : 1;
+            result = String.format(CENTURY_TEMPLATE, date.getYear() / 100 + iDateShift);
+        }
             break;
         case YEAR:
             result = String.valueOf(date.getYear());
@@ -138,7 +157,7 @@ public class UnitDatePrintConvertor {
             throw new IllegalStateException("Neexistující formát: " + format);
         }
 
-        if (addEstimate) {
+        if (estimated) {
             result = String.format(ESTIMATED_TEMPLATE, result);
         }
 

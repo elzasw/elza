@@ -13,7 +13,6 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
-import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -49,6 +48,7 @@ import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
@@ -186,7 +186,9 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            exportBuilder = new CamExportBuilder(staticDataService, groovyService, schemaManager, apDataService);
+            exportBuilder = new CamExportBuilder(staticDataService,
+                    groovyService, schemaManager,
+                    apDataService);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }

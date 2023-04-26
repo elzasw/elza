@@ -6,6 +6,7 @@
   "scripts": {
     "start:cra": "react-scripts start",
     "start": "rescripts start",
+    "dev-legacy": "rescripts --openssl-legacy-provider start",
     "dev": "rescripts start",
     "build": "cross-env CI=false rescripts build",
     "initialize": "npm install",
@@ -27,6 +28,7 @@
     "axios": "^0.21.4",
     "classnames": "^2.2.6",
     "core-js": "2.4.1",
+    "diff": "^5.1.0",
     "dom-scroll-into-view": "1.2.1",
     "elza-api": "file:target/elza-api",
     "es5-shim": "^4.5.13",
@@ -77,6 +79,7 @@
     "@storybook/addon-links": "5.3.15",
     "@storybook/addons": "5.3.15",
     "@storybook/react": "5.3.15",
+    "@types/diff": "^5.0.2",
     "@types/react": "^16.9.23",
     "@types/react-dom": "^16.9.5",
     "@types/react-redux": "^7.1.7",

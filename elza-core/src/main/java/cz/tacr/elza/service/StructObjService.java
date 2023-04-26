@@ -12,11 +12,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.castor.core.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +30,40 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -224,8 +248,9 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        structObjInternalService.deleteStructObj(structObj, null);
+    public List<Integer> deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+                                         final List<ArrStructuredObject> structObjs) {
+        return structObjInternalService.deleteStructObj(structObjs, null);
     }
 
     /**
@@ -236,8 +261,9 @@ public class StructObjService {
      *
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj, ArrChange change) {
-        structObjInternalService.deleteStructObj(structObj, change);
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+                                final List<ArrStructuredObject> structObjs, ArrChange change) {
+        structObjInternalService.deleteStructObj(structObjs, change);
     }
 
     /**
@@ -258,6 +284,9 @@ public class StructObjService {
         for (ArrStructuredObject structureData : structureDataList) {
             if (structureData.getDeleteChange() != null) {
                 throw new BusinessException("Nelze změnit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+            }
+            if (!assignable && structureData.getErrorDescription() != null) {
+                throw new BusinessException("Nelze zavřít, pokud strukturovaná data obsahují chyby", BaseCode.INVALID_STATE);
             }
             structureData.setAssignable(assignable);
         }
@@ -559,7 +588,7 @@ public class StructObjService {
      * @param structureDataList strukturovaný typ
      */
     private List<ArrStructuredObject> revalidateStructureData(final List<ArrStructuredObject> structureDataList) {
-        Assert.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
+        Validate.notNull(structureDataList, "Musí být vyplněn list hodnot strukt. typu");
 
         for (ArrStructuredObject structureData : structureDataList) {
             structureData.setValue(null);
@@ -684,7 +713,7 @@ public class StructObjService {
      * @param fundVersion     verze AS
      * @return entita
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
     public ArrStructuredObject getStructObjById(final Integer structureDataId,
                                                     @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
         return getStructObjById(structureDataId);
@@ -1321,12 +1350,9 @@ public class StructObjService {
     public void updateStructObj(ArrChange change, ArrStructuredObject structObj, List<ArrStructuredItem> items) {
 
         // drop all old items
-        List<ArrStructuredItem> currItems = structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
-        for (ArrStructuredItem structureItemDB : currItems) {
-            structureItemDB.setDeleteChange(change);
-            ArrStructuredItem save = structureItemRepository.save(structureItemDB);
-        }
+        List<ArrStructuredItem> currItems = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        currItems.forEach(item -> item.setDeleteChange(change));
+        structureItemRepository.saveAll(currItems);
 
         // create new items
         for (ArrStructuredItem newItem : items) {
@@ -1345,7 +1371,6 @@ public class StructObjService {
                                   structObjIds,
                                   null),
                           structObjIds);
-
     }
 
     private void notifyAboutChange(Integer fundId, EventStructureDataChange eventStructObjChange,
@@ -1362,15 +1387,11 @@ public class StructObjService {
     }
 
     public List<ArrStructuredObject> getUnusedStructObj(Collection<ArrStructuredObject> structObjsToDelete) {
-        List<ArrStructuredObject> unusedObjs = new ArrayList<>();
-        // identifikaci strukt. objektů, které se již nepoužívají
-        for (ArrStructuredObject obj : structObjsToDelete) {
-            Integer count = structureItemRepository.countItemsUsingStructObj(obj);
-            if (count == 0) {
-                unusedObjs.add(obj);
-            }
-        }
-        return unusedObjs;
+        List<ArrStructuredObject> unusedStructObjs = new ArrayList<>(structObjsToDelete);
+        List<ArrStructuredObject> usedStructObjs = new ArrayList<>();
+        ObjectListIterator.forEachPage(structObjsToDelete, page -> usedStructObjs.addAll(structureItemRepository.findUsedStructuredObjects(page)));
+        unusedStructObjs.removeAll(usedStructObjs);
+        return unusedStructObjs;
     }
 
 }

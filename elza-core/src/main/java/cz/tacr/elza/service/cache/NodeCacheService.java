@@ -22,7 +22,6 @@ import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
-import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +47,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -62,6 +62,7 @@ import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataUriRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 
@@ -110,6 +111,9 @@ public class NodeCacheService {
 
     @Autowired
     private FundFileRepository fundFileRepository;
+
+    @Autowired
+    private NodeExtensionRepository nodeExtensionRepository;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -474,6 +478,7 @@ public class NodeCacheService {
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
+        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
 
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
@@ -482,6 +487,7 @@ public class NodeCacheService {
             CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
+            cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
 			String nodeData = serialize(cn);
 
 			// prepare final object
@@ -509,6 +515,7 @@ public class NodeCacheService {
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
+        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
 
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
@@ -516,6 +523,7 @@ public class NodeCacheService {
             CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
+            cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
 
             String nodeData = serialize(cn);
             ArrCachedNode cachedNode = nodeCachedNodes.get(nodeId);
@@ -523,6 +531,22 @@ public class NodeCacheService {
         }
 
         return cachedNodes;
+    }
+
+    private Map<Integer, List<ArrNodeExtension>> createNodeExtensionMap(final Collection<Integer> nodeIds) {
+        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+
+        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = new HashMap<>();
+        for (ArrNodeExtension nodeExtension : nodeExtensions) {
+            nodeExtension = HibernateUtils.unproxy(nodeExtension);
+            List<ArrNodeExtension> links = nodeIdNodeExtension.get(nodeExtension.getNodeId());
+            if (links == null) {
+                links = new ArrayList<>();
+                nodeIdNodeExtension.put(nodeExtension.getNodeId(), links);
+            }
+            links.add(nodeExtension);
+        }
+        return nodeIdNodeExtension;
     }
 
     private Map<Integer, List<ArrDaoLink>> createNodeDaoLinkMap(final Collection<Integer> nodeIds) {
@@ -564,7 +588,7 @@ public class NodeCacheService {
      * @return JP
      */
 	private RestoredNode getNodeInternal(final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 		ArrCachedNode cachedNode = cachedNodeRepository.findByNodeId(nodeId);
         if (cachedNode == null) {
             throw new ObjectNotFoundException("Node not found in cache", ArrangementCode.NODE_NOT_FOUND)

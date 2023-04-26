@@ -60,7 +60,7 @@ const DetailRelatedPart: FC<Props> = ({
     };
 
     
-    const partBinding = part ? bindings.partsMap[part.id] : false;
+    const partBinding = part ? bindings.partsMap[part.id] : undefined;
     const hasBinding = partBinding != null;
     const hasLocalChange = hasBinding && !partBinding;
     const isRevisionModified = updatedPart?.changeType === "UPDATED";
@@ -99,7 +99,7 @@ const DetailRelatedPart: FC<Props> = ({
                 </RevisionDisplay>
 
                 <div className="actions">
-                    {partBinding && 
+                    {hasBinding && 
                         <SyncIcon syncState={!hasLocalChange ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}

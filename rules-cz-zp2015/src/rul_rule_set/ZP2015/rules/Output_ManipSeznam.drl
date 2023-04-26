@@ -24,11 +24,12 @@ then
     $itemType.setRepeatable(false);
 end
 
-rule "Možné opakovatelné prvky - přílohy"
+rule "Možné opakovatelné prvky - přílohy a charakter poškození"
 no-loop
 when
     $itemType : RulItemTypeExt( code in (
-        "ZP2015_ATTACHMENT"
+        "ZP2015_ATTACHMENT",
+        "ZP2015_UNIT_DAMAGE_TYPE"
     ) )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);

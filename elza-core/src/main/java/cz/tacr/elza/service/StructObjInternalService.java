@@ -1,12 +1,24 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.core.security.AuthParam;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -19,13 +31,6 @@ import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Interní servisní třída pro práci se strukturovanými datovými typy.
@@ -34,6 +39,8 @@ import java.util.List;
  */
 @Service
 public class StructObjInternalService {
+
+    private final static Logger logger = LoggerFactory.getLogger(StructObjInternalService.class);
 
     private final StructuredItemRepository structureItemRepository;
     private final StructuredObjectRepository structObjRepository;
@@ -64,66 +71,105 @@ public class StructObjInternalService {
     }
 
     /**
-     * Smazání hodnoty strukturovaného datového typu.
+     * Smazání hodnot strukturovaného datového typu.
      *
-     * @param structObj hodnota struktovaného datového typu
+     * @param structObjs seznam hodnot struktovaného datového typu
      * @param changeOverride přetížená změna
+     * @return List<Integer>
      */
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj,
-                                @Nullable final ArrChange changeOverride) {
-        if (structObj.getDeleteChange() != null) {
-            throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+    public List<Integer> deleteStructObj(final List<ArrStructuredObject> structObjs, @Nullable final ArrChange changeOverride) {
+        List<ArrStructuredObject> tempStructObj = new ArrayList<>(); 
+        List<ArrStructuredObject> permStructObj = new ArrayList<>();
+        List<String> sortValues = new ArrayList<>();
+        List<Integer> deletedIds = new ArrayList<>();
+
+        ArrStructuredObject firstStructObj = structObjs.get(0);
+        ArrFund fund = firstStructObj.getFund();
+        RulStructuredType structuredType = firstStructObj.getStructuredType();
+
+        logger.debug("Creating two lists according to objects status");
+
+        // vytvoření 2 seznamů podle stavu objektu
+        for (ArrStructuredObject structObj : structObjs) {
+            if (structObj.getDeleteChange() != null) {
+                throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
+            }
+            if (!structObj.getFundId().equals(fund.getFundId())) {
+                throw new BusinessException("All structured objects have to be from same fund", BaseCode.INVALID_STATE)
+                        .set("fundId", fund.getFundId())
+                        .set("structuredObjectId", structObj.getStructuredObjectId())
+                        .set("structObjFundId", structObj.getFundId());
+            }
+            if (!structObj.getStructuredTypeId().equals(structuredType.getStructuredTypeId())) {
+                throw new BusinessException("All structured object have to have same type", BaseCode.INVALID_STATE)
+                        .set("structuredTypeId", structuredType.getStructuredTypeId())
+                        .set("structuredObjectId", structObj.getStructuredObjectId())
+                        .set("otherStructuredTypeId", structObj.getStructuredTypeId());
+            }
+            if (structObj.getState() == State.TEMP) {
+                tempStructObj.add(structObj);
+            } else {
+                sortValues.add(structObj.getSortValue());
+                permStructObj.add(structObj);
+            }
         }
 
-        if (structObj.getState() == State.TEMP) {
+        logger.debug("Two lists were created: temp.size={}, permanent.size={}", tempStructObj.size(), permStructObj.size());
 
-            // remove temporary object
-            structureItemRepository.deleteByStructuredObject(structObj);
-            dataRepository.deleteByStructuredObject(structObj);
-            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
-            structObjRepository.delete(structObj);
-            changeRepository.delete(change);
-
-        } else {
-
-            // drop permanent object
-
-            // check usage
-            Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
-            if (count > 0) {
-                throw new BusinessException("Existují návazné jednotky popisu, objekt nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
-                        .level(Level.WARNING)
-                        .set("count", count)
-                        .set("id", structObj.getStructuredObjectId());
+        // vymazání 'temporary' objektů
+        if (!tempStructObj.isEmpty()) {
+            for (ArrStructuredObject structObj : tempStructObj) {
+                structureItemRepository.deleteByStructuredObject(structObj);
+                dataRepository.deleteByStructuredObject(structObj);
+                ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
+                structObjRepository.delete(structObj);
+                changeRepository.delete(change);
+                deletedIds.add(structObj.getStructuredObjectId());
             }
 
+            logger.debug("Removed {} temporary objects", tempStructObj.size());
+        }
+
+        // vymazání 'permanent' objektů
+        if (!permStructObj.isEmpty()) {
             ArrChange change = changeOverride == null
                     ? arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA)
                     : changeOverride;
-            structObj.setDeleteChange(change);
 
-            ArrStructuredObject savedStructObj = structObjRepository.save(structObj);
-
-            // check duplicates for deleted item
-            // find potentially duplicated items
-            List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                    .findValidByStructureTypeAndFund(savedStructObj.getStructuredType(),
-                                                     savedStructObj.getFund(),
-                                                     savedStructObj.getSortValue(),
-                                                     savedStructObj);
-            for (ArrStructuredObject pd : potentialDuplicates) {
-                if (pd.getState().equals(State.ERROR)) {
-                    structObjService.addToValidate(pd);
-                }
+            // kontrolujeme použití
+            List<Integer> userStructObjIds = new ArrayList<>(); 
+            ObjectListIterator.forEachPage(permStructObj, 
+                                           page -> userStructObjIds.addAll(structureItemRepository.findUsedStructuredObjectIds(page)));
+            if (!userStructObjIds.isEmpty()) {
+                throw new BusinessException("Existují návazné jednotky popisu, objekt(y) nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
+                        .level(Level.WARNING)
+                        .set("count", userStructObjIds.size())
+                        .set("ids", userStructObjIds);
             }
 
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    null,
-                    Collections.singletonList(structObj.getStructuredObjectId())));
+            for (ArrStructuredObject structObj : permStructObj) {
+                structObj.setDeleteChange(change);
+                deletedIds.add(structObj.getStructuredObjectId());
+            }
+            structObjRepository.saveAll(permStructObj);
+
+            logger.debug("Removed {} permanent objects", permStructObj.size());
+
+            // hledáme duplikáty
+            List<ArrStructuredObject> structuredObjectsDup = new ArrayList<>();
+            ObjectListIterator
+                .forEachPage(sortValues, 
+                             page -> structuredObjectsDup.addAll(structObjRepository.findErrorByStructureTypeAndFund(structuredType, fund, page)));
+            structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+
+            logger.debug("Processed {} duplicates objects", structuredObjectsDup.size());
+
+            notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
+                                                                          structuredType.getCode(),
+                                                                          null, null, null,
+                                                                          deletedIds));
         }
+        return deletedIds;
     }
 
     public RulPartType getPartTypeByCode(final String partTypeCode) {

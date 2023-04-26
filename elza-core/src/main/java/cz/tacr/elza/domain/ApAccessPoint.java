@@ -36,6 +36,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     public static final String FIELD_UUID = "uuid";
     public static final String FIELD_NAMES = "names";
     public static final String FIELD_DESCRIPTIONS = "descriptions";
+    public static final String FIELD_LAST_UPDATE = "lastUpdate";
     public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
     public static final String FIELD_PREFFERED_PART = "preferredPart";

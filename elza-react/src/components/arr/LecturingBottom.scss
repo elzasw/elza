@@ -26,14 +26,16 @@
                 border-left: $node-panel-border 1px solid;
                 border-right: $node-panel-border 1px solid;
                 padding: 2px 5px;
+                color: $shade-7;
+
                 .comment-text {
                     text-align: justify;
                     padding: 6px;
                 }
             }
             .state-change {
-                color: #ffffff;
-                background: #000000;
+                color: $fg-color;
+                background: $shade-0;
                 padding: 2px 5px;
             }
         }

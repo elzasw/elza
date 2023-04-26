@@ -1,3 +1,4 @@
+@import "../../variables.scss";
 /**
  * Styly pro AddNodeCross
  *
@@ -26,7 +27,7 @@
             align-items: center;
             cursor:pointer;
             position: absolute;
-            color: #eeeeee;
+            color: $contrast-color-fg;
             font-family: Arial, sans-serif;
             font-size: 0.9em;
             text-decoration: none;
@@ -60,7 +61,7 @@
         }
 
         .center {
-            background-color: #ddd;
+            background-color: $shade-4;
             top: 0;
             left: 0;
             width: 100%;
@@ -76,7 +77,8 @@
         }
 
         .blue-but {
-            background-color: #6fa8dc;
+            background-color: $accent-color;
+            color: $accent-color-fg;
             transition: background-color 300ms ease-out;
         }
 
@@ -92,7 +94,7 @@
             }
 
             .top {
-                background: linear-gradient(135deg, transparent 0px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 10px, #333 0) bottom right, linear-gradient(45deg, transparent 10px, #333 0) bottom left;
+                background: linear-gradient(135deg, transparent 0px, $contrast-color 0) top left, linear-gradient(225deg, transparent 0px, $contrast-color 0) top right, linear-gradient(315deg, transparent 10px, $contrast-color 0) bottom right, linear-gradient(45deg, transparent 10px, $contrast-color 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
                 margin-top:-2px;
@@ -100,12 +102,12 @@
 
             }
             .top:hover {
-                background: linear-gradient(135deg, transparent 0px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 10px, #555 0) bottom right, linear-gradient(45deg, transparent 10px, #555 0) bottom left;
+                background: linear-gradient(135deg, transparent 0px, $shade-9 0) top left, linear-gradient(225deg, transparent 0px, $shade-9 0) top right, linear-gradient(315deg, transparent 10px, $shade-9 0) bottom right, linear-gradient(45deg, transparent 10px, $shade-9 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
             }
             .right {
-                background: linear-gradient(135deg, transparent 9px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 9px, #333 0) bottom left;
+                background: linear-gradient(135deg, transparent 9px, $contrast-color 0) top left, linear-gradient(225deg, transparent 0px, $contrast-color 0) top right, linear-gradient(315deg, transparent 0px, $contrast-color 0) bottom right, linear-gradient(45deg, transparent 9px, $contrast-color 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
                 margin-top:-2px;
@@ -113,25 +115,25 @@
 
             }
             .right:hover {
-                background: linear-gradient(135deg, transparent 9px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 9px, #555 0) bottom left;
+                background: linear-gradient(135deg, transparent 9px, $shade-9 0) top left, linear-gradient(225deg, transparent 0px, $shade-9 0) top right, linear-gradient(315deg, transparent 0px, $shade-9 0) bottom right, linear-gradient(45deg, transparent 9px, $shade-9 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
             }
             .bottom {
-                background: linear-gradient(135deg, transparent 10px, #333 0) top left, linear-gradient(225deg, transparent 10px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 0px, #333 0) bottom left;
+                background: linear-gradient(135deg, transparent 10px, $contrast-color 0) top left, linear-gradient(225deg, transparent 10px, $contrast-color 0) top right, linear-gradient(315deg, transparent 0px, $contrast-color 0) bottom right, linear-gradient(45deg, transparent 0px, $contrast-color 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
                 margin-top:-2px;
                 margin-left:-2px;
             }
             .bottom:hover {
-                background: linear-gradient(135deg, transparent 10px, #555 0) top left, linear-gradient(225deg, transparent 10px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 0px, #555 0) bottom left;
+                background: linear-gradient(135deg, transparent 10px, $shade-9 0) top left, linear-gradient(225deg, transparent 10px, $shade-9 0) top right, linear-gradient(315deg, transparent 0px, $shade-9 0) bottom right, linear-gradient(45deg, transparent 0px, $shade-9 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
             }
 
             .bottom2 {
-                background: linear-gradient(135deg, transparent 0px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 0px, #333 0) bottom left;
+                background: linear-gradient(135deg, transparent 0px, $contrast-color 0) top left, linear-gradient(225deg, transparent 0px, $contrast-color 0) top right, linear-gradient(315deg, transparent 0px, $contrast-color 0) bottom right, linear-gradient(45deg, transparent 0px, $contrast-color 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
                 opacity:0;
@@ -139,7 +141,7 @@
                 margin-left:-2px;
             }
             .bottom2:hover {
-                background: linear-gradient(135deg, transparent 0px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 0px, #555 0) bottom left;
+                background: linear-gradient(135deg, transparent 0px, $shade-9 0) top left, linear-gradient(225deg, transparent 0px, $shade-9 0) top right, linear-gradient(315deg, transparent 0px, $shade-9 0) bottom right, linear-gradient(45deg, transparent 0px, $shade-9 0) bottom left;
                 background-size: 60% 60%;
                 background-repeat: no-repeat;
             }

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.print.item.Item;
 import net.bytebuddy.implementation.bytecode.Throw;
 
@@ -118,7 +119,18 @@ public interface Output {
      * @param code požadovaný kód recordu
      * @return seznam recordů v daného typu
      */
+    @Deprecated
     FilteredRecords getRecordsByType(final String code);
+
+    /**
+     * vstupem je kód typu rejstříku a vrací se seznam rejstříkových hesel řazených
+     * podle názvu (record).
+     *
+     * @param filter
+     *            požadovaný filtr
+     * @return seznam recordů v daného typu
+     */
+    FilteredRecords getFilteredRecords(RecordsFilter filter);
 
     /**
      * Vrací seznam všech archivních entit ve výstupu
@@ -126,4 +138,11 @@ public interface Output {
      * @return
      */
     Iterator<Record> getRecords();
+
+    /**
+     * Return system/configuration property
+     * 
+     * @return
+     */
+    ExportConfig getExportConfig();
 }

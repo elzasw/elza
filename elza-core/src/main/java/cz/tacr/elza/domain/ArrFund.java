@@ -3,7 +3,6 @@ package cz.tacr.elza.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -19,7 +18,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 /**
@@ -31,7 +31,7 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @Entity(name = "arr_fund")
 @Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFund extends AbstractVersionableEntity implements Versionable, IArrFund {
+public class ArrFund extends AbstractVersionableEntity implements Versionable, ArrFundGetter {
 
 	@Id
 	@GeneratedValue

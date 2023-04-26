@@ -1,10 +1,11 @@
 package cz.tacr.elza.exception;
 
-import cz.tacr.elza.exception.codes.ErrorCode;
-import org.castor.core.util.Assert;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.exception.codes.ErrorCode;
 
 /**
  * Výchozí výjimka serveru.
@@ -50,7 +51,7 @@ public abstract class AbstractException extends RuntimeException {
     }
 
     public AbstractException level(final Level level) {
-        Assert.notNull(level, "Level musí být vyplněn");
+        Validate.notNull(level, "Level musí být vyplněn");
         this.level = level;
         return this;
     }

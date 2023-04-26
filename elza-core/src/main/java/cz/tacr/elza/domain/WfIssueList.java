@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.api.interfaces.IWfIssueList;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * Seznam problémů
  */
 @Entity(name = "wf_issue_list")
-public class WfIssueList implements IArrFund, IWfIssueList {
+public class WfIssueList implements ArrFundGetter, IWfIssueList {
 
     // --- fields ---
 

@@ -216,6 +216,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
     protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
     protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/assignable/{assignable}";
+    @Deprecated
     protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
@@ -376,6 +377,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static String DE_IMPORT = DE_IMPORT_CONTROLLER_URL + "/import";
     protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
 
+    // Import coodrinates
+    protected static final String IMPORT_COORDINATES = AP_CONTROLLER_URL + "/import/coordinates";
+
     // Uživatelé a skupiny
     protected final static String USER_DETAIL = USER_CONTROLLER_URL + "/detail";
     protected final static String CHANGE_PASSWORD = USER_CONTROLLER_URL + "/{userId}/password";
@@ -419,14 +423,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
-    //FUND
+    // FUND
     protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
+    protected static final String FUND_DELETE_STRUCTURE_DATA = FUND_CONTROLLER_URL + "/fund/{id}/structuredObject";
 
-    //ACCESSPOINTS
+    // ACCESSPOINTS
     protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
 
-    //ŠABLONY PRO JP
+    // ŠABLONY PRO JP
     protected static final String CREATE_NODE_TEMPLATE = NODES + "/{fundId}/template/create";
     protected static final String UPDATE_NODE_TEMPLATE = NODES + "/template/{templateId}";
     protected static final String DELETE_NODE_TEMPLATE = NODES + "/template/{templateId}";
@@ -438,6 +443,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     public static final String SCOPE_GLOBAL = "GLOBAL";
+    public static final String SCOPE_COPY = "COPY";
 
     @Value("${local.server.port}")
     protected int port;
@@ -783,7 +789,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return archivní pomůcka
      */
     protected ArrFundVO getFund(final Integer fundId) {
-        Response response = get(spec -> spec.pathParams("fundId", fundId), FUND);
+        Response response = get(spec -> spec.pathParam("fundId", fundId), FUND);
         return response.getBody().as(ArrFundVO.class);
     }
 
@@ -964,7 +970,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundId id souboru
      */
     protected void deleteFund(final Integer fundId) {
-        delete(spec -> spec.pathParams("fundId", fundId), DELETE_FUND);
+        delete(spec -> spec.pathParam("fundId", fundId), DELETE_FUND);
     }
 
     /**
@@ -1208,8 +1214,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("nodeId", nodeId);
         params.put("descItemTypeId", descItemTypeId);
 
-        Response response = multipart(spec ->
-                        spec
+        Response response = multipart(spec -> spec
                                 .pathParam("fundVersionId", fundVersionId)
                                 .multiPart("file", importFile)
                                 .params(params)
@@ -3142,15 +3147,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání hodnoty strukturovaného datového typu.
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return smazaná entita
+     * @param fundVersionId    identifikátor verze AS
+     * @param structureDataIds seznam identifikátorů hodnot strukturovaného datového typu
+     * @return seznam identifikátorů smazaných entit
      */
-    protected ArrStructureDataVO deleteStructureData(final Integer fundVersionId,
-                                                     final Integer structureDataId) {
-        return delete(spec -> spec.pathParam("structureDataId", structureDataId)
-                .pathParam("fundVersionId", fundVersionId), DELETE_STRUCTURE_DATA)
-                .as(ArrStructureDataVO.class);
+    protected List<Integer> deleteStructureData(final Integer fundVersionId,
+                                                final List<Integer> structureDataIds) {
+        return delete(spec -> spec
+                      .pathParams("id", fundVersionId)
+                      .body(structureDataIds), FUND_DELETE_STRUCTURE_DATA)
+                .as(ArrayList.class);
     }
 
     /**
@@ -3176,8 +3182,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParam("search", search)
                         .queryParam("assignable", assignable)
                         .queryParam("from", from)
-                        .queryParam("count", count)
-                , FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
+                        .queryParam("count", count), FIND_STRUCTURE_DATA)
+                .as(FilteredResultVO.class);
     }
 
     /**

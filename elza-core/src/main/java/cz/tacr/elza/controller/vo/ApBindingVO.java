@@ -46,6 +46,10 @@ public class ApBindingVO {
 
     private SyncStateVO syncState;
 
+    private SyncProgressVO syncProgress;
+
+    private String syncLastUploadError;
+
     private List<ApBindingItemVO> bindingItemList;
 
     public Integer getId() {
@@ -146,6 +150,22 @@ public class ApBindingVO {
         this.detailUrlExtReplacedBy = detailUrlExtReplacedBy;
     }
 
+    public String getSyncLastUploadError() {
+        return syncLastUploadError;
+    }
+
+    public void setSyncLastUploadError(String syncLastUploadError) {
+        this.syncLastUploadError = syncLastUploadError;
+    }
+
+    public SyncProgressVO getSyncProgress() {
+        return syncProgress;
+    }
+
+    public void setSyncProgress(SyncProgressVO syncProgress) {
+        this.syncProgress = syncProgress;
+    }
+
     /**
      * Creates value object from ApBindingState.
      *
@@ -225,7 +245,12 @@ public class ApBindingVO {
                 		if(bindedItem==null) {
                 			otherLocalChange = true;
                     	} else {
-                    		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
+                            boolean synced = syncChangeId >= item.getCreateChangeId();
+                            bindedItem.setSync(synced);
+                            if (!synced) {
+                                // set parent as modified
+                                bindedParts.get(item.getPartId()).setSync(synced);
+                            }
                     	}
                 	}            		
             	}
@@ -306,7 +331,13 @@ public class ApBindingVO {
                 		if(bindedItem==null) {
                             otherLocalChange = true;
                     	} else {
-                    		bindedItem.setSync(syncChangeId >= item.getCreateChangeId());
+                            boolean synced = syncChangeId >= item.getCreateChangeId();
+                            bindedItem.setSync(synced);
+                            if (!synced) {
+                                // set parent as modified
+                                bindedParts.get(item.getPartId()).setSync(synced);
+                            }
+
                     	}
                 	}            		
             	}

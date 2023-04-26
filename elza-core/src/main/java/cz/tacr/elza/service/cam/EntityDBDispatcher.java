@@ -86,6 +86,7 @@ import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
@@ -376,6 +377,7 @@ public class EntityDBDispatcher {
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
+        MultipleApChangeContext mcc = new MultipleApChangeContext(); 
 
         readBindingItems(prevBindingState.getBinding(), accessPoint);
         // check if exists subparts without binding
@@ -441,7 +443,7 @@ public class EntityDBDispatcher {
                 if (replacedBindingState.isPresent()) {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
-                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem());
+                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
                     state.setReplacedBy(replacedBy);
                     break;
                 }
@@ -478,7 +480,10 @@ public class EntityDBDispatcher {
         }
 
         accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
-        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+        mcc.add(accessPoint.getAccessPointId());
+        for (Integer apId : mcc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
 
         this.procCtx = null;
     }
@@ -648,13 +653,13 @@ public class EntityDBDispatcher {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
                 ApPart part = item.getPart();
-                accessPointService.updatePartValue(part);
+                accessPointService.updatePartValue(apState, part);
                 if (part.getParentPartId() != null) {
                     // Item was in some cases dettached proxy
                     // we have to fetch part from DB
                     ApPart parentPart = this.partService.getPart(part.getParentPartId());
                     Validate.notNull(parentPart, "Failed to read parent part, partId: ", part.getParentPartId());
-                    accessPointService.updatePartValue(parentPart);
+                    accessPointService.updatePartValue(apState, parentPart);
                 }
                 accessPointCacheService.createApCachedAccessPoint(part.getAccessPointId());
             }
@@ -709,6 +714,8 @@ public class EntityDBDispatcher {
      * Metoda mění odkaz na aktuální podobu preferovaného označení.
      * Dochází k uložení entity, další metody by měly používat aktualizovanou
      * entitu.
+     * 
+     * Nedochazi k validaci entity.
      *
      * @param procCtx
      *            context
@@ -856,7 +863,7 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
+        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);        
         syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",

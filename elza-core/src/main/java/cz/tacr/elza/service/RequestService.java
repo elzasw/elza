@@ -305,7 +305,7 @@ public class RequestService {
         return requestRepository.getOneCheckExist(id);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrRequest> findRequests(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                          @Nullable final ArrRequest.State state,
                                          @Nullable final ArrRequest.ClassType type,

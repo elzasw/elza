@@ -15,7 +15,7 @@ export const FormCheckbox:FC<CommonFieldProps<ApItemBitVO>> = ({
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemBitVO>>(`${name}`);
     const {updatedItem, item} = field.input.value;
 
     const getValue = (item?: ApItemBitVO) => {
@@ -29,13 +29,24 @@ export const FormCheckbox:FC<CommonFieldProps<ApItemBitVO>> = ({
             const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
             const isDeleted = updatedItem?.changeType === "DELETED";
 
-            const handleChange = (e: any) => {
+            const handleBlur = (e: any) => {
                 props.input.onBlur(e)
                 handleValueUpdate(form, props);
             }
 
+            const handleChange = (e: any) => {
+                if(updatedItem?.changeType === "ORIGINAL"){
+                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                }
+                props.input.onChange(e)
+            }
+
             const handleRevert = () => {
-                form.change(`${name}.updatedItem`, item)
+                if(!updatedItem){ throw Error("No updated item to revert."); }
+                if(!item){ throw Error("No original item to revert to."); }
+
+                const newUpdatedItem: ApItemBitVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                form.change(`${name}.updatedItem`, newUpdatedItem)
                 handleValueUpdate(form, props);
             }
 
@@ -65,7 +76,8 @@ export const FormCheckbox:FC<CommonFieldProps<ApItemBitVO>> = ({
                     input={{
                         ...props.input,
                         checked: props.input.value,
-                        onBlur: handleChange // inject modified onChange handler
+                        onChange: handleChange,
+                        onBlur: handleBlur // inject modified onChange handler
                     }}
                     disabled={disabled}
                     renderComponent={FormInput}

@@ -1,13 +1,14 @@
 package cz.tacr.elza.groovy;
 
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import org.apache.commons.lang3.Validate;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 public class GroovyUnitdateFormatter {
 
@@ -81,14 +82,14 @@ public class GroovyUnitdateFormatter {
     }
 
     private String completeBeginUnitdate(IUnitdate unitdate, String str) {
-        if (unitdate.getValueFromEstimated() && !unitdate.getFormat().equals(CENTURY)) {
+        if (unitdate.getValueFromEstimated()) {
             str = estimate + str;
         }
         return joinStr(str, prefixFrom);
     }
 
     private String completeEndUnitdate(IUnitdate unitdate, String str) {
-        if (unitdate.getValueToEstimated() && !unitdate.getFormat().equals(CENTURY)) {
+        if (unitdate.getValueToEstimated()) {
             str = estimate + str;
         }
         return joinStr(str, prefixTo);
@@ -96,9 +97,7 @@ public class GroovyUnitdateFormatter {
 
     private String completeEqualUnitdate(IUnitdate from, IUnitdate to, String str) {
         if (from.getValueFromEstimated()
-                && to.getValueToEstimated()
-                && !from.getFormat().equals(CENTURY)
-                && !to.getFormat().equals(CENTURY)) {
+                && to.getValueToEstimated()) {
             str = estimate + str;
         }
         return joinStr(str, prefixYearEqual);

@@ -17,15 +17,17 @@ $tabs-height: 28px;
         flex-wrap: nowrap;
         height: $tabs-height;
         padding-right: 23px;
-        overflow: hidden;
+        // overflow: hidden;
+        // border-bottom: none;
 
         li {
             display: flex;
-            flex: 1;
-            overflow: hidden;
+            /* flex: 1; */
+            // overflow: hidden;
             max-width: 240px;
-            min-width: 30px;
+            min-width: 40px;
             //width: 100%;
+            margin-bottom: 0;
 
             a {
                 overflow: hidden;
@@ -35,7 +37,8 @@ $tabs-height: 28px;
                 padding: 5px;
                 font-size: 12px;
                 font-weight: normal;
-                border: 1px solid #ddd;
+                border: 1px solid $shade-3;
+                color: $fg-color;
 
                 span {
                     overflow: hidden;
@@ -68,10 +71,16 @@ $tabs-height: 28px;
 
                 &.active {
                     background: $tabs-tab-active-bg;
+                    color: $fg-color;
+                    border-color: $border-color;
+                    margin-bottom: -1px;
                 }
 
                 &:hover {
+                    // background: linear-gradient($tabs-tab-active-bg 80%, $shade-5) ;
                     background: $tabs-tab-active-bg;
+                    color: $fg-color;
+                    border-color: $border-color;
                 }
             }
         }

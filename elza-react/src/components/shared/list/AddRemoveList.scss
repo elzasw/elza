@@ -22,7 +22,7 @@
         margin: 0;
         vertical-align: top;
         .icon  {
-            color: $node-form-actions-color;
+            color: $fg-color;
             height: 1.35em;
             line-height: 1.35em;
             width: 1.35em;
@@ -47,8 +47,8 @@
         .item-list-container {
             .item-container {
                 &:nth-child(even){
-                    background-color: #f8f8f8; 
-                    background-color: #0000000b; 
+                    background-color: $shade-1; 
+                    /* background-color: #0000000b;  */
                 }
             }
         }

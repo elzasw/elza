@@ -41,6 +41,12 @@
         <engine>JASPER</engine>
         <directory>STITKY_PDF_JASPER</directory>
     </template>
+    <template code="ZP2015_KOSILKA_PDF_JASPER" output-type="ZP2015_STITKY" 
+              mime-type="application/pdf" extension="pdf">
+        <name>Košilka (PDF)</name>
+        <engine>JASPER</engine>
+        <directory>KOSILKA_PDF_JASPER</directory>
+    </template>
     <template code="ZP2015_KARTA_PDF_JASPER" output-type="ZP2015_STITKY" 
               mime-type="application/pdf" extension="pdf">
         <name>Karta (PDF)</name>
@@ -54,6 +60,20 @@
         <directory>INVENTAR_XML_PUBLICATION</directory>
     </template>
     <template code="ZP2015_INVENTAR_EAD" output-type="ZP2015_INVENTAR" 
+              mime-type="application/xml" extension="xml">
+        <name>Publikace do EAD</name>
+        <engine>FREEMARKER</engine>
+        <directory>INVENTAR_EAD</directory>
+        <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
+    </template>
+    <template code="ZP2015_MANIP_SEZNAM_EAD" output-type="ZP2015_MANIP_SEZNAM" 
+              mime-type="application/xml" extension="xml">
+        <name>Publikace do EAD</name>
+        <engine>FREEMARKER</engine>
+        <directory>INVENTAR_EAD</directory>
+        <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
+    </template>
+    <template code="ZP2015_STARSI_POMUCKA_1958_EAD" output-type="STARSI_POMUCKA_1958" 
               mime-type="application/xml" extension="xml">
         <name>Publikace do EAD</name>
         <engine>FREEMARKER</engine>

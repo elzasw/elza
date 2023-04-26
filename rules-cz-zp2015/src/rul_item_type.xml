@@ -60,6 +60,14 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+        <item-type code="ZP2015_ITEM_ORDER" data-type="INT">
+        <name>Pořadí uložení</name>
+        <shortcut>Pořadí</shortcut>
+        <description>Pořadí v ukládací jednotce</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_AIP_ID" data-type="STRING">
         <name>Uložení v DA</name>
         <shortcut>Uložení v DA</shortcut>
@@ -71,6 +79,14 @@
     <item-type code="ZP2015_DAO_ID" data-type="STRING">
         <name>Číslo digitalizátu</name>
         <shortcut>Digitalizát</shortcut>
+        <description>ZP4.5.3 Existence kopií jednotky popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_DAO_LINK" data-type="URI_REF">
+        <name>Odkaz na digitalizát</name>
+        <shortcut>Odkaz na digitalizát</shortcut>
         <description>ZP4.5.3 Existence kopií jednotky popisu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
@@ -177,7 +193,7 @@
     <item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
         <shortcut>Dat. vzniku - Textově</shortcut>
-        <description>ZP4.2.5 Datace vzniku jednotky popisu - textový zápis</description>
+        <description>ZP4.2.6 Datace vzniku jednotky popisu - textový zápis</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -332,6 +348,14 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_UNIT_DAMAGE_TYPE" data-type="ENUM">
+        <name>Charakter poškození</name>
+        <shortcut>Poškození</shortcut>
+        <description>ZP4.4.4 Fyzický stav - charakter poškození</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>    
     <item-type code="ZP2015_COPY_SOURCE" data-type="TEXT">
         <name>Identifikace předlohy kopie</name>
         <shortcut>Předloha kopie</shortcut>
@@ -341,11 +365,19 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RELATED_UNITS" data-type="TEXT">
-        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</name>
-        <shortcut>Odkazy</shortcut>
+        <name>Odkazy na příbuzné dokumenty, archiválie a pomůcky (TEXT)</name>
+        <shortcut>Odkazy (TEXT)</shortcut>
         <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RELATED_UNITS_LINK" data-type="URI_REF">
+        <name>Odkazy na příbuzné jednotky popisu (URL)</name>
+        <shortcut>Odkazy (URL)</shortcut>
+        <description>ZP4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_EXISTING_COPY" data-type="TEXT">
@@ -733,14 +765,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
-    <item-type code="ZP2015_ITEM_ORDER" data-type="INT">
-        <name>Pořadí uložení</name>
-        <shortcut>Pořadí</shortcut>
-        <description>Pořadí v ukládací jednotce</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>false</can-be-ordered>
-        <use-specification>false</use-specification>
-    </item-type>
 
     <!-- Prvky popisu pro uložení -->
     <item-type code="ZP2015_PACKET_TYPE" data-type="ENUM">
@@ -909,6 +933,16 @@
         <use-specification>true</use-specification>
     </item-type>
 
+    <!-- Jiné rozměry -->
+    <item-type code="ZP2015_SIZE_OTHER" data-type="DECIMAL">
+        <name>Jiné rozměry</name>
+        <shortcut>Jiné rozměry</shortcut>
+        <description>ZP5.2.4 Jiné rozměry - specifikace a hodnota</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+
     <!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
     <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
         <name>Technika záznamu</name>
@@ -1047,5 +1081,13 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ALTERNATIVE_DESCRIPTION_INLINE" data-type="STRUCTURED" structure-type="ZP2015_ALTERNATIVE_DESCRIPTION">
+        <name>Alternativní popis</name>
+        <shortcut>Alt. popis</shortcut>
+        <description>Alternativní archivní popis (v jiném jazyce)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
     </item-type>
 </item-types>

@@ -1,3 +1,5 @@
+@import "../../../../variables.scss";
+
 .sync-icon {
     display: flex;
     align-items: center;
@@ -5,15 +7,18 @@
 
     .sync {
         &.not-synced {
-            color: #b83131;
+            // color: #b83131;
+            color: $color-red;
         }
         &.sync-ok {
-            color: #3fba3f;
+            // color: #3fba3f;
+            color: $color-green;
         }
         &.local-change {
             // color: #eab304;
             // color: #e0e300;
-            color: #e7d704;
+            // color: #e7d704;
+            color: $color-yellow;
         }
     }
 }

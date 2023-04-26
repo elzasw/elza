@@ -15,6 +15,8 @@ import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../../validate';
 import {CLS_CALCULABLE} from "../../../constants";
 
+const DATE_FORMAT = "DD.MM.RRRR";
+
 class DescItemDate extends AbstractReactComponent {
     focusEl = null;
     focus() {
@@ -56,6 +58,7 @@ class DescItemDate extends AbstractReactComponent {
                         time={false}
                         value={value == null ? null : new Date(value)}
                         onChange={this.handleChange}
+                        placeholder={DATE_FORMAT}
                     />
                 </ItemTooltipWrapper>
             </div>

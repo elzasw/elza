@@ -1,3 +1,4 @@
+@import "../../variables.scss";
 .fund-detail-container {
     display: flex;
     flex-direction: column;
@@ -29,14 +30,14 @@
             min-height: 60px;
             font-size: 16px;
             display: flex;
-            background: #eee;
+            background: $shade-2;
             border: none;
             align-items: center;
             justify-content: center;
             border-radius: 5px;
 
             &:hover {
-                background: #ddd;
+                background: $shade-4;
             }
         }
 

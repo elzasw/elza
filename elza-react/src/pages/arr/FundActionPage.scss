@@ -58,12 +58,14 @@ $header-minimized-height: 12px;
         height: 100%;
         clear: both;
         overflow: hidden;
-        border: 1px solid #DDDDDD;
+        border: 1px solid $border-color;
         border-top: 0;
-        background: #f8f8f8;
+        background: $shade-1;
         .detail {
             .config {
                 width:100%;
+                background-color: $shade-0;
+                border: $primary-border;
             }
         }
     }

@@ -76,6 +76,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -99,6 +100,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -145,6 +147,7 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -159,6 +162,8 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
  */
 @Service
 public class RuleService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -253,6 +258,9 @@ public class RuleService {
     @Autowired
     private ExportFilterRepository exportFilterRepository;
 
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
     // why is it here?
@@ -262,8 +270,6 @@ public class RuleService {
     private static final String GEO_UNIT = "GEO_UNIT";
     private static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
     private static final String GEO_TYPE = "GEO_TYPE";
-
-    private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     /**
      *
@@ -689,6 +695,25 @@ public class RuleService {
     }
 
     /**
+     * Provádění validaci nody, které mají odkaz na ApAccessPoint
+     *
+     * @param accessPointId
+     */
+    public void revalidateNodes(final Integer accessPointId) {
+        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
+        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
+                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
+                                               Collectors.mapping(i -> i.getNodeId(),
+                                                                  Collectors.toList())));
+        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
+            List<ArrNode> nodes = new ArrayList<>();
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            asyncRequestService.enqueue(version, nodes);
+        }
+    }
+
+    /**
      * Smaže všechny vybrané stavy.
      *
      *
@@ -706,6 +731,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(missing)) {
             ObjectListIterator.forEachPage(missing,
                                            page -> nodeConformityMissingRepository.deleteAll(page));
+            nodeConformityMissingRepository.flush();
         }
 
         List<ArrNodeConformityError> errors = ObjectListIterator
@@ -713,6 +739,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(errors)) {
             ObjectListIterator.forEachPage(errors,
                                            page -> nodeConformityErrorRepository.deleteAll(page));
+            nodeConformityErrorRepository.flush();
         }
 
         ObjectListIterator.forEachPage(infos,
@@ -726,11 +753,32 @@ public class RuleService {
     /**
      * Mazání uzlů podle seznamu id.
      *
+     * Metoda akceptuje velké množství uzlů a zajistí stránkování.
+     *
      * @param unusedNodes
      */
     public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
         List<ArrNodeConformity> deleteInfos = ObjectListIterator
                 .findIterable(nodeIds, page -> nodeConformityRepository.findByNodeIds(page));
+
+        deleteConformityInfo(deleteInfos);
+    }
+
+    /**
+     * Mazání dle seznamu item
+     *
+     * Metoda akceptuje velké množství item a zajistí stránkování.
+     *
+     * @param unusedNodes
+     */
+    public void deleteConformityByItems(List<ArrItem> arrItemList) {
+        List<ArrNodeConformity> deleteInfos = ObjectListIterator
+                .findIterable(arrItemList, page -> {
+                    List<Integer> itemIds = page.stream().map(ArrItem::getItemId).collect(Collectors.toList());
+                    List<ArrNodeConformityError> nodeErrors = nodeConformityErrorRepository.findByItemIds(itemIds);
+                    return nodeErrors.stream().map(ArrNodeConformityError::getNodeConformity)
+                            .collect(Collectors.toList());
+                });
 
         deleteConformityInfo(deleteInfos);
     }
@@ -792,6 +840,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
+        // TODO: Limit itemTypes to itemTypes defined in given RuleSet
 		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
@@ -1203,6 +1252,7 @@ public class RuleService {
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
         ApScope scope = accessPointService.getApScope(form.getScopeId());
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
 
         Integer preferredPartId = null;
 
@@ -1275,12 +1325,11 @@ public class RuleService {
 
         boolean isPartPreferred = form.getAccessPointId() == null || (partForm.getPartId() != null && preferredPartId != null && preferredPartId.equals(partForm.getPartId()));
 
-        Part part = new Part(null, partForm.getParentPartId(), PartType.fromValue(partForm.getPartTypeCode()),
-                modelItems, parentPart, isPartPreferred);
+        Part part = new Part(null, PartType.fromValue(partForm.getPartTypeCode()), modelItems, parentPart, isPartPreferred);
 
         ModelAvailable modelAvailable = new ModelAvailable(ae, part, modelItems, modelItemTypes);
 
-        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
+        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, ruleSet);
     }
 
     /**
@@ -1293,20 +1342,36 @@ public class RuleService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+    public ApValidationErrorsVO executeValidation(final ApState apState,
+                                                  final boolean includeRevision) {
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
 
-        ApState apState = accessPointService.getStateInternal(accessPoint);
-        RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
-        List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
-        Integer preferredPartId = accessPoint.getPreferredPartId();
-        List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
-        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId());
+        StaticDataProvider sdp = staticDataService.getData();
 
-        ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
+        ApAccessPoint accessPoint = apState.getAccessPoint();
+        ApScope scope = apState.getScope();
+        Integer ruleSetId = scope.getRuleSetId();
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId);
+
+        List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+        List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
+
+        ApBuilder apBuilder = new ApBuilder(sdp);
         apBuilder.setAccessPoint(apState, parts, itemList);
+
+        if (includeRevision) {
+            ApRevision revision = revisionService.findRevisionByState(apState);
+            if (revision != null) {
+                List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
+                List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+
+                // apply revision data
+                apBuilder.setRevision(revision, revParts, revItems);
+            }
+        }
         Ap ap = apBuilder.build();
 
         Map<PartType, List<Index>> indexMap = indexList.stream()
@@ -1324,7 +1389,7 @@ public class RuleService {
 
         List<AbstractItem> items = apBuilder.createAbstractItemList();
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
-        ModelValidation validationResult = executeValidation(modelValidation, rulRuleSet);
+        ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
@@ -1338,7 +1403,7 @@ public class RuleService {
 
         for (Part part : ap.getParts()) {
             ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
-            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, rulRuleSet);
+            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, ruleSet);
 
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
@@ -1827,7 +1892,7 @@ public class RuleService {
 
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
                                             @NotNull final ModelAvailable modelAvailable,
-                                            @NotNull final RulRuleSet rulRuleSet) {
+                                            @NotNull final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.AVAILABLE_ITEMS;
 
@@ -1845,7 +1910,6 @@ public class RuleService {
         executeDrls.add(drlType.value() + "/" + partType.value());
         executeDrls.add(drlType.value());
 
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
 
         try {
@@ -1858,7 +1922,7 @@ public class RuleService {
     }
 
     private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation,
-                                              @NotNull final RulRuleSet rulRuleSet) {
+                                              @NotNull final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.VALIDATION;
 
@@ -1880,7 +1944,6 @@ public class RuleService {
         }
         executeDrls.add(drlType.value());
 
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
 
         try {

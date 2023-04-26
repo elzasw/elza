@@ -6,6 +6,7 @@ import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
+import {diffChars} from "diff";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -65,6 +66,7 @@ const DetailMultipleItem: FC<Props> = ({
                                         return item ? <DetailItemContent
                                             select={select}
                                             item={item}
+                                            updatedItem={updatedItem}
                                             key={index}
                                             globalEntity={globalEntity}
                                             bindings={bindings}
@@ -75,6 +77,7 @@ const DetailMultipleItem: FC<Props> = ({
                                         return updatedItem ? <DetailItemContent
                                             select={select}
                                             item={updatedItem}
+                                            prevItem={item}
                                             key={index}
                                             bindings={bindings}
                                             globalEntity={globalEntity}

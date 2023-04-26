@@ -40,6 +40,9 @@ public enum BaseCode implements ErrorCode {
 
     /**
      * Pole entity musí být vyplněno.
+     * 
+     * nastavuje se hodnota "property" pro zobrazení názvu chybějícího
+     * pole.
      */
     PROPERTY_NOT_EXIST,
 
@@ -83,6 +86,10 @@ public enum BaseCode implements ErrorCode {
     /**
      * Přílišná délka
      */
-    INVALID_LENGTH
+    INVALID_LENGTH;
+
+    // Konstanty specifické pro jednotlivé chybové kódy
+
+    public static final String PARAM_PROPERTY = "property";
 
 }

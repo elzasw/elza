@@ -1,4 +1,189 @@
 //@import "bootstrap/less/bootstrap.scss";
+// Default
+$fg-color: #333;
+$fg-shade-2: #eee;
+$contrast-color-fg: #fff;
+$fg-shade-4: #fff;
+
+$shade-0: #fff;
+$shade-1: #f8f8f8;
+$shade-2: #eee;
+$shade-3: #e7e7e7;
+$shade-4: #ddd;
+$shade-5: #ccc;
+$shade-6: #bbb;
+$shade-7: #999;
+$contrast-color: #333;
+$shade-9: #555;
+
+$shade-0-opacity-50: #fff8;
+
+$border-color: #ddd;
+
+$accent-color: #66afe9;
+$accent-color: #eb993c;
+$accent-color: #6fa8dc;
+
+$color-red: #d7200d;
+$color-red: #ea9999;
+$color-orange: #d7760d;
+$color-yellow: #e7d704;
+$color-blue: #0092ff;
+$color-green: #B6D7A8;
+
+$color-link: #23527c;
+
+// Light
+$fg-color: #333;
+$fg-shade-2: #eee;
+$contrast-color-fg: #fff;
+$fg-shade-4: #fff;
+
+$shade-0: #ffffff;
+$shade-1: darken($shade-0, 3%);
+$shade-2: darken($shade-0, 6%);
+$shade-3: darken($shade-0, 6%);
+$shade-4: darken($shade-0, 14%);
+$shade-5: darken($shade-0, 20%);
+$shade-6: darken($shade-0, 25%);
+$shade-7: darken($shade-0, 50%);
+$contrast-color: #333;
+$shade-9: lighten($contrast-color, 10%);
+
+$shade-0-opacity-50: #fff8;
+
+$border-color: rgba(#000, 0.2);
+$primary-border: 1px solid $border-color;
+
+$accent-color: mix(#66afe9, $shade-7, 60%);
+$accent-color-alt: darken($accent-color, 7%);
+$accent-color-fg: white;
+
+/* $color-red: mix($shade-7, #f00, 40%); */
+$color-red: mix($shade-7, #f00, 60%);
+$color-orange: mix($shade-7, #ff7700, 40%);
+/* $color-yellow: mix($shade-7, #ffff00, 40%); */
+$color-yellow: #e5ca09;
+$color-blue: mix($shade-7, #0033ff, 40%);
+$color-green: mix($shade-7, #00ff33, 60%);
+
+$color-link: mix(#66afe9, $fg-color, 50%);
+
+.light {
+    --fg-color: #{$fg-color};
+    --fg-shade-2: #eee;
+    --fg-shade-4: #fff;
+
+    --shade-0: #{$shade-0};
+    --shade-1: #{$shade-1};
+    --shade-2: #{$shade-2};
+    --shade-3: #{$shade-3};
+    --shade-4: #{$shade-4};
+    --shade-5: #{$shade-5};
+    --shade-6: #{$shade-6};
+    --shade-7: #{$shade-7};
+
+    --contrast-color: #{$contrast-color};
+    --contrast-color-fg: #fff;
+    --shade-9: #{$shade-9};
+
+    --shade-0-opacity-50: #{$shade-0-opacity-50};
+
+    --primary-border: #{$primary-border};
+    --border-color: #{$border-color};
+
+    --accent-color: #{$accent-color};
+    --accent-color-alt: #{$accent-color-alt};
+    --accent-color-fg: #{$accent-color-fg};
+
+    --color-red: #{$color-red};
+    --color-orange: #{$color-orange};
+    --color-yellow: #{$color-yellow};
+    --color-blue: #{$color-blue};
+    --color-green: #{$color-green};
+
+    --color-link: #{$color-link};
+}
+
+// Dark
+$base-color: #808080;
+$fg-color: #cdd;
+$fg-color: lighten($base-color, 45%);
+
+$shade-0: #181818;
+$shade-0: #0f0f1f;
+$shade-0: desaturate(darken($fg-color, 77%), 0%);
+$shade-0: darken($base-color, 45%);
+
+$contrast-color-fg: $fg-color;
+$fg-shade-4: $fg-color;
+
+$shade-1: lighten($shade-0, 3%);
+$shade-2: lighten($shade-0, 6%);
+$shade-3: lighten($shade-0, 6%);
+$shade-4: lighten($shade-0, 14%);
+$shade-5: lighten($shade-0, 20%);
+$shade-6: lighten($shade-0, 25%);
+$shade-7: lighten($shade-0, 60%);
+$contrast-color: darken($shade-0, 2%);
+$shade-9: lighten($contrast-color, 10%);
+
+$shade-0-opacity-50: #0008;
+
+$border-color: rgba(#fff, 0.2);
+$primary-border: 1px solid $border-color;
+$accent-color: #226fac;
+$accent-color-alt: lighten($accent-color, 10%);
+// $accent-color: mix(teal, $shade-2, 60%);
+$accent-color-fg: $fg-color;
+
+$color-red: mix($shade-5, #f00, 60%);
+$color-orange: mix($shade-5, #ff6600, 60%);
+/* $color-yellow: mix($shade-5, #ffff00, 60%); */
+$color-yellow: #c9b317;
+
+/* $color-blue: mix($shade-5, #0000ff, 60%); */
+$color-blue: #4242cf;
+$color-green: mix($shade-5, #00ff00, 60%);
+
+$color-link: mix($fg-color, #0000ff, 60%);
+$color-link: $accent-color-fg;
+
+.dark {
+    --fg-color: #{$fg-color};
+    --fg-shade-2: #eee;
+    --fg-shade-4: #fff;
+
+    --shade-0: #{$shade-0};
+    --shade-1: #{$shade-1};
+    --shade-2: #{$shade-2};
+    --shade-3: #{$shade-3};
+    --shade-4: #{$shade-4};
+    --shade-5: #{$shade-5};
+    --shade-6: #{$shade-6};
+    --shade-7: #{$shade-7};
+
+    --contrast-color-fg: #fff;
+    --contrast-color: #{$contrast-color};
+    --shade-9: #{$shade-9};
+
+    --shade-0-opacity-50: #{$shade-0-opacity-50};
+
+    --primary-border: #{$primary-border};
+    --border-color: #{$border-color};
+
+    --accent-color: #{$accent-color};
+    --accent-color-alt: #{$accent-color-alt};
+    --accent-color-fg: #{$accent-color-fg};
+
+    --color-red: #{$color-red};
+    --color-orange: #{$color-orange};
+    --color-yellow: #{$color-yellow};
+    --color-blue: #{$color-blue};
+    --color-green: #{$color-green};
+
+    --color-link: #{$color-link};
+}
 @import "../variables.scss";
 $version-height: 15px;
 
@@ -6,10 +191,13 @@ html, body {
     height:100%;
     max-height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #content {
-    height:100%;
+    height:500px;
+    flex: 1;
 }
 
 .root-container {
@@ -27,8 +215,8 @@ html, body {
     text-align: right;
     line-height: 15px;
     padding-right:5px;
-    background-color: #333;
-    color:white;
+    background-color: $contrast-color;
+    color: $contrast-color-fg;
     font-size: 10px;
 }
 

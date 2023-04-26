@@ -1393,6 +1393,21 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_89">
+        <name>obrazově a/nebo zvukově zachycená entita</name>
+        <description>obrazově a/nebo zvukově zachycená entita</description>
+        <shortcut>zachycená entita</shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="EVENT"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
     <!-- Zneplatněno viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6146 -->
     <item-spec code="ZP2015_ENTITY_ROLE_64">
         <name>entita zachycená jednotkami popisu</name>
@@ -1422,7 +1437,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_66">
-        <name>osoba/bytost zachycená jednotkou popisu</name>
+        <name>osoba/bytost související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>osoba/bytost</shortcut>
         <item-aptypes>
@@ -1431,7 +1446,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_67">
-        <name>rod/rodina zachycený/á jednotkou popisu</name>
+        <name>rod/rodina související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>rod/rodina</shortcut>
         <item-aptypes>
@@ -1440,7 +1455,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_68">
-        <name>korporace zachycená jednotkou popisu</name>
+        <name>korporace související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>korporace</shortcut>
         <item-aptypes>
@@ -1449,7 +1464,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_69">
-        <name>událost zachycená jednotkou popisu</name>
+        <name>událost související s jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
         <shortcut>událost</shortcut>
         <item-aptypes>
@@ -1458,7 +1473,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_70">
-        <name>dílo/výtvor zachycené/ý jednotkou popisu</name>
+        <name>dílo/výtvor související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>dílo/výtvor</shortcut>
         <item-aptypes>
@@ -1467,7 +1482,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_71">
-        <name>geografický objekt zachycený jednotkou popisu</name>
+        <name>geografický objekt související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>geografický objekt</shortcut>
         <item-aptypes>
@@ -1476,7 +1491,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_72">
-        <name>obecný pojem vztahující se k jednotce popisu</name>
+        <name>obecný pojem související s jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
         <shortcut>obecný pojem</shortcut>
         <item-aptypes>
@@ -1515,7 +1530,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_88 -->    
+    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_89 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>
@@ -2366,5 +2381,120 @@
         <description>Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný.</description>
         <shortcut>nepřístupné vztahy mezi JP a entitami</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_FRAGILE">
+        <name>křehký, lámavý</name>
+        <description>křehký, lámavý</description>
+        <shortcut>křehký, lámavý</shortcut>
+        <view-order>1</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_CRACK">
+        <name>trhliny, přelomení</name>
+        <description>trhliny, přelomení</description>
+        <shortcut>trhliny, přelomení</shortcut>
+        <view-order>2</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_MOULD">
+        <name>plísněmi</name>
+        <description>poškozený plísněmi</description>
+        <shortcut>plíseň</shortcut>
+        <view-order>3</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_INSECT">
+        <name>hmyzem</name>
+        <description>poškozený hmyzem</description>
+        <shortcut>hmyz</shortcut>
+        <view-order>4</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_RODENT">
+        <name>hlodavci</name>
+        <description>poškozený hlodavci</description>
+        <shortcut>hlodavci</shortcut>
+        <view-order>5</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_FIRE">
+        <name>ohněm</name>
+        <description>poškozený ohněm</description>
+        <shortcut>oheň</shortcut>
+        <view-order>6</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_HEAT">
+        <name>teplem</name>
+        <description>poškozený teplem</description>
+        <shortcut>teplo</shortcut>
+        <view-order>7</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_WATER">
+        <name>vodou</name>
+        <description>poškozený vodou</description>
+        <shortcut>voda</shortcut>
+        <view-order>8</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_RUST">
+        <name>rzí</name>
+        <description>poškozený rzí</description>
+        <shortcut>rez</shortcut>
+        <view-order>9</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_ELECTROMAGNETIC">
+        <name>vlivem elektromagnetického pole</name>
+        <description>poškozený vlivem elektromagnetického pole</description>
+        <shortcut>vliv elektromag. pole</shortcut>
+        <view-order>10</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_DUST">
+        <name>prachem</name>
+        <description>poškozený prachem</description>
+        <shortcut>prach</shortcut>
+        <view-order>11</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_LIGHT">
+        <name>světlem</name>
+        <description>poškozený světlem</description>
+        <shortcut>světlo</shortcut>
+        <view-order>12</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_DAMAGE_OTHER">
+        <name>jiné</name>
+        <description>jiné</description>
+        <shortcut>jiné</shortcut>
+        <view-order>13</view-order>
+        <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_PLICA">
+        <name>plika (výška)</name>
+        <description>výška pliky</description>
+        <shortcut>plika</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_DIAMETER">
+        <name>průměr</name>
+        <description>průměr</description>
+        <shortcut>průměr</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_MAP_WIDTH">
+        <name>zrcadlo (šířka)</name>
+        <description>šířka zrcadla mapy</description>
+        <shortcut>zrcadlo (šířka)</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_MAP_HEIGHT">
+        <name>zrcadlo (výška)</name>
+        <description>výška zrcadla mapy</description>
+        <shortcut>zrcadlo (výška)</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
     </item-spec>
 </item-specs>

@@ -173,7 +173,6 @@ public class StructObjValueService {
             @Override
             public void afterCommit() {
                 notifyGenerator();
-                //runValidator(Collections.singletonList(structureData.getStructuredObjectId()));
             }
         });
     }

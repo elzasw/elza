@@ -1,3 +1,4 @@
+@import "../../../variables.scss";
 $autocomplete-tree-depth: 14px;
 
 .tree-list{
@@ -72,13 +73,13 @@ $autocomplete-tree-depth: 14px;
             font-weight: bold;
         }
         &.focus {
-            background: #afafaf;
+            background: $shade-6;
         }
         &.focus.not-focusable {
             background: transparent;
         }
         &.focus.not-selectable {
-            background: #dfdfdf;
+            background: $shade-4;
         }
     }
 }

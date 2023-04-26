@@ -4,28 +4,46 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
-import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
-import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
-import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
-import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.schema.v2.AccessPoint;
+import cz.tacr.elza.schema.v2.AccessPointEntry;
+import cz.tacr.elza.schema.v2.DescriptionItem;
+import cz.tacr.elza.schema.v2.DescriptionItemString;
+import cz.tacr.elza.schema.v2.ExternalId;
+import cz.tacr.elza.schema.v2.Fragment;
+import cz.tacr.elza.schema.v2.Fragments;
+import cz.tacr.elza.schema.v2.Party;
 
 /**
  * Processing access point entries for access points or parties. Implementation
@@ -90,6 +108,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     }
 
     // obsolete - can be removed
+    @Deprecated
     protected void processEntry(Party party) {
         AccessPointEntry entry = party.getApe();
         entryId = entry.getId();
@@ -290,6 +309,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         ApAccessPoint accessPoint = new ApAccessPoint();
         accessPoint.setUuid(StringUtils.trimToNull(entry.getUuid()));
         accessPoint.setState(ApStateEnum.OK);
+        accessPoint.setLastUpdate(context.getCreateChange().getChangeDate().toLocalDateTime());
 
         StateApproval stateApproval = StateApproval.NEW;
         if (entry.getS() != null) {

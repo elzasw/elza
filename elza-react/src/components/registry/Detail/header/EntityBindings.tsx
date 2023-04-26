@@ -1,4 +1,4 @@
-import { showAsyncWaiting } from 'actions/global/modalDialog';
+import { showAsyncWaiting, modalDialogShow, modalDialogHide } from 'actions/global/modalDialog';
 import * as perms from 'actions/user/Permission';
 import { WebApi } from 'actions/WebApi';
 import { ApAccessPointVO } from 'api/ApAccessPointVO';
@@ -18,6 +18,9 @@ import { AppState, RefTablesState } from 'typings/store';
 import { SyncIcon } from "../sync-icon";
 import './DetailHeader.scss';
 import {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
+import { showConfirmDialog } from 'components/shared/dialog';
+import { ApPushToExt } from 'components/registry/modal/ApPushToExt';
+// import { goToAe } from 'actions/registry/registry';
 
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
@@ -53,30 +56,47 @@ export const EntityBindings:FC<{
 
     if(!item || item?.bindings.length === 0 || externalSystems.length === 0){return <></>}
 
-    const handleSynchronize = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.synchronize'),
-                WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
+    const handleSynchronize = async (binding: ApBindingVO) => {
+        const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
+        if(result){
+            dispatch(
+                showAsyncWaiting(
+                    null,
+                    getProcessingMessage('ap.binding.processing.synchronize'),
+                    WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
+                    () => {
+                        onInvalidateDetail && onInvalidateDetail();
+                    },
+                ),
+            );
+        }
     };
 
     const handleUpdate = (binding: ApBindingVO) => {
+        const extSystem = externalSystems.find((extSystem) => extSystem.code === binding.externalSystemCode);
+        if(!extSystem){ throw Error("External system not found.") }
         dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.update'),
-                WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
+            modalDialogShow(
+                this,
+                i18n('ap.push-to-ext.title'),
+                <ApPushToExt
+                    detail={item}
+                    onSubmit={async () => {
+                        try {
+                            await WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode);
+                        } catch (e) {
+                            throw Error(e);
+                        }
+                        dispatch(modalDialogHide());
+                        return;
+                    }}
+                    onClose={()=>{
+                        modalDialogHide();
+                    }}
+                    extSystems={[extSystem]}
+                />,
             ),
-        );
+            );
     };
 
     const handleTakeRelEntities = (binding: ApBindingVO) => {
@@ -121,7 +141,7 @@ export const EntityBindings:FC<{
                                 className={'binding-dropdown'}
                                 alignRight={true}
                             >
-                                { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED", "REV_NEW", "REV_AMEND"]) &&
+                                { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
                                     <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
                                         {i18n('ap.binding.action.synchronize')}
                                     </Dropdown.Item>}

@@ -1,16 +1,25 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.locationtech.jts.geom.Geometry;
+import org.geotools.kml.KML;
+import org.geotools.kml.KMLConfiguration;
+import org.geotools.xsd.Parser;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -97,8 +106,32 @@ public class AccessPointDataService {
         return apChangeRepository.save(change);
     }
 
-    public String convertCoordinatesFromKml(String coordinates) {
-        return dataCoordinatesRepository.convertCoordinatesFromKml(coordinates);
+    public String convertCoordinatesFromKml(InputStream inputStream) {
+        try {
+            Parser parser = new Parser(new KMLConfiguration());
+            SimpleFeature simpleFeature = (SimpleFeature) parser.parse(inputStream);
+            for (Property property : simpleFeature.getValue()) {
+                // if file created by https://www.freemaptools.com/kml-file-creator.htm
+                if (property.getType().getName().getURI().equals(KML.Geometry.getLocalPart())) {
+                    return property.getValue().toString();
+                }
+                // if file created by https://earth.google.com/
+                if (property.getType().getName().getURI().equals(KML.Feature.getLocalPart())) {
+                    List<SimpleFeature> simpleFeatures = (List<SimpleFeature>) property.getValue();
+                    for (SimpleFeature sf : simpleFeatures) {
+                        for (Property p : sf.getValue()) {
+                            if (p.getType().getName().getURI().equals(KML.Geometry.getLocalPart())) {
+                                return p.getValue().toString();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            logger.error("", e);
+            throw new IllegalStateException("Chyba při importu souřadnic ze souboru", e);
+        }
+        return null;
     }
 
     public String convertCoordinatesFromGml(String coordinates) {
@@ -117,7 +150,7 @@ public class AccessPointDataService {
 //        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
 //    }
 
-    public byte[] convertGeometryToWKB(Geometry geometry) {
+    public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
 

@@ -7,21 +7,21 @@ import org.springframework.context.ApplicationEvent;
  */
 public class AsyncRequestEvent extends ApplicationEvent {
 
-    private final AsyncRequest asyncRequest;
+    private final IAsyncRequest asyncRequest;
 
     private final IAsyncWorker worker;
 
     private final Throwable error;
 
-    public static AsyncRequestEvent fail(AsyncRequest asyncRequest, final IAsyncWorker worker, Throwable t) {
+    public static AsyncRequestEvent fail(IAsyncRequest asyncRequest, final IAsyncWorker worker, Throwable t) {
         return new AsyncRequestEvent(asyncRequest, worker, t);
     }
 
-    public static AsyncRequestEvent success(AsyncRequest asyncRequest, final IAsyncWorker worker) {
+    public static AsyncRequestEvent success(IAsyncRequest asyncRequest, final IAsyncWorker worker) {
         return new AsyncRequestEvent(asyncRequest, worker, null);
     }
 
-    protected AsyncRequestEvent(AsyncRequest asyncRequest, final IAsyncWorker worker, Throwable error) {
+    protected AsyncRequestEvent(final IAsyncRequest asyncRequest, final IAsyncWorker worker, Throwable error) {
         super(asyncRequest);
         this.asyncRequest = asyncRequest;
         this.worker = worker;
@@ -32,7 +32,7 @@ public class AsyncRequestEvent extends ApplicationEvent {
         return error == null;
     }
 
-    public AsyncRequest getAsyncRequest() {
+    public IAsyncRequest getAsyncRequest() {
         return asyncRequest;
     }
 
