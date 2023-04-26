@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class GroovyService {
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
-    
+
     @Autowired
     protected AccessPointCacheService accessPointCacheService;
 

@@ -255,7 +255,7 @@ public class ApFactory {
         ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
         ApPart preferredPart = accessPoint.getPreferredPart();
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
-        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
+        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getIndexValue() : null;
         return createVO(apState, accessPoint, name);
     }
 
@@ -306,7 +306,7 @@ public class ApFactory {
         ApAccessPoint ap = state.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
-        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
+        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getIndexValue() : null;
 
         List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
         List<Integer> replacedIds = states.stream().map(s -> s.getAccessPointId()).collect(Collectors.toList());
@@ -337,7 +337,7 @@ public class ApFactory {
 
             // prepare bindings
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(ap);
-            Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);            
+            Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);
 
             // prepare last change
             Integer lastChangeId = apRepository.getLastChange(state.getAccessPointId());
@@ -353,12 +353,12 @@ public class ApFactory {
                 	List<ApBindingItem> bindingItems = bindingItemRepository.findByBindings(bindings.keySet());
                     bindingItemsMap = bindingItems.stream().collect(Collectors.groupingBy(i -> i.getBindingId()));
                 }
-                
+
             	bindingsVO = new ArrayList<>(bindingStates.size());
             	for(ApBindingState bindingState: bindingStates) {
             		// check existence of nonbinded items
             		List<ApBindingItem> bindedItems = bindingItemsMap.get(bindingState.getBindingId());
-            		
+
                     ApBindingVO bivo = ApBindingVO.newInstance(bindingState, state, bindedItems, parts, items,
                                                                lastChange);
             		bindingsVO.add(bivo);
@@ -504,7 +504,7 @@ public class ApFactory {
                     if (CollectionUtils.isNotEmpty(part.getIndices())) {
                         for (ApIndex index : part.getIndices()) {
                             if (index.getIndexType().equals(DISPLAY_NAME)) {
-                                return index.getValue();
+                                return index.getIndexValue();
                             }
                         }
                     }
@@ -576,7 +576,7 @@ public class ApFactory {
             return Collections.emptyList();
         }
 
-        Map<ApPartVO, String> sortValues = new HashMap<>(); 
+        Map<ApPartVO, String> sortValues = new HashMap<>();
         List<ApPartVO> partVOList = new ArrayList<>(parts.size());
         for (CachedPart part : parts) {
             ApPartVO partVO = createPartVO(part);
@@ -628,7 +628,7 @@ public class ApFactory {
         }
         for (ApIndex index : indices) {
             if (index.getIndexType().equals(indexName)) {
-                return index.getValue();
+                return index.getIndexValue();
             }
         }
         return null;
@@ -658,7 +658,7 @@ public class ApFactory {
         apPartVO.setTypeId(part.getPartType().getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
         apPartVO.setErrorDescription(part.getErrorDescription());
-        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getValue() : null);
+        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getIndexValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
         apPartVO.setChangeType(ChangeType.ORIGINAL);
@@ -711,7 +711,7 @@ public class ApFactory {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
             ApIndex indexName = nameMap.get(accessPointId);
-            String name = indexName != null ? indexName.getValue() : null;
+            String name = indexName != null ? indexName.getIndexValue() : null;
             result.add(createVO(apState, accessPoint, name));
         }
 
@@ -992,7 +992,7 @@ public class ApFactory {
 
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(part.getPartType().getPartTypeId());
-        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getValue() : null);
+        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getRevValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPartId() : null);
         apPartVO.setRevPartParentId(part.getRevParentPart() != null ? part.getRevParentPartId() : null);
         apPartVO.setOrigPartId(part.getOriginalPart() != null ? part.getOriginalPartId() : null);

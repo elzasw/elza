@@ -4,8 +4,8 @@ import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import org.apache.commons.lang3.Validate;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
 

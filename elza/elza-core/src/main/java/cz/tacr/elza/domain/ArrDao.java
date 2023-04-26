@@ -68,7 +68,7 @@ public class ArrDao {
      */
     @Column(nullable = false)
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String attributes;
 
     public Integer getDaoId() {

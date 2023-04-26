@@ -172,11 +172,11 @@ public class RevisionPartService {
                 index = new ApRevIndex();
                 index.setPart(part);
                 index.setIndexType(indexType);
-                index.setValue(value);
+                index.setRevValue(value);
                 revIndexRepository.save(index);
             } else {
-                if (!value.equals(index.getValue())) {
-                    index.setValue(value);
+                if (!value.equals(index.getRevValue())) {
+                    index.setRevValue(value);
                     revIndexRepository.save(index);
                 }
             }

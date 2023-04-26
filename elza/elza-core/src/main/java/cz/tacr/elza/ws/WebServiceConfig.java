@@ -2,11 +2,11 @@ package cz.tacr.elza.ws;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.xml.ws.Binding;
-import javax.xml.ws.Endpoint;
-import javax.xml.ws.handler.Handler;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.xml.ws.Binding;
+import jakarta.xml.ws.Endpoint;
+import jakarta.xml.ws.handler.Handler;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,11 @@ import cz.tacr.elza.ws.core.v1.UserServiceImpl;
 
 /**
  * CXF Servlet configuration
- * 
+ *
  *
  * Sevlet is by default binded to URL/services/...
  * Binding URL can be changed using cxf.servlet.init
- * 
+ *
  * Since CXF 3.3 we can use CXF default binding constant
  * see org.apache.cxf.spring.boot.autoconfigure.CxfProperties
  */

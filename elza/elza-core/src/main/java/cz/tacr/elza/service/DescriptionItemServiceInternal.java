@@ -60,11 +60,11 @@ public class DescriptionItemServiceInternal {
 
     /**
      * Return list of description items for node
-     * 
+     *
      * Description items are returned including data
-     * 
+     *
      * Method will return only valid / non deleted items.
-     * 
+     *
      * @param node
      * @return
      */
@@ -111,7 +111,7 @@ public class DescriptionItemServiceInternal {
         case RECORD_REF: {
             ArrDataRecordRef apData = (ArrDataRecordRef) data;
             ApIndex apIndex = accessPointNames.get(apData.getRecordId());
-            String title = apIndex == null? "unknownName" : apIndex.getValue();  
+            String title = apIndex == null? "unknownName" : apIndex.getIndexValue();
             TitleValue value = new TitleValue(title);
             if (dataExport) {
                 value.setEntityId(apData.getRecord().getAccessPointId());

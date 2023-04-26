@@ -42,7 +42,7 @@ public class WfComment implements IWfIssueList {
      */
     @Column(nullable = false)
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String comment;
 
     /**

@@ -3,7 +3,7 @@ package cz.tacr.elza.filter.condition;
 import java.util.List;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
 
 
 /**
@@ -24,10 +24,10 @@ public class UnselectedValuesDescItemEnumCondition extends SelectedValuesDescIte
        super(values, attributeName);
    }
 
-   @Override
-   public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-       Query query = super.createLuceneQuery(queryBuilder);
-
-       return queryBuilder.bool().must(query).not().createQuery();
-   }
+//   @Override TODO hibernate search 6
+//   public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+//       Query query = super.createLuceneQuery(queryBuilder);
+//
+//       return queryBuilder.bool().must(query).not().createQuery();
+//   }
 }

@@ -95,12 +95,12 @@ public class ArrBulkActionRun {
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
 
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String result;
 
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String config;
 

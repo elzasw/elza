@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepositoryImpl;
-import cz.tacr.elza.search.DescItemIndexingInterceptor;
+//import cz.tacr.elza.search.DescItemIndexingInterceptor; TODO hibernate search 6
 
 /**
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
@@ -37,7 +37,7 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 //        filters = {
 //                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
 //        })
-@Indexed(interceptor = DescItemIndexingInterceptor.class)
+//@Indexed(interceptor = DescItemIndexingInterceptor.class) TODO hibernate search 6
 @Entity(name = "arr_desc_item")
 @Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -116,7 +116,7 @@ public class ArrDescItem extends ArrItem {
     @JsonIgnore
     @Override
     @GenericField(name = FIELD_FUND_ID,   projectable = Projectable.YES)
-    @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING)
+//    @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING) //TODO hibernate search 6
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();

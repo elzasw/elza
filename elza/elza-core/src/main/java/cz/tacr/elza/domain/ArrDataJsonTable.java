@@ -22,7 +22,7 @@ public class ArrDataJsonTable extends ArrData  {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Column(nullable = false)
+    @Column(name = "data_value", nullable = false)
     private String value;
 
 	public ArrDataJsonTable() {

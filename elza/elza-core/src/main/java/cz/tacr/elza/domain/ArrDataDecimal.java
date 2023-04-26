@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataDecimal extends ArrData {
 
-    @Column(nullable = false)
+    @Column(name = "decimal_value", nullable = false)
     private BigDecimal value;
 
 	public ArrDataDecimal() {

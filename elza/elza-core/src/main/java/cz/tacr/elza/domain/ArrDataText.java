@@ -23,7 +23,7 @@ public class ArrDataText extends ArrData {
 
     @Column(name = "text_value", nullable = false)
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String textValue;
 
 	public ArrDataText() {

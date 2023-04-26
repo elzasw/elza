@@ -57,7 +57,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
 
     @Column
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 
     @Column

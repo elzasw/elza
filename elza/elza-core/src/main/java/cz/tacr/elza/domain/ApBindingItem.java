@@ -25,7 +25,7 @@ public class ApBindingItem implements AccessPointCacheSerializable {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer bindingId;
 
-    @Column(length = StringLength.LENGTH_50, nullable = false)
+    @Column(name = "item_value", length = StringLength.LENGTH_50, nullable = false)
     private String value;
 
     @JsonIgnore

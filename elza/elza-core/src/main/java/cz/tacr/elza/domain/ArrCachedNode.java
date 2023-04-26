@@ -38,7 +38,7 @@ public class ArrCachedNode {
     private Integer nodeId;
 
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String data;
 

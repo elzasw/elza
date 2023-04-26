@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -2843,7 +2843,7 @@ public class AccessPointService {
                 .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
                 .findAny()
                 .orElse(null);
-        return index == null ? "": index.getValue();
+        return index == null ? "": index.getIndexValue();
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max,
@@ -2882,7 +2882,7 @@ public class AccessPointService {
 
         for (ExtSyncsQueueItem extSyncsQueueItem : items) {
             String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem
-                    .getAccessPointId()).getValue() : null;
+                    .getAccessPointId()).getIndexValue() : null;
             ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
             extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
         }

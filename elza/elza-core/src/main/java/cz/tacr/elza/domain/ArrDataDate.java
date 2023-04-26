@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataDate extends ArrData {
 
-    @Column(nullable = false)
+    @Column(name = "date_value", nullable = false)
     private LocalDate value;
 
     public ArrDataDate() {

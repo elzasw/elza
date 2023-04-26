@@ -326,7 +326,7 @@ public class ApController {
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
                         apState.getAccessPoint(),
-                        nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
+                        nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null),
                 foundRecordsCount);
     }
 
@@ -363,9 +363,11 @@ public class ApController {
 
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
-                state, from, count, sdp);
+//        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository //TODO hibernate search 6
+//                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
+//                state, from, count, sdp);
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
+
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
 
@@ -851,10 +853,10 @@ public class ApController {
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
-                                                  null, from, max, sdp);
-
+//        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository //TODO hibernate search 6
+//                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
+//                                                  null, from, max, sdp);
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
         /*
         filter.setAeTypeIds(apTypes);
         return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);

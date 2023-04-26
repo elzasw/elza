@@ -50,7 +50,7 @@ public class UISettings {
     @Column(nullable = true)
     private Integer entityId;
 
-    @Column(nullable = true)
+    @Column(name = "settings_value", nullable = true)
     private String value;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)

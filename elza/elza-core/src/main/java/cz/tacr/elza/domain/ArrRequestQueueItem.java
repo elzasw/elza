@@ -59,7 +59,7 @@ public class ArrRequestQueueItem {
 
     @Column(nullable = false)
     @Lob
-    //@Type(org.hibernate.type.TextType) TODO pasek
+    //@Type(org.hibernate.type.TextType) TODO hibernate search 6
     private String data;
 
     public Integer getRequestQueueItemId() {
