@@ -16,7 +16,6 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -207,6 +206,9 @@ public class StartupService implements SmartLifecycle {
 
         tt.executeWithoutResult(r -> startInTransaction2());
 
+        // volání v samostatných transakcích
+        asyncRequestService.start();
+        arrangementService.startNodeValidation();
         camScheduler.start();
 
         running = true;
@@ -270,21 +272,6 @@ public class StartupService implements SmartLifecycle {
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
-
-        // je třeba volat mimo současnou transakci
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                try {
-                    asyncRequestService.start();
-                    arrangementService.startNodeValidation();
-                } catch (Throwable t) {
-                    logger.error("Unexpected error in after commit initialization", t);
-                } finally {
-                    logger.info("After commit initialization finished.");
-                }
-            }
-        });
 
         runQueuedRequests();
     }
