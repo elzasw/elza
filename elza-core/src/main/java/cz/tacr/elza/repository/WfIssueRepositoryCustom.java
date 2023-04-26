@@ -3,8 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueState;

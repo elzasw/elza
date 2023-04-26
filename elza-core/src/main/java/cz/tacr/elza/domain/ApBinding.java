@@ -24,7 +24,7 @@ public class ApBinding implements AccessPointCacheSerializable {
     @Access(AccessType.PROPERTY)
     private Integer bindingId;
 
-    @Column(length = StringLength.LENGTH_50, nullable = false)
+    @Column(name = "binding_value", length = StringLength.LENGTH_50, nullable = false)
     private String value;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)

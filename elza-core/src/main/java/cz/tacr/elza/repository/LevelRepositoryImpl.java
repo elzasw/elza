@@ -458,7 +458,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
             while (scrollableResults.next()) {
                 ArrLevel level = (ArrLevel) scrollableResults.get();
-                int depth = scrollableResults.getRowNumber(); //TODO pasek
+                int depth = scrollableResults.getRowNumber();
                 treeLevelConsumer.accept(level, depth);
                 count++;
             }

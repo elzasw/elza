@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -77,10 +78,15 @@ public class ApplicationSecurity {
 //        	builder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
 //        }
 //    }
-
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+            http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.authenticationProvider(new PasswordAutheticationProvider(userService));
+        if (optionalSsoHeaderProperties.isPresent()) {
+            authenticationManagerBuilder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
+        }
+        return authenticationManagerBuilder.build();
     }
 
     @Bean

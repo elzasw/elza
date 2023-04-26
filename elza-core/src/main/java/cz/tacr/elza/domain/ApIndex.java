@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApIndex implements AccessPointCacheSerializable {
 
-    public static final String VALUE = "value";
+    public static final String VALUE = "indexValue";
     public static final String INDEX_TYPE = "indexType";
     public static final String PART = "part";
 
@@ -38,8 +38,8 @@ public class ApIndex implements AccessPointCacheSerializable {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String indexType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
-    private String value;
+    @Column(name = "index_value", length = StringLength.LENGTH_4000, nullable = false)
+    private String indexValue;
 
     public Integer getIndexId() {
         return indexId;
@@ -70,11 +70,11 @@ public class ApIndex implements AccessPointCacheSerializable {
         this.indexType = indexType;
     }
 
-    public String getValue() {
-        return value;
+    public String getIndexValue() {
+        return indexValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setIndexValue(String value) {
+        this.indexValue = value;
     }
 }

@@ -1,18 +1,18 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+//import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.ClassBridge;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
+//import org.hibernate.search.annotations.Analyzer; TODO hibernate search 6
+//import org.hibernate.search.annotations.AnalyzerDef;
+//import org.hibernate.search.annotations.ClassBridge;
+//import org.hibernate.search.annotations.Field;
+//import org.hibernate.search.annotations.Indexed;
+//import org.hibernate.search.annotations.Store;
+//import org.hibernate.search.annotations.TokenFilterDef;
+//import org.hibernate.search.annotations.TokenizerDef;
 
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
@@ -29,18 +29,18 @@ import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Table
-@Indexed
-@AnalyzerDef(name = "cz",
-        tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
-        filters = {
-                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-                @TokenFilterDef(factory = ASCIIFoldingFilterFactory.class)
-        })
-@ClassBridge(name = "data",
-        impl = ApCachedAccessPointClassBridge.class,
-        analyzer = @Analyzer(definition = "cz"),
-        store = Store.YES)
-@Analyzer(definition = "cz")
+//@Indexed TODO hibernate search 6
+//@AnalyzerDef(name = "cz",
+//        tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
+//        filters = {
+//                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+//                @TokenFilterDef(factory = ASCIIFoldingFilterFactory.class)
+//        })
+//@ClassBridge(name = "data",
+//        impl = ApCachedAccessPointClassBridge.class,
+//        analyzer = @Analyzer(definition = "cz"),
+//        store = Store.YES)
+//@Analyzer(definition = "cz")
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 
@@ -62,7 +62,7 @@ public class ApCachedAccessPoint {
     private Integer accessPointId;
 
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String data;
 

@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
 import org.springframework.util.Assert;
 
 import jakarta.persistence.EntityManager;

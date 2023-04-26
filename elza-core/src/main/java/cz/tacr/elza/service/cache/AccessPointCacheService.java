@@ -874,14 +874,16 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                                   Integer count, StaticDataProvider sdp) {
         String searchText = (searchFilter != null) ? searchFilter.getSearch() : null;
 
-        QueryResults<ApCachedAccessPoint> r = cachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(searchText,
-                                                  searchFilter,
-                                                  apTypeIds,
-                                                  scopeIds,
-                                                  state,
-                                                  from, count,
-                                                  sdp);
+//        QueryResults<ApCachedAccessPoint> r = cachedAccessPointRepository //TODO hibernate search 6
+//                .findApCachedAccessPointisByQuery(searchText,
+//                                                  searchFilter,
+//                                                  apTypeIds,
+//                                                  scopeIds,
+//                                                  state,
+//                                                  from, count,
+//                                                  sdp);
+        QueryResults<ApCachedAccessPoint> r = new QueryResults<>(0, null); //TODO hibernate search 6
+
         if (CollectionUtils.isEmpty(r.getRecords())) {
             return QueryResults.emptyResult(r.getRecordCount());
         }

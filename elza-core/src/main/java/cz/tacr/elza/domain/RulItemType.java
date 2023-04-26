@@ -80,7 +80,7 @@ public class RulItemType {
 
     @Column(nullable = false)
     @Lob
-    //@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String description;
 
     @Column(nullable = false)

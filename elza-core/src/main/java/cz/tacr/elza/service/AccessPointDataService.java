@@ -113,9 +113,9 @@ public class AccessPointDataService {
         return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
     }
 
-    public String convertCoordinatesToEWKT(byte[] coordinates) {
-        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
-    }
+//    public String convertCoordinatesToEWKT(byte[] coordinates) { //TODO asi nadbytečné, nikde se nevolá
+//        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
+//    }
 
     public byte[] convertGeometryToWKB(Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);

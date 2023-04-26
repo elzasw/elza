@@ -1,12 +1,13 @@
 package cz.tacr.elza.ws;
 
+import jakarta.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.handler.soap.SOAPHandler;
+import jakarta.xml.ws.handler.soap.SOAPMessageContext;
+
+import javax.xml.namespace.QName;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 public class CustomSOAPHandler implements SOAPHandler<SOAPMessageContext> {
 

@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertorConsts;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -251,7 +251,7 @@ public class GroovyAppender {
         items.add(item);
         return item;
     }
-    
+
     public String getUniqueCode(final String typeCode) {
         return typeCode + UUID.randomUUID().toString();
     }

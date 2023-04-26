@@ -1,9 +1,9 @@
 package cz.tacr.elza.domain.listener;
 
 import javax.annotation.PostConstruct;
-import jakarta.persistence.EntityManagerFactory;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PreUpdateEvent;
@@ -25,14 +25,12 @@ import cz.tacr.elza.domain.AbstractVersionableEntity;
 public class VersionableEntityListener implements PreUpdateEventListener {
 
     @Autowired
-    private EntityManagerFactory entityManagerFactory;
+    private SessionFactory sessionFactory;
 
     @PostConstruct
     private void init() {
-        SessionFactory hibernateEntityManagerFactory = (SessionFactory) this.entityManagerFactory;
-        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateEntityManagerFactory;
-        EventListenerRegistry registry = sessionFactoryImpl.getServiceRegistry().getService(EventListenerRegistry.class);
-        registry.appendListeners(EventType.PRE_UPDATE, this);
+//        EventListenerRegistry registry = sessionFactory.getSessionFactoryOptions().getServiceRegistry().getService(EventListenerRegistry.class); //TODO hibernate search 6
+//        registry.appendListeners(EventType.PRE_UPDATE, this);
     }
 
     @Override

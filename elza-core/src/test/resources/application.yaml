@@ -10,6 +10,7 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
+    allow-circular-references: true
 
 # !!! při změně DB změnit i elza.data.url !!!
   jpa:
@@ -26,16 +27,10 @@ spring:
                 use_second_level_cache: true
                 region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
 
-            search:
-                lucene_version: LUCENE_CURRENT
-                default:
-                    indexBase: ${elza.workingDir}/lucene/indexes/
-                    directory_provider: filesystem
-                    worker:
-                      backend: cz.tacr.elza.search.DbQueueProcessor
 
-            dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-            #dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+            dialect: org.hibernate.dialect.H2Dialect
+#            dialect: org.hibernate.dialect.PostgreSQLDialect
+
 
 elza:
   debug:

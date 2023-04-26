@@ -25,7 +25,7 @@
              has to be configured separately because of JaCoCo -->
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
-        <cxf.version>3.3.7</cxf.version>
+        <cxf.version>4.0.0</cxf.version>
         <hibernate.version>6.1.7.Final</hibernate.version>
         <hibernate.lucene.version>5.5.5</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
@@ -235,7 +235,7 @@
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-<!--            <dependency> TODO pasek-->
+<!--            <dependency> -->
 <!--                <groupId>org.hibernate</groupId>-->
 <!--                <artifactId>hibernate-search-orm</artifactId>-->
 <!--            </dependency>-->
@@ -246,7 +246,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-ehcache</artifactId>
-                <version>${hibernate.version}</version>
+                <version>5.4.32.Final</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -347,7 +347,7 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
            <!--
             <dependency>
@@ -369,12 +369,12 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-jms</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
             <dependency>
                 <groupId>org.openapitools</groupId>

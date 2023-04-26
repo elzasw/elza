@@ -1,6 +1,6 @@
 package cz.tacr.elza.groovy;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class GroovyKeyValue {
 

@@ -65,14 +65,14 @@ public class WebServiceConfig {
 		return endpoint;
 	}
 
-	@Bean
-    public ServletRegistrationBean<CXFServlet> CXFServlet() {
-		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/ws/*";
-
-        log.info("URL for WSDL services: " + contextPath);
-
-        ServletRegistrationBean<CXFServlet> servlet = new ServletRegistrationBean<>(new CXFServlet(), contextPath);
-		servlet.setLoadOnStartup(1);
-		return servlet;
-	}
+//	@Bean TODO pasek jakarta
+//    public ServletRegistrationBean<CXFServlet> CXFServlet() {
+//		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/ws/*";
+//
+//        log.info("URL for WSDL services: " + contextPath);
+//
+//        ServletRegistrationBean<CXFServlet> servlet = new ServletRegistrationBean<>(new CXFServlet(), contextPath);
+//		servlet.setLoadOnStartup(1);
+//		return servlet;
+//	}
 }

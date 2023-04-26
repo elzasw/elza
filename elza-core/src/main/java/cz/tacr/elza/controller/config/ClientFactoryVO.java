@@ -1182,7 +1182,7 @@ public class ClientFactoryVO {
 
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setAccessPointId(institution.getAccessPointId());
-        institutionVO.setName(displayName != null ? displayName.getValue() : null);
+        institutionVO.setName(displayName != null ? displayName.getIndexValue() : null);
         institutionVO.setCode(institution.getInternalCode());
 
         return institutionVO;
@@ -1261,9 +1261,9 @@ public class ClientFactoryVO {
      * @param fundVersion
      * @return VO výstup
      */
-    public ArrOutputVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {    	
+    public ArrOutputVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
         ArrOutputVO outputExt = createOutput(output);
-        
+
         // prepare template list
     	List<ArrOutputTemplate> outputTemplates = outputServiceInternal.getOutputTemplates(output);
     	if(CollectionUtils.isNotEmpty(outputTemplates)) {
@@ -1273,20 +1273,20 @@ public class ClientFactoryVO {
     		}
     		outputExt.setTemplateIds(templateIds);
     	}
-    	
+
     	// prepare result list
     	List<ArrOutputResult> outputResults = output.getOutputResults();
     	if(CollectionUtils.isNotEmpty(outputResults)) {
     		// prepare date of generation
     		outputExt.setGeneratedDate(Date.from(outputResults.get(0).getChange().getChangeDate().toInstant()));
-    		
+
     		List<Integer> outputResultIds = new ArrayList<>(outputResults.size());
     		for(ArrOutputResult outputResult: outputResults) {
     			outputResultIds.add(outputResult.getOutputResultId());
     		}
     		outputExt.setOutputResultIds(outputResultIds);
     	}
-        
+
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion));
@@ -1331,7 +1331,7 @@ public class ClientFactoryVO {
             accessPointVO.setUuid(user.getAccessPoint().getUuid());
             if (user.getAccessPoint().getPreferredPart() != null) {
                 ApIndex displayName = indexRepository.findByPartAndIndexType(user.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-                accessPointVO.setName(displayName != null ? displayName.getValue() : null);
+                accessPointVO.setName(displayName != null ? displayName.getIndexValue() : null);
             }
         }
         UsrUserVO result = new UsrUserVO(user, accessPointVO);

@@ -36,7 +36,7 @@ public class ApPart implements AccessPointPart {
 
     @Column
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPartType.class)

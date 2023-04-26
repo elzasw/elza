@@ -151,7 +151,7 @@ public class ArrStructuredObject implements IArrFund, Structured {
     @Column(name = "fundId", updatable = false, insertable = false)
     private Integer fundId;
 
-    @Column(length = StringLength.LENGTH_1000)
+    @Column(name = "object_value", length = StringLength.LENGTH_1000)
     private String value;
 
     @Column(length = StringLength.LENGTH_1000)
@@ -168,7 +168,7 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     @Column
     @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO pasek
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 
     @Enumerated(EnumType.STRING)

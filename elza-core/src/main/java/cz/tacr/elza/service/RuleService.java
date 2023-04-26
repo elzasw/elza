@@ -1822,7 +1822,7 @@ public class RuleService {
     }
 
     private Index createIndex(ApIndex apIndex, Part part) {
-        return new Index(apIndex.getIndexType(), apIndex.getValue(), part);
+        return new Index(apIndex.getIndexType(), apIndex.getIndexValue(), part);
     }
 
     private ModelAvailable executeAvailable(@NotNull final PartType partType,

@@ -32,8 +32,8 @@ public class ApRevIndex {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String indexType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
-    private String value;
+    @Column(name = "rev_value",length = StringLength.LENGTH_4000, nullable = false)
+    private String revValue;
 
     public Integer getIndexId() {
         return indexId;
@@ -64,12 +64,12 @@ public class ApRevIndex {
         this.indexType = indexType;
     }
 
-    public String getValue() {
-        return value;
+    public String getRevValue() {
+        return revValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setRevValue(String value) {
+        this.revValue = value;
     }
 
 }

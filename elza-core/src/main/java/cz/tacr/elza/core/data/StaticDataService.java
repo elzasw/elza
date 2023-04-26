@@ -183,8 +183,8 @@ public class StaticDataService {
     }
 
     public void reloadOnCommit() {
-        Transaction tx = getCurrentActiveTransaction();
-        reloadOnCommit(tx);
+//        Transaction tx = getCurrentActiveTransaction(); //TODO hibernate search 6
+//        reloadOnCommit(tx);
     }
 
     public void reloadOnCommit(Transaction tx) {

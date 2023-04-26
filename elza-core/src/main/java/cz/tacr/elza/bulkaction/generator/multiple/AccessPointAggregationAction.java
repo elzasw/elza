@@ -165,7 +165,7 @@ public class AccessPointAggregationAction extends Action {
         ApIndex index = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, DISPLAY_NAME);
         Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(parts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getPartId(), Function.identity()));
-        String apName = index != null ? index.getValue() : null;
+        String apName = index != null ? index.getIndexValue() : null;
 
         apResult = new ApResult();
         results.put(ap.getAccessPointId(), apResult);
@@ -203,7 +203,7 @@ public class AccessPointAggregationAction extends Action {
                         if (part.getPartType().getPartTypeId().equals(fromPart.getPartTypeId())) {
                             ApIndex index = indexMap.getOrDefault(part.getPartId(), null);
                             if (index != null) {
-                                foundPartValues.add(index.getValue());
+                                foundPartValues.add(index.getIndexValue());
                             }
                         }
                     }

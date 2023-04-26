@@ -3,8 +3,8 @@ package cz.tacr.elza.filter.condition;
 import java.util.List;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.query.dsl.BooleanJunction; TODO hibernate search 6
+//import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -32,15 +32,15 @@ public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescIt
         this.attributeName = attributeName;
     }
 
-    @Override
-    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-        BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
-
-        values.forEach(v -> {
-            Query query = queryBuilder.range().onField(attributeName).from(v).to(v).createQuery();
-            booleanJunction.should(query);
-        });
-
-        return booleanJunction.createQuery();
-    }
+//    @Override TODO hibernate search 6
+//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+//        BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
+//
+//        values.forEach(v -> {
+//            Query query = queryBuilder.range().onField(attributeName).from(v).to(v).createQuery();
+//            booleanJunction.should(query);
+//        });
+//
+//        return booleanJunction.createQuery();
+//    }
 }

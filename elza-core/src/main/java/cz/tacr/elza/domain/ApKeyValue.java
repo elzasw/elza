@@ -31,7 +31,7 @@ public class ApKeyValue implements AccessPointCacheSerializable {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String keyType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
+    @Column(name = "key_value", length = StringLength.LENGTH_4000, nullable = false)
     private String value;
 
     public Integer getKeyValueId() {
