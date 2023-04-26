@@ -19,7 +19,6 @@ import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
-import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
@@ -44,7 +43,7 @@ public class EventNotificationService implements IEventNotificationService {
     @Override
     public void publishEvent(final AbstractEventSimple event) {
         Validate.notNull(event);
-        logger.debug("Publish event: {}", event.getEventType());
+        logger.debug("Publish event: {}, {}", event.getEventType(), event.toString());
 
         AfterTransactionListener listener = null;
         for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
@@ -92,7 +91,11 @@ public class EventNotificationService implements IEventNotificationService {
 
 
     /**
-     * Listener udržující připravená data, která v případě úspěšné transakce budou připravena k odeslání.
+     * Listener udržující připravená data, která v případě úspěšné transakce budou
+     * připravena k odeslání.
+     * 
+     * Priorita odeslání zpráv je nastavena na 0. Toto umožňuje odeslat ostatní
+     * zprávy dříve či později.
      */
     private class AfterTransactionListener extends TransactionSynchronizationAdapter {
 
@@ -113,37 +116,10 @@ public class EventNotificationService implements IEventNotificationService {
                     transformToNodesEvent((EventVersion) event);
                     break;
 
-                case PARTY_CREATE:
-                    transformToPartiesEvent((EventId) event);
-                    break;
-
                 default:
                     uncommittedEvents.add(event);
                     break;
             }
-        }
-
-        /**
-         * Metoda grupuje požadované události.
-         *
-         * @param event událost
-         */
-        private void transformToPartiesEvent(final EventId event) {
-            EventId partiesEvent = null;
-            for (AbstractEventSimple eventSimple : uncommittedEvents) {
-                if (eventSimple.getEventType().equals(EventType.PARTIES_CREATE)) {
-                    partiesEvent = (EventId) eventSimple;
-                    break;
-                }
-            }
-
-            // pokud ještě neexistuje
-            if (partiesEvent == null) {
-                partiesEvent = new EventId(EventType.PARTIES_CREATE, event.getIds());
-                uncommittedEvents.add(partiesEvent);
-            }
-
-            partiesEvent.getIds().addAll(event.getIds());
         }
 
         /**
@@ -191,8 +167,15 @@ public class EventNotificationService implements IEventNotificationService {
         }
 
         @Override
+        public int getOrder() {
+            // Zprávy o změnách jsou odesílány s prioritou 0
+            // Výsledek volání přes WS je odesílán vždy s nejvyšší prioritou
+            return 0;
+        }
+
+        @Override
         public void afterCommit() {
-            logger.debug("Publishing events in afterCommit: {}", uncommittedEvents.size());
+            logger.debug("AfterCommit: Publishing events: {}", uncommittedEvents.size());
 
             commitEvents(uncommittedEvents);
         }

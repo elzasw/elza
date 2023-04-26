@@ -23,11 +23,16 @@ public class ApBindingSync {
     @Column(length = StringLength.LENGTH_36, nullable = false)
     private String lastTransaction;
 
+    @Column(length = StringLength.LENGTH_36)
+    private String toTransaction;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId", nullable = false)
     private ApExternalSystem apExternalSystem;
 
     private Integer page;
+
+    private Integer count;
 
     public Integer getBindingSyncId() {
         return bindingSyncId;
@@ -45,6 +50,14 @@ public class ApBindingSync {
         this.lastTransaction = lastTransaction;
     }
 
+    public String getToTransaction() {
+        return toTransaction;
+    }
+
+    public void setToTransaction(String toTransaction) {
+        this.toTransaction = toTransaction;
+    }
+
     public ApExternalSystem getApExternalSystem() {
         return apExternalSystem;
     }
@@ -59,5 +72,13 @@ public class ApBindingSync {
 
     public void setPage(Integer page) {
         this.page = page;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }

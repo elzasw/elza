@@ -12,19 +12,15 @@ public class UnitdateSearchParam extends SearchParam {
 
     private UnitdateCondition condition;
 
-    private Integer calendarId;
-
     public UnitdateSearchParam() {
     }
 
-    protected UnitdateSearchParam(final String value, final UnitdateCondition condition, final Integer calendarId) {
+    protected UnitdateSearchParam(final String value, final UnitdateCondition condition) {
         super(SearchParamType.UNITDATE, value);
 
         Assert.notNull(condition, "Podmínka musí být vyplněna");
-        Assert.notNull(calendarId, "Identifikátor typu kalendáře musí být vyplněn");
 
         this.condition = condition;
-        this.calendarId = calendarId;
     }
 
     public UnitdateCondition getCondition() {
@@ -33,13 +29,5 @@ public class UnitdateSearchParam extends SearchParam {
 
     public void setCondition(final UnitdateCondition condition) {
         this.condition = condition;
-    }
-
-    public Integer getCalendarId() {
-        return calendarId;
-    }
-
-    public void setCalendarId(final Integer calendarId) {
-        this.calendarId = calendarId;
     }
 }

@@ -2,12 +2,14 @@ package cz.tacr.elza.service.eventnotification.events;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+
 
 
 /**
  * Předek událostí, které jsou odesílány klientům.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.01.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -27,6 +29,13 @@ public abstract class AbstractEventSimple {
     private String code;
 
     public AbstractEventSimple(final EventType eventType) {
+        // Check if event type match
+        if (!eventType.getEventClass().equals(this.getClass())) {
+            throw new BusinessException("Incorrect class", BaseCode.INVALID_STATE)
+                    .set("EventClass", eventType.getEventClass())
+                    .set("ObjectClass", this.getClass());
+        }
+
         this.eventType = eventType;
     }
 

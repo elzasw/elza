@@ -2,4 +2,11 @@
     .was-validated .form-control:invalid, .form-control.is-invalid {
         background-image: none;
     }
+    .error-link {
+        color: currentColor;
+        text-decoration: underline;
+    }
+    .confirm-message {
+        margin-top: 10px;
+    }
 }

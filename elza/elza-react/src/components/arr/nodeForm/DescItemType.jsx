@@ -972,17 +972,12 @@ class DescItemType extends AbstractReactComponent {
                 i18n('ap.coordinate.import.title'),
                 <ImportCoordinateModal
                     onSubmit={async formData => {
-                        const reader = new FileReader();
-                        reader.onload = async () => {
-                            const data = reader.result;
-                            try {
-                                const fieldValue = await WebApi.importApCoordinates(data, formData.format);
-                                this.setState({coordinatesUpload: fieldValue});
-                            } catch (e) {
-                                //notification.error({message: 'Nepodařilo se importovat souřadnice'});
-                            }
-                        };
-                        reader.readAsBinaryString(formData.file);
+                        try {
+                            const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
+                            this.setState({coordinatesUpload: fieldValue});
+                        } catch (e) {
+                            //notification.error({message: 'Nepodařilo se importovat souřadnice'});
+                        }
                     }}
                     onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
                 />,

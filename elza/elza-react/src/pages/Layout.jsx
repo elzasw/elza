@@ -57,6 +57,7 @@ import AppRouter from './AppRouter';
 import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
 import { MAP_URL } from './map/MapPage';
+import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvider';
 // import FundOpenPage from './fund_open/FundOpenPage';
 
 let _gameRunner = null;
@@ -188,80 +189,82 @@ class Layout extends AbstractReactComponent {
             >
                 <IntegrationPanel id="integration-header" integrationFunction={window.renderIntegrationHeader}/>
                 <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
-                    <div
-                        onClick={() => {
-                            canStartGame && this.setState({showGame: true});
-                        }}
-                        onMouseEnter={this.handleGameStartOver}
-                        onMouseLeave={this.handleGameStartLeave}
-                        className={'game-placeholder ' + (canStartGame ? 'canStart' : '')}
-                    >
-                        &nbsp;
-                    </div>
-                    {this.props.login.logged && (
-                        <Switch>
-                            <Route path={`${URL_FUND}/open`} component={ArrPage}/>
-                            <Route path={`${URL_FUND}/:id/v/:versionId`}>
-                                <Switch>
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
-                                    <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
-                                    <Route component={ArrPage} />
-                                </Switch>
-                            </Route>
-                            <Route path={`${URL_FUND}/:id`}>
-                                <Switch>
-                                    <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
-                                    <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
-                                    <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
-                                    <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
-                                    <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
-                                    <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
-                                    <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
-                                    <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
-                                    <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
-                                    <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
-                                    <Route component={FundPage} />
-                                </Switch>
-                            </Route>
-                            <Route path={`${URL_FUND}/`} component={FundPage}/>
-                            <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
-                            <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
-                            <Route path={URL_ENTITY} component={RegistryPage} />
-                            <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
+                    <WebsocketProvider>
+                        <div
+                            onClick={() => {
+                                canStartGame && this.setState({showGame: true});
+                            }}
+                            onMouseEnter={this.handleGameStartOver}
+                            onMouseLeave={this.handleGameStartLeave}
+                            className={'game-placeholder ' + (canStartGame ? 'canStart' : '')}
+                        >
+                            &nbsp;
+                        </div>
+                        {this.props.login.logged && (
+                            <Switch>
+                                <Route path={`${URL_FUND}/open`} component={ArrPage}/>
+                                <Route path={`${URL_FUND}/:id/v/:versionId`}>
+                                    <Switch>
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
+                                        <Route component={ArrPage} />
+                                    </Switch>
+                                </Route>
+                                <Route path={`${URL_FUND}/:id`}>
+                                    <Switch>
+                                        <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
+                                        <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
+                                        <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                        <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
+                                        <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
+                                        <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
+                                        <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
+                                        <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
+                                        <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
+                                        <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
+                                        <Route component={FundPage} />
+                                    </Switch>
+                                </Route>
+                                <Route path={`${URL_FUND}/`} component={FundPage}/>
+                                <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
+                                <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
+                                <Route path={URL_ENTITY} component={RegistryPage} />
+                                <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
 
-                            <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
-                            <Route path="/admin">
-                                <Switch>
-                                    <Route path="/admin/user" component={AdminUserPage} />
-                                    <Route path="/admin/group" component={AdminGroupPage} />
-                                    <Route path="/admin/fund" component={AdminFundPage} />
-                                    <Route path="/admin/packages" component={AdminPackagesPage} />
-                                    <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
-                                    <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
-                                    <Route path="/admin/extSystem" component={AdminExtSystemPage} />
-                                    <Route path="/admin/logs" component={AdminLogsPage} />
-                                    <Route component={AdminPage} />
-                                </Switch>
-                            </Route>
-                            <Route component={HomePage} />
-                        </Switch>
-                    )}
-                    <div style={{overflow: 'hidden'}}>
-                        <Toastr.Toastr />
-                    </div>
-                    <ContextMenu {...this.props.contextMenu} />
-                    <ModalDialog {...this.props.modalDialog} />
-                    <WebSocket />
-                    <Login />
-                    <AppRouter />
+                                <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
+                                <Route path="/admin">
+                                    <Switch>
+                                        <Route path="/admin/user" component={AdminUserPage} />
+                                        <Route path="/admin/group" component={AdminGroupPage} />
+                                        <Route path="/admin/fund" component={AdminFundPage} />
+                                        <Route path="/admin/packages" component={AdminPackagesPage} />
+                                        <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
+                                        <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
+                                        <Route path="/admin/extSystem" component={AdminExtSystemPage} />
+                                        <Route path="/admin/logs" component={AdminLogsPage} />
+                                        <Route component={AdminPage} />
+                                    </Switch>
+                                </Route>
+                                <Route component={HomePage} />
+                            </Switch>
+                        )}
+                        <div style={{overflow: 'hidden'}}>
+                            <Toastr.Toastr />
+                        </div>
+                        <ContextMenu {...this.props.contextMenu} />
+                        <ModalDialog {...this.props.modalDialog} />
+                        <WebSocket />
+                        <Login />
+                        <AppRouter />
+                    </WebsocketProvider>
                 </div>
                 <IntegrationPanel id="integration-footer" integrationFunction={window.renderIntegrationFooter}>
                     {window.versionNumber && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}

@@ -1,8 +1,11 @@
 package cz.tacr.elza.websocket.service;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.Ordered;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.SmartMessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -19,6 +22,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Service
 public class WebScoketStompService {
 
+    private static Logger log = LoggerFactory.getLogger(WebScoketStompService.class);
+
     private static final byte[] EMPTY_PAYLOAD = new byte[0];
 
     @Autowired
@@ -31,8 +36,15 @@ public class WebScoketStompService {
 
     public void sendReceiptAfterCommit(Object payload, StompHeaderAccessor requestHeaders) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+
+            @Override
+            public int getOrder() {
+                return Ordered.HIGHEST_PRECEDENCE;
+            }
+
             @Override
             public void afterCommit() {
+                log.debug("AfterCommit: Sending receipt");
                 sendReceipt(payload, requestHeaders);
             }
         });
@@ -47,6 +59,9 @@ public class WebScoketStompService {
 
         String sessionId = Validate.notEmpty(requestHeaders.getSessionId());
         String receiptId = Validate.notEmpty(requestHeaders.getReceipt());
+
+        log.debug("Sending receipt back to the client, sessionId: {}, receiptId: {}, payload: {}",
+                  sessionId, receiptId, payload);
 
         StompHeaderAccessor responseHeaders = StompHeaderAccessor.create(StompCommand.RECEIPT);
         responseHeaders.setSessionId(sessionId);

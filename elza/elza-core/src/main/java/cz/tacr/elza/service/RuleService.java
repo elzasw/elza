@@ -100,6 +100,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -146,6 +147,7 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -160,6 +162,8 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
  */
 @Service
 public class RuleService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -254,6 +258,9 @@ public class RuleService {
     @Autowired
     private ExportFilterRepository exportFilterRepository;
 
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
     // why is it here?
@@ -263,8 +270,6 @@ public class RuleService {
     private static final String GEO_UNIT = "GEO_UNIT";
     private static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
     private static final String GEO_TYPE = "GEO_TYPE";
-
-    private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     /**
      * 
@@ -690,6 +695,25 @@ public class RuleService {
     }
 
     /**
+     * Provádění validaci nody, které mají odkaz na ApAccessPoint
+     * 
+     * @param accessPointId
+     */
+    public void revalidateNodes(final Integer accessPointId) {
+        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
+        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
+                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
+                                               Collectors.mapping(i -> i.getNodeId(), 
+                                                                  Collectors.toList())));
+        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
+            List<ArrNode> nodes = new ArrayList<>();
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            asyncRequestService.enqueue(version, nodes);
+        }
+    }
+
+    /**
      * Smaže všechny vybrané stavy.
      *
      * 
@@ -816,6 +840,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
+        // TODO: Limit itemTypes to itemTypes defined in given RuleSet
 		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
@@ -1300,8 +1325,7 @@ public class RuleService {
 
         boolean isPartPreferred = form.getAccessPointId() == null || (partForm.getPartId() != null && preferredPartId != null && preferredPartId.equals(partForm.getPartId()));
 
-        Part part = new Part(null, partForm.getParentPartId(), PartType.fromValue(partForm.getPartTypeCode()),
-                modelItems, parentPart, isPartPreferred);
+        Part part = new Part(null, PartType.fromValue(partForm.getPartTypeCode()), modelItems, parentPart, isPartPreferred);
 
         ModelAvailable modelAvailable = new ModelAvailable(ae, part, modelItems, modelItemTypes);
 
@@ -1323,17 +1347,14 @@ public class RuleService {
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
-        
+
         StaticDataProvider sdp = staticDataService.getData();
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
         ApScope scope = apState.getScope();
-        RuleSet ruleSet = null;
-        try {
-            ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
-        } catch (Exception e) {
-            System.out.print(e);
-        }
+        Integer ruleSetId = scope.getRuleSetId();
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId); 
+
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
         List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());

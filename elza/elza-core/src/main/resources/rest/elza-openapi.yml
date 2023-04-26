@@ -730,7 +730,7 @@ components:
         scope:
           description: Kód oblasti nebo její ID
           type: string
-        replaceOrigin:
+        replace:
           description: Příznak, zda se má původní AP nahradit
           type: boolean
           default: false

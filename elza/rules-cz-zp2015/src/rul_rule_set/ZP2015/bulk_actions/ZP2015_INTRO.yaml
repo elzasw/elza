@@ -218,7 +218,7 @@ actions:
           excludeWhen:
             someOf:
               # Nesmí být nastaven jako pevné spojení s jinou
-              - itemType: ZP2015_ITEM_LINK    
+              - itemType: ZP2015_ITEM_LINK
           inputType: ZP2015_UNIT_DATE
           bulkRangeType: ZP2015_UNIT_DATE_BULK
           outputType: ZP2015_DATE_RANGE

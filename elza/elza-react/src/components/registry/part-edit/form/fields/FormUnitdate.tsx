@@ -16,10 +16,10 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemUnitdateVO>>(`${name}`);
     const inputRef = useRef<HTMLInputElement>();
     const {item, updatedItem} = field.input.value;
-    const prevValue = (item as ApItemUnitdateVO | undefined)?.value;
+    const prevValue = item?.value;
     const dispatch = useThunkDispatch();
 
     return <Field
@@ -29,7 +29,7 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
             const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
             const isDeleted = updatedItem?.changeType === "DELETED";
 
-            const handleChange = async (e: any) => {
+            const handleBlur = async (e: any) => {
                 props.input.onBlur(e)
                 try {
                     const value = e.target.value;
@@ -49,8 +49,19 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
             }
 
             const handleRevert = () => {
-                form.change(`${name}.updatedItem`, item)
+                if(!updatedItem){ throw Error("No updated item to revert."); }
+                if(!item){ throw Error("No original item to revert to."); }
+
+                const newUpdatedItem: ApItemUnitdateVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                form.change(`${name}.updatedItem`, newUpdatedItem);
                 handleValueUpdate(form, props);
+            }
+
+            const handleChange = (e: any) => {
+                if(updatedItem?.changeType === "ORIGINAL"){
+                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                }
+                props.input.onChange(e)
             }
 
             const handleDelete = () => {
@@ -80,7 +91,8 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
                     ref={inputRef}
                     input={{
                         ...props.input,
-                        onBlur: handleChange // inject modified onChange handler
+                        onChange: handleChange,
+                        onBlur: handleBlur, // inject modified onChange handler
                     }}
                     disabled={disabled}
                     renderComponent={UnitdateField}
