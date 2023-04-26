@@ -1,5 +1,29 @@
+@import "../../variables.scss";
+
 .fund-bulk-modifications-container {
     .listbox-wrapper {
         height: 100px;
+    }
+
+    h1 {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin: 0;
+        margin-bottom: 10px;
+    }
+
+    section {
+        margin: 20px 0;
+    }
+
+    .separator {
+        border-bottom: $primary-border;
+    }
+
+    .item-count-label {
+        background-color: $shade-4;
+        padding: 2px 4px;
+        border-radius: 3px;
+        margin-left: 5px;
     }
 }

@@ -3,6 +3,7 @@ package cz.tacr.elza.drools.model;
 import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.DataType;
@@ -42,6 +45,7 @@ import cz.tacr.elza.service.cache.CachedPart;
 
 public class ApBuilder {
 
+    private static final Logger logger = LoggerFactory.getLogger(ApBuilder.class);
 
     private Integer id;
     private Integer preferredPartId;
@@ -81,11 +85,9 @@ public class ApBuilder {
     }
 
     private AbstractItem createItem(ApItem item) {
-
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
         DataType dataType = itemType.getDataType();
-        String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode()
-                : null;
+        String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode() : null;
 
         return createItem(item.getObjectId(), item.getItemId(), dataType, itemType, itemSpecCode, item.getData());
     }
@@ -93,10 +95,10 @@ public class ApBuilder {
     private AbstractItem createItem(ApRevItem revItem) {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(revItem.getItemTypeId());
         DataType dataType = itemType.getDataType();
-        String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId())
-                .getCode() : null;
+        String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId()).getCode() : null;
+        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();  
 
-        return createItem(revItem.getObjectId(), null, dataType, itemType, itemSpecCode, revItem.getData());
+        return createItem(objectId, null, dataType, itemType, itemSpecCode, revItem.getData());
     }
 
     private AbstractItem createItem(Integer objectId,
@@ -157,25 +159,33 @@ public class ApBuilder {
         }
 
         AbstractItem prevAbstrItem = objectIdItemMap.put(objectId, abstractItem);
-        Validate.isTrue(prevAbstrItem == null);
+        if (prevAbstrItem != null) {
+            logger.error("Item nesmí být dvakrát, objectId: {}, itemId: {}, dataType: {}", objectId, itemId, dataType);
+            throw new SystemException("Item can't be twice, objectId: " + objectId + ", itemId: " + itemId + ", fataType: " + dataType, INVALID_STATE);
+        }
 
         return abstractItem;
     }
 
     private Part createPart(ApRevPart revPart, List<ApRevItem> revItems, boolean preferred) {
-        List<AbstractItem> itemList = new ArrayList<>(revItems.size());
-        for (ApRevItem revItem : revItems) {
-            if (revItem.isDeleted() || revItem.getDeleteChangeId() != null) {
-                continue;
+        List<AbstractItem> itemList;
+        if (revItems != null) {
+            itemList = new ArrayList<>(revItems.size());
+            for (ApRevItem revItem : revItems) {
+                if (revItem.isDeleted() || revItem.getDeleteChangeId() != null) {
+                    continue;
+                }
+                AbstractItem item = createItem(revItem);
+                itemList.add(item);
             }
-            AbstractItem item = createItem(revItem);
-            itemList.add(item);
+        } else {
+            itemList = Collections.emptyList();
         }
 
-        Integer parentPartId = revPart.getParentPartId();
-        Part result = new Part(null, parentPartId,
-                PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
-                itemList, null, preferred);
+        Part parentPart = getParentPart(revPart);
+        Part result = new Part(revPart.getPartId(), 
+                               PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
+                               itemList, parentPart, preferred);
         this.parts.add(result);
         this.revPartIdMap.put(revPart.getPartId(), result);
         return result;
@@ -191,8 +201,9 @@ public class ApBuilder {
 
         Integer parentPartId = part.getParentPartId();
         boolean preferred = part.getPartId().equals(preferredPartId);
-        Part result = new Part(part.getPartId(), parentPartId, PartType.fromValue(part.getPartTypeCode()),
-                abstractItemList, null, preferred);
+        Part result = new Part(part.getPartId(), 
+                               PartType.fromValue(part.getPartTypeCode()), 
+                               abstractItemList, partIdMap.get(parentPartId), preferred);
         this.parts.add(result);
         this.partIdMap.put(part.getPartId(), result);
         return result;
@@ -209,16 +220,16 @@ public class ApBuilder {
 
         Integer parentPartId = apPart.getParentPartId();
         boolean preferred = apPart.getPartId().equals(preferredPartId);
-        Part result = new Part(apPart.getPartId(), parentPartId,
-                PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
-                abstractItemList, null, preferred);
+        Part result = new Part(apPart.getPartId(),
+                               PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
+                               abstractItemList, partIdMap.get(parentPartId), preferred);
         this.parts.add(result);
         this.partIdMap.put(result.getId(), result);
         return result;
     }
 
     public void setAccessPoint(CachedAccessPoint cachedAcessPoint) {
-        
+
         id = cachedAcessPoint.getAccessPointId();
         preferredPartId = cachedAcessPoint.getPreferredPartId();
 
@@ -229,7 +240,6 @@ public class ApBuilder {
         }
 
         fillParentParts();
-        
     }
 
     public void setAccessPoint(ApState apState, List<ApPart> apParts, List<ApItem> itemList) {
@@ -347,7 +357,7 @@ public class ApBuilder {
                     part = createPart(revPart, items, false);
                 } else 
                 // is new main part
-                if(revPart.getRevParentPartId()==null) {
+                if (revPart.getRevParentPartId() == null) {
                     part = createPart(revPart, items, false);
                 } else {
                     part = null;
@@ -366,13 +376,12 @@ public class ApBuilder {
                 }
             }
         }
-        
+
         // create sub parts
         for (ApRevPart revPart : subpartsToCreate) {
             List<ApRevItem> items = itemPartMap.get(revPart.getPartId());
             createPart(revPart, items, false);
         }
-
     }
 
     private void updatePart(Part part, List<ApRevItem> revItems) {
@@ -384,12 +393,12 @@ public class ApBuilder {
             Integer origObjectId = revItem.getOrigObjectId();
             //
             List<AbstractItem> itemList = part.getItems();
-            if(origObjectId!=null) {
+            if (origObjectId != null) {
                 // item is updated
                 AbstractItem prevItem = objectIdItemMap.remove(origObjectId);
                 itemList.remove(prevItem);
 
-                if(revItem.isDeleted()) {
+                if (revItem.isDeleted()) {
                     // deleted - nothing to add
                     continue;
                 }
@@ -397,7 +406,18 @@ public class ApBuilder {
             // add new item
             itemList.add(createItem(revItem));
         }
+    }
 
+    private Part getParentPart(ApRevPart revPart) {
+        Integer parentPartId = revPart.getParentPartId();
+        Integer revParentPartId = revPart.getRevParentPartId(); 
+        if (parentPartId != null) {
+            return partIdMap.get(parentPartId);
+        }
+        if (revParentPartId != null) {
+            return revPartIdMap.get(revParentPartId);
+        }
+        return null;
     }
 
     public Part getPartByRevPartId(Integer revPartId) {

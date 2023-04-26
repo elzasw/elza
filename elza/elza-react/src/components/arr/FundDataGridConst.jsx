@@ -1,7 +1,7 @@
 /**
  * Implicitní šířka sloupčků gridu.
  */
-export const COL_DEFAULT_WIDTH = 164;
+export const COL_DEFAULT_WIDTH = 140;
 /**
  * Id a kód sloupce, který obsahuje číslo JP.
  */

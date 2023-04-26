@@ -393,10 +393,10 @@ export function node(state = nodeInitialState, action) {
                 nodeInfoFetched: true,
                 nodeInfoDirty: false,
                 changeParent: false,
-                childNodes: action.childNodes === null ? state.childNodes : action.childNodes,
+                childNodes: action.childNodes == null ? state.childNodes : action.childNodes,
                 nodeCount: action.nodeCount,
                 nodeIndex: action.nodeIndex,
-                parentNodes: action.parentNodes === null ? state.parentNodes : action.parentNodes,
+                parentNodes: action.parentNodes == null ? state.parentNodes : action.parentNodes,
                 lastUpdated: action.receivedAt,
             };
 

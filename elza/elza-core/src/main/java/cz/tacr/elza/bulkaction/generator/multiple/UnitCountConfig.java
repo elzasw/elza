@@ -20,7 +20,9 @@ public class UnitCountConfig implements ActionConfig {
 
     private DateRangeConfig dateRangeCounter;
 
-	private List<UnitCounterConfig> aggegators;
+    private List<TableOrderConfig> outputOrderBy;
+
+    private List<UnitCounterConfig> aggegators;
 
     private boolean local;
 
@@ -31,6 +33,14 @@ public class UnitCountConfig implements ActionConfig {
 	public void setOutputType(String outputType) {
 		this.outputType = outputType;
 	}
+
+    public List<TableOrderConfig> getOutputOrderBy() {
+        return outputOrderBy;
+    }
+
+    public void setOutputOrderBy(List<TableOrderConfig> outputOrderBy) {
+        this.outputOrderBy = outputOrderBy;
+    }
 
 	public List<UnitCounterConfig> getAggegators() {
 		return aggegators;

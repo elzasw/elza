@@ -1,13 +1,15 @@
 package cz.tacr.elza.service.cache;
 
-import cz.tacr.elza.domain.ApChange;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApStateEnum;
-
-import java.util.ArrayList;
-import java.util.List;
+import cz.tacr.elza.domain.RulPartType;
 
 public class CachedPart implements AccessPointCacheSerializable {
 
@@ -32,6 +34,17 @@ public class CachedPart implements AccessPointCacheSerializable {
     private List<ApItem> items;
 
     private List<ApIndex> indices;
+
+    @JsonIgnore
+    private RulPartType partType;
+
+    public RulPartType getPartType() {
+        return partType;
+    }
+
+    public void setPartType(RulPartType partType) {
+        this.partType = partType;
+    }
 
     public Integer getPartId() {
         return partId;

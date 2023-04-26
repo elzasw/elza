@@ -35,8 +35,9 @@ class ArrRequestPage extends ArrParentPage {
     };
 
     async componentDidMount() {
+        super.componentDidMount()
         const {dispatch, match, history} = this.props;
-        await super.componentDidMount();
+        await this.resolveUrls();
 
         const fund = this.getActiveFund(this.props);
         const matchId = match.params.requestId;

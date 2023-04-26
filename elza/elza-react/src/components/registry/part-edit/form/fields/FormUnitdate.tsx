@@ -1,11 +1,12 @@
-import React, { FC } from 'react';
+import React, { FC, useRef } from 'react';
 import { Field, useForm, useField } from 'react-final-form';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
-import UnitdateField from '../../../field/UnitdateField';
+import UnitdateField, { validateUnitDate, convertToEstimateWithConfirmation } from '../../../field/UnitdateField';
 import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import {ApItemUnitdateVO} from 'api/ApItemUnitdateVO';
 import { CommonFieldProps } from './types';
+import { useThunkDispatch } from 'utils/hooks';
 
 export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
     name,
@@ -15,9 +16,11 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
     onDelete = () => {console.warn("'onDelete' not defined")},
 }) => {
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemUnitdateVO>>(`${name}`);
+    const inputRef = useRef<HTMLInputElement>();
     const {item, updatedItem} = field.input.value;
-    const prevValue = (item as ApItemUnitdateVO | undefined)?.value;
+    const prevValue = item?.value;
+    const dispatch = useThunkDispatch();
 
     return <Field
         name={`${name}.updatedItem.value`}
@@ -26,14 +29,39 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
             const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
             const isDeleted = updatedItem?.changeType === "DELETED";
 
-            const handleChange = (e: any) => {
+            const handleBlur = async (e: any) => {
                 props.input.onBlur(e)
+                try {
+                    const value = e.target.value;
+                    const validated = validateUnitDate(value);
+
+                    if(validated.valid){
+                        const newValue = await convertToEstimateWithConfirmation(value, dispatch)
+                        if(newValue){
+                            form.change(`${name}.updatedItem`, {...updatedItem, value: newValue})
+                        } else {
+                            inputRef.current?.focus();
+                            return;
+                        }
+                    }
+                } catch (e) { throw e; }
                 handleValueUpdate(form, props);
             }
 
             const handleRevert = () => {
-                form.change(`${name}.updatedItem`, item)
+                if(!updatedItem){ throw Error("No updated item to revert."); }
+                if(!item){ throw Error("No original item to revert to."); }
+
+                const newUpdatedItem: ApItemUnitdateVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                form.change(`${name}.updatedItem`, newUpdatedItem);
                 handleValueUpdate(form, props);
+            }
+
+            const handleChange = (e: any) => {
+                if(updatedItem?.changeType === "ORIGINAL"){
+                    form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                }
+                props.input.onChange(e)
             }
 
             const handleDelete = () => {
@@ -60,9 +88,11 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}
+                    ref={inputRef}
                     input={{
                         ...props.input,
-                        onBlur: handleChange // inject modified onChange handler
+                        onChange: handleChange,
+                        onBlur: handleBlur, // inject modified onChange handler
                     }}
                     disabled={disabled}
                     renderComponent={UnitdateField}

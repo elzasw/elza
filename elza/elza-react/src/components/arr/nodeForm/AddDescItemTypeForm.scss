@@ -19,7 +19,7 @@
         padding: $item-padding;
         &.type-impossible {
             /* Added in AddDescItemTypeForm.jsx:40 */
-            background-color: #eee;
+            background-color: $shade-2;
             color: #888;
             font-style: italic;
         }

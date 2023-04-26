@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -50,7 +52,9 @@ import cz.tacr.elza.service.StructObjService;
 @Component
 @Scope("prototype")
 public class ItemGeneratorAction extends Action {
-    
+
+    private final static Logger logger = LoggerFactory.getLogger(ItemGeneratorAction.class);
+
     private final ItemGeneratorConfig config;
 
     @Autowired
@@ -78,6 +82,7 @@ public class ItemGeneratorAction extends Action {
         private ItemType trgItemType;
         private StructType structType;
 
+        private List<ArrDescItem> descItemsToDelete = new ArrayList<>();
         private Set<ArrStructuredObject> structObjsToDelete = new HashSet<>();
 
         public DeleteAction(DeleteItem deleteConfig) {
@@ -114,21 +119,23 @@ public class ItemGeneratorAction extends Action {
                 for (ArrDescItem item : itemList) {
                     ArrDataStructureRef data = HibernateUtils.unproxy(item.getData());
                     structObjsToDelete.add(data.getStructuredObject());
+                    descItemsToDelete.add(item);
                 }
-                ArrNode node = itemList.get(0).getNode();
-                descriptionItemService.deleteDescriptionItems(itemList, node, fundVersion, change, false, false);
             }
         }
 
         @Override
         public void done() {
+            logger.debug("Deleting descItems.size={} and structObjs.size={}", descItemsToDelete.size(), structObjsToDelete.size());
+            
+            // vymazání vybraných descItems
+            descriptionItemService.deleteDescriptionItems(descItemsToDelete, fundVersion, change, false, false);
+
             // check if still used this Structured object
             List<ArrStructuredObject> unusedStructObj = structObjService.getUnusedStructObj(structObjsToDelete);
 
             // vymazani strukt objektu které se již nepoužívají
-            for (ArrStructuredObject so : unusedStructObj) {
-                structObjService.deleteStructObj(so, change);
-            }
+            structObjService.deleteStructObj(fund.getFundId(), unusedStructObj, change);
         }
     }
 

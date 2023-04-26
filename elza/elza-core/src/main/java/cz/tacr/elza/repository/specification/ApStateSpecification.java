@@ -39,12 +39,13 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.specification.search.BitComparator;
 import cz.tacr.elza.repository.specification.search.Comparator;
 import cz.tacr.elza.repository.specification.search.CoordinatesComparator;
@@ -194,10 +195,16 @@ public class ApStateSpecification implements Specification<ApState> {
             if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
                 for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
                     if (rel.getCode() != null) {
-                        String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;
-                        String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
-                        and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
+                        // relation without item type
+                        if(rel.getRelTypeId()==null) {
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()),
+                                                      DataType.RECORD_REF, QueryComparator.EQ);
+                        } else {
+                            String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;                                                
+                            String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
                                 itemSpecCode, QueryComparator.EQ, false);
+                        }
                     }
                 }
             }
@@ -217,8 +224,37 @@ public class ApStateSpecification implements Specification<ApState> {
         return condition;
     }
 
+    /**
+     * Podminka pro hledani shody na zaklade hodnoty bez znalosti itemType
+     * 
+     * @param ctx
+     * @param condition
+     * @param value
+     * @param dataType
+     * @param comparator
+     * @return
+     */
+    private Predicate processValueCondDef(final Ctx ctx, final Predicate condition,
+                                          final String value,
+                                          final DataType dataType,
+                                          final QueryComparator comparator) {
+        CriteriaBuilder cb = ctx.cb;
+
+        Predicate and = cb.conjunction();
+        ctx.resetApItemRoot();
+
+        // zajimaji nas jen platne apItem
+        and = cb.and(and, cb.isNull(ctx.getApItemRoot().get(ApItem.DELETE_CHANGE_ID)));
+
+        return cb.and(condition,
+                      and,
+                      processValueComparator(ctx, comparator, dataType, value));
+    }
+
     private Predicate processValueCondDef(final Ctx ctx, final Predicate condition, final String value,
-                                          final String partTypeCode, final String itemTypeCode, final String itemSpecCode,
+                                          final String partTypeCode,
+                                          final String itemTypeCode,
+                                          final String itemSpecCode,
                                           final QueryComparator comparator, final boolean prefPart) {
         CriteriaBuilder cb = ctx.cb;
 
@@ -228,13 +264,12 @@ public class ApStateSpecification implements Specification<ApState> {
         // zajimaji nas jen platne apItem
         and = cb.and(and, cb.isNull(ctx.getApItemRoot().get(ApItem.DELETE_CHANGE_ID)));
 
-        String dataTypeCode;
-        if (StringUtils.isNotEmpty(itemTypeCode)) {
-            dataTypeCode = validateItemType(itemTypeCode);
-            and = cb.and(and, ctx.getItemTypeJoin().get(RulItemType.CODE).in(itemTypeCode));
-        } else {
-            throw new IllegalArgumentException("Musí být vyplněn alespoň jeden typ prvku popisu v hodnotové podmínce");
+        if (StringUtils.isEmpty(itemTypeCode)) {
+            throw new BusinessException("ItemType is null", BaseCode.INVALID_STATE);
         }
+        RulItemType rulItemType = sdp.getItemType(itemTypeCode);
+        DataType dataType = DataType.fromId(rulItemType.getDataTypeId());
+        and = cb.and(and, ctx.getItemTypeJoin().get(RulItemType.CODE).in(itemTypeCode));
 
         if (StringUtils.isNotEmpty(itemSpecCode)) {
             validateItemSpec(itemSpecCode);
@@ -242,20 +277,26 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         if (partTypeCode != null) {
-            Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
-            if (prefPart) {
-                itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
-                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
-            } else {
-                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
-                // zajimaji nas jen nesmazane part
-                and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
-            }
+            addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode);
         }
 
         return cb.and(condition,
-                and,
-                processValueComparator(ctx, comparator, dataTypeCode, value));
+                      and,
+                      processValueComparator(ctx, comparator, dataType, value));
+    }
+
+    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and,
+                                        boolean prefPart, String partTypeCode) {
+        Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
+        if (prefPart) {
+            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(
+                                                                                                    ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+        } else {
+            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            // zajimaji nas jen nesmazane part
+            and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
+        }
     }
 
     private Predicate processIndexCondDef(final Ctx ctx, final Predicate condition, final String value, final String partTypeCode, final boolean prefPart) {
@@ -296,19 +337,14 @@ public class ApStateSpecification implements Specification<ApState> {
         }
     }
 
-    private String validateItemType(String itemTypeCode) {
-        RulItemType rulItemType = sdp.getItemType(itemTypeCode);
-        RulDataType dataType = rulItemType.getDataType();
-        return dataType.getCode();
-    }
-
     private void validateItemSpec(String itemSpecCode) {
         sdp.getItemSpec(itemSpecCode);
     }
 
-    private Predicate processValueComparator(final Ctx ctx, final QueryComparator comparator, final String dataTypeCode, final String value) {
+    private Predicate processValueComparator(final Ctx ctx, final QueryComparator comparator, 
+                                             final DataType dataType, final String value) {
         Comparator cmp;
-        switch (DataType.fromCode(dataTypeCode)) {
+        switch (dataType) {
             case FORMATTED_TEXT:
             case TEXT:
                 cmp = new TextComparator(ctx);
@@ -356,7 +392,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 cmp = new DateComparator(ctx);
                 break;
             default:
-                throw new IllegalArgumentException("Neplatný datový typ: " + dataTypeCode);
+                throw new IllegalArgumentException("Neplatný datový typ: " + dataType);
         }
         return cmp.toPredicate(comparator, value);
     }

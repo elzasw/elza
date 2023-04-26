@@ -2,11 +2,11 @@ package cz.tacr.elza.service.output.generator;
 
 import jakarta.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
@@ -14,8 +14,8 @@ import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -49,8 +49,6 @@ public class OutputGeneratorFactory {
 
     private final ApBindingStateRepository bindingStateRepository;
 
-    private final ApPartRepository partRepository;
-
     private final ApItemRepository itemRepository;
 
     private final DaoLinkRepository daoLinkRepository;
@@ -63,6 +61,8 @@ public class OutputGeneratorFactory {
 
     private ElzaLocale elzaLocale;
 
+    private ExportConfig exportConfig;
+
     @Autowired
     public OutputGeneratorFactory(final ApplicationContext applicationContext,
                                   final StaticDataService staticDataService,
@@ -73,7 +73,6 @@ public class OutputGeneratorFactory {
                                   final InstitutionRepository institutionRepository,
                                   final ApStateRepository apStateRepository,
                                   final ApBindingRepository bindingRepository,
-                                  final ApPartRepository partRepository,
                                   final ApItemRepository itemRepository,
                                   final ApBindingStateRepository bindingStateRepository,
                                   final ApIndexRepository indexRepository,
@@ -81,7 +80,8 @@ public class OutputGeneratorFactory {
                                   final DmsService dmsService,
                                   final DEExportService exportService,
                                   final DaoLinkRepository daoLinkRepository,
-                                  final AccessPointCacheService accessPointCacheService) {
+                                  final AccessPointCacheService accessPointCacheService,
+                                  final ExportConfig exportConfig) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -91,7 +91,6 @@ public class OutputGeneratorFactory {
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
         this.bindingRepository = bindingRepository;
-        this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
@@ -100,6 +99,7 @@ public class OutputGeneratorFactory {
         this.exportService = exportService;
         this.daoLinkRepository = daoLinkRepository;
         this.accessPointCacheService = accessPointCacheService;
+        this.exportConfig = exportConfig;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -119,9 +119,9 @@ public class OutputGeneratorFactory {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository,
+                institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
-                daoLinkRepository, accessPointCacheService);
+                daoLinkRepository, exportConfig);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
@@ -129,8 +129,8 @@ public class OutputGeneratorFactory {
                 fundRepository, fundTreeProvider,
                 nodeCacheService,
                 institutionRepository, apStateRepository,
-                bindingRepository, partRepository, itemRepository, bindingStateRepository,
-                indexRepository, em, dmsService, daoLinkRepository, accessPointCacheService);
+                bindingRepository, itemRepository, bindingStateRepository,
+                indexRepository, em, dmsService, daoLinkRepository, exportConfig);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

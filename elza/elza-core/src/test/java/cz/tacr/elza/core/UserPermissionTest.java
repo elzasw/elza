@@ -1,5 +1,6 @@
 package cz.tacr.elza.core;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -109,12 +110,6 @@ public class UserPermissionTest extends AbstractTest {
         Assert.assertTrue(states.size() == 1);
         Assert.assertTrue(states.contains(StateApproval.APPROVED));
 
-        // TO_APPROVE -> APPROVED
-        state.setStateApproval(StateApproval.REV_PREPARED);
-        states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
-        Assert.assertTrue(states.contains(StateApproval.APPROVED));
-
         // 3. změna schválených
         UsrUser user3 = createUser("u3", accessPoint);
         addPermission(user3, UsrPermission.Permission.AP_EDIT_CONFIRMED_ALL);
@@ -125,26 +120,6 @@ public class UserPermissionTest extends AbstractTest {
         states = accessPointService.getNextStates(state);
         Assert.assertTrue(states.size() == 1);
         Assert.assertTrue(states.contains(StateApproval.APPROVED));
-
-        // REV_NEW -> REV_PREPARED
-        state.setStateApproval(StateApproval.REV_NEW);
-        states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 2);
-        Assert.assertTrue(states.contains(StateApproval.REV_NEW));
-        Assert.assertTrue(states.contains(StateApproval.REV_PREPARED));
-
-        // REV_PREPARED -> REV_AMEND
-        state.setStateApproval(StateApproval.REV_PREPARED);
-        states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
-        Assert.assertTrue(states.contains(StateApproval.REV_AMEND));
-
-        // REV_AMEND -> REV_PREPARED
-        state.setStateApproval(StateApproval.REV_AMEND);
-        states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 2);
-        Assert.assertTrue(states.contains(StateApproval.REV_AMEND));
-        Assert.assertTrue(states.contains(StateApproval.REV_PREPARED));
     }
 
     private void addPermission(UsrUser user, UsrPermission.Permission permission) {
@@ -188,6 +163,7 @@ public class UserPermissionTest extends AbstractTest {
         accessPoint.setAccessPointId(1);
         accessPoint.setUuid(UUID.randomUUID().toString());
         accessPoint.setState(ApStateEnum.OK);
+        accessPoint.setLastUpdate(LocalDateTime.now());
         return accessPointRepository.save(accessPoint);
     }
 

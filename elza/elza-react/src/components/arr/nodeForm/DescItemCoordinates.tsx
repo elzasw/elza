@@ -15,6 +15,7 @@ import './DescItemCoordinates.scss';
 import { DescItemComponentProps } from './DescItemTypes';
 import { decorateValue } from './DescItemUtils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import DescItemLabel from './DescItemLabel';
 
 
 type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
@@ -95,11 +96,15 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
-            return <CoordinatesDisplay 
+            if(descItem.undefined){
+                return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
+            }
+
+            return <CoordinatesDisplay
                 value={value}
                 id={descItem.id}
                 arrangement={true}
-                />
+            />
         }
 
         if (coordinatesUpload) {
@@ -125,11 +130,11 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (
                         <>
-                            <TooltipTrigger 
-                                className="desc-item-coordinates-action" 
+                            <TooltipTrigger
+                                className="desc-item-coordinates-action"
                                 content={i18n('global.action.copyToClipboard')}
                                 style={{width: "auto"}}
-                                placement="vertical" 
+                                placement="vertical"
                             >
                                 <Button
                                     variant={'action'}
@@ -139,11 +144,11 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                                     <Icon glyph="fa-clone" fixedWidth className="icon" />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipTrigger 
-                                className="desc-item-coordinates-action" 
+                            <TooltipTrigger
+                                className="desc-item-coordinates-action"
                                 content={i18n('global.action.export')}
                                 style={{width: "auto"}}
-                                placement="vertical" 
+                                placement="vertical"
                             >
                                 <NoFocusButton onClick={() => this.props.showExportDialog(descItem.id)}>
                                     <Icon glyph="fa-download" />

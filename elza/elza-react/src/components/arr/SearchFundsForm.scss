@@ -18,7 +18,7 @@ $rowHeight: 24px;
     &.result {
         margin-top: 10px;
         padding: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid $border-color;
 
         .result-list {
             height: 400px;
@@ -70,7 +70,7 @@ $rowHeight: 24px;
                     line-height: 24px;
                     vertical-align: middle;
                     &:hover {
-                        background: #EEEEEE;
+                        background: $shade-2;
                     }
                 }
             }

@@ -192,7 +192,7 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
         }
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
-                dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true));
+                dispatch(fundSelectSubNode(versionId, nodeId, nodeParent, false, newIndex, true, undefined, undefined, true));
                 break;
             case types.FUND_TREE_AREA_COPY:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, nodeParent, false, newIndex, true));

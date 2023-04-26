@@ -3,6 +3,7 @@ import {consolidateState} from 'components/Utils';
 import subNodeForm from './subNodeForm';
 import {nodeFormActions} from 'actions/arr/subNodeForm';
 import {getMapFromList} from 'stores/app/utils';
+import { serializeJson } from 'components/arr/FundDataGrid';
 
 const initialState = {
     initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.
@@ -99,13 +100,14 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 data: {type: 'FORM'},
             };
         case types.STORE_SAVE: {
-            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
+            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos, serializedFilter} = state;
 
             return {
                 initialised,
                 pageSize,
                 pageIndex,
                 filter,
+                serializedFilter,
                 visibleColumns,
                 columnsOrder,
                 columnInfos,
@@ -246,27 +248,12 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
-            let filter = {...state.filter};
-
-            if (action.descItemTypeId !== null) {
-                // null je pro případ, kdy jen chceme aktualizovat data
-                if (action.filter) {
-                    filter[action.descItemTypeId] = action.filter;
-                } else {
-                    delete filter[action.descItemTypeId];
-                }
-            }
-
-            return {
-                ...state,
-                filter: filter,
-                fetchedFilter: false,
-                cellFocus: {row: 0, col: 0},
-            };
-        case types.FUND_FUND_DATA_GRID_FILTER_SET:
             return {
                 ...state,
                 filter: action.filter,
+                serializedFilter: action.filter 
+                    && Object.keys(action.filter).length > 0 
+                    ? serializeJson(action.filter) : undefined ,
                 fetchedFilter: false,
                 cellFocus: {row: 0, col: 0},
             };

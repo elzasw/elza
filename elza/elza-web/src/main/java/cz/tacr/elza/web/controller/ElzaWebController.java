@@ -2,6 +2,7 @@ package cz.tacr.elza.web.controller;
 
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +95,19 @@ public class ElzaWebController {
     @ModelAttribute("logoutUrl")
     public String getLogoutUrl() {
         return logoutUrl;
+    }
+
+    @Value("${elza.integrationScriptUrl:}")
+    private String integrationScriptUrl;
+
+    @ModelAttribute("integrationScriptUrl")
+    public String getIntegrationScriptUrl() {
+        return integrationScriptUrl;
+    }
+
+    @ModelAttribute("hasIntegrationScriptUrl")
+    public boolean hasIntegrationScriptUrl() {
+        return StringUtils.isNotBlank(integrationScriptUrl);
     }
 
     private void initDefaults(final HttpServletRequest request, final Model model) {

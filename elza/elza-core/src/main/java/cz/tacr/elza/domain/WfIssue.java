@@ -15,14 +15,14 @@ import jakarta.persistence.ManyToOne;
 
 import org.hibernate.annotations.Type;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.api.interfaces.IWfIssueList;
 
 /**
  * Jednotlivý problém
  */
 @Entity(name = "wf_issue")
-public class WfIssue implements IArrFund, IWfIssueList {
+public class WfIssue implements ArrFundGetter, IWfIssueList {
 
     public static final String FIELD_NODE_ID = "nodeId";
 

@@ -85,7 +85,7 @@ Fakticky stačí nastavit opakovatelnost událostí a návazných vztahů k PT_B
 
 rule "R_UNQ_Opakovatelné indexy u události"
 when $part: ModelPart(type == PartType.PT_EVENT)
-     $index: Index(indexType in ("SHORT_NAME", "DISPLAY_NAME")) from $part.indices
+     $index: Index(indexType in ("SHORT_NAME", "DISPLAY_NAME", "DISPLAY_NAME_LOWER", "SORT_NAME")) from $part.indices
 then
      $index.setRepeatable(true);
 end

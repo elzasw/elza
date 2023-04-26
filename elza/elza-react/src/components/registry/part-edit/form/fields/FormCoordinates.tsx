@@ -17,6 +17,7 @@ import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemCoordinatesVO } from 'api/ApItemCoordinatesVO';
 import { CommonFieldProps } from './types';
+import { wktFromTypeAndData } from 'components/Utils';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -31,14 +32,9 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     const fieldName = `${name}.updatedItem.value`;
     const dispatch = useThunkDispatch<AppState>()
     const form = useForm();
-    const field = useField<RevisionItem>(`${name}`);
+    const field = useField<RevisionItem<ApItemCoordinatesVO>>(`${name}`);
     const {updatedItem, item} = field.input.value;
-    const prevValue = (item as ApItemCoordinatesVO | undefined)?.value;
-
-    const handleImport = async () => {
-        const fieldValue = await dispatch(importCoordinateFile());
-        form.change(fieldName, fieldValue)
-    }
+    const prevValue = item?.value;
 
     return <Row>
         <Col>
@@ -49,13 +45,30 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                     const isNew = updatedItem ? updatedItem.changeType === "NEW" || (!item && !!updatedItem) : false;
                     const isDeleted = updatedItem?.changeType === "DELETED";
 
-                    const handleChange = (e: any) => {
+                    const handleBlur = (e: any) => {
                         props.input.onBlur(e)
+
+                        // convert value with point coordinates to wkt when possible
+                        // if not, keeps current value
+                        const value = wktFromTypeAndData("POINT", e.target.value);
+                        form.change(`${name}.updatedItem`, {...updatedItem, value})
+
                         handleValueUpdate(form, props);
                     }
 
+                    const handleChange = (e: any) => {
+                        if(updatedItem?.changeType === "ORIGINAL"){
+                            form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
+                        }
+                        props.input.onChange(e)
+                    }
+
                     const handleRevert = () => {
-                        form.change(`${name}.updatedItem`, item)
+                        if(!updatedItem){ throw Error("No updated item to revert."); }
+                        if(!item){ throw Error("No original item to revert to."); }
+
+                        const newUpdatedItem: ApItemCoordinatesVO = {...updatedItem, value: item?.value, changeType: "ORIGINAL"};
+                        form.change(`${name}.updatedItem`, newUpdatedItem);
                         handleValueUpdate(form, props);
                     }
 
@@ -69,6 +82,15 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                             })
                         }
                         handleValueUpdate(form);
+                    }
+
+                    const handleImport = async () => {
+                        const value = await dispatch(importCoordinateFile());
+                        form.change(`${name}.updatedItem`, {
+                            ...updatedItem,
+                            changeType: "UPDATED",
+                            value
+                        })
                     }
 
                     return <RevisionFieldExample
@@ -89,7 +111,8 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
 
                                 input={{
                                     ...props.input,
-                                    onBlur: handleChange // inject modified onChange handler
+                                    onChange: handleChange,
+                                    onBlur: handleBlur // inject modified onBlur handler
                                 }}
                                 disabled={disabled}
                                 renderComponent={FormInput}
@@ -121,9 +144,8 @@ const importCoordinateFile = ():ThunkAction<any> =>
             i18n('ap.coordinate.import.title'),
             <ImportCoordinateModal
                 onSubmit={async (formData) => {
-                    const data = await readFileAsBinaryString(formData.file)
                     try {
-                        const fieldValue = await WebApi.importApCoordinates(data!, formData.format);
+                        const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
                         console.log(fieldValue);
                         resolve(fieldValue);
                     } catch (error) {
@@ -137,13 +159,3 @@ const importCoordinateFile = ():ThunkAction<any> =>
                 />
         ))
 )
-
-const readFileAsBinaryString = (file: File) => {
-    return new Promise<string | ArrayBuffer | null>((resolve)=>{
-        const reader = new FileReader();
-        reader.onload = async () => {
-            resolve(reader.result);
-        };
-        reader.readAsBinaryString(file);
-    })
-}

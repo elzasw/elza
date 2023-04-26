@@ -150,7 +150,7 @@ const RelationPartItemEditModalForm = ({
                 <Col xs={12}>
                     <ArchiveEntityRel
                         name={'codeObj'}
-                        label={'Návazná archivní entita'}
+                        label={i18n('ap.ext-search.section.relations.obj')}
                         onlyMainPart={onlyMainPart}
                         area={area}
                         scopeId={scopeId}

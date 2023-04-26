@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
@@ -36,9 +36,9 @@ import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
 import ApExtSearchModal, {TypeModal} from '../../components/registry/modal/ApExtSearchModal';
 import {Area} from 'api/Area';
-import ApPushToExt from '../../components/registry/modal/ApPushToExt';
+import { ApPushToExt } from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
-import {objectById} from '../../shared/utils';
+import {objectById, storeFromArea} from '../../shared/utils';
 import RegistryUsageForm from '../../components/form/RegistryUsageForm';
 import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
 import {StateApproval} from 'api/StateApproval';
@@ -48,6 +48,7 @@ import { showConfirmDialog } from 'components/shared/dialog';
 import { Api } from 'api';
 import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
+import { ApCopyModal } from 'components/registry/modal/ap-copy';
 
 /**
  * Stránka rejstříků.
@@ -337,21 +338,44 @@ class RegistryPage extends AbstractReactComponent {
                     this,
                     i18n('ap.push-to-ext.title'),
                     <ApPushToExt
-                        onSubmit={data => {
-                            return WebApi.saveAccessPoint(id, data.extSystem);
-                        }}
-                        onSubmitSuccess={() => {
+                        detail={this.props.detail?.data}
+                        onSubmit={async (data) => {
+                            try {
+                                await WebApi.saveAccessPoint(id, data.extSystemCode);
+                            } catch (e) {
+                                throw Error(e);
+                            }
                             dispatch(modalDialogHide());
                             dispatch(goToAe(history, id, true, !select));
+                            return;
                         }}
-                        initialValues={initialValues}
                         extSystems={filteredExtSystems}
-                        />,
-                    MODAL_DIALOG_SIZE.SM,
+                    />,
                 ),
             );
         }
     };
+
+    handleApCopy = () => {
+        const { dispatch, detail, history } = this.props;
+        if(!detail){throw Error("No accesspoint detail.")}
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.copy.title'),
+                <ApCopyModal
+                    onSubmit={async (data) => {
+                        const id = detail.id;
+                        const result = await Api.accesspoints.copyAccessPoint(id, data);
+                        dispatch(modalDialogHide())
+                        dispatch(goToAe(history, result.data.id, true, true));
+                        return;
+                    }}
+                    detail={detail.data}
+                />,
+            ),
+        );
+    }
 
     handleScopeManagement = () => {
         this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists />));
@@ -675,6 +699,14 @@ class RegistryPage extends AbstractReactComponent {
                             </div>
                         </Button>,
                     );
+                    itemActions.push(
+                        <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
+                            <Icon glyph="fa-copy" />
+                            <div>
+                                <span className="btnText">{i18n("ap.copy.title")}</span>
+                            </div>
+                        </Button>,
+                    );
                 }
 
                 if (hasRevision) {
@@ -755,18 +787,11 @@ class RegistryPage extends AbstractReactComponent {
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
             const revisionState = registryDetail.data.revStateApproval;
-            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.REV_PREPARED && apState !== StateApproval.APPROVED ) {
-                if (apState === StateApproval.REV_NEW || apState === StateApproval.REV_AMEND) {
-                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
-                        type: perms.AP_EDIT_CONFIRMED,
-                        scopeId: registryDetail.data.scopeId,
-                    });
-                } else {
-                    editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
+            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.APPROVED ) {
+                editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
                         type: perms.AP_SCOPE_WR,
                         scopeId: registryDetail.data.scopeId,
-                    });
-                }
+                });
             }
             if(
                 revisionState === RevStateApproval.ACTIVE 
@@ -839,6 +864,7 @@ export default withRouter(connect(state => {
         userDetail,
     } = state;
     return {
+        detail: storeFromArea(state, AREA_REGISTRY_DETAIL),
         extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
         splitter,
         registryDetail,

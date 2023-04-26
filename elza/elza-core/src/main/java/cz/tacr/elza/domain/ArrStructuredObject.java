@@ -23,7 +23,7 @@ import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.service.importnodes.vo.Structured;
 
@@ -36,7 +36,7 @@ import cz.tacr.elza.service.importnodes.vo.Structured;
 @Entity(name = "arr_structured_object")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrStructuredObject implements IArrFund, Structured {
+public class ArrStructuredObject implements ArrFundGetter, Structured {
 
     public final static String TABLE_NAME = "arr_structured_object";
 

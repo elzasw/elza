@@ -274,6 +274,7 @@ class TooltipTrigger extends AbstractReactComponent {
                 onBlur={() => this.handleFocus(false)}
                 onMouseOver={() => this.showTooltip(true, this.getDelay(true))}
                 onMouseLeave={() => this.showTooltip(false, this.getDelay(false))}
+                onClick={(e)=>{e.stopPropagation()}}
                 {...otherProps}
             >
                 {children}

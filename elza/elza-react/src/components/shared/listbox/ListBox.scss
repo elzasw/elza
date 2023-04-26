@@ -1,10 +1,15 @@
 @import "../../../variables.scss";
 .listbox-wrapper {
-    border: 1px solid #DDDDDD;
-    background-color: white;
+    border: 1px solid $border-color;
+    background-color: $shade-0;
     display:block;
     height:100px;
     flex-grow:1;
+
+    &:focus {
+        border-color: $accent-color;
+        box-shadow: 0 0 0px 1px $accent-color;
+    }
 
     .listbox-container {
         display: block;
@@ -12,6 +17,10 @@
         height:100%;
         .listbox-item {
             cursor: default;
+
+            &:nth-child(even){
+                background: $shade-1;
+            }
             .node {
                 display: flex;
                 flex-direction: row;

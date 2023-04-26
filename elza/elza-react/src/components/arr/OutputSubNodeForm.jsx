@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux';
-import {outputFormActions} from '../../actions/arr/subNodeForm';
+import {outputFormActions} from 'actions/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
 import SubNodeForm from './SubNodeForm';

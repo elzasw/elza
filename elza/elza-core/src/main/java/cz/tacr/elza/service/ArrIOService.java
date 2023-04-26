@@ -436,6 +436,7 @@ public class ArrIOService {
         List<String> columNames = new LinkedList<>();
         columNames.add("Číslo záznamu");
         columNames.add("Číslo JP");
+        columNames.add("UUID");
         columNames.add("Atribut");
         columNames.add("Specifikace");
         columNames.add("Hodnota");
@@ -449,8 +450,7 @@ public class ArrIOService {
         int pageSize = 100;
         try (ServletOutputStream os = response.getOutputStream();
              OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
-             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
-        ) {
+             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
             List<FilterNode> filteredData;
             int i = 0;
             do {
@@ -481,6 +481,7 @@ public class ArrIOService {
                     List<Object> rowValues = new ArrayList<>(columNames.size());
                     rowValues.add(i);
                     rowValues.add(StringUtils.join(node.getReferenceMark()));
+                    rowValues.add(node.getNode().getUuid());
                     rowValues.add(itemType.getEntity().getName());
 
                     String specname = null;
@@ -510,7 +511,6 @@ public class ArrIOService {
         }
     }
 
-
     @Transactional
     public void dataGridTableExport(final HttpServletResponse response,
                                    final Integer versionId,
@@ -524,6 +524,7 @@ public class ArrIOService {
         List<String> columNames = new ArrayList<>(orderedItemTypeMap.size() + 2);
         columNames.add("Číslo záznamu");
         columNames.add("Číslo JP");
+        columNames.add("UUID");
         for (RulItemType rulItemType : orderedItemTypeMap.values()) {
             if (rulItemType != null) {
                 columNames.add(rulItemType.getShortcut());
@@ -537,8 +538,7 @@ public class ArrIOService {
         int pageSize = 100;
         try (ServletOutputStream os = response.getOutputStream();
              OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
-             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out);
-        ) {
+             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
             List<FilterNode> filteredData;
             int i = 1;
             do {
@@ -548,6 +548,7 @@ public class ArrIOService {
                     List<Object> rowValues = new ArrayList<>(orderedItemTypeMap.size());
                     rowValues.add(i++);
                     rowValues.add(StringUtils.join(node.getReferenceMark()));
+                    rowValues.add(node.getNode().getUuid());
 
                     Map<Integer, DescItemValues> valuesMap = node.getValuesMap();
                     for (RulItemType rulItemType : orderedItemTypeMap.values()) {

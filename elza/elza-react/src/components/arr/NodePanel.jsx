@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
+import {withRouter} from "react-router";
 import {AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils} from 'components/shared';
 import {SubNodeDao} from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
@@ -34,7 +35,7 @@ import defaultKeymap from './NodePanelKeymap';
 
 import './NodePanel.scss';
 import { NodeSettingsModal } from './node-settings-form';
-import {FOCUS_KEYS} from '../../constants';
+import {FOCUS_KEYS, urlNode} from '../../constants';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
 import SyncNodes from './SyncNodes';
@@ -158,9 +159,10 @@ class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        const {node, versionId} = this.props;
         const settings = this.getSettingsFromProps();
 
-        this.requestData(this.props.versionId, this.props.node, settings);
+        this.requestData(versionId, node, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }
@@ -735,7 +737,7 @@ class NodePanel extends AbstractReactComponent {
             if (errors && errors.length > 0) {
                 messages.push(
                     <div key="errors" className="error">
-                        Chyby
+                        {i18n('arr.node.status.err.errors')}
                     </div>,
                 );
                 errors.forEach(error => {
@@ -760,7 +762,7 @@ class NodePanel extends AbstractReactComponent {
             if (missings && missings.length > 0) {
                 messages.push(
                     <div key="missings" className="missing">
-                        Chybějící
+                        {i18n('arr.node.status.err.missing')}
                     </div>,
                 );
                 missings.forEach(missing => {
@@ -799,7 +801,7 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-exclamation-circle" />;
                     tooltip = (
                         <div>
-                            {i18n('arr.node.status.err')} {description} {messages}
+                             {description} {messages}
                         </div>
                     );
                 }
@@ -1215,4 +1217,4 @@ function mapState(state) {
     };
 }
 
-export default connect(mapState)(NodePanel);
+export default withRouter(connect(mapState)(NodePanel));

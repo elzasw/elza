@@ -1,16 +1,17 @@
 @import "../../../variables.scss";
 
 $emptyColWidth: 8000px;
-$noselected-background: #FFFFFF;
-$focus-background: #f9f9f9;
-$selected-index-background: #f0f0f0;
-$selected-background: #EAECF5;
-$selected-both-background: #DEE2F5;
-$header-background: #ececec;
+$noselected-background: $shade-0;
+$focus-background: $shade-1;
+$selected-index-background: $shade-2;
+$selected-background: $accent-color;
+$selected-both-background: $accent-color-alt;
+$selected-fg-color: $accent-color-fg;
+$header-background: $shade-2;
 $header-height: 24px;
 
 .datagrid-container {
-    border: 1px solid #DDDDDD;
+    border: 1px solid $border-color;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -20,7 +21,7 @@ $header-height: 24px;
         overflow: hidden;
         //height: $header-height;
         background: $header-background;
-        border-bottom: 1px solid #DDDDDD;
+        border-bottom: 1px solid $border-color;
         padding-left: 1px;
 
         table {
@@ -28,7 +29,7 @@ $header-height: 24px;
             height: 100%;
 
             th {
-                border: 1px solid #DDDDDD;
+                border: 1px solid $border-color;
                 border-bottom: none;
                 font-weight: normal;
 
@@ -36,7 +37,7 @@ $header-height: 24px;
                 &.header-fixed {
                     .cell-container {
                         background: $header-background;
-                        box-shadow: -1px 0 0 #DDDDDD inset;
+                        box-shadow: -1px 0 0 $border-color inset;
                     }
                 }
 
@@ -99,13 +100,14 @@ $header-height: 24px;
                 .cell-container {
                     position: absolute;
                     top: 0;
-                    box-shadow: -1px 0 0 #D0D7E5 inset;
+                    box-shadow: -1px 0 0 $border-color inset;
                 }
             }
 
             tr {
                 &.selected {
                     background: $selected-background;
+                    color: $selected-fg-color;
 
                     td.col-fixed {
                         .cell-container {
@@ -124,6 +126,7 @@ $header-height: 24px;
                 }
                 &.selected.selected-index {
                     background: $selected-both-background;
+                    color: $selected-fg-color;
 
                     td.col-fixed {
                         .cell-container {
@@ -133,7 +136,7 @@ $header-height: 24px;
                 }
 
                 td {
-                    border: 1px solid #D0D7E5;
+                    border: 1px solid $border-color;
                     cursor: default;
 
                     &.col-fixed {
@@ -145,7 +148,7 @@ $header-height: 24px;
                     }
 
                     &.cell-focus {
-                        outline: 1px solid black;
+                        outline: 1px solid currentColor;
                         outline-offset: -2px;
                     }
 

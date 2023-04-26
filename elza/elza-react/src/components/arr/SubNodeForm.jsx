@@ -33,12 +33,12 @@ import { showConfirmDialog } from 'components/shared/dialog';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class SubNodeForm extends AbstractReactComponent {
-    refNodeForm = null;
 
     refObjects = {};
 
     constructor(props) {
         super(props);
+        this.refNodeForm = React.createRef(null)
 
         this.bindMethods(
             'renderDescItemGroup',
@@ -143,11 +143,8 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     initFocus() {
-        if (this.refNodeForm) {
-            const el = ReactDOM.findDOMNode(this.refNodeForm);
-            if (el) {
-                setInputFocus(el, false);
-            }
+        if (this.refNodeForm?.current) {
+            setInputFocus(this.refNodeForm.current, false);
         }
     }
 
@@ -172,9 +169,8 @@ class SubNodeForm extends AbstractReactComponent {
                 } else {
                     // obecně formulář
                     this.setState({}, () => {
-                        const el = ReactDOM.findDOMNode(this.refNodeForm);
-                        if (el) {
-                            setInputFocus(el, false);
+                        if(this.refNodeForm?.current){
+                            setInputFocus(this.refNodeForm?.current, false);
                         }
                         focusWasSet();
                     });
@@ -938,7 +934,7 @@ class SubNodeForm extends AbstractReactComponent {
         return (
             <div className="node-form">
                 {unusedGeneratedItems}
-                <div ref={ref => (this.refNodeForm = ref)} className="desc-item-groups">
+                <div ref={this.refNodeForm} className="desc-item-groups">
                     {descItemGroups}
                 </div>
             </div>

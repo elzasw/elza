@@ -38,6 +38,7 @@ import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
 public class CamConnector {
@@ -46,6 +47,9 @@ public class CamConnector {
 
     @Autowired
     private SchemaManager schemaManager;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     /**
      * External system ID to CamInstance map
@@ -61,9 +65,21 @@ public class CamConnector {
     }
 
     public EntityXml getEntity(final String archiveEntityId,
+                               final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getEntityApi(externalSystemId).getEntityByIdWithHttpInfo(archiveEntityId);
+        return unmarshal(EntityXml.class, fileApiResponse);
+    }
+
+    public EntityXml getEntity(final String archiveEntityId,
                                final ApExternalSystem externalSystem) throws ApiException {
         ApiResponse<File> fileApiResponse = getEntityApi(externalSystem).getEntityByIdWithHttpInfo(archiveEntityId);
         return unmarshal(EntityXml.class, fileApiResponse);
+    }
+
+    public EntitiesXml getEntities(final List<String> archiveEntityIds,
+                                   final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getExportApi(externalSystemId).exportSnapshotsWithHttpInfo(archiveEntityIds);
+        return unmarshal(EntitiesXml.class, fileApiResponse);
     }
 
     public EntitiesXml getEntities(final List<String> archiveEntityIds,
@@ -105,8 +121,8 @@ public class CamConnector {
     }
 
     public UpdatesFromXml getUpdatesFrom(final String fromTransId,
-                                         final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<File> fileApiResponse = getUpdatesApi(externalSystem).getUpdatesFromWithHttpInfo(fromTransId);
+                                         final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getUpdatesApi(externalSystemId).getUpdatesFromWithHttpInfo(fromTransId);
         return unmarshal(UpdatesFromXml.class, fileApiResponse);
     }
 
@@ -114,8 +130,8 @@ public class CamConnector {
                                        final String toTransId,
                                        final Integer page,
                                        final Integer pageSize,
-                                       final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<File> fileApiResponse = getUpdatesApi(externalSystem).getUpdatesFromToWithHttpInfo(fromTransId, toTransId, page, pageSize);
+                                       final Integer externalSystemId) throws ApiException {
+        ApiResponse<File> fileApiResponse = getUpdatesApi(externalSystemId).getUpdatesFromToWithHttpInfo(fromTransId, toTransId, page, pageSize);
         return unmarshal(UpdatesXml.class, fileApiResponse);
     }
 
@@ -130,6 +146,10 @@ public class CamConnector {
                         apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             instanceMap.remove(apExternalSystem.getExternalSystemId());
         }
+    }
+
+    public CamInstance get(Integer apExternalSystemId) {
+        return get(externalSystemService.getExternalSystemInternal(apExternalSystemId));
     }
 
     public CamInstance get(ApExternalSystem apExternalSystem) {
@@ -167,16 +187,23 @@ public class CamConnector {
         return get(apExternalSystem).getEntityApi();
     }
 
+    private EntityApi getEntityApi(Integer apExternalSystemId) {
+        return get(apExternalSystemId).getEntityApi();
+    }
+
     private ExportApi getExportApi(ApExternalSystem apExternalSystem) {
         return get(apExternalSystem).getExportApi();
+    }
+
+    private ExportApi getExportApi(Integer apExternalSystemId) {
+        return get(apExternalSystemId).getExportApi();
     }
 
     private BatchUpdatesApi getBatchUpdatesApi(ApExternalSystem apExternalSystem) {
         return get(apExternalSystem).getBatchUpdatesApi();
     }
 
-    private UpdatesApi getUpdatesApi(ApExternalSystem apExternalSystem) {
-        return get(apExternalSystem).getUpdatesApi();
+    private UpdatesApi getUpdatesApi(Integer apExternalSystemId) {
+        return get(apExternalSystemId).getUpdatesApi();
     }
-
 }

@@ -1,12 +1,13 @@
+@import "../../../variables.scss";
 .text-fragments-window {
-    border: 1px solid #ddd;
+    border: 1px solid $border-color;
     box-shadow: 3px 3px 10px #0002;
-    background-color: #f8f8f8;
+    background-color: $shade-1;
     padding: 10px;
     padding-top: 0px;
     width: 350px;
     position: fixed;
-    z-index: 500;
+    z-index: 5000;
 
     .actions-container {
         padding: 5px 0;
@@ -18,7 +19,7 @@
             color: currentColor;
 
             &.active {
-                background-color: #ddd;
+                background-color: $shade-4;
             }
         }
 
@@ -39,8 +40,9 @@
         position: relative;
 
         textarea {
-            border: 1px solid #ddd;
-            background-color: #fff;
+            border: 1px solid $border-color;
+            background-color: $shade-0;
+            color: $fg-color;
             width: 100%;
             padding: 10px;
             padding-top: 25px;
@@ -48,8 +50,9 @@
         }
 
         button {
+            color: currentColor;
             border: none;
-            background-color: #fff;
+            background-color: $shade-0;
         }
 
         .actions-container {
@@ -61,8 +64,8 @@
     }
 
     .scroll-window {
-        border: 1px solid #ddd;
-        background-color: #eee;
+        border: 1px solid $border-color;
+        background-color: $shade-2;
         max-height: 400px;
         overflow: auto;
 
@@ -72,8 +75,8 @@
             padding: 4px;
 
             .item {
-                border: 1px solid #ddd;
-                background-color: #fff;
+                border: 1px solid $border-color;
+                background-color: $shade-0;
                 font-size: 1.2em;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -87,26 +90,24 @@
                 transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out;
 
                 &:hover {
-                    background-color: #f8f8f8;
+                    background-color: $shade-1;
                 }
 
                 &:disabled {
                     opacity: 0.6;
 
                     &:hover {
-                        background-color: #fff
+                        background-color: $shade-0;
                     }
                 }
 
                 &.edit {
-                    border: 1px solid #D86464;
-                    background-color: #D86464;
-                    color: white;
+                    border: 1px solid $color-red;
+                    background-color: $color-red;
+                    color: $fg-color;
 
                     &:hover {
-                        background-color: #FF7C7C;
-                        border-color: #FF7C7C;
-                        color: white;
+                        color: $fg-color;
                         
                         .delete-overlay {
                             opacity: 1;
@@ -114,7 +115,7 @@
                     }
 
                     .delete-overlay {
-                        background-color: #FF7C7C;
+                        background-color: $color-red;
                         position: absolute;
                         top: 0;
                         left: 0;

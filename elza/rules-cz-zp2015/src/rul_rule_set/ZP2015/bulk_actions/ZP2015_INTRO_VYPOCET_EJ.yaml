@@ -16,6 +16,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                # Je nastaven typ i pocet
                itemType: ZP2015_EXTRA_UNITS
@@ -66,6 +68,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                all:
                  - itemType: ZP2015_LEVEL_TYPE
@@ -84,6 +88,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                someOf:
                  # Složka s počtem EJ
@@ -153,6 +159,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD                 
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
@@ -169,6 +177,8 @@ actions:
                  - itemType: ZP2015_CONNECTED_RECORD
                  # Nesmí být nastaven jako pevné spojení s jinou
                  - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_DAO

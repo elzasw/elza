@@ -1,5 +1,6 @@
+@import "../../variables.scss";
 .arr-abstract-page {
     .splitter-left {
-        border-right: 1px solid #DDDDDD;
+        border-right: 1px solid $border-color;
     }
 }

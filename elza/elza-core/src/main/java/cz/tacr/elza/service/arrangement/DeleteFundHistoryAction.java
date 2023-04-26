@@ -237,6 +237,9 @@ public class DeleteFundHistoryAction {
                 arrDataList.add(data);
             }
         }
+        // drop ArrNodeConformityError for given items
+        ruleService.deleteConformityByItems(arrItemList);
+
         iterateAction(arrItemList, itemRepository::deleteAll);
         em.flush();
 
@@ -395,7 +398,7 @@ public class DeleteFundHistoryAction {
         iterateAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
 
         // delete node conformity
-        iterateAction(nodeIds, ruleService::deleteByNodeIdIn);
+        ruleService.deleteByNodeIdIn(nodeIds);
 
         // delete attached extensions
         iterateAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);

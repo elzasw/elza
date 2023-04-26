@@ -1,8 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
-
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -14,6 +11,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_key_value")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -27,6 +27,9 @@ public class ApKeyValue implements AccessPointCacheSerializable {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scope_id", nullable = false)
     private ApScope scope;
+
+    @Column(name = "scope_id", nullable = false, updatable = false, insertable = false)
+    private Integer scopeId;
 
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String keyType;
@@ -48,6 +51,18 @@ public class ApKeyValue implements AccessPointCacheSerializable {
 
     public void setScope(ApScope scope) {
         this.scope = scope;
+        if (scope != null) {
+            scopeId = scope.getScopeId();
+        } else {
+            scopeId = null;
+        }
+    }
+
+    public Integer getScopeId() {
+        if (scopeId == null && scope != null) {
+            return scope.getScopeId();
+        }
+        return scopeId;
     }
 
     public String getKeyType() {

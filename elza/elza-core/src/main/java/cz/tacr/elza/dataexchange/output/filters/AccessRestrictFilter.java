@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,43 +9,46 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
 import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 
 public class AccessRestrictFilter implements ExportFilter {
 
-    Set<Integer> restrictedNodeIds = new HashSet<>();
-    private StaticDataProvider sdp;
+    final Set<Integer> restrictedNodeIds = new HashSet<>();
+    final private StaticDataProvider sdp;
 
     /**
      * Map of restriction definition objects
      */
-    private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
+    final private Map<Integer, StructObjectInfo> structRestrDefsMap = new HashMap<>();
 
     /**
-     * Map of restriction levels <levelId, List<restrictionId>>
+     * Map of restriction levels <levelId, List<ArrItem>>
      */
-    private Map<Integer, List<Integer>> levelRestrMap = new HashMap<>();
+    private Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
     /**
      * IDs of filtered Sois for export
      */
-    private Set<Integer> filteredSois = new HashSet<>();
+    final private Set<Integer> filteredSois = new HashSet<>();
 
-    private StructObjectInfoLoader soiLoader;
+    final private StructObjectInfoLoader soiLoader;
 
-    private AccessRestrictConfig efc;
+    final private AccessRestrictConfig efc;
 
     final private FilterRules filterRules;
 
@@ -67,9 +71,9 @@ public class AccessRestrictFilter implements ExportFilter {
                 .collect(Collectors.groupingBy(item -> sdp.getItemTypeById(item.getItemTypeId())));
 
         // to get list of restriction ids by restrictions item types
-        List<Integer> restrictionIds = new ArrayList<>();
-        for (ItemType structItemType : filterRules.getRestrictionTypes()) {
-            List<ArrItem> restrictionList = itemsByType.get(structItemType);
+        List<ArrItem> restrictionItems = new ArrayList<>();
+        for (ItemType itemType : filterRules.getRestrictionTypes()) {
+            List<ArrItem> restrictionList = itemsByType.get(itemType);
             if (restrictionList != null) {
                 for (ArrItem item : restrictionList) {
                     // skip items without data
@@ -77,29 +81,42 @@ public class AccessRestrictFilter implements ExportFilter {
                         continue;
                     }
                     // found restr
-                    ArrDataStructureRef dsr = (ArrDataStructureRef) item.getData();
-                    restrictionIds.add(dsr.getStructuredObjectId());
+                    restrictionItems.add(item);
                 }
             }
         }
 
         // expand restriction list to include parent(s) restriction list
         if (levelInfo.getParentNodeId() != null) {
-            List<Integer> restParentIds = levelRestrMap.get(levelInfo.getParentNodeId());
-            if (restParentIds != null) {
-                restrictionIds.addAll(restParentIds);
+            List<ArrItem> restParentItems = levelRestrMap.get(levelInfo.getParentNodeId());
+            if (restParentItems != null) {
+                restrictionItems.addAll(restParentItems);
             }
         }
 
         // if we have a list - we have to filter
-        if (!restrictionIds.isEmpty()) {
-            levelRestrMap.put(levelInfo.getNodeId(), restrictionIds);
+        if (!restrictionItems.isEmpty()) {
+            levelRestrMap.put(levelInfo.getNodeId(), restrictionItems);
 
-            for (Integer restrictionId : restrictionIds) {
-                StructObjectInfo soi = readSoiFromDB(restrictionId);
+            for (ArrItem restrictionItem : restrictionItems) {
+                ItemType itemType = sdp.getItemTypeById(restrictionItem.getItemTypeId());
+                Integer restrStructId = null;
+                Collection<ArrItem> restrItems;
+                if (itemType.getDataType().equals(DataType.STRUCTURED)) {
+                    // Load real structured level
+                    ArrData data = restrictionItem.getData();
+                    ArrDataStructureRef sdr = (ArrDataStructureRef) data;
+                    Integer restrictionId = sdr.getStructuredObjectId();
+                    StructObjectInfo soi = readSoiFromDB(restrictionId);
+                    restrStructId = soi.getId();
+                    restrItems = soi.getItems();
+                } else {
+                    // Create fake SOI from current level
+                    restrItems = levelInfo.getItems();
+                }
 
                 for (FilterRule rule : filterRules.getFilterRules()) {
-                    processRule(rule, levelInfo, itemsByType, soi, filter);
+                    processRule(rule, levelInfo, itemsByType, restrStructId, restrItems, filter);
                 }
             }
         }
@@ -107,12 +124,26 @@ public class AccessRestrictFilter implements ExportFilter {
         return filter.apply(levelInfo);
     }
 
+    /**
+     *
+     * @param rule
+     * @param levelInfo
+     * @param itemsByType
+     * @param soiRestrId
+     *            Optional ID of source structured ID
+     *            If ID is set and level is ignored, whole structured object is
+     *            marked as ignored
+     * @param restrItems
+     * @param soi
+     * @param filter
+     */
     private void processRule(FilterRule rule, LevelInfoImpl levelInfo,
                             Map<ItemType, List<ArrItem>> itemsByType,
-                            StructObjectInfo soi,
+                             @Nullable Integer soiRestrId,
+                             Collection<ArrItem> restrItems,
                             ApplyFilter filter) {
 
-        if (!rule.canApply(soi)) {
+        if (!rule.canApply(restrItems)) {
             // rule does not apply for this soi
             return;
         }
@@ -120,7 +151,12 @@ public class AccessRestrictFilter implements ExportFilter {
         // if we need to hide level
         if (rule.isHiddenLevel()) {
             restrictedNodeIds.add(levelInfo.getNodeId());
-            filteredSois.add(soi.getId());
+            // TODO: This should be reworked
+            //       SOI should be automatically removed when not referenced and
+            //       based on this criteria
+            if (soiRestrId != null) {
+                filteredSois.add(soiRestrId);
+            }
             filter.hideLevel();
             return;
         }

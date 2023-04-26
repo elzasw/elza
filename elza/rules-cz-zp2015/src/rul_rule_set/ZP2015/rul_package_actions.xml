@@ -35,6 +35,7 @@
             <action-item-type item-type="ZP2015_UNIT_CONTENT" />
             <action-item-type item-type="ZP2015_FUTURE_UNITS" />
             <action-item-type item-type="ZP2015_RELATED_UNITS" />
+            <action-item-type item-type="ZP2015_UNIT_CURRENT_STATUS" />
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_DESCRIPTION_DATE" />
             <action-item-type item-type="ZP2015_DATE_RANGE" />
@@ -44,6 +45,8 @@
             <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />
             <action-item-type item-type="ZP2015_ORIGINATOR_SIMPLE" />
+            <action-item-type item-type="ZP2015_ATTACHMENT" />
+            <action-item-type item-type="ZP2015_UNIT_DAMAGE_TYPE" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="STARSI_POMUCKA_1958" />

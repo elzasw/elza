@@ -40,6 +40,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -52,6 +54,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -366,17 +369,25 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return apCachedAccessPoints;
     }
 
+    /**
+     * Create AP in cache
+     *
+     * Method will flush entityManager and clear ALL objectcs from entityManager (including HibernateProxyObj)
+     *
+     * @param accessPointId
+     */
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
 
-        //flush a batch of updates and release memory:
+        // flush a batch of updates and release memory:
         this.entityManager.flush();
         this.entityManager.clear();
 
-        synchronized (this){
+        synchronized (this) {
 			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 			if (oldApCachedAccessPoint != null) {
 				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+                this.entityManager.flush();
 			}
 			processNewAPs(Collections.singletonList(accessPointId));
         }
@@ -514,6 +525,23 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedBinding;
     }
 
+    public EntityRef createEntityRef(CachedAccessPoint accessPoint) {
+        EntityRef entityRef = new EntityRef();
+        entityRef.setId(accessPoint.getUuid());
+
+        List<CachedPart> parts = accessPoint.getParts();
+        for (CachedPart part : parts) {
+            if (part.getPartId().equals(accessPoint.getPreferredPartId())) {
+                entityRef.setLabel(ApFactory.findDisplayIndexValue(part.getIndices()));
+            } else {
+                if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
+                    entityRef.setNote(ApFactory.findDisplayIndexValue(part.getIndices()));
+                }
+            }
+        }
+        return entityRef;
+    }
+
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
 		ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
@@ -584,9 +612,30 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         if (cap.getParts() != null) {
             // restore parts
+            List<ApPart> apParts = new ArrayList<>(cap.getParts().size());
 
             for (CachedPart part : cap.getParts()) {
-                ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+                // ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+                ApPart apPart = new ApPart();
+                apPart.setAccessPoint(ap);
+                apPart.setCreateChange(entityManager.getReference(ApChange.class, part.getCreateChangeId()));
+                if (part.getDeleteChangeId() != null) {
+                    apPart.setDeleteChange(entityManager.getReference(ApChange.class, part.getDeleteChangeId()));
+                }
+                apPart.setErrorDescription(part.getErrorDescription());
+
+                ApKeyValue keyValue = part.getKeyValue();
+                if (keyValue != null) {
+                    ApScope scope = entityManager.getReference(ApScope.class, keyValue.getScopeId());
+                    keyValue.setScope(scope);
+                }
+                apPart.setKeyValue(keyValue);
+                apPart.setLastChange(entityManager.getReference(ApChange.class, part.getLastChangeId()));
+                apPart.setPartId(part.getPartId());
+                apPart.setPartType(sdp.getPartTypeByCode(part.getPartTypeCode()));
+                apPart.setState(part.getState());
+
+                apParts.add(apPart);
                 partMap.put(part.getPartId(), apPart);
 
                 if (part.getItems() != null) {
@@ -627,6 +676,18 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                     part.setItems(items);
                 }
             }
+            // restore parent part
+            for (CachedPart part : cap.getParts()) {
+                if (part.getParentPartId() != null) {
+                    ApPart apPart = partMap.get(part.getPartId());
+                    ApPart apParentPart = partMap.get(part.getParentPartId());
+                    apPart.setParentPart(apParentPart);
+                }
+            }
+
+            cap.setApParts(apParts);
+        } else {
+            cap.setApParts(Collections.emptyList());
         }
 
         List<CachedBinding> cachedBindings = cap.getBindings();

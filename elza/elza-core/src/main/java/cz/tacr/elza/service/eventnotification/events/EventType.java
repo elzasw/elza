@@ -27,15 +27,19 @@ public enum EventType {
 
     DELETE_LEVEL(EventDeleteNode.class),
 
-    PARTY_CREATE(EventId.class),
-    PARTIES_CREATE(EventId.class),
-    PARTY_DELETE(EventId.class),
-    PARTY_UPDATE(EventId.class),
-
     ACCESS_POINT_CREATE(EventId.class),
     ACCESS_POINT_DELETE(EventId.class),
     ACCESS_POINT_UPDATE(EventId.class),
     ACCESS_POINT_RESTORE(EventId.class),
+
+    // přidání archivní entity do fronty ke zpracování
+    ACCESS_POINT_EXPORT_NEW(EventApQueue.class),
+    // zahájení zpracování archivní entity z fronty
+    ACCESS_POINT_EXPORT_STARTED(EventApQueue.class),
+    // zpracování archivní entity z fronty skončilo chybou
+    ACCESS_POINT_EXPORT_FAILED(EventApQueue.class),
+    // zpracování archivní entity z fronty bylo úspěšně dokončeno
+    ACCESS_POINT_EXPORT_COMPLETED(EventApQueue.class),
 
     /**
      * Asi drive pouzivano pro notifikaci o zkopirovanem atributu
@@ -44,6 +48,13 @@ public enum EventType {
      */
     //COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
+    /**
+     * Nodes data were changed
+     * 
+     * Typically: items were added/deleted/updated
+     * 
+     * Do not use this event for node structure changes
+     */
     NODES_CHANGE(EventIdsInVersion.class),
 
     // při použití UNDO, kde se reálně entity JP můžou mazat
@@ -65,7 +76,7 @@ public enum EventType {
 
     INSTITUTION_CHANGE(ActionEvent.class),
 
-    VISIBLE_POLICY_CHANGE(EventIdsInVersion.class),
+    VISIBLE_POLICY_CHANGE(EventVisiblePolicy.class),
 
     CONFORMITY_INFO(EventIdsInVersion.class),
 
@@ -102,7 +113,7 @@ public enum EventType {
     ISSUE_CREATE(EventIdInIssueList.class),
     ISSUE_UPDATE(EventIdInIssueList.class),
 
-    BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
+    BULK_ACTION_STATE_CHANGE(EventIdInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 

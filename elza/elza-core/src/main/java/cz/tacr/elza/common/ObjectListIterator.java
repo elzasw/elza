@@ -1,8 +1,10 @@
 package cz.tacr.elza.common;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -16,24 +18,27 @@ import org.apache.commons.collections4.CollectionUtils;
  *
  * @since 08.01.2016
  */
-public class ObjectListIterator<T> {
+public class ObjectListIterator<T> implements Iterator<List<T>> {
 
     /**
      * Maximální velikost jedné vrácené kolekce.
      */
     private static int maxIterationSize = 1500;
 
-    private List<T> list;
+    private Iterator<T> iterator;
     private int maximalIterationSize = maxIterationSize;
-    private int index = 0;
 
     public ObjectListIterator(final Collection<T> list) {
-        this.list = new ArrayList<>(list);
+        this.iterator = list.iterator();
+    }
+
+    private ObjectListIterator(final Iterable<T> iterable) {
+        this.iterator = iterable.iterator();
     }
 
     public ObjectListIterator(final int maximalIterationSize, final Collection<T> list) {
         this.maximalIterationSize = maximalIterationSize;
-        this.list = new ArrayList<>(list);
+        this.iterator = list.iterator();
     }
 
     public static void setMaxBatchSize(int maxBatchSize) {
@@ -43,9 +48,10 @@ public class ObjectListIterator<T> {
     public static int getMaxBatchSize() {
         return maxIterationSize; 
     }
-    
+
+    @Override
     public boolean hasNext() {
-        return this.index < this.list.size();
+        return iterator.hasNext();
     }
 
     /**
@@ -53,11 +59,14 @@ public class ObjectListIterator<T> {
      *
      * @return podkolekce
      */
+    @Override
     public List<T> next() {
-        int size = Math.min(this.maximalIterationSize, this.list.size() - this.index);
-        List<T> result = new ArrayList<>(size);
-        result.addAll(this.list.subList(this.index, this.index + size));
-        this.index += this.maximalIterationSize;
+        int index = 0;
+        List<T> result = new ArrayList<>(maximalIterationSize);
+        while (iterator.hasNext() && index < maximalIterationSize) {
+            result.add(iterator.next());
+            index++;
+        }
         return result;
     }
 
@@ -74,6 +83,17 @@ public class ObjectListIterator<T> {
         }
     }
 
+    public static <T> void forEachPage(final Iterable<T> iter, Consumer<Collection<T>> call) {
+        if (iter == null) {
+            return;
+        }
+        ObjectListIterator<T> iterator = new ObjectListIterator<>(iter);
+        while (iterator.hasNext()) {
+            call.accept(iterator.next());
+        }
+    }
+
+    // TODO: rename
     public static <T, R> List<R> findIterable(final Collection<T> list, Function<Collection<T>, List<R>> call) {
         List<R> result = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(list)) {
@@ -85,6 +105,7 @@ public class ObjectListIterator<T> {
         return result;
     }
 
+    // TODO: rename
     public static <T, R> Set<R> findIterableSet(final Collection<T> list, Function<Collection<T>, Collection<R>> call) {
         Set<R> result = new HashSet<>();
         if (CollectionUtils.isNotEmpty(list)) {

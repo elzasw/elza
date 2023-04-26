@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>2.5.0-SNAPSHOT</version>
+        <version>2.6.0-SNAPSHOT</version>
     </parent>
     <artifactId>elza-core</artifactId>
     <name>ELZA Core</name>
@@ -26,138 +26,144 @@
             <groupId>javax.interceptor</groupId>
             <artifactId>javax.interceptor-api</artifactId>
             <version>1.2</version>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <!--<version>3.5.5</version>-->
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-ws-api</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-rest</artifactId>
-        </dependency>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-resource-server</artifactId>
+		</dependency>
+		<!-- JWT decoding library (org.springframework.security.oauth2.jwt.NimbusJwtDecoder) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+		</dependency>
+
 		<dependency>
     		<groupId>org.springdoc</groupId>
     		<artifactId>springdoc-openapi-ui</artifactId>
     		<version>1.6.6</version>
 		</dependency>
-        <!--<dependency>
+		<!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+		<!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.threeten</groupId>
             <artifactId>threetenbp</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-core</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <!--<scope>provided</scope> -->
-        </dependency>
+			<!--<scope>provided</scope> -->
+		</dependency>
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>
             <artifactId>jtds</artifactId>
-        </dependency>
-<!--        <dependency>
-            <groupId>org.jadira.usertype</groupId>
-            <artifactId>usertype.core</artifactId>
-        </dependency>-->
+		</dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-avro</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>ma.glasnost.orika</groupId>
             <artifactId>orika-core</artifactId>
             <version>1.5.4</version>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-pojo-base</artifactId>
@@ -187,55 +193,55 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-websocket</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-messaging</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-messaging</artifactId>
-        </dependency>
+		</dependency>
 
-        <!-- test -->
+		<!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
-        </dependency>
+		</dependency>
 
-        <!-- Drools -->
+		<!-- Drools -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-core</artifactId>
             <version>${drools.version}</version>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-compiler</artifactId>
             <version>${drools.version}</version>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>org.geotools</groupId>
@@ -244,130 +250,161 @@
                 <exclusion>
                     <groupId>javax</groupId>
                     <artifactId>javaee-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+				</exclusion>
+			</exclusions>
+		</dependency>
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-core</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
-        </dependency>
-	<!-- https://mvnrepository.com/artifact/it.geosolutions.jgridshift/jgridshift-core -->
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/it.geosolutions.jgridshift/jgridshift-core -->
         <dependency>
 		<groupId>it.geosolutions.jgridshift</groupId>
 		<artifactId>jgridshift-core</artifactId>
 		<version>1.3</version>
-	</dependency>
+		</dependency>
         <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-grouping</artifactId>
           <version>${hibernate.lucene.version}</version>
-        </dependency>
+		</dependency>
         <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-queryparser</artifactId>
           <version>${hibernate.lucene.version}</version>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
             <version>${hibernate.lucene.version}</version>
-        </dependency>
+		</dependency>
 
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-fonts</artifactId>
-        </dependency>
-        <!-- Optional dependency for JasperReports - barcode generator -->
+		</dependency>
+		<!-- Optional dependency for JasperReports - barcode generator -->
         <dependency>
             <groupId>net.sourceforge.barbecue</groupId>
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
-        </dependency>
+		</dependency>
+		<!-- QR code support -->
+        <dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+		    <version>3.5.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.zxing</groupId>
+		    <artifactId>javase</artifactId>
+		    <version>3.5.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>net.sf.barcode4j</groupId>
+		    <artifactId>barcode4j</artifactId>
+		    <version>2.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-svg-dom</artifactId>
+		    <version>1.16</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-svggen</artifactId>
+		    <version>1.16</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-bridge</artifactId>
+		    <version>1.16</version>
+		</dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
+			<!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
                  bez jejiho uvedeni se vytvari WAR bez CXF -->
             <version>3.9</version>
-        </dependency>
-        <!-- Pridano kvuli tride ByteArrayDataSource -->
+		</dependency>
+		<!-- Pridano kvuli tride ByteArrayDataSource -->
         <dependency>
           <groupId>javax.mail</groupId>
           <artifactId>javax.mail-api</artifactId>
           <version>1.6.2</version>
-        </dependency>
-        <!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
+		</dependency>
+		<!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
              Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
         <dependency>
 	        <groupId>org.glassfish.jaxb</groupId>
         	<artifactId>txw2</artifactId>
         	<version>2.2.11</version>
-        </dependency>
+		</dependency>
         <dependency>
         	<groupId>com.sun.xml.messaging.saaj</groupId>
         	<artifactId>saaj-impl</artifactId>
-        </dependency>
+		</dependency>
 
-        <!-- SAML / Shibboleth -->
+		<!-- SAML / Shibboleth -->
         <dependency>
             <groupId>org.springframework.security.extensions</groupId>
             <artifactId>spring-security-saml2-core</artifactId>
-        </dependency>
-        <!-- END - SAML / Shibboleth -->
+		</dependency>
+		<!-- END - SAML / Shibboleth -->
 
-        <!-- CXF -->
+		<!-- CXF -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-aegis</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-jms</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-local</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-        </dependency>
+		</dependency>
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
-        </dependency>
+		</dependency>
 		<dependency>
 		  <groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
@@ -409,46 +446,46 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/*.yaml</include>
-                </includes>
-            </resource>
+				</includes>
+			</resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/*.yaml</exclude>
-                </excludes>
-            </resource>
-        </resources>
+				</excludes>
+			</resource>
+		</resources>
         <testResources>
-            <!-- Copy default test resources -->
+			<!-- Copy default test resources -->
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>**/*.yaml</include>
-                </includes>
-            </testResource>
+				</includes>
+			</testResource>
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>**/*.yaml</exclude>
-                </excludes>
-            </testResource>
-            <!-- Add test folder with source files for packages -->
+				</excludes>
+			</testResource>
+			<!-- Add test folder with source files for packages -->
             <testResource>
                 <directory>${basedir}/target/test-resources</directory>
                 <includes />
-            </testResource>
+			</testResource>
             <testResource>
                 <directory>${project.basedir}/../package-cz-base/src</directory>
                 <targetPath>${project.basedir}/target/test-classes/package-cz-base</targetPath>
-            </testResource>
+			</testResource>
             <testResource>
                 <directory>${project.basedir}/../rules-simple-dev/src</directory>
                 <targetPath>${project.basedir}/target/test-classes/rules-simple-dev</targetPath>
-            </testResource>
-        </testResources>
+			</testResource>
+		</testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -456,8 +493,8 @@
                 <configuration>
                     <source>8</source>
                     <target>8</target>
-                </configuration>
-            </plugin>
+				</configuration>
+			</plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -468,29 +505,29 @@
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>add-source</goal>
-                        </goals>
+						</goals>
                         <configuration>
                             <sources>
                                 <source>${project.build.directory}/generated-sources/jaxb</source>
                                 <source>${project.build.directory}/generated-sources/cam</source>
-                                <!--<source>${project.build.directory}/generated-sources/api/rest</source>-->
-                            </sources>
-                        </configuration>
-                    </execution>
+								<!--<source>${project.build.directory}/generated-sources/api/rest</source>-->
+							</sources>
+						</configuration>
+					</execution>
                     <execution>
                         <id>add-gen-test-sources</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>add-test-source</goal>
-                        </goals>
+						</goals>
                         <configuration>
                             <sources>
                                 <source>${project.build.directory}/generated-test-sources/api/rest/src/main/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
@@ -500,36 +537,36 @@
                         <id>generate-elza-schema</id>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
                             <args>
                                 <arg>-Xinheritance</arg>
-                            </args>
+							</args>
                             <generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
                             <schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
                             <schemaIncludes>
                                 <include>elza-schema-v2.xsd</include>
-                            </schemaIncludes>
+							</schemaIncludes>
                             <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
                             <bindingIncludes>
                                 <include>elza-schema-v2-bindinds.xml</include>
-                            </bindingIncludes>
+							</bindingIncludes>
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
                                     <version>1.11.1</version>
-                                </plugin>
-                            </plugins>
-                        </configuration>
-                    </execution>
+								</plugin>
+							</plugins>
+						</configuration>
+					</execution>
                     <execution>
                         <id>generate-cam-schema</id>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
@@ -537,18 +574,18 @@
                                 <arg>-Xannotate</arg>
                                 <arg>-Xinheritance</arg>
                                 <arg>-Xvalue-constructor</arg>
-                            </args>
+							</args>
                             <generateDirectory>${project.build.directory}/generated-sources/cam</generateDirectory>
                             <schemaDirectory>${project.basedir}/src/main/resources/cam</schemaDirectory>
                             <schemaIncludes>
                                 <include>cam-2019.xsd</include>
-                            </schemaIncludes>
+							</schemaIncludes>
                             <bindingDirectory>${project.basedir}/src/main/resources/cam</bindingDirectory>
                             <bindingIncludes>
                                 <include>cam-2019.xjb</include>
-                            </bindingIncludes>
-<!--                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>-->
-<!--                            <bindingIncludes>
+							</bindingIncludes>
+							<!--                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>-->
+							<!--                            <bindingIncludes>
                                 <include>elza-schema-v2-bindinds.xml</include>
                             </bindingIncludes>-->
                             <plugins>
@@ -556,44 +593,44 @@
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
                                     <version>1.11.1</version>
-                                </plugin>
-                            </plugins>
-                        </configuration>
-                    </execution>
-                </executions>
+								</plugin>
+							</plugins>
+						</configuration>
+					</execution>
+				</executions>
                 <dependencies>
                     <dependency>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-xjc</artifactId>
                         <version>2.3.2</version>
-                    </dependency>
+					</dependency>
                     <dependency>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
                         <version>2.3.2</version>
-                    </dependency>
+					</dependency>
                     <dependency>
                         <groupId>io.swagger.core.v3</groupId>
                         <artifactId>swagger-annotations</artifactId>
                         <version>2.0.8</version>
-                    </dependency>
+					</dependency>
                     <dependency>
                         <groupId>org.jvnet.jaxb2_commons</groupId>
                         <artifactId>jaxb2-basics</artifactId>
                         <version>1.11.1</version>
-                    </dependency>
+					</dependency>
                     <dependency>
                         <groupId>org.jvnet.jaxb2_commons</groupId>
                         <artifactId>jaxb2-basics-annotate</artifactId>
                         <version>1.1.0</version>
-                    </dependency>
+					</dependency>
                     <dependency>
                         <groupId>org.jvnet.jaxb2_commons</groupId>
                         <artifactId>jaxb2-value-constructor</artifactId>
                         <version>3.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+					</dependency>
+				</dependencies>
+			</plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -604,7 +641,7 @@
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
+						</goals>
                         <configuration>
                             <generatorName>spring</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
@@ -613,21 +650,21 @@
                             <modelPackage>cz.tacr.elza.controller.vo</modelPackage>
                             <generateSupportingFiles>true</generateSupportingFiles>
                             <generateApiTests>false</generateApiTests>
-                            <!--<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>-->
+							<!--<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>-->
                             <configOptions>
-                                <!--<sourceFolder>/</sourceFolder>-->
+								<!--<sourceFolder>/</sourceFolder>-->
                                 <interfaceOnly>true</interfaceOnly>
-                                <!--  disables default interface methods for testing  -->
+								<!--  disables default interface methods for testing  -->
                                 <useTags>true</useTags>
-                            </configOptions>
-                        </configuration>
-                    </execution>
+							</configOptions>
+						</configuration>
+					</execution>
                     <execution>
                         <id>openapi-spring-client</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
+						</goals>
                         <configuration>
                             <generatorName>java</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/cam/cam-openapi.yml</inputSpec>
@@ -635,17 +672,17 @@
                             <apiPackage>cz.tacr.cam.client.controller</apiPackage>
                             <modelPackage>cz.tacr.cam.client.controller.vo</modelPackage>
                             <generateApiTests>false</generateApiTests>
-                            <!--<configOptions>
+							<!--<configOptions>
                                 <library>resttemplate</library>
                             </configOptions>-->
-                        </configuration>
-                    </execution>
+						</configuration>
+					</execution>
                     <execution>
                         <id>openapi-test-client</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
+						</goals>
                         <configuration>
                             <generatorName>java</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
@@ -711,12 +748,12 @@
                         <configuration>
                             <properties>
                                 <spring.profiles.active>pgsql</spring.profiles.active>
-                            </properties>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+							</properties>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
         <profile>
             <id>dist</id>
             <build>
@@ -729,13 +766,13 @@
                                 <phase>package</phase>
                                 <goals>
                                     <goal>copy-dependencies</goal>
-                                </goals>
+								</goals>
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
                     <plugin>
                         <artifactId>maven-jar-plugin</artifactId>
                         <configuration>
@@ -745,13 +782,13 @@
                                     <addClasspath>true</addClasspath>
                                     <classpathPrefix>lib/</classpathPrefix>
                                     <useUniqueVersions>false</useUniqueVersions>
-                                </manifest>
-                            </archive>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+								</manifest>
+							</archive>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
         <profile>
             <id>jacoco-report</id>
             <build>
@@ -761,19 +798,19 @@
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <configuration>
                             <excludes>org.drools.compiler.lang.*</excludes>
-                        </configuration>
+						</configuration>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>

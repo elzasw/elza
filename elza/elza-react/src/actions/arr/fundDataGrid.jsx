@@ -17,7 +17,6 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
-        case types.FUND_FUND_DATA_GRID_FILTER_SET:
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
@@ -265,21 +264,10 @@ export function fundDataGridRefreshRows(versionId) {
     };
 }
 
-export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
+export function fundDataGridFilterChange(versionId, filter) {
     return (dispatch, getState) => {
         dispatch({
             type: types.FUND_FUND_DATA_GRID_FILTER_CHANGE,
-            versionId,
-            descItemTypeId,
-            filter,
-        });
-    };
-}
-
-export function fundDataGridFilterSet(versionId, filter) {
-    return (dispatch, getState) => {
-        dispatch({
-            type: types.FUND_FUND_DATA_GRID_FILTER_SET,
             versionId,
             filter,
         });

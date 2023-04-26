@@ -24,8 +24,9 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     componentDidMount() {
+        super.componentDidMount()
         this.props.dispatch(refRuleSetFetchIfNeeded());
-        super.componentDidMount();
+        this.resolveUrls()
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {

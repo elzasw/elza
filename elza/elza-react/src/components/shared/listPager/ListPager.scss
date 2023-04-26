@@ -1,6 +1,7 @@
+@import "../../../variables.scss";
 .list-pager {
-    background-color: black;
-    color: white;
+    background-color: $contrast-color;
+    color: $contrast-color-fg;
     display: flex;
     height: 30px;
     align-items: center;

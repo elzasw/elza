@@ -27,7 +27,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     }
 
     componentDidMount() {
-        super.componentDidMount();
+        super.componentDidMount()
+        this.resolveUrls()
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {

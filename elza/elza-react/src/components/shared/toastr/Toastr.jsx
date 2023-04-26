@@ -38,9 +38,9 @@ class Toastr extends AbstractReactComponent {
     static getIconStyle(style) {
         switch (style) {
             case 'success':
-                return <Icon glyph="fa-check" />;
+                return <Icon glyph="fa-check-circle" />;
             case 'warning':
-                return <Icon glyph="fa-exclamation" />;
+                return <Icon glyph="fa-exclamation-triangle" />;
             case 'info':
                 return <Icon glyph="fa-info-circle" />;
             case 'danger':

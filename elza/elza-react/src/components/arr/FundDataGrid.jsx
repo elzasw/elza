@@ -76,6 +76,20 @@ import {withRouter} from "react-router";
 import {storeSave} from "../../actions/store/storeEx";
 import {fundDataGridFilterSet} from "../../actions/arr/fundDataGrid";
 
+export const serializeJson = (json) => {
+    let s = JSON.stringify(json);
+    return json == null || s === '{}' ? null : btoa(encodeURIComponent(s));
+}
+
+export const deserializeJson = (str) => {
+    try {
+        return JSON.parse(decodeURIComponent(atob(str)));
+    } catch (e) {
+        console.warn("Data objektu se nepodařilo deserializovat", str);
+        return {}
+    }
+}
+
 class FundDataGrid extends AbstractReactComponent {
     dataGridRef = null;
 
@@ -132,29 +146,20 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.fetchData(this.props);
+        const {versionId, fundDataGrid} = this.props;
+        this.props.dispatch(fundDataGridFilterChange(versionId, this.getFilterFromUrl()));
 
+        this.fetchData(this.props);
         this.setState({}, this.resizeGrid);
 
         // Pokud je potřeba aktualizovat, aktualizujeme při přepnutí na grid, ale zachováme stránkování
-        const {versionId, fundDataGrid} = this.props;
         if (fundDataGrid.rowsDirty || fundDataGrid.filterDirty) {
             this.props.dispatch(fundDataGridRefreshRows(versionId));
         }
     }
 
     fetchData(props) {
-        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet, urlFilterEncoded} = props;
-
-        const filterStr = this.serializeFilter(fundDataGrid.filter);
-        if (urlFilterEncoded == null && filterStr !== null) {
-            this.setState({}, () => {
-                this.setFilterUrl(); // nastavujeme až se zpožděním kvůli aktualizaci store
-            })
-        } else if (urlFilterEncoded !== filterStr) {
-            const urlFilter = this.deserializeFilter(urlFilterEncoded);
-            this.props.dispatch(fundDataGridFilterSet(versionId, urlFilter));
-        }
+        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet, location} = props;
 
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(structureTypesFetchIfNeeded(this.props.versionId));
@@ -162,6 +167,7 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
         this.props.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
+
         // this.props.dispatch(refRuleSetFetchIfNeeded());
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
             // Prvotní inicializace zobrazení, pokud ještě grid nebyl zobrazem
@@ -199,14 +205,20 @@ class FundDataGrid extends AbstractReactComponent {
         }
     }
 
-    setFilterUrl = () => {
-        const {fundDataGrid, fund, history, dispatch} = this.props;
-        const encodeFilter = this.serializeFilter(fundDataGrid.filter);
-        let url = urlFundGrid(fund.id);
-        if (encodeFilter !== null) {
-            url = url + "?filter=" + encodeFilter;
-        }
-        dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
+    getFilterFromUrl = () => {
+        const {location} = this.props;
+
+        const params = new URLSearchParams(location.search);
+        const urlFilter = params.get("filter");
+
+        return urlFilter ? deserializeJson(urlFilter) : {};
+    }
+
+    setFilterUrl = (filter) => {
+        const {fund, history} = this.props;
+        const encodeFilter = serializeJson(filter);
+        let url = urlFundGrid(fund.id, undefined, encodeFilter);
+
         history.replace(url);
     }
 
@@ -608,30 +620,21 @@ class FundDataGrid extends AbstractReactComponent {
         );
     }
 
-    handleChangeFilter(versionId, refType, filter) {
-        this.props.dispatch(modalDialogHide());
-        this.props.dispatch(fundDataGridFilterChange(versionId, refType.id, filter));
-        this.setState({}, () => {
-            this.setFilterUrl(); // nastavujeme až se zpožděním kvůli aktualizaci store
-        })
-    }
+    handleChangeFilter(versionId, refType, _filter) {
+        const filter = {...(this.props.fundDataGrid?.filter || {})};
 
-    serializeFilter(filter) {
-        let s = JSON.stringify(filter);
-        return filter == null || s === '{}' ? null : btoa(s);
-    }
-
-    deserializeFilter(str) {
-        try {
-            return JSON.parse(atob(str));
-        } catch (e) {
-            console.log("Data filtru se nepodařilo deserializovat", str);
-            return {}
+        if (refType != null) {
+            // null je pro případ, kdy jen chceme aktualizovat data
+            if (filter && _filter) {
+                filter[refType.id] = _filter;
+            } else {
+                delete filter[refType.id];
+            }
         }
-    }
 
-    handleChangeStructValue(valueItems) {
-        this.setState({valueItems: valueItems});
+        this.props.dispatch(modalDialogHide());
+        this.props.dispatch(fundDataGridFilterChange(versionId, filter));
+        this.setFilterUrl(filter);
     }
 
     handleBulkModifications(refType, dataType) {
@@ -694,27 +697,13 @@ class FundDataGrid extends AbstractReactComponent {
                 }
             }
 
-            // Získání seznam specifikací
-            const refTypeX = {
-                ...refType,
-                descItemSpecs: [
-                    {
-                        id: FILTER_NULL_VALUE,
-                        name: i18n('arr.fund.filterSettings.value.empty'),
-                    },
-                    ...refType.descItemSpecs,
-                ],
-            };
-            let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
-            specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
-            let valuesIds = getValueIds(this.state.valueItems, data.values.type, data.values.ids);
             const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
             if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(
                         versionId,
                         refType.id,
-                        specsIds,
+                        data.specIds,
                         data.operationType,
                         data.findText,
                         replaceText,
@@ -722,7 +711,7 @@ class FundDataGrid extends AbstractReactComponent {
                         nodes,
                         selectionType,
                         data.replaceValueId,
-                        valuesIds,
+                        [],
                     ),
                 );
             }
@@ -740,7 +729,6 @@ class FundDataGrid extends AbstractReactComponent {
                     checkedItemsCount={fundDataGrid.selectedIds.length}
                     versionId={versionId}
                     structureTypes={structureTypes}
-                    onStructValueChange={this.handleChangeStructValue.bind(this)}
                 />,
             ),
         );
@@ -855,7 +843,7 @@ class FundDataGrid extends AbstractReactComponent {
             parentNode = createFundRoot(fund);
         }
 
-        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, true, null, true));
+        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, true, null, true, undefined, undefined, true));
     }
 
     handleFulltextChange(value) {
@@ -902,7 +890,7 @@ class FundDataGrid extends AbstractReactComponent {
             parentNode = createFundRoot(fund);
         }
 
-        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true));
+        this.props.dispatch(fundSelectSubNode(versionId, row.node.id, parentNode, false, null, true, undefined, undefined, true));
     }
 
     handleToggleExtendedSearch() {

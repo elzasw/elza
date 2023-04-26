@@ -10,18 +10,19 @@ import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.context.ApplicationContext;
 
+import cz.tacr.elza.config.export.ExportConfig;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.print.OutputContext;
 import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -29,7 +30,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import freemarker.cache.FileTemplateLoader;
@@ -52,25 +52,26 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               InstitutionRepository institutionRepository,
                               ApStateRepository apStateRepository,
                               ApBindingRepository bindingRepository,
-                              ApPartRepository partRepository,
                               ApItemRepository itemRepository,
                               ApBindingStateRepository bindingStateRepository,
                               ApIndexRepository indexRepository,
                               EntityManager em,
                               DmsService dmsService,
                               DaoLinkRepository daoLinkRepository,
-                              AccessPointCacheService accessPointCacheService) {
+                              ExportConfig exportConfig) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
-        outputModel = new OutputModel(staticDataService, elzaLocale,
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+
+        outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, accessPointCacheService, em);
+                daoLinkRepository, exportConfig, em);
     }
 
     @Override

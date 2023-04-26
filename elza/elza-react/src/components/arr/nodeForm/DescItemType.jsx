@@ -24,7 +24,7 @@ import './AbstractDescItem.scss';
 import {convertValue, validate} from '../../../stores/app/arr/subNodeForm';
 import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
-import {validateUnitDate} from '../../registry/field/UnitdateField';
+import {validateUnitDate, convertToEstimateWithConfirmation} from '../../registry/field/UnitdateField';
 import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
 import {registerField, unregisterField} from "../text-fragments";
@@ -387,13 +387,43 @@ class DescItemType extends AbstractReactComponent {
         this.props.onChangeSpec(descItemIndex, specId);
     }
 
+    interceptValue = async (value, rulDataType, descItemIndex) => {
+        const {dispatch} = this.props;
+        const { descItemType } = this.state;
+        const descItem = descItemType.descItems[descItemIndex];
+
+        if(rulDataType.code === 'UNITDATE'){
+            try {
+                const validated = validateUnitDate(value.value);
+
+                if(validated.valid){
+                    const newValue = await convertToEstimateWithConfirmation(value.value, dispatch)
+                    if(newValue){
+                        value.value = newValue;
+                    } else {
+                        const refObject = this.refObjects[descItem.formKey]
+                        if(refObject){
+                            refObject.focus();
+                        }
+                        return;
+                    }
+                }
+            } catch (e) { }
+        }
+
+        return value
+    }
+
     /**
      * Opuštení focusu hodnoty atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
-    handleBlur(descItemIndex) {
-        const {onBlur, onChange} = this.props;
-        const {value, error} = this.state;
+    async handleBlur(descItemIndex) {
+        const {onBlur, onChange, rulDataType} = this.props;
+        let {value, error} = this.state;
+
+        const newValue = await this.interceptValue(value, rulDataType, descItemIndex);
+        if(!newValue && newValue !== value){return;} // Cancel the value change when null
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
         value &&
@@ -942,17 +972,12 @@ class DescItemType extends AbstractReactComponent {
                 i18n('ap.coordinate.import.title'),
                 <ImportCoordinateModal
                     onSubmit={async formData => {
-                        const reader = new FileReader();
-                        reader.onload = async () => {
-                            const data = reader.result;
-                            try {
-                                const fieldValue = await WebApi.importApCoordinates(data, formData.format);
-                                this.setState({coordinatesUpload: fieldValue});
-                            } catch (e) {
-                                //notification.error({message: 'Nepodařilo se importovat souřadnice'});
-                            }
-                        };
-                        reader.readAsBinaryString(formData.file);
+                        try {
+                            const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
+                            this.setState({coordinatesUpload: fieldValue});
+                        } catch (e) {
+                            //notification.error({message: 'Nepodařilo se importovat souřadnice'});
+                        }
                     }}
                     onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
                 />,

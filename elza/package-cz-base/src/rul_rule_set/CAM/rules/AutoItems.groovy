@@ -180,8 +180,9 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
     // seznam zaniklých typů území
     List<String> disappearedTerritory = Arrays.asList(
         "GT_MUNIP",
+        "GT_MUNIPDISTR",
         "GT_MUNIPPART",
-        "GT_CITYDISTRICT",
+        "GT_CADASTRALTERRITORY",
         "GT_STREET",
         "GT_SQUARE",
         "GT_WATERFRONT",

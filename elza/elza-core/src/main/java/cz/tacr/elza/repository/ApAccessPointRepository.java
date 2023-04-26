@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
@@ -19,14 +20,10 @@ import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 @Repository
 public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
 
-    /**
-     * Najde heslo podle UUID.
-     *
-     * @param uuid
-     *            UUID
-     * @return rejstříkové heslo
-     */
     ApAccessPoint findAccessPointByUuid(String uuid);
+
+    @Query("SELECT a.accessPointId FROM ap_access_point a WHERE a.state = :state")
+    List<Integer> findAccessPointIdByState(@Param("state") ApStateEnum state);
 
     @Query("SELECT ap FROM ap_access_point ap WHERE ap.uuid IN :uuids")
     List<ApAccessPoint> findApAccessPointsByUuids(@Param("uuids") Collection<String> uuids);

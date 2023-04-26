@@ -18,7 +18,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 
@@ -28,13 +28,12 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * různé typy finální pomůcky (například manipulační seznam, inventární seznam, katalog v případě
  * ZP)
  *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "arr_fund_version")
 @Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFundVersion extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
+public class ArrFundVersion extends AbstractVersionableEntity implements Versionable, Serializable, ArrFundGetter {
 
     public static final String TABLE_NAME = "arr_fund_version";
 

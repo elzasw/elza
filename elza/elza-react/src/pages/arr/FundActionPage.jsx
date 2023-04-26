@@ -66,9 +66,10 @@ class FundActionPage extends ArrParentPage {
     }
 
     async componentDidMount() {
+        super.componentDidMount()
         const {dispatch, match, history} = this.props;
 
-        await super.componentDidMount();
+        await this.resolveUrls();
         dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props);
@@ -116,7 +117,7 @@ class FundActionPage extends ArrParentPage {
     }
 
     hasPageShowRights(userDetail, activeFund) {
-        return userDetail.hasFundActionPage(activeFund ? activeFund.id : null);
+        return userDetail.hasRdPage(activeFund ? activeFund.id : null);
     }
 
     handleRibbonFormClear() {

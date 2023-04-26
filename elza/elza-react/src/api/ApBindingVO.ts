@@ -1,6 +1,11 @@
 import {SyncState} from "./SyncState";
 import {ApBindingItemVO} from "./ApBindingItemVO";
 
+export enum SyncProgress {
+    UPLOAD_PENDING = "UPLOAD_PENDING",
+    UPLOAD_STARTED = "UPLOAD_STARTED",
+}
+
 export interface ApBindingVO {
 
     id: number;
@@ -22,6 +27,8 @@ export interface ApBindingVO {
     extReplacedBy?: string;
 
     detailUrlExtReplacedBy: string;
+
+    syncProgress: SyncProgress;
 
     syncState: SyncState;
 

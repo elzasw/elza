@@ -1,6 +1,7 @@
+@import "../../variables.scss";
 .scopes-permissions-container {
-    background-color: white;
-    border: 1px solid #ddd;
+    background-color: $shade-0;
+    border: 1px solid $border-color;
 
     .admin-rights-content {
         .admin-rights-right {
@@ -17,7 +18,7 @@
         border-width: 0 1px 0 0;
 
         &:focus {
-            border-color: #ddd !important; 
+            border-color: $border-color !important; 
             outline-width: 1px !important;
         }
         .listbox-container:focus {
