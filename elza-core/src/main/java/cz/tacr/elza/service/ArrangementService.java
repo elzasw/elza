@@ -1585,7 +1585,7 @@ public class ArrangementService {
      * <p>
      * Metoda je pouštěna po startu aplikačního serveru.
      */
-    @Transactional(value = Transactional.TxType.MANDATORY)
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void startNodeValidation() {
         Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
         Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
@@ -1595,7 +1595,7 @@ public class ArrangementService {
 
         // roztřídění podle AF
         for (ArrNode node : nodes) {
-            Integer fundId = node.getFund().getFundId();
+            Integer fundId = node.getFundId();
             List<ArrNode> addedNodes = fundNodesMap.get(fundId);
             if (addedNodes == null) {
                 addedNodes = new LinkedList<>();
@@ -1609,7 +1609,7 @@ public class ArrangementService {
 
         // vytvoření převodní mapy "id AF->verze AF"
         for (ArrFundVersion openVersion : openVersions) {
-            fundVersionMap.put(openVersion.getFund().getFundId(), openVersion);
+            fundVersionMap.put(openVersion.getFundId(), openVersion);
         }
 
         // projde všechny fondy
@@ -1624,7 +1624,8 @@ public class ArrangementService {
             }
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
-            logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
+            logger.info("Přidání uzlů do fronty pro zvalidování, fundId: {}, version: {}, count: {}",
+                        fundId, version.getFundVersionId(), entry.getValue().size());
             asyncRequestService.enqueue(version, entry.getValue());
         }
     }
