@@ -820,34 +820,6 @@ public class CamService {
     }
 
     /**
-     * Update accesspoint from WSDL/API
-     *
-     * @param procCtx
-     * @param syncRequests
-     */
-    public void updateAccessPoints(final ProcessingContext procCtx,
-                                   final List<SyncEntityRequest> syncRequests) {
-        if (CollectionUtils.isEmpty(syncRequests)) {
-            return;
-        }
-
-        for (SyncEntityRequest syncReq : syncRequests) {
-            Validate.notNull(syncReq.getBindingState());
-
-            synchronizeAccessPoint(procCtx, syncReq.getState(),
-                                   syncReq.getBindingState(),
-                                   null,
-                                   syncReq.getEntityXml(), false);
-        }
-
-        // kontrola datové struktury
-        if (checkDb) {
-            entityManager.flush();
-            accessPointService.checkConsistency();
-        }
-    }
-
-    /**
      * Příprava synchronizace Elza -> CAM
      *
      * @param extSyncsQueueItem

@@ -309,7 +309,7 @@ public class GroovyService {
                 if (dataTmp.getRecord() != null) {
                     intValue = dataTmp.getRecordId();
                     ApIndex index = apService.findPreferredPartIndex(intValue);
-                    value = index == null? null : index.getValue();
+                    value = index == null? null : index.getIndexValue();
                     accessPoint = accessPointCacheService.findCachedAccessPoint(intValue);
                 } else if (dataTmp.getBinding() != null) {
                     value = dataTmp.getBinding().getValue();
