@@ -103,4 +103,20 @@ $rowHeight: 24px;
             }
         }
     }
+
+}
+
+.horizontal-radio {
+    display: flex;
+    margin-bottom: 10px;
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-right: 15px;
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
 }
