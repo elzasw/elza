@@ -3445,7 +3445,7 @@ public class AccessPointService {
         ApIndex indexTo = new ApIndex();
         indexTo.setIndexType(index.getIndexType());
         indexTo.setPart(partTo);
-        indexTo.setValue(index.getValue());
+        indexTo.setIndexValue(index.getIndexValue());
         return indexRepository.save(indexTo);
     }
 

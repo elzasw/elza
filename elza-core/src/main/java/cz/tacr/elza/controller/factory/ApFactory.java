@@ -319,7 +319,7 @@ public class ApFactory {
                 .findPartIndexByAccessPointsAndPartTypeAndIndexType(Collections.singletonList(ap),
                                                                     sdp.getDefaultBodyPartType(), DISPLAY_NAME);
         ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
-        String description = bodyPartDisplayName != null ? bodyPartDisplayName.getValue() : null;
+        String description = bodyPartDisplayName != null ? bodyPartDisplayName.getIndexValue() : null;
 
         List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
         List<Integer> replacedIds = states.stream().map(s -> s.getAccessPointId()).collect(Collectors.toList());

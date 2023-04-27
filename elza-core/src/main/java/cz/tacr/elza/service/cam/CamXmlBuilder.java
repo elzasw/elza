@@ -80,7 +80,7 @@ import cz.tacr.elza.service.GroovyService;
 abstract public class CamXmlBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(CamXmlBuilder.class);
-    
+
     final protected static ObjectFactory objectFactory = CamUtils.getObjectFactory();
 
     protected final StaticDataProvider sdp;
@@ -104,7 +104,7 @@ abstract public class CamXmlBuilder {
     /**
      * Map of new UUIDS for parts
      */
-    private Map<Integer, String> partUuids = new HashMap<>();    
+    private Map<Integer, String> partUuids = new HashMap<>();
 
     public Map<Integer, String> getItemUuids() {
         return itemUuids;
@@ -127,7 +127,7 @@ abstract public class CamXmlBuilder {
         this.apDataService = apDataService;
         this.scope = scope;
     }
-	
+
     protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList) {
         NewItemsXml newItems = new NewItemsXml();
         newItems.setPid(new UuidXml(changedPart.getValue()));
@@ -172,7 +172,7 @@ abstract public class CamXmlBuilder {
             // sub parts will be added at the end
             adjustedPartList.addAll(subparts);
         }
-        
+
         // if no parts available -> create item without parts
         List<PartXml> partxmlList = createNewParts(null, adjustedPartList, itemMap, indexMap);
         // if no parts available -> return null
@@ -190,7 +190,7 @@ abstract public class CamXmlBuilder {
 
     /**
      * Create list of new parts
-     * 
+     *
      * @param partList
      * @param itemMap
      * @param indexMap
@@ -205,7 +205,7 @@ abstract public class CamXmlBuilder {
         }
 
         // collection of available parts for export
-        // note: if parent part is deleted, subparts may still be 
+        // note: if parent part is deleted, subparts may still be
         //       included in partList, these parts without parent
         //       parts have to be filtered out.
         Set<String> availableParts = new HashSet<>();
@@ -261,14 +261,14 @@ abstract public class CamXmlBuilder {
 
             List<Object> items = new ArrayList<>();
             items.add(new ItemEnumXml(new CodeXml("CAM_REAL_ID"), new CodeXml("IDN_TYPE"), new UuidXml(UUID.randomUUID().toString())));
-            items.add(new ItemStringXml(new StringXml(bindingValue), null, new CodeXml("IDN_VALUE"), new UuidXml(UUID.randomUUID().toString()))); 
+            items.add(new ItemStringXml(new StringXml(bindingValue), null, new CodeXml("IDN_VALUE"), new UuidXml(UUID.randomUUID().toString())));
             ItemsXml itemsXml = new ItemsXml(items);
-    
+
             PartXml partXml = new PartXml();
             partXml.setT(PartTypeXml.PT_IDENT);
             partXml.setPid(new UuidXml(UUID.randomUUID().toString()));
             partXml.setItms(itemsXml);
-    
+
             partXmlList.add(partXml);
         }
 
@@ -342,34 +342,34 @@ abstract public class CamXmlBuilder {
 		if(item instanceof ItemStringXml ) {
 			ItemStringXml its = (ItemStringXml)item;
 			removeItemByUuid(its.getUuid().getValue());
-		} else 
+		} else
 		if(item instanceof ItemIntegerXml) {
 			ItemIntegerXml ix = (ItemIntegerXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemBooleanXml) {
 			ItemBooleanXml ix = (ItemBooleanXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemBinaryXml) {
 			ItemBinaryXml ix = (ItemBinaryXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemEntityRefXml) {
 			ItemEntityRefXml ix = (ItemEntityRefXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemEnumXml) {
 			ItemEnumXml ix = (ItemEnumXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemUnitDateXml) {
 			ItemUnitDateXml ix = (ItemUnitDateXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
-		} else 
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
 		if(item instanceof ItemLinkXml) {
 			ItemLinkXml ix = (ItemLinkXml)item;
-			removeItemByUuid(ix.getUuid().getValue());			
+			removeItemByUuid(ix.getUuid().getValue());
 		} else {
 			throw new IllegalStateException("Unrecognized item type: "+ item.getClass().toString()
 					+", item: "+item);
@@ -377,7 +377,7 @@ abstract public class CamXmlBuilder {
 	}
 
 	/**
-	 * Remove previously prepared XML item 
+	 * Remove previously prepared XML item
 	 * @param uuid
 	 */
 	private void removeItemByUuid(String uuid) {
@@ -386,12 +386,12 @@ abstract public class CamXmlBuilder {
 				itemUuids.remove(ep.getKey());
 				break;
 			}
-		}	
+		}
 	}
 
 	/**
      * Create part
-     * 
+     *
      * @param apPart
      * @param partItems
      * @param partIndexes
@@ -426,7 +426,7 @@ abstract public class CamXmlBuilder {
             for (ApIndex partIndex : partIndexes) {
                 ItemStringXml isx = new ItemStringXml();
                 isx.setT(new CodeXml(partIndex.getIndexType()));
-                isx.setValue(new StringXml(partIndex.getValue()));
+                isx.setValue(new StringXml(partIndex.getIndexValue()));
                 eresult.add(isx);
             }
             partXml.setEits(eitems);
@@ -445,7 +445,7 @@ abstract public class CamXmlBuilder {
 
     /**
      * Fill list of XML items
-     * 
+     *
      * @param itemList
      * @param binding
      * @param sdp
@@ -464,9 +464,9 @@ abstract public class CamXmlBuilder {
 
     /**
      * Return Uuid for given part
-     * 
+     *
      * @param apPart
-     * 
+     *
      * @return
      */
     protected String getUuidForPart(ApPart apPart) {
@@ -482,7 +482,7 @@ abstract public class CamXmlBuilder {
 
     /**
      * Metoda odfiltruje itemy, které nemají mapování v externím systému
-     * 
+     *
      * @param part
      *
      * @param itemList
@@ -555,7 +555,7 @@ abstract public class CamXmlBuilder {
         itemCoordinates.setUuid(uuidXml);
         return itemCoordinates;
     }
-    
+
     /*
     protected EntityRecordRefXml createEntityRef(ArrDataRecordRef dataRecordRef) {
         // create record ref only for records with same binding
@@ -568,9 +568,9 @@ abstract public class CamXmlBuilder {
         return entityRecordRef;
     }
     */
-    
+
     abstract protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef);
-    
+
     private ItemEntityRefXml convertEntityRef(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
                                                      UuidXml uuidXml) {
         if (!(data instanceof ArrDataRecordRef)) {

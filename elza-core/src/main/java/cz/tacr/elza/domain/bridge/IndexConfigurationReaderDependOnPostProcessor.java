@@ -1,7 +1,7 @@
 package cz.tacr.elza.domain.bridge;
 
 import cz.tacr.elza.service.SpringContext;
-import org.springframework.boot.autoconfigure.data.jpa.EntityManagerFactoryDependsOnPostProcessor;
+import org.springframework.boot.autoconfigure.orm.jpa.EntityManagerFactoryDependsOnPostProcessor;
 import org.springframework.context.annotation.Configuration;
 
 /**
