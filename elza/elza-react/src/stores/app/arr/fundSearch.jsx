@@ -1,8 +1,10 @@
-import {indexById} from 'stores/app/utils';
+import { indexById } from 'stores/app/utils';
 import * as types from './../../../actions/constants/ActionTypes';
+import { getDataKey } from 'actions/arr/fundSearch';
 
 const initialState = {
     fulltext: '',
+    isIdSearch: false,
     funds: [],
     isFetching: false,
     fetched: false,
@@ -21,11 +23,15 @@ export default function fundSearch(state = initialState, action = {}) {
     switch (action.type) {
         case types.FUND_SEARCH_FULLTEXT_CHANGE: {
             if (action.fulltext === '') {
-                return initialState;
+                return {
+                    ...initialState,
+                    isIdSearch: state.isIdSearch,
+                };
             } else {
                 return {
                     ...state,
-                    fulltext: action.fulltext,
+                    fulltext: action.fulltext != undefined ? action.fulltext : state.fulltext,
+                    isIdSearch: action.isIdSearch != undefined ? action.isIdSearch : state.isIdSearch,
                 };
             }
         }
@@ -33,7 +39,7 @@ export default function fundSearch(state = initialState, action = {}) {
             return {
                 ...state,
                 isFetching: true,
-                currentDataKey: action.fulltext,
+                currentDataKey: getDataKey(state.fulltext, state.isIdSearch),
             };
         }
         case types.FUND_SEARCH_FULLTEXT_RECEIVE: {
@@ -52,9 +58,9 @@ export default function fundSearch(state = initialState, action = {}) {
         case types.FUND_SEARCH_EXPAND_FUND: {
             index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
-            const {fund} = action;
+            const { fund } = action;
 
-            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded});
+            Object.assign(newFunds[index], { ...fund, expanded: !fund.expanded });
 
             return {
                 ...state,
@@ -65,7 +71,7 @@ export default function fundSearch(state = initialState, action = {}) {
             index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
 
-            Object.assign(newFunds[index], {...action.fund, isFetching: true});
+            Object.assign(newFunds[index], { ...action.fund, isFetching: true });
 
             return {
                 ...state,
@@ -76,7 +82,7 @@ export default function fundSearch(state = initialState, action = {}) {
             index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
 
-            Object.assign(newFunds[index], {...action.fund, isFetching: false, fetched: true, nodes: action.nodes});
+            Object.assign(newFunds[index], { ...action.fund, isFetching: false, fetched: true, nodes: action.nodes });
 
             return {
                 ...state,
