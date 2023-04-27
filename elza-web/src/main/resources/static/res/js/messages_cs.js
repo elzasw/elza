@@ -740,6 +740,9 @@ var messages = {
     "arr.fund.deleteNode.noSibling": "Nebyli nalezeni žádní další sourozencí. Byl vybrán rodič.",
     "arr.fund.deleteNode.confirm": "Opravdu chcete smazat tuto jednotku popisu?",
 
+    "arr.fund.search.fulltext": "Fulltext",
+    "arr.fund.search.id": "ID/UUID",
+
     "arr.movements.move.under": "Přesunout pod",
     "arr.movements.move.before": "Přesunout před",
     "arr.movements.move.after": "Přesunout za",
@@ -1389,8 +1392,8 @@ var messages = {
     "admin.extSystem.password": "Heslo",
     "admin.extSystem.elzaCode": "Kód ELZA",
     "admin.extSystem.publishOnlyApproved": "Odeslání jen schválených",
-    "admin.extSystem.publishOnlyApproved.true":"Ano",
-    "admin.extSystem.publishOnlyApproved.false":"Ne",
+    "admin.extSystem.publishOnlyApproved.true": "Ano",
+    "admin.extSystem.publishOnlyApproved.false": "Ne",
     "admin.extSystem.userInfo": "Autor změny - šablona",
     "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele",
     "admin.extSystem.type": "Typ",

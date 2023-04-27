@@ -70,7 +70,7 @@ export interface SimpleList<T> {
     sourceRows: T[];
 }
 
-export interface AdminFundsFilter extends SimpleListFilter {}
+export interface AdminFundsFilter extends SimpleListFilter { }
 
 export interface AdminFunds {
     count?: number;
@@ -148,6 +148,10 @@ export interface NodesState {
     nodes: Node[];
 }
 
+export interface FundTree {
+    expandedIds: unknown[]
+}
+
 export interface Fund {
     activeVersion: unknown;
     apScopes: unknown;
@@ -165,7 +169,7 @@ export interface Fund {
     fundNodesPolicy: unknown;
     fundNumber: unknown | null;
     fundOutput: unknown;
-    fundTree: unknown;
+    fundTree: FundTree;
     fundTreeDaosLeft: unknown;
     fundTreeDaosRight: unknown;
     fundTreeMovementsLeft: unknown;
@@ -220,11 +224,43 @@ export interface VisiblePolicy {
     fetching: boolean;
 }
 
+export interface FundSearchNodeType {
+    arrPerm: boolean;
+    depth: number;
+    hasChildren: boolean;
+    icon: string;
+    id: number;
+    name: string;
+    referenceMark: string[];
+    version: number;
+}
+
+export interface FundSearchFundType {
+    count: number;
+    expanded: boolean;
+    fetched: boolean;
+    isFetching: boolean;
+    fundVersionId: number;
+    icon: string;
+    id: number;
+    internalCode: string | null;
+    name: string;
+    nodes: FundSearchNodeType[];
+}
+
+export interface FundSearch {
+    fulltext: string;
+    funds: FundSearchFundType[];
+    fetched: boolean;
+    isFetching: boolean;
+    isIdSearch: boolean;
+}
+
 export interface ArrRegion {
     activeIndex: number | null;
     customFund: unknown;
     extendedView?: boolean;
-    fundSearch: unknown;
+    fundSearch: FundSearch;
     funds: Fund[];
     globalFundTree: unknown;
     nodeSettings: unknown;
