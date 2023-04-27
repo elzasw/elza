@@ -22,7 +22,7 @@ interface Props {
     onSubmit: (data: SubmitDataType) => void;
 }
 
-export const SelectSearchFundsFormFn = ({ onSubmit }: Props) => {
+export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const dispatch = useThunkDispatch();
     const arrRegion = useSelector(({ arrRegion }: AppState) => (arrRegion));
