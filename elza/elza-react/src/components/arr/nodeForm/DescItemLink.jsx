@@ -9,7 +9,7 @@ import DescItemLabel from './DescItemLabel.jsx';
 import { IDescItemBaseProps } from 'components/arr/nodeForm/DescItemTypes';
 import Icon from '../../shared/icon/Icon';
 import { Button } from 'react-bootstrap';
-import { SelectSearchFundsFormFn as SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
+import { SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
 import { modalDialogHide, modalDialogShow } from '../../../actions/global/modalDialog';
 import { WebApi } from '../../../actions';
 import { CLS_CALCULABLE, ELZA_SCHEME_NODE } from '../../../constants';
