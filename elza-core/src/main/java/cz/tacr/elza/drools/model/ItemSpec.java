@@ -1,25 +1,21 @@
 package cz.tacr.elza.drools.model;
 
+import cz.tacr.elza.domain.RulItemSpec;
+
 public class ItemSpec {
 
-    private Integer id;
-    private String code;
+    final private RulItemSpec itemSpec;
     private boolean repeatable;
     private RequiredType requiredType;
 
-    public ItemSpec(final Integer id, final String code) {
-        this.id = id;
-        this.code = code;
+    public ItemSpec(final RulItemSpec itemSpec) {
+        this.itemSpec = itemSpec;
         this.repeatable = false;
         this.requiredType = RequiredType.IMPOSSIBLE;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
     public String getCode() {
-        return code;
+        return itemSpec.getCode();
     }
 
     public RequiredType getRequiredType() {
@@ -48,5 +44,9 @@ public class ItemSpec {
 
     public void setRepeatable(boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    public RulItemSpec getItemSpec() {
+        return itemSpec;
     }
 }

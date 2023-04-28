@@ -105,7 +105,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -1142,12 +1141,12 @@ public class ApController {
         for (cz.tacr.elza.drools.model.ItemType itemType : modelAvailable.getItemTypes()) {
             if (itemType.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE) {
                 ApCreateTypeVO createTypeVO = new ApCreateTypeVO();
-                createTypeVO.setItemTypeId(itemType.getId());
+                createTypeVO.setItemTypeId(itemType.getItemType().getItemTypeId());
                 createTypeVO.setRepeatable(itemType.isRepeatable());
                 createTypeVO.setRequiredType(RequiredType.fromValue(itemType.getRequiredType().name()));
                 List<Integer> specIds = itemType.getSpecs().stream()
                         .filter(s -> s.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE)
-                        .map(ItemSpec::getId)
+                        .map(s -> s.getItemSpec().getItemSpecId())
                         .collect(Collectors.toList());
                 createTypeVO.setItemSpecIds(specIds);
                 result.add(createTypeVO);

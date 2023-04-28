@@ -58,12 +58,15 @@ public class AccessPointGeneratorService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
         accessPointService.lockWrite(accessPoint);
 
-        List<ApPart> partList = cap.getApParts();
-        Map<Integer, List<ApItem>> itemMap = cap.getApItemMap();
-
-        /*
-        // old implementation based on raw DB data        
+        // Read parts from DB
+        // Part state might be modified and we need to have fresh data
+        // In some future version we might use data from cache:  
+        //    List<ApPart> partList = cap.getApParts();
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
+        // Items are not modified, we may use cache version
+        Map<Integer, List<ApItem>> itemMap = cap.getApItemMap();
+        /*
+        // old implementation based on raw DB data                
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
          */

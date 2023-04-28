@@ -58,6 +58,7 @@ import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -135,7 +136,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class, SyncState.class,
+                String.class, Number.class, Boolean.class, Iterable.class,
+                // Domain specific enums
+                SyncState.class, ApStateEnum.class,
                 LocalDate.class, LocalDateTime.class));
     }
 
@@ -616,7 +619,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             List<ApPart> apParts = new ArrayList<>(cap.getParts().size());
         	
             for (CachedPart part : cap.getParts()) {
-                // ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
                 ApPart apPart = new ApPart();
                 apPart.setAccessPoint(ap);
                 apPart.setCreateChange(entityManager.getReference(ApChange.class, part.getCreateChangeId()));
@@ -634,6 +636,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 apPart.setLastChange(entityManager.getReference(ApChange.class, part.getLastChangeId()));
                 apPart.setPartId(part.getPartId());
                 apPart.setPartType(sdp.getPartTypeByCode(part.getPartTypeCode()));
+                // State cannot be null
+                if (part.getState() == null) {
+                    Validate.notNull(part.getState(), "Part state is null, accessPointId: %s, partId: %s",
+                                     ap.getAccessPointId(),
+                                     part.getPartId());
+                }
                 apPart.setState(part.getState());
 
                 apParts.add(apPart);
