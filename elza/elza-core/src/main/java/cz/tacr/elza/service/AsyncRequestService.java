@@ -222,6 +222,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return;
         }
         int pri = priority == null ? 1 : priority;
+        // read access points
         List<ArrAsyncRequest> requests = new ArrayList<>(accessPointIds.size());
         for (Integer accessPointId : accessPointIds) {
             ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId),
@@ -229,6 +230,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             requests.add(request);
         }
         dispatchRequests(AsyncTypeEnum.AP, requests);
+
     }
 
     private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
