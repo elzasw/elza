@@ -283,24 +283,24 @@ public abstract class AsyncExecutor {
 
     public void onFail(IAsyncWorker worker, final Throwable error) {
         IAsyncRequest request = worker.getRequest();
-        logger.error("Selhání requestu {}", request, error);
+        logger.error("Request failed: {}", request, error);
 
         synchronized (lockQueue) {
             countRequest();
-            processing.removeIf(r -> r.getRequest().getRequestId().equals(request.getRequestId()));
+            processing.remove(worker);
             deleteRequests(worker.getRequests());
             scheduleNext();
         }
     }
 
     public void onSuccess(IAsyncWorker worker) {
-        IAsyncRequest request = worker.getRequest();
-        logger.debug("Dokončení requestu {}", request);
+        List<? extends IAsyncRequest> requests = worker.getRequests();
+        logger.debug("Finished requests({}): {}", requests.size(), requests);
 
         synchronized (lockQueue) {
             countRequest();
-            processing.removeIf(r -> r.getRequest().getRequestId().equals(request.getRequestId()));
-            deleteRequests(worker.getRequests());
+            processing.remove(worker);
+            deleteRequests(requests);
             scheduleNext();
         }
     }
@@ -466,7 +466,7 @@ public abstract class AsyncExecutor {
         if (skip(request)) {
             skipped.add(request); // přidání do fronty na přeskočení
         } else {
-            logger.debug("Přidání do fronty: {}", request);
+            logger.debug("Přidán do fronty (v paměti): {}", request);
             queue.add(request);
         }
     }
@@ -506,9 +506,12 @@ public abstract class AsyncExecutor {
     }
 
     /**
-     * Hromadné přidání požadavků.
+     * Hromadné přidání požadavků do paměťové fronty
+     * 
+     * Metoda naplánuje požadavky po commitu.
      *
-     * @param requests požadavky na zpracování
+     * @param requests
+     *            požadavky na zpracování
      */
     public void enqueue(final Collection<IAsyncRequest> requests) {
         // přidáváme až po úspěšném dokončení probíhající transakce
