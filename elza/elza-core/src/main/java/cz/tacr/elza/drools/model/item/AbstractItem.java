@@ -1,17 +1,22 @@
 package cz.tacr.elza.drools.model.item;
 
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+
 public abstract class AbstractItem {
 
     private Integer id;
-    private String type;
-    private String spec;
-    private String dataType;
+    private ItemType itemType;
+    private RulItemSpec spec;
 
-    AbstractItem(final Integer id, final String type, final String spec, final String dataType) {
+    AbstractItem(final Integer id, final ItemType itemType, final RulItemSpec itemSpec) {
+        Validate.notNull(itemType);
+
         this.id = id;
-        this.type = type;
-        this.spec = spec;
-        this.dataType = dataType;
+        this.itemType = itemType;
+        this.spec = itemSpec;
     }
 
     public Integer getId() {
@@ -19,14 +24,24 @@ public abstract class AbstractItem {
     }
 
     public String getType() {
-        return type;
+        return itemType.getCode();
+    }
+
+    public ItemType getItemType() {
+        return itemType;
     }
 
     public String getSpec() {
-        return spec;
+        if (spec == null) {
+            return null;
+        } else {
+            return spec.getCode();
+        }
     }
 
+    // TODO: Method is probably never used and could be removed
+    //       We have to check rules
     public String getDataType() {
-        return dataType;
+        return itemType.getDataType().getCode();
     }
 }

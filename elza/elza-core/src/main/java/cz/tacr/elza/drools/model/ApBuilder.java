@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.common.GeometryConvertor;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -34,6 +33,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
@@ -86,82 +86,74 @@ public class ApBuilder {
 
     private AbstractItem createItem(ApItem item) {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-        DataType dataType = itemType.getDataType();
-        String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode() : null;
+        RulItemSpec itemSpec = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()) : null;
 
-        return createItem(item.getObjectId(), item.getItemId(), dataType, itemType, itemSpecCode, item.getData());
+        return createItem(item.getObjectId(), item.getItemId(), itemType, itemSpec, item.getData());
     }
 
     private AbstractItem createItem(ApRevItem revItem) {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(revItem.getItemTypeId());
-        DataType dataType = itemType.getDataType();
-        String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId()).getCode() : null;
+        RulItemSpec itemSpec = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId())
+                : null;
         int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();  
 
-        return createItem(objectId, null, dataType, itemType, itemSpecCode, revItem.getData());
+        return createItem(objectId, null, itemType, itemSpec, revItem.getData());
     }
 
     private AbstractItem createItem(Integer objectId,
                                     Integer itemId,
-                                    DataType dataType,
                                     cz.tacr.elza.core.data.ItemType itemType,
-                                    String itemSpecCode,
+                                    RulItemSpec itemSpec,
                                     ArrData data) {
 
-        String itemTypeCode = itemType.getCode();
         AbstractItem abstractItem;
-        switch (dataType) {
+        switch (itemType.getDataType()) {
         case ENUM:
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), itemSpecCode);
+            abstractItem = new Item(itemId, itemType, itemSpec, (itemSpec != null) ? itemSpec.getCode() : null);
             break;
         case BIT:
             ArrDataBit aeDataBit = (ArrDataBit) data;
-            abstractItem = new BoolItem(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), aeDataBit
-                    .getValueBoolean());
+            abstractItem = new BoolItem(itemId, itemType, itemSpec, aeDataBit.getValueBoolean());
             break;
         case RECORD_REF:
             ArrDataRecordRef aeDataRecordRef = (ArrDataRecordRef) data;
-            abstractItem = new IntItem(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), aeDataRecordRef
-                    .getRecordId());
+            abstractItem = new IntItem(itemId, itemType, itemSpec, aeDataRecordRef.getRecordId());
             break;
         case COORDINATES:
             ArrDataCoordinates aeDataCoordinates = (ArrDataCoordinates) data;
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), GeometryConvertor
-                    .convert(aeDataCoordinates.getValue()));
+            abstractItem = new Item(itemId, itemType, itemSpec, GeometryConvertor.convert(aeDataCoordinates
+                    .getValue()));
             break;
         case INT:
             ArrDataInteger aeDataInteger = (ArrDataInteger) data;
-            abstractItem = new IntItem(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), aeDataInteger
-                    .getValueInt());
+            abstractItem = new IntItem(itemId, itemType, itemSpec, aeDataInteger.getValueInt());
             break;
         case STRING:
             ArrDataString aeDataString = (ArrDataString) data;
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), aeDataString
-                    .getStringValue());
+            abstractItem = new Item(itemId, itemType, itemSpec, aeDataString.getStringValue());
             break;
         case TEXT:
             ArrDataText aeDataText = (ArrDataText) data;
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), aeDataText
-                    .getTextValue());
+            abstractItem = new Item(itemId, itemType, itemSpec, aeDataText.getTextValue());
             break;
         case UNITDATE:
             ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) data;
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), UnitDateConvertor
-                    .convertToString(aeDataUnitdate));
+            abstractItem = new Item(itemId, itemType, itemSpec, UnitDateConvertor.convertToString(aeDataUnitdate));
             break;
         case URI_REF:
             ArrDataUriRef arrDataUriRef = (ArrDataUriRef) data;
-            abstractItem = new Item(itemId, itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef
-                    .getUriRefValue());
+            abstractItem = new Item(itemId, itemType, itemSpec, arrDataUriRef.getUriRefValue());
             break;
         default:
-            throw new SystemException("Invalid data type (RulItemType.DataType) " + dataType.getCode(), INVALID_STATE);
+            throw new SystemException("Invalid data type (RulItemType.DataType) " + itemType.getDataType().getCode(),
+                    INVALID_STATE);
         }
 
         AbstractItem prevAbstrItem = objectIdItemMap.put(objectId, abstractItem);
         if (prevAbstrItem != null) {
-            logger.error("Item nesmí být dvakrát, objectId: {}, itemId: {}, dataType: {}", objectId, itemId, dataType);
-            throw new SystemException("Item can't be twice, objectId: " + objectId + ", itemId: " + itemId + ", fataType: " + dataType, INVALID_STATE);
+            logger.error("Item nesmí být dvakrát, objectId: {}, itemId: {}", objectId, itemId);
+            throw new SystemException("Item can't be twice, objectId: " + objectId + ", itemId: " + itemId,
+                    INVALID_STATE);
         }
 
         return abstractItem;
@@ -199,16 +191,25 @@ public class ApBuilder {
             abstractItemList.add(createItem(item));
         }
 
-        Integer parentPartId = part.getParentPartId();
         boolean preferred = part.getPartId().equals(preferredPartId);
         Part result = new Part(part.getPartId(), 
                                PartType.fromValue(part.getPartTypeCode()), 
-                               abstractItemList, partIdMap.get(parentPartId), preferred);
+                abstractItemList, null, preferred);
         this.parts.add(result);
         this.partIdMap.put(part.getPartId(), result);
         return result;
     }
 
+    /**
+     * Create part and store it in the map
+     * 
+     * Maps are created without parent. Use later method to
+     * set parent mapping.
+     * 
+     * @param apPart
+     * @param itemList
+     * @return
+     */
     private Part createPart(ApPart apPart, List<ApItem> itemList) {
         List<AbstractItem> abstractItemList = new ArrayList<>();
 
@@ -218,11 +219,10 @@ public class ApBuilder {
             }
         }
 
-        Integer parentPartId = apPart.getParentPartId();
         boolean preferred = apPart.getPartId().equals(preferredPartId);
         Part result = new Part(apPart.getPartId(),
-                               PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
-                               abstractItemList, partIdMap.get(parentPartId), preferred);
+                PartType.fromValue(sdp.getPartTypeById(apPart.getPartTypeId()).getCode()),
+                abstractItemList, null, preferred);
         this.parts.add(result);
         this.partIdMap.put(result.getId(), result);
         return result;
@@ -239,7 +239,10 @@ public class ApBuilder {
             createPart(part);
         }
 
-        fillParentParts();
+        // Fill parent parts
+        for (CachedPart srcPart : cachedAcessPoint.getParts()) {
+            fillParentPart(srcPart.getPartId(), srcPart.getParentPartId());
+        }
     }
 
     public void setAccessPoint(ApState apState, List<ApPart> apParts, List<ApItem> itemList) {
@@ -251,17 +254,30 @@ public class ApBuilder {
             createPart(apPart, itemList);
         }
 
-        fillParentParts();
+        // Fill parent parts
+        for (ApPart srcPart : apParts) {
+            fillParentPart(srcPart.getPartId(), srcPart.getParentPartId());
+        }
     }
 
-    private void fillParentParts() {
-        for (Part part : parts) {
-            if (part.getParentPartId() != null) {
-                Part parentPart = partIdMap.get(part.getParentPartId());
-                Validate.notNull(parentPart);
-                part.setParent(parentPart);
-            }
+    /**
+     * Fill parts with parent links
+     * 
+     * Method is used after all parts are ready
+     * 
+     * @param partId
+     * @param parentPartId
+     */
+    private void fillParentPart(Integer partId, Integer parentPartId) {
+        if (parentPartId == null) {
+            return;
         }
+
+        Part part = partIdMap.get(partId);
+        Validate.notNull(part, "Part not found, partId: %s", partId);
+        Part parentPart = partIdMap.get(parentPartId);
+        Validate.notNull(parentPart, "Parent part not found, parentPartId: %s", parentPartId);
+        part.setParent(parentPart);
     }
 
     public void setAeType(Integer apTypeId) {
@@ -410,14 +426,18 @@ public class ApBuilder {
 
     private Part getParentPart(ApRevPart revPart) {
         Integer parentPartId = revPart.getParentPartId();
-        Integer revParentPartId = revPart.getRevParentPartId(); 
+        Integer revParentPartId = revPart.getRevParentPartId();
+
+        Part result = null;
         if (parentPartId != null) {
-            return partIdMap.get(parentPartId);
-        }
+            result = partIdMap.get(parentPartId);
+            Validate.notNull(result, "Missing parent part, parentPartId: %s", parentPartId);
+        } else
         if (revParentPartId != null) {
-            return revPartIdMap.get(revParentPartId);
+            result = revPartIdMap.get(revParentPartId);
+            Validate.notNull(result, "Missing rev. parent part, revParentPartId: %s", revParentPartId);
         }
-        return null;
+        return result;
     }
 
     public Part getPartByRevPartId(Integer revPartId) {
