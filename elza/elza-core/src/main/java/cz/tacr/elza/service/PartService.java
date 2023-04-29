@@ -488,7 +488,7 @@ public class PartService {
                 logger.warn("Archivní entita id " + accessPoint.getAccessPointId() + " má referenci sama na sebe!");
             }
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
-                asyncRequestService.enqueue(accessPointIds);
+                asyncRequestService.enqueueAp(accessPointIds);
             }
         }
     }

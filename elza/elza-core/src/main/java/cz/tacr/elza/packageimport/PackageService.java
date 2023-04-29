@@ -710,7 +710,7 @@ public class PackageService {
         IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
         processIssueStates(issueStates, rulPackage);
 
-        asyncRequestService.enqueue(accessPoints);
+        asyncRequestService.enqueueAp(accessPoints);
 
         entityManager.flush();
 

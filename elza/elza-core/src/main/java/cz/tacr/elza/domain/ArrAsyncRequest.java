@@ -1,11 +1,24 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.domain.enumeration.StringLength;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang3.Validate;
 
-import javax.persistence.*;
-import javax.persistence.criteria.Fetch;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name="arr_async_request")
 @Table
@@ -30,9 +43,15 @@ public class ArrAsyncRequest {
     @JoinColumn(name="fund_version_id", nullable = true)
     private ArrFundVersion fundVersion;
 
+    @Column(name = "fund_version_id", updatable = false, insertable = false)
+    private Integer fundVersionId;
+
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name="node_id", nullable = true)
     private ArrNode node;
+
+    @Column(name = "node_id", updatable = false, insertable = false)
+    private Integer nodeId;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
     @JoinColumn(name="output_id", nullable = true)
@@ -97,6 +116,7 @@ public class ArrAsyncRequest {
         this.type = AsyncTypeEnum.BULK;
         this.priority = priority;
         this.fundVersion = fundVersion;
+        this.fundVersionId = (fundVersion != null) ? fundVersion.getFundVersionId() : null;
         this.bulkAction = bulkAction;
     }
 
@@ -106,7 +126,9 @@ public class ArrAsyncRequest {
         this.type = AsyncTypeEnum.NODE;
         this.priority = priority;
         this.fundVersion = fundVersion;
+        this.fundVersionId = (fundVersion != null) ? fundVersion.getFundVersionId() : null;
         this.node = node;
+        this.nodeId = (node != null) ? node.getNodeId() : null;
     }
 
     protected ArrAsyncRequest(final ArrFundVersion fundVersion,
@@ -116,6 +138,7 @@ public class ArrAsyncRequest {
         this.type = AsyncTypeEnum.OUTPUT;
         this.priority = priority;
         this.fundVersion = fundVersion;
+        this.fundVersionId = (fundVersion != null) ? fundVersion.getFundVersionId() : null;
         this.output = output;
         this.userId = userId;
     }
@@ -155,16 +178,30 @@ public class ArrAsyncRequest {
         return fundVersion;
     }
 
+    public Integer getFundVersionId() {
+        return fundVersionId;
+    }
+
     public void setFundVersion(ArrFundVersion fundVersion) {
         this.fundVersion = fundVersion;
+        this.fundVersionId = (fundVersion != null) ? fundVersion.getFundVersionId() : null;
+    }
+
+    public void setFundVersionId(Integer fundVersionId) {
+        this.fundVersionId = fundVersionId;
     }
 
     public ArrNode getNode() {
         return node;
     }
 
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
     public void setNode(ArrNode node) {
         this.node = node;
+        this.nodeId = (node != null) ? node.getNodeId() : null;
     }
 
     public ArrOutput getOutput() {
