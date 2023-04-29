@@ -173,9 +173,9 @@ public class NodeCacheService {
     public void syncNodes(final Collection<Integer> nodeIds) {
         writeLock.lock();
         try {
-            logger.debug(">syncNodes(nodeIds:" + nodeIds + ")");
+            logger.trace("syncNodes(nodeIds: {})", nodeIds);
             syncNodesInternal(nodeIds);
-            logger.debug("<syncNodes(nodeIds:" + nodeIds + ")");
+            logger.trace("end of syncNodes(nodeIds: {})", nodeIds);
         } finally {
             writeLock.unlock();
         }
@@ -227,10 +227,12 @@ public class NodeCacheService {
 	public RestoredNode getNode(final Integer nodeId) {
         readLock.lock();
         try {
-            logger.debug(">getNode(nodeId:" + nodeId + ")");
+            logger.trace("getNode(nodeId: {})", nodeId);
 			RestoredNode nodeInternal = getNodeInternal(nodeId);
-            logger.debug("<getNode(nodeId:" + nodeId + ")");
             return nodeInternal;
+        } catch (Exception e) {
+            logger.error("Failed to read nodeId: {}", nodeId, e);
+            throw e;
         } finally {
             readLock.unlock();
         }
@@ -246,10 +248,12 @@ public class NodeCacheService {
 	public Map<Integer, RestoredNode> getNodes(final Collection<Integer> nodeIds) {
         readLock.lock();
         try {
-            logger.debug(">getNodes(nodeIds:" + nodeIds + ")");
+            logger.trace("getNodes(nodeId: {})", nodeIds);
 			Map<Integer, RestoredNode> nodesInternal = getNodesInternal(nodeIds);
-            logger.debug("<getNodes(nodeIds:" + nodeIds + ")");
             return nodesInternal;
+        } catch (Exception e) {
+            logger.error("Failed to read nodes, ids: {}", nodeIds, e);
+            throw e;
         } finally {
             readLock.unlock();
         }
@@ -267,9 +271,9 @@ public class NodeCacheService {
     public void saveNodes(final Collection<? extends CachedNode> cachedNodes, boolean flush) {
         readLock.lock();
         try {
-            logger.debug(">saveNodes(" + cachedNodes + ")");
+            logger.trace("saveNodes({})", cachedNodes);
             saveNodesInternal(cachedNodes, flush);
-            logger.debug("<saveNodes(" + cachedNodes + ")");
+            logger.trace("end of saveNodes({})", cachedNodes);
         } finally {
             readLock.unlock();
         }
@@ -288,9 +292,9 @@ public class NodeCacheService {
     public void saveNode(final CachedNode cachedNode, boolean flush) {
         readLock.lock();
         try {
-            logger.debug(">saveNode(" + cachedNode + ")");
+            logger.trace("saveNode({})", cachedNode);
             saveNodesInternal(Collections.singletonList(cachedNode), flush);
-            logger.debug("<saveNode(" + cachedNode + ")");
+            logger.trace("end of saveNode({})", cachedNode);
         } finally {
             readLock.unlock();
         }
@@ -305,9 +309,9 @@ public class NodeCacheService {
     public void deleteNodes(final Collection<Integer> nodeIds) {
         writeLock.lock();
         try {
-            logger.debug(">deleteNodes(" + nodeIds + ")");
+            logger.trace("deleteNodes({})", nodeIds);
             deleteNodesInternal(nodeIds);
-            logger.debug("<deleteNodes(" + nodeIds + ")");
+            logger.trace("end of deleteNodes({})", nodeIds);
         } finally {
             writeLock.unlock();
         }
@@ -325,7 +329,7 @@ public class NodeCacheService {
 
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
 
-        logger.debug("Synchronizace požadovaných JP: " + cachedNodes.size());
+        logger.debug("Synchronizace požadovaných JP: {}", cachedNodes.size());
         int i = 0;
         for (List<ArrCachedNode> partCachedNodes : Lists.partition(cachedNodes, SYNC_BATCH_NODE_SIZE)) {
             i++;
