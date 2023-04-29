@@ -284,6 +284,14 @@ public abstract class AsyncExecutor {
         });
     }
 
+    public void countRequest(int cnt) {
+        TimeRequestInfo tri = new TimeRequestInfo();
+        for (int i = 0; i < cnt; i++) {
+            lastHourRequests.add(tri);
+        }
+        lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
+    }
+
     public void countRequest() {
         lastHourRequests.add(new TimeRequestInfo());
         lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
@@ -292,11 +300,12 @@ public abstract class AsyncExecutor {
     public void onFail(IAsyncWorker worker, final Throwable error) {
         IAsyncRequest request = worker.getRequest();
         logger.error("Request failed: {}", request, error);
+        List<? extends IAsyncRequest> requests = worker.getRequests();
 
         synchronized (lockQueue) {
-            countRequest();
+            countRequest(requests.size());
             processing.remove(worker);
-            deleteRequests(worker.getRequests());
+            deleteRequests(requests);
             scheduleNext();
         }
     }
@@ -306,7 +315,7 @@ public abstract class AsyncExecutor {
         logger.debug("Finished requests({}): {}", requests.size(), requests);
 
         synchronized (lockQueue) {
-            countRequest();
+            countRequest(requests.size());
             processing.remove(worker);
             deleteRequests(requests);
             scheduleNext();
