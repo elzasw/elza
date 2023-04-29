@@ -47,6 +47,11 @@ public abstract class AsyncExecutor {
      */
     public final int LOAD_SEC = 3600;
 
+    /**
+     * Maximální počet záznamů pro načtení z DB při obnově fronty
+     */
+    public final int READ_MAX_COUNT = 10000;
+
     private final ArrAsyncRequestRepository asyncRequestRepository;
     private final ApplicationContext appCtx;
     private final PlatformTransactionManager txManager;
@@ -222,10 +227,13 @@ public abstract class AsyncExecutor {
             List<IAsyncRequest> results = new ArrayList<>();
             int p = 0;
             List<ArrAsyncRequest> requests;
-            int MAX = 1000;
             List<ArrAsyncRequest> deleteRequests = new ArrayList<>();
             do {
-                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, MAX));
+                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p,
+                                                                                                            READ_MAX_COUNT));
+
+                logger.info("Async requests fetched from DB, type: {}, count: {}, page: {}",
+                            getType(), requests.size(), p);
                 for (ArrAsyncRequest request : requests) {
                     if (isFailedRequest(request)) {
                         deleteRequests.add(request);
@@ -237,7 +245,7 @@ public abstract class AsyncExecutor {
                     }
                 }
                 p++;
-            } while (requests.size() == MAX);
+            } while (requests.size() == READ_MAX_COUNT);
 
             if (deleteRequests.size() > 0) {
                 asyncRequestRepository.deleteAll(deleteRequests);
@@ -466,7 +474,6 @@ public abstract class AsyncExecutor {
         if (skip(request)) {
             skipped.add(request); // přidání do fronty na přeskočení
         } else {
-            logger.debug("Přidán do fronty (v paměti): {}", request);
             queue.add(request);
         }
     }

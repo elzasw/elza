@@ -619,7 +619,8 @@ public class RuleService {
         nodes.add(rootNode);
         logger.info("Conformity Info All");
         if (!nodes.isEmpty()) {
-            asyncRequestService.enqueue(fundVersion, nodes);
+            asyncRequestService.enqueueNodes(fundVersion.getFundVersionId(),
+                                             nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()));
         }
     }
 
@@ -686,7 +687,9 @@ public class RuleService {
         }
 
         if (!updateNodes.isEmpty()) {
-            asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
+            asyncRequestService.enqueueNodes(fundVersionId,
+                                        updateNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()),
+                                        validationPriority);
         }
     }
 
@@ -701,12 +704,10 @@ public class RuleService {
                 .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
                                                Collectors.mapping(i -> i.getNodeId(), 
                                                                   Collectors.toList())));
-        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
-            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
-            List<ArrNode> nodes = new ArrayList<>();
-            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
-            asyncRequestService.enqueue(version, nodes);
-        }
+
+        nodeIdFundVersionMap.forEach((fundVersionId, nodeIds) -> {
+            asyncRequestService.enqueueNodes(fundVersionId, nodeIds);
+        });
     }
 
     /**

@@ -1576,7 +1576,8 @@ public class ArrangementService {
     public void startNodeValidation(@NotNull final ArrFundVersion fundVersion) {
         // zjištění uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull(fundVersion.getFund());
-        asyncRequestService.enqueue(fundVersion, nodes);
+        List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
+        asyncRequestService.enqueueNodes(fundVersion.getFundVersionId(), nodeIds);
     }
     
     /**
@@ -1585,49 +1586,43 @@ public class ArrangementService {
      * <p>
      * Metoda je pouštěna po startu aplikačního serveru.
      */
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public void startNodeValidation() {
-        Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
-        Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
+    @Transactional
+    public Map<Integer, List<Integer>> findNodesForValidation() {
+        Map<Integer, Integer> fundVersionMap = new HashMap<>();
+
+        // načtení otevřených verzí AF
+        {
+            List<ArrFundVersion> openVersions = fundVersionRepository.findAllOpenVersion();
+            // vytvoření převodní mapy "id AF->verze AF"
+            for (ArrFundVersion openVersion : openVersions) {
+                fundVersionMap.put(openVersion.getFundId(), openVersion.getFundVersionId());
+            }
+            openVersions.clear();
+        }
+
 
         // zjištění všech uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
 
+        Map<Integer, List<Integer>> fundVersionNodesMap = new HashMap<>();
         // roztřídění podle AF
         for (ArrNode node : nodes) {
             Integer fundId = node.getFundId();
-            List<ArrNode> addedNodes = fundNodesMap.get(fundId);
-            if (addedNodes == null) {
-                addedNodes = new LinkedList<>();
-                fundNodesMap.put(fundId, addedNodes);
-            }
-            addedNodes.add(node);
-        }
-
-        // načtení otevřených verzí AF
-        List<ArrFundVersion> openVersions = fundVersionRepository.findAllOpenVersion();
-
-        // vytvoření převodní mapy "id AF->verze AF"
-        for (ArrFundVersion openVersion : openVersions) {
-            fundVersionMap.put(openVersion.getFundId(), openVersion);
-        }
-
-        // projde všechny fondy
-        for (Map.Entry<Integer, List<ArrNode>> entry : fundNodesMap.entrySet()) {
-            Integer fundId = entry.getKey();
-            ArrFundVersion version = fundVersionMap.get(fundId);
-
-            if (version == null) {
-                logger.error("Pro AF s ID=" + fundId + " byly nalezeny nezvalidované uzly (" + entry.getValue()
-                        + "), které nejsou z otevřené verze AF");
+            Integer fundVersionId = fundVersionMap.get(fundId);
+            if (fundVersionId == null) {
+                logger.error("Pro AF s ID=" + fundId + " byly nalezen nezvalidovaný uzel (" + node.getNodeId()
+                        + "), který není z otevřené verze AF");
                 continue;
             }
-
-            // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
-            logger.info("Přidání uzlů do fronty pro zvalidování, fundId: {}, version: {}, count: {}",
-                        fundId, version.getFundVersionId(), entry.getValue().size());
-            asyncRequestService.enqueue(version, entry.getValue());
+            List<Integer> addedNodes = fundVersionNodesMap.get(fundVersionId);
+            if (addedNodes == null) {
+                addedNodes = new ArrayList<>();
+                fundVersionNodesMap.put(fundVersionId, addedNodes);
+            }
+            addedNodes.add(node.getNodeId());
         }
+
+        return fundVersionNodesMap;
     }
 
     public ParInstitution getInstitution(String identifier) {

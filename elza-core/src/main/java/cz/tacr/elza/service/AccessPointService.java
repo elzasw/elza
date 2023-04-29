@@ -32,6 +32,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,6 +289,9 @@ public class AccessPointService {
 
     @Autowired
     private RevisionItemService revisionItemService;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     private EntityManager em;
@@ -1746,16 +1750,6 @@ public class AccessPointService {
     }
 
     /**
-     * Získání id přístupových bodů podle stavu
-     * 
-     * @param state
-     * @return ids
-     */
-    public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
-        return apAccessPointRepository.findAccessPointIdByState(state);
-    }
-
-    /**
      * Uložení AP s odverzováním.
      *
      * @param accessPoint přístupový bod
@@ -3172,6 +3166,7 @@ public class AccessPointService {
      * Tato metoda se volá, pokud parametr elza.ap.checkDb má hodnotu TRUE
      */
     public void checkConsistency() {
+        Log.info("Checking APs consistency ...");
         int partsWithChild = partRepository.countDeletedPartsWithUndeletedChild();
         if (partsWithChild > 0) {
             logger.error("Existují {} vymazané Parts s nevymazanými potomky", partsWithChild);
@@ -3580,5 +3575,10 @@ public class AccessPointService {
             }
             
         };
+    }
+
+    @Transactional
+    public List<Integer> findByState(ApStateEnum init) {
+        return apAccessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
     }
 }

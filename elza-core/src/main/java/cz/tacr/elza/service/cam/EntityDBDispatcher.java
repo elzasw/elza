@@ -312,7 +312,7 @@ public class EntityDBDispatcher {
             List<Integer> accessPointIds = ObjectListIterator.findIterable(dataRecordRefList,
                                                                            accessPointRepository::findAccessPointIdsByRefData);
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
-                asyncRequestService.enqueue(accessPointIds);
+                asyncRequestService.enqueueAp(accessPointIds);
             }
         }
 
