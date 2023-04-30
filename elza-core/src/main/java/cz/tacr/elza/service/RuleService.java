@@ -65,6 +65,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -1353,26 +1354,67 @@ public class RuleService {
 
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
-        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
 
         ApBuilder apBuilder = new ApBuilder(sdp);
         apBuilder.setAccessPoint(apState, parts, itemList);
 
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
+
+        List<ApRevIndex> revIndexes = null;
         if (includeRevision) {
             ApRevision revision = revisionService.findRevisionByState(apState);
             if (revision != null) {
                 List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
                 List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+                revIndexes = revisionPartService.findIndexesByRevision(revision);
 
                 // apply revision data
                 apBuilder.setRevision(revision, revParts, revItems);
+
+                // remove indexes for modified or deleted parts
+                Set<Integer> modOrigParts = revParts.stream().filter(r -> r.getOriginalPartId() != null)
+                        .map(ApRevPart::getOriginalPartId)
+                        .collect(Collectors.toSet());
+                List<ApIndex> origIndexList = indexList;
+                indexList = new ArrayList<>();
+                for (ApIndex origIndex : origIndexList) {
+                    if (!modOrigParts.contains(origIndex.getPartId())) {
+                        indexList.add(origIndex);
+                    }
+                }
             }
         }
+
         Ap ap = apBuilder.build();
 
-        Map<PartType, List<Index>> indexMap = indexList.stream()
-                .map(index -> createIndex(index, apBuilder.getPart(index.getPartId())))
-                .collect(Collectors.groupingBy(index -> index.getPart().getType()));
+        // prepare indexes
+        Map<PartType, List<Index>> indexMap = new HashMap<>();
+        for (ApIndex dbIndex : indexList) {
+            Part part = apBuilder.getPart(dbIndex.getPartId());
+            // add only for converted items
+            Index index = createIndex(dbIndex, part);
+            List<Index> indexes = indexMap.computeIfAbsent(part.getType(), pt -> new ArrayList<>());
+            indexes.add(index);
+        }
+        if (CollectionUtils.isNotEmpty(revIndexes)) {
+            // add new indexes
+            for (ApRevIndex revIndex : revIndexes) {
+                Part part = apBuilder.getPartByRevPartId(revIndex.getPartId());
+                if (part == null) {
+                    // part is only modified?
+                    Integer origPartId = revIndex.getPart().getOriginalPartId();
+                    Validate.notNull(origPartId);
+                    part = apBuilder.getPart(origPartId);
+                    Validate.notNull(part);
+                }
+
+                Index index = new Index(revIndex.getIndexType(), revIndex.getValue(), part);
+                List<Index> indexes = indexMap.computeIfAbsent(part.getType(), pt -> new ArrayList<>());
+                indexes.add(index);
+            }
+        }
+
+        List<ModelPart> modelPartList = createModelParts(indexMap);
 
         GeoModel geoModel = createGeoModel(ap);
 
@@ -1384,7 +1426,7 @@ public class RuleService {
         Map<String, Integer> identMap = apBuilder.createIdentMap();
 
         List<AbstractItem> items = apBuilder.createAbstractItemList();
-        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
+        ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
@@ -1450,20 +1492,21 @@ public class RuleService {
     }
 
     private void validatePartRepeatability(final ModelValidation validationResult) {
-        Map<String, Integer> partCountMap = new HashMap<>();
+        Map<PartType, Integer> partCountMap = new HashMap<>();
         for (Part part : validationResult.getAp().getParts()) {
             if (part.getParent() == null) {
-                partCountMap.put(part.getType().value(), partCountMap.getOrDefault(part.getType().value(), 0) + 1);
+                partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
             }
         }
         for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable() && partCountMap.getOrDefault(modelPart.getType().value(), 0) > 1) {
+            if (!modelPart.isRepeatable() && partCountMap.getOrDefault(modelPart.getType(), 0) > 1) {
                 validationResult.getApValidationErrors().addError("Část " + modelPart.getType() + " je v entitě vícekrát.");
             }
         }
     }
 
-    private void validateIndexRepeatability(ModelValidation validationResult, ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateIndexRepeatability(ModelValidation validationResult,
+                                            ApValidationErrorsVO apValidationErrorsVO) {
         for (ModelPart modelPart : validationResult.getModelParts()) {
             if (CollectionUtils.isNotEmpty(modelPart.getIndices())) {
                 Map<String, Integer> indexCount = createIndexCountMap(modelPart.getIndices());
@@ -1834,8 +1877,15 @@ public class RuleService {
         return modelItemTypes;
     }
 
+    /**
+     * Prepare list of part types
+     * 
+     * @param indexMap
+     * @return
+     */
     private List<ModelPart> createModelParts(Map<PartType, List<Index>> indexMap) {
         List<ModelPart> modelPartList = new ArrayList<>();
+
         for(PartType partType : PartType.values()) {
             List<Index> indices = indexMap.getOrDefault(partType, null);
             modelPartList.add(new ModelPart(partType, indices));

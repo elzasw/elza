@@ -348,7 +348,7 @@ public class ApBuilder {
         List<ApRevPart> subpartsToCreate = new ArrayList<>();
 
         for (ApRevPart revPart : revParts) {
-            if (revPart.getDeleteChangeId() != null) {
+            if (revPart.getDeleteChangeId() != null || Boolean.TRUE.equals(revPart.isDeleted())) {
                 // part is deleted
                 if (revPart.getOriginalPartId() == null) {
                     // non original part -> simply skip
