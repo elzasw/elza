@@ -2,6 +2,7 @@ package cz.tacr.elza.drools.model;
 
 import java.util.List;
 
+// TODO: Consider renaming class to ModelPartType
 public class ModelPart {
 
     private PartType type;

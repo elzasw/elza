@@ -103,10 +103,13 @@ public class RequestQueue<E> implements IRequestQueue<E> {
     @Override
     public List<E> poll() {
         E item = originalQueue.poll();
-        if (calcId != null && item != null) {
+        if (item == null) {
+            return null;
+        }
+        if (calcId != null) {
             idMap.remove(calcId.apply(item));
         }
-        return item != null ? Collections.singletonList(item) : null;
+        return Collections.singletonList(item);
     }
 
     @Override

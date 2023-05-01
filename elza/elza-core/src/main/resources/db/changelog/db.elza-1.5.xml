@@ -2254,4 +2254,15 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
            )
 	  </sql>
     </changeSet>
+    <changeSet id="20230426134200" author="ppy">
+      <delete tableName="ap_cached_access_point" />
+      <!-- Revalidace chybnych AP nebo tech bez key value -->
+      <sql dbms="postgresql">update ap_access_point set state = 'INIT' where access_point_id in (
+		select ap.access_point_id as access_point_id from ap_access_point ap 
+		where ap.state not in ('OK', 'INIT')
+		union 
+		select ap.access_point_id from ap_access_point ap
+		join ap_part p on ap.preferred_part_id = p.part_id 
+		where p.key_value_id is null)</sql>
+    </changeSet>
 </databaseChangeLog>

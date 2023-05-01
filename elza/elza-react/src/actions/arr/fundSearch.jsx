@@ -1,8 +1,12 @@
 /**
  * Akce pro vyhledávání archivních souborů v komponentě Modal
  */
-import {WebApi} from './../../actions/index.jsx';
+import { WebApi } from './../../actions/index.jsx';
 import * as types from './../../actions/constants/ActionTypes';
+
+export const getDataKey = (fulltext, isIdSearch) => {
+    return isIdSearch ? `${fulltext}-id` : fulltext;
+}
 
 export function isFundSearchAction(action) {
     switch (action.type) {
@@ -21,32 +25,59 @@ export function isFundSearchAction(action) {
 export function fundSearchFetchIfNeeded() {
     return (dispatch, getState) => {
         const {
-            arrRegion: {fundSearch},
+            arrRegion: { fundSearch },
         } = getState();
-        const {currentDataKey, isFetching, fulltext, funds} = fundSearch;
+        const { currentDataKey, isFetching, fulltext, funds, isIdSearch } = fundSearch;
 
-        if (fulltext != currentDataKey && !isFetching) {
-            dispatch(fundSearchFulltextRequest(fulltext));
-            WebApi.fundFulltext(fulltext).then(result => {
-                dispatch(fundSearchFulltextReceive(result));
-            });
-        }
+        if (!fulltext) { return; }
 
-        funds.forEach(fund => {
-            if (fund.expanded && !fund.isFetching && !fund.fetched) {
-                dispatch(fundSearchFundRequest(fund));
-                WebApi.fundFulltextNodes(fund.id).then(result => {
-                    dispatch(fundSearchFundReceive(fund, result));
+        if (!isIdSearch) {
+            if (fulltext != currentDataKey && !isFetching) {
+                dispatch(fundSearchFulltextRequest());
+                WebApi.fundFulltext(fulltext).then(result => {
+                    dispatch(fundSearchFulltextReceive(result));
                 });
             }
-        });
+
+            funds.forEach(fund => {
+                if (fund.expanded && !fund.isFetching && !fund.fetched) {
+                    dispatch(fundSearchFundRequest(fund));
+                    WebApi.fundFulltextNodes(fund.id).then(result => {
+                        dispatch(fundSearchFundReceive(fund, result));
+                    });
+                }
+            });
+        }
+        else {
+            if (getDataKey(fulltext, isIdSearch) != currentDataKey && !isFetching) {
+                dispatch(fundSearchFulltextRequest());
+                WebApi.selectNode(fulltext).then(({ fund, nodeWithParent }) => {
+                    const _fund = {
+                        count: 1,
+                        fundVersionId: fund.versions.find((version) => version.lockDate === null)?.id,
+                        internalCode: fund.internalCode,
+                        id: fund.id,
+                        name: fund.name,
+                        expanded: true,
+                    };
+
+                    if (_fund.fundVersionId != undefined) {
+                        WebApi.getNodes(_fund.fundVersionId, [nodeWithParent.node.id]).then((nodes) => {
+                            dispatch(fundSearchFulltextReceive([_fund]));
+                            dispatch(fundSearchFundReceive(_fund, nodes));
+                        })
+                    }
+                })
+            }
+        }
     };
 }
 
-export function fundSearchFulltextChange(fulltext) {
+export function fundSearchFulltextChange({ fulltext, isIdSearch }) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_CHANGE,
         fulltext,
+        isIdSearch,
     };
 }
 
@@ -57,10 +88,9 @@ export function fundSearchFulltextClear() {
     };
 }
 
-function fundSearchFulltextRequest(fulltext) {
+function fundSearchFulltextRequest() {
     return {
         type: types.FUND_SEARCH_FULLTEXT_REQUEST,
-        fulltext,
     };
 }
 

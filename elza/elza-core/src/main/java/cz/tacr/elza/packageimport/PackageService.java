@@ -57,7 +57,6 @@ import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
-import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -711,8 +710,7 @@ public class PackageService {
         IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
         processIssueStates(issueStates, rulPackage);
 
-        ObjectListIterator.forEachPage(accessPoints, accessPointRepository::updateToInit);
-        asyncRequestService.enqueue(accessPoints);
+        asyncRequestService.enqueueAp(accessPoints);
 
         entityManager.flush();
 

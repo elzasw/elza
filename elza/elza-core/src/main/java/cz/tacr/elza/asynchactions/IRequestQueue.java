@@ -17,6 +17,11 @@ public interface IRequestQueue<E> extends Iterable<E> {
 
     void clear();
 
+    /**
+     * Vratí seznam dalších položek ke zpracování
+     * 
+     * @return
+     */
     List<E> poll();
 
     /**

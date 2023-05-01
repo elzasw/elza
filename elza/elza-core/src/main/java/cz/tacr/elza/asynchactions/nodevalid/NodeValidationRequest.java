@@ -11,10 +11,10 @@ public class NodeValidationRequest extends AsyncRequestBase {
     public NodeValidationRequest(ArrAsyncRequest request) {
         super(request.getAsyncRequestId(),
                 request.getPriority(),
-                request.getFundVersion() != null ? request.getFundVersion().getFundVersionId() : null,
+                request.getFundVersionId(),
                 request.getType());
 
-        this.nodeId = request.getNode().getNodeId();
+        this.nodeId = request.getNodeId();
     }
 
     Integer getNodeId() {

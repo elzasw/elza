@@ -83,7 +83,7 @@ public class ValidationRules extends Rules {
                      System.currentTimeMillis() - startTime);
 
         ModelFactory.addLevelWithParents(activeLevel, facts);
-        logger.debug("Added level for parents to model (workerId: {}) in {}ms from start",
+        logger.trace("Added level for parents to model (workerId: {}) in {}ms from start",
                      Thread.currentThread().getId(),
                      System.currentTimeMillis() - startTime);
 
@@ -92,7 +92,7 @@ public class ValidationRules extends Rules {
         for (RulArrangementRule rulPackageRule : rulPackageRules) {
             try {
                 Path path = resourcePathResolver.getDroolFile(rulPackageRule);
-                logger.debug("Executing rule (workerId: {}), path: {} in {}ms from start",
+                logger.trace("Executing rule (workerId: {}), path: {} in {}ms from start",
                              Thread.currentThread().getId(), path,
                              System.currentTimeMillis() - startTime);
 
@@ -101,7 +101,7 @@ public class ValidationRules extends Rules {
                 executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
-                logger.debug("Rule executed (workerId: {}) in {}ms",
+                logger.trace("Rule executed (workerId: {}) in {}ms",
                              Thread.currentThread().getId(),
                              endTime - startTime);
             } catch (Exception e) {
@@ -114,14 +114,14 @@ public class ValidationRules extends Rules {
             try {
                 Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 
-                logger.debug("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
+                logger.trace("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
 
                 StatelessKieSession ksession = createKieStatelessSession(path);
                 ksession.setGlobal("results", validationResults);
                 executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
-                logger.debug("Extension executed (workerId: {}) in {}ms",
+                logger.trace("Extension executed (workerId: {}) in {}ms",
                              Thread.currentThread().getId(),
                              endTime - startTime);
             } catch (Exception e) {
@@ -163,7 +163,7 @@ public class ValidationRules extends Rules {
 
             DataValidationResult validationResult = iterator.next();
 
-            logger.debug("Storing DataValidationResult (workerId: {}, object: {}) in {}ms from start",
+            logger.trace("Storing DataValidationResult (workerId: {}, object: {}) in {}ms from start",
                          Thread.currentThread().getId(),
                          validationResult,
                          System.currentTimeMillis() - startTime);
@@ -214,7 +214,7 @@ public class ValidationRules extends Rules {
 				throw new IllegalArgumentException(
 				        "Neznamy typ vysledku validace " + validationResult.getResultType().name());
 			}
-            logger.debug("Stored DataValidationResult (workerId: {}, object: {}) in {}ms from start",
+            logger.trace("Stored DataValidationResult (workerId: {}, object: {}) in {}ms from start",
                          Thread.currentThread().getId(),
                          validationResult,
                          System.currentTimeMillis() - startTime);

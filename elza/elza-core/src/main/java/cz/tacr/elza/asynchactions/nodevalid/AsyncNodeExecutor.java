@@ -1,5 +1,7 @@
 package cz.tacr.elza.asynchactions.nodevalid;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -57,10 +59,13 @@ public class AsyncNodeExecutor extends AsyncExecutor {
         synchronized (lockQueue) {
             IAsyncRequest request = worker.getRequest();
             logger.error("Selhání requestu {}", request, error);
-            countRequest();
+
+            List<? extends IAsyncRequest> reqs = worker.getRequests();
+            // ?? what should we count here
+            countRequest(1);
             processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
             if (worker.getRequests().size() > 1) {
-                for (IAsyncRequest r : worker.getRequests()) {
+                for (IAsyncRequest r : reqs) {
                     NodeValidationRequest nvr = (NodeValidationRequest) r;
                     nvr.setFailed(true);
                     enqueueInner(r);

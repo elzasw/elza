@@ -1,11 +1,14 @@
 package cz.tacr.elza.drools.model.item;
 
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+
 public class DoubleItem extends AbstractItem {
 
     private Double value;
 
-    public DoubleItem(final Integer id, final String type, final String spec, final String systemCode, final Double value) {
-        super(id, type, spec, systemCode);
+    public DoubleItem(final Integer id, final ItemType itemType, final RulItemSpec itemSpec, final Double value) {
+        super(id, itemType, itemSpec);
         this.value = value;
     }
 

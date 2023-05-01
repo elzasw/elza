@@ -116,7 +116,7 @@ public class NodeValidationQueue implements IRequestQueue<IAsyncRequest> {
 
     @Override
     public List<IAsyncRequest> poll() {
-        NodeQueue nodeQueue = queue.poll();
+        NodeQueue nodeQueue = queue.peek();
         if (nodeQueue == null) {
             return null;
         }

@@ -1,22 +1,22 @@
 /** */
-import {ConnectedProps} from 'components/arr/nodeForm/DescItemStructureRef';
-import React, {ChangeEvent} from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect, DispatchProp} from 'react-redux';
-import {normalizeString} from 'components/validate.jsx';
-import {decorateValue, inputValue} from './DescItemUtils.jsx';
+import { ConnectedProps } from 'components/arr/nodeForm/DescItemStructureRef';
+import React, { ChangeEvent } from 'react';
+import { AbstractReactComponent, i18n } from 'components/shared';
+import { connect, DispatchProp } from 'react-redux';
+import { normalizeString } from 'components/validate.jsx';
+import { decorateValue, inputValue } from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
-import {IDescItemBaseProps} from 'components/arr/nodeForm/DescItemTypes';
+import { IDescItemBaseProps } from 'components/arr/nodeForm/DescItemTypes';
 import Icon from '../../shared/icon/Icon';
-import {Button} from 'react-bootstrap';
-import SelectSearchFundsForm from 'components/arr/SelectSearchFundsForm';
-import {modalDialogHide, modalDialogShow} from '../../../actions/global/modalDialog';
-import {WebApi} from '../../../actions';
-import {CLS_CALCULABLE, ELZA_SCHEME_NODE} from '../../../constants';
-import {routerNavigate} from '../../../actions/router';
+import { Button } from 'react-bootstrap';
+import { SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
+import { modalDialogHide, modalDialogShow } from '../../../actions/global/modalDialog';
+import { WebApi } from '../../../actions';
+import { CLS_CALCULABLE, ELZA_SCHEME_NODE } from '../../../constants';
+import { routerNavigate } from '../../../actions/router';
 import './DescItemLink.scss';
 import RefTemplateField from '../RefTemplateField';
-import {decorateAutocompleteValue} from './DescItemUtils';
+import { decorateAutocompleteValue } from './DescItemUtils';
 
 const DescItemString_MAX_LENGTH = 1000;
 
@@ -68,7 +68,7 @@ class DescItemLink extends AbstractReactComponent {
                 this,
                 i18n('arr.fund.title.search'),
                 <SelectSearchFundsForm
-                    onSubmit={({node, fund}) => {
+                    onSubmit={({ node, fund }) => {
                         // TODO new api
                         WebApi.getNode(fund.fundVersionId, node.id).then(data => {
                             this.props.onChange({
@@ -86,7 +86,7 @@ class DescItemLink extends AbstractReactComponent {
     };
 
     handleNavigate = () => {
-        const {descItem} = this.props;
+        const { descItem } = this.props;
         if (descItem.value.startsWith(ELZA_SCHEME_NODE)) {
             if (descItem.nodeId) {
                 const uuid = descItem.value.replace(ELZA_SCHEME_NODE + '://', '');
@@ -98,7 +98,7 @@ class DescItemLink extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, readMode, cal, fundId} = this.props;
+        const { descItem, locked, readMode, cal, fundId } = this.props;
 
         let value =
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
@@ -171,4 +171,4 @@ class DescItemLink extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {forwardRef: true})(DescItemLink);
+export default connect(null, null, null, { forwardRef: true })(DescItemLink);

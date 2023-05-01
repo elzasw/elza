@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 
@@ -16,7 +17,6 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -42,7 +42,13 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cam.CamScheduler;
 
 /**
- * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
+ * Service to manage tasks during application startup.
+ *
+ * Order of starting:
+ * <ul>
+ * <li>stage1: setup components according configuration</li>
+ * <li>stage2: run first transaction</li>
+ * </ul>
  */
 @Service
 public class StartupService implements SmartLifecycle {
@@ -183,15 +189,14 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
+        //---- stage 1 ------
         ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
 
-        List<Integer> accessPoints = accessPointService.getAccessPointIdsByState(ApStateEnum.INIT);
-        asyncRequestService.enqueue(accessPoints);
-
+        //----- stage 2 ------
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());
         syncApCacheService();
@@ -200,14 +205,29 @@ public class StartupService implements SmartLifecycle {
         SecurityContextHolder.setContext(userService.createSecurityContextSystem());
         packageService.autoImportPackages(resourcePathResolver.getDpkgDir());
 
+        //----- stage 3 ------
+        tt.executeWithoutResult(r -> startInTransaction2());
+
+        // volání v samostatných transakcích
+        // Add APs to the queue for sync
+        List<Integer> accessPoints = accessPointService.findByState(ApStateEnum.INIT);
+        Map<Integer, List<Integer>> nodeIdsByFundVersion = arrangementService.findNodesForValidation();
+        asyncRequestService.start();
+        asyncRequestService.enqueueAp(accessPoints);
+        nodeIdsByFundVersion.forEach((fundVersionId, nodeIds) -> {
+            // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
+            logger.info("Přidání uzlů do fronty pro zvalidování, fundVersionId: {}, count: {}",
+                        fundVersionId, nodeIds.size());
+            asyncRequestService.enqueueNodes(fundVersionId, nodeIds);
+
+        });
+
+        camScheduler.start();
+
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
             tt.executeWithoutResult(r -> adminService.reindexInternal());
         }
-
-        tt.executeWithoutResult(r -> startInTransaction2());
-
-        camScheduler.start();
 
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
@@ -260,25 +280,16 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         // kontrola datové struktury
         accessPointService.checkConsistency();
-        ;
     }
 
     private void startInTransaction2() {
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
             throw new IllegalStateException("Active transaction required");
         }
+
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
-
-        // je třeba volat mimo současnou transakci
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                asyncRequestService.start();
-                arrangementService.startNodeValidation();
-            }
-        });
 
         runQueuedRequests();
     }

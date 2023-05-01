@@ -28,7 +28,6 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
 
@@ -38,23 +37,10 @@ public class RevisionPartService {
     private static final Logger logger = LoggerFactory.getLogger(RevisionPartService.class);
 
     @Autowired
-    private RevisionItemService revisionItemService;
-
-    @Autowired
-    private PartService partService;
-
-    @Autowired
-    private AccessPointItemService accessPointItemService;
-
-    @Autowired
     private ApRevPartRepository revPartRepository;
 
     @Autowired
     private ApRevIndexRepository revIndexRepository;
-
-    @Autowired
-    private ApPartRepository partRepository;
-
 
     public List<ApRevPart> findPartsByRevision(ApRevision revision) {
         return revPartRepository.findByRevision(revision);
@@ -233,5 +219,9 @@ public class RevisionPartService {
 
         revPart.setDeleted(true);
         return revPartRepository.save(revPart);
+    }
+
+    public List<ApRevIndex> findIndexesByRevision(ApRevision revision) {
+        return revIndexRepository.findByRevision(revision);
     }
 }
