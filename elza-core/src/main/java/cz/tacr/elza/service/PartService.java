@@ -336,7 +336,7 @@ public class PartService {
      * @return
      */
     // TODO: Check logic when async==true
-    public boolean updatePartValue(ApPart apPart,
+    public boolean updatePartIndexes(ApPart apPart,
                                    GroovyResult result,
                                    ApState state,
                                    ApScope scope,
@@ -359,7 +359,7 @@ public class PartService {
 
 
         String keyType = null;
-        if (result.getKeyValue() != null && state.getDeleteChange() != null) {
+        if (result.getKeyValue() != null && state.getDeleteChange() == null) {
             // has new keyValue and not deleted AP
             GroovyKeyValue keyValue = result.getKeyValue();
             keyType = StringUtils.stripToNull(keyValue.getKey());
@@ -488,8 +488,7 @@ public class PartService {
                 logger.warn("Archivní entita id " + accessPoint.getAccessPointId() + " má referenci sama na sebe!");
             }
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
-                ObjectListIterator.forEachPage(accessPointIds, accessPointRepository::updateToInit);
-                asyncRequestService.enqueue(accessPointIds);
+                asyncRequestService.enqueueAp(accessPointIds);
             }
         }
     }
@@ -497,14 +496,17 @@ public class PartService {
     private boolean checkKeyValueUnique(String keyType, String value, ApScope scope, boolean async) {
         ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
 
-        if (!async && apKeyValue != null) {
+        if (apKeyValue != null) {
+            if (async) {
+                return false;
+            }
             throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scopeId už existuje.", RegistryCode.NOT_UNIQUE_FULL_NAME)
                     .set("keyType", keyType)
                     .set("value", value)
                     .set("scopeId", scope.getScopeId());
         }
 
-        return apKeyValue == null;
+        return true;
     }
 
     /**

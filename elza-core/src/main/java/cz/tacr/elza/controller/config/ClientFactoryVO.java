@@ -1371,8 +1371,7 @@ public class ClientFactoryVO {
      */
     public UsrGroupVO createGroup(final UsrGroup group, final boolean initPermissions, final boolean initUsers) {
         // Hlavní objekt
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        UsrGroupVO result = mapper.map(group, UsrGroupVO.class);
+        UsrGroupVO result = UsrGroupVO.newInstance(group);
 
         // Načtení oprávnění
         if (initPermissions) {

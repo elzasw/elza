@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -64,10 +63,6 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
 
     @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
     List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
-
-    @Modifying
-    @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds AND state <> 'INIT'")
-    void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Query(value = 
             "SELECT ap.uuid FROM ap_state s" + 

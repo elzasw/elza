@@ -431,7 +431,7 @@ public class RevisionService {
         if (!childPartIds.isEmpty() || !childRevParts.isEmpty()) {
             List<Integer> childRevPartIds = childRevParts.stream().map(i -> i.getPartId()).collect(Collectors.toList());
             throw new BusinessException("Nelze smazat part, který má aktivní podřízené party, partId: " + partId, BaseCode.INVALID_STATE)
-                    .set("revPartId", revPart.getPartId())
+                    .set("revPartId", (revPart != null) ? revPart.getPartId() : null)
                     .set("childPartIds", childPartIds)
                     .set("childRevPartIds", childRevPartIds);
         }

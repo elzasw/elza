@@ -48,13 +48,13 @@ import cz.tacr.elza.controller.vo.FundStatisticsVO;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -93,6 +93,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Autowired
     private BulkActionRunRepository bulkActionRepository;
@@ -188,22 +191,24 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * Přidání JP do fronty ke zpracování s výchozí prioritou.
      */
     @Transactional
-    public void enqueue(final ArrFundVersion fundVersion,
-                        final List<ArrNode> nodeList) {
-        enqueue(fundVersion, nodeList, null);
+    public void enqueueNodes(final Integer fundVersionId,
+                             final List<Integer> nodeIdList) {
+        enqueueNodes(fundVersionId, nodeIdList, null);
     }
 
     /**
      * Přidání JP do fronty ke zpracování.
      */
     @Transactional
-    public void enqueue(final ArrFundVersion fundVersion,
-                        final List<ArrNode> nodeList,
+    public void enqueueNodes(final Integer fundVersionId,
+                             final List<Integer> nodeList,
                         final Integer priority) {
         List<ArrAsyncRequest> reqList = new ArrayList<>(nodeList.size());
         int pri = (priority == null) ? 1 : priority;
-        for (ArrNode node : nodeList) {
-            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, pri);
+        for (Integer nodeId : nodeList) {
+            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersionRepository.getOne(fundVersionId),
+                                                             nodeRepository.getOne(nodeId),
+                                                             pri);
             reqList.add(request);
         }
 
@@ -211,17 +216,18 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     @Transactional
-    public void enqueue(final Collection<Integer> accessPointIds) {
-        enqueue(accessPointIds, null);
+    public void enqueueAp(final Collection<Integer> accessPointIds) {
+        enqueueAp(accessPointIds, null);
     }
 
     @Transactional
-    public void enqueue(final Collection<Integer> accessPointIds,
+    public void enqueueAp(final Collection<Integer> accessPointIds,
                         final Integer priority) {
         if (CollectionUtils.isEmpty(accessPointIds)) {
             return;
         }
         int pri = priority == null ? 1 : priority;
+        // read access points
         List<ArrAsyncRequest> requests = new ArrayList<>(accessPointIds.size());
         for (Integer accessPointId : accessPointIds) {
             ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId),
@@ -229,6 +235,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             requests.add(request);
         }
         dispatchRequests(AsyncTypeEnum.AP, requests);
+
     }
 
     private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
@@ -312,10 +319,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Override
     public void onApplicationEvent(final AsyncRequestEvent event) {
         IAsyncRequest request = event.getAsyncRequest();
+        AsyncExecutor executor = getExecutor(request.getType());
         if (event.success()) {
-            getExecutor(request.getType()).onSuccess(event.getWorker());
+            executor.onSuccess(event.getWorker());
         } else {
-            getExecutor(request.getType()).onFail(event.getWorker(), event.getError());
+            executor.onFail(event.getWorker(), event.getError());
         }
     }
 

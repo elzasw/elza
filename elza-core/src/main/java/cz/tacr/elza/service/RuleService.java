@@ -65,6 +65,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -147,7 +148,6 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -257,9 +257,6 @@ public class RuleService {
 
     @Autowired
     private ExportFilterRepository exportFilterRepository;
-
-    @Autowired
-    private ScopeRepository scopeRepository;
 
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
@@ -623,7 +620,8 @@ public class RuleService {
         nodes.add(rootNode);
         logger.info("Conformity Info All");
         if (!nodes.isEmpty()) {
-            asyncRequestService.enqueue(fundVersion, nodes);
+            asyncRequestService.enqueueNodes(fundVersion.getFundVersionId(),
+                                             nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()));
         }
     }
 
@@ -690,7 +688,9 @@ public class RuleService {
         }
 
         if (!updateNodes.isEmpty()) {
-            asyncRequestService.enqueue(version, updateNodes.stream().collect(Collectors.toList()), validationPriority);
+            asyncRequestService.enqueueNodes(fundVersionId,
+                                        updateNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()),
+                                        validationPriority);
         }
     }
 
@@ -705,12 +705,10 @@ public class RuleService {
                 .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
                                                Collectors.mapping(i -> i.getNodeId(), 
                                                                   Collectors.toList())));
-        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
-            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
-            List<ArrNode> nodes = new ArrayList<>();
-            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
-            asyncRequestService.enqueue(version, nodes);
-        }
+
+        nodeIdFundVersionMap.forEach((fundVersionId, nodeIds) -> {
+            asyncRequestService.enqueueNodes(fundVersionId, nodeIds);
+        });
     }
 
     /**
@@ -1284,27 +1282,26 @@ public class RuleService {
         for (ApItemVO item : items) {
             AbstractItem ai;
             cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(item.getTypeId());
-            DataType dataType = itemType.getDataType();
             RulItemSpec itemSpec = item.getSpecId() == null ? null : sdp.getItemSpecById(item.getSpecId());
 
             if (item instanceof ApItemStringVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemStringVO) item).getValue());
+                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemStringVO) item).getValue());
             } else if (item instanceof ApItemBitVO) {
-                ai = new BoolItem(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemBitVO) item).getValue());
+                ai = new BoolItem(item.getId(), itemType, itemSpec, ((ApItemBitVO) item).getValue());
             } else if (item instanceof ApItemIntVO) {
-                ai = new IntItem(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemIntVO) item).getValue());
+                ai = new IntItem(item.getId(), itemType, itemSpec, ((ApItemIntVO) item).getValue());
             } else if (item instanceof ApItemTextVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemTextVO) item).getValue());
+                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemTextVO) item).getValue());
             } else if (item instanceof ApItemEnumVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), itemSpec == null ? null : itemSpec.getCode());
+                ai = new Item(item.getId(), itemType, itemSpec, itemSpec == null ? null : itemSpec.getCode());
             } else if (item instanceof ApItemAccessPointRefVO) {
-                ai = new IntItem(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemAccessPointRefVO) item).getValue());
+                ai = new IntItem(item.getId(), itemType, itemSpec, ((ApItemAccessPointRefVO) item).getValue());
             } else if (item instanceof ApItemUnitdateVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemUnitdateVO) item).getValue());
+                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemUnitdateVO) item).getValue());
             } else if (item instanceof ApItemCoordinatesVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemCoordinatesVO) item).getValue());
+                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemCoordinatesVO) item).getValue());
             } else if (item instanceof ApItemUriRefVO) {
-                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemUriRefVO) item).getValue());
+                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemUriRefVO) item).getValue());
             } else {
                 throw new NotImplementedException("Neimplementovaná konverze");
             }
@@ -1357,26 +1354,67 @@ public class RuleService {
 
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
-        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
 
         ApBuilder apBuilder = new ApBuilder(sdp);
         apBuilder.setAccessPoint(apState, parts, itemList);
 
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
+
+        List<ApRevIndex> revIndexes = null;
         if (includeRevision) {
             ApRevision revision = revisionService.findRevisionByState(apState);
             if (revision != null) {
                 List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
                 List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+                revIndexes = revisionPartService.findIndexesByRevision(revision);
 
                 // apply revision data
                 apBuilder.setRevision(revision, revParts, revItems);
+
+                // remove indexes for modified or deleted parts
+                Set<Integer> modOrigParts = revParts.stream().filter(r -> r.getOriginalPartId() != null)
+                        .map(ApRevPart::getOriginalPartId)
+                        .collect(Collectors.toSet());
+                List<ApIndex> origIndexList = indexList;
+                indexList = new ArrayList<>();
+                for (ApIndex origIndex : origIndexList) {
+                    if (!modOrigParts.contains(origIndex.getPartId())) {
+                        indexList.add(origIndex);
+                    }
+                }
             }
         }
+
         Ap ap = apBuilder.build();
 
-        Map<PartType, List<Index>> indexMap = indexList.stream()
-                .map(index -> createIndex(index, apBuilder.getPart(index.getPartId())))
-                .collect(Collectors.groupingBy(index -> index.getPart().getType()));
+        // prepare indexes
+        Map<PartType, List<Index>> indexMap = new HashMap<>();
+        for (ApIndex dbIndex : indexList) {
+            Part part = apBuilder.getPart(dbIndex.getPartId());
+            // add only for converted items
+            Index index = createIndex(dbIndex, part);
+            List<Index> indexes = indexMap.computeIfAbsent(part.getType(), pt -> new ArrayList<>());
+            indexes.add(index);
+        }
+        if (CollectionUtils.isNotEmpty(revIndexes)) {
+            // add new indexes
+            for (ApRevIndex revIndex : revIndexes) {
+                Part part = apBuilder.getPartByRevPartId(revIndex.getPartId());
+                if (part == null) {
+                    // part is only modified?
+                    Integer origPartId = revIndex.getPart().getOriginalPartId();
+                    Validate.notNull(origPartId);
+                    part = apBuilder.getPart(origPartId);
+                    Validate.notNull(part);
+                }
+
+                Index index = new Index(revIndex.getIndexType(), revIndex.getValue(), part);
+                List<Index> indexes = indexMap.computeIfAbsent(part.getType(), pt -> new ArrayList<>());
+                indexes.add(index);
+            }
+        }
+
+        List<ModelPart> modelPartList = createModelParts(indexMap);
 
         GeoModel geoModel = createGeoModel(ap);
 
@@ -1388,7 +1426,7 @@ public class RuleService {
         Map<String, Integer> identMap = apBuilder.createIdentMap();
 
         List<AbstractItem> items = apBuilder.createAbstractItemList();
-        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
+        ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
@@ -1403,7 +1441,7 @@ public class RuleService {
 
         for (Part part : ap.getParts()) {
             ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
-            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, ruleSet);
+            ModelAvailable availableResult = executeAvailable(part.getType(), modelAvailable, ruleSet);
 
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
@@ -1454,20 +1492,21 @@ public class RuleService {
     }
 
     private void validatePartRepeatability(final ModelValidation validationResult) {
-        Map<String, Integer> partCountMap = new HashMap<>();
+        Map<PartType, Integer> partCountMap = new HashMap<>();
         for (Part part : validationResult.getAp().getParts()) {
             if (part.getParent() == null) {
-                partCountMap.put(part.getType().value(), partCountMap.getOrDefault(part.getType().value(), 0) + 1);
+                partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
             }
         }
         for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable() && partCountMap.getOrDefault(modelPart.getType().value(), 0) > 1) {
+            if (!modelPart.isRepeatable() && partCountMap.getOrDefault(modelPart.getType(), 0) > 1) {
                 validationResult.getApValidationErrors().addError("Část " + modelPart.getType() + " je v entitě vícekrát.");
             }
         }
     }
 
-    private void validateIndexRepeatability(ModelValidation validationResult, ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateIndexRepeatability(ModelValidation validationResult,
+                                            ApValidationErrorsVO apValidationErrorsVO) {
         for (ModelPart modelPart : validationResult.getModelParts()) {
             if (CollectionUtils.isNotEmpty(modelPart.getIndices())) {
                 Map<String, Integer> indexCount = createIndexCountMap(modelPart.getIndices());
@@ -1511,15 +1550,13 @@ public class RuleService {
     private void validateRequiredItems(final ModelAvailable availableResult,
                                        final List<String> errors,
                                        final Part part) {
-        StaticDataProvider sdp = staticDataService.getData();
         for (ItemType itemType : availableResult.getItemTypes()) {
             if (itemType.getRequiredType().equals(RequiredType.REQUIRED)) {
-                AbstractItem item = findItem(availableResult.getItems(), itemType.getCode());
+                AbstractItem item = availableResult.findItem(itemType.getItemType());
                 if (item == null) {
-                    RulItemType rulItemType = sdp.getItemTypeByCode(itemType.getCode()).getEntity();
                     String partType = part != null ? " typu " + part.getType().value() : "";
                     errors.add("V části" + partType + " chybí povinný typ prvku "
-                            + itemType.getCode() + "-" + rulItemType.getName());
+                            + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
                 }
             }
         }
@@ -1528,38 +1565,21 @@ public class RuleService {
     private void validateImpossibleItems(final ModelAvailable availableResult,
                                          final List<String> errors,
                                          final Part part) {
-        StaticDataProvider sdp = staticDataService.getData();
         for (AbstractItem item : availableResult.getItems()) {
-            for (ItemType itemType : availableResult.getItemTypes()) {
-                if (item.getType().equals(itemType.getCode())) {
-                    if (itemType.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                        RulItemType rulItemType = sdp.getItemTypeByCode(itemType.getCode()).getEntity();
-                        String partType = part != null ? " typu " + part.getType().value() : "";
-                        errors.add("V části" + partType + " je zakázaný prvek typu "
-                                + itemType.getCode() + "-" + rulItemType.getName());
-                    } else if (item.getSpec() != null) {
-                        validateImpossibleSpec(item, itemType.getSpecs(), errors, part);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void validateImpossibleSpec(final AbstractItem item,
-                                        final Set<ItemSpec> itemSpecs,
-                                        final List<String> errors,
-                                        final Part part) {
-        StaticDataProvider sdp = staticDataService.getData();
-        for (ItemSpec itemSpec : itemSpecs) {
-            if (item.getSpec().equals(itemSpec.getCode())) {
+            ItemType itemType = availableResult.getItemType(item);
+            if (itemType.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
+                String partType = part != null ? " typu " + part.getType().value() : "";
+                errors.add("V části" + partType + " je zakázaný prvek typu " + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
+            } else if (item.getSpec() != null) {
+                ItemSpec itemSpec = itemType.getSpec(item.getSpec());
+                // specification must exist
+                Validate.notNull(itemSpec, "Data inconsistency, specification: %s", item.getSpec());
+                        
                 if (itemSpec.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                    RulItemSpec rulItemSpec = sdp.getItemSpecByCode(itemSpec.getCode());
                     String partType = part != null ? " typu " + part.getType().value() : "";
-                    errors.add("V části" + partType + " je zakázaná specifikace prvku "
-                            + itemSpec.getCode() + "-" + rulItemSpec.getName());
+                    errors.add("V části" + partType + " je zakázaná specifikace prvku " + itemSpec.getCode() + "-"
+                            + itemSpec.getItemSpec().getName());
                 }
-                break;
             }
         }
     }
@@ -1575,7 +1595,7 @@ public class RuleService {
 
         for (Map.Entry<String, Integer> entry : itemMap.entrySet()) {
             if (entry.getValue() > 1) {
-                ItemType itemType = findItemType(availableResult.getItemTypes(), entry.getKey());
+                ItemType itemType = availableResult.getItemType(entry.getKey());
                 if (itemType != null) {
                     if (!itemType.isRepeatable()) {
                         RulItemType rulItemType = sdp.getItemTypeByCode(itemType.getCode()).getEntity();
@@ -1595,19 +1615,30 @@ public class RuleService {
             Part parent = availableResult.getPart().getParent();
             Integer key = parent != null ? parent.getId() : -1;
             Map<String, Relation> simpleRelationMap = relationMap.get(key);
-            AbstractItem item = findItem(availableResult.getItems(), REL_ENTITY);
+
+            // Co dela cela kontrola nize a proc neni v pravidlech?
+            cz.tacr.elza.core.data.ItemType itemTypeRelEntity = sdp.getItemTypeByCode(REL_ENTITY);
+            if (itemTypeRelEntity == null) {
+                Validate.notNull(itemTypeRelEntity, "Chybi itemType " + REL_ENTITY);
+            }
+
+            // ?? muze vratit vice item stejneho typu
+            AbstractItem item = availableResult.findItem(itemTypeRelEntity);
             if (item != null) {
                 Relation simpleRelation = simpleRelationMap.get(item.getSpec());
                 if (simpleRelation.getRelationCount() > 1) {
-                    ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, REL_ENTITY);
+                    // Uplatni se jen pri vetsim poctu vztahu
+                    ItemType itemType = availableResult.getItemType(item);
+                    ItemSpec itemSpec = itemType.getSpec(item.getSpec());
+
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
-                        RulItemSpec rulItemSpec = sdp.getItemSpecByCode(itemSpec.getCode());
                         if (parent != null) {
                             PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(aeValidationErrorsVO, parent.getId());
                             partValidationErrorsVO.getErrors().add("V části typu " + parent.getType().value() + " je vztah "
-                                    + itemSpec.getCode() + "-" + rulItemSpec.getName() + " vícekrát.");
+                                    + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName() + " vícekrát.");
                         } else {
-                            aeValidationErrorsVO.getErrors().add("V entitě je vztah " + itemSpec.getCode() + "-" + rulItemSpec.getName() + " vícekrát.");
+                            aeValidationErrorsVO.getErrors().add("V entitě je vztah " + itemSpec.getCode() + "-"
+                                    + itemSpec.getItemSpec().getName() + " vícekrát.");
                         }
                     }
                 }
@@ -1617,16 +1648,18 @@ public class RuleService {
 
     private List<String> validateIdentRepeatabilitySpecs(final ModelAvailable availableResult,
                                                         final Map<String, Integer> identMap) {
-        StaticDataProvider sdp = staticDataService.getData();
         List<String> errors = new ArrayList<>();
         if (availableResult.getPart().getType().equals(PartType.PT_IDENT)) {
-            AbstractItem item = findItem(availableResult.getItems(), IDN_TYPE);
+            // TODO: itemu muze byt vice??
+            AbstractItem item = availableResult.findItem(IDN_TYPE);
             if (item != null && identMap.get(item.getSpec()) > 1) {
-                ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, IDN_TYPE);
+                ItemType itemType = availableResult.getItemType(item);
+                ItemSpec itemSpec = itemType.getSpec(item.getSpec());
+
                 if (itemSpec != null && !itemSpec.isRepeatable()) {
-                    RulItemSpec rulItemSpec = sdp.getItemSpecByCode(itemSpec.getCode());
                     errors.add("V části typu " + availableResult.getPart().getType().value() +
-                            " je externí identifikátor " + itemSpec.getCode() + "-" + rulItemSpec.getName() + " vícekrát.");
+                            " je externí identifikátor " + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName()
+                            + " vícekrát.");
                 }
             }
         }
@@ -1827,31 +1860,8 @@ public class RuleService {
     @Nullable
     private AbstractItem findItem(List<AbstractItem> itemList, String itemTypeCode) {
         for (AbstractItem item : itemList) {
-            if (item.getType().equals(itemTypeCode)) {
+            if (item.getItemType().getCode().equals(itemTypeCode)) {
                 return item;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private ItemType findItemType(List<ItemType> itemTypeList, String itemTypeCode) {
-        for (ItemType itemType : itemTypeList) {
-            if (itemType.getCode().equals(itemTypeCode)) {
-                return itemType;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private ItemSpec findItemSpec(List<ItemType> itemTypeList, AbstractItem item, String itemTypeCode) {
-        ItemType itemType = findItemType(itemTypeList, itemTypeCode);
-        if (itemType != null && CollectionUtils.isNotEmpty(itemType.getSpecs())) {
-            for (ItemSpec itemSpec : itemType.getSpecs()) {
-                if (itemSpec.getCode().equals(item.getSpec())) {
-                    return itemSpec;
-                }
             }
         }
         return null;
@@ -1860,25 +1870,22 @@ public class RuleService {
     private List<ItemType> createModelItemTypes() {
         StaticDataProvider sdp = staticDataService.getData();
         Collection<cz.tacr.elza.core.data.ItemType> itemTypes = sdp.getItemTypes();
-        List<ItemType> modelItemTypes = new ArrayList<>();
+        List<ItemType> modelItemTypes = new ArrayList<>(itemTypes.size());
         for (cz.tacr.elza.core.data.ItemType itemType : itemTypes) {
-            ItemType modelItemType;
-            if (CollectionUtils.isNotEmpty(itemType.getItemSpecs())) {
-                Collection<RulItemSpec> itemSpecs = itemType.getItemSpecs();
-                Set<ItemSpec> modelItemSpecs = itemSpecs.stream()
-                        .map(is -> new ItemSpec(is.getItemSpecId(), is.getCode()))
-                        .collect(Collectors.toSet());
-                modelItemType = new ItemType(itemType.getItemTypeId(), itemType.getCode(), modelItemSpecs);
-            } else {
-                modelItemType = new ItemType(itemType.getItemTypeId(), itemType.getCode());
-            }
-            modelItemTypes.add(modelItemType);
+            modelItemTypes.add(new ItemType(itemType));
         }
         return modelItemTypes;
     }
 
+    /**
+     * Prepare list of part types
+     * 
+     * @param indexMap
+     * @return
+     */
     private List<ModelPart> createModelParts(Map<PartType, List<Index>> indexMap) {
         List<ModelPart> modelPartList = new ArrayList<>();
+
         for(PartType partType : PartType.values()) {
             List<Index> indices = indexMap.getOrDefault(partType, null);
             modelPartList.add(new ModelPart(partType, indices));

@@ -47,6 +47,11 @@ public abstract class AsyncExecutor {
      */
     public final int LOAD_SEC = 3600;
 
+    /**
+     * Maximální počet záznamů pro načtení z DB při obnově fronty
+     */
+    public final int READ_MAX_COUNT = 10000;
+
     private final ArrAsyncRequestRepository asyncRequestRepository;
     private final ApplicationContext appCtx;
     private final PlatformTransactionManager txManager;
@@ -222,10 +227,13 @@ public abstract class AsyncExecutor {
             List<IAsyncRequest> results = new ArrayList<>();
             int p = 0;
             List<ArrAsyncRequest> requests;
-            int MAX = 1000;
             List<ArrAsyncRequest> deleteRequests = new ArrayList<>();
             do {
-                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, MAX));
+                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p,
+                                                                                                            READ_MAX_COUNT));
+
+                logger.info("Async requests fetched from DB, type: {}, count: {}, page: {}",
+                            getType(), requests.size(), p);
                 for (ArrAsyncRequest request : requests) {
                     if (isFailedRequest(request)) {
                         deleteRequests.add(request);
@@ -237,7 +245,7 @@ public abstract class AsyncExecutor {
                     }
                 }
                 p++;
-            } while (requests.size() == MAX);
+            } while (requests.size() == READ_MAX_COUNT);
 
             if (deleteRequests.size() > 0) {
                 asyncRequestRepository.deleteAll(deleteRequests);
@@ -276,29 +284,40 @@ public abstract class AsyncExecutor {
         });
     }
 
+    public void countRequest(int cnt) {
+        TimeRequestInfo tri = new TimeRequestInfo();
+        for (int i = 0; i < cnt; i++) {
+            lastHourRequests.add(tri);
+        }
+        lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
+    }
+
     public void countRequest() {
         lastHourRequests.add(new TimeRequestInfo());
         lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
     }
 
     public void onFail(IAsyncWorker worker, final Throwable error) {
+        IAsyncRequest request = worker.getRequest();
+        logger.error("Request failed: {}", request, error);
+        List<? extends IAsyncRequest> requests = worker.getRequests();
+
         synchronized (lockQueue) {
-            IAsyncRequest request = worker.getRequest();
-            logger.error("Selhání requestu {}", request, error);
-            countRequest();
-            processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
-            deleteRequests(worker.getRequests());
+            countRequest(requests.size());
+            processing.remove(worker);
+            deleteRequests(requests);
             scheduleNext();
         }
     }
 
     public void onSuccess(IAsyncWorker worker) {
+        List<? extends IAsyncRequest> requests = worker.getRequests();
+        logger.debug("Finished requests({}): {}", requests.size(), requests);
+
         synchronized (lockQueue) {
-            IAsyncRequest request = worker.getRequest();
-            logger.debug("Dokončení requestu {}", request);
-            countRequest();
-            processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
-            deleteRequests(worker.getRequests());
+            countRequest(requests.size());
+            processing.remove(worker);
+            deleteRequests(requests);
             scheduleNext();
         }
     }
@@ -464,7 +483,6 @@ public abstract class AsyncExecutor {
         if (skip(request)) {
             skipped.add(request); // přidání do fronty na přeskočení
         } else {
-            logger.debug("Přidání do fronty: {}", request);
             queue.add(request);
         }
     }
@@ -504,9 +522,12 @@ public abstract class AsyncExecutor {
     }
 
     /**
-     * Hromadné přidání požadavků.
+     * Hromadné přidání požadavků do paměťové fronty
+     * 
+     * Metoda naplánuje požadavky po commitu.
      *
-     * @param requests požadavky na zpracování
+     * @param requests
+     *            požadavky na zpracování
      */
     public void enqueue(final Collection<IAsyncRequest> requests) {
         // přidáváme až po úspěšném dokončení probíhající transakce

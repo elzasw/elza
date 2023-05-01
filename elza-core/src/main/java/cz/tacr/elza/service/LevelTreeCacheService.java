@@ -686,7 +686,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
             List<AbstractEventSimple> events = changeMessage.getEvents();
             for (AbstractEventSimple event : events) {
-                logger.debug("Zpracování události " + event.getEventType());
+                logger.trace("Přijetí události: {}", event.getEventType());
 
                 processEvent(event);
             }
@@ -706,6 +706,8 @@ private void processEvent(AbstractEventSimple event) {
         case ADD_LEVEL_AFTER:
         case ADD_LEVEL_BEFORE:
         case ADD_LEVEL_UNDER:
+            logger.debug("Zpracování události: {}", event.getEventType());
+
             EventAddNode eventAddNode = (EventAddNode) event;
             actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
                            eventAddNode.getVersionId(), event.getEventType());
@@ -713,6 +715,8 @@ private void processEvent(AbstractEventSimple event) {
         case MOVE_LEVEL_AFTER:
         case MOVE_LEVEL_BEFORE:
         case MOVE_LEVEL_UNDER:
+            logger.debug("Zpracování události: {}", event.getEventType());
+
             EventNodeMove eventNodeMove = (EventNodeMove) event;
             List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
                     .map(n -> n.getNodeId()).collect(Collectors.toList());
@@ -721,10 +725,14 @@ private void processEvent(AbstractEventSimple event) {
 
             break;
         case DELETE_LEVEL:
+            logger.debug("Zpracování události: {}", event.getEventType());
+
             EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
             actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
             break;
         case BULK_ACTION_STATE_CHANGE:
+            logger.debug("Zpracování události: {}", event.getEventType());
+
             EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
             if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
                 if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
