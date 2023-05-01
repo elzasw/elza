@@ -17,8 +17,6 @@ import cz.tacr.elza.domain.vo.DataValidationResult.ValidationResultType;
 /**
  * Object for validation results
  *
- * @author Petr Pytelka
- *
  */
 public class DataValidationResults {
 
