@@ -23,7 +23,7 @@ public class AsyncAccessPointExecutor extends AsyncExecutor {
                 executor,
                 new RequestQueue<>(IAsyncRequest::getCurrentId),
                 txManager,
-                asyncRequestRepository, appCtx, Integer.MAX_VALUE);
+                asyncRequestRepository, appCtx, 2/*Integer.MAX_VALUE*/);
     }
 
     @Override

@@ -62,6 +62,12 @@ spring:
     url: ${elza.data.url}
     username: ${elza.data.user}
     password: ${elza.data.pass}
+    hikari:
+      # Prodlouzeni doby cekani na transakci
+      connectionTimeout: 300000
+      # Zvyseni poctu pripojeni do DB z duvodu behu paralelnich transakci pri validacich
+      maximumPoolSize: 20
+
   main:
     allow-bean-definition-overriding: true
   data:
