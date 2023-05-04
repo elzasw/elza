@@ -272,7 +272,7 @@ public class GroovyService {
         String itemTypeCode = itemType.getCode();
         RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
 
-        DataType dataType = DataType.fromCode(data.getDataType().getCode());
+        DataType dataType = itemType.getDataType();
         GroovyItem groovyItem;
         switch (dataType) {
             case BIT: {
