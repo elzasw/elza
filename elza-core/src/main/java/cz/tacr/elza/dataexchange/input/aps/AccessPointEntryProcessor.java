@@ -100,7 +100,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         // Try to pair entity to existing one
         String apUuid = StringUtils.trimToNull(entry.getUuid());
         if (apUuid != null) {
-            ApAccessPoint dbAp = context.getApByUuid(apUuid);
+            ApAccessPoint dbAp = context.findApByUuid(apUuid);
             if (dbAp != null) {
                 context.addExisingAccessPoint(dbAp, entry.getId());
                 return;
