@@ -97,7 +97,17 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected void proccessAp(AccessPoint ap) {
         AccessPointEntry entry = ap.getApe();
         entryId = entry.getId();
-        ApEntity entity = createEntity(entry);
+        // Try to pair entity to existing one
+        String apUuid = StringUtils.trimToNull(entry.getUuid());
+        if (apUuid != null) {
+            ApAccessPoint dbAp = context.getApByUuid(apUuid);
+            if (dbAp != null) {
+                context.addExisingAccessPoint(dbAp, entry.getId());
+                return;
+            }
+        }
+
+        ApEntity entity = createEntity(entry, apUuid);
         List<ApBindingState> eids = createExternalIds(entry.getEid());
         if (ap.getFrgs() == null) {
             throw new NotImplementedException("Nejsou vyplněné fragmenty u " + entryId + ", je potřeba použít nový zápis!");
@@ -113,7 +123,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         AccessPointEntry entry = party.getApe();
         entryId = entry.getId();
         // create AP and prepare AP info
-        ApEntity entity = createEntity(entry);
+        ApEntity entity = createEntity(entry, null);
         List<ApBindingState> eids = createExternalIds(entry.getEid());
         apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids, null);
 
@@ -289,7 +299,15 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
     }
 
-    private ApEntity createEntity(AccessPointEntry entry) {
+    /**
+     * Create entit
+     * 
+     * @param entry
+     * @param uuid
+     *            - optional entity UUID, might be null
+     * @return
+     */
+    private ApEntity createEntity(AccessPointEntry entry, String uuid) {
         if (StringUtils.isEmpty(entry.getId())) {
             throw new DEImportException("AP entry id is empty");
         }
@@ -307,7 +325,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
         // create AP
         ApAccessPoint accessPoint = new ApAccessPoint();
-        accessPoint.setUuid(StringUtils.trimToNull(entry.getUuid()));
+        accessPoint.setUuid(uuid);
         accessPoint.setState(ApStateEnum.OK);
         accessPoint.setLastUpdate(context.getCreateChange().getChangeDate().toLocalDateTime());
 
