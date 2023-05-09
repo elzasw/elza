@@ -138,8 +138,8 @@ public class AccessPointsContext {
         parentPartIdMap.putIfAbsent(partWrapper, parentFragmentId);
     }
 
-    public ApAccessPoint getApByUuid(String apUuid) {
-        ApAccessPoint ap = accessPointService.getAccessPointByUuid(apUuid);
+    public ApAccessPoint findApByUuid(String apUuid) {
+        ApAccessPoint ap = accessPointService.findAccessPointByUuid(apUuid);
         return ap;
     }
 
