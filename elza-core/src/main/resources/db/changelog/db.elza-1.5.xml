@@ -2265,4 +2265,10 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 		join ap_part p on ap.preferred_part_id = p.part_id 
 		where p.key_value_id is null)</sql>
     </changeSet>
+
+
+    <changeSet id="20230510143300" author="ppyt">
+        <!-- Fulltext reindex -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
+	</changeSet>
 </databaseChangeLog>
