@@ -1739,9 +1739,21 @@ public class AccessPointService {
     }
 
     /**
+     * Vyhledání přístupového bodu dle uuid
+     *
+     * @param uuid
+     *            identifikátor přístupového bodu
+     * @return přístupový bod nebo null pokud není nalezen
+     */
+    public ApAccessPoint findAccessPointByUuid(final String uuid) {
+        return apAccessPointRepository.findAccessPointByUuid(uuid);
+    }
+
+    /**
      * Získání přístupového bodu pro úpravu.
      *
-     * @param accessPointId identifikátor přístupového bodu
+     * @param accessPointId
+     *            identifikátor přístupového bodu
      * @return přístupový bod
      */
     public ApAccessPoint getAccessPointInternal(final Integer accessPointId) {

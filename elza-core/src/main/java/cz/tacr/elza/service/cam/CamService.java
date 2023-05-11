@@ -915,9 +915,8 @@ public class CamService {
             SecurityContextHolder.setContext(secCtx);
 
             ApBinding binding;
-            if(queueItem.getAccessPointId()!=null) {
-                ApBindingState bindingState = bindingStateRepository
-                        .findByAccessPointAndExternalSystem(queueItem.getAccessPoint(), externalSystem);
+            if (queueItem.getAccessPointId() != null) {
+                ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(queueItem.getAccessPoint(), externalSystem);
                 if (bindingState == null) {
                     if (queueItem.getBinding() != null) {
                         // this is quite weird case
@@ -929,9 +928,8 @@ public class CamService {
 
                         binding = queueItem.getBinding();
                     } else {
-                        throw new BusinessException("Missing bindingState for accessPoint",
-                                BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                        throw new BusinessException("Missing bindingState for accessPoint", BaseCode.DB_INTEGRITY_PROBLEM)
+                                .set("queueItemId", queueItem.getExtSyncsQueueItemId());
                     }
                 } else {
                     binding = bindingState.getBinding();
@@ -947,12 +945,22 @@ public class CamService {
             // find related xmlEntity
             EntityXml entity = entityXmlMap.get(binding.getValue());
             if (entity == null) {
-                throw new BusinessException("Missing requested entity, binding: " + binding.getValue(),
-                        ExternalCode.RECORD_NOT_FOUND)
-                                .set("bindingValue", binding.getValue())
-                                .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                // if batch size = 1, then mark queue item as invalid and stop trying
+                if (queueItemIds.size() == 1) {
+                    log.error("Missing requested entity, binding: {}, queueItemId: {}", binding.getValue(), queueItem.getExtSyncsQueueItemId());
+                    setQueueItemState(queueItem,
+                                      ExtAsyncQueueState.ERROR,
+                                      OffsetDateTime.now(),
+                                      "Error: entity not found in ES, binding: " + binding.getValue());
+                    return;
+                } else {
+                    throw new BusinessException("Missing requested entity, binding: " + binding.getValue(),
+                            ExternalCode.RECORD_NOT_FOUND)
+                                    .set("bindingValue", binding.getValue())
+                                    .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                }
             }
-            
+
             synchronizeAccessPoint(procCtx, binding, entity, true);
             setQueueItemState(queueItem,
                               ExtAsyncQueueState.IMPORT_OK,

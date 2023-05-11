@@ -20,7 +20,9 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
     public void process(Object item) {
         AccessPoint ap = (AccessPoint) item;
         proccessAp(ap);
-        apInfo.onProcessed();
+        if (apInfo != null) {
+            apInfo.onProcessed();
+        }
     }
 
     protected ApPart createPart(RulPartType type, AccessPointInfo apInfo) {
