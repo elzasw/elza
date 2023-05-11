@@ -1,20 +1,39 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
-import cz.tacr.elza.dataexchange.input.context.*;
+import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
+import cz.tacr.elza.dataexchange.input.context.ImportPhase;
+import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
+import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.parts.context.ParentPartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
-
-import java.util.*;
 
 /**
  * Context for data exchange access points.
@@ -117,6 +136,24 @@ public class AccessPointsContext {
 
     public void addToParentPartIdMap(PartWrapper partWrapper, String parentFragmentId) {
         parentPartIdMap.putIfAbsent(partWrapper, parentFragmentId);
+    }
+
+    public ApAccessPoint findApByUuid(String apUuid) {
+        ApAccessPoint ap = accessPointService.findAccessPointByUuid(apUuid);
+        return ap;
+    }
+
+    /**
+     * Add reference to existing AP in DB
+     * 
+     * @param Ap
+     * @param id
+     */
+    public void addExisingAccessPoint(ApAccessPoint ap, String entryId) {
+        AccessPointInfo info = new AccessPointInfo(ap);
+        if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
+            throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
+        }
     }
 
     /**

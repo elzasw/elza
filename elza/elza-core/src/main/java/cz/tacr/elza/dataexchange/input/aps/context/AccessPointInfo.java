@@ -35,6 +35,16 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
         this.apState = apState;
     }
 
+    /**
+     * Reference to existing AP
+     * 
+     * @param ap
+     */
+    public AccessPointInfo(ApAccessPoint ap) {
+        this.entityId = ap.getAccessPointId();
+        this.apState = null;
+    }
+
     @Override
     public Integer getEntityId() {
         Validate.notNull(entityId);

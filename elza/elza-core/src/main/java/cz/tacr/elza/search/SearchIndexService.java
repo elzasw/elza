@@ -1,5 +1,8 @@
 package cz.tacr.elza.search;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +12,6 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.search.backend.LuceneWork;
@@ -33,12 +34,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.SysIndexWork;
 import cz.tacr.elza.service.DescriptionItemService;
-
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toSet;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 
 @Component
 public class SearchIndexService {
@@ -112,7 +112,17 @@ public class SearchIndexService {
             }
 
             for (Map.Entry<Integer, Object> entry : entityMap.entrySet()) {
-                plan.addWork(new Work(entry.getValue(), entry.getKey(), WorkType.INDEX));
+                // Hack to not index deleted descItems
+                WorkType wt = WorkType.INDEX;
+                if (entry.getValue() instanceof ArrDescItem) {
+                    ArrDescItem di = (ArrDescItem) entry.getValue();
+                    if (di.getDeleteChangeId() != null ||
+                            di.getDeleteChange() != null) {
+                        wt = WorkType.DELETE;
+                    }
+                }
+
+                plan.addWork(new Work(entry.getValue(), entry.getKey(), wt));
             }
 
             List<LuceneWork> luceneWorkList = plan.getPlannedLuceneWork();
