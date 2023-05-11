@@ -80,8 +80,9 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
             List<ApPart> subParts = new ArrayList<>();
             // export main / parent parts
             for (ApPart part : apInfo.getParts()) {
-                if(part.getParentPart() != null) {
+                if (part.getParentPart() != null) {
                     subParts.add(part);
+                    continue;
                 }
 
                 Fragment frgElement = createFragment(part, apInfo.getItems().get(part.getPartId()));

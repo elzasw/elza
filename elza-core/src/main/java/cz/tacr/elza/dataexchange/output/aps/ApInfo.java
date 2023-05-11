@@ -3,9 +3,7 @@ package cz.tacr.elza.dataexchange.output.aps;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 
@@ -29,14 +27,6 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
     private Collection<ApBindingState> externalIds;
 
     private ArrayList<ApPart> parts = new ArrayList<>();
-
-    /**
-     * Prevent multiple exports of same part.
-     * 
-     * Probably should not be needed, but such cases detected.
-     * Needs improvement in future releases.
-     */
-    private Set<Integer> partIds = new HashSet<>();
 
     private Map<Integer, Collection<ApItem>> partItemsMap; // partId, items
 
@@ -77,16 +67,12 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemAp
 
     @Override
     public void addPart(ApPart part) {
-        if (partIds.contains(part.getPartId())) {
-            return;
-        }
         if (part.getPartId().equals(apState.getAccessPoint().getPreferredPartId())) {
             // store pref. name as first
             parts.add(0, part);
         } else {
             this.parts.add(part);
         }
-        partIds.add(part.getPartId());
     }
 
 
