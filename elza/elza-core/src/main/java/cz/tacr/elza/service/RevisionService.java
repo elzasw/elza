@@ -458,7 +458,7 @@ public class RevisionService {
     }
 
     @Transactional
-    public void deletePart(ApState state, Integer partId) {
+    public void deleteRevPart(ApState state, Integer partId) {
         ApRevision revision = revisionRepository.findByState(state);
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
@@ -470,9 +470,6 @@ public class RevisionService {
         }
 
         ApRevPart revPart = revisionPartService.findById(partId);
-        ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
-        List<ApRevIndex> indices = revIndexRepository.findByPart(revPart);
-        List<ApRevItem> items = revisionItemService.findByPart(revPart);
 
         // pokud existuje smazaný rodičovský part obnovení není možné
         if (revPart.getParentPartId() != null) {
@@ -484,9 +481,18 @@ public class RevisionService {
             }
         }
 
+        // pokud existují podřízené part, vymažeme je také
+        List<ApRevPart> toDelete = new ArrayList<>(); 
+        toDelete.addAll(revisionPartService.findPartsByRevParentPart(revPart));
+        toDelete.add(revPart);
+
+        List<ApRevIndex> indices = revIndexRepository.findByParts(toDelete);
+        List<ApRevItem> items = revisionItemService.findByParts(toDelete);
+        ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
+
         deleteRevisionIndices(indices);
         revisionItemService.deleteRevisionItems(items, apChange);
-        revisionPartService.deleteRevisionPart(revPart, apChange);
+        revisionPartService.deleteRevisionParts(toDelete, apChange);
     }
 
     @Transactional
