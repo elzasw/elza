@@ -134,6 +134,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
+import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 
@@ -1360,7 +1361,12 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, binding, entity, false);
+        try {
+            camService.synchronizeAccessPoint(procCtx, binding, entity, false);
+        } catch (SyncImpossibleException e) {
+            logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", accessPoint.getAccessPointId(), bindingState.getBindingId(), e.getMessage());
+            throw new BusinessException("Synchronizace této entity s CAM není možná. " + e.getMessage(), ExternalCode.SYNC_IMPOSSIBLE);
+        }
     }
 
     private AbstractException prepareSystemException(ApiException e) {
