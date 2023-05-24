@@ -562,6 +562,10 @@ public class ExternalSystemService {
         return bindingStateRepository.findActiveByBinding(binding);
     }
 
+    public ApBindingState getBindingState(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
+        return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+    }
+
     @Transactional
     public BindingSyncInfo getBindingSync(final String extSystemCode, final String transactionUuid) {
         ApExternalSystem externalSystem = findApExternalSystemByCode(extSystemCode);
