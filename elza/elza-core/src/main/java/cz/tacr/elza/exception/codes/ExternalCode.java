@@ -23,5 +23,10 @@ public enum ExternalCode implements ErrorCode {
     EXTERNAL_SYSTEM_ERROR,
 
     /** Záznam byl již importován. */
-    ALREADY_IMPORTED;
+    ALREADY_IMPORTED,
+    
+    /**
+     * Synchronizace s CAM není možná
+     */
+    SYNC_IMPOSSIBLE,
 }
