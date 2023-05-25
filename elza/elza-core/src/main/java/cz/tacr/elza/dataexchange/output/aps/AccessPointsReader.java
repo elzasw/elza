@@ -11,9 +11,12 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.exception.AccessPointException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -64,12 +67,13 @@ public class AccessPointsReader implements ExportReader {
                     ApInfo apInfo = getApInfo();
                     if (apInfo == null) {
                     	throw new SystemException("Entity not found.", BaseCode.ID_NOT_EXIST)
-                    		.set("ID", apId);
+                                .set(ApAccessPoint.FIELD_ACCESS_POINT_ID, apId);
                     }
                     if (!context.canExportDeletedAPs()) {
                         if (apInfo.getApState().getDeleteChangeId() != null) {
-                            throw new SystemException("Entity has been deleted.", BaseCode.INVALID_STATE)
-                                    .set("ID", apId);
+                            throw new AccessPointException("Entity has been deleted.",
+                                    RegistryCode.CANT_EXPORT_DELETED_AP)
+                                            .set(ApAccessPoint.FIELD_ACCESS_POINT_ID, apId);
                         }
                     }
 

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.PackageVO;
@@ -27,7 +26,6 @@ public class PackageTest extends AbstractControllerTest {
     public void setUp() throws Exception {
         loadInstitutions = false;
         super.setUp();
-        loadInstitutions = true;
     }
 
     @Test

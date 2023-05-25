@@ -164,7 +164,7 @@ import io.restassured.specification.RequestSpecification;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
-    protected static boolean loadInstitutions = true;
+    protected boolean loadInstitutions = true;
 
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(
             EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));

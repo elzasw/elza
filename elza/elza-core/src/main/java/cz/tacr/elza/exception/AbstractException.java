@@ -14,7 +14,7 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  */
 public abstract class AbstractException extends RuntimeException {
 
-    private ErrorCode errorCode;
+    final protected ErrorCode errorCode;
 
     private Map<String, Object> properties;
 
