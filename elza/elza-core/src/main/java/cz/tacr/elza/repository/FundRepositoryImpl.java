@@ -134,7 +134,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 
 		// get total number of records if needed
 		if (totalCount >= maxResults || firstResult > 0) {
-			TypedQuery<Number> count = buildFundFindQuery(false, search, firstResult, maxResults, Number.class);
+			TypedQuery<Number> count = buildFundFindQuery(false, search, institutionId, firstResult, maxResults, Number.class);
 			totalCount = count.getSingleResult().intValue();
 		}
 		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
