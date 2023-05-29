@@ -14,7 +14,7 @@ public class FilterInputStreamWithException extends FilterInputStream {
 	
 	private void checkException() throws IOException {
         if (except != null) {
-            //Exception thrown by the write will bubble up to InputStream reader
+            //Exception thrown by the writer will bubble up to InputStream reader
             throw new IOException("IOException in writer: "+except.getMessage(), except);
         }		
 	}

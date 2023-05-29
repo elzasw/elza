@@ -45,7 +45,9 @@ import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
+import cz.tacr.elza.exception.AccessPointException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.service.AccessPointDataService;
@@ -218,6 +220,21 @@ public class ExportServiceImpl implements ExportService {
             DataHandler dataHandler = new DataHandler(ds);
             erd.setBinData(dataHandler);
         } catch (IOException e) {
+            Throwable cause = e.getCause();
+            if (cause != null) {
+                if (cause instanceof AccessPointException) {
+                    // Handle special case of deleted entity
+                    AccessPointException ape = (AccessPointException) cause;
+                    if (ape.getErrorCode() == RegistryCode.CANT_EXPORT_DELETED_AP) {
+                        cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper
+                                .prepareErrorDescription("Cannot export delete entity.",
+                                                         "Deleted AP: " + ape.getProperties()
+                                                                 .get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
+                        
+                        throw new ExportRequestException("Cannot export deleted AP.", ed);
+                    }
+                }
+            }
             throw new SystemException(e);
         }
 

@@ -19,6 +19,11 @@ public enum RegistryCode implements ErrorCode {
     CANT_RESTORE_NOT_DELETED_AP,
     
     /**
+     * Deleted AP cannot be exported
+     */
+    CANT_EXPORT_DELETED_AP,
+
+    /**
      * Nelze upravit odstraněné jméno přístupového bodu.
      */
     CANT_CHANGE_DELETED_NAME,

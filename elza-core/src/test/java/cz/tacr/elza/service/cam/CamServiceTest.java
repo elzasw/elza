@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.cam;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
@@ -154,8 +155,12 @@ public class CamServiceTest extends AbstractControllerTest {
             assertNotNull(ent2);
 
             ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
-            camService.synchronizeAccessPoint(procCtx, binding1, ent1, true);
-            camService.synchronizeAccessPoint(procCtx, binding2, ent2, true);
+            try {
+                camService.synchronizeAccessPoint(procCtx, binding1, ent1, true);
+                camService.synchronizeAccessPoint(procCtx, binding2, ent2, true);
+            } catch (SyncImpossibleException e) {
+                fail();
+            }
         	return null;
         });
 

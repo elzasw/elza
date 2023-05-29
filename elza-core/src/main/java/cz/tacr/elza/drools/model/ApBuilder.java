@@ -371,14 +371,15 @@ public class ApBuilder {
                 // is new subpart of old part
                 if (revPart.getParentPartId() != null) {
                     part = createPart(revPart, items, false);
-                } else 
-                // is new main part
-                if (revPart.getRevParentPartId() == null) {
-                    part = createPart(revPart, items, false);
                 } else {
-                    part = null;
-                    // subpart of new main part - process in next run
-                    subpartsToCreate.add(revPart);
+                    // is new main part
+                    if (revPart.getRevParentPartId() == null) {
+                        part = createPart(revPart, items, false);
+                    } else {
+                        part = null;
+                        // subpart of new main part - process in next run
+                        subpartsToCreate.add(revPart);
+                    }
                 }
             }
 
