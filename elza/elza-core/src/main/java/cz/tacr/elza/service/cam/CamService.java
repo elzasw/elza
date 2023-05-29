@@ -641,21 +641,18 @@ public class CamService {
      * 
      * Metoda musí mít nastaven securityContext pro aktivního uživatele
      * 
-     * @param procCtx
-     *            context
-     * @param binding
-     *            vazba na externí entit
-     * @param entity
-     *            entita z externího systému
+     * @param procCtx   context
+     * @param binding   vazba na externí entit
+     * @param entity    entita z externího systému
      * @param syncQueue
      *            zda-li se jedná o volání z fronty
      *            při volání z fronty:
      *            - lokálně smazaná entita není obnovena (změna stavu)
-     * 
+     * @throws  SyncImpossibleException
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        @NotNull ApBinding binding,
-                                       @NotNull EntityXml entity, boolean syncQueue) {
+                                       @NotNull EntityXml entity, boolean syncQueue) throws SyncImpossibleException {
         Validate.notNull(binding);
         Validate.notNull(entity);
 
@@ -673,30 +670,36 @@ public class CamService {
         // ex      | ex              | true
         ApAccessPoint accessPoint = null;
         ApState state = null;
-        ApBindingState bindingState = this.externalSystemService.getBindingState(binding).orElse(null);
+        ApBindingState bindingState = externalSystemService.getBindingState(binding).orElse(null);
         ApChange apChange = null;
         if (bindingState != null) {
             // ap exists
             accessPoint = bindingState.getAccessPoint();
             state = accessPointService.getStateInternal(accessPoint);
-        } else {
-            apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
-
+        } else {            
             // Kontrola na zalozeni nove entity
             // overeni existence UUID
             accessPoint = apAccessPointRepository.findAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
+                // Check if entity has other binding state in the external system
+                // if found throw SyncImpossibleException
+                bindingState = externalSystemService.getBindingState(accessPoint, procCtx.getApExternalSystem());
+                if (bindingState != null) {
+                    throw new SyncImpossibleException("Found accesspoint by UUID but with different binding, accessPointId: " + accessPoint.getAccessPointId());
+                }
+
+                apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
                 // we can assign ap to the binding
                 log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
                          entity.getEuid().getValue(), accessPoint.getAccessPointId());
                 state = accessPointService.getStateInternal(accessPoint);
                 if (state == null) {
                     // ap without apState -> this is DB inconsistency
-                    throw new BusinessException("AccessPoint without state, accessPointId: " + accessPoint
-                            .getAccessPointId(), BaseCode.DB_INTEGRITY_PROBLEM)
+                    throw new BusinessException("AccessPoint without state, accessPointId: " + accessPoint.getAccessPointId(), 
+                                                BaseCode.DB_INTEGRITY_PROBLEM)
                                     .set("accessPointId", accessPoint.getAccessPointId());
                 }
-                if (state.getDeleteChangeId() != null) {
+                if (state.getDeleteChangeId() != null) {                    
                     // pokud state smazan && bindingState == null mohlo by jít o obnovení neplatné entity
                     state = accessPointService.copyState(state, apChange);
                 }
@@ -733,7 +736,7 @@ public class CamService {
                         bindingStateRepository.save(bindingState);
                         accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                     }
-                    return;                	
+                    return;
                 } else {
                 	throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
                 		.set("accessPointId", state.getAccessPointId())
@@ -961,11 +964,20 @@ public class CamService {
                 }
             }
 
-            synchronizeAccessPoint(procCtx, binding, entity, true);
-            setQueueItemState(queueItem,
-                              ExtAsyncQueueState.IMPORT_OK,
-                              OffsetDateTime.now(),
-                              "Synchronized: ES -> ELZA");
+            try {
+                synchronizeAccessPoint(procCtx, binding, entity, true);
+                setQueueItemState(queueItem,
+                                  ExtAsyncQueueState.IMPORT_OK,
+                                  OffsetDateTime.now(),
+                                  "Synchronized: ES -> ELZA");
+            } catch (SyncImpossibleException e) {
+                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(), 
+                          queueItem.getExtSyncsQueueItemId(), e);
+                setQueueItemState(queueItem,
+                                  ExtAsyncQueueState.ERROR,
+                                  OffsetDateTime.now(),
+                                  "Error: synchronized impossible: ES -> ELZA, " + e.getMessage());
+            }
         }
     }
 

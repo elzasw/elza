@@ -1339,16 +1339,19 @@ public class RuleService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApState apState,
+    public ApValidationErrorsVO executeValidation(final ApState srcApState,
                                                   final boolean includeRevision) {
+
+        Integer stateId = srcApState.getStateId();
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
 
         StaticDataProvider sdp = staticDataService.getData();
 
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApScope scope = apState.getScope();
+        ApState state = stateRepository.findById(stateId).orElseThrow(() -> new ObjectNotFoundException("ApState neexistuje", BaseCode.ID_NOT_EXIST).setId(stateId));
+        ApAccessPoint accessPoint = state.getAccessPoint();
+        ApScope scope = state.getScope();
         Integer ruleSetId = scope.getRuleSetId();
         RuleSet ruleSet = sdp.getRuleSetById(ruleSetId); 
 
@@ -1356,13 +1359,13 @@ public class RuleService {
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
 
         ApBuilder apBuilder = new ApBuilder(sdp);
-        apBuilder.setAccessPoint(apState, parts, itemList);
+        apBuilder.setAccessPoint(state, parts, itemList);
 
-        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(apState.getAccessPointId());
+        List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(state.getAccessPointId());
 
         List<ApRevIndex> revIndexes = null;
         if (includeRevision) {
-            ApRevision revision = revisionService.findRevisionByState(apState);
+            ApRevision revision = revisionService.findRevisionByState(state);
             if (revision != null) {
                 List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
                 List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
