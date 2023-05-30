@@ -444,7 +444,8 @@ public class PartService {
 
             ApIndex apIndex = apIndexMapByType.remove(indexType);
 
-            if (indexType.equals(DISPLAY_NAME)) {
+            // Kontrola, zda došlo ke změně pref. označení u nesmazané entity - nutno přegenerovat napojené
+            if (indexType.equals(DISPLAY_NAME) && state.getDeleteChange() == null) {
                 if ((wasPreferredPart && !value.equals(apIndex.getValue()))
                         || (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))
                         || (preferredPart && !wasPreferredPart)) {
