@@ -55,6 +55,9 @@ public class CamExportBuilder implements ExportBuilder {
 
     final private SchemaManager schemaManager;
 
+    // entity filter
+    final private boolean applyFilter;
+
     protected CamExportBuilder getExportBuilder() {
         return this;
     }
@@ -81,25 +84,31 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
+    // call by REST
     public CamExportBuilder(final StaticDataProvider staticDataProvider,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
-                            final AccessPointDataService apDataService) {
+                            final AccessPointDataService apDataService,
+                            boolean applyFilter) {
         this.staticDataProvider = staticDataProvider;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
         this.apDataService = apDataService;
+        this.applyFilter = applyFilter;
         initBuilder();
     }
 
+    // call by WDSL
     public CamExportBuilder(final StaticDataService staticDataService,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
-                            final AccessPointDataService apDataService) {
+                            final AccessPointDataService apDataService,
+                            boolean applyFilter) {
         this.staticDataService = staticDataService;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
         this.apDataService = apDataService;
+        this.applyFilter = applyFilter;
         initBuilder();
     }
 
@@ -122,7 +131,8 @@ public class CamExportBuilder implements ExportBuilder {
                 apInfo.getExternalIds(),
                 groovyService,
                 apDataService,
-                apInfo.getApState().getScope());
+                apInfo.getApState().getScope(),
+                applyFilter);
 
         // Copy received items
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();

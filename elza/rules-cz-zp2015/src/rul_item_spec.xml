@@ -2346,7 +2346,7 @@
         <shortcut>nepřístupný DAO</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
-    <item-spec code="ZP2015_ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY">
+    <item-spec code="ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY">
         <name>digitální archivní objekt přístupný jen v badatelně</name>
         <description>Digitální archivní objekt je přístupný k nahlížení pouze v prostorách badatelny.</description>
         <shortcut>DAO přístupný jen v badatelně</shortcut>
