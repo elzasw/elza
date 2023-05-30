@@ -420,10 +420,11 @@ public class Record {
         DocumentBuilder db = factory.newDocumentBuilder();
         Document xmlDoc = db.newDocument();
 
-        // fomat CAM
+        // format CAM
         CamExportBuilder exportBuilder = new CamExportBuilder(staticData, outputContext.getGroovyService(),
                 outputContext.getSchemaManager(),
-                outputContext.getApDataService());
+                outputContext.getApDataService(),
+                true);
 
         ExportContext ec = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
         ec.addApId(this.ap.getAccessPointId());
