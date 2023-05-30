@@ -187,10 +187,10 @@ public class ExportServiceImpl implements ExportService {
             exportBuilder = new XmlExportBuilder();
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
-            // fomat CAM
+            // format CAM
             exportBuilder = new CamExportBuilder(staticDataService,
                     groovyService, schemaManager,
-                    apDataService);
+                    apDataService, false);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
