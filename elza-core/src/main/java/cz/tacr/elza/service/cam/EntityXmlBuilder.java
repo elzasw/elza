@@ -40,9 +40,11 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                             Collection<ApBindingState> bindingStates,
                             GroovyService groovyService,
                             AccessPointDataService apDataService,
-                            ApScope scope) {
+                            ApScope scope,
+                            boolean applyFilter) {
         super(sdp, accessPoint, bindingStates, groovyService, apDataService, scope);
         this.apState = apState;
+        this.applyFilter = applyFilter;
     }
 
     public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap,
