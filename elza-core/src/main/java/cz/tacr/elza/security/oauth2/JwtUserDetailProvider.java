@@ -109,12 +109,12 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
 
         Object result = new TransactionTemplate(txManager).execute(r -> {
             UsrUser user = this.userService.findByUsername(sub);
-            if (user == null) {
-                // Prepare temporary credentials
-                SecurityContext prevSecCtx = SecurityContextHolder.getContext();
-                SecurityContext secCtx = userService.createSecurityContextSystem();
-                SecurityContextHolder.setContext(secCtx);
+            // Prepare temporary credentials
+            SecurityContext prevSecCtx = SecurityContextHolder.getContext();
+            SecurityContext secCtx = userService.createSecurityContextSystem();
+            SecurityContextHolder.setContext(secCtx);
 
+            if (user == null) {
                 ApScope userScope = apService.getApScope("JWT_USERS");
                 ApType type = apService.getType("PERSON_INDIVIDUAL");
 
@@ -124,14 +124,15 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                 user = userService.createUser(sub, null, ap.getAccessPointId());
 
                 log.debug("Created new user from JWT: {}", sub);
-
-                // Prepare permissions
-                List<UsrPermission> perms = preparePermissions(authorities);
-                userService.addUserPermission(user, perms, false);
-
-                // return back previous context
-                SecurityContextHolder.setContext(prevSecCtx);
             }
+
+            // Prepare permissions and synchronize permissions
+            updatePermissions(authorities, user);
+
+            log.debug("Permissions for user '{}' are synchronized.", sub);
+
+            // return back previous context
+            SecurityContextHolder.setContext(prevSecCtx);
 
             return this.userService.createUserDetail(user);
         });
@@ -158,18 +159,18 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         return pf;
     }
 
-    private List<UsrPermission> preparePermissions(List<String> authorities) {
+    private void updatePermissions(List<String> authorities, UsrUser user) {
+        List<UsrPermission> perms;
         if (CollectionUtils.isEmpty(authorities)) {
-            return Collections.emptyList();
+            perms = Collections.emptyList();
+        } else {
+            perms = new ArrayList<>();
+            for (String authority : authorities) {
+                preparePermissions(authority, perms);
+            }
         }
 
-        List<UsrPermission> perms = new ArrayList<>();
-
-        for (String authority : authorities) {
-            preparePermissions(authority, perms);
-        }
-
-        return perms;
+        userService.changeUserPermission(user, perms);
     }
 
     private void preparePermissions(String authority, List<UsrPermission> perms) {
