@@ -104,7 +104,12 @@ abstract public class CamXmlBuilder {
     /**
      * Map of new UUIDS for parts
      */
-    private Map<Integer, String> partUuids = new HashMap<>();    
+    private Map<Integer, String> partUuids = new HashMap<>();
+
+    /**
+     * Entity filter
+     */
+    protected boolean applyFilter = true;
 
     public Map<Integer, String> getItemUuids() {
         return itemUuids;
@@ -217,9 +222,12 @@ abstract public class CamXmlBuilder {
         List<PartXml> partXmlList = new ArrayList<>();
         for (ApPart part : partList) {
             List<ApItem> srcPartItems = itemMap.get(part.getPartId());
+            List<ApItem> partItems = new ArrayList<>(srcPartItems);
 
             // filter parts without mapping
-            List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(part, srcPartItems);
+            if (applyFilter) {
+                partItems = filterOutItemsWithoutExtSysMapping(part, srcPartItems);
+            }
             if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
                 log.debug("Ignoring part, missing mapping to external system, partId={}", part.getPartId());
                 continue;
