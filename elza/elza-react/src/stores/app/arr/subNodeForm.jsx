@@ -1,11 +1,11 @@
 import * as types from 'actions/constants/ActionTypes';
-import {i18n} from 'components/shared';
-import {getMapFromList, indexById} from 'stores/app/utils';
-import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate';
-import {valuesEquals} from 'components/Utils';
-import {DisplayType} from '../../../constants';
-import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
-import {cloneDeep} from 'lodash-es';
+import { i18n } from 'components/shared';
+import { getMapFromList, indexById } from 'stores/app/utils';
+import { validateCoordinatePoint, validateDouble, validateDuration, validateInt } from 'components/validate';
+import { valuesEquals } from 'components/Utils';
+import { DisplayType } from '../../../constants';
+import { buildIgnoreMap, endWith, startWith } from '../../../components/Utils';
+import { cloneDeep } from 'lodash-es';
 import {
     prepareNextFormKey,
     isType,
@@ -16,8 +16,8 @@ import {
     updateFormData,
     checkFormData,
 } from './subNodeFormUtils';
-import {validateUnitDate} from '../../../components/registry/field/UnitdateField';
-import {RulItemTypeType} from '../../../api/RulItemTypeType';
+import { validateUnitDate } from '../../../components/registry/field/UnitdateField';
+import { RulItemTypeType } from '../../../api/RulItemTypeType';
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -69,11 +69,11 @@ function getLoc(state, valueLocation) {
         console.warn('formData do not exist');
         return null;
     }
-    const descItemGroup = {...state.formData.descItemGroups[valueLocation.descItemGroupIndex]};
-    const descItemType = {...descItemGroup.descItemTypes[valueLocation.descItemTypeIndex]};
+    const descItemGroup = { ...state.formData.descItemGroups[valueLocation.descItemGroupIndex] };
+    const descItemType = { ...descItemGroup.descItemTypes[valueLocation.descItemTypeIndex] };
     let descItem;
     if (typeof valueLocation.descItemIndex !== 'undefined') {
-        descItem = {...descItemType.descItems[valueLocation.descItemIndex]};
+        descItem = { ...descItemType.descItems[valueLocation.descItemIndex] };
     }
 
     descItemGroup.descItemTypes = [...descItemGroup.descItemTypes];
@@ -270,7 +270,7 @@ export function convertValue(value, descItem, type) {
             };
         },
         DEFAULT: value => {
-            return {value};
+            return { value };
         },
     };
     const convertFunction = dataTypeMap[type];
@@ -279,6 +279,22 @@ export function convertValue(value, descItem, type) {
     } else {
         return dataTypeMap['DEFAULT'](value);
     }
+}
+
+/**
+ * Vyhledani skupiny a typu atributu v existujicich skupinach podle itemTypeId.
+ */
+const findGroupAndType = (groups, itemTypeId) => {
+    let descItemGroup = null;
+    let descItemType = null;
+    groups.find((group) => {
+        descItemType = group.descItemTypes.find((descItemType) => descItemType.id == itemTypeId)
+        if (descItemType != undefined) {
+            descItemGroup = group;
+            return true;
+        }
+    })
+    return [descItemGroup, descItemType];
 }
 
 /**
@@ -309,7 +325,7 @@ function addItemType(state, itemTypeId) {
         descItemGroup = state.formData.descItemGroups[grpIndex];
     } else {
         // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
-        descItemGroup = {code: addGroup.code, name: addGroup.name, descItemTypes: []};
+        descItemGroup = { code: addGroup.code, name: addGroup.name, descItemTypes: [] };
         state.formData.descItemGroups.push(descItemGroup);
 
         // Seřazení
@@ -319,7 +335,7 @@ function addItemType(state, itemTypeId) {
     }
 
     // Přidání prvku do skupiny a seřazení prvků podle position
-    let descItemType = {...addItemType, descItems: []};
+    let descItemType = { ...addItemType, descItems: [] };
     descItemGroup.descItemTypes.push(descItemType);
     // Musíme ponechat prázdnou hodnotu
     let refType = state.refTypesMap[descItemType.id];
@@ -332,7 +348,7 @@ function addItemType(state, itemTypeId) {
         return indexById(descItemGroup.types, a.id) - indexById(descItemGroup.types, b.id);
     });
 
-    state.formData = {...state.formData};
+    state.formData = { ...state.formData };
 }
 
 function addValue(state, loc) {
@@ -343,7 +359,7 @@ function addValue(state, loc) {
     descItem.position = loc.descItemType.descItems.length + 1;
     loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
 
-    state.formData = {...state.formData};
+    state.formData = { ...state.formData };
 }
 
 export default function subNodeForm(state = initialState, action = {}) {
@@ -410,7 +426,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             );
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
-            const {valueLocation} = action;
+            const { valueLocation } = action;
             var refType = state.refTypesMap[loc.descItemType.id];
             const convertedValue = convertValue(action.value, loc.descItem, refType.dataType.code);
             // touched if new value is not equal with previous value, or something else changed during conversion
@@ -468,7 +484,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.CHANGE_STRUCTURE:
         case types.FUND_INVALID:
             checkFormData(state.formData);
-            return {...state, dirty: true};
+            return { ...state, dirty: true };
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.parent = action.copySiblingResult.node;
 
@@ -630,18 +646,18 @@ export default function subNodeForm(state = initialState, action = {}) {
             return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
-            const {template:{formData, replaceValues}, groups} = action;
+            const { template: { formData, replaceValues }, groups } = action;
             console.log("use template", action.template);
 
-            const {refTypesMap, infoTypesMap} = state;
+            const { refTypesMap, infoTypesMap } = state;
 
             const currentFormData = state.formData
             let descItemGroups = [];
             let descItemTypes = [];
 
-            currentFormData.descItemGroups.forEach((group)=>{
+            currentFormData.descItemGroups.forEach((group) => {
                 descItemGroups.push(group);
-                group.descItemTypes.forEach((type)=>{
+                group.descItemTypes.forEach((type) => {
                     descItemTypes.push(type);
                 })
             })
@@ -649,35 +665,35 @@ export default function subNodeForm(state = initialState, action = {}) {
             const updateDescItems = (itemType, newDescItems, replace = false) => {
                 let descItems = itemType.descItems ? [...itemType.descItems] : [];
 
-                // Replace values when 'replaceValues' is true, add values when none exist or itemType is repeatable. 
+                // Replace values when 'replaceValues' is true, add values when none exist or itemType is repeatable.
                 // Do nothing otherwise
-                if(replace){
+                if (replace) {
                     descItems = [...newDescItems];
-                } else if(descItems.length === 0 || itemType.rep){
+                } else if (descItems.length === 0 || itemType.rep) {
                     descItems.push(...newDescItems);
                 }
 
-               return { ...itemType, descItems };
+                return { ...itemType, descItems };
             }
-            
+
             Object.keys(formData).forEach((itemTypeId) => {
                 itemTypeId = parseInt(itemTypeId);
-                const descItemTypeIndex = descItemTypes.findIndex((type)=>type.id === itemTypeId);
+                const descItemTypeIndex = descItemTypes.findIndex((type) => type.id === itemTypeId);
                 let itemType = descItemTypeIndex !== -1 ? descItemTypes[descItemTypeIndex] : infoTypesMap[itemTypeId];
 
-                const newDescItems = formData[itemTypeId].map((item)=>({
+                const newDescItems = formData[itemTypeId].map((item) => ({
                     ...createDescItem(itemType, refTypesMap[itemTypeId], true),
-                    ...item, 
+                    ...item,
                 }))
 
                 itemType = updateDescItems(itemType, newDescItems, replaceValues);
 
                 consolidateDescItems(itemType, infoTypesMap[itemTypeId], refTypesMap[itemTypeId], true);
-                
+
                 // if itemType exists, update values, if not, add it
-                if(descItemTypeIndex !== -1){
+                if (descItemTypeIndex !== -1) {
                     descItemTypes[descItemTypeIndex] = itemType;
-                }else{
+                } else {
                     descItemTypes.push(itemType);
                 }
 
@@ -685,45 +701,45 @@ export default function subNodeForm(state = initialState, action = {}) {
                 const descItemGroup = groups[groupCode];
 
                 // if the group doesn't exist in the existing list, add it
-                if(descItemGroups.find((group)=>group.code === groupCode) === undefined){
+                if (descItemGroups.find((group) => group.code === groupCode) === undefined) {
                     descItemGroups.push(descItemGroup);
                 }
             })
 
             // order types by viewOrder
-            descItemTypes = descItemTypes.sort((typeA, typeB) => 
+            descItemTypes = descItemTypes.sort((typeA, typeB) =>
                 refTypesMap[typeA.id].viewOrder - refTypesMap[typeB.id].viewOrder
             )
 
             // order groups by code
-            descItemGroups = descItemGroups.sort((groupA, groupB)=> {
-                if(groupA.code < groupB.code){return -1}
-                if(groupA.code > groupB.code){return 1}
+            descItemGroups = descItemGroups.sort((groupA, groupB) => {
+                if (groupA.code < groupB.code) { return -1 }
+                if (groupA.code > groupB.code) { return 1 }
                 return 0;
             })
 
             // update groups with new types
-            descItemGroups = descItemGroups.map((group)=>({
+            descItemGroups = descItemGroups.map((group) => ({
                 ...group,
-                descItemTypes: descItemTypes.filter((type)=>groups.reverse[type.id] === group.code)
+                descItemTypes: descItemTypes.filter((type) => groups.reverse[type.id] === group.code)
             }))
 
             state.formData.descItemGroups = [...descItemGroups];
             checkFormData(state.formData);
-            return {...state};
+            return { ...state };
         }
 
         // Přidá identifikátory typů atributů, které budou s dalším načtením obsahu JP přidány (prázdné)
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE: {
             state.addItemTypeIds = action.itemTypeIds;
             checkFormData(state.formData);
-            return {...state};
+            return { ...state };
         }
 
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             addItemType(state, action.descItemTypeId);
             checkFormData(state.formData);
-            return {...state};
+            return { ...state };
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             if (action.onlyDescItems) {
                 // jen desc items, nic víc
@@ -826,25 +842,39 @@ export default function subNodeForm(state = initialState, action = {}) {
             checkFormData(result.formData, '#checkFormData - 2');
 
             // Pokud existují typy atributů, které chceme po načtení přidat, přidáme je
-            const itemTypeIds = result.addItemTypeIds;
-            if (itemTypeIds) {
-                const added = {};
-                itemTypeIds.forEach(itemTypeId => {
-                    if (added[itemTypeId]) {
-                        let descItemGroup = null;
-                        let descItemType = null;
-                        for (let i = 0; i < result.formData.descItemGroups.length; i++) {
-                            descItemGroup = result.formData.descItemGroups[i];
-                            const itemTypeIndex = indexById(descItemGroup.descItemTypes, itemTypeId);
-                            if (itemTypeIndex != null) {
-                                descItemType = descItemGroup.descItemTypes[itemTypeIndex];
-                                addValue(result, {descItemGroup, descItemType});
-                                break;
-                            }
-                        }
+            if (result.addItemTypeIds?.length > 0) {
+                const itemTypeIds = {};
+                // Group itemTypes
+                (result.addItemTypeIds).forEach((itemTypeId) => {
+                    if (!itemTypeIds[itemTypeId]) {
+                        itemTypeIds[itemTypeId] = 1;
                     } else {
-                        addItemType(result, itemTypeId);
-                        added[itemTypeId] = true;
+                        itemTypeIds[itemTypeId] = itemTypeIds[itemTypeId] + 1;
+                    }
+                })
+
+                // Adds empty items from template for requested itemTypes
+                Object.entries(itemTypeIds).forEach(([itemTypeId, emptyItemCount]) => {
+                    let [descItemGroup, descItemType] = findGroupAndType(result.formData.descItemGroups, itemTypeId);
+
+                    let existingCount = descItemType?.descItems?.length || 0;
+                    let existingEmptyItemCount = descItemType?.descItems?.filter(
+                        (descItem) => descItem.value == undefined
+                            && (descItem.descItemSpecId == undefined || descItem.descItemSpecId == "")
+                            && !descItem.undefined
+                    ).length || 0;
+                    // Subtract already existing empty items
+                    let missingEmptyItemCount = emptyItemCount - existingEmptyItemCount;
+
+                    while (missingEmptyItemCount > 0) {
+                        if (existingCount !== 0) {
+                            [descItemGroup, descItemType] = findGroupAndType(result.formData.descItemGroups, itemTypeId);
+                            addValue(result, { descItemGroup, descItemType });
+                        } else {
+                            addItemType(result, itemTypeId);
+                        }
+                        missingEmptyItemCount--;
+                        existingCount++;
                     }
                 });
                 result.addItemTypeIds = null;
@@ -855,7 +885,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             return result;
         }
         case types.FUND_SUBNODE_UPDATE: {
-            const {node, parent} = action.data;
+            const { node, parent } = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
             if (nodeId !== state.nodeId) {
