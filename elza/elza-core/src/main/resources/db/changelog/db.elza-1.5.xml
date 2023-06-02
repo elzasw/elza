@@ -2293,4 +2293,11 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 			WHERE src.part_id = trg.part_id</sql>
 	</changeSet>
 
+	<changeSet id="20230602133500" author="sergey.iryupin">
+		<!-- oprava nekonzistencí -->
+		<sql dbms="postgresql">DELETE FROM arr_structured_item WHERE item_id IN
+			(SELECT si.item_id FROM arr_structured_item si LEFT JOIN arr_item i ON si.item_id = i.item_id 
+			WHERE i.item_id IS NULL)</sql>
+	</changeSet>
+
 </databaseChangeLog>
