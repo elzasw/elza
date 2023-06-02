@@ -676,12 +676,15 @@ export default function subNodeForm(state = initialState, action = {}) {
                 return { ...itemType, descItems };
             }
 
-            Object.keys(formData).forEach((itemTypeId) => {
+            Object.entries(formData).forEach(([itemTypeId, newItemTypeDescItems]) => {
                 itemTypeId = parseInt(itemTypeId);
                 const descItemTypeIndex = descItemTypes.findIndex((type) => type.id === itemTypeId);
                 let itemType = descItemTypeIndex !== -1 ? descItemTypes[descItemTypeIndex] : infoTypesMap[itemTypeId];
 
-                const newDescItems = formData[itemTypeId].map((item) => ({
+                // Create new descItems for items without value or marked as undefined
+                const newDescItems = newItemTypeDescItems.filter((item) =>
+                    !item.undefined && (item.value === null || item.descItemSpecId == "")
+                ).map((item) => ({
                     ...createDescItem(itemType, refTypesMap[itemTypeId], true),
                     ...item,
                 }))
