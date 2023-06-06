@@ -579,8 +579,19 @@ abstract public class CamXmlBuilder {
     
     abstract protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef);
     
-    private ItemEntityRefXml convertEntityRef(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
-                                                     UuidXml uuidXml) {
+    /**
+     * Create entity ref for given system
+     * 
+     * @param data
+     * @param itemTypeCode
+     * @param itemSpecCode
+     * @param uuidXml
+     * @return
+     */
+    private ItemEntityRefXml convertEntityRef(ArrData data,
+                                              CodeXml itemTypeCode,
+                                              CodeXml itemSpecCode,
+                                              UuidXml uuidXml) {
         if (!(data instanceof ArrDataRecordRef)) {
             throw new BusinessException("Failed to convert data: " + data.getDataId(),
                     BaseCode.EXPORT_FAILED);

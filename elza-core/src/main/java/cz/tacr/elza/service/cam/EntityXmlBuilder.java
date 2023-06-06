@@ -17,6 +17,7 @@ import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
@@ -114,12 +115,21 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         return revInfo;
     }
 
+    /**
+     * Create system neutral entity reference
+     * base on UUID
+     */
+    // TODO: allow to genereate system specific reference
+    //       requires to have ApExternalSystem as parameter
 	@Override
 	protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
-        String uuid;
-        if (recordRef.getBinding() == null) {
-            uuid = recordRef.getRecord().getUuid();
-        } else {
+        String uuid = null;
+        ApAccessPoint ap = recordRef.getRecord();
+        ApBinding binding = recordRef.getBinding();
+
+        if (ap != null) {
+            uuid = ap.getUuid();
+        } else if (binding != null) {
             String bindingValue = recordRef.getBinding().getValue();
             try {
                 // check if binding value is uuid
@@ -130,6 +140,11 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                 // reference cannot be propageted
                 return null;
             }
+        }
+
+        // safety check
+        if (uuid == null) {
+            return null;
         }
 
         EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
