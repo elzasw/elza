@@ -2300,4 +2300,17 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 			WHERE i.item_id IS NULL)</sql>
 	</changeSet>
 
+	<changeSet id="20230606093500" author="sergey.iryupin">
+		<!-- odstranění duplicit -->
+		<sql dbms="postgresql">DELETE FROM arr_fund_register_scope
+			WHERE fund_register_scope_id IN
+    			(SELECT fund_register_scope_id FROM 
+        			(SELECT fund_register_scope_id, ROW_NUMBER() OVER(PARTITION BY fund_id, scope_id ORDER BY fund_register_scope_id) AS row_num
+				FROM arr_fund_register_scope) t
+			WHERE t.row_num > 1)</sql>
+		<!-- unikátní index zabrání duplicitám -->
+    	<sql dbms="postgresql">CREATE UNIQUE INDEX arr_fund_register_scope_fund_scope_idx
+			ON arr_fund_register_scope(fund_id, scope_id)</sql>	
+	</changeSet>
+
 </databaseChangeLog>
