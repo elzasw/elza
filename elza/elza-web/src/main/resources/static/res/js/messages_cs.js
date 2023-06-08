@@ -1090,7 +1090,7 @@ var messages = {
     "ap.history.title.change.state": "Stav",
     "ap.history.title.change.scope": "Oblast",
     "ap.history.title.change.comment": "Komentář",
-    "ap.history.title.change.type": "Typ",
+    "ap.history.title.change.type": "Podtřída",
     "ap.history.title.change.user": "Uživatel",
     "ap.history.title.state.NEW": "nová",
     "ap.history.title.state.TO_APPROVE": "ke schválení",
