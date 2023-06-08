@@ -473,9 +473,9 @@ public class CamService {
     }
 
     public UpdateEntityBuilder createEntityUpdateBuilder(final ApAccessPoint accessPoint,
-                                                        final ApBindingState bindingState,
-                                                        final EntityXml entityXml,
-                                                        final ApExternalSystem apExternalSystem) {
+                                                         final ApBindingState bindingState,
+                                                         final EntityXml entityXml,
+                                                         final ApExternalSystem apExternalSystem) throws ApiException {
         ApState state = accessPointService.getStateInternal(accessPoint);
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
