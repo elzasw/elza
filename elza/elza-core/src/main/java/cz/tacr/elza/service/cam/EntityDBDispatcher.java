@@ -87,6 +87,7 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
 
@@ -160,6 +161,8 @@ public class EntityDBDispatcher {
 
     final private ApItemRepository itemRepository;
 
+    final private RuleService ruleService;
+
     //final private AccessPointDataService accessPointDataService;
 
     final private CamService camService;
@@ -183,6 +186,7 @@ public class EntityDBDispatcher {
                               final PartService partService,
                               final AccessPointCacheService accessPointCacheService,
                               final ApItemRepository itemRepository,
+                              final RuleService ruleService,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
         this.stateRepository = stateRepository;
@@ -197,6 +201,7 @@ public class EntityDBDispatcher {
         this.partService = partService;
         this.accessPointCacheService = accessPointCacheService;
         this.itemRepository = itemRepository;
+        this.ruleService = ruleService;
     }
 
     /**
@@ -432,6 +437,8 @@ public class EntityDBDispatcher {
                                                                      accessPoint.getPreferredPart(),
                                                                      state.getApType());
 
+        StateApproval oldStateApproval = null;
+        StateApproval newStateApproval = null;
         switch (entity.getEns()) {
         case ERS_REPLACED:
             // entita je nahrazena v CAM -> musíme nahradit v ELZA
@@ -455,7 +462,8 @@ public class EntityDBDispatcher {
             break;
 
         default:
-            StateApproval newStateApproval = camService.convertStateXmlToStateApproval(entity.getEns());
+            oldStateApproval = state.getStateApproval();
+            newStateApproval = camService.convertStateXmlToStateApproval(entity.getEns());
             // synchronizace stavu entit
             // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
             // musi entita zustat smazana
@@ -478,6 +486,9 @@ public class EntityDBDispatcher {
         }
 
         accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
+        if (accessPointService.isRevalidaceRequired(oldStateApproval, newStateApproval)) {
+            ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
+        }
         mcc.add(accessPoint.getAccessPointId());
         for (Integer apId : mcc.getModifiedApIds()) {
             accessPointCacheService.createApCachedAccessPoint(apId);

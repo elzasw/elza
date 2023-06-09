@@ -2861,7 +2861,10 @@ public class AccessPointService {
     }
 
     public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
-        return (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) && state != newState;
+        return state != null 
+                && newState != null
+                && (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) 
+                && state != newState;
     }
 
     /**
