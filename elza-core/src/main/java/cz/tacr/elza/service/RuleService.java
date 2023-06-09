@@ -699,7 +699,7 @@ public class RuleService {
      * 
      * @param accessPointId
      */
-    public void revalidateNodes(final Integer accessPointId) {
+    public void revalidateNodesWithApRef(final Integer accessPointId) {
         List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
         Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
                 .collect(Collectors.groupingBy(i -> i.getFundVersionId(),

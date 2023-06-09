@@ -91,6 +91,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RevisionService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 
@@ -162,6 +163,9 @@ public class CamService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RuleService ruleService;
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -187,6 +191,7 @@ public class CamService {
                 partService,
                 accessPointCacheService,
                 itemRepository,
+                ruleService,
                 this);
     }
 
