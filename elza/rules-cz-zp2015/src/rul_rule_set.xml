@@ -1,6 +1,6 @@
 <rule-sets>
     <rule-set code="ZP2015">
-        <name>Základní pravidla 2015</name>
+        <name>Základní pravidla pro zpracování archiválií ver. 3.1</name>
         <rule-type>ARRANGEMENT</rule-type>
         <rule-item-type-filter>ItemTypeFilter.drl</rule-item-type-filter>
     </rule-set>
