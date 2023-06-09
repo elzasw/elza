@@ -1,6 +1,6 @@
 <package>
   <code>ZP2015</code>
-  <name>Základní pravidla 2015</name>
+  <name>Základní pravidla pro zpracování archiválií</name>
   <version>225</version>
   <description>Výchozí balíček obsahující prvku popisu a související pravidla pořádání dle Základních pravidel pro zpracování archiválií, druhé vydání 2015</description>
   <dependencies>
