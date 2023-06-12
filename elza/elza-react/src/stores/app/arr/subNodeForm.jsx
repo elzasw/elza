@@ -662,18 +662,22 @@ export default function subNodeForm(state = initialState, action = {}) {
                 })
             })
 
-            const updateDescItems = (itemType, newDescItems, replace = false) => {
+            const updateDescItems = (itemType, descItemsFromTemplate, replace = false) => {
                 let descItems = itemType.descItems ? [...itemType.descItems] : [];
 
-                // Replace values when 'replaceValues' is true, add values when none exist or itemType is repeatable.
-                // Do nothing otherwise
-                if (replace) {
-                    descItems = [...newDescItems];
-                } else if (descItems.length === 0 || itemType.rep) {
-                    descItems.push(...newDescItems);
-                }
+                const emptyDescItems = descItemsFromTemplate.filter((newDescItem) => {
+                    const descItem = descItems.find((descItem) => {
+                        if (newDescItem.descItemSpecId === descItem.descItemSpecId
+                            && newDescItem.value === descItem.value) {
+                            return true;
+                        }
+                    })
+                    if (!descItem) {
+                        return true;
+                    }
+                })
 
-                return { ...itemType, descItems };
+                return { ...itemType, descItems: [...descItems, ...emptyDescItems] };
             }
 
             Object.entries(formData).forEach(([itemTypeId, newItemTypeDescItems]) => {
