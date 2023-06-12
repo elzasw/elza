@@ -697,8 +697,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                             Object.keys(deleteItemsAdded).forEach(itemObjectId => {
                                 let updateItemsTemp = [];
-                                for (let i = 0; i < updateItems.length; i++) {
-                                    const updateItem = updateItems[i];
+                                updateItems.forEach((updateItem) => {
                                     if (itemObjectId === updateItem.descItemObjectId) {
                                         createItems.push({
                                             ...updateItem,
@@ -707,7 +706,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                                     } else {
                                         updateItemsTemp.push(updateItem);
                                     }
-                                }
+                                })
                                 updateItems = updateItemsTemp;
                             });
 
@@ -818,13 +817,28 @@ class NodeSubNodeForm extends AbstractReactComponent {
         if (itemType && itemType.rep) {
             // je opakovatelný
             const existsItems = actualFormData[itemTypeId];
+
             if (data.replaceValues) {
                 this.processItemsToDelete(existsItems, deleteItemsAdded, deleteItems);
-            } else {
-                const addAsNew = this.processRepetitiveItemsToUpdate(existsItems, item, itemTypeId, updateItems);
-                if (addAsNew) {
-                    createItems.push(newItem);
-                }
+            }
+
+            const itemTypeDeletedItems = deleteItems.filter((deleteItem) => deleteItem.itemTypeId.toString() == itemTypeId.toString());
+
+            const duplicateItem = existsItems.find((existingItem) =>
+                // searching for item that:
+                // has same values
+                existingItem.value === newItem.value
+                && existingItem.descItemSpecId === newItem.descItemSpecId
+                && existingItem.undefined === newItem.undefined
+                // is not set to be deleted
+                && itemTypeDeletedItems.findIndex((deletedItem) => deletedItem.itemTypeId == existingItem.itemTypeId) < 0
+            )
+
+            if (!duplicateItem) {
+                createItems.push({
+                    ...newItem,
+                    position: existsItems.length - itemTypeDeletedItems.length + newItem.position,
+                });
             }
         } else {
             // není opakovatelný, pouze aktualizujeme hodnotu
