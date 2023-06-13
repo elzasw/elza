@@ -662,9 +662,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                 })
             })
 
-            const updateDescItems = (itemType, descItemsFromTemplate, replace = false) => {
+            const appendEmptyDescItems = (itemType, descItemsFromTemplate) => {
                 let descItems = itemType.descItems ? [...itemType.descItems] : [];
 
+                // find descItems, that exist in the template, but not in formData
                 const emptyDescItems = descItemsFromTemplate.filter((newDescItem) => {
                     const descItem = descItems.find((descItem) => {
                         if (newDescItem.descItemSpecId === descItem.descItemSpecId
@@ -693,7 +694,12 @@ export default function subNodeForm(state = initialState, action = {}) {
                     ...item,
                 }))
 
-                itemType = updateDescItems(itemType, newDescItems, replaceValues);
+                itemType = appendEmptyDescItems(itemType, newDescItems, replaceValues);
+
+                // item from template does not contain empty items
+                if (itemType.descItems.length <= 0) {
+                    return;
+                }
 
                 consolidateDescItems(itemType, infoTypesMap[itemTypeId], refTypesMap[itemTypeId], true);
 
