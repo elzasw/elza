@@ -837,8 +837,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
                         "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
 
-        List<ArrDescItem> results = new ArrayList<>();
-        for (ArrDescItem descItem : deleteDescItems) {
+        // Order by positions 
+        // - last item has to be deleted first to prevent reordering
+        List<ArrDescItem> orderedDbDescItems = new ArrayList<>(deleteDescItems);
+        orderedDbDescItems.sort((di1, di2) -> -di1.getPosition().compareTo(di2.getPosition()));
+
+        List<ArrDescItem> results = new ArrayList<>(orderedDbDescItems.size());
+        for (ArrDescItem descItem : orderedDbDescItems) {
             if (!force && descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
