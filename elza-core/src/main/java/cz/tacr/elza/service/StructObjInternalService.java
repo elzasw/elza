@@ -180,10 +180,20 @@ public class StructObjInternalService {
         return partType;
     }
 
-    public ArrStructuredObject deepCopy(final ArrStructuredObject structuredObject) {
-        ArrStructuredObject copyStructuredObject = structObjRepository.save(structuredObject.makeCopyWithoutId());
-        copyItems(structuredObject, copyStructuredObject);
-        return copyStructuredObject;
+    /**
+     * Copy structured object and all its items
+     * 
+     * @param structuredObject
+     * @param uuid
+     *            UUID of new object
+     * @return
+     */
+    public ArrStructuredObject deepCopy(final ArrStructuredObject structuredObject,
+                                        final String uuid) {
+        ArrStructuredObject rawCopy = structuredObject.makeCopyWithoutId(uuid);
+        ArrStructuredObject trgObject = structObjRepository.save(rawCopy);
+        copyItems(structuredObject, trgObject);
+        return trgObject;
     }
 
     private void copyItems(final ArrStructuredObject sourceStructuredObject, final ArrStructuredObject targetStructuredObject) {

@@ -102,7 +102,14 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
         }
     }
 
-    public ArrStructuredObject makeCopyWithoutId() {
+    /**
+     * Make copy of structured object
+     * 
+     * @param uuid
+     *            UUID for new object
+     * @return
+     */
+    public ArrStructuredObject makeCopyWithoutId(final String uuid) {
         ArrStructuredObject trg = new ArrStructuredObject();
         trg.setState(state);
         trg.setValue(value);
