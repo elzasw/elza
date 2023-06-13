@@ -306,7 +306,7 @@ public class ArrangementFormService {
             }
 		}
 
-        // validace uzl
+        // ulozeni do db
         changeContext.flush();
 
 		return result;
