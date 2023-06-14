@@ -213,7 +213,7 @@ public class RevisionService {
         revision.setCreateChange(change);
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
-        if (!nextApTypeId.equals(state.getApTypeId())) {
+        if (!nextApTypeId.equals(revision.getTypeId())) {
             int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
             if (countBinding > 0) {
                 throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)

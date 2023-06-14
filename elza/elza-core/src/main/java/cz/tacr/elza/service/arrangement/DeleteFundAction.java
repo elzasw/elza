@@ -271,22 +271,16 @@ public class DeleteFundAction {
         }
     }
 
+    /**
+     * Drop all Structured Objects by Fund
+     */
     private void dropStructObjs() {
 
         structureItemRepository.deleteByStructuredObjectFund(fund);
-        /*
-        List<ArrStructuredObject> objList = structureDataRepository.findByFund(fund);
-        objList.forEach(obj -> {
-            structureItemRepository.deleteByStructuredObject(obj);
-            dataRepository.deleteByStructuredObject(obj);
-        });
-        structureDataRepository.deleteInBatch(objList);
-        */
         structureDataRepository.deleteByFund(fund);
 
         fundStructureExtensionRepository.deleteByFund(fund);
         em.flush();
-
     }
 
     /**

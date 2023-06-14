@@ -699,6 +699,8 @@ class RegistryPage extends AbstractReactComponent {
                             </div>
                         </Button>,
                     );
+                }
+                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
                     itemActions.push(
                         <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
                             <Icon glyph="fa-copy" />

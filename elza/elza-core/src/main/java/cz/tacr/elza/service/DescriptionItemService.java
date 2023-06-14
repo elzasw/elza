@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -837,8 +838,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
                         "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
 
-        List<ArrDescItem> results = new ArrayList<>();
-        for (ArrDescItem descItem : deleteDescItems) {
+        // Order by positions 
+        // - last item has to be deleted first to prevent reordering
+        List<ArrDescItem> orderedDbDescItems = new ArrayList<>(deleteDescItems);
+        orderedDbDescItems.sort((di1, di2) -> -di1.getPosition().compareTo(di2.getPosition()));
+
+        List<ArrDescItem> results = new ArrayList<>(orderedDbDescItems.size());
+        for (ArrDescItem descItem : orderedDbDescItems) {
             if (!force && descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
@@ -1051,7 +1057,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrData dataNew = ArrData.makeCopyWithoutId(srcData);
         if (dataNew instanceof ArrDataStructureRef) {
             ArrStructuredObject structuredObject = ((ArrDataStructureRef) srcData).getStructuredObject();
-            ArrStructuredObject copyStructuredObject = structObjInternalService.deepCopy(structuredObject);
+            // prepare UUID for new object
+            String uuid = UUID.randomUUID().toString();
+            ArrStructuredObject copyStructuredObject = structObjInternalService.deepCopy(structuredObject, uuid);
             ((ArrDataStructureRef) dataNew).setStructuredObject(copyStructuredObject);
         }
         return dataRepository.save(dataNew);

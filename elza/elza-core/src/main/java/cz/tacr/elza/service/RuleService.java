@@ -699,7 +699,7 @@ public class RuleService {
      * 
      * @param accessPointId
      */
-    public void revalidateNodes(final Integer accessPointId) {
+    public void revalidateNodesWithApRef(final Integer accessPointId) {
         List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
         Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
                 .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
@@ -1494,16 +1494,35 @@ public class RuleService {
         }
     }
 
+    /**
+     * Validate part repeatability
+     * 
+     * @param validationResult
+     */
     private void validatePartRepeatability(final ModelValidation validationResult) {
+        Ap ap = validationResult.getAp();
+        // count parts per type
         Map<PartType, Integer> partCountMap = new HashMap<>();
-        for (Part part : validationResult.getAp().getParts()) {
+        for (Part part : ap.getParts()) {
             if (part.getParent() == null) {
                 partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
             }
         }
+        // check if part is repeatable
         for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable() && partCountMap.getOrDefault(modelPart.getType(), 0) > 1) {
-                validationResult.getApValidationErrors().addError("Část " + modelPart.getType() + " je v entitě vícekrát.");
+            if (!modelPart.isRepeatable()) {
+                Integer partCount = partCountMap.getOrDefault(modelPart.getType(), 0);
+                if (partCount > 1) {
+
+                    logger.error("Multiple occurance of non-repeatable part, accessPointId = {}, partType={}, count={}",
+                                 ap.getId(),
+                                 modelPart.getType(), partCount);
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Část ").append(modelPart.getType())
+                            .append(" je v entitě vícekrát (").append(partCount).append(").");
+                    validationResult.getApValidationErrors().addError(sb.toString());
+                }
             }
         }
     }
