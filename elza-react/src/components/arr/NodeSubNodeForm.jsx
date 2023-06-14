@@ -1,13 +1,13 @@
-import {notEmpty} from '../../shared/utils';
-import {objectByProperty} from 'stores/app/utils';
+import { notEmpty } from '../../shared/utils';
+import { objectByProperty } from 'stores/app/utils';
 import * as factory from '../../shared/factory';
 import PropTypes from 'prop-types';
 
 import React from 'react';
 import SubNodeForm from './SubNodeForm';
-import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
+import { AbstractReactComponent, i18n, Icon, NoFocusButton } from 'components/shared';
 
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import {
     copyDescItemType,
     lockDescItemType,
@@ -16,35 +16,35 @@ import {
     unlockAllDescItemType,
     unlockDescItemType,
 } from 'actions/arr/nodeSetting';
-import {deleteNode} from '../../actions/arr/node';
-import {createFundRoot, isFundRootId} from './ArrUtils';
+import { deleteNode } from '../../actions/arr/node';
+import { createFundRoot, isFundRootId } from './ArrUtils';
 import * as perms from 'actions/user/Permission';
-import {nodeFormActions} from 'actions/arr/subNodeForm';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils';
+import { nodeFormActions } from 'actions/arr/subNodeForm';
+import { getOneSettings, setSettings } from 'components/arr/ArrUtils';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
-import {WebApi} from 'actions/index';
-import {getMapFromList, indexById} from 'stores/app/utils';
-import {fundSelectSubNode} from 'actions/arr/node';
-import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
-import {Dropdown, DropdownButton} from 'react-bootstrap';
-import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from './TemplateForm';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
+import { WebApi } from 'actions/index';
+import { getMapFromList, indexById } from 'stores/app/utils';
+import { fundSelectSubNode } from 'actions/arr/node';
+import { addToastr, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import TemplateForm, { EXISTS_TEMPLATE, NEW_TEMPLATE } from './TemplateForm';
 import TemplateUseForm from './TemplateUseForm';
-import {userDetailsSaveSettings} from 'actions/user/userDetail';
+import { userDetailsSaveSettings } from 'actions/user/userDetail';
 import DescItemFactory from 'components/arr/nodeForm/DescItemFactory';
-import {CLS, CLS_ITEM_ENUM} from '../../shared/factory/factoryConsts';
+import { CLS, CLS_ITEM_ENUM } from '../../shared/factory/factoryConsts';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
 import IssueForm from '../form/IssueForm';
-import {objectEqualsDiff} from 'components/Utils';
-import {NODE_SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
+import { objectEqualsDiff } from 'components/Utils';
+import { NODE_SUB_NODE_FORM_CMP } from '../../stores/app/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
-import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemClass, urlNode} from '../../constants';
+import { JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemClass, urlNode } from '../../constants';
 
-import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
+import { refExternalSystemsFetchIfNeeded } from 'actions/refTables/externalSystems';
 
-import {TextFragmentsWindow} from "../../components/arr/text-fragments";
+import { TextFragmentsWindow } from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
 
@@ -120,8 +120,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
         //}
     }
 
-    componentDidMount(){
-        const {dispatch} = this.props;
+    componentDidMount() {
+        const { dispatch } = this.props;
         dispatch(refExternalSystemsFetchIfNeeded());
     }
 
@@ -130,17 +130,17 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     getNodeSetting() {
-        const {nodeSettings, nodeId} = this.props;
+        const { nodeSettings, nodeId } = this.props;
 
         let nodeSetting;
         if (nodeSettings) {
             nodeSetting =
                 nodeSettings.nodes[
-                    nodeSettings.nodes
-                        .map(function(node) {
-                            return node.id;
-                        })
-                        .indexOf(nodeId)
+                nodeSettings.nodes
+                    .map(function(node) {
+                        return node.id;
+                    })
+                    .indexOf(nodeId)
                 ];
         }
 
@@ -193,18 +193,18 @@ class NodeSubNodeForm extends AbstractReactComponent {
     handleShowHistory = () => {
         const {
             versionId,
-            fund: {nodes},
+            fund: { nodes },
         } = this.props;
         const node = nodes.nodes[nodes.activeIndex];
         const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
-        const form = <ArrHistoryForm 
-            versionId={versionId} 
+        const form = <ArrHistoryForm
+            versionId={versionId}
             node={{
-                ...nodeObj, 
-                name: nodeObj.accordionLeft // ArrHistoryForm needs a 'name: string' property, which is missing in the 'SubNode' type 
-            }} 
-            onDeleteChanges={this.handleDeleteChanges} 
-            />;
+                ...nodeObj,
+                name: nodeObj.accordionLeft // ArrHistoryForm needs a 'name: string' property, which is missing in the 'SubNode' type
+            }}
+            onDeleteChanges={this.handleDeleteChanges}
+        />;
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
     };
 
@@ -218,7 +218,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
      * @param {func} callback - function(selectedParent) - funkci je předáván {bool} určující, zda byl vybrán rodič
      */
     selectSubnodeAfterDelete = (versionId, prevNode, callback) => {
-        let outdatedParent = {...this.props.parentNode}; //Potřeba kvůli seznamu potomků
+        let outdatedParent = { ...this.props.parentNode }; //Potřeba kvůli seznamu potomků
         let prevIndex = indexById(outdatedParent.childNodes, prevNode.id);
         let childNodeCount = outdatedParent.childNodes.length;
         let newNodeId = outdatedParent.childNodes[0];
@@ -298,7 +298,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
      * @param descItemTypeId {Integer} id desc item type
      */
     handleDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemTypeId) {
-        const {routingKey} = this.props;
+        const { routingKey } = this.props;
 
         const valueLocation = {
             descItemGroupIndex,
@@ -321,8 +321,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     isDigitizationFrontdeskDefined = () => {
         const { externalSystems } = this.props;
-        if(externalSystems.fetched){
-            return externalSystems.items.some((extSystem)=>(
+        if (externalSystems.fetched) {
+            return externalSystems.items.some((extSystem) => (
                 extSystem[JAVA_ATTR_CLASS] === JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO
             ))
         }
@@ -334,8 +334,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     subNodeHasDescItemClass = (itemClass) => {
         const { subNodeForm } = this.props;
-        if(subNodeForm && subNodeForm.data && subNodeForm.data.descItems){
-            return subNodeForm.data.descItems.some((item)=>( item[JAVA_ATTR_CLASS] === itemClass))
+        if (subNodeForm && subNodeForm.data && subNodeForm.data.descItems) {
+            return subNodeForm.data.descItems.some((item) => (item[JAVA_ATTR_CLASS] === itemClass))
         }
         return false;
     }
@@ -349,7 +349,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     getDaoWithScenario = () => {
         const daos = this.props.parentNode.subNodeDaos.data
 
-        if(daos.length <= 0){return null}
+        if (daos.length <= 0) { return null }
 
         const dao = daos[0] // je predpoklad, ze napojeny soubor je vzdy jen 1
         return dao.daoLink?.scenario ? dao : null;
@@ -362,20 +362,20 @@ class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
 
-        const {fundId, fund, userDetail, nodeId, nodeSettings, readMode} = this.props;
+        const { fundId, fund, userDetail, nodeId, nodeSettings, readMode } = this.props;
 
         const editPermAllowed = userDetail.hasOne(
             perms.FUND_ADMIN,
-            {type: perms.FUND_VER_WR, fundId},
+            { type: perms.FUND_VER_WR, fundId },
             perms.FUND_ARR_ALL,
-            {type: perms.FUND_ARR, fundId},
+            { type: perms.FUND_ARR, fundId },
         );
 
         const nodeSettingsIndex = indexById(nodeSettings.nodes, nodeId);
         const nodeSetting = nodeSettings.nodes[nodeSettingsIndex];
         const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
-        const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fundId}) ||
+        const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, { type: perms.FUND_ISSUE_ADMIN, fundId: fundId }) ||
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
 
         const dao = this.getDaoWithScenario();
@@ -433,11 +433,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             &Omega;
                         </NoFocusButton>
                         {this.state?.showSpecialCharactersWindow &&
-                            <TextFragmentsWindow onClose={()=>{this.setState({showSpecialCharactersWindow: false})}}/>
+                            <TextFragmentsWindow onClose={() => { this.setState({ showSpecialCharactersWindow: false }) }} />
                         }
                     </div>
                     <div className="section">
-                        { this.isDigitizationFrontdeskDefined() &&
+                        {this.isDigitizationFrontdeskDefined() &&
                             <NoFocusButton onClick={this.props.onDigitizationRequest}>
                                 <Icon glyph="fa-camera" />
                                 {i18n('subNodeForm.digitizationRequest')}
@@ -451,7 +451,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         )}
                     </div>
                     <div className="section">
-                        { this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
+                        {this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
                             <NoFocusButton onClick={this.props.onRefSync}>
                                 <Icon glyph="fa-refresh" />
                                 {i18n('subNodeForm.refSync')}
@@ -482,9 +482,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Dropdown.Item eventKey="3" onClick={this.handleCopyUuid}>
                                 {i18n('subNodeForm.section.copyUuid')}
                             </Dropdown.Item>
-                            { !this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
+                            {!this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
                                 <>
-                                    <Dropdown.Divider/>
+                                    <Dropdown.Divider />
                                     <Dropdown.Item onClick={this.props.onRefSync}>
                                         <Icon glyph="fa-refresh" />
                                         {i18n('subNodeForm.refSync')}
@@ -499,14 +499,14 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     /**
-     * Checks if current subNode has daos. 
+     * Checks if current subNode has daos.
      * If given an array of types, checks only for daos of those types.
      */
     hasDaos = (daoTypes) => {
         const { subNodeDaos } = this.props.parentNode;
-        if(subNodeDaos && subNodeDaos.data){
+        if (subNodeDaos && subNodeDaos.data) {
             const data = subNodeDaos.data;
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 const daoType = data[i].daoType;
                 return daoTypes ? daoTypes.indexOf(daoType) >= 0 : true;
             }
@@ -515,7 +515,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     handleCreateIssueNode = () => {
-        const {issueProtocol, issueTypes, dispatch, fund} = this.props;
+        const { issueProtocol, issueTypes, dispatch, fund } = this.props;
 
         let node;
         if (fund.nodes && fund.nodes.activeIndex !== null) {
@@ -548,7 +548,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     handleCreateTemplate = () => {
-        const {userDetail, fund} = this.props;
+        const { userDetail, fund } = this.props;
 
         let settings = userDetail.settings;
 
@@ -614,7 +614,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
      * If template is without values only enums are stored
      */
     createTemplate = (name, withValues) => {
-        const {subNodeForm} = this.props;
+        const { subNodeForm } = this.props;
 
         let formData = {};
         subNodeForm.formData.descItemGroups.forEach(group => {
@@ -644,7 +644,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     handleUseTemplate = () => {
-        const {userDetail, fund, routingKey, selectedSubNode, subNodeForm} = this.props;
+        const { userDetail, fund, routingKey, selectedSubNode, subNodeForm } = this.props;
 
         let settings = userDetail.settings;
 
@@ -697,8 +697,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                             Object.keys(deleteItemsAdded).forEach(itemObjectId => {
                                 let updateItemsTemp = [];
-                                for (let i = 0; i < updateItems.length; i++) {
-                                    const updateItem = updateItems[i];
+                                updateItems.forEach((updateItem) => {
                                     if (itemObjectId === updateItem.descItemObjectId) {
                                         createItems.push({
                                             ...updateItem,
@@ -707,7 +706,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                                     } else {
                                         updateItemsTemp.push(updateItem);
                                     }
-                                }
+                                })
                                 updateItems = updateItemsTemp;
                             });
 
@@ -751,7 +750,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     handleCopyUuid = () => {
-        const {selectedSubNode} = this.props;
+        const { selectedSubNode } = this.props;
         const el = document.createElement('textarea');
         el.value = selectedSubNode.uuid;
         document.body.appendChild(el);
@@ -778,8 +777,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
             };
 
             if (
-                notEmpty(newItem.value) ||
-                (newItem[JAVA_ATTR_CLASS] === ItemClass.ENUM && notEmpty(item.descItemSpecId))
+                notEmpty(newItem.value)
+                || (newItem[JAVA_ATTR_CLASS] === ItemClass.ENUM && notEmpty(item.descItemSpecId))
+                || newItem.undefined
             ) {
                 if (actualFormData[itemTypeId]) {
                     // pokud existuje
@@ -817,13 +817,28 @@ class NodeSubNodeForm extends AbstractReactComponent {
         if (itemType && itemType.rep) {
             // je opakovatelný
             const existsItems = actualFormData[itemTypeId];
+
             if (data.replaceValues) {
                 this.processItemsToDelete(existsItems, deleteItemsAdded, deleteItems);
-            } else {
-                const addAsNew = this.processRepetitiveItemsToUpdate(existsItems, item, itemTypeId, updateItems);
-                if (addAsNew) {
-                    createItems.push(newItem);
-                }
+            }
+
+            const itemTypeDeletedItems = deleteItems.filter((deleteItem) => deleteItem.itemTypeId.toString() == itemTypeId.toString());
+
+            const duplicateItem = existsItems.find((existingItem) =>
+                // searching for item that:
+                // has same values
+                existingItem.value === newItem.value
+                && existingItem.descItemSpecId === newItem.descItemSpecId
+                && existingItem.undefined === newItem.undefined
+                // is not set to be deleted
+                && itemTypeDeletedItems.findIndex((deletedItem) => deletedItem.itemTypeId == existingItem.itemTypeId) < 0
+            )
+
+            if (!duplicateItem) {
+                createItems.push({
+                    ...newItem,
+                    position: existsItems.length - itemTypeDeletedItems.length + newItem.position,
+                });
             }
         } else {
             // není opakovatelný, pouze aktualizujeme hodnotu
@@ -903,7 +918,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     findItemType = itemTypeId => {
-        const {subNodeForm, groups} = this.props;
+        const { subNodeForm, groups } = this.props;
         const groupCode = groups.reverse[itemTypeId];
         const group = objectByProperty(subNodeForm.formData.descItemGroups, groupCode, 'code');
         return objectByProperty(group.types, parseInt(itemTypeId), 'id');
@@ -914,7 +929,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {singleDescItemTypeEdit, userDetail} = this.props;
+        const { singleDescItemTypeEdit, userDetail } = this.props;
         const {
             versionId,
             focus,
@@ -935,7 +950,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         // console.info('{NodeSubNodeForm}');
 
         let formActions;
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm) {
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, { type: perms.FUND_ARR, fundId }) || arrPerm) {
             if (!readMode && !singleDescItemTypeEdit && arrPerm) {
                 formActions = this.renderFormActions();
             }
@@ -976,7 +991,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus, userDetail, refTables} = state;
+    const { arrRegion, focus, userDetail, refTables } = state;
     let fund = null;
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
@@ -997,4 +1012,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(NodeSubNodeForm);

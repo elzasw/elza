@@ -1,19 +1,21 @@
 package cz.tacr.elza.drools;
 
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.drools.model.ItemType;
-import cz.tacr.elza.drools.model.ModelAvailable;
-import cz.tacr.elza.drools.model.item.AbstractItem;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-import java.util.List;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ModelAvailable;
+import cz.tacr.elza.drools.model.item.AbstractItem;
 
 @Component
 public class AvailableItemsRules extends Rules {
@@ -26,10 +28,13 @@ public class AvailableItemsRules extends Rules {
 
     public synchronized ModelAvailable execute(final List<RulExtensionRule> rules,
                                                final ModelAvailable modelAvailable) throws Exception {
+        Ap ap = modelAvailable.getAp();
+        logger.debug("Executing rules for AccessPoint, accessPointId: {}", ap.getId());
+
         for (RulExtensionRule rule : rules) {
             Path path = resourcePathResolver.getDroolFile(rule);
             KieSession kSession = createKieSession(path);
-            kSession.insert(modelAvailable.getAp());
+            kSession.insert(ap);
             kSession.insert(modelAvailable.getPart());
             for (ItemType itemType : modelAvailable.getItemTypes()) {
                 kSession.insert(itemType);
@@ -40,6 +45,8 @@ public class AvailableItemsRules extends Rules {
             kSession.fireAllRules();
             kSession.dispose();
         }
+
+        logger.debug("Finished executing rules for AccessPoint, accessPointId: {}", ap.getId());
         return modelAvailable;
     }
 

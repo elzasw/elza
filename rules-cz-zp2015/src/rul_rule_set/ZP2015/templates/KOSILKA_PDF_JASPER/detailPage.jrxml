@@ -411,7 +411,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="7" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getMark()))?"NAD č. / zn.:":"NAD č.:"]]></textFieldExpression>
 			</textField>
@@ -424,7 +424,7 @@
 					<property name="com.jaspersoft.studio.unit.rightIndent" value="px"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotBlank($P{fund}.getMark())]]></printWhenExpression>
 				</reportElement>
-				<box topPadding="2" leftPadding="0" bottomPadding="0" rightPadding="0">
+				<box topPadding="3" leftPadding="0" bottomPadding="0" rightPadding="0">
 					<bottomPen lineWidth="0.0"/>
 					<rightPen lineWidth="0.0"/>
 				</box>

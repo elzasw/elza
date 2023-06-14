@@ -1075,9 +1075,9 @@ var messages = {
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
     "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
 
-    "registry.add.type": "Třída archivních entit",
+    "registry.add.type": "Podtřída",
     "registry.update.title": "Změna archivní entity",
-    "registry.update.type": "Třída archivní entity",
+    "registry.update.type": "Třída / podtřída archivní entity",
     "registry.type": "Třída / podtřída entity",
     "registry.scopeClass": "Oblast",
     "registry.addRegistryVariant": "Přidání varianty jména",
@@ -1090,7 +1090,7 @@ var messages = {
     "ap.history.title.change.state": "Stav",
     "ap.history.title.change.scope": "Oblast",
     "ap.history.title.change.comment": "Komentář",
-    "ap.history.title.change.type": "Typ",
+    "ap.history.title.change.type": "Podtřída",
     "ap.history.title.change.user": "Uživatel",
     "ap.history.title.state.NEW": "nová",
     "ap.history.title.state.TO_APPROVE": "ke schválení",
@@ -1103,7 +1103,7 @@ var messages = {
     "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
     "ap.state.title.scope": "Oblast",
-    "ap.state.title.type": "Třída archivní entity",
+    "ap.state.title.type": "Podtřída",
     "ap.state.title.state": "Stav",
     "ap.state.title.comment": "Komentář",
     "ap.state.state.insufficient.right": "Nemáte oprávnění pro schválení AP.",
@@ -1749,7 +1749,7 @@ var messages = {
     "accesspoint.description": "Popis",
     "accesspoint.update.description": "Úprava popisu",
 
-    "accesspoint.create.titleMessage": "Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.",
+    "accesspoint.create.titleMessage": "Nejprve vyberte podtřídu a oblast nové archivní entity. Dle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.",
 
     "accesspoint.removeDuplicity.confirmation": "Opravdu chcete odstranit archivní entitu s rozpracovanou revizí?",
     "accesspoint.removeDuplicity": "Odstranit duplicitu",

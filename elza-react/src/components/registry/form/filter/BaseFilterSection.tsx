@@ -25,7 +25,7 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
         {!hideType && <FieldArray
             name="types"
             component={TypesField}
-            label={i18n('ap.state.title.type')}
+            label={i18n('registry.type')}
             disabled={submitting}
             items={types}
         />}

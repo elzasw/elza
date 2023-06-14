@@ -1977,14 +1977,15 @@ public class AccessPointService {
      */
     public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace, List<Integer> skipItems) {
         ApState state = getStateInternal(srcAccessPoint);
-        if (!hasPermissionToCopy(state, scope)) {
+
+        if (!hasPermissionToCopy(state, scope, replace)) {
             throw new SystemException("Uživatel nemá oprávnění na kopírování přístupového bodu do cílové oblasti", BaseCode.INSUFFICIENT_PERMISSIONS)
                 .set("accessPointId", state.getAccessPointId())
                 .set("sourceScopeId", state.getScopeId())
                 .set("targetScopeId", scope.getScopeId());
         }
 
-        this.logger.debug("Copying access point: {}", srcAccessPoint.getAccessPointId());
+        logger.debug("Copying access point: {}", srcAccessPoint.getAccessPointId());
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
         ApState trgState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
@@ -2497,11 +2498,13 @@ public class AccessPointService {
     /**
      * Má uživatel možnost kopírovat přístupový bod (archivní entitu)
      * 
+     * @param replace
+     * 
      * @param oldApScope
      * @param newApScope
      * @return
      */
-    private boolean hasPermissionToCopy(ApState state, ApScope scope) {
+    private boolean hasPermissionToCopy(ApState state, ApScope scope, boolean replace) {
         Validate.notNull(state, "ApState is null");
         Validate.notNull(scope, "Target ApScope is null");
 
@@ -2510,12 +2513,37 @@ public class AccessPointService {
             return true;
         }
 
-        if (userService.hasPermission(Permission.AP_SCOPE_RD, state.getScopeId()) 
-                && userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
-            return true;
+        // musí být možné číst ze zdrojového
+        Integer srcScopeId = state.getScopeId();
+        if (!userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
+                && !userService.hasPermission(Permission.AP_SCOPE_RD, srcScopeId)) {
+            return false;
         }
 
-        return false;
+        // pokud se entita nahrazuje - musí být možné zapisovat do zdrojového scope
+        if (replace) {
+            // pokud je schválená
+            if (state.getStateApproval() == StateApproval.APPROVED) {
+                if (!userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                        && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED, srcScopeId)) {
+                    return false;
+                }
+            } else {
+                // neschválená, tj. stačí běžný zápis
+                if (!userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        && !userService.hasPermission(Permission.AP_SCOPE_WR, srcScopeId)) {
+                    return false;
+                }
+            }
+        }
+
+        // musí být možné zapisovat do cílového scope
+        if (!userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                && !userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -2861,7 +2889,10 @@ public class AccessPointService {
     }
 
     public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
-        return (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) && state != newState;
+        return state != null 
+                && newState != null
+                && (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) 
+                && state != newState;
     }
 
     /**

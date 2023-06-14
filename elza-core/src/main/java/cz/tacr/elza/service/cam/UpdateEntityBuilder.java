@@ -17,12 +17,18 @@ import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.DeleteItemsXml;
 import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
+
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_APPROVED;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_INVALID;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_NEW;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_REPLACED;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ItemRefXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -40,7 +46,8 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApState.StateApproval;
+import static cz.tacr.elza.domain.ApState.StateApproval.APPROVED;
+import static cz.tacr.elza.domain.ApState.StateApproval.NEW;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -303,9 +310,9 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         return batchEntityRecordRevXml;
     }
 
-    public List<Object> build(final EntityXml entityXml,
-    		List<ApPart> partList,
-    		Map<Integer, List<ApItem>> itemMap) {
+    public List<Object> build(final EntityXml externalEntityXml,
+                              List<ApPart> partList,
+                              Map<Integer, List<ApItem>> itemMap) throws ApiException {
         // check that list is empty
         Validate.isTrue(trgList.size() == 0);
 
@@ -329,24 +336,31 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         createUpdateEntityChanges(partList, itemMap);
 
-        // TODO: this is broken, probably meant for aptype change
-        /*if (!entityXml.getEnt().getValue().equals(apState.getApType().getCode())) {
-            addChange(trgList, new CodeXml(apState.getApType().getCode()));
-        }*/
-
-        // zmena stavu entity
-        if (apState.getStateApproval() == StateApproval.APPROVED &&
-                entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
-            addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
-            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_APPROVED.toString());
-        } else if (apState.getStateApproval() == StateApproval.NEW &&
-                entityXml.getEns() == EntityRecordStateXml.ERS_APPROVED) {
-            addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_NEW, null));
-            bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_NEW.toString());
+        // aktualizace ap_binding_state
+        // nutne pro detekci zmen
+        EntityRecordStateXml nextExtState;
+        // pokud je v CAMu zneplatnena, tak neumime vyresit
+        // - simulate ApiException - cannot restore invalidate entity from Elza
+        if (externalEntityXml.getEns() == ERS_INVALID || externalEntityXml.getEns() == ERS_REPLACED) {
+            String errMessage = "Cannot restore invalidated entity in ext. system from Elza, accessPointId=" + apState.getAccessPointId() + 
+                                ", external state: " + externalEntityXml.getEns();
+            logger.error(errMessage);
+            throw new ApiException(errMessage);
         }
+        if (apState.getStateApproval() == APPROVED && externalEntityXml.getEns() == ERS_NEW) {
+            addUpdate(new SetRecordStateXml(ERS_APPROVED, null));
+            nextExtState = ERS_APPROVED;
+        } else if (apState.getStateApproval() == NEW && externalEntityXml.getEns() == ERS_APPROVED) {
+            addUpdate(new SetRecordStateXml(ERS_NEW, null));
+            nextExtState = ERS_NEW;
+        } else {
+            // same state in Elza and ext. system (ERS_NEW or ERS_APPROVED)
+            nextExtState = externalEntityXml.getEns();
+        }
+        bingingStates.put(apState.getAccessPointId(), nextExtState.toString());
 
         // změna preferovaného partu
-        PartXml prefNameXml = CamUtils.getPrefName(entityXml);
+        PartXml prefNameXml = CamUtils.getPrefName(externalEntityXml);
         ApBindingItem preferPart = CamUtils.findBindingItemById(bindingParts,
                                                                 accessPoint.getPreferredPartId());
         String prefPartUuid;

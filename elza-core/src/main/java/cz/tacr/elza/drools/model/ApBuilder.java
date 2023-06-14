@@ -339,6 +339,11 @@ public class ApBuilder {
     }
 
     public void setRevision(ApRevision revision, List<ApRevPart> revParts, List<ApRevItem> revItems) {
+        // set apType if exists
+        if (revision.getTypeId() != null) {
+            setAeType(revision.getTypeId());
+        }
+
         // sort items to parts
         Map<Integer, List<ApRevItem>> itemPartMap = revItems.stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId(),
