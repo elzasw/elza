@@ -2515,36 +2515,35 @@ public class AccessPointService {
 
         // musí být možné číst ze zdrojového
         Integer srcScopeId = state.getScopeId();
-        if (userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
-                || userService.hasPermission(Permission.AP_SCOPE_RD, srcScopeId)) {
-            return true;
+        if (!userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
+                && !userService.hasPermission(Permission.AP_SCOPE_RD, srcScopeId)) {
+            return false;
         }
 
         // pokud se entita nahrazuje - musí být možné zapisovat do zdrojového scope
         if (replace) {
             // pokud je schválená
             if (state.getStateApproval() == StateApproval.APPROVED) {
-                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, srcScopeId)) {
-                    return true;
+                if (!userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                        && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED, srcScopeId)) {
+                    return false;
                 }
             } else {
                 // neschválená, tj. stačí běžný zápis
-                if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
-                        || userService.hasPermission(Permission.AP_SCOPE_WR, srcScopeId)) {
-                    return true;
+                if (!userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        && !userService.hasPermission(Permission.AP_SCOPE_WR, srcScopeId)) {
+                    return false;
                 }
             }
         }
 
         // musí být možné zapisovat do cílového scope
-        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
-                || userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
-            return true;
+        if (!userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                && !userService.hasPermission(Permission.AP_SCOPE_WR, scope.getScopeId())) {
+            return false;
         }
 
-
-        return false;
+        return true;
     }
 
     /**
