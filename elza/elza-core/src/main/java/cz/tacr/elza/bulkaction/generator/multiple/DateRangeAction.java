@@ -374,7 +374,7 @@ public class DateRangeAction extends Action {
                 return;
             }
         }
-        sb.append("-");
+        sb.append("–");
         if (maxDateStr != null) {
             sb.append(maxDateStr);
         }
