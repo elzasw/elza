@@ -320,7 +320,7 @@ var messages = {
     "ribbon.action.arr.fund.settings.template": "Správa šablon",
     "ribbon.action.arr.fund.settings.refTemplate": "Správa šablon synchronizace JP",
     "ribbon.action.registry": "Archivní entity",
-    "ribbon.action.registry.scope.manage": "Správa oblastí archivních entit",
+    "ribbon.action.registry.scope.manage": "Správa oblastí archivních entit1",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",
@@ -1028,8 +1028,8 @@ var messages = {
 
     "registry.noSelection.title": "Není vybráno rejstříkové heslo",
     "registry.noSelection.message": "Prosím vyberte rejstříkové heslo ze seznamu nebo vytvořte nové.",
-    "registry.addRegistry": "Nová archivní entita",
-    "registry.addNewRegistry": "Nová archivní entita",
+    "registry.addRegistry": "Nová archivní entita1",
+    "registry.addNewRegistry": "Nová archivní entita2",
     "registry.all": "Vše",
     "registry.name": "Název",
     "registry.characteristics": "Charakteristika",
@@ -1143,7 +1143,7 @@ var messages = {
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
 
-    "ap.copy.title": "Kopie archivní entity",
+    "ap.copy.title": "Kopie entity",
     "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
     "ap.copy.scope": "Oblast",
 
@@ -1764,7 +1764,7 @@ var messages = {
     "accesspoint.removeDuplicity.confirm.nonEqualNames": "Entity mají ruzná označení",
     "accesspoint.removeDuplicity.inProgress": "Probíhá odstranění duplicity...",
 
-    "accesspoint.scope.management.title": "Správa oblastí archivních entit",
+    "accesspoint.scope.management.title": "Správa oblastí archivních entit2",
     "accesspoint.scope.list": "Seznam oblastí",
     "accesspoint.scope.code": "Kód",
     "accesspoint.scope.ruleSetCode": "Pravidla popisu",
