@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
@@ -129,6 +130,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
+        // check if deleted
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);
         assertTrue(apInfo.isInvalid());
@@ -138,6 +140,14 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
+
+        // try to restore AP
+        accesspointsApi.restoreAccessPoint(ap1.getAccessPointId().toString());
+        apInfo = this.getAccessPoint(ap1.getAccessPointId());
+        assertNotNull(apInfo);
+        assertTrue(!apInfo.isInvalid());
+        assertNull(apInfo.getReplacedById());
+        assertEquals(apInfo.getStateApproval(), ApState.StateApproval.NEW);
     }
     
     @Test

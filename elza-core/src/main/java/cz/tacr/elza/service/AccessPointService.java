@@ -488,13 +488,15 @@ public class AccessPointService {
     }
 
     /**
-     * Obnovení neplatné entity a návrat do původního stavu
+     * Obnovení zneplatněné entity
+     * 
+     * Entita je vždy obnovena ve stavu nová
      * 
      * @param apState
      */
     public void restoreAccessPoint(ApState apState) {
 
-        checkPermissionForEdit(apState);
+        checkPermissionForRestore(apState);
 
         // check if access point is deleted
         validationDeleted(apState);
@@ -502,6 +504,8 @@ public class AccessPointService {
         // create new version of ApState 
         ApChange change = apDataService.createChange(ApChange.Type.AP_RESTORE);
         ApState restoreState = copyState(apState, change);
+        // access point is always restored as new
+        restoreState.setStateApproval(StateApproval.NEW);
         stateRepository.save(restoreState);
 
         // restore ApKeyValue(s)
@@ -2672,6 +2676,21 @@ public class AccessPointService {
         } else {
             checkPermissionForEdit(state, (RevStateApproval) null);
         }
+    }
+
+    public void checkPermissionForRestore(final ApState state) {
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return;
+        }
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
+            return;
+        }
+
+        throw new SystemException("Nedostatečné oprávnění na obnovu přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
     }
 
     public void checkPermissionForEdit(final ApState state,
