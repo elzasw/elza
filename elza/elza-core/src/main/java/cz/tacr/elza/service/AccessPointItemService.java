@@ -153,7 +153,7 @@ public class AccessPointItemService {
     }
 
     /**
-     * Odstraní kolekci item.
+     * Odstranění kolekci item.
      *
      * @param items
      *            seznam
@@ -172,7 +172,20 @@ public class AccessPointItemService {
         List<ApItem> deletedItems = itemRepository.saveAll(items);
 
         // Delete bindings
-        List<ApBindingItem> bindingItems = this.bindingItemRepository.findByItems(deletedItems);
+        List<ApBindingItem> bindingItems = deleteBindingItems(deletedItems, change);
+
+        return new DeletedItems(deletedItems, bindingItems);
+    }
+
+    /**
+     *  Odstranění seznamu BindingItem by ApItem
+     *
+     * @param deletedItems - seznam ApItem
+     * @param change
+     * @return List<ApBindingItem>
+     */
+    public List<ApBindingItem> deleteBindingItems(List<ApItem> deletedItems, ApChange change) {
+        List<ApBindingItem> bindingItems = bindingItemRepository.findByItems(deletedItems);
         if (bindingItems.size() > 0) {
             for (ApBindingItem bindingItem : bindingItems) {
                 log.debug("Deleting binding item, apBindingItemId: {}, apItemId: {}",
@@ -180,12 +193,9 @@ public class AccessPointItemService {
                           bindingItem.getItem().getItemId());
                 bindingItem.setDeleteChange(change);
             }
-            bindingItems = bindingItemRepository.saveAll(bindingItems);
-
-            return new DeletedItems(deletedItems, bindingItems);
-        } else {
-            return new DeletedItems(deletedItems, Collections.emptyList());
+            return bindingItemRepository.saveAll(bindingItems);
         }
+        return Collections.emptyList();
     }
 
     public List<ApItem> deleteBindnedItems(List<ApBindingItem> bindingItemsInPart, ApChange apChange) {

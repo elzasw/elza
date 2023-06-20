@@ -202,24 +202,26 @@ public class PartService {
      * 
      * Odstraní jen samotné části bez prvků popisu
      *
-     * @param partList
+     * @param parts
      *            seznam částí
      * @param apChange
      *            změna
      */
-    public void deleteParts(List<ApPart> partList, ApChange apChange) {
-        if (CollectionUtils.isEmpty(partList)) {
+    public void deleteParts(List<ApPart> parts, ApChange apChange) {
+        if (CollectionUtils.isEmpty(parts)) {
             return;
         }
         List<ApKeyValue> keyValues = new ArrayList<>();
-        for (ApPart part : partList) {
+        for (ApPart part : parts) {
             if (part.getKeyValue() != null) {
                 keyValues.add(part.getKeyValue());
             }
-            part.setDeleteChange(apChange);
+            if (part.getDeleteChange() == null) {
+                part.setDeleteChange(apChange);
+            }
             part.setKeyValue(null);
         }
-        partRepository.saveAll(partList);
+        partRepository.saveAll(parts);
         partRepository.flush();
         if (CollectionUtils.isNotEmpty(keyValues)) {
             keyValueRepository.deleteAll(keyValues);
