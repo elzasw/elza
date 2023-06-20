@@ -916,7 +916,10 @@ public class RevisionService {
                 revPartMap.put(revPart.getPartId(), revPart.getOriginalPart());
 
                 if (revPart.isDeleted()) {
-                    deletedParts.add(revPart.getOriginalPart());
+                    ApPart part = revPart.getOriginalPart();
+                    // set deleteChange from createChange from revPart
+                    part.setDeleteChange(revPart.getCreateChange());
+                    deletedParts.add(part);
                 }
             }
         }
