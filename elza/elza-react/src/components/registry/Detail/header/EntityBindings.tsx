@@ -17,20 +17,25 @@ import { ThunkDispatch } from 'redux-thunk';
 import { AppState, RefTablesState } from 'typings/store';
 import { SyncIcon } from "../sync-icon";
 import './DetailHeader.scss';
-import {DetailDescriptionsItemWithButton} from './DetailDescriptionsItem';
+import { DetailDescriptionsItemWithButton } from './DetailDescriptionsItem';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { ApPushToExt } from 'components/registry/modal/ApPushToExt';
-// import { goToAe } from 'actions/registry/registry';
+import { Button } from 'components/ui';
+import { useHistory } from 'react-router';
+import { Api } from 'api';
+import { goToAe } from 'actions/registry/registry';
+import { ApCopyModal } from 'components/registry/modal/ap-copy';
+import { objectById } from 'stores/app/utils';
 
-const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
+const useThunkDispatch = <State,>(): ThunkDispatch<State, void, AnyAction> => useDispatch()
 
 const hasUnimportedEntity = (accessPoint: ApAccessPointVO, refTables: RefTablesState) => {
-    const externalEntity = accessPoint.parts.find((part)=>{
-        return part.items?.find((item: any)=>{
+    const externalEntity = accessPoint.parts.find((part) => {
+        return part.items?.find((item: any) => {
             const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
             const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
             const isRef = dataType.code === RulDataTypeCodeEnum.RECORD_REF;
-            if(isRef && !item.accessPoint || isRef && !item.value){
+            if (isRef && !item.accessPoint || isRef && !item.value) {
                 return item;
             }
         })
@@ -42,155 +47,184 @@ const getProcessingMessage = (key: string) => {
     return <h4 className="processing">{i18n(key)}</h4>;
 };
 
-export const EntityBindings:FC<{
+export const EntityBindings: FC<{
     item?: ApAccessPointVO;
     onInvalidateDetail?: () => void;
+    onPushApToExt?: (item: ApAccessPointVO) => void;
 }> = ({
     item,
     onInvalidateDetail,
+    onPushApToExt,
 }) => {
-    const dispatch = useThunkDispatch()
-    const userDetail = useSelector((state: AppState) => state.userDetail)
-    const externalSystems = useSelector((state: AppState) => state.app.apExtSystemList.rows)
-    const refTables = useSelector((state: AppState) => state.refTables)
+        const dispatch = useThunkDispatch()
+        const userDetail = useSelector((state: AppState) => state.userDetail)
+        const externalSystems = useSelector((state: AppState) => state.app.apExtSystemList.rows)
+        const refTables = useSelector((state: AppState) => state.refTables)
 
-    if(!item || item?.bindings.length === 0 || externalSystems.length === 0){return <></>}
+        if (!item || externalSystems.length === 0) { return <></> }
 
-    const handleSynchronize = async (binding: ApBindingVO) => {
-        const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
-        if(result){
+        const handlePushApToExt = () => onPushApToExt?.(item);
+
+        if (item?.bindings?.length === 0) {
+            return (
+                <div className="binding" key={'no-binding'}>
+                    <DetailDescriptionsItemWithButton
+                        renderButton={() => <>
+                            <Button className="button" onClick={handlePushApToExt} title={i18n('ap.push-to-ext')}><Icon glyph="fa-cloud-upload" /></Button>
+                        </>}
+                    >
+                        <div className="info">
+                            {/* {i18n('ap.binding.source')}{': '} */}
+                            <span className="system">{i18n('ap.not-in-ext')}</span>
+                        </div>
+                    </DetailDescriptionsItemWithButton>
+
+                </div>
+            );
+        }
+
+        const handleSynchronize = async (binding: ApBindingVO) => {
+            const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
+            if (result) {
+                dispatch(
+                    showAsyncWaiting(
+                        null,
+                        getProcessingMessage('ap.binding.processing.synchronize'),
+                        WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
+                        () => {
+                            onInvalidateDetail && onInvalidateDetail();
+                        },
+                    ),
+                );
+            }
+        };
+
+        const handleUpdate = (binding: ApBindingVO) => {
+            const extSystem = externalSystems.find((extSystem) => extSystem.code === binding.externalSystemCode);
+            if (!extSystem) { throw Error("External system not found.") }
+            dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('ap.push-to-ext.title'),
+                    <ApPushToExt
+                        detail={item}
+                        onSubmit={async () => {
+                            try {
+                                await WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode);
+                            } catch (e) {
+                                throw Error(e);
+                            }
+                            dispatch(modalDialogHide());
+                            return;
+                        }}
+                        onClose={() => {
+                            modalDialogHide();
+                        }}
+                        extSystems={[extSystem]}
+                    />,
+                ),
+            );
+        };
+
+        const handleTakeRelEntities = (binding: ApBindingVO) => {
             dispatch(
                 showAsyncWaiting(
                     null,
-                    getProcessingMessage('ap.binding.processing.synchronize'),
-                    WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
+                    getProcessingMessage('ap.binding.processing.take-rel-entities'),
+                    WebApi.takeRelArchiveEntities(item.id!, binding.externalSystemCode),
                     () => {
                         onInvalidateDetail && onInvalidateDetail();
                     },
                 ),
             );
+        };
+
+        const hasState = (state: string, approvedStates: string[]) => {
+            return approvedStates.indexOf(state) >= 0;
         }
-    };
 
-    const handleUpdate = (binding: ApBindingVO) => {
-        const extSystem = externalSystems.find((extSystem) => extSystem.code === binding.externalSystemCode);
-        if(!extSystem){ throw Error("External system not found.") }
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('ap.push-to-ext.title'),
-                <ApPushToExt
-                    detail={item}
-                    onSubmit={async () => {
-                        try {
-                            await WebApi.updateArchiveEntity(item.id!, binding.externalSystemCode);
-                        } catch (e) {
-                            throw Error(e);
-                        }
-                        dispatch(modalDialogHide());
-                        return;
-                    }}
-                    onClose={()=>{
-                        modalDialogHide();
-                    }}
-                    extSystems={[extSystem]}
-                />,
-            ),
-            );
-    };
+        const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
 
-    const handleTakeRelEntities = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.take-rel-entities'),
-                WebApi.takeRelArchiveEntities(item.id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
+        return (
+            <div className="bindings" key="bindings">
+                {item.bindings.map(binding => {
+                    const externalSystem = externalSystems.find((externalSystem) => binding.externalSystemCode === externalSystem.code);
+                    const tooltip = ('id: ' + binding.value) + (binding.extRevision ? (', uuid: ' + binding.extRevision) : '')
+                        + (binding.extUser ? (', ' + i18n('ap.binding.user') + ': ' + binding.extUser) : '');
+
+                    const renderTooltip = () =>
+                        <div style={{ textAlign: "left", padding: "4px" }}>
+                            <div>id: {binding.value}</div>
+                            {binding.extRevision && <div>rev_id: {binding.extRevision}</div>}
+                            {binding.extUser && <div>{`${i18n('ap.binding.user')}: ${binding.extUser}`}</div>}
+                        </div>
+
+                    return (
+                        <div className="binding" key={'binding-' + binding.id}>
+                            <DetailDescriptionsItemWithButton
+                                renderButton={() => <>
+                                    <DropdownButton
+                                        variant="action"
+                                        id={'binding-action-' + binding.id}
+                                        title={<Icon glyph="fa-ellipsis-h" />}
+                                        className={'binding-dropdown button'}
+                                        alignRight={true}
+                                    >
+                                        {hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
+                                            <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
+                                                {i18n('ap.binding.action.synchronize')}
+                                            </Dropdown.Item>}
+                                        {hasUnimportedEntity(item, refTables) &&
+                                            <Dropdown.Item
+                                                key="take-rel-entities"
+                                                onClick={() => handleTakeRelEntities(binding)}
+                                            >
+                                                {i18n('ap.binding.action.take-rel-entities')}
+                                            </Dropdown.Item>
+                                        }
+                                    </DropdownButton>
+                                    {apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"])
+                                        && binding.syncState === SyncState.LOCAL_CHANGE
+                                        && (
+                                            <Button
+                                                className="button save-button"
+                                                title={i18n('ap.binding.action.update')}
+                                                onClick={() => handleUpdate(binding)}
+                                            >
+                                                <Icon glyph="fa-save" />
+                                            </Button>
+                                        )}
+                                </>}
+                            >
+                                <TooltipTrigger content={renderTooltip()}>
+                                    <div className="info">
+                                        {/* {i18n('ap.binding.source')}{': '} */}
+                                        <span className="system">{externalSystem?.name}</span>
+                                        {i18n('ap.binding.extState.' + binding.extState)}
+                                        {binding.extReplacedBy && (
+                                            <span className="link">
+                                                {' '}
+                                            (
+                                                <a
+                                                    href={binding.detailUrlExtReplacedBy}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    {binding.detailUrlExtReplacedBy}
+                                                </a>
+                                            )
+                                            </span>
+                                        )}
+                                    </div>
+                                </TooltipTrigger>
+                                <div className="action">
+                                    <SyncIcon syncState={binding.syncState || undefined} />
+                                </div>
+                            </DetailDescriptionsItemWithButton>
+
+                        </div>
+                    );
+                })}
+            </div>
         );
     };
-
-    const hasState = (state: string, approvedStates: string[]) => {
-        return approvedStates.indexOf(state) >= 0;
-    }
-
-    const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
-    return (
-        <div className="bindings" key="bindings">
-            {item.bindings.map(binding => {
-                const externalSystem = externalSystems.find((externalSystem)=>binding.externalSystemCode === externalSystem.code);
-                const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'')
-                    + (binding.extUser?(', '+i18n('ap.binding.user')+': '+binding.extUser):'');
-
-                const renderTooltip = () =>
-                    <div style={{textAlign: "left", padding: "4px"}}>
-                        <div>id: {binding.value}</div>
-                        {binding.extRevision && <div>uuid: {binding.extRevision}</div>}
-                        {binding.extUser && <div>{`${i18n('ap.binding.user')}: ${binding.extUser}`}</div>}
-                    </div>
-                                        
-                return (
-                    <div className="binding" key={'binding-' + binding.id}>
-                        <DetailDescriptionsItemWithButton
-                            renderButton={() => <DropdownButton
-                                variant="action"
-                                id={'binding-action-' + binding.id}
-                                title={<Icon glyph="fa-ellipsis-h" />}
-                                className={'binding-dropdown'}
-                                alignRight={true}
-                            >
-                                { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
-                                    <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
-                                        {i18n('ap.binding.action.synchronize')}
-                                    </Dropdown.Item>}
-                                { apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) 
-                                    && binding.syncState === SyncState.LOCAL_CHANGE 
-                                    && (
-                                        <Dropdown.Item key="update" onClick={() => handleUpdate(binding)}>
-                                            {i18n('ap.binding.action.update')}
-                                        </Dropdown.Item>
-                                    )}
-                                {hasUnimportedEntity(item, refTables) &&
-                                    <Dropdown.Item
-                                        key="take-rel-entities"
-                                        onClick={() => handleTakeRelEntities(binding)}
-                                    >
-                                        {i18n('ap.binding.action.take-rel-entities')}
-                                    </Dropdown.Item>
-                            }
-                            </DropdownButton>}
-                        >
-                            <TooltipTrigger content={renderTooltip()}>
-                                <div className="info">
-                                    {/* {i18n('ap.binding.source')}{': '} */}
-                                    <span className="system">{externalSystem?.name}</span>
-                                    {i18n('ap.binding.extState.' + binding.extState)}
-                                    {binding.extReplacedBy && (
-                                        <span className="link">
-                                            {' '}
-                                            (
-                                            <a
-                                                href={binding.detailUrlExtReplacedBy}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {binding.detailUrlExtReplacedBy}
-                                            </a>
-                                            )
-                                        </span>
-                                    )}                                    
-                                </div>
-                            </TooltipTrigger>
-                            <div className="action">
-                                <SyncIcon syncState={binding.syncState || undefined}/>
-                            </div>
-                        </DetailDescriptionsItemWithButton>
-                        
-                    </div>
-                );
-            })}
-        </div>
-    );
-};

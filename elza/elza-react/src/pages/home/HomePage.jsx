@@ -21,15 +21,15 @@ import './HomePage.scss';
 // import AutocompleteTest from "./test/AutocompleteTest";
 
 const truncateStringWithTooltip = (string, length, maxWidth = "13em") => {
-    if(string.length <= length){
+    if (string.length <= length) {
         return string;
     }
-    return <TooltipTrigger content={<div style={{maxWidth}}>{string}</div>} placement='vertical'>
-        {`${string.slice(0, length-3).trim()}...`}
+    return <TooltipTrigger content={<div style={{ maxWidth }}>{string}</div>} placement='vertical'>
+        {`${string.slice(0, length - 3).trim()}...`}
     </TooltipTrigger>
 }
 
-const FundItem = ({fundDetail, version}) => {
+const FundItem = ({ fundDetail, version }) => {
     const name = truncateStringWithTooltip(fundDetail.name, 90)
 
     return <LinkContainer to={urlFundTree(fundDetail.id, version.lockDate === null ? undefined : version.id)} className="history-list-item history-button">
@@ -50,11 +50,11 @@ const FundItem = ({fundDetail, version}) => {
                             </div>}
                             <div className="fund-desc-item version" >
                                 {version.lockDate && <>
-                                    <Icon glyph={'fa-lock'}/> Verze {new Date(version.lockDate).toLocaleString()}
-                                    </>}
+                                    <Icon glyph={'fa-lock'} /> Verze {new Date(version.lockDate).toLocaleString()}
+                                </>}
                             </div>
                         </div>
-                        </>
+                    </>
                 </div>
                 <div className="fund-label">
                     {fundDetail.internalCode || fundDetail.fundNumber}
@@ -66,26 +66,26 @@ const FundItem = ({fundDetail, version}) => {
     </LinkContainer>
 }
 
-const EntityItem = ({entity}) => {
+const EntityItem = ({ entity }) => {
     return (
-        <TooltipTrigger 
-            style={{zIndex: 2, display: "inline-block"}} 
-            content={entity.data.description 
-                && <div style={{maxWidth: "13em"}} >
+        <TooltipTrigger
+            style={{ zIndex: 2, display: "inline-block" }}
+            content={entity.data.description
+                && <div style={{ maxWidth: "13em" }} >
                     {entity.data.description}
-                </div>} 
+                </div>}
             placement="vertical"
         >
-            <LinkContainer 
-                to={`/entity/${entity.id}`} 
-                className="history-list-item history-button" 
+            <LinkContainer
+                to={`/entity/${entity.id}`}
+                className="history-list-item history-button"
             >
                 <Button>
                     <div className="background-text-container">
                         {/* <Icon glyph='fa-th-list' /> */}
                         <div className="background-text">{entity.data.name}</div>
                     </div>
-                    <div style={{zIndex: 2}} className="history-name">
+                    <div style={{ zIndex: 2 }} className="history-name">
                         {truncateStringWithTooltip(entity.data.name, 120)}
                     </div>
                 </Button>
@@ -108,10 +108,10 @@ class HomePage extends AbstractReactComponent {
 
     componentDidMount() {
         const funds = this.props.stateRegion?.arrRegionFront;
-        if(funds?.length > 0){
-            Promise.all(funds.map((fund) => Api.funds.getFund(fund.id, {overrideErrorHandler: true})
-                .catch(()=>{return undefined;})))
-                .then((responses)=>{
+        if (funds?.length > 0) {
+            Promise.all(funds.map((fund) => Api.funds.getFund(fund.id, { overrideErrorHandler: true })
+                .catch(() => { return undefined; })))
+                .then((responses) => {
                     const fundDetails = responses.filter((response) => response != undefined).map((response) => response.data);
                     this.setState({ fundDetails })
                 });
@@ -120,7 +120,7 @@ class HomePage extends AbstractReactComponent {
     }
 
     trySetFocus = props => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
@@ -151,10 +151,10 @@ class HomePage extends AbstractReactComponent {
     };
 
     handleAddFund = () => {
-        const {userDetail} = this.props;
+        const { userDetail } = this.props;
         let initData = {};
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
-            initData.fundAdmins = [{id: 'default', user: userDetail}];
+            initData.fundAdmins = [{ id: 'default', user: userDetail }];
         }
         WebApi.getAllScopes().then(scopes => {
             this.props.dispatch(
@@ -175,7 +175,7 @@ class HomePage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {userDetail} = this.props;
+        const { userDetail } = this.props;
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
@@ -188,14 +188,16 @@ class HomePage extends AbstractReactComponent {
             );
         }
 
-        altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
-                <Icon glyph="fa-search" />
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
-                </div>
-            </Button>,
-        );
+        if (userDetail.hasOne(perms.FUND_RD, perms.FUND_RD_ALL)) {
+            altActions.push(
+                <Button key="search-fa" onClick={this.handleFundsSearchForm}>
+                    <Icon glyph="fa-search" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+                    </div>
+                </Button>,
+            );
+        }
 
         let altSection;
         if (altActions.length > 0) {
@@ -210,21 +212,22 @@ class HomePage extends AbstractReactComponent {
     };
 
     renderHistory = () => {
-        const {registryRegionFront, arrRegionFront} = this.props.stateRegion;
-        const {fundDetails} = this.state;
+        const { registryRegionFront, arrRegionFront } = this.props.stateRegion;
+        const { userDetail } = this.props;
+        const { fundDetails } = this.state;
 
         const registryItems = registryRegionFront.map((item) => {
             if (item.data) {
-                return <EntityItem entity={item}/>;
+                return <EntityItem entity={item} />;
             }
             return <></>
         });
 
         const arrItems = [];
-        arrRegionFront.forEach(({activeVersion, id}) => {
+        arrRegionFront.forEach(({ activeVersion, id }) => {
             const item = fundDetails.find((fund) => fund.id === id);
-            if(item){
-                arrItems.push(<FundItem fundDetail={item} version={activeVersion}/>);
+            if (item) {
+                arrItems.push(<FundItem fundDetail={item} version={activeVersion} />);
             }
         })
 
@@ -249,8 +252,13 @@ class HomePage extends AbstractReactComponent {
         return (
             <div ref="list" className="history-list-container">
                 <div className="button-container">
-                    <h4>{i18n('home.recent.fund.title')}</h4>
-                    <div className="section">{arrItems}</div>
+                    {
+                        userDetail.hasOne(perms.FUND_RD, perms.FUND_RD_ALL)
+                        && <>
+                            <h4>{i18n('home.recent.fund.title')}</h4>
+                            <div className="section">{arrItems}</div>
+                        </>
+                    }
                     <h4>{i18n('home.recent.registry.title')}</h4>
                     <div className="section">{registryItems}</div>
                 </div>
@@ -272,7 +280,7 @@ class HomePage extends AbstractReactComponent {
         // Test komponent - jen pro vývojové účely
         // return <AutocompleteTest/>
 
-        const {splitter} = this.props;
+        const { splitter } = this.props;
 
         let centerPanel = <div className="splitter-home">{this.renderHistory()}</div>;
 
@@ -281,7 +289,7 @@ class HomePage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, stateRegion, focus, userDetail} = state;
+    const { splitter, arrRegion, refTables, stateRegion, focus, userDetail } = state;
     return {
         splitter,
         arrRegion,

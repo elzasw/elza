@@ -1,9 +1,9 @@
 @import "../../../../variables.scss";
 
 .tooltip-link {
-    cursor: pointer; 
-    text-decoration: underline; 
-    background: none; 
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
     border: none;
     padding: 0;
     margin: 0;
@@ -43,7 +43,7 @@
 
     }
     .header-container {
-        padding: 15px; 
+        padding: 15px;
         position: relative;
 
         .header {
@@ -106,18 +106,30 @@
     .detail-descriptions-item-button {
         display: flex;
 
-        .btn {
-            height: auto;
+        .button {
             background-color: $shade-4;
             color: $fg-color;
-            border-radius: 0 5px 5px 0;
-            padding: 0px 8px;
+
+            &:last-child {
+                border-radius: 0 5px 5px 0;
+            }
+
+            &.save-button {
+                background-color: $color-green;
+                color: $fg-shade-4;
+            }
 
             &:hover, &:active, &:focus {
                 background-color: $shade-5;
+                color: $fg-color;
                 box-shadow: none;
             }
 
+        }
+
+        .btn {
+            height: auto;
+            padding: 0px 8px;
         }
     }
 
