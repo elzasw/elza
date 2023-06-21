@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
@@ -778,5 +777,9 @@ public class ExternalSystemService {
                                                   ExtAsyncQueueState... states) {
          return extSyncsQueueItemRepository.findByApExtSystAndState(accessPointId, externalSystemId, Arrays.asList(
                                                                                                                    states));
+     }
+
+     public ArrDigitalRepository getDigitalRepository(Integer digiRepId) {
+         return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
  }

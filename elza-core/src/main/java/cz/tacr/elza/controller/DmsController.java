@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,7 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -53,14 +55,15 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 /**
- * @author Petr Compel <petr.compel@marbes.cz>
+ * 
  * @since 20.6.2016
  */
 @RestController
-/// @RequestMapping("/api/dms") - Mapping není funkční pro upload
 public class DmsController {
 
     private ThreadLocal<SimpleDateFormat> FORMATTER_DATE_TIME = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"));
@@ -85,6 +88,12 @@ public class DmsController {
 
     @Autowired
     private DmsService dmsService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private FileSystemRepoService fileSystemRepoService;
 
     /**
      * Načtení seznamu editovatelných mime typů.
@@ -345,15 +354,39 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
     public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
-        Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         DmsFile file = dmsService.getFile(fileId);
-        Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
+        Validate.notNull(file, "Soubor s fileId %s neexistuje!", fileId);
+
         FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
 
         try (ServletOutputStream out = response.getOutputStream();
                 InputStream in = dmsService.downloadFile(file);) {
             IOUtils.copy(in, out);
         }
+    }
+
+    // TODO: In Spring6 change to: "/api/digirepo/{repoId}/{*filePath}"
+    @RequestMapping(value = "/api/digirepo/{repoId}", method = RequestMethod.GET)
+    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId,
+                        @RequestParam(value = "filePath") String filePath)
+            throws IOException {
+        // read file repo
+        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
+        
+        Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
+        String contentType = fileSystemRepoService.getMimetype(filePath);
+        if (StringUtils.isEmpty(contentType)) {
+            contentType = "application/binary";
+            FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
+        }
+        response.setContentType(filePath);
+        
+        try (ServletOutputStream out = response.getOutputStream();
+                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath);) {
+            IOUtils.copy(in, out);
+        }
+
     }
 
     /**

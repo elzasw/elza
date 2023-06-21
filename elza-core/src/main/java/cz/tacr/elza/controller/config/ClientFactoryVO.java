@@ -163,7 +163,6 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
@@ -1818,9 +1817,35 @@ public class ClientFactoryVO {
      * @return list VO
      */
     public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, final ArrFundVersion version) {
-        List<ArrDaoVO> voList = new ArrayList<>();
+        if (CollectionUtils.isEmpty(arrDaoList)) {
+            return Collections.emptyList();
+        }
+        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(arrDaoList);
+        // There might me more links to one DAO
+        // We will send only first DaoLink
+        //
+        // This functionality has to be changed in future
+        // Client should request existing daolinks
+        Map<Integer, ArrDaoLink> daoLinkMap = new HashMap<>();
+        for (ArrDaoLink daoLink : daoLinkList) {
+            daoLinkMap.put(daoLink.getDaoId(), daoLink);
+        }
+
+        List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(arrDao, detail, version));
+            voList.add(createDao(arrDao, detail, version, daoLinkMap));
+        }
+        return voList;
+    }
+
+    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail,
+                                        final ArrFundVersion version, final Map<Integer, ArrDaoLink> daoLinkMap) {
+        if (CollectionUtils.isEmpty(arrDaoList)) {
+            return Collections.emptyList();
+        }
+        List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
+        for (ArrDao arrDao : arrDaoList) {
+            voList.add(createDao(arrDao, detail, version, daoLinkMap));
         }
         return voList;
     }
@@ -1850,7 +1875,8 @@ public class ClientFactoryVO {
      * @return vo
      */
     private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail,
-                               final ArrFundVersion version) {
+                               final ArrFundVersion version,
+                               final Map<Integer, ArrDaoLink> daoLinkMap) {
         // read scenarios
         Items items = daoSyncService.unmarshalItemsFromAttributes(arrDao);
         List<String> scenarios = null;
@@ -1860,23 +1886,14 @@ public class ClientFactoryVO {
 
         ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
 
-        ArrDaoLink daoLink;
-        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
-        if (CollectionUtils.isNotEmpty(daoLinkList)) {
-            if (daoLinkList.size() > 1) {
-                throw new SystemException("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
-            }
-            daoLink = daoLinkList.iterator().next();
-
+        ArrDaoLink daoLink = daoLinkMap.get(arrDao.getDaoId());
+        if (daoLink != null) {
             ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
-
             vo.setDaoLink(daoLinkVo);
-        } else {
-        	daoLink = null;
         }
 
         ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-        String url = daoService.getDaoUrl(arrDao, daoLink, digitalRepository.getViewDaoUrl());
+        String url = daoService.getDaoUrl(arrDao, daoLink, digitalRepository);
         vo.setUrl(url);
 
         if (detail) {
@@ -1922,9 +1939,11 @@ public class ClientFactoryVO {
         return new ArrDaoLinkVO(daoLinkId, nodesByIds.get(0), scenario);
     }
 
-    public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
-        ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
-
+    public List<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
+        if (CollectionUtils.isEmpty(arrDaoList)) {
+            return Collections.emptyList();
+        }
+        List<ArrDaoPackageVO> result = new ArrayList<>(arrDaoList.size());
         for (ArrDaoPackage arrDaoPackage : arrDaoList) {
             ArrDaoPackageVO vo = createDaoPackage(unassigned, arrDaoPackage);
             result.add(vo);

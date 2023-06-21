@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -22,14 +23,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -38,7 +37,6 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -63,6 +61,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
+import cz.tacr.elza.service.dao.DaoServiceInternal;
+import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -119,7 +119,16 @@ public class DaoService {
     private NodeRepository nodeRepository;
 
     @Autowired
+    private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
     private ApplicationContext appCtx;
+
+    @Autowired
+    private DaoServiceInternal daoServiceInternal;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -132,14 +141,43 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                 @Nullable final ArrNode node, final Integer index, final Integer maxResults) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Pageable pageable = PageRequest.of(index, maxResults);  
-        if (node == null) {
-            return daoRepository.findDettachedByFund(fundVersion.getFund(), pageable).toList();
-        } else {
-            return daoRepository.findAttachedByNode(node, pageable).toList();
+                                 final ArrNode node, final Integer index, final Integer maxResults) {
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(node, "Node musí být vyplněn");
+
+        Pageable pageable = PageRequest.of(index, maxResults);
+
+        return daoRepository.findAttachedByNode(node, pageable).toList();
+    }
+
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+    public List<ArrDao> findDettachedDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                          final Integer index, final Integer maxResults) {
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Pageable pageable = PageRequest.of(index, maxResults);
+
+        // Test na externí systémy
+        List<ArrDigitalRepository> digitRepositories = externalSystemService.findDigitalRepository();
+        if (CollectionUtils.isEmpty(digitRepositories)) {
+            return Collections.emptyList();
         }
+        if (digitRepositories.size() == 1) {
+            ArrDigitalRepository digiRep = digitRepositories.get(0);
+            if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
+                // we have fileSystemRepo
+                return fileSystemRepoService.findDettachedDaos(digiRep, index, maxResults);
+            }
+        }
+
+        return daoRepository.findDettachedByFund(fundVersion.getFund(), pageable).toList();
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrDao> findDaosByVirtualPackageId(@AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion,
+                                                 final Integer daoPackageId,
+                                                 final Integer index, final Integer maxResults
+    ) {
+        return fileSystemRepoService.findDaosByPackageId(daoPackageId);
     }
 
     /**
@@ -153,12 +191,13 @@ public class DaoService {
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion,
                                           final ArrDaoPackage daoPackage,
                                           final Integer index, final Integer maxResults, 
                                           final boolean unassigned) {
-        Validate.notNull(fundId, "Verze AS musí být vyplněna");
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
+
         Pageable pageable = PageRequest.of(index, maxResults);  
         if (unassigned) {
             return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
@@ -317,17 +356,41 @@ public class DaoService {
     }
 
     /**
-     * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
+     * Poskytuje seznam digitálních entit (DAO),
+     * které jsou napojené na konkrétní jednotku popisu (JP) nebo
+     * nemá žádné napojení (pouze pod archivní souborem (AS)).
      *
-     * @param fundVersion id archivního souboru
-     * @param search      vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
-     * @param unassigned  mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
-     * @param maxResults  maximální počet vyhledaných balíčků
-     * @return seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední vytvořené budou na začátku seznamu)
+     * @param fundVersion
+     *            id archivního souboru
+     * @param search
+     *            vyhledává (použití LIKE) nad kódem balíčku, kódem a labelem
+     *            arr_dao (přirazený k balíčku), kódem a labelem arr_dao_batch_info
+     * @param unassigned
+     *            mají-li se získávat pouze balíčky, které obsahují DAO, které
+     *            nejsou nikam přirazené (unassigned = true), a nebo úplně všechny
+     *            (unassigned = false)
+     * @param maxResults
+     *            maximální počet vyhledaných balíčků
+     * @return seznam balíčků, seřazení je podle ID balíčku sestupně (tzn. poslední
+     *         vytvořené budou na začátku seznamu)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDaoPackage> findDaoPackages(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                final String search, final Boolean unassigned, final Integer maxResults) {
+        // Test na externí systémy
+        List<ArrDigitalRepository> digitRepositories = externalSystemService.findDigitalRepository();
+        if (CollectionUtils.isEmpty(digitRepositories)) {
+            return Collections.emptyList();
+        }
+        if (Boolean.TRUE.equals(unassigned)) {
+            if (digitRepositories.size() == 1) {
+                ArrDigitalRepository digiRep = digitRepositories.get(0);
+                if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
+                    //
+                    return fileSystemRepoService.findDettachedPackages(digiRep, search, maxResults);
+                }
+            }
+        }
         return daoPackageRepository.findDaoPackages(fundVersion, search, unassigned, maxResults);
     }
 
@@ -358,16 +421,6 @@ public class DaoService {
         }
 
         deleteDaos(fundVersion, arrDaos, true);
-    }
-
-    /**
-     * Delete dao files from DB
-     * 
-     * @param daoFiles
-     */
-    public void deleteDaoFiles(Collection<ArrDaoFile> daoFiles) {
-        daoFileRepository.deleteAll(daoFiles);
-
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
@@ -401,12 +454,12 @@ public class DaoService {
             daoLinkRepository.deleteAll(arrDaoLinkList);
 
             // smazat arr_dao_file
-            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
-            deleteDaoFiles(daoFileList);
+            final List<ArrDaoFile> daoFileList = daoServiceInternal.getFilesByDao(arrDao);
+            daoServiceInternal.deleteDaoFiles(daoFileList);
 
             // smazat arr_dao_file_group
-            final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
-            daoFileGroupRepository.deleteAll(daoFileGroupList);
+            final List<ArrDaoFileGroup> daoFileGroupList = daoServiceInternal.getFileGroupsByDao(arrDao);
+            daoServiceInternal.deleteDaoFileGroups(daoFileGroupList);
 
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
@@ -470,26 +523,49 @@ public class DaoService {
 
     /**
      * Získání url na dao.
-     * @param dao dao
-     * @param daoLink Optional DAO Link
-     * @param viewDaoUrl 
+     * 
+     * @param dao
+     *            dao
+     * @param daoLink
+     *            Optional DAO Link
+     * @param digitalRepository
      * @return url
      */
     public String getDaoUrl(final ArrDao dao, 
     						final ArrDaoLink daoLink, 
-    						final String viewDaoUrl) {
-        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", dao.getCode())
-                .add("label", dao.getLabel())
-                .add("id", dao.getDaoId());
-        if(daoLink!=null) {
-        	params.add("nodeId", daoLink.getNodeId())
-        		.add("nodeUuid", daoLink.getNode().getUuid());
+                            final ArrDigitalRepository digiRep) {
+        String url = digiRep.getViewDaoUrl();
+
+        String daoCode = dao.getCode();
+        String daoLinkNodeId, daoLinkNodeUuid;
+        if (daoLink != null) {
+            daoLinkNodeId = daoLink.getNodeId().toString();
+            daoLinkNodeUuid = daoLink.getNode().getUuid();
         } else {
-        	params.add("nodeId", "")
-    			.add("nodeUuid", "");        	
+            daoLinkNodeId = "";
+            daoLinkNodeUuid = "";
         }
-        return ElzaTools.bindingUrlParams(viewDaoUrl, params);
+
+        if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
+            // URLs for DAOs are not yet implemented
+            return null;
+            /*
+            url = "/api/digirepo/{repoId}?filePath={code}";
+            if (StringUtils.isNotBlank(daoCode)) {
+                daoCode = StringUtils.replace(daoCode, "\\", "/");
+            }*/
+        }
+
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("repoId", digiRep.getExternalSystemId())
+                .add("repoCode", digiRep.getElzaCode())
+                .add("repoElzaCode", digiRep.getElzaCode())
+                .add("code", daoCode)
+                .add("label", dao.getLabel())
+                .add("id", dao.getDaoId())
+                .add("nodeId", daoLinkNodeId)
+                .add("nodeUuid", daoLinkNodeUuid);
+        return ElzaTools.bindingUrlParams(url, params);
     }
 
     /**
@@ -498,11 +574,24 @@ public class DaoService {
      * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
      * @return url
      */
-    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
+    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+        String url = digiRep.getViewFileUrl();
+
+        String daoFileCode = daoFile.getCode();
+        if (StringUtils.isEmpty(url) && fileSystemRepoService.isFileSystemRepository(digiRep)) {
+            url = "/api/digirepo/{repoId}?filePath={code}";
+            if (StringUtils.isNotBlank(daoFileCode)) {
+                daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
+            }
+        }
+
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode())
+                .add("repoId", digiRep.getExternalSystemId())
+                .add("repoCode", digiRep.getElzaCode())
+                .add("repoElzaCode", digiRep.getElzaCode())
+                .add("code", daoFileCode)
                 .add("fileName", daoFile.getFileName());
-        return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
+        return ElzaTools.bindingUrlParams(url, params);
     }
 
     /**
@@ -511,11 +600,24 @@ public class DaoService {
      * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
      * @return url
      */
-    public String getDaoThumbnailUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
+    public String getDaoThumbnailUrl(final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+        String url = digiRep.getViewThumbnailUrl();
+
+        String daoFileCode = daoFile.getCode();
+        if (StringUtils.isEmpty(url) && fileSystemRepoService.isFileSystemRepository(digiRep)) {
+            url = "/api/digirepo/{repoId}?filePath={code}";
+            if (StringUtils.isNotBlank(daoFileCode)) {
+                daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
+            }
+        }
+
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode())
+                .add("repoId", digiRep.getExternalSystemId())
+                .add("repoCode", digiRep.getCode())
+                .add("repoElzaCode", digiRep.getElzaCode())
+                .add("code", daoFileCode)
                 .add("fileName", daoFile.getFileName());
-        return ElzaTools.bindingUrlParams(repository.getViewThumbnailUrl(), params);
+        return ElzaTools.bindingUrlParams(url, params);
     }
 
     /**
@@ -558,7 +660,15 @@ public class DaoService {
                                     Integer daoId,
                                     @AuthParam(type = AuthParam.Type.NODE) Integer nodeId) {
         final ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
-        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+
+        ArrDao dao;
+        if (daoId < 0) {
+            // temporary solution till specialized functions will be created
+            // we have virtual daoId -> create real DAO
+            dao = fileSystemRepoService.createDao(fundVersion, daoId);
+        } else {
+            dao = daoRepository.getOneCheckExist(daoId);
+        }
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
         return createDaoLink(fundVersion, dao, node);
@@ -623,18 +733,5 @@ public class DaoService {
      */
     public List<ArrDaoFile> findDaoFiles(List<ArrDao> daos) {
         return daoFileRepository.findByDaoIn(daos);
-    }
-
-    public ArrDaoPackage createDaoPackage(ArrFund fund,
-                                          ArrDigitalRepository repository,
-                                          String identifier,
-                                          ArrDaoBatchInfo batchInfo) {
-        ArrDaoPackage arrDaoPackage = new ArrDaoPackage();
-        arrDaoPackage.setFund(fund);
-        arrDaoPackage.setDigitalRepository(repository);
-        arrDaoPackage.setDaoBatchInfo(batchInfo);
-        arrDaoPackage.setCode(identifier);
-
-        return daoPackageRepository.save(arrDaoPackage);
     }
 }

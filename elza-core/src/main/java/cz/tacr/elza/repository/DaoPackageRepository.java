@@ -22,5 +22,7 @@ public interface DaoPackageRepository extends ElzaJpaRepository<ArrDaoPackage, I
     @Modifying
     void deleteByFund(ArrFund fund);
 
+    List<ArrDaoPackage> findAllByDigitalRepository(ArrDigitalRepository repository);
+
     List<ArrDaoPackage> findAllByDigitalRepositoryAndCodeIn(ArrDigitalRepository repository, List<String> packageIds);
 }
