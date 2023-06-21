@@ -1,62 +1,63 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils} from '../../components/shared';
-import {DetailActions} from '../../shared/detail';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils } from '../../components/shared';
+import { DetailActions } from '../../shared/detail';
 import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
-import {Button} from '../../components/ui';
+import { Button } from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
     registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
-import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
-import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusFor, setFocus} from '../../actions/global/focus.jsx';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog.jsx';
+import { refRecordTypesFetchIfNeeded } from '../../actions/refTables/recordTypes.jsx';
+import { Shortcuts } from 'react-shortcuts';
+import { canSetFocus, focusWasSet, isFocusFor, setFocus } from '../../actions/global/focus.jsx';
 import * as perms from '../../actions/user/Permission.jsx';
-import {apExtSystemListFetchIfNeeded} from '../../actions/registry/apExtSystemList';
-import {PropTypes} from 'prop-types';
+import { apExtSystemListFetchIfNeeded } from '../../actions/registry/apExtSystemList';
+import { PropTypes } from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, URL_ENTITY} from '../../constants.tsx';
+import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, URL_ENTITY } from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
 import RevStateChangeForm from '../../components/registry/RevStateChangeForm';
 import RevMergeForm from '../../components/registry/RevMergeForm';
-import {WebApi} from '../../actions';
+import { WebApi } from '../../actions';
 import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
-import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
-import {refPartTypesFetchIfNeeded} from '../../actions/refTables/partTypes';
-import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
-import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
+import { refApTypesFetchIfNeeded } from '../../actions/refTables/apTypes';
+import { refPartTypesFetchIfNeeded } from '../../actions/refTables/partTypes';
+import { descItemTypesFetchIfNeeded } from '../../actions/refTables/descItemTypes';
+import { refRulDataTypesFetchIfNeeded } from '../../actions/refTables/rulDataTypes';
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
-import ApExtSearchModal, {TypeModal} from '../../components/registry/modal/ApExtSearchModal';
-import {Area} from 'api/Area';
+import ApExtSearchModal, { TypeModal } from '../../components/registry/modal/ApExtSearchModal';
+import { Area } from 'api/Area';
 import { ApPushToExt } from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
-import {objectById, storeFromArea} from '../../shared/utils';
+import { objectById, storeFromArea } from '../../shared/utils';
 import RegistryUsageForm from '../../components/form/RegistryUsageForm';
-import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
-import {StateApproval} from 'api/StateApproval';
-import {withRouter} from "react-router";
-import {RevStateApproval} from 'api/RevStateApproval';
+import { AccessPointDeleteForm } from '../../components/form/AccesspointDeleteForm';
+import { StateApproval } from 'api/StateApproval';
+import { withRouter } from "react-router";
+import { RevStateApproval } from 'api/RevStateApproval';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { Api } from 'api';
 import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
 import { ApCopyModal } from 'components/registry/modal/ap-copy';
+import { AP_EXT_SYSTEM_TYPE } from '../../constants';
 
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
  */
 class RegistryPage extends AbstractReactComponent {
-    static contextTypes = {shortcuts: PropTypes.object};
-    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
@@ -67,7 +68,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     getChildContext() {
-        return {shortcuts: this.shortcutManager};
+        return { shortcuts: this.shortcutManager };
     }
 
     static propTypes = {
@@ -78,7 +79,7 @@ class RegistryPage extends AbstractReactComponent {
         fund: PropTypes.object,
     };
 
-    state = {items: []};
+    state = { items: [] };
 
     componentDidMount() {
         this.initData();
@@ -90,13 +91,13 @@ class RegistryPage extends AbstractReactComponent {
 
     canDeleteRegistry = () => {
         // We can delete item if has id and data
-        const {id, data} = this.props.registryDetail;
+        const { id, data } = this.props.registryDetail;
 
         return id && data;
     };
 
     initData = (props = this.props) => {
-        const {dispatch, registryDetail, history, select = false} = this.props;
+        const { dispatch, registryDetail, history, select = false } = this.props;
 
         //todo: prevest na apTypes
         dispatch(refRecordTypesFetchIfNeeded());
@@ -121,12 +122,12 @@ class RegistryPage extends AbstractReactComponent {
             }
 
             if (isUuid(matchId)) {
-                dispatch(registryDetailFetchIfNeeded(matchId)).then((data)=>{
-                    if(data){
+                dispatch(registryDetailFetchIfNeeded(matchId)).then((data) => {
+                    if (data) {
                         dispatch(routerNavigate(getArchiveEntityUrl(data.id), "REPLACE"));
                     }
-                }); 
-            } else if(isInteger(matchId)) {
+                });
+            } else if (isInteger(matchId)) {
                 dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
             }
         }
@@ -135,7 +136,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     trySetFocus = props => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
@@ -173,10 +174,10 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
-    isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ?  item.specId !== undefined : item.value !== undefined;
+    isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ? item.specId !== undefined : item.value !== undefined;
 
     handleAddRegistry = () => {
-        const {dispatch, history, select = false} = this.props;
+        const { dispatch, history, select = false } = this.props;
 
         dispatch(
             modalDialogShow(
@@ -192,7 +193,7 @@ class RegistryPage extends AbstractReactComponent {
                             ...formData,
                             partForm: {
                                 ...formData.partForm,
-                                items: formData.partForm.items.map(({updatedItem}) => updatedItem).filter(this.isFormItemValid),
+                                items: formData.partForm.items.map(({ updatedItem }) => updatedItem).filter(this.isFormItemValid),
                             },
                         };
                         const submitData = {
@@ -202,7 +203,7 @@ class RegistryPage extends AbstractReactComponent {
                             scopeId: data.scopeId,
                             typeId: data.apType.id,
                         };
-                        return WebApi.createAccessPoint(submitData).then((data)=>{
+                        return WebApi.createAccessPoint(submitData).then((data) => {
                             dispatch(modalDialogHide());
                             this.props.dispatch(goToAe(history, data.id, false, !select));
                             this.props.dispatch(registryListInvalidate());
@@ -210,15 +211,15 @@ class RegistryPage extends AbstractReactComponent {
                     }}
                 />,
                 MODAL_DIALOG_SIZE.LG,
-                () => {},
+                () => { },
             ),
         );
     };
 
     handleDeleteRegistry = async () => {
-        const { dispatch, registryDetail: { data: { id }}} = this.props;
+        const { dispatch, registryDetail: { data: { id } } } = this.props;
         const result = await dispatch(showConfirmDialog(i18n('registry.deleteRegistryQuestion')));
-        if(result){
+        if (result) {
             dispatch(registryDelete(id));
         }
     };
@@ -228,7 +229,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleApExtSearch = () => {
-        const {extSystems} = this.props;
+        const { extSystems } = this.props;
         const initialValues = {
             area: Area.ALLNAMES,
             onlyMainPart: 'false', // musí být jako string, autocomplete má problém s true/false hodnotou
@@ -247,7 +248,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleExtSyncs = () => {
-        const {extSystems, dispatch, history, select = false} = this.props;
+        const { extSystems, dispatch, history, select = false } = this.props;
         const initialValues = {};
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
@@ -272,7 +273,7 @@ class RegistryPage extends AbstractReactComponent {
     handleConnectAp = () => {
         const {
             extSystems,
-            registryDetail: {data},
+            registryDetail: { data },
             dispatch,
             history,
             select = false,
@@ -309,28 +310,28 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handlePushApToExt = async () => {
+    handlePushApToExt = async (item) => {
         const {
             extSystems,
-            registryDetail: {data},
+            // registryDetail: { data },
             dispatch,
             history,
             select = false,
         } = this.props;
-        const id = data.id;
+        const id = item.id;
         const initialValues = {};
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
         }
 
-        const result = data.revStateApproval != null 
-            ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation'))) 
+        const result = item.revStateApproval != null
+            ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation')))
             : true;
 
-        if(result){
-            const filteredExtSystems = extSystems.filter(extSystem => {
-                const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
-                return found === null;
+        if (result) {
+            const unboundExtSystems = extSystems.filter(extSystem => {
+                const unboundExtSystem = item.bindings.find((binding) => binding.externalSystemCode == extSystem.code)
+                return unboundExtSystem == null;
             });
 
             dispatch(
@@ -349,7 +350,7 @@ class RegistryPage extends AbstractReactComponent {
                             dispatch(goToAe(history, id, true, !select));
                             return;
                         }}
-                        extSystems={filteredExtSystems}
+                        extSystems={unboundExtSystems}
                     />,
                 ),
             );
@@ -358,7 +359,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleApCopy = () => {
         const { dispatch, detail, history } = this.props;
-        if(!detail){throw Error("No accesspoint detail.")}
+        if (!detail) { throw Error("No accesspoint detail.") }
         dispatch(
             modalDialogShow(
                 this,
@@ -384,7 +385,7 @@ class RegistryPage extends AbstractReactComponent {
     handleShowApHistory = () => {
         const {
             registryDetail: {
-                data: {id},
+                data: { id },
             },
         } = this.props;
         this.props.dispatch(
@@ -403,19 +404,19 @@ class RegistryPage extends AbstractReactComponent {
 
     handleDeleteAccessPoint = async (accessPointDetail) => {
         const { dispatch } = this.props;
-        const result = accessPointDetail.data.revStateApproval != null 
-            ? await dispatch(showConfirmDialog(i18n('accesspoint.removeDuplicity.confirmation'))) 
+        const result = accessPointDetail.data.revStateApproval != null
+            ? await dispatch(showConfirmDialog(i18n('accesspoint.removeDuplicity.confirmation')))
             : true;
-        if(result){
+        if (result) {
             dispatch(modalDialogShow(
                 this,
                 i18n('accesspoint.removeDuplicity.title'),
                 <AccessPointDeleteForm
-                    detail={accessPointDetail} 
+                    detail={accessPointDetail}
                     onSubmitSuccess={() => {
                         dispatch(registryDetailInvalidate());
                     }}
-                    />
+                />
             ));
         }
     };
@@ -424,7 +425,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: {id, typeId, scopeId, stateApproval},
+                data: { id, typeId, scopeId, stateApproval },
             },
             select = false,
         } = this.props;
@@ -455,17 +456,17 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleCreateRevision = async () => {
-        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const { dispatch, history, select = false, registryDetail: { data: { id } } } = this.props;
         const result = await dispatch(showConfirmDialog(i18n('registry.createRevisionQuestion')));
-        if(result){
+        if (result) {
             dispatch(registryCreateRevision(id, history, select));
         }
     };
 
     handleDeleteRevision = async () => {
-        const { dispatch, history, select = false, registryDetail: { data: { id }}} = this.props;
+        const { dispatch, history, select = false, registryDetail: { data: { id } } } = this.props;
         const result = await dispatch(showConfirmDialog(i18n('registry.deleteRevisionQuestion')));
-        if(result){
+        if (result) {
             dispatch(registryDeleteRevision(id, history, select));
         }
     };
@@ -474,7 +475,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: {id, newTypeId, revStateApproval},
+                data: { id, newTypeId, revStateApproval },
             },
             select = false,
         } = this.props;
@@ -506,7 +507,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: {id, stateApproval},
+                data: { id, stateApproval },
             },
             select = false,
         } = this.props;
@@ -531,14 +532,14 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleRestoreEntity = async () => {
-        const { registryDetail: {id}} = this.props;
+        const { registryDetail: { id } } = this.props;
         await Api.accesspoints.restoreAccessPoint(id);
         this.props.dispatch(registryDetailInvalidate());
     }
 
     buildRibbon = () => {
         const {
-            registryDetail: {data, id},
+            registryDetail: { data, id },
             userDetail,
             extSystems,
             module,
@@ -547,8 +548,11 @@ class RegistryPage extends AbstractReactComponent {
             select,
         } = this.props;
 
-        const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
+        const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
         const hasRevision = data?.revStateApproval != null;
+
+        const completeExternalSystems = extSystems?.filter((extSystem) => extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE);
+        const hasOnlyCompleteExternalSystems = completeExternalSystems?.length === extSystems?.length;
 
         const altActions = [...parts.altActions];
 
@@ -561,7 +565,7 @@ class RegistryPage extends AbstractReactComponent {
                     </div>
                 </Button>,
             );
-            if(!select){
+            if (!select) {
                 altActions.push(
                     <Button key="registryImport" onClick={this.handleRegistryImport}>
                         <Icon glyph="fa-file" />
@@ -571,7 +575,7 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>,
                 );
 
-                if (extSystems && extSystems.length > 0) {
+                if (extSystems && extSystems.length > 0 && !hasOnlyCompleteExternalSystems) {
                     altActions.push(
                         <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
                             <Icon glyph="fa-cloud-download" />
@@ -596,7 +600,7 @@ class RegistryPage extends AbstractReactComponent {
         const revisionActions = [];
         const invalidItemActions = [];
 
-        if(!select){
+        if (!select) {
             if (userDetail.hasOne(perms.ADMIN)) {
                 altActions.push(
                     <Button key="scopeManagement" onClick={this.handleScopeManagement}>
@@ -625,14 +629,27 @@ class RegistryPage extends AbstractReactComponent {
                     );
                 }
 
-                itemActions.push(
-                    <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search" />
-                        <div>
-                            <span className="btnText">{i18n('registry.registryUsage')}</span>
-                        </div>
-                    </Button>,
-                );
+                if (
+                    userDetail.hasOne(
+                        perms.AP_SCOPE_WR_ALL,
+                        {
+                            type: perms.AP_SCOPE_WR,
+                            scopeId: data ? data.scopeId : null,
+                        }
+                    ) && userDetail.hasOne(
+                        perms.FUND_RD,
+                        perms.FUND_RD_ALL,
+                    )
+                ) {
+                    itemActions.push(
+                        <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+                            <Icon glyph="fa-search" />
+                            <div>
+                                <span className="btnText">{i18n('registry.registryUsage')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
 
                 if (
                     userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
@@ -661,8 +678,8 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>,
                 );
 
-                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR, 
-                    perms.AP_CONFIRM_ALL, perms.AP_CONFIRM, 
+                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR,
+                    perms.AP_CONFIRM_ALL, perms.AP_CONFIRM,
                     perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
                 )) {
                     itemActions.push(
@@ -690,16 +707,6 @@ class RegistryPage extends AbstractReactComponent {
                 }
                 */
 
-                if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
-                    itemActions.push(
-                        <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
-                            <Icon glyph="fa-cloud-upload" />
-                            <div>
-                                <span className="btnText">{i18n('ap.push-to-ext')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
                 if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
                     itemActions.push(
                         <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
@@ -736,7 +743,7 @@ class RegistryPage extends AbstractReactComponent {
                             </div>
                         </Button>,
                     );
-                } else if(!data.invalid) {
+                } else if (!data.invalid) {
                     revisionActions.push(
                         <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
                             <Icon glyph="fa-plus" />
@@ -746,7 +753,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                 }
-                if(data.invalid){
+                if (data.invalid) {
                     invalidItemActions.push(
                         <Button key="restoreEntity" onClick={this.handleRestoreEntity}>
                             <Icon glyph="fa-undo" />
@@ -761,45 +768,45 @@ class RegistryPage extends AbstractReactComponent {
 
         const altSection = altActions.length > 0 ? (
             <>
-                {altActions.length > 0 && 
+                {altActions.length > 0 &&
                     <RibbonGroup className="small" >
                         {altActions}
                     </RibbonGroup>}
-                {itemActions.length > 0 && 
+                {itemActions.length > 0 &&
                     <RibbonGroup className="small" >
                         {itemActions}
                     </RibbonGroup>}
-                {revisionActions.length > 0 && 
+                {revisionActions.length > 0 &&
                     <RibbonGroup className="small" >
                         {revisionActions}
                     </RibbonGroup>}
-                {invalidItemActions.length > 0 && 
+                {invalidItemActions.length > 0 &&
                     <RibbonGroup className="small" >
                         {invalidItemActions}
                     </RibbonGroup>}
-                </>
+            </>
         ) : undefined;
 
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} showUser={!select}/>;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} showUser={!select} />;
     };
 
     getEditMode = () => {
-        const {registryDetail, userDetail} = this.props;
+        const { registryDetail, userDetail } = this.props;
         let editMode = false;
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
             const revisionState = registryDetail.data.revStateApproval;
-            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.APPROVED ) {
+            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.APPROVED) {
                 editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
-                        type: perms.AP_SCOPE_WR,
-                        scopeId: registryDetail.data.scopeId,
+                    type: perms.AP_SCOPE_WR,
+                    scopeId: registryDetail.data.scopeId,
                 });
             }
-            if(
-                revisionState === RevStateApproval.ACTIVE 
-                    || revisionState === RevStateApproval.TO_AMEND
-            ){
-                if(apState === StateApproval.APPROVED){
+            if (
+                revisionState === RevStateApproval.ACTIVE
+                || revisionState === RevStateApproval.TO_AMEND
+            ) {
+                if (apState === StateApproval.APPROVED) {
                     editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
                         type: perms.AP_EDIT_CONFIRMED,
                         scopeId: registryDetail.data.scopeId,
@@ -816,16 +823,17 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, status, registryDetail, select = false} = this.props;
+        const { splitter, status, registryDetail, select = false } = this.props;
 
         const centerPanel = (
             <div className="registry-page">
-                {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) && 
-                    <ApDetailPageWrapper 
-                        select={select} 
-                        id={registryDetail?.data?.id} 
-                        editMode={this.getEditMode()} 
-                        />}
+                {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
+                    <ApDetailPageWrapper
+                        select={select}
+                        id={registryDetail?.data?.id}
+                        editMode={this.getEditMode()}
+                        onPushApToExt={this.handlePushApToExt}
+                    />}
             </div>
         );
 
@@ -859,7 +867,7 @@ class RegistryPage extends AbstractReactComponent {
 
 export default withRouter(connect(state => {
     const {
-        app: {apExtSystemList, registryDetail, registryList},
+        app: { apExtSystemList, registryDetail, registryList },
         splitter,
         refTables,
         focus,

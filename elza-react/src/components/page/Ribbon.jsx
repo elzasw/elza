@@ -324,12 +324,14 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.home')}</span>
                         </BootstrapButton>
                     </IndexLinkContainer>
-                    <LinkContainer key="ribbon-btn-fund" to="/fund">
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-database" />
-                            <span className="btnText">{i18n('ribbon.action.fund')}</span>
-                        </Button>
-                    </LinkContainer>
+                    {userDetail.hasOne(perms.FUND_RD_ALL, perms.FUND_RD) &&
+                        <LinkContainer key="ribbon-btn-fund" to="/fund">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-database" />
+                                <span className="btnText">{i18n('ribbon.action.fund')}</span>
+                            </Button>
+                        </LinkContainer>
+                    }
                     <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-th-list" />
