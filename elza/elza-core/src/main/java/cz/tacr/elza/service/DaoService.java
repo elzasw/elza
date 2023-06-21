@@ -524,6 +524,8 @@ public class DaoService {
     /**
      * Získání url na dao.
      * 
+     * @param contextPath
+     * 
      * @param dao
      *            dao
      * @param daoLink
@@ -531,7 +533,8 @@ public class DaoService {
      * @param digitalRepository
      * @return url
      */
-    public String getDaoUrl(final ArrDao dao, 
+    public String getDaoUrl(String contextPath,
+                            final ArrDao dao,
     						final ArrDaoLink daoLink, 
                             final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewDaoUrl();
@@ -550,6 +553,14 @@ public class DaoService {
             // URLs for DAOs are not yet implemented
             return null;
             /*
+            if (contextPath == null || contextPath.equals("/")) {
+                contextPath = "";
+            } else {
+                if (contextPath.endsWith("/")) {
+                    contextPath = contextPath.substring(0, contextPath.length() - 1);
+                }
+            }
+            url = contextPath + "/api/digirepo/{repoId}?filePath={code}"; 
             url = "/api/digirepo/{repoId}?filePath={code}";
             if (StringUtils.isNotBlank(daoCode)) {
                 daoCode = StringUtils.replace(daoCode, "\\", "/");
@@ -574,12 +585,19 @@ public class DaoService {
      * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
      * @return url
      */
-    public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+    public String getDaoFileUrl(String contextPath, final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewFileUrl();
 
         String daoFileCode = daoFile.getCode();
         if (StringUtils.isEmpty(url) && fileSystemRepoService.isFileSystemRepository(digiRep)) {
-            url = "/api/digirepo/{repoId}?filePath={code}";
+            if (contextPath == null || contextPath.equals("/")) {
+                contextPath = "";
+            } else {
+                if (contextPath.endsWith("/")) {
+                    contextPath = contextPath.substring(0, contextPath.length() - 1);
+                }
+            }
+            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
             if (StringUtils.isNotBlank(daoFileCode)) {
                 daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
             }
@@ -600,12 +618,21 @@ public class DaoService {
      * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
      * @return url
      */
-    public String getDaoThumbnailUrl(final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+    public String getDaoThumbnailUrl(String contextPath,
+                                     final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewThumbnailUrl();
 
         String daoFileCode = daoFile.getCode();
         if (StringUtils.isEmpty(url) && fileSystemRepoService.isFileSystemRepository(digiRep)) {
-            url = "/api/digirepo/{repoId}?filePath={code}";
+            if (contextPath == null || contextPath.equals("/")) {
+                contextPath = "";
+            } else {
+                if (contextPath.endsWith("/")) {
+                    contextPath = contextPath.substring(0, contextPath.length() - 1);
+                }
+            }
+            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
+
             if (StringUtils.isNotBlank(daoFileCode)) {
                 daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
             }

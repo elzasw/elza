@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
@@ -397,13 +398,16 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public List<ArrDaoVO> findDaos(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public List<ArrDaoVO> findDaos(final HttpServletRequest request,
+                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                    @RequestParam(value = "nodeId", required = false) final Integer nodeId,
                                    @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                                    @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
                                    @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
         Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+
+        String contextPath = request.getContextPath();
 
         List<ArrDao> arrDaoList;
         if (nodeId != null) {
@@ -413,7 +417,7 @@ public class ArrangementController {
             arrDaoList = daoService.findDettachedDaos(fundVersion, index, maxResults);
         }
 
-        return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+        return factoryVo.createDaoList(contextPath, arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
 
     /**
@@ -431,7 +435,8 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public List<ArrDaoVO> findDaosByPackage(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public List<ArrDaoVO> findDaosByPackage(final HttpServletRequest request,
+                                            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                             @PathVariable(value = "daoPackageId") final Integer daoPackageId,
                                             @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                                             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
@@ -442,13 +447,16 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
+        String contextPath = request.getContextPath();
+
         List<ArrDaoVO> daoList = new ArrayList<>();
         // process virtual package
         if (daoPackageId < 0 && Boolean.TRUE.equals(unassigned)) {
             final List<ArrDao> arrDaoList = daoService.findDaosByVirtualPackageId(fundVersion,
                                                                            daoPackageId, index,
                                                                                   maxResults);
-            daoList.addAll(factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
+            daoList.addAll(factoryVo.createDaoList(contextPath,
+                                                   arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
                                                    Collections.emptyMap()));
         } else {
             ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
@@ -463,7 +471,9 @@ public class ArrangementController {
                 final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
                 Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
                         .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
-                daoList.addAll(factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
+                daoList.addAll(factoryVo.createDaoList(contextPath,
+                                                       arrDaoList,
+                                                       BooleanUtils.isTrue(detail), fundVersion,
                                                        daoLinkMap));
             });
 
@@ -2647,7 +2657,8 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/requests/{fundVersionId}", method = RequestMethod.GET)
     @Transactional
-    public List<ArrRequestVO> findRequests(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public List<ArrRequestVO> findRequests(final HttpServletRequest request,
+                                           @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "state", required = false) final ArrRequest.State state,
                                            @RequestParam(value = "type", required = false) final ArrRequest.ClassType type,
                                            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
@@ -2655,17 +2666,22 @@ public class ArrangementController {
                                            @RequestParam(value = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
                                            @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime toDate,
                                            @RequestParam(value = "subType", required = false) final String subType) {
+
+        String contextPath = request.getContextPath();
+
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrRequest> requests = requestService.findRequests(fundVersion.getFund(), state, type, description, fromDate, toDate, subType);
-        return factoryVo.createRequest(requests, detail, fundVersion);
+        return factoryVo.createRequest(contextPath, requests, detail, fundVersion);
     }
 
 
     @RequestMapping(value = "/requests/queued", method = RequestMethod.GET)
     @Transactional
-    public List<ArrRequestQueueItemVO> findQueuedRequests() {
+    public List<ArrRequestQueueItemVO> findQueuedRequests(final HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+
         List<ArrRequestQueueItem> requestQueueItems = requestQueueService.findQueued();
-        return factoryVo.createRequestQueueItem(requestQueueItems);
+        return factoryVo.createRequestQueueItem(contextPath, requestQueueItems);
     }
 
 
@@ -2680,12 +2696,15 @@ public class ArrangementController {
     @RequestMapping(value = "/requests/{fundVersionId}/{requestId}", method = RequestMethod.GET)
     @Transactional
     public ArrRequestVO getRequest(
-            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-            @PathVariable(value = "requestId") final Integer requestId,
-            @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail) {
+                                   final HttpServletRequest request,
+                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                   @PathVariable(value = "requestId") final Integer requestId,
+                                   @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrRequest request = requestService.getRequest(requestId);
-        return factoryVo.createRequest(request, detail, fundVersion);
+        String contextPath = request.getContextPath();
+
+        ArrRequest arrRequest = requestService.getRequest(requestId);
+        return factoryVo.createRequest(contextPath, arrRequest, detail, fundVersion);
     }
 
     @Transactional
