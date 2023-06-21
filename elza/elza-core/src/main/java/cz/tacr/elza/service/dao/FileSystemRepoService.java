@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,7 +66,11 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     public synchronized FileSystemImage getFileSystemImage(ArrDigitalRepository digiRep) {
         digiRep = HibernateUtils.unproxy(digiRep);
 
-        Validate.isTrue(digiRep.getUrl().startsWith(FILE_URI_PREFIX));
+        if (!isFileSystemRepository(digiRep)) {
+            throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
+                    .set("RepositoryId", digiRep.getExternalSystemId());
+        }
+
         // repo path
         String repoPath = digiRep.getUrl().substring(FILE_URI_PREFIX.length());
         FileSystemImage fsi = images.getIfPresent(repoPath);
@@ -257,7 +260,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
     public boolean isFileSystemRepository(ArrDigitalRepository digiRep) {
         String repoUrl = digiRep.getUrl();
-        if (repoUrl.startsWith(FILE_URI_PREFIX)) {
+        if (StringUtils.isNotEmpty(repoUrl) && repoUrl.startsWith(FILE_URI_PREFIX)) {
             // we have fileSystemRepo
             return true;
         }
@@ -270,6 +273,10 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public Path resolvePath(ArrDigitalRepository digiRep, String filePath) {
+        if (!isFileSystemRepository(digiRep)) {
+            throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
+                    .set("RepositoryId", digiRep.getExternalSystemId());
+        }
         String repoPath = digiRep.getUrl().substring(FILE_URI_PREFIX.length());
         Path rootPath = Paths.get(repoPath).toAbsolutePath();
         if (StringUtils.isNotBlank(filePath)) {
