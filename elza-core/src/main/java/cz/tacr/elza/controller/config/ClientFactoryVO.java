@@ -1410,7 +1410,9 @@ public class ClientFactoryVO {
         return mapper.mapAsList(entity, clazz);
     }
 
-    public List<ArrRequestVO> createRequest(final Collection<ArrRequest> requests, final boolean detail, final ArrFundVersion fundVersion) {
+    public List<ArrRequestVO> createRequest(String contextPath,
+                                            final Collection<ArrRequest> requests, final boolean detail,
+                                            final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
@@ -1459,14 +1461,18 @@ public class ClientFactoryVO {
 
         for (ArrRequest request : requests) {
             ArrRequestVO requestVO;
-            requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
+            requestVO = createRequestVO(contextPath,
+                                        countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap,
+                                        codeTreeNodeClientMap, request, detail, fundVersion);
             convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
         return requestVOList;
     }
 
-    public ArrRequestVO createRequest(final ArrRequest request, final boolean detail, final ArrFundVersion fundVersion) {
+    public ArrRequestVO createRequest(String contextPath,
+                                      final ArrRequest request, final boolean detail,
+                                      final ArrFundVersion fundVersion) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         Set<ArrDaoRequest> requestForDaos = new HashSet<>();
@@ -1506,7 +1512,9 @@ public class ClientFactoryVO {
         }
 
         ArrRequestVO requestVO;
-        requestVO = createRequestVO(countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap, codeTreeNodeClientMap, request, detail, fundVersion);
+        requestVO = createRequestVO(contextPath,
+                                    countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap,
+                                    codeTreeNodeClientMap, request, detail, fundVersion);
         convertRequest(mapper, request, requestQueueItem, requestVO);
 
         return requestVO;
@@ -1628,7 +1636,8 @@ public class ClientFactoryVO {
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
 
-    private ArrRequestVO createRequestVO(final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
+    private ArrRequestVO createRequestVO(String contextPath,
+                                         final Map<ArrDigitizationRequest, Integer> countNodesRequestMap,
                                          final Map<ArrDigitizationRequest, List<TreeNodeVO>> nodesRequestMap,
                                          final Map<ArrDaoRequest, Integer> countDaosRequestMap,
                                          final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap,
@@ -1638,6 +1647,7 @@ public class ClientFactoryVO {
                                          final ArrFundVersion fundVersion) {
         ArrRequest req = HibernateUtils.unproxy(request);
         ArrRequestVO requestVO;
+
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestVO = new ArrDigitizationRequestVO();
@@ -1648,7 +1658,8 @@ public class ClientFactoryVO {
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-                convertDaoRequest((ArrDaoRequest) req, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request),
+                convertDaoRequest(contextPath, (ArrDaoRequest) req, (ArrDaoRequestVO) requestVO,
+                                  countDaosRequestMap.get(request),
                         daosRequestMap.get(request), detail, fundVersion);
                 break;
             }
@@ -1705,7 +1716,8 @@ public class ClientFactoryVO {
         requestVO.setNode(codeTreeNodeClientMap.get(request.getDidCode()));
     }
 
-    private void convertDaoRequest(final ArrDaoRequest request,
+    private void convertDaoRequest(final String contextPath,
+                                   final ArrDaoRequest request,
                                    final ArrDaoRequestVO requestVO,
                                    final Integer daoCount,
                                    final List<ArrDao> daos,
@@ -1716,7 +1728,7 @@ public class ClientFactoryVO {
         requestVO.setDigitalRepositoryId(request.getDigitalRepository().getExternalSystemId());
         requestVO.setType(request.getType());
         if (daos != null) {
-            requestVO.setDaos(createDaoList(daos, detail, fundVersion));
+            requestVO.setDaos(createDaoList(contextPath, daos, detail, fundVersion));
         }
     }
 
@@ -1764,7 +1776,8 @@ public class ClientFactoryVO {
         return requestQueueItemVO;
     }
 
-    public List<ArrRequestQueueItemVO> createRequestQueueItem(final List<ArrRequestQueueItem> requestQueueItems) {
+    public List<ArrRequestQueueItemVO> createRequestQueueItem(String contextPath,
+                                                              final List<ArrRequestQueueItem> requestQueueItems) {
         if (requestQueueItems == null) {
             return null;
         }
@@ -1790,7 +1803,8 @@ public class ClientFactoryVO {
             ArrFund key = arrFundListEntry.getKey();
             for (ArrFundVersion arrFundVersion : key.getVersions()) {
                 if (arrFundVersion.getLockChange() == null) {
-                    List<ArrRequestVO> request = createRequest(arrFundListEntry.getValue(), false, arrFundVersion);
+                    List<ArrRequestVO> request = createRequest(contextPath,
+                                                               arrFundListEntry.getValue(), false, arrFundVersion);
                     for (ArrRequestVO requestVO : request) {
                         requestMap.put(requestVO.getId(), requestVO);
                     }
@@ -1816,7 +1830,9 @@ public class ClientFactoryVO {
      * @param version
      * @return list VO
      */
-    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail, final ArrFundVersion version) {
+    public List<ArrDaoVO> createDaoList(String contextPath,
+                                        final List<ArrDao> arrDaoList, final boolean detail,
+                                        final ArrFundVersion version) {
         if (CollectionUtils.isEmpty(arrDaoList)) {
             return Collections.emptyList();
         }
@@ -1833,19 +1849,20 @@ public class ClientFactoryVO {
 
         List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(arrDao, detail, version, daoLinkMap));
+            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap));
         }
         return voList;
     }
 
-    public List<ArrDaoVO> createDaoList(final List<ArrDao> arrDaoList, final boolean detail,
+    public List<ArrDaoVO> createDaoList(String contextPath,
+                                        final List<ArrDao> arrDaoList, final boolean detail,
                                         final ArrFundVersion version, final Map<Integer, ArrDaoLink> daoLinkMap) {
         if (CollectionUtils.isEmpty(arrDaoList)) {
             return Collections.emptyList();
         }
         List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(arrDao, detail, version, daoLinkMap));
+            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap));
         }
         return voList;
     }
@@ -1856,65 +1873,74 @@ public class ClientFactoryVO {
      * @param daoFile do
      * @return VO
      */
-    private ArrDaoFileVO createDaoFile(final ArrDaoFile daoFile) {
+    private ArrDaoFileVO createDaoFile(String contextPath, final ArrDaoFile daoFile) {
         ArrDaoFileVO fileVo = ArrDaoFileVO.newInstance(daoFile);
 
         ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
-        fileVo.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
-        fileVo.setThumbnailUrl(daoService.getDaoThumbnailUrl(daoFile, digitalRepository));
+        fileVo.setUrl(daoService.getDaoFileUrl(contextPath, daoFile, digitalRepository));
+        fileVo.setThumbnailUrl(daoService.getDaoThumbnailUrl(contextPath, daoFile, digitalRepository));
 
         return fileVo;
     }
 
     /**
      * Vytvoření vo z DO
+     * 
+     * @param contextPath
      *
-     * @param arrDao  DO
-     * @param detail  příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param dao
+     *            DO
+     * @param detail
+     *            příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou
+     *            naplněny pouze počty podřízených záznamů v DB
      * @param version
      * @return vo
      */
-    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail,
+    private ArrDaoVO createDao(String contextPath,
+                               final ArrDao dao, final boolean detail,
                                final ArrFundVersion version,
                                final Map<Integer, ArrDaoLink> daoLinkMap) {
         // read scenarios
-        Items items = daoSyncService.unmarshalItemsFromAttributes(arrDao);
+        Items items = daoSyncService.unmarshalItemsFromAttributes(dao);
         List<String> scenarios = null;
         if (items != null) {
             scenarios = daoSyncService.getAllScenarioNames(items);
         }
 
-        ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
+        ArrDaoVO vo = ArrDaoVO.newInstance(dao, scenarios);
 
-        ArrDaoLink daoLink = daoLinkMap.get(arrDao.getDaoId());
+        ArrDaoLink daoLink = daoLinkMap.get(dao.getDaoId());
         if (daoLink != null) {
             ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
             vo.setDaoLink(daoLinkVo);
         }
 
-        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-        String url = daoService.getDaoUrl(arrDao, daoLink, digitalRepository);
+        ArrDigitalRepository digitalRepository = dao.getDaoPackage().getDigitalRepository();
+        String url = daoService.getDaoUrl(contextPath, dao, daoLink, digitalRepository);
         vo.setUrl(url);
 
         if (detail) {
-            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);
-            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
+            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(dao);
+            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(f -> createDaoFile(contextPath, f))
+                    .collect(Collectors.toList());
             vo.addAllFile(daoFileVOList);
 
-            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
+            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(dao);
             final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
             for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
                 final ArrDaoFileGroupVO daoFileGroupVO = ArrDaoFileGroupVO.newInstance(daoFileGroup);
-                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
-                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
+                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(dao, daoFileGroup);
+                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream()
+                        .map(f -> createDaoFile(contextPath, f))
+                        .collect(Collectors.toList());
                 daoFileGroupVO.setFiles(groupDaoFileVOList);
                 daoFileGroupVOList.add(daoFileGroupVO);
             }
 
             vo.addAllFileGroup(daoFileGroupVOList);
         } else {
-            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(arrDao));
-            vo.setFileGroupCount(daoFileGroupRepository.countByDao(arrDao));
+            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(dao));
+            vo.setFileGroupCount(daoFileGroupRepository.countByDao(dao));
         }
         return vo;
     }

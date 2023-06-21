@@ -1942,7 +1942,7 @@ private void processEvent(AbstractEventSimple event) {
             for (Set<ArrDigitizationRequest> digitizationRequests : requestMap.values()) {
                 requests.addAll(digitizationRequests);
             }
-            List<ArrRequestVO> requestVOs = clientFactoryVO.createRequest(requests, false, fundVersion);
+            List<ArrRequestVO> requestVOs = clientFactoryVO.createRequest(null, requests, false, fundVersion);
             requestVOMap = requestVOs.stream().collect(Collectors.toMap(ArrRequestVO::getId, Function.identity()));
         }
 
