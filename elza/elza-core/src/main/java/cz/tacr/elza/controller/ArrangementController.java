@@ -49,6 +49,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.tacr.elza.common.FileDownload;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -307,7 +308,7 @@ public class ArrangementController {
             @RequestParam(value = "search", required = false) final String search,
             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
             @RequestParam(value = "maxResults", required = false, defaultValue = "200") final Integer maxResults) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
         final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
@@ -401,15 +402,16 @@ public class ArrangementController {
                                    @RequestParam(value = "detail", required = false, defaultValue = "false") final Boolean detail,
                                    @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
                                    @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
-        ArrNode node = null;
+        List<ArrDao> arrDaoList;
         if (nodeId != null) {
-            node = nodeRepository.getOneCheckExist(nodeId);
+            ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+            arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
+        } else {
+            arrDaoList = daoService.findDettachedDaos(fundVersion, index, maxResults);
         }
-
-        final List<ArrDao> arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
 
         return factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
     }
@@ -435,22 +437,42 @@ public class ArrangementController {
                                             @RequestParam(value = "unassigned", required = false, defaultValue = "false") final Boolean unassigned,
                                             @RequestParam(value = "index", required = false, defaultValue = "0") final Integer index,
                                             @RequestParam(value = "maxResults", required = false, defaultValue = "99999") final Integer maxResults) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(daoPackageId, "Idenitifikátor DAO obalu musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(daoPackageId, "Idenitifikátor DAO obalu musí být vyplněn");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
+        List<ArrDaoVO> daoList = new ArrayList<>();
+        // process virtual package
+        if (daoPackageId < 0 && Boolean.TRUE.equals(unassigned)) {
+            final List<ArrDao> arrDaoList = daoService.findDaosByVirtualPackageId(fundVersion,
+                                                                           daoPackageId, index,
+                                                                                  maxResults);
+            daoList.addAll(factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
+                                                   Collections.emptyMap()));
+        } else {
+            ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
-        final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion.getFundId(), arrDaoPackage, index,
-                maxResults,
-                BooleanUtils.isTrue(unassigned));
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion,
+                                                                         arrDaoPackage, index,
+                                                                         maxResults,
+                                                                         BooleanUtils.isTrue(unassigned));
 
-        final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+            // read related DB data
+            ObjectListIterator.forEachPage(arrDaoList, page -> {
+                final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
+                Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
+                        .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
+                daoList.addAll(factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
+                                                       daoLinkMap));
+            });
 
-        final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
+            // daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+            // todo improve efficiency
+            final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
 
-        daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
+            daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
+        }
 
         return daoList;
     }
@@ -474,7 +496,7 @@ public class ArrangementController {
 
         // create dao link in separate transaction
         // dao link might create level and data from levelTreeCache are available
-        // in new transaction
+        // in new transaction>
         ArrDaoLink daoLink = daoService.createDaoLink(fundVersionId, daoId, nodeId);
 
         Validate.notNull(daoLink);
@@ -538,8 +560,8 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoLinkId") final Integer daoLinkId) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(daoLinkId, "Identifikátor DAO linku musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(daoLinkId, "Identifikátor DAO linku musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);

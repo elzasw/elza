@@ -104,4 +104,13 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             "  AND dl.deleteChange IS NULL)" +
             " ORDER BY d.label ASC, d.code ASC")
     Page<ArrDao> findDettachedByPackage(@Param("daoPackage") ArrDaoPackage daoPackage, Pageable pageable);
+
+    @Query("SELECT d FROM arr_dao d JOIN FETCH d.daoPackage p WHERE d.code IN :codes AND p.fund = :fund" +
+            "  AND NOT EXISTS(SELECT dl FROM arr_dao_link dl" +
+            "  WHERE dl.dao = d" +
+            "  AND dl.deleteChange IS NULL)" +
+            "AND p.digitalRepository = :repo")
+    List<ArrDao> findDettachedByFundAndCodes(@Param(value = "repo") ArrDigitalRepository repository,
+                                      @Param("fund") ArrFund fund,
+                                      @Param(value = "codes") List<String> daoCodes);
 }
