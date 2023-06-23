@@ -9,12 +9,12 @@ import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import { SyncState } from 'api/SyncState';
 import i18n from 'components/i18n';
 import { Icon, TooltipTrigger } from 'components/shared';
-import React, { FC } from 'react';
+import React, { FC, useCallback } from 'react';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import { AppState, RefTablesState } from 'typings/store';
+import { AppState, RefTablesState, ApExternalSystemSimpleVO } from 'typings/store';
 import { SyncIcon } from "../sync-icon";
 import './DetailHeader.scss';
 import { DetailDescriptionsItemWithButton } from './DetailDescriptionsItem';
@@ -26,6 +26,8 @@ import { Api } from 'api';
 import { goToAe } from 'actions/registry/registry';
 import { ApCopyModal } from 'components/registry/modal/ap-copy';
 import { objectById } from 'stores/app/utils';
+
+import { AP_EXT_SYSTEM_TYPE } from '../../../../constants';
 
 const useThunkDispatch = <State,>(): ThunkDispatch<State, void, AnyAction> => useDispatch()
 
@@ -50,7 +52,7 @@ const getProcessingMessage = (key: string) => {
 export const EntityBindings: FC<{
     item?: ApAccessPointVO;
     onInvalidateDetail?: () => void;
-    onPushApToExt?: (item: ApAccessPointVO) => void;
+    onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
 }> = ({
     item,
     onInvalidateDetail,
@@ -61,24 +63,60 @@ export const EntityBindings: FC<{
         const externalSystems = useSelector((state: AppState) => state.app.apExtSystemList.rows)
         const refTables = useSelector((state: AppState) => state.refTables)
 
-        if (!item || externalSystems.length === 0) { return <></> }
+        const scopeBoundExternalSystem = externalSystems.find((externalSystem) => externalSystem.scope === item?.scopeId);
+        const isBoundExternalSystemComplete = scopeBoundExternalSystem?.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE;
 
-        const handlePushApToExt = () => onPushApToExt?.(item);
+        const handlePushApToExt = useCallback(() => {
+            if (!item) { throw Error("Item data missing.") }
+            const extSystems: ApExternalSystemSimpleVO[] = [];
+
+            if (scopeBoundExternalSystem && isBoundExternalSystemComplete) {
+                extSystems.push(scopeBoundExternalSystem);
+            } else {
+                const unboundExtSystems = externalSystems.filter(extSystem => {
+                    const unboundExtSystem = item.bindings.find((binding) => binding.externalSystemCode == extSystem.code);
+                    return unboundExtSystem == null;
+                });
+                extSystems.push(...unboundExtSystems);
+            }
+            onPushApToExt?.(item, extSystems);
+        }, [item, scopeBoundExternalSystem, isBoundExternalSystemComplete])
+
+        if (!item || externalSystems.length === 0) { return <></> }
 
         if (item?.bindings?.length === 0) {
             return (
-                <div className="binding" key={'no-binding'}>
-                    <DetailDescriptionsItemWithButton
-                        renderButton={() => <>
-                            <Button className="button" onClick={handlePushApToExt} title={i18n('ap.push-to-ext')}><Icon glyph="fa-cloud-upload" /></Button>
-                        </>}
-                    >
-                        <div className="info">
-                            {/* {i18n('ap.binding.source')}{': '} */}
-                            <span className="system">{i18n('ap.not-in-ext')}</span>
-                        </div>
-                    </DetailDescriptionsItemWithButton>
+                <div className="bindings">
+                    <div className="binding" key={'no-binding'}>
+                        <DetailDescriptionsItemWithButton
+                            renderButton={() => <>
+                                {scopeBoundExternalSystem && isBoundExternalSystemComplete ? <Button
+                                    className="button save-button"
+                                    title={i18n('ap.push-to-ext')}
+                                    onClick={handlePushApToExt}
+                                >
+                                    <Icon glyph="fa-save" />
+                                </Button> :
+                                    <Button
+                                        className="button"
+                                        onClick={handlePushApToExt}
+                                        title={i18n('ap.push-to-ext')}
+                                    >
+                                        <Icon glyph="fa-cloud-upload" />
+                                    </Button>
+                                }
+                            </>}
+                        >
+                            <div className="info">
+                                {scopeBoundExternalSystem
+                                    && isBoundExternalSystemComplete
+                                    && <span className="system">{scopeBoundExternalSystem.name}</span>
+                                }
+                                <span>{i18n('ap.not-in-ext')}</span>
+                            </div>
+                        </DetailDescriptionsItemWithButton>
 
+                    </div>
                 </div>
             );
         }

@@ -3,7 +3,7 @@ import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { AppState, Scope } from 'typings/store';
+import { AppState, Scope, ApExternalSystemSimpleVO } from 'typings/store';
 import { ApAccessPointVO } from '../../../../api/ApAccessPointVO';
 import { objectById } from '../../../../shared/utils';
 import { FundScope } from '../../../../types';
@@ -28,7 +28,7 @@ interface Props {
     onToggleCollapsed?: () => void;
     onInvalidateDetail?: () => void;
     onInvalidateValidation?: () => void;
-    onPushApToExt?: (item: ApAccessPointVO) => void;
+    onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
     onToggleRevision?: () => void;
     collapsed: boolean;
     id?: number;

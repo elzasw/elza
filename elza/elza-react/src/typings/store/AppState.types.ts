@@ -273,6 +273,7 @@ export interface ApExternalSystemSimpleVO {
     id?: number;
     name?: string;
     type?: string;
+    scope?: number | null;
 }
 
 export interface App {
