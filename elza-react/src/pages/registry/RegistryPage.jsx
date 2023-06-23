@@ -310,47 +310,34 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
-    handlePushApToExt = async (item) => {
+    handlePushApToExt = async (item, extSystems) => {
         const {
-            extSystems,
-            // registryDetail: { data },
             dispatch,
             history,
             select = false,
         } = this.props;
-        const id = item.id;
-        const initialValues = {};
-        if (extSystems.length === 1) {
-            initialValues.extSystem = extSystems[0].code;
-        }
-
         const result = item.revStateApproval != null
             ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation')))
             : true;
 
         if (result) {
-            const unboundExtSystems = extSystems.filter(extSystem => {
-                const unboundExtSystem = item.bindings.find((binding) => binding.externalSystemCode == extSystem.code)
-                return unboundExtSystem == null;
-            });
-
             dispatch(
                 modalDialogShow(
                     this,
                     i18n('ap.push-to-ext.title'),
                     <ApPushToExt
-                        detail={this.props.detail?.data}
+                        detail={item}
                         onSubmit={async (data) => {
                             try {
-                                await WebApi.saveAccessPoint(id, data.extSystemCode);
+                                await WebApi.saveAccessPoint(item.id, data.extSystemCode);
                             } catch (e) {
                                 throw Error(e);
                             }
                             dispatch(modalDialogHide());
-                            dispatch(goToAe(history, id, true, !select));
+                            dispatch(goToAe(history, item.id, true, !select));
                             return;
                         }}
-                        extSystems={unboundExtSystems}
+                        extSystems={extSystems}
                     />,
                 ),
             );

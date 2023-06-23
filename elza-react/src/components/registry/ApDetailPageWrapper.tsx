@@ -18,7 +18,7 @@ import { indexById } from '../../shared/utils';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import { Bindings, DetailStoreState } from '../../types';
 import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
-import { AppState } from '../../typings/store';
+import { AppState, ApExternalSystemSimpleVO } from '../../typings/store';
 import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
@@ -98,7 +98,7 @@ type OwnProps = {
     apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
     select: boolean;
-    onPushApToExt?: (item: ApAccessPointVO) => void;
+    onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
 };
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
