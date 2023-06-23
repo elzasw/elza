@@ -10,7 +10,17 @@ import cz.tacr.elza.domain.ApExternalSystem;
  */
 public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
 
+    private Integer scope;
+
     private ApExternalSystemType type;
+
+    public Integer getScope() {
+        return scope;
+    }
+
+    public void setScope(Integer scope) {
+        this.scope = scope;
+    }
 
     public ApExternalSystemType getType() {
         return type;
@@ -29,6 +39,9 @@ public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
         vo.setId(src.getExternalSystemId());
         vo.setName(src.getName());
         vo.setType(src.getType());
+        if (src.getScope() != null) {
+            vo.setScope(src.getScope().getScopeId());
+        }
         return vo;
     }
 }
