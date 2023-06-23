@@ -47,7 +47,16 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state: AppState) => state.refTables);
     const userDetail = useSelector((state: AppState) => state.userDetail);
-    const [values, setValues] = useState<CreateAccessPointModalFields>({ partForm: { partTypeCode, items: [] } });
+
+    const apTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
+    const scopes = getScopes(refTables.scopesData.scopes, userDetail);
+    const visibleScopes = scopes.find((scopeData) => scopeData.versionId === -1)?.scopes || [];
+    const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode) as number;
+
+    const [values, setValues] = useState<CreateAccessPointModalFields>({
+        scopeId: visibleScopes.length === 1 ? visibleScopes[0].id : undefined,
+        partForm: { partTypeCode, items: [] },
+    });
     const [availableAttributes, setAvailableAttributes] = useState<ApCreateTypeVO[] | undefined>();
     const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
 
@@ -59,9 +68,6 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
         !refTables.descItemTypes.fetched ||
         !apViewSettings.fetched;
 
-    const apTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
-    const scopes = getScopes(refTables.scopesData.scopes, userDetail);
-    const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode) as number;
 
     const fetchAttributes = async (data: CreateAccessPointModalFields) => {
         if (data.apType?.id == null || data.scopeId == null) { return; }
@@ -115,12 +121,14 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
                             allowSelectItem={(item: ApTypeVO) => item.addRecord}
                         />
 
-                        <FormScope
-                            name={'scopeId'}
-                            disabled={submitting}
-                            label={i18n('registry.scopeClass')}
-                            items={scopes}
-                        />
+                        {visibleScopes.length > 1 &&
+                            <FormScope
+                                name={'scopeId'}
+                                disabled={submitting}
+                                label={i18n('registry.scopeClass')}
+                                items={scopes}
+                            />
+                        }
 
                         {(apTypeId || (apType && apType.id)) && scopeId && partForm && partTypeId !== undefined && (
                             <>
