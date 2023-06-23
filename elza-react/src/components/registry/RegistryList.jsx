@@ -370,7 +370,7 @@ class RegistryList extends AbstractReactComponent {
     registryTypeDefaultValue = i18n('registry.all');
 
     render() {
-        const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes } = this.props;
+        const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes, userDetail } = this.props;
 
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
@@ -407,16 +407,19 @@ class RegistryList extends AbstractReactComponent {
             filterCls = filterCls + ' ext-filter-used';
         }
 
+        const visibleScopes = scopes.find((scopeData) => scopeData.versionId === -1)?.scopes || [];
+
         return (
             <div className="registry-list">
                 <div className="filter">
-                    <Autocomplete
+                    {visibleScopes.length > 1 && <Autocomplete
                         placeholder={this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope')}
                         items={this.getScopesWithAll(scopes)}
                         onChange={this.handleFilterRegistryScope}
                         value={filter.scopeId}
                         useIdAsValue
-                    />
+                    />}
+
                     <Autocomplete
                         placeholder={filter.state ? StateApprovalCaption(filter.state) : i18n('party.apState')}
                         items={this.getStateWithAll()}

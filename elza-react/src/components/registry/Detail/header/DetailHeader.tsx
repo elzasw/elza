@@ -3,7 +3,7 @@ import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { AppState } from 'typings/store';
+import { AppState, Scope } from 'typings/store';
 import { ApAccessPointVO } from '../../../../api/ApAccessPointVO';
 import { objectById } from '../../../../shared/utils';
 import { FundScope } from '../../../../types';
@@ -21,6 +21,7 @@ import { EntityBindings } from './EntityBindings';
 import { ReplacedEntities } from './ReplacedEntities';
 import { PartValidationErrorsVO } from 'api/PartValidationErrorsVO';
 import { Api } from 'api';
+import * as permissions from 'actions/user/Permission';
 
 interface Props {
     item: ApAccessPointVO;
@@ -59,6 +60,8 @@ const DetailHeader: FC<Props> = ({
     const scopes = useSelector(({ refTables: { scopesData } }: AppState) =>
         scopesData.scopes.find((scope) => scope.versionId === -1)?.scopes || []) // všechny scope
     const apTypesMap = useSelector(({ refTables }: AppState) => refTables.recordTypes.itemsMap);
+    const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
+
     const apType = apTypesMap[item.typeId] as any;
     const apTypeNew = apTypesMap[item.newTypeId] as any;
     const itemState = getItemState(item);
@@ -75,11 +78,20 @@ const DetailHeader: FC<Props> = ({
         }
     };
 
-    let scope: FundScope | null = null;
-    if (item.scopeId) {
-        scope = objectById(scopes, item.scopeId);
-    }
+    const itemScope = scopes.find((scope) => item.scopeId == scope.id);
 
+    const getVisibleScopes = (scopes: Scope[]) => {
+        return scopes.filter((scope) => {
+            if (!scope || scope.id == undefined) { return false; }
+            return userDetail.hasOne(permissions.AP_SCOPE_RD_ALL, {
+                type: permissions.AP_SCOPE_RD,
+                scopeId: scope?.id,
+            })
+        })
+    }
+    const visibleScopes = getVisibleScopes(scopes);
+
+    const isScopeHidden = visibleScopes.find((scope) => scope.id === itemScope?.id) && visibleScopes.length === 1;
 
     return (
         <div className={'detail-header-wrapper'}>
@@ -126,6 +138,7 @@ const DetailHeader: FC<Props> = ({
                                         <>
                                             <div>id: {id}</div>
                                             <div>uuid: {item.uuid}</div>
+                                            {itemScope && <div>{i18n("registry.scopeClass").toLowerCase()}: {itemScope.name}</div>}
                                         </>
                                     }
                                 >
@@ -185,10 +198,10 @@ const DetailHeader: FC<Props> = ({
                                 </DetailDescriptionsItem>
                             </TooltipTrigger>
 
-                            {scope && (
+                            {itemScope && !isScopeHidden && (
                                 <DetailDescriptionsItem>
                                     <Icon glyph={'fa-globe'} className={'mr-1'} />
-                                    {scope.name}
+                                    {itemScope.name}
                                 </DetailDescriptionsItem>
                             )}
                             <EntityBindings item={item} onInvalidateDetail={onInvalidateDetail} onPushApToExt={onPushApToExt} />
