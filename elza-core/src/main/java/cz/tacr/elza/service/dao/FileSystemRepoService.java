@@ -197,7 +197,10 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
                 // check file existance
                 ArrDaoFile daoFile = daoFilesMap.remove(relatName);
                 if (daoFile != null) {
-                    // file exists -> do nothing
+                    // file exists -> only update
+                    updateDaoFile(daoFile, itemPath);
+                    daoFile = daoServiceInternal.persistDaoFile(daoFile);
+
                     existingFiles.put(relatName, daoFile);
                 } else {
                     // file not found -> add new one
@@ -236,14 +239,24 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
                                 BaseCode.INVALID_STATE);
                     }
                 }
-                long fileSize = Files.size(fp);
-                String mimetype = getMimetype(fp);
                 String filaName = fp.getFileName().toString();
-                ArrDaoFile dff = daoServiceInternal.createDaoFile(relatPath, filaName, parentFileGroup, fileSize,
-                                                                  mimetype, dao);
+                ArrDaoFile dff = daoServiceInternal.createDaoFile(relatPath, filaName, parentFileGroup, dao);
+                updateDaoFile(dff, fp);
+                dff = daoServiceInternal.persistDaoFile(dff);
                 existingFiles.put(filePath, dff);
             }
         }
+    }
+
+    private void updateDaoFile(ArrDaoFile daoFile, Path itemPath) {
+        try {
+            long fileSize = Files.size(itemPath);
+            daoFile.setSize(fileSize);
+        } catch (IOException e) {
+            throw new BusinessException("Failed to get size, path: " + itemPath, e, BaseCode.INVALID_STATE);
+        }
+        String mimetype = getMimetype(itemPath);
+        daoFile.setMimetype(mimetype);
     }
 
     public String getMimetype(Path fp) {

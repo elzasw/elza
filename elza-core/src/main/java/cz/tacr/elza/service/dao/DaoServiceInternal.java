@@ -101,17 +101,17 @@ public class DaoServiceInternal {
         return daoFileGroupRepository.save(daoFileGroup);
     }
 
-    public ArrDaoFile createDaoFile(String code, String fileName, ArrDaoFileGroup parentFileGroup, long size,
-                                    String mimeType,
+    public ArrDaoFile createDaoFile(String code, String fileName, ArrDaoFileGroup parentFileGroup,
                                     ArrDao dao) {
         ArrDaoFile daoFile = new ArrDaoFile();
         daoFile.setCode(code);
         daoFile.setDao(dao);
         daoFile.setDaoFileGroup(parentFileGroup);
         daoFile.setFileName(fileName);
-        daoFile.setSize(size);
-        daoFile.setMimetype(mimeType);
-        return daoFileRepository.save(daoFile);
+        return daoFile;
     }
 
+    public ArrDaoFile persistDaoFile(final ArrDaoFile daoFile) {
+        return daoFileRepository.save(daoFile);
+    }
 }
