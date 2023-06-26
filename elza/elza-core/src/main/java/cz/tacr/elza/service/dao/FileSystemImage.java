@@ -118,8 +118,12 @@ public class FileSystemImage {
 
     public void walk(String filePath, Consumer<? super Path> consumer) throws IOException {
         Path p = Paths.get(repoPath, filePath);
-        try (Stream<Path> stream = Files.walk(p)) {
-            stream.forEach(consumer);
+        if (Files.isDirectory(p)) {
+            try (Stream<Path> stream = Files.walk(p)) {
+                stream.forEach(consumer);
+            }
+        } else {
+            consumer.accept(p);
         }
     }
 
