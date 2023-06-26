@@ -991,6 +991,9 @@ components:
         state:
           description: Stav revize
           $ref: "#/components/schemas/RevisionState"
+        comment:
+          description: Komentář k revizi
+          type: string
     RevisionState:
       title: Stav revize
       type: string
