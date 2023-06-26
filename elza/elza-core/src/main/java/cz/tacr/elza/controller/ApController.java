@@ -90,6 +90,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -484,7 +485,8 @@ public class ApController {
 
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
-            vo = apFactory.createVO(vo, revision, apState.getAccessPoint());
+            ApRevState revState = revisionService.findLastRevState(revision);
+            vo = apFactory.createVO(vo, revision, revState, apState.getAccessPoint());
         }
         // read status of data in export/import queue
         if (CollectionUtils.isNotEmpty(vo.getBindings())) {
@@ -568,7 +570,8 @@ public class ApController {
             return Collections.emptyList();
         }
 
-        List<StateApproval> states = accessPointService.getNextStatesRevision(apState, revision);
+        ApRevState revState = revisionService.findLastRevState(revision);
+        List<StateApproval> states = accessPointService.getNextStatesRevision(apState, revState);
 
         return states.stream().map(p -> p.name()).collect(Collectors.toList());
     }
@@ -930,15 +933,14 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
     public Integer createPart(@PathVariable final Integer accessPointId,
-                           @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
+                              @RequestBody final ApPartFormVO apPartFormVO) {
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApRevision revision = revisionService.findRevisionByState(state);
+        ApRevState revState = revisionService.findRevStateByState(state);
 
-        if (revision != null) {
+        if (revState != null) {
             // Permission check is part of revisionService
-            ApRevPart revPart = revisionService.createPart(state, revision, apPartFormVO);
+            ApRevPart revPart = revisionService.createPart(state, revState, apPartFormVO);
             return revPart.getPartId();
         } else {
             accessPointService.checkPermissionForEdit(state);
@@ -1063,12 +1065,11 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part/{partId}/prefer-name", method = RequestMethod.PUT)
     public void setPreferName(@PathVariable final Integer accessPointId,
                               @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.setPreferName(state, revision, partId);
+        ApRevState revState = revisionService.findRevStateByState(state);
+        if (revState != null) {
+            revisionService.setPreferName(state, revState, partId, null);
         } else {
             accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
