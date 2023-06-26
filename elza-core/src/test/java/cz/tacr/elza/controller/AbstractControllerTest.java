@@ -2072,9 +2072,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
-        post(spec -> spec.pathParam("entityId", entityId)
-                .param("state", state),
-             MERGE_AP);
+        post(spec -> spec.pathParam("entityId", entityId).param("state", state), MERGE_AP);
     }
 
     /**

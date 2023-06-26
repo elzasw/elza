@@ -557,16 +557,16 @@ public class PartService {
      */
 	public ApPart unsetPreferredPart(Integer partId) {
 		ApPart part = getPart(partId);
-		
+
     	// drop keyValue of old pref part
 		ApKeyValue keyValue = part.getKeyValue();
-    	if(keyValue!=null) {
+    	if (keyValue != null) {
         	part.setKeyValue(null);
         	partRepository.saveAndFlush(part);
-        	
+
         	keyValueRepository.delete(keyValue);
         	keyValueRepository.flush();    		
-    	}    	
+    	}
     	return part;
 	}
 

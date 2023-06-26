@@ -81,6 +81,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -925,11 +926,12 @@ public class ApFactory {
         return apValidationErrorsVO;
     }
 
-    public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApAccessPoint accessPoint) {
-        vo.setRevStateApproval(revision.getStateApproval());
-        vo.setNewTypeId(revision.getTypeId());
-        vo.setRevPreferredPart(revision.getRevPreferredPartId());
-        vo.setNewPreferredPart(revision.getPreferredPartId());
+    public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApRevState revState, ApAccessPoint accessPoint) {
+        vo.setRevStateApproval(revState.getStateApproval());
+        vo.setNewTypeId(revState.getTypeId());
+        vo.setRevPreferredPart(revState.getRevPreferredPartId());
+        vo.setNewPreferredPart(revState.getPreferredPartId());
+        vo.setRevComment(revState.getComment());
 
         // prepare parts
         List<ApRevPart> parts = revPartRepository.findByRevision(revision);

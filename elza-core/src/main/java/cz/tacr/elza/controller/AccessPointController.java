@@ -23,6 +23,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -168,7 +169,7 @@ public class AccessPointController implements AccesspointsApi {
             nextTypeId = state.getApTypeId();
         }
 
-        revisionService.changeStateRevision(state, nextTypeId, revNextState);
+        revisionService.changeStateRevision(state, nextTypeId, revNextState, revStateChange.getComment());
         return ResponseEntity.ok().build();
     }
 
@@ -239,10 +240,12 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> setPreferNameRevision(Integer id, Integer partId) {
-        ApState state = accessPointService.getStateInternal(id);
+    public ResponseEntity<Void> setPreferNameRevision(Integer accessPointId, Integer partId) {
+        ApState state = accessPointService.getStateInternal(accessPointId);
+        ApRevState revState = revisionService.findRevStateByState(state);
+        Validate.notNull(revState, "Neexistuje revize: accessPointId:%d", accessPointId);
         accessPointService.lockWrite(state.getAccessPoint());
-        revisionService.setPreferName(state, partId);
+        revisionService.setPreferName(state, revState, null, partId);
         return ResponseEntity.ok().build();
     }
 

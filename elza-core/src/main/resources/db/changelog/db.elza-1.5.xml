@@ -2313,4 +2313,68 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 			ON arr_fund_register_scope(fund_id, scope_id)</sql>	
 	</changeSet>
 
+	<changeSet id="20230623133500" author="sergey.iryupin">
+        <createTable tableName="ap_rev_state">
+            <column name="state_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="revision_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_state_revision"
+                             referencedTableName="ap_revision"
+                             referencedColumnNames="revision_id"/>
+            </column>
+            <column name="type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_state_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_rev_state_preferred_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="rev_preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_rev_state_rev_preferred_part"
+                             referencedTableName="ap_rev_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_state_change_create"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_rev_state_change_delete"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="state_approval" type="char(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_rev_state_revision_idx
+                               ON ap_rev_state(revision_id)
+                               WHERE delete_change_id IS NULL</sql>
+        <sql dbms="postgresql">INSERT INTO ap_rev_state (state_id, revision_id, type_id, preferred_part_id, rev_preferred_part_id, create_change_id, state_approval) 
+			SELECT revision_id, revision_id, type_id, preferred_part_id, rev_preferred_part_id, create_change_id, state_approval 
+			FROM ap_revision WHERE delete_change_id IS NULL</sql>
+		<sql dbms="postgresql">INSERT INTO db_hibernate_sequences (sequence_name, next_val) 
+			VALUES ('ap_rev_state|state_id', (SELECT GREATEST(MAX(state_id) + 1, 1) FROM ap_rev_state))</sql>
+        <dropColumn tableName="ap_revision">
+            <column name="type_id"/>
+            <column name="preferred_part_id"/>
+            <column name="rev_preferred_part_id"/>
+            <column name="state_approval"/>
+        </dropColumn>
+    </changeSet>
+
 </databaseChangeLog>
