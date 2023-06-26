@@ -68,6 +68,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -1266,9 +1267,10 @@ public class RuleService {
             if (revision != null) {
                 List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
                 List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
+                ApRevState revState = revisionService.findLastRevState(revision);
 
                 // apply revision data
-                apBuilder.setRevision(revision, revParts, revItems);
+                apBuilder.setRevision(revState, revParts, revItems);
             }
         } else {
             apBuilder.setAeType(apTypeId);
@@ -1370,9 +1372,10 @@ public class RuleService {
                 List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
                 List<ApRevItem> revItems = revisionItemService.findByParts(revParts);
                 revIndexes = revisionPartService.findIndexesByRevision(revision);
+                ApRevState revState = revisionService.findLastRevState(revision);
 
                 // apply revision data
-                apBuilder.setRevision(revision, revParts, revItems);
+                apBuilder.setRevision(revState, revParts, revItems);
 
                 // remove indexes for modified or deleted parts
                 Set<Integer> modOrigParts = revParts.stream().filter(r -> r.getOriginalPartId() != null)

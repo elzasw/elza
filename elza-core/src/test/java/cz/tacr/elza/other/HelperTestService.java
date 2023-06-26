@@ -36,6 +36,7 @@ import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
+import cz.tacr.elza.repository.ApRevStateRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -106,6 +107,8 @@ public class HelperTestService {
     protected ApRevPartRepository revPartRepository;
     @Autowired
     protected ApRevisionRepository revisionRepository;
+    @Autowired
+    protected ApRevStateRepository revStateRepository;
     @Autowired
     protected BulkActionNodeRepository bulkActionNodeRepository;
     @Autowired
@@ -295,6 +298,7 @@ public class HelperTestService {
         revIndexRepository.deleteAll();
         revItemRepository.deleteAll();
         revPartRepository.deleteAll();
+        revStateRepository.deleteAll();
         revisionRepository.deleteAll();
 
         apCachedAccessPointRepository.deleteAll();

@@ -90,6 +90,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -1246,7 +1247,8 @@ public class AccessPointService {
         ArrData data = HibernateUtils.unproxy(revItem.getData());
         Validate.isTrue(data instanceof ArrDataRecordRef);
 
-        checkPermissionForEdit(revision.getState(), revision);
+        ApRevState revState = revisionService.findLastRevState(revision);
+        checkPermissionForEdit(revision.getState(), revState);
        
         // Mark revItem as deleted
         ArrDataRecordRef drr = new ArrDataRecordRef();
@@ -2388,11 +2390,11 @@ public class AccessPointService {
      * revize
      *
      * @param apState
-     * @param revision
+     * @param revState
      * @return seznam stavů
      */
     public List<StateApproval> getNextStatesRevision(@NotNull ApState apState,
-                                                     @NotNull ApRevision revision) {
+                                                     @NotNull ApRevState revState) {
         
         ApScope apScope = apState.getScope();
         UserDetail user = userService.getLoggedUserDetail();
@@ -2421,11 +2423,11 @@ public class AccessPointService {
             }
         }
 
-        UsrUser createChangeUser = revision.getCreateChange().getUser();
+        UsrUser createChangeUser = revState.getCreateChange().getUser();
         Integer lastRevUserId = createChangeUser != null ? createChangeUser.getUserId() : null;
         // schvalování
         // jen jiny uzivatel nez tvurce revize muze schvalit
-        if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
+        if (revState.getStateApproval() == RevStateApproval.TO_APPROVE) {
             // Kontrola, zda je odlišný uživatel, který změnil revizi
             if (!Objects.equals(user.getId(), lastRevUserId)) {
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
@@ -2666,13 +2668,13 @@ public class AccessPointService {
      *
      * @param state
      *            state entity
-     * @param revision
-     *            active revision (if exists)
+     * @param revState
+     *            active revision state (if exists)
      */
     public void checkPermissionForEdit(final ApState state,
-                                       @Nullable final ApRevision revision) {
-        if (revision != null) {
-            checkPermissionForEdit(state, revision.getStateApproval());
+                                       @Nullable final ApRevState revState) {
+        if (revState != null) {
+            checkPermissionForEdit(state, revState.getStateApproval());
         } else {
             checkPermissionForEdit(state, (RevStateApproval) null);
         }
