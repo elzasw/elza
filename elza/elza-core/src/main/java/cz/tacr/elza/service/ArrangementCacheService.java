@@ -230,7 +230,8 @@ public class ArrangementCacheService {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {
-            throw new ObjectNotFoundException("Seznam je prázdný, nelze v něm měnit navázané prvky popisu, nodeId:"+nodeId, BaseCode.ID_NOT_EXIST);
+            throw new ObjectNotFoundException("Seznam je prázdný, nelze v něm měnit navázané prvky popisu, nodeId:"+nodeId, BaseCode.ID_NOT_EXIST)
+                .set("nodeId", nodeId);
         }
         for (ArrDescItem descItem : descItemList) {
             int index = -1;
@@ -238,6 +239,7 @@ public class ArrangementCacheService {
                 ArrDescItem descItemLocal = descItems.get(i);
                 if (descItemLocal.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
                     if (move) {
+                        // replace data with cached version
                         descItem.setData(descItemLocal.getData());
                     }
                     index = i;
@@ -245,7 +247,9 @@ public class ArrangementCacheService {
                 }
             }
             if (index < 0) {
-                throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST);
+                throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST)
+                    .set("nodeId", nodeId)
+                    .set("itemId", descItem.getItemId());
             }
             descItems.set(index, descItem);
         }
