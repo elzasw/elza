@@ -175,10 +175,11 @@ public class RevisionService {
         List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = revisionItemService.findByParts(parts);
 
-        deleteRevision(revision, revState, change, parts, items);
+        deleteRevision(revision, null, revState, change, parts, items);
     }
 
     private ApRevision deleteRevision(ApRevision revision,
+                                      ApState mergeState,
                                       ApRevState revState,
                                       ApChange change,
                                       List<ApRevPart> parts,
@@ -195,6 +196,7 @@ public class RevisionService {
         revState.setDeleteChange(change);
         revStateRepository.save(revState);
 
+        revision.setMergeState(mergeState);
         revision.setDeleteChange(change);
         return revisionRepository.save(revision);
     }
@@ -900,7 +902,7 @@ public class RevisionService {
         newState = stateRepository.save(newState);
 
         // smazání revize
-        deleteRevision(revision, revState, change, revParts, revItems);
+        deleteRevision(revision, newState, revState, change, revParts, revItems);
 
         // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
