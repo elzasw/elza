@@ -2377,4 +2377,21 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         </dropColumn>
     </changeSet>
 
+    <changeSet id="20230630133500" author="sergey.iryupin">
+    	<addColumn tableName="ap_revision">
+            <column name="merge_state_id" type="int">
+                <constraints nullable="true"
+                    foreignKeyName="fk_ap_revision_merge_state"
+                    referencedTableName="ap_state"
+                    referencedColumnNames="state_id"/>
+            </column>
+    	</addColumn>
+    	<sql dbms="postgresql">UPDATE ap_revision SET merge_state_id = s.state_id
+			FROM (SELECT r.revision_id, s.state_id FROM ap_revision r 
+				JOIN ap_change c ON r.delete_change_id = c.change_id
+				JOIN ap_state s ON s.create_change_id = c.change_id 
+				WHERE c.type = 'AP_UPDATE') s
+			WHERE ap_revision.revision_id = s.revision_id</sql>
+    </changeSet>
+
 </databaseChangeLog>

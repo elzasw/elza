@@ -46,6 +46,13 @@ public class ApRevision {
     @Column(name = "delete_change_id", updatable = false, insertable = false)
     private Integer deleteChangeId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApState.class)
+    @JoinColumn(name = "merge_state_id", nullable = false)
+    private ApState mergeState;
+
+    @Column(name = "merge_state_id", nullable = false, updatable = false, insertable = false)
+    private Integer mergeStateId;
+
     public Integer getRevisionId() {
         return revisionId;
     }
@@ -91,6 +98,19 @@ public class ApRevision {
 
     public Integer getDeleteChangeId() {
         return deleteChangeId;
+    }
+
+    public ApState getMergeState() {
+        return mergeState;
+    }
+
+    public void setMergeState(ApState mergeState) {
+        this.mergeState = mergeState;
+        this.mergeStateId = mergeState != null ? mergeState.getStateId() : null;
+    }
+
+    public Integer getMergeStateId() {
+        return mergeStateId;
     }
 
 }
