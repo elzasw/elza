@@ -120,7 +120,7 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
-                LOG.error("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
+                LOG.debug("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
                 return;
 			}
             // send heartbeat as priority/first message
