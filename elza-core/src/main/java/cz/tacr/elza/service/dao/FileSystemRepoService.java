@@ -324,4 +324,21 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         Path path = Paths.get(repoPath).toAbsolutePath();
         return path;
     }
+
+    public Path resolvePath(ArrDigitalRepository digiRepo, ArrFund fund, String itemPath) {
+        Path rootPath = getPath(digiRepo, fund);
+        // check if dir exists
+        if (!Files.isDirectory(rootPath)) {
+            throw new BusinessException("Repository is not vailable", BaseCode.INVALID_STATE)
+                    .set("repoPath", rootPath)
+                    .set("fundId", fund.getFundId())
+                    .set("fsrepoId", digiRepo.getExternalSystemId());
+        }
+
+        if (StringUtils.isNotBlank(itemPath)) {
+            return rootPath.resolve(itemPath);
+        } else {
+            return rootPath;
+        }
+    }
 }
