@@ -26,6 +26,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -280,22 +282,46 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         return false;
     }
 
-    public InputStream getInputStream(ArrDigitalRepository digiRep, String filePath) throws IOException {
-        FileSystemImage fsi = getFileSystemImage(digiRep);
+    public InputStream getInputStream(ArrDigitalRepository digiRepo, String filePath) throws IOException {
+        FileSystemImage fsi = getFileSystemImage(digiRepo);
         return fsi.getInputStream(filePath);
     }
 
-    public Path resolvePath(ArrDigitalRepository digiRep, String filePath) {
-        if (!isFileSystemRepository(digiRep)) {
+    public Path resolvePath(ArrDigitalRepository digiRepo, String filePath) {
+        if (!isFileSystemRepository(digiRepo)) {
             throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
-                    .set("RepositoryId", digiRep.getExternalSystemId());
+                    .set("RepositoryId", digiRepo.getExternalSystemId());
         }
-        String repoPath = digiRep.getUrl().substring(FILE_URI_PREFIX.length());
+        String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
         Path rootPath = Paths.get(repoPath).toAbsolutePath();
         if (StringUtils.isNotBlank(filePath)) {
             return rootPath.resolve(filePath);
         } else {
             return rootPath;
         }
+    }
+
+    public Path getPath(ArrDigitalRepository digiRepo, ArrFund fund) {
+        if (!isFileSystemRepository(digiRepo)) {
+            throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
+                    .set("RepositoryId", digiRepo.getExternalSystemId());
+        }
+        String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
+
+        ElzaTools.UrlParams params = ElzaTools.createUrlParams()
+                .add("repoId", digiRepo.getExternalSystemId())
+                .add("repoCode", digiRepo.getElzaCode())
+                .add("repoElzaCode", digiRepo.getElzaCode());
+        if (fund != null) {
+            params.add("fundId", fund.getFundId())
+                    .add("fundNumber", fund.getFundNumber())
+                    .add("fundCode", fund.getInternalCode())
+                    .add("fundMark", fund.getMark())
+                    .add("institutionId", fund.getInstitution().getInstitutionId())
+                    .add("institutionCode", fund.getInstitution().getInternalCode());
+        }
+        repoPath = ElzaTools.bindingUrlParams(repoPath, params);
+        Path path = Paths.get(repoPath).toAbsolutePath();
+        return path;
     }
 }

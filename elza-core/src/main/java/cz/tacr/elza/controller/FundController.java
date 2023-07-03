@@ -1,11 +1,16 @@
 package cz.tacr.elza.controller;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -26,6 +31,8 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.FsItems;
+import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.UpdateFund;
@@ -33,6 +40,7 @@ import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -46,8 +54,10 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -85,6 +95,12 @@ public class FundController implements FundsApi {
     @Autowired
     private StructObjService structureService;
     
+    @Autowired
+    private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
     @Override
     @Transactional
     public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
@@ -221,5 +237,61 @@ public class FundController implements FundsApi {
         List<Integer> deletedIds = structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
 
         return ResponseEntity.ok(deletedIds);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<List<FsRepo>> fundFsRepos(@PathVariable("fundId") Integer fundId) {
+        ArrFund fund = arrangementService.getFund(fundId);
+
+        List<ArrDigitalRepository> digitRepositories = externalSystemService.findDigitalRepository();
+
+        List<FsRepo> result = null;
+        if (CollectionUtils.isNotEmpty(digitRepositories)) {
+            for (ArrDigitalRepository digiRepo : digitRepositories) {
+                if (fileSystemRepoService.isFileSystemRepository(digiRepo)) {
+                    Path repoPath = fileSystemRepoService.getPath(digiRepo, fund);
+                    // append only real dirs
+                    if(!Files.isDirectory(repoPath)) {
+                        continue;
+                    }
+                    if (result == null) {
+                        result = new ArrayList<>();
+                    }                    
+                    
+                    FsRepo fsRepo = new FsRepo();
+                    fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
+                    fsRepo.setName(digiRepo.getName());
+                    fsRepo.setCode(digiRepo.getCode());
+                    fsRepo.setPath(repoPath.toString());
+                    result.add(fsRepo);
+                }
+            }
+        }
+
+        if (result == null) {
+            result = Collections.emptyList();
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<FsItems> fundFsRepoItems(@PathVariable("fundId") Integer fundId,
+                                                   @PathVariable("fsrepoId") Integer fsrepoId,
+                                                   @RequestParam(value = "filterType", required = false) String filterType,
+                                                   @RequestParam(value = "path", required = false) String path,
+                                                   @RequestParam(value = "lastKey", required = false) String lastKey) {
+        FsItems fsItems = new FsItems();
+        return ResponseEntity.ok(fsItems);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<byte[]> fundFsRepoItemData(@PathVariable("fundId") Integer fundId,
+                                                     @PathVariable("fsrepoId") Integer fsrepoId,
+                                                     @RequestParam(value = "path", required = true) String path) {
+        //return ResponseEntity.ok();
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 }
