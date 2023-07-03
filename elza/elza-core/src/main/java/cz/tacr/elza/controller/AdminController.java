@@ -46,8 +46,9 @@ public class AdminController implements AdminApi {
     @Autowired
     private UserService userService;
 
+    @Override
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
-    public ResponseEntity<AdminInfo> getAdminInfo() {
+    public ResponseEntity<AdminInfo> adminInfo() {
         AdminInfo ai = new AdminInfo();
         
         ArrangementStats arrStats = arrangementService.getStats();
@@ -66,8 +67,9 @@ public class AdminController implements AdminApi {
         return new ResponseEntity<>(ai, HttpStatus.OK);
     }
 
+    @Override
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
-    public ResponseEntity<LoggedUsers> getAdminLoggedUsers() {
+    public ResponseEntity<LoggedUsers> adminLoggedUsers() {
 
         LoggedUsers lus = new LoggedUsers();
         List<Principal> sessions = clientOutboundChannelExecutor.getPrincipals();
@@ -84,9 +86,10 @@ public class AdminController implements AdminApi {
     /**
      * Vytvoření chybějících záznamů v arr_cached_node
      */
+    @Override
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     @Transactional
-    public ResponseEntity<Void> syncNodeCache() {
+    public ResponseEntity<Void> adminSyncNodeCache() {
         nodeCacheService.syncCache();
         return ResponseEntity.ok().build();
     }
