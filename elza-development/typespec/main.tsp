@@ -5,6 +5,41 @@ import "@typespec/openapi3";
 using TypeSpec.Http;
 using TypeSpec.Rest;
 
+/** Basic statistics about Elza instance */
+model AdminInfo {
+    /** Number of funds */
+    funds: int32;
+
+    /** Number of valid levels */
+    levels: int32;
+
+    /** Number of valid access points */
+    accessPoints: int32;
+
+    /** Number of users */
+    users: int32;
+
+    /** Number of logged users */
+    loggedUsers: int32;
+}
+
+/** Logged user */
+model LoggedUser {
+
+    /** username */
+    user: string;
+}
+
+/** List of logged users */
+model LoggedUsers {
+
+    /** User list */
+    users: LoggedUser[];
+
+    /** Total number of logged users */
+    totalCount: int32;
+}
+
 model FsRepo {
     /** Repository ID */
     fsRepoId: int32;
@@ -20,6 +55,12 @@ model FundIdParameter {
     /** Fund ID*/
     @path
     fundId: integer;
+}
+
+model NodeIdParameter {
+    /** Node ID*/
+    @path
+    nodeId: integer;
 }
 
 model FsRepoIdParameter {
@@ -64,6 +105,27 @@ namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
 }
 
+@tag("admin")
+@route("/admin")
+namespace ElzaAPI.Admin {
+
+    /** Creating missing items in arr_cached_node */
+    @route("admin/arrangement/missing-cached-nodes")
+    op syncNodeCache(): { 
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Return basic statistical info
+     */
+    @route("info")
+    op info(): AdminInfo;
+
+    /** Return list of logged users */
+    @route("info/logged-users")
+    op loggedUsers(): LoggedUsers;    
+}
+
 @tag("funds")
 @route("/fund")
 namespace ElzaAPI.Fund {
@@ -72,6 +134,14 @@ namespace ElzaAPI.Fund {
      */
     @route("{fundId}/fsrepos")
     op fsRepos(...FundIdParameter): FsRepo[];
+
+    @route("{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}")
+    @put op fsCreateDAOLink (
+        ...FundIdParameter,
+        ...FsRepoIdParameter,
+        ...NodeIdParameter,
+        @query path?: string
+    ) : integer;
 
     @route("{fundId}/fsrepo/{fsrepoId}/items")
     op fsRepoItems(
