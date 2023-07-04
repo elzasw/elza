@@ -1,140 +1,109 @@
-import PropTypes from 'prop-types';
 import React from 'react';
-import {DecoratedFormProps, Field, FormErrors, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
-import {Autocomplete, i18n} from 'components/shared';
-import {Form, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
+import { Form as FinalForm, Field } from 'react-final-form';
+import { i18n } from 'components/shared';
+import { Form, Modal } from 'react-bootstrap';
+import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
-import {connect} from 'react-redux';
-import FF from '../shared/form/FF';
-import {AppState} from "typings/store";
-import {RevStateApproval, RevStateApprovalCaption} from "../../api/RevStateApproval";
+import { useSelector } from 'react-redux';
+import { AppState } from "typings/store";
+import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApproval";
+import { ApTypeVO } from 'api/ApTypeVO';
+import { RevStateChange } from 'elza-api';
 
 const stateToOption = (item: RevStateApproval) => ({
     id: item,
     name: RevStateApprovalCaption(item),
 });
 
-type OwnProps = {
-    accessPointId: number;
+interface Props {
     versionId?: number;
     hideType?: boolean;
     onClose?: Function;
+    onSubmit: (data: any) => void;
     states: string[];
+    initialValues?: Partial<RevStateChange>;
 };
 
-type RevStateChangeVO = {
-    state: RevStateApproval;
-    typeId: number;
-};
+type FormErrors<T> = Partial<Record<keyof T, string>>;
 
-type ConnectedProps = ReturnType<typeof mapStateToProps>;
-type Props = OwnProps & ConnectedProps & InjectedFormProps<RevStateChangeVO, OwnProps, FormErrors<RevStateChangeVO>>;
+export const RevStateChangeFormFn = ({
+    onClose,
+    hideType = false,
+    onSubmit,
+    initialValues,
+}: Props) => {
 
-class RevStateChangeForm extends React.Component<Props> {
-    static propTypes = {
-        accessPointId: PropTypes.number.isRequired,
-        versionId: PropTypes.number,
-        hideType: PropTypes.bool,
-    };
+    const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
 
-    static defaultProps = {
-        hideType: false,
-    };
+    const stateOptions = [
+        RevStateApproval.ACTIVE,
+        RevStateApproval.TO_AMEND,
+        RevStateApproval.TO_APPROVE,
+    ].map(stateToOption);
 
-    getStateWithAll() {
-        if (this.props.states) {
-            return Object.values(this.props.states).map(stateToOption);
-        } else {
-            return [];
-        }
-    }
-
-    componentDidMount() {
-        let data = [
-            RevStateApproval.ACTIVE,
-            RevStateApproval.TO_AMEND,
-            RevStateApproval.TO_APPROVE,
-        ];
-        this.props.change('states', data);
-    }
-
-    render() {
-        const {
-            handleSubmit,
-            onClose,
-            hideType,
-            versionId,
-            refTables: {apTypes},
-            submitting,
-        } = this.props;
-
-        return (
-            <Form onSubmit={handleSubmit}>
-                <Modal.Body>
-                    {!hideType && (
-                        <FF
-                            field={Autocomplete}
-                            label={i18n('ap.state.title.type')}
-                            items={apTypes.items ? apTypes.items : []}
-                            tree
-                            alwaysExpanded
-                            allowSelectItem={item => item.addRecord}
-                            name={'typeId'}
-                            useIdAsValue
-                            disabled={submitting}
-                        />
-                    )}
-                    <Field
-                        component={FormInputField}
-                        type="autocomplete"
-                        disabled={submitting}
-                        useIdAsValue
-                        required
-                        label={i18n('ap.state.title.state')}
-                        items={this.getStateWithAll()}
-                        name={'state'}
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.store')}
-                    </Button>
-                    <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
-                    </Button>
-                </Modal.Footer>
-            </Form>
-        );
-    }
-}
-
-const mapStateToProps = (state:AppState) => {
-    const selector = formValueSelector('revStateChangeForm');
-
-    return {
-        typeId: selector(state, 'typeId'),
-        state: selector(state, 'state'),
-        refTables: state.refTables,
-        userDetail: state.userDetail as any,
-        states: selector(state, 'states'),
-    };
-};
-
-const form = reduxForm<RevStateChangeVO, OwnProps, FormErrors<RevStateChangeVO>>({
-    form: 'revStateChangeForm',
-    validate(
-        values: RevStateChangeVO,
-        props: DecoratedFormProps<RevStateChangeVO, Props, FormErrors<RevStateChangeVO>>,
-    ): FormErrors<RevStateChangeVO, FormErrors<RevStateChangeVO>> {
-        const errors: FormErrors<RevStateChangeVO, FormErrors<RevStateChangeVO>> = {};
+    const validate = (values: RevStateChange) => {
+        const errors: FormErrors<RevStateChange> = {};
 
         if (!values.state) {
             errors.state = i18n('global.validation.required');
         }
 
         return errors;
-    },
-})(RevStateChangeForm as any);
+    }
 
-export default connect(mapStateToProps)(form);
+    return (
+        <FinalForm<RevStateChange>
+            initialValues={initialValues}
+            onSubmit={onSubmit}
+            validate={validate}
+        >
+            {({ submitting, handleSubmit }) => {
+                return <Form>
+                    <Modal.Body>
+                        {!hideType && (
+                            <Field
+                                name={'typeId'}
+                                component={FormInputField}
+                                type="autocomplete"
+                                label={i18n('ap.state.title.type')}
+                                items={apTypes.items ? apTypes.items : []}
+                                tree={true}
+                                alwaysExpanded={true}
+                                allowSelectItem={(item: ApTypeVO) => item.addRecord}
+                                useIdAsValue={true}
+                                disabled={submitting}
+                            />
+                        )}
+                        <Field
+                            name={'state'}
+                            component={FormInputField}
+                            type="autocomplete"
+                            label={i18n('ap.state.title.state')}
+                            items={stateOptions}
+                            useIdAsValue={true}
+                            required={true}
+                            disabled={submitting}
+                        />
+                        <Field
+                            name={'comment'}
+                            component={FormInputField}
+                            type="textarea"
+                            label={i18n('ap.state.title.comment')}
+                            disabled={submitting}
+                        />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
+                            {i18n('global.action.store')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            }}
+        </FinalForm>
+    );
+}
+
+export default RevStateChangeFormFn;
