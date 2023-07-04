@@ -460,6 +460,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleChangeStateRevision = () => {
         const {
+            dispatch,
             history,
             registryDetail: {
                 data: { id, newTypeId, revStateApproval },
@@ -472,22 +473,16 @@ class RegistryPage extends AbstractReactComponent {
                     state: revStateApproval,
                     typeId: newTypeId,
                 }}
-                onSubmit={data => {
-                    const finalData = {
-                        state: data.state,
-                        typeId: data.typeId,
-                    };
-                    this.props.dispatch(registryChangeStateRevision(id, finalData, history, select));
+                onSubmit={async (data) => {
+                    await dispatch(registryChangeStateRevision(id, data, history, select))
+
+                    dispatch(modalDialogHide());
+                    dispatch(goToAe(history, id, true, !select));
+                    dispatch(registryListInvalidate());
                 }}
-                onSubmitSuccess={() => {
-                    this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(goToAe(history, id, true, !select));
-                    this.props.dispatch(registryListInvalidate());
-                }}
-                accessPointId={id}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('registry.changeStateRevision'), form));
+        dispatch(modalDialogShow(this, i18n('registry.changeStateRevision'), form));
     };
 
     handleMergeRevision = () => {
