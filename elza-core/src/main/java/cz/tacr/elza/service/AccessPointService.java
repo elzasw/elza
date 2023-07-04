@@ -115,6 +115,7 @@ import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
@@ -2157,8 +2158,8 @@ public class AccessPointService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public List<ApState> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
-        return apStateRepository.findByAccessPointFetch(apAccessPoint);
+    public List<ApStateInfo> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
+        return apStateRepository.findInfoByAccessPoint(apAccessPoint);
     }
 
     /**

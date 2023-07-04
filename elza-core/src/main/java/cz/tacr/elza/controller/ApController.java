@@ -106,6 +106,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -833,7 +834,7 @@ public class ApController {
     @RequestMapping(value = "/{accessPointId}/history", method = RequestMethod.GET)
     public List<ApStateHistoryVO> findStateHistories(@PathVariable("accessPointId") final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
-        List<ApState> states = accessPointService.findApStates(apAccessPoint);
+        List<ApStateInfo> states = accessPointService.findApStates(apAccessPoint);
         return apFactory.createStateHistoriesVO(states);
     }
 
