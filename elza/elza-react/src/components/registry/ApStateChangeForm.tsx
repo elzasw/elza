@@ -1,30 +1,31 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import {DecoratedFormProps, Field, FormErrors, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
-import {Autocomplete, i18n} from 'components/shared';
-import {Form, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
-import {indexByProperty} from 'stores/app/utils';
+import React, { useEffect, useState } from 'react';
+import { i18n } from 'components/shared';
+import { Form, Modal } from 'react-bootstrap';
+import { Form as FinalForm, Field } from 'react-final-form';
+import { Button } from '../ui';
+import { indexByProperty } from 'stores/app/utils';
 import Scope from '../shared/scope/Scope';
 import FormInputField from '../../components/shared/form/FormInputField';
-import {connect} from 'react-redux';
-import FF from '../shared/form/FF';
-import * as perms from '../../actions/user/Permission';
-import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
-import {AppState} from "typings/store";
-import {WebApi} from 'actions';
+import { useSelector } from 'react-redux';
+import { StateApproval, StateApprovalCaption } from '../../api/StateApproval';
+import { AppState } from "typings/store";
+import { WebApi } from 'actions';
+import { ApTypeVO } from 'api/ApTypeVO';
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
     name: StateApprovalCaption(item),
 });
 
-type OwnProps = {
+type Props = {
     accessPointId: number;
     versionId?: number;
     hideType?: boolean;
-    onClose?: Function;
+    onClose?: () => void;
+    onSubmit: (data: ApStateChangeVO) => void;
     states: string[];
+    scopeId?: number;
+    initialValues?: Partial<ApStateChangeVO>;
 };
 
 type ApStateChangeVO = {
@@ -34,147 +35,95 @@ type ApStateChangeVO = {
     scopeId: number;
 };
 
-type ConnectedProps = ReturnType<typeof mapStateToProps>;
-type Props = OwnProps & ConnectedProps & InjectedFormProps<ApStateChangeVO, OwnProps, FormErrors<ApStateChangeVO>>;
+export const ApStateChangeForm = ({
+    accessPointId,
+    hideType = false,
+    versionId,
+    onClose,
+    onSubmit,
+    initialValues,
+}: Props) => {
+    const scopesData = useSelector((appState: AppState) => appState.refTables.scopesData);
+    const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
 
-class ApStateChangeForm extends React.Component<Props> {
-    static propTypes = {
-        accessPointId: PropTypes.number.isRequired,
-        versionId: PropTypes.number,
-        hideType: PropTypes.bool,
-    };
+    const [states, setStates] = useState<string[]>([]);
 
-    static defaultProps = {
-        hideType: false,
-    };
-
-    getStateWithAll() {
-        if (this.props.states) {
-            return Object.values(this.props.states).map(stateToOption);
-        } else {
-            return [];
+    let preselectedScopeId: number | null | undefined = initialValues?.scopeId;
+    if (preselectedScopeId == undefined) {
+        let index = scopesData.scopes ? indexByProperty(scopesData.scopes, versionId, "versionId") : false;
+        if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
+            preselectedScopeId = scopesData.scopes[index].scopes[0].id
         }
     }
 
-    componentDidMount() {
-        WebApi.getStateApproval(this.props.accessPointId).then(data => {
-            this.props.change('states', data);
-        });
-        if (!this.props.scopeId) {
-            const {
-                refTables: {scopesData},
-                versionId,
-            } = this.props;
+    useEffect(() => {
+        (async () => {
+            const data = await WebApi.getStateApproval(accessPointId)
+            setStates(data)
+        })()
+    }, [accessPointId])
 
-            let index = scopesData.scopes ? indexByProperty(scopesData.scopes, versionId, "versionId") : false;
-            if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
-                this.props.change('scopeId', scopesData.scopes[index].scopes[0].id);
-            }
-        }
-    }
+    const stateOptions = states.map(stateToOption);
 
-    render() {
-        const {
-            handleSubmit,
-            onClose,
-            hideType,
-            versionId,
-            refTables: {apTypes},
-            submitting,
-        } = this.props;
-
-        return (
-            <Form onSubmit={handleSubmit}>
-                <Modal.Body>
-                    <FF
-                        field={Scope}
-                        disabled={submitting}
-                        versionId={versionId}
-                        label={i18n('ap.state.title.scope')}
-                        name={'scopeId'}
-                    />
-                    {!hideType && (
-                        <FF
-                            field={Autocomplete}
-                            label={i18n('ap.state.title.type')}
-                            items={apTypes.items ? apTypes.items : []}
-                            tree
-                            alwaysExpanded
-                            allowSelectItem={item => item.addRecord}
-                            name={'typeId'}
-                            useIdAsValue
+    return (
+        <FinalForm onSubmit={onSubmit} initialValues={{ ...initialValues, scopeId: preselectedScopeId }}>
+            {({ submitting, handleSubmit }) => {
+                return <Form>
+                    <Modal.Body>
+                        <Field name={'scopeId'} >
+                            {({ input }) => {
+                                return <Scope
+                                    {...input}
+                                    disabled={submitting}
+                                    versionId={versionId}
+                                    label={i18n('ap.state.title.scope')}
+                                />
+                            }}
+                        </Field>
+                        {!hideType && (
+                            <Field
+                                component={FormInputField}
+                                type="autocomplete"
+                                label={i18n('ap.state.title.type')}
+                                items={apTypes.items ? apTypes.items : []}
+                                tree={true}
+                                alwaysExpanded={true}
+                                allowSelectItem={(item: ApTypeVO) => item.addRecord}
+                                name={'typeId'}
+                                useIdAsValue={true}
+                                disabled={submitting}
+                            />
+                        )}
+                        <Field
+                            component={FormInputField}
+                            type="autocomplete"
                             disabled={submitting}
+                            useIdAsValue
+                            required
+                            label={i18n('ap.state.title.state')}
+                            items={stateOptions}
+                            name={'state'}
                         />
-                    )}
-                    <Field
-                        component={FormInputField}
-                        type="autocomplete"
-                        disabled={submitting}
-                        useIdAsValue
-                        required
-                        label={i18n('ap.state.title.state')}
-                        items={this.getStateWithAll()}
-                        name={'state'}
-                    />
-                    <Field
-                        component={FormInputField}
-                        disabled={submitting}
-                        type="text"
-                        label={i18n('ap.state.title.comment')}
-                        name={'comment'}
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.store')}
-                    </Button>
-                    <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
-                    </Button>
-                </Modal.Footer>
-            </Form>
-        );
-    }
+                        <Field
+                            component={FormInputField}
+                            disabled={submitting}
+                            type="textarea"
+                            label={i18n('ap.state.title.comment')}
+                            name={'comment'}
+                        />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting} onClick={handleSubmit}>
+                            {i18n('global.action.store')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+
+            }}
+        </FinalForm>
+    );
 }
-
-const mapStateToProps = (state:AppState) => {
-    const selector = formValueSelector('apStateChangeForm');
-
-    return {
-        scopeId: selector(state, 'scopeId'),
-        typeId: selector(state, 'typeId'),
-        state: selector(state, 'state'),
-        refTables: state.refTables,
-        userDetail: state.userDetail as any,
-        states: selector(state, 'states'),
-    };
-};
-
-const form = reduxForm<ApStateChangeVO, OwnProps, FormErrors<ApStateChangeVO>>({
-    form: 'apStateChangeForm',
-    validate(
-        values: ApStateChangeVO,
-        props: DecoratedFormProps<ApStateChangeVO, Props, FormErrors<ApStateChangeVO>>,
-    ): FormErrors<ApStateChangeVO, FormErrors<ApStateChangeVO>> {
-        const errors: FormErrors<ApStateChangeVO, FormErrors<ApStateChangeVO>> = {};
-
-        if (!values.state) {
-            errors.state = i18n('global.validation.required');
-        }
-
-        if (
-            props.initialValues.state !== StateApproval.APPROVED &&
-            values.state === StateApproval.APPROVED &&
-            !props.userDetail.hasOne(perms.AP_CONFIRM_ALL, {
-                type: perms.AP_CONFIRM,
-                scopeId: parseInt(values.scopeId as any),
-            })
-        ) {
-            errors.state = i18n('ap.state.state.insufficient.right');
-        }
-
-        return errors;
-    },
-})(ApStateChangeForm as any);
-
-export default connect(mapStateToProps)(form);
+export default ApStateChangeForm;
