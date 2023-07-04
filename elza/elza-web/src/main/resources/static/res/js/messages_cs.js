@@ -1104,6 +1104,7 @@ var messages = {
     "ap.state.title.type": "Podtřída",
     "ap.state.title.state": "Stav",
     "ap.state.title.comment": "Komentář",
+    "ap.state.title.revComment": "Komentář revize",
     "ap.state.state.insufficient.right": "Nemáte oprávnění pro schválení AP.",
     "ap.connect": "Propojení s externím systémem",
 

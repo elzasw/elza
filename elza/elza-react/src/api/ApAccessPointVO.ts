@@ -1,10 +1,10 @@
-import {ApStateVO} from "./ApStateVO";
-import {ApBindingVO} from "./ApBindingVO";
-import {ApPartVO} from "./ApPartVO";
-import {StateApproval} from "./StateApproval";
-import {UserVO} from "./UserVO";
-import {ApChangeVO} from "./ApChangeVO";
-import {RevStateApproval} from "./RevStateApproval";
+import { ApStateVO } from "./ApStateVO";
+import { ApBindingVO } from "./ApBindingVO";
+import { ApPartVO } from "./ApPartVO";
+import { StateApproval } from "./StateApproval";
+import { UserVO } from "./UserVO";
+import { ApChangeVO } from "./ApChangeVO";
+import { RevStateApproval } from "./RevStateApproval";
 
 /**
  * VO rejstříkového záznamu.
@@ -36,6 +36,11 @@ export interface ApAccessPointVO {
      * Komentář ke stavu schválení.
      */
     comment: string;
+
+    /**
+     * Komentář ke stavu schválení revize.
+     */
+    revComment: string;
 
     /**
      * Identifikátor pravidel.
