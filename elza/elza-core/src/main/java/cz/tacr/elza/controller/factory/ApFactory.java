@@ -95,6 +95,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -286,24 +287,26 @@ public class ApFactory {
         return bindings;
     }
 
-    public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApState> states) {
+    public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApStateInfo> states) {
         if (CollectionUtils.isEmpty(states)) {
             return Collections.emptyList();
         }
 
         List<ApStateHistoryVO> results = new ArrayList<>();
 
-        for (ApState state : states) {
+        for (ApStateInfo state : states) {
             ApStateHistoryVO result = new ApStateHistoryVO();
-            ApChange createChange = state.getCreateChange();
-            ApScope scope = state.getScope();
-            UsrUser user = createChange.getUser();
-            result.setChangeDate(Date.from(createChange.getChangeDate().toInstant()));
-            result.setComment(state.getComment());
-            result.setType(state.getApType().getName());
-            result.setUsername(user == null ? null : user.getUsername());
-            result.setScope(scope.getName());
-            result.setState(state.getStateApproval());
+            result.setChangeDate(Date.from(state.getChangeDate().toInstant()));
+            if (state.getState() != null) {
+                result.setState(state.getState().toString());
+            }
+            if (state.getRevState() != null) {
+                result.setState("REV_" + state.getRevState().toString());
+            }
+            result.setType(state.getTypeName() != null? state.getTypeName() : state.getRevTypeName() != null? state.getRevTypeName() : null);
+            result.setComment(state.getComment() != null? state.getComment() : state.getRevComment() != null? state.getRevComment() : null);
+            result.setUsername(state.getUser() == null ? null : state.getUser().getUsername());
+            result.setScope(state.getScopeName());
             results.add(result);
         }
         return results;
