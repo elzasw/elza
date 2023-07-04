@@ -410,6 +410,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleChangeApState = () => {
         const {
+            dispatch,
             history,
             registryDetail: {
                 data: { id, typeId, scopeId, stateApproval },
@@ -418,28 +419,27 @@ class RegistryPage extends AbstractReactComponent {
         } = this.props;
         const form = (
             <ApStateChangeForm
+                accessPointId={id}
                 initialValues={{
                     state: stateApproval,
                     typeId: typeId,
                     scopeId: scopeId,
                 }}
-                onSubmit={data => {
+                onSubmit={async (data) => {
                     const finalData = {
                         comment: data.comment,
                         state: data.state,
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    return WebApi.changeState(id, finalData);
+                    await WebApi.changeState(id, finalData);
+
+                    dispatch(modalDialogHide());
+                    dispatch(goToAe(history, id, true, !select));
                 }}
-                onSubmitSuccess={() => {
-                    this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(goToAe(history, id, true, !select));
-                }}
-                accessPointId={id}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
+        dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
     };
 
     handleCreateRevision = async () => {
