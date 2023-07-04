@@ -441,6 +441,26 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     onPushApToExt={onPushApToExt}
                     revisionActive={revisionActive}
                 />
+                {detail.data?.comment && <div>
+                    <div className="detail-multi-selection">
+                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.comment')}</div>
+                        <div className={`parts single-part`}>
+                            <div className="part">
+                                {detail.data.comment}
+                            </div>
+                        </div>
+                    </div>
+                </div>}
+                {detail.data?.revComment && revisionActive && <div>
+                    <div className="detail-multi-selection">
+                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.revComment')}</div>
+                        <div className={`parts single-part`}>
+                            <div className="part">
+                                {detail.data.revComment}
+                            </div>
+                        </div>
+                    </div>
+                </div>}
 
                 {allParts && (
                     <div key="part-sections">
