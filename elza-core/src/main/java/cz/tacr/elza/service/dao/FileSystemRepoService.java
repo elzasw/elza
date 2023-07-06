@@ -10,10 +10,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -137,18 +139,27 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
     private ArrDao createDaoFromFile(ArrFundVersion fundVersion, FileSystemImage fsi, String filePath) {
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(fsi.getDigiRepId());
+
+        return createDao(digiRep, fundVersion, filePath);
+    }
+
+    public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
+        Path repoPath = getPath(digiRepo, fundVersion.getFund());
+        Path filePath = resolvePath(repoPath, itemRelatPath);
+
+        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(digiRepo.getExternalSystemId());
         // check if package exists
         List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepository(digiRep);
         ArrDaoPackage daoPackage;
         if (CollectionUtils.isEmpty(daoPackages)) {
             // create package for repo
-            daoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(), digiRep, fsi.getRepoPath(), null);
+            daoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(), digiRep, repoPath.toString(), null);
         } else {
             daoPackage = daoPackages.get(0);
         }
         // Check if Dao exists
         List<ArrDao> daos = daoRepository.findDettachedByFundAndCodes(digiRep, fundVersion.getFund(),
-                                                                      Collections.singletonList(filePath));
+                                                                      Collections.singletonList(itemRelatPath));
 
         ArrDao dao;
         if (CollectionUtils.isNotEmpty(daos)) {
@@ -157,20 +168,24 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         } else {
             // create dao
             dao = daoServiceInternal.createDao(daoPackage,
-                                               filePath, filePath, null, DaoType.ATTACHMENT);
+                                               itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
             dao = daoServiceInternal.persistDao(dao);
         }
 
         // sync files and folders
         try {
-            syncFilesAndFolders(dao, fsi, filePath);
+            syncFilesAndFolders(dao, repoPath, filePath);
         } catch (IOException e) {
             throw new BusinessException("Failed to sync path: " + filePath, e, BaseCode.INVALID_STATE);
         }
         return dao;
     }
 
-    private void syncFilesAndFolders(ArrDao dao, FileSystemImage fsi, String filePath) throws IOException {
+    static public String getRelatPath(Path rootPath, Path itemPath) {
+        return rootPath.relativize(itemPath).toString();
+    }
+
+    private void syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
         List<ArrDaoFile> daoFiles = daoServiceInternal.getFilesByDao(dao);
         List<ArrDaoFileGroup> daoFileGroups = daoServiceInternal.getFileGroupsByDao(dao);
 
@@ -184,34 +199,48 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         List<Path> createFileGroups = new ArrayList<>();
         Map<String, ArrDaoFileGroup> existingFileGroups = new HashMap<>();
 
-        fsi.walk(filePath, itemPath -> {
-            String relatName = fsi.getRelatPath(itemPath);
-            if (Files.isDirectory(itemPath)) {
-                ArrDaoFileGroup daoFileGroup = daoFileGroupsMap.remove(relatName);
-                if (daoFileGroup != null) {
-                    // group exists -> do nothing
-                    existingFileGroups.put(relatName, daoFileGroup);
-                } else {
-                    // group not found -> add new one
-                    createFileGroups.add(itemPath);
-                }
-            } else if (Files.isRegularFile(itemPath)) {
-                // check file existance
-                ArrDaoFile daoFile = daoFilesMap.remove(relatName);
-                if (daoFile != null) {
-                    // file exists -> only update
-                    updateDaoFile(daoFile, itemPath);
-                    daoFile = daoServiceInternal.persistDaoFile(daoFile);
+        // Skip root folder
+        Set<Path> skipItems;
+        if (Files.isDirectory(srcItemPath)) {
+            skipItems = Collections.singleton(srcItemPath);
+        } else {
+            skipItems = Collections.emptySet();
+        }
 
-                    existingFiles.put(relatName, daoFile);
-                } else {
-                    // file not found -> add new one
-                    createFiles.add(itemPath);
+        try (Stream<Path> stream = Files.walk(srcItemPath)) {
+            stream.forEachOrdered(itemPath -> {
+                if (skipItems.contains(itemPath)) {
+                    return;
                 }
-            } else {
-                throw new BusinessException("Unrecognized path: " + itemPath, BaseCode.INVALID_STATE);
-            }
-        });
+
+                String relatName = getRelatPath(repoPath, itemPath);
+                if (Files.isDirectory(itemPath)) {
+                    ArrDaoFileGroup daoFileGroup = daoFileGroupsMap.remove(relatName);
+                    if (daoFileGroup != null) {
+                        // group exists -> do nothing
+                        existingFileGroups.put(relatName, daoFileGroup);
+                    } else {
+                        // group not found -> add new one
+                        createFileGroups.add(itemPath);
+                    }
+                } else if (Files.isRegularFile(itemPath)) {
+                    // check file existance
+                    ArrDaoFile daoFile = daoFilesMap.remove(relatName);
+                    if (daoFile != null) {
+                        // file exists -> only update
+                        updateDaoFile(daoFile, itemPath);
+                        daoFile = daoServiceInternal.persistDaoFile(daoFile);
+
+                        existingFiles.put(relatName, daoFile);
+                    } else {
+                        // file not found -> add new one
+                        createFiles.add(itemPath);
+                    }
+                } else {
+                    throw new BusinessException("Unrecognized path: " + itemPath, BaseCode.INVALID_STATE);
+                }
+            });
+        }
 
         // drop old files
         daoServiceInternal.deleteDaoFiles(daoFilesMap.values());
@@ -222,7 +251,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         if(CollectionUtils.isNotEmpty(createFileGroups)) {
             createFileGroups.sort((p1, p2) -> p1.compareTo(p2) );
             for (Path fileGroupPath : createFileGroups) {
-                String relatPath = fsi.getRelatPath(fileGroupPath);
+                String relatPath = getRelatPath(repoPath, fileGroupPath);
                 ArrDaoFileGroup dfg = daoServiceInternal.createDaoFileGroup(relatPath, relatPath, dao);
                 existingFileGroups.put(relatPath, dfg);
             }
@@ -230,22 +259,26 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         // create files
         if (CollectionUtils.isNotEmpty(createFiles)) {
             for (Path fp : createFiles) {
-                String relatPath = fsi.getRelatPath(fp);
+                String relatPath = getRelatPath(repoPath, fp);
                 ArrDaoFileGroup parentFileGroup = null;
-                if (!relatPath.equals(filePath)) {
+                Path parentPath = fp.getParent();
+                // do not create skipped items
+                if (!fp.equals(srcItemPath) && !skipItems.contains(parentPath)) {
+
                     // find parent group
-                    String parentName = fsi.getRelatPath(fp.getParent());
+                    String parentName = getRelatPath(repoPath, parentPath);
                     ArrDaoFileGroup parentDaoFileGroup = existingFileGroups.get(parentName);
                     if (parentDaoFileGroup == null) {
-                        throw new BusinessException("Missing parent group: " + parentName + " for item: " + relatPath,
+                        throw new BusinessException(
+                                "Missing parent group: " + parentName + " for item: " + relatPath,
                                 BaseCode.INVALID_STATE);
                     }
                 }
-                String filaName = fp.getFileName().toString();
-                ArrDaoFile dff = daoServiceInternal.createDaoFile(relatPath, filaName, parentFileGroup, dao);
+                String fileName = fp.getFileName().toString();
+                ArrDaoFile dff = daoServiceInternal.createDaoFile(relatPath, fileName, parentFileGroup, dao);
                 updateDaoFile(dff, fp);
                 dff = daoServiceInternal.persistDaoFile(dff);
-                existingFiles.put(filePath, dff);
+                existingFiles.put(relatPath, dff);
             }
         }
     }
@@ -335,10 +368,14 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
                     .set("fsrepoId", digiRepo.getExternalSystemId());
         }
 
+        return resolvePath(rootPath, itemPath);
+    }
+
+    public Path resolvePath(Path rootRepoPath, String itemPath) {
         if (StringUtils.isNotBlank(itemPath)) {
-            return rootPath.resolve(itemPath);
+            return rootRepoPath.resolve(itemPath);
         } else {
-            return rootPath;
+            return rootRepoPath;
         }
     }
 }

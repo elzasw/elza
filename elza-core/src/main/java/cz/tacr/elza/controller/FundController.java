@@ -52,9 +52,12 @@ import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -68,6 +71,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
@@ -114,6 +118,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private DaoService daoService;
 
     @Override
     @Transactional
@@ -421,5 +428,31 @@ public class FundController implements FundsApi {
 
         FileSystemResource fsr = new FileSystemResource(filePath);
         return ResponseEntity.ok(fsr);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Integer> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
+                                                       @PathVariable("fsrepoId") Integer fsrepoId,
+                                                       @PathVariable("nodeId") Integer nodeId,
+                                                       @RequestParam(value = "path", required = false) String path) {
+        ArrFund fund = arrangementService.getFund(fundId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
+        ArrNode node = arrangementService.getNode(nodeId);
+
+        ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
+
+        ArrDao dao = fileSystemRepoService.createDao(digiRepo, fundVersion, path);
+
+        // create dao link in separate transaction
+        // dao link might create level and data from levelTreeCache are available
+        // in new transaction>
+        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
+
+        Validate.notNull(daoLink);
+        Validate.notNull(daoLink.getDaoLinkId());
+        Validate.notNull(daoLink.getNodeId());
+
+        return ResponseEntity.ok(daoLink.getDaoLinkId());
     }
 }

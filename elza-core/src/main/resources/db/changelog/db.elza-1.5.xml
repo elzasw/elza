@@ -2393,5 +2393,11 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 				WHERE c.type = 'AP_UPDATE') s
 			WHERE ap_revision.revision_id = s.revision_id</sql>
     </changeSet>
+    
+    <changeSet id="20230706222400" author="ppyt">
+        <dropUniqueConstraint constraintName="arr_dao_code_key" tableName="arr_dao" />
+        <dropUniqueConstraint constraintName="arr_dao_file_code_key" tableName="arr_dao_file" />
+        <dropUniqueConstraint constraintName="arr_dao_file_group_code_key" tableName="arr_dao_file_group" />
+    </changeSet>
 
 </databaseChangeLog>
