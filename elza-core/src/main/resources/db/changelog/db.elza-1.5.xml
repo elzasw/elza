@@ -2394,10 +2394,34 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 			WHERE ap_revision.revision_id = s.revision_id</sql>
     </changeSet>
     
+    <!-- Drop Unique constraint on column code in tables arr_dao, arr_dao_file, arr_dao_file_group -->
     <changeSet id="20230706222400" author="ppyt">
-        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_code_key" tableName="arr_dao" />
-        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_file_code_key" tableName="arr_dao_file" />
-        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_file_group_code_key" tableName="arr_dao_file_group" />
+        <renameColumn tableName="arr_dao" oldColumnName="code" newColumnName="code_old"/>
+        <addColumn tableName="arr_dao">
+            <column name="code" type="nvarchar(1000)" />
+        </addColumn>
+        <update tableName="arr_dao">
+          <column name="code" valueComputed="code_old" />
+        </update>
+        <dropColumn tableName="arr_dao" columnName="code_old" />
+
+        <renameColumn tableName="arr_dao_file" oldColumnName="code" newColumnName="code_old"/>
+        <addColumn tableName="arr_dao_file">
+            <column name="code" type="nvarchar(1000)" />
+        </addColumn>
+        <update tableName="arr_dao_file">
+          <column name="code" valueComputed="code_old" />
+        </update>
+        <dropColumn tableName="arr_dao_file" columnName="code_old" />
+        
+        <renameColumn tableName="arr_dao_file_group" oldColumnName="code" newColumnName="code_old"/>
+        <addColumn tableName="arr_dao_file_group">
+            <column name="code" type="nvarchar(1000)" />
+        </addColumn>
+        <update tableName="arr_dao_file_group">
+          <column name="code" valueComputed="code_old" />
+        </update>
+        <dropColumn tableName="arr_dao_file_group" columnName="code_old" />
     </changeSet>
 
 </databaseChangeLog>
