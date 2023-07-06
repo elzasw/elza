@@ -164,6 +164,7 @@ import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -289,6 +290,9 @@ public class ArrangementController {
     
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private FileSystemRepoService fileSystemRepoService;
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -450,39 +454,29 @@ public class ArrangementController {
         String contextPath = request.getContextPath();
 
         List<ArrDaoVO> daoList = new ArrayList<>();
-        // process virtual package
-        if (daoPackageId < 0 && Boolean.TRUE.equals(unassigned)) {
-            final List<ArrDao> arrDaoList = daoService.findDaosByVirtualPackageId(fundVersion,
-                                                                           daoPackageId, index,
-                                                                                  maxResults);
+        ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+
+        final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion,
+                                                                     arrDaoPackage, index,
+                                                                     maxResults,
+                                                                     BooleanUtils.isTrue(unassigned));
+
+        // read related DB data
+        ObjectListIterator.forEachPage(arrDaoList, page -> {
+            final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
+            Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
+                    .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
             daoList.addAll(factoryVo.createDaoList(contextPath,
-                                                   arrDaoList, BooleanUtils.isTrue(detail), fundVersion,
-                                                   Collections.emptyMap()));
-        } else {
-            ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
+                                                   arrDaoList,
+                                                   BooleanUtils.isTrue(detail), fundVersion,
+                                                   daoLinkMap));
+        });
 
-            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion,
-                                                                         arrDaoPackage, index,
-                                                                         maxResults,
-                                                                         BooleanUtils.isTrue(unassigned));
+        // daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+        // todo improve efficiency
+        final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
 
-            // read related DB data
-            ObjectListIterator.forEachPage(arrDaoList, page -> {
-                final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
-                Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
-                        .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
-                daoList.addAll(factoryVo.createDaoList(contextPath,
-                                                       arrDaoList,
-                                                       BooleanUtils.isTrue(detail), fundVersion,
-                                                       daoLinkMap));
-            });
-
-            // daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
-            // todo improve efficiency
-            final List<Integer> processingArrDaoIds = daoService.findProcessingArrDaoRequestDaoArrDaoIds(arrDaoList);
-
-            daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
-        }
+        daoList.forEach(i -> i.setExistInArrDaoRequest(processingArrDaoIds.contains(i.getId())));
 
         return daoList;
     }
@@ -497,6 +491,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public ArrDaoLinkVO createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                       @PathVariable(value = "daoId") final Integer daoId,
                                       @PathVariable(value = "nodeId") final Integer nodeId) {
@@ -504,10 +499,21 @@ public class ArrangementController {
         Validate.notNull(daoId, "Identifikátor DAO musí být vyplněn");
         Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
+        final ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
+        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        // check if not FSRepo
+        ArrDigitalRepository daoRepo = dao.getDaoPackage().getDigitalRepository();
+        if (fileSystemRepoService.isFileSystemRepository(daoRepo)) {
+            throw new BusinessException("Cannot create DaoLink for FileSystem item", BaseCode.INVALID_STATE)
+                    .set("daoId", daoId);
+        }
+
         // create dao link in separate transaction
         // dao link might create level and data from levelTreeCache are available
         // in new transaction>
-        ArrDaoLink daoLink = daoService.createDaoLink(fundVersionId, daoId, nodeId);
+        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
 
         Validate.notNull(daoLink);
         Validate.notNull(daoLink.getDaoLinkId());

@@ -161,23 +161,8 @@ public class DaoService {
         if (CollectionUtils.isEmpty(digitRepositories)) {
             return Collections.emptyList();
         }
-        if (digitRepositories.size() == 1) {
-            ArrDigitalRepository digiRep = digitRepositories.get(0);
-            if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
-                // we have fileSystemRepo
-                return fileSystemRepoService.findDettachedDaos(digiRep, index, maxResults);
-            }
-        }
 
         return daoRepository.findDettachedByFund(fundVersion.getFund(), pageable).toList();
-    }
-
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaosByVirtualPackageId(@AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion,
-                                                 final Integer daoPackageId,
-                                                 final Integer index, final Integer maxResults
-    ) {
-        return fileSystemRepoService.findDaosByPackageId(daoPackageId);
     }
 
     /**
@@ -382,15 +367,7 @@ public class DaoService {
         if (CollectionUtils.isEmpty(digitRepositories)) {
             return Collections.emptyList();
         }
-        if (Boolean.TRUE.equals(unassigned)) {
-            if (digitRepositories.size() == 1) {
-                ArrDigitalRepository digiRep = digitRepositories.get(0);
-                if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
-                    //
-                    return fileSystemRepoService.findDettachedPackages(digiRep, search, maxResults);
-                }
-            }
-        }
+
         return daoPackageRepository.findDaoPackages(fundVersion, search, unassigned, maxResults);
     }
 
@@ -670,35 +647,6 @@ public class DaoService {
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
                 dao.getDaoId(), Collections.singletonList(node.getNodeId()));
         eventNotificationService.publishEvent(event);
-    }
-
-    /**
-     * Create DAO link
-     * 
-     * @param fundVersionId
-     * @param daoId
-     * @param nodeId
-     * @return
-     */
-    @Transactional
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
-            UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })
-    public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
-                                    Integer daoId,
-                                    @AuthParam(type = AuthParam.Type.NODE) Integer nodeId) {
-        final ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
-
-        ArrDao dao;
-        if (daoId < 0) {
-            // temporary solution till specialized functions will be created
-            // we have virtual daoId -> create real DAO
-            dao = fileSystemRepoService.createDao(fundVersion, daoId);
-        } else {
-            dao = daoRepository.getOneCheckExist(daoId);
-        }
-        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
-
-        return createDaoLink(fundVersion, dao, node);
     }
 
     @Transactional(value = TxType.MANDATORY)
