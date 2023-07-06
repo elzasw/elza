@@ -2395,9 +2395,9 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
     </changeSet>
     
     <changeSet id="20230706222400" author="ppyt">
-        <dropUniqueConstraint constraintName="arr_dao_code_key" tableName="arr_dao" />
-        <dropUniqueConstraint constraintName="arr_dao_file_code_key" tableName="arr_dao_file" />
-        <dropUniqueConstraint constraintName="arr_dao_file_group_code_key" tableName="arr_dao_file_group" />
+        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_code_key" tableName="arr_dao" />
+        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_file_code_key" tableName="arr_dao_file" />
+        <dropUniqueConstraint dbms="postgresql" constraintName="arr_dao_file_group_code_key" tableName="arr_dao_file_group" />
     </changeSet>
 
 </databaseChangeLog>
