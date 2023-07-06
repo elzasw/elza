@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,7 +52,6 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
             .expireAfterAccess(5, TimeUnit.MINUTES)
             .removalListener(this)
             .build();
-    private Map<Integer, FileSystemImage> packageIdMap = new HashMap<>();
 
     @Autowired
     private DaoPackageRepository daoPackageRepos;
@@ -80,68 +78,19 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         FileSystemImage fsi = images.getIfPresent(repoPath);
         if (fsi == null) {
             fsi = new FileSystemImage(repoPath, digiRep);
-            try {
-                fsi.loadData();
-            } catch (IOException e) {
-                throw new BusinessException("Faied to read repo", e, BaseCode.INVALID_STATE);
-            }
 
             images.put(repoPath, fsi);
-            packageIdMap.put(fsi.getVirtPackage().getDaoPackageId(), fsi);
         }
         return fsi;
-    }
-
-    public List<ArrDao> findDettachedDaos(ArrDigitalRepository digiRep, Integer index, Integer maxResults) {
-        FileSystemImage fsi = getFileSystemImage(digiRep);
-        return fsi.getDaos();
-
     }
 
     @Override
     synchronized public void onRemoval(RemovalNotification<String, FileSystemImage> notification) {
         FileSystemImage fsi = notification.getValue();
-        packageIdMap.remove(fsi.getVirtPackage().getDaoPackageId());
+        // todo cleanup on removcal
+        // is it needed?
     }
 
-    public List<ArrDaoPackage> findDettachedPackages(ArrDigitalRepository digiRep, String search, Integer maxResults) {
-        FileSystemImage fsi = getFileSystemImage(digiRep);
-
-        return Collections.singletonList(fsi.getVirtPackage());
-    }
-
-    public synchronized List<ArrDao> findDaosByPackageId(Integer daoPackageId) {
-        FileSystemImage fsi = packageIdMap.get(daoPackageId);
-        if(fsi==null) {
-            throw new BusinessException("Missing virtual package, id: "+daoPackageId, BaseCode.ID_NOT_EXIST);
-        }
-        return fsi.getDaos();
-    }
-
-    /**
-     * Temporary method for transforming virtual DAO to real one
-     * 
-     * @param fundVersion
-     * @param daoId
-     * @return
-     */
-    public ArrDao createDao(ArrFundVersion fundVersion, Integer daoId) {
-        // find repos
-        ConcurrentMap<String, FileSystemImage> currFsiMap = this.images.asMap();
-        for(FileSystemImage fsi: currFsiMap.values()) {
-            ArrDao virtDao = fsi.findDaoById(daoId);
-            if (virtDao != null) {
-                return createDaoFromFile(fundVersion, fsi, virtDao.getCode());
-            }
-        }
-        return null;
-    }
-
-    private ArrDao createDaoFromFile(ArrFundVersion fundVersion, FileSystemImage fsi, String filePath) {
-        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(fsi.getDigiRepId());
-
-        return createDao(digiRep, fundVersion, filePath);
-    }
 
     public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
