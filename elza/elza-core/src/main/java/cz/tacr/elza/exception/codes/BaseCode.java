@@ -52,6 +52,11 @@ public enum BaseCode implements ErrorCode {
     PROPERTY_IS_INVALID,
 
     /**
+     * Neplatný odkaz.
+     */
+    INVALID_URI,
+
+    /**
      * Problém s integritou databáze.
      */
     DB_INTEGRITY_PROBLEM,
