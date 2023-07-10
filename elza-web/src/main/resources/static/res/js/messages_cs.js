@@ -142,6 +142,7 @@ var messages = {
     "exception.base.PROPERTY_NOT_EXIST": "Pole '{property}' musí být vyplněno",
     "exception.base.PROPERTY_HAS_INVALID_TYPE": "Pole '{property}' není správného datového typu ({actual}, {expected})",
     "exception.base.PROPERTY_IS_INVALID": "Pole '{property}' není správně vyplněno",
+    "exception.base.INVALID_URI": "Zadan není platný odkaz URI",
     "exception.base.DB_INTEGRITY_PROBLEM": "Problém s integritou databáze",
     "exception.base.BAD_REQUEST": "Neplatný požadavek",
     "exception.base.INVALID_STATE": "Neplatný stav",
