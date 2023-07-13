@@ -2203,7 +2203,7 @@ public class AccessPointService {
             // nelze změnit třídu pokud existuje platná ApBindingState
             int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
             if (countBinding > 0) {
-                throw new SystemException("Třídu entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Třídu a podtřídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("typeId", oldApState.getApTypeId());
             }
