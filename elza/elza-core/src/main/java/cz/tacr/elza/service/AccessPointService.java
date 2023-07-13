@@ -2713,12 +2713,9 @@ public class AccessPointService {
 
         switch (state.getStateApproval()) {
         case APPROVED:
-            if (revState != null) {
-                // approved with revision might be edited
-                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
-                    return;
-                }
+            if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
+                return;
             }
             break;
         case NEW:
