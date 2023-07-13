@@ -185,17 +185,11 @@ namespace ElzaAPI.Fund {
         @header contentType: "*/*";
         @body data: bytes;
     };
-}
-
-@tag("accesspoints")
-@route("/accesspoints")
-namespace ElzaAPI.AccessPoint {
 
 	@route("/export")
 	@post op exportFund(
 		...FundExportParams
-	): void; 
-
+	): void;
 }
 
 @service({
