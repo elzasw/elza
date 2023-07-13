@@ -1146,6 +1146,7 @@ var messages = {
     "ap.copy.title": "Kopie entity",
     "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
     "ap.copy.scope": "Oblast",
+    "ap.copy.submitting" : "Odesílání...",
 
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
