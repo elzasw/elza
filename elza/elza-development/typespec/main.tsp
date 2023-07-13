@@ -100,6 +100,26 @@ model FsItems {
     lastKey?: string;
 }
 
+/**
+ * Parameters of archive file export
+ */
+model FundExportParams {
+    apIds: integer[];
+    fundsSections: FundSections[];
+    exportFilterId?: integer;
+    includeUUID?: boolean = true;
+    includeAccessPoints?: boolean = true;
+}
+
+/**
+ * Specifies multiple sections for fund version
+ */
+model FundSections {
+	fundVersionId: integer;
+	mergeSections: boolean;
+	rootNodeIds?: integer[];
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -141,7 +161,7 @@ namespace ElzaAPI.Fund {
         ...FsRepoIdParameter,
         ...NodeIdParameter,
         @query path?: string
-    ) : integer;
+    ): integer;
 
     @route("{fundId}/fsrepo/{fsrepoId}/items")
     op fsRepoItems(
@@ -165,6 +185,17 @@ namespace ElzaAPI.Fund {
         @header contentType: "*/*";
         @body data: bytes;
     };
+}
+
+@tag("accesspoints")
+@route("/accesspoints")
+namespace ElzaAPI.AccessPoint {
+
+	@route("/export")
+	@post op exportFund(
+		...FundExportParams
+	): void; 
+
 }
 
 @service({
