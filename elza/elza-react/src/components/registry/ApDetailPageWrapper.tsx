@@ -433,7 +433,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     <div className="detail-multi-selection">
                         <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.comment')}</div>
                         <div className={`parts single-part`}>
-                            <div className="part">
+                            <div className="part comment">
                                 {detail.data.comment}
                             </div>
                         </div>
@@ -443,7 +443,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     <div className="detail-multi-selection">
                         <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.revComment')}</div>
                         <div className={`parts single-part`}>
-                            <div className="part">
+                            <div className="part comment">
                                 {detail.data.revComment}
                             </div>
                         </div>
