@@ -180,7 +180,7 @@ export const ApCopyModal = ({
                 <Modal.Body className="ap-copy-modal">
                     <div style={{height: "100%", position: "relative"}}>
                         {submitting && <WaitingOverlay>
-                            <span>{i18n("ap.copy.submitting")}</span>
+                            <span>{i18n("ap.copy.pending.message")}</span>
                         </WaitingOverlay>}
                         <FormScope name="scope" label={i18n("ap.copy.scope")} items={scopesData.scopes}/>
                         <div style={{marginTop: "10px"}}>
