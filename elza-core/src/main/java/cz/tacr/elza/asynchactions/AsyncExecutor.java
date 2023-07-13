@@ -322,6 +322,11 @@ public abstract class AsyncExecutor {
         }
     }
 
+    /**
+     * Try to terminate async request
+     * 
+     * @param currentId
+     */
     public void terminate(Integer currentId) {
         List<IAsyncWorker> terminateWorkers = new ArrayList<>();
         synchronized (lockQueue) {
@@ -344,6 +349,7 @@ public abstract class AsyncExecutor {
                 }
             }
         }
+
         for (IAsyncWorker worker : terminateWorkers) {
             IAsyncRequest request = worker.getRequest();
             logger.debug("Ukončuji {} request: {}", getType(), request.getRequestId());

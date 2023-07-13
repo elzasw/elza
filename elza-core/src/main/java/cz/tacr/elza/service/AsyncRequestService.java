@@ -42,11 +42,13 @@ import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ap.AsyncAccessPointExecutor;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
+import cz.tacr.elza.bulkaction.BulkActionHelperService;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
@@ -101,6 +103,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private BulkActionRunRepository bulkActionRepository;
 
     @Autowired
+    protected BulkActionHelperService bulkActionHelperService;
+
     private OutputRepository outputRepository;
 
     @Autowired
@@ -288,6 +292,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         ArrBulkActionRun bulkActionRun = bulkActionRepository.findById(bulkActionId)
                 .orElseThrow(bulkAction(bulkActionId));
 
+        // TODO: Check permission to delete action 
+
         ArrBulkActionRun.State originalState = bulkActionRun.getState();
 
         if(originalState.equals(ArrBulkActionRun.State.FINISHED)||
@@ -305,6 +311,19 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         }
 
         getExecutor(AsyncTypeEnum.BULK).terminate(bulkActionRun.getBulkActionRunId());
+
+        // Recheck action status (incase it is not part of async actions)
+        // and set state manually
+        bulkActionRun = bulkActionRepository.findById(bulkActionId).orElseThrow(bulkAction(bulkActionId));
+        State nextState = bulkActionRun.getState();
+        if (nextState.equals(ArrBulkActionRun.State.WAITING) ||
+                !nextState.equals(ArrBulkActionRun.State.PLANNED) ||
+                !nextState.equals(ArrBulkActionRun.State.RUNNING)) {
+            // if action is not still terminated
+            // reset it manually
+            bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
+            bulkActionHelperService.updateAction(bulkActionRun);
+        }
     }
 
     /**
