@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { sortPart } from 'components/registry/ApDetailPageWrapper';
 import { FormScope } from 'components/registry/part-edit/form/fields';
 import { FormInput } from 'components/shared';
+import { WaitingOverlay } from 'components/shared/waiting-overlay';
 import React, { ChangeEvent } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Field, Form } from 'react-final-form';
@@ -166,7 +167,7 @@ export const ApCopyModal = ({
             }
         })
         
-        onSubmit({
+        return onSubmit({
             scope: parseInt(scope, 10) as any,
             replace,
             skipItems: _skipItems,
@@ -177,150 +178,155 @@ export const ApCopyModal = ({
         {({submitting, handleSubmit, form, valid}) => {
             return <>
                 <Modal.Body className="ap-copy-modal">
-                    <FormScope name="scope" label={i18n("ap.copy.scope")} items={scopesData.scopes}/>
-                    <div style={{marginTop: "10px"}}>
-                        <Field<boolean> name="replace">
-                            {(props) => {
-                                return <div style={{display: "flex", alignItems: "center"}}>
-                                    <FormInput type="checkbox" {...props.input} checked={props.input.value} />
-                                    <span>{i18n("ap.copy.replace")}</span>
-                                </div>
-                            }}
+                    <div style={{height: "100%", position: "relative"}}>
+                        {submitting && <WaitingOverlay>
+                            <span>{i18n("ap.copy.submitting")}</span>
+                        </WaitingOverlay>}
+                        <FormScope name="scope" label={i18n("ap.copy.scope")} items={scopesData.scopes}/>
+                        <div style={{marginTop: "10px"}}>
+                            <Field<boolean> name="replace">
+                                {(props) => {
+                                    return <div style={{display: "flex", alignItems: "center"}}>
+                                        <FormInput type="checkbox" {...props.input} checked={props.input.value} />
+                                        <span>{i18n("ap.copy.replace")}</span>
+                                    </div>
+                                }}
+                            </Field>
+                        </div>
+                        <hr/>
+                        <Field<number[]> name="skipParts">{({input: skipPartsInput}) => {
+                            const partsArray = skipPartsInput.value;
+
+                            const handleChangePart = (id: number) => (e: ChangeEvent | React.MouseEvent) => {
+                                console.log("#### handle change part", e)
+                                const index = partsArray.indexOf(id);
+                                if(index < 0){
+                                    partsArray.push(id);
+                                }
+                                else {
+                                    partsArray.splice(index, 1);
+                                }
+                                skipPartsInput.onChange(e);
+                                form.change("skipParts", partsArray);
+                            }
+
+                            return <Field<number[]> name="skipItems">
+                                {({input: skipItemsInput}) => {
+                                    const itemsArray = skipItemsInput.value;
+
+                                    const handleChangeItem = (id: number) => (e:React.ChangeEvent | React.MouseEvent) => {
+                                        const index = itemsArray.indexOf(id);
+                                        if(index < 0){
+                                            itemsArray.push(id);
+                                        }
+                                        else {
+                                            itemsArray.splice(index, 1);
+                                        }
+                                        skipItemsInput.onChange(e);
+                                        form.change("skipItems", itemsArray);
+                                    }
+
+                                    const getSkippedItemsInArray = (items?: ApItemVO[] | null) => {
+                                        if(!items){return [];}
+                                        return items.filter((item) => {
+                                            return itemsArray.findIndex((itemId) => itemId === item.id) >= 0;
+                                        })
+                                    }
+
+                                    return <div className="list">
+                                        {sortedPartTypes.map((partType) => {
+                                            const parts = groupedParts[partType.id] || [];
+
+                                            if(parts.length === 0){
+                                                return <></>;
+                                            }
+
+                                            return <div>
+                                                <div>
+                                                    <b>{partType.name}</b>
+                                                </div>
+                                                <div>
+                                                    {parts.map((part)=>{
+                                                        const isEveryRelatedPartSkipped = part.relatedParts?.filter((relatedPart) => {
+                                                            const isRelatedPartSkipped = partsArray.findIndex((partId) => partId === relatedPart.id) >= 0;
+                                                            const isEveryRelatedPartItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
+
+                                                            return isRelatedPartSkipped || isEveryRelatedPartItemSkipped;
+                                                        }).length === part.relatedParts?.length;
+
+                                                        const isEveryItemSkipped = getSkippedItemsInArray(part.items).length === part.items?.length && isEveryRelatedPartSkipped;
+                                                        const isPartSkipped = partsArray.indexOf(part.id) >= 0;
+
+                                                        return <div 
+                                                            key={part.id} 
+                                                            className={classNames({"part": true, "muted": isPartSkipped || isEveryItemSkipped})}
+                                                        >
+                                                            <div className="title" onClick={handleChangePart(part.id)}>
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={!isPartSkipped} 
+                                                                    style={{marginRight: "10px"}}
+                                                                />
+                                                                <b>{part.value}</b>
+                                                            </div>
+                                                            {!isPartSkipped && <>
+                                                                <div className="item-list">
+                                                                    {part.items?.map((item:any) => {
+                                                                        const isItemSkipped = itemsArray.indexOf(item.id) >= 0 || isPartSkipped;
+                                                                        return <Item 
+                                                                            key={item.id} 
+                                                                            item={item} 
+                                                                            disabled={isPartSkipped} 
+                                                                            checked={isItemSkipped} 
+                                                                            onChange={handleChangeItem(item.id)}
+                                                                        />
+                                                                    })}
+                                                                </div>
+                                                                {part.relatedParts?.map((relatedPart)=>{
+                                                                    const isEveryItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
+                                                                    const isRelatedPartSkipped = partsArray.indexOf(relatedPart.id) >= 0 || isPartSkipped;
+
+                                                                    return <div 
+                                                                        key={relatedPart.id} 
+                                                                        className={classNames({"related-part":true, "muted": isRelatedPartSkipped || isEveryItemSkipped})}
+                                                                    >
+                                                                        <div className="title" onClick={handleChangePart(relatedPart.id)}>
+                                                                            <input 
+                                                                                type="checkbox" 
+                                                                                checked={!isRelatedPartSkipped} 
+                                                                                style={{marginRight: "10px"}}
+                                                                                disabled={isPartSkipped}
+                                                                            />
+                                                                            <b>{relatedPart.value}</b>
+                                                                        </div>
+                                                                        {!isRelatedPartSkipped && <>
+                                                                            <div className="item-list">
+                                                                                {relatedPart.items?.map((item:any) => {
+                                                                                    const isItemSkipped = itemsArray.indexOf(item.id) >= 0 || isRelatedPartSkipped;
+                                                                                    return <Item 
+                                                                                        key={item.id} 
+                                                                                        item={item} 
+                                                                                        disabled={isRelatedPartSkipped} 
+                                                                                        checked={isItemSkipped} 
+                                                                                        onChange={handleChangeItem(item.id)}
+                                                                                    />
+                                                                                })}
+                                                                            </div>
+                                                                        </>}
+                                                                    </div>
+                                                                })}
+                                                            </>}
+                                                        </div>
+                                                    })}
+                                                </div>
+                                            </div>
+                                        })}
+                                    </div>
+                                }}
+                            </Field>
+                        }}
                         </Field>
                     </div>
-                    <hr/>
-                    <Field<number[]> name="skipParts">{({input: skipPartsInput}) => {
-                        const partsArray = skipPartsInput.value;
-
-                        const handleChangePart = (id: number) => (e: ChangeEvent | React.MouseEvent) => {
-                            console.log("#### handle change part", e)
-                            const index = partsArray.indexOf(id);
-                            if(index < 0){
-                                partsArray.push(id);
-                            }
-                            else {
-                                partsArray.splice(index, 1);
-                            }
-                            skipPartsInput.onChange(e);
-                            form.change("skipParts", partsArray);
-                        }
-
-                        return <Field<number[]> name="skipItems">
-                            {({input: skipItemsInput}) => {
-                                const itemsArray = skipItemsInput.value;
-
-                                const handleChangeItem = (id: number) => (e:React.ChangeEvent | React.MouseEvent) => {
-                                    const index = itemsArray.indexOf(id);
-                                    if(index < 0){
-                                        itemsArray.push(id);
-                                    }
-                                    else {
-                                        itemsArray.splice(index, 1);
-                                    }
-                                    skipItemsInput.onChange(e);
-                                    form.change("skipItems", itemsArray);
-                                }
-
-                                const getSkippedItemsInArray = (items?: ApItemVO[] | null) => {
-                                    if(!items){return [];}
-                                    return items.filter((item) => {
-                                        return itemsArray.findIndex((itemId) => itemId === item.id) >= 0;
-                                    })
-                                }
-
-                                return <div className="list">
-                                    {sortedPartTypes.map((partType) => {
-                                        const parts = groupedParts[partType.id] || [];
-
-                                        if(parts.length === 0){
-                                            return <></>;
-                                        }
-
-                                        return <div>
-                                            <div>
-                                                <b>{partType.name}</b>
-                                            </div>
-                                            <div>
-                                                {parts.map((part)=>{
-                                                    const isEveryRelatedPartSkipped = part.relatedParts?.filter((relatedPart) => {
-                                                        const isRelatedPartSkipped = partsArray.findIndex((partId) => partId === relatedPart.id) >= 0;
-                                                        const isEveryRelatedPartItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
-
-                                                        return isRelatedPartSkipped || isEveryRelatedPartItemSkipped;
-                                                    }).length === part.relatedParts?.length;
-
-                                                    const isEveryItemSkipped = getSkippedItemsInArray(part.items).length === part.items?.length && isEveryRelatedPartSkipped;
-                                                    const isPartSkipped = partsArray.indexOf(part.id) >= 0;
-
-                                                    return <div 
-                                                        key={part.id} 
-                                                        className={classNames({"part": true, "muted": isPartSkipped || isEveryItemSkipped})}
-                                                    >
-                                                        <div className="title" onClick={handleChangePart(part.id)}>
-                                                            <input 
-                                                                type="checkbox" 
-                                                                checked={!isPartSkipped} 
-                                                                style={{marginRight: "10px"}}
-                                                            />
-                                                            <b>{part.value}</b>
-                                                        </div>
-                                                        {!isPartSkipped && <>
-                                                            <div className="item-list">
-                                                                {part.items?.map((item:any) => {
-                                                                    const isItemSkipped = itemsArray.indexOf(item.id) >= 0 || isPartSkipped;
-                                                                    return <Item 
-                                                                        key={item.id} 
-                                                                        item={item} 
-                                                                        disabled={isPartSkipped} 
-                                                                        checked={isItemSkipped} 
-                                                                        onChange={handleChangeItem(item.id)}
-                                                                    />
-                                                                })}
-                                                            </div>
-                                                            {part.relatedParts?.map((relatedPart)=>{
-                                                                const isEveryItemSkipped = getSkippedItemsInArray(relatedPart.items).length === relatedPart.items?.length;
-                                                                const isRelatedPartSkipped = partsArray.indexOf(relatedPart.id) >= 0 || isPartSkipped;
-
-                                                                return <div 
-                                                                    key={relatedPart.id} 
-                                                                    className={classNames({"related-part":true, "muted": isRelatedPartSkipped || isEveryItemSkipped})}
-                                                                >
-                                                                    <div className="title" onClick={handleChangePart(relatedPart.id)}>
-                                                                        <input 
-                                                                            type="checkbox" 
-                                                                            checked={!isRelatedPartSkipped} 
-                                                                            style={{marginRight: "10px"}}
-                                                                            disabled={isPartSkipped}
-                                                                        />
-                                                                        <b>{relatedPart.value}</b>
-                                                                    </div>
-                                                                    {!isRelatedPartSkipped && <>
-                                                                        <div className="item-list">
-                                                                            {relatedPart.items?.map((item:any) => {
-                                                                                const isItemSkipped = itemsArray.indexOf(item.id) >= 0 || isRelatedPartSkipped;
-                                                                                return <Item 
-                                                                                    key={item.id} 
-                                                                                    item={item} 
-                                                                                    disabled={isRelatedPartSkipped} 
-                                                                                    checked={isItemSkipped} 
-                                                                                    onChange={handleChangeItem(item.id)}
-                                                                                />
-                                                                            })}
-                                                                        </div>
-                                                                    </>}
-                                                                </div>
-                                                            })}
-                                                        </>}
-                                                    </div>
-                                                })}
-                                            </div>
-                                        </div>
-                                    })}
-                                </div>
-                            }}
-                        </Field>
-                    }}
-                    </Field>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button disabled={submitting || !valid} onClick={handleSubmit} variant="outline-secondary">{i18n('global.action.write')}</Button>
