@@ -36,6 +36,7 @@ import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
 import { SyncProgress } from 'api/ApBindingVO';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
+import { WaitingOverlay } from 'components/shared/waiting-overlay';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -109,19 +110,6 @@ export enum ExportState {
     PENDING = "PENDING",
     STARTED = "STARTED",
     COMPLETED = "COMPLETED",
-}
-
-const WaitingOverlay = ({
-    children,
-}: PropsWithChildren<{}>) => {
-    return <div className="waiting-overlay">
-        <div className="waiting-icon">
-            <Icon glyph="fa-spin fa-circle-o-notch" />
-        </div>
-        <div>
-            {children}
-        </div>
-    </div>
 }
 
 /**
