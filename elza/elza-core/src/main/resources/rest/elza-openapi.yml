@@ -11,6 +11,8 @@ tags:
     description: Vyhledávání
   - name: admin
     description: Administrativní funkce
+  - name: io
+    description: Vstup a výstup informací
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -680,6 +682,45 @@ paths:
                 items:
                   $ref: '#/components/schemas/FsRepo'
                 x-typespec-name: FsRepo[]
+  /io/export:
+    post:
+      tags:
+        - io
+      operationId: exportRequest
+      description: Create export file of funds or access points
+      requestBody:
+        description: Export parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportParams'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+  /io/file/{requestId}:
+    get:
+      tags:
+        - io
+      operationId: getExportFile
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
 components:
   parameters:
     FsRepoIdParameter:
@@ -1252,3 +1293,38 @@ components:
       required:
         - importType
         - dataFile
+    ExportParams:
+      type: object
+      properties:
+        apIds:
+          type: array
+          items:
+            type: integer
+        fundsSections:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundSections'
+        exportFilterId:
+          type: integer
+        includeUUID:
+          type: boolean
+          default: true
+        includeAccessPoints:
+          type: boolean
+          default: true
+      description: Parameters of archive file export
+      title: Export parameters
+    FundSections:
+      type: object
+      properties:
+        fundVersionId:
+          type: integer
+        mergeSections:
+          type: boolean
+        rootNodeIds:
+          type: array
+          items:
+            type: integer
+      description: Specifies multiple sections for fund version
+      required:
+        - fundVersionId

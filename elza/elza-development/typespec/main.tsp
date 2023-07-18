@@ -103,9 +103,9 @@ model FsItems {
 /**
  * Parameters of archive file export
  */
-model FundExportParams {
-    apIds: integer[];
-    fundsSections: FundSections[];
+model ExportParams {
+    apIds?: integer[];
+    fundsSections?: FundSections[];
     exportFilterId?: integer;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
@@ -116,7 +116,7 @@ model FundExportParams {
  */
 model FundSections {
 	fundVersionId: integer;
-	mergeSections: boolean;
+	mergeSections?: boolean;
 	rootNodeIds?: integer[];
 }
 
@@ -185,11 +185,29 @@ namespace ElzaAPI.Fund {
         @header contentType: "*/*";
         @body data: bytes;
     };
+}
 
+@tag("io")
+@route("/io")
+namespace ElzaAPI.Io {
+	/**
+	 * Create export file of funds or access points
+	 */ 
 	@route("/export")
-	@post op exportFund(
-		...FundExportParams
-	): void;
+	@post op exportRequest(
+	   ...ExportParams
+	): integer;
+
+	/**
+	 * Getting the generated file by request id
+	 */
+	@route("/file/{requestId}")
+	@get op getExportFile(
+		@path requestId: integer
+	): {
+        @header contentType: "*/*";
+        @body data: bytes;
+    };
 }
 
 @service({
