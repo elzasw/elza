@@ -418,9 +418,9 @@ class SubNodeForm extends AbstractReactComponent {
                     valueLocation,
                 ),
             );
+            // Nyní pošleme focus
+            this.props.dispatch(setFocusFunc());
         }
-        // Nyní pošleme focus
-        this.props.dispatch(setFocusFunc());
     }
 
     getFlatDescItemTypes(onlyNotLocked) {
