@@ -952,6 +952,7 @@ var messages = {
     "subNodeForm.descItemGroup.default": "Bez skupiny",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
+    "subNodeForm.deleteDescItemType.confirm": "Opravdu chcete smazat povinný prvek popisu včetně všech hodnot?",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     "subNodeForm.descItemType.all": "Všechny prvky",
