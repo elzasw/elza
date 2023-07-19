@@ -342,6 +342,7 @@ public class StartupService implements SmartLifecycle {
 
     private void clearBulkActions() {
         int affected = bulkActionRunRepository.updateFromStateToState(ArrBulkActionRun.State.RUNNING, ArrBulkActionRun.State.ERROR);
+        affected += bulkActionRunRepository.updateFromStateToStateAndError(ArrBulkActionRun.State.WAITING, ArrBulkActionRun.State.ERROR, "Not in queue");
         if (affected > 0) {
             logger.warn("Detected unfinished actions, reseting to error state, count:" + affected);
         }
