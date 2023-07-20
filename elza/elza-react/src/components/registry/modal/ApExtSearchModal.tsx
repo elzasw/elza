@@ -8,8 +8,10 @@ import {
     SubmitHandler,
 } from 'redux-form';
 import {Col, Dropdown, DropdownButton, Modal, Row} from 'react-bootstrap';
-import {connect} from "react-redux";
+import {connect,useSelector} from "react-redux";
 import {Action} from "redux";
+import { AppState } from 'typings/store';
+import * as perms from '../../../actions/user/Permission.jsx';
 import {ThunkDispatch} from "redux-thunk";
 import {Button} from "../../ui";
 import i18n from "../../i18n";
@@ -118,6 +120,7 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
     });
     const [taked, setTaked] = useState<string[]>([]);
     const [calling, setCalling] = useState<boolean>(false);
+    const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
     const {apTypes} = refTables;
 
@@ -195,7 +198,21 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
         return fetchWithState(tmpData, from, data.externalSystemCode, data.filter, data.data);
     }
 
+    const getAvailableScopes = (scopes: any[]) => {
+        const availableScopes: any[] = [];
+        scopes.forEach(scope => {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_WR,
+                scopeId: scope.id,
+            })) {
+                availableScopes.push(scope);
+            }
+        })
+        return availableScopes;
+    };
+
     const renderAction = (item: ArchiveEntityVO, index: number) => {
+        const availableScopes = getAvailableScopes(scopes);
         switch (itemType) {
             case TypeModal.CONNECT:
                 return <>
@@ -207,11 +224,20 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
                 </>
             case TypeModal.SEARCH:
                 return <>
-                    {taked.indexOf(data.externalSystemCode + item.id) === -1 &&
-                    <DropdownButton disabled={calling} variant="default" id={"b" + index} title={i18n('ap.ext-search.label.take-to-scope')}>
-                        {scopes.map((scope, index) => <Dropdown.Item key={index}
-                                                                     onClick={() => handleItemTake(item, scope.id)}>{scope.name}</Dropdown.Item>)}
-                    </DropdownButton>}
+                    {taked.indexOf(data.externalSystemCode + item.id) === -1 && (
+                        <DropdownButton
+                            disabled={calling}
+                            variant="default"
+                            id={'b' + index}
+                            title={i18n('ap.ext-search.label.take-to-scope')}
+                        >
+                            {availableScopes.map((scope, index) => (
+                                <Dropdown.Item key={index} onClick={() => handleItemTake(item, scope.id)}>
+                                    {scope.name}
+                                </Dropdown.Item>
+                            ))}
+                        </DropdownButton>
+                    )}
                 </>
         }
     }
