@@ -51,8 +51,13 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     @Query("UPDATE arr_bulk_action_run ba SET ba.state = :toState WHERE ba.state = :fromState")
     int updateFromStateToState(@Param("fromState") final State fromState, @Param("toState") final State toState);
 
+    @Modifying
+    @Query("UPDATE arr_bulk_action_run ba SET ba.state = :toState, ba.error = :error " +
+            "WHERE ba.state = :fromState AND ba NOT IN (SELECT ar FROM arr_async_request ar WHERE ar.bulkAction = ba)")
+    int updateFromStateToStateAndError(@Param("fromState") final State fromState, @Param("toState") final State toState, @Param("error") String error);
+
     List<ArrBulkActionRun> findByState(@Param(value = "state") final State state);
-    
+
     void deleteByFundVersionFund(ArrFund fund);
 
     @Modifying
