@@ -5,6 +5,7 @@
     display:flex;
     height:100%;
     overflow:auto;
+    flex-grow: 1;
 
     h4{
         font-size: 1.2rem;
@@ -151,8 +152,14 @@
     }
 }
 
+.stats-container {
+    flex-shrink: 0;
+}
+
 .splitter-home {
     height: 100%;
+    display: flex;
+    flex-direction: column;
     .Resizer {
         background: $contrast-color;
         opacity: .2;
