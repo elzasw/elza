@@ -14,6 +14,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { Button } from '../../components/ui';
 import { FOCUS_KEYS, urlFundTree, URL_ENTITY } from '../../constants.tsx';
 import PageLayout from '../shared/layout/PageLayout';
+import { StatsSimple } from "components/shared/stats";
 import './HomePage.scss';
 
 
@@ -282,7 +283,14 @@ class HomePage extends AbstractReactComponent {
 
         const { splitter } = this.props;
 
-        let centerPanel = <div className="splitter-home">{this.renderHistory()}</div>;
+        let centerPanel = (
+            <div className="splitter-home">
+                {this.renderHistory()}
+                <div className='stats-container'>
+                    <StatsSimple />
+                </div>
+            </div>
+        )
 
         return <PageLayout splitter={splitter} ribbon={this.buildRibbon()} centerPanel={centerPanel} />;
     }

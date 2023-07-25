@@ -396,6 +396,12 @@ var messages = {
     "home.recent.registry.goTo": "Přejít na archivní entity",
     "home.recent.party.goTo": "Přejít na osoby",
 
+    "stats.funds.title" : "Počet AS",
+    "stats.levels.title" : "Počet JP",
+    "stats.accessPoints.title" : "Počet arch. entit",
+    "stats.users.title" : "Počet uživatelů",
+    "stats.loggedUsers.title" : "Počet přihlášených uživatelů",
+
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
 
