@@ -314,8 +314,14 @@ public class FundController implements FundsApi {
                     .set("path", path)
                     .set("itemPath", itemPath);
         }
-        
-        int maxItems = 2;
+
+        int maxItems = 1000;
+        if (digiRepo.getCode() != null) {
+            // hack for debugging client
+            if (digiRepo.getCode().endsWith("_DEBUG")) {
+                maxItems = 2;
+            }
+        }
         int offset = 0;
         // check if continue in previous list
         if(lastKey!=null) {
