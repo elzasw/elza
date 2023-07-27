@@ -62,8 +62,7 @@ public class AdminController implements AdminApi {
         AuthorizationRequest arFundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.FUND_ADMIN)
                 .or(Permission.FUND_ARR_ALL)
-                .or(Permission.FUND_RD_ALL)
-                .or(Permission.FUND_RD);
+                .or(Permission.FUND_RD_ALL);
         if (arFundRead.matches(userDetail)) {
             // read fund stats
             ArrangementStats arrStats = arrangementService.getStats();
@@ -72,8 +71,7 @@ public class AdminController implements AdminApi {
         }
         
         AuthorizationRequest arRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
-                .or(Permission.AP_SCOPE_RD_ALL)
-                .or(Permission.AP_SCOPE_RD);
+                .or(Permission.AP_SCOPE_RD_ALL);
         if (arRead.matches(userDetail)) {
             AccessPointStats apStats = accessPointService.getStats();
             ai.setAccessPoints(apStats.getValidAccessPointCount());
