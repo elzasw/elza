@@ -451,7 +451,7 @@ class FundPage extends AbstractReactComponent {
         var desc = fields.join(', ');
         return [
             <div className="item-row" key={item.id}>
-                <div className="name">{item.name}</div>
+                <div className="name" title={item.name}>{item.name}</div>
                 <LinkContainer key={`fund-${item.id}`} to={urlFundTree(item.id)}>
                     <Button variant="action">
                         <Icon glyph="fa-folder-open" />

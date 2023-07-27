@@ -68,7 +68,8 @@ export const EntityItem = props => {
 
     return (
         <div {...otherProps} className={cls}>
-            {name}
+            <div className='name' title={name}>{name}</div>
+            <div className='item-row desc'>{item.internalCode}</div>
         </div>
     );
 };
