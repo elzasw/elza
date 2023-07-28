@@ -1,0 +1,82 @@
+@import "../../../../variables.scss";
+
+.file-system-browser {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .toolbar {
+        display: flex;
+        line-height: 1em;
+        align-items: center;
+
+        .actions {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+
+            .divider {
+                padding: 0 5px;
+            }
+        }
+    }
+    .main-container {
+        height: 200px;
+        flex-grow: 1;
+        display: flex;
+        background: var(--shade-0);
+        border: var(--primary-border);
+
+        .file-list, .tree {
+            .list-item {
+                padding: 6px 6px;
+                line-height: 1em;
+                cursor: pointer;
+
+                &:nth-child(even){
+                    background: var(--shade-1);
+                }
+
+                &.selected {
+                    background-color: var(--shade-5);
+                }
+                &.repo {
+                    font-weight: bold;
+                }
+            }
+        }
+
+        .tree {
+            width: 200px;
+            max-height: 100%;
+            overflow: auto;
+        }
+
+        .file-list {
+            flex-grow: 1;
+            border-left: var(--primary-border);
+            max-height: 100%;
+            overflow: auto;
+            .list-item {
+                display: flex;
+                .item-part {
+                    padding: 0 10px;
+                    &.right {
+                        text-align: right;
+                        min-width: 18ch;
+                    }
+                }
+                .spacer {
+                    flex-grow: 1;
+                }
+                .icon {
+                    padding-right: 5px;
+                }
+            }
+        }
+    }
+}
