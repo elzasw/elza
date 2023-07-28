@@ -198,7 +198,7 @@ var messages = {
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE":
         "Navázaná entita musí mít stejnou oblast jako osoba, ke které entitu navazujeme",
     "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE":
-        "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
+        "Přístupový bod musí patřit do třídy, která je povolena pro roli entity použitou v modulu Archivní soubory",
     "exception.reg.PARTY_NOT_EXIST": "Osoba neexistuje",
     "exception.reg.REGISTRY_TYPE_NOT_FOUND": "Nebyla nalezena třída archivních entit '{name}'",
     "exception.reg.SCOPE_CODE_CANT_CHANGE": "Kód oblasti nelze změnit",
