@@ -22,3 +22,28 @@
         }
     }
 }
+
+.stats-user-box {
+    display: inline-flex;
+    flex-direction: column;
+    background-color: $shade-1;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+.stats-user-list {
+    padding: 0 30px 30px;
+
+    .users {
+        background-color: $shade-4;
+        border-radius: 5px;
+        max-height: 250px;
+        overflow: auto;
+
+        & > div {
+            margin: 8px;
+            line-height: 1em;
+        }
+    }
+}
+
