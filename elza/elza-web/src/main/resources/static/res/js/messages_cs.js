@@ -401,6 +401,7 @@ var messages = {
     "stats.accessPoints.title": "Počet arch. entit",
     "stats.users.title": "Počet uživatelů",
     "stats.loggedUsers.title": "Počet přihlášených uživatelů",
+    "loggedUsers.title": "Přihlášení uživatelé",
 
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
