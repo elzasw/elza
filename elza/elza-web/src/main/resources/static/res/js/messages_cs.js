@@ -396,11 +396,11 @@ var messages = {
     "home.recent.registry.goTo": "Přejít na archivní entity",
     "home.recent.party.goTo": "Přejít na osoby",
 
-    "stats.funds.title" : "Počet AS",
-    "stats.levels.title" : "Počet JP",
-    "stats.accessPoints.title" : "Počet arch. entit",
-    "stats.users.title" : "Počet uživatelů",
-    "stats.loggedUsers.title" : "Počet přihlášených uživatelů",
+    "stats.funds.title": "Počet AS",
+    "stats.levels.title": "Počet JP",
+    "stats.accessPoints.title": "Počet arch. entit",
+    "stats.users.title": "Počet uživatelů",
+    "stats.loggedUsers.title": "Počet přihlášených uživatelů",
 
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
@@ -788,6 +788,8 @@ var messages = {
     "arr.daos.files.title.unitOfMeasure.IN": "in",
     "arr.daos.files.title.unitOfMeasure.MM": "mm",
     "arr.daos.files.title.description": "Popis",
+    "arr.daos.fileSystem.loadMore": "Načíst další...",
+    "arr.daos.fileSystem.selectParent": "Přejít nahoru",
 
     "arr.syncNodes.title": "Synchronizace JP ze zdrojových AS",
     "arr.syncNodes.templateId": "Šablona",
@@ -1150,7 +1152,7 @@ var messages = {
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
 
-    "ap.copy.pending.message" : "Vytváření kopie...",
+    "ap.copy.pending.message": "Vytváření kopie...",
     "ap.copy.replace": "Zneplatnit původní entitu a nahradit novou",
     "ap.copy.scope": "Oblast",
     "ap.copy.title": "Kopie entity",
