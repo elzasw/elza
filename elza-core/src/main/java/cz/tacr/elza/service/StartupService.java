@@ -1,12 +1,15 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,6 +231,13 @@ public class StartupService implements SmartLifecycle {
             logger.info("Full text reindex ...");
             tt.executeWithoutResult(r -> adminService.reindexInternal());
         }
+
+        // vyklizení složky for export xml dir
+        try {
+            FileUtils.cleanDirectory(resourcePathResolver.getExportXmlTrasnformDir().toFile());
+        } catch (IOException e) {
+            logger.error("Error cleanup folder {}", resourcePathResolver.getExportXmlTrasnformDir());
+        } 
 
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);

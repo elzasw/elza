@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoListener;
@@ -29,6 +30,13 @@ public class DEExportParams {
 
     public void setFundsSections(Collection<FundSections> fundsSections) {
         this.fundsSections = fundsSections;
+    }
+
+    public void addFundsSection(FundSections fundsSection) {
+        if (fundsSections == null) {
+            fundsSections = new ArrayList<>();
+        }
+        fundsSections.add(fundsSection);
     }
 
     public Integer getExportFilterId() {
