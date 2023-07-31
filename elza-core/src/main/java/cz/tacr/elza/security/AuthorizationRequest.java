@@ -105,7 +105,8 @@ public class AuthorizationRequest {
 				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
 				|| perm == Permission.FUND_RD_ALL || perm == Permission.FUND_ISSUE_ADMIN_ALL
 				|| perm == Permission.AP_SCOPE_RD_ALL || perm == Permission.AP_SCOPE_WR_ALL
-				|| perm == Permission.USR_PERM);
+                || perm == Permission.USR_PERM,
+                        "Unsupported permission check: %s", perm);
 
 		checkList.add(new AuthCheck(perm));
 		return this;

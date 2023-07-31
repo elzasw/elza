@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
@@ -338,10 +339,10 @@ public class ApBuilder {
         return items;
     }
 
-    public void setRevision(ApRevision revision, List<ApRevPart> revParts, List<ApRevItem> revItems) {
+    public void setRevision(ApRevState revState, List<ApRevPart> revParts, List<ApRevItem> revItems) {
         // set apType if exists
-        if (revision.getTypeId() != null) {
-            setAeType(revision.getTypeId());
+        if (revState.getTypeId() != null) {
+            setAeType(revState.getTypeId());
         }
 
         // sort items to parts
@@ -389,7 +390,7 @@ public class ApBuilder {
             }
 
             // reset pref part
-            if (part != null && Objects.equals(revision.getRevPreferredPartId(), revPart.getPartId())) {
+            if (part != null && Objects.equals(revState.getRevPreferredPartId(), revPart.getPartId())) {
                 if (this.preferredPartId != null) {
                     Part prefPart = this.partIdMap.get(this.preferredPartId);
                     prefPart.setPreferred(false);

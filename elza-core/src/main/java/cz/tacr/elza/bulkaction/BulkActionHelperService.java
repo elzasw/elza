@@ -26,7 +26,6 @@ import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -77,9 +76,10 @@ public class BulkActionHelperService {
      * @param bulkActionRun
      */
     @Transactional(Transactional.TxType.REQUIRED)
-    public synchronized void updateAction(ArrBulkActionRun bulkActionRun) {
-        storeBulkActionRun(bulkActionRun);
+    public synchronized ArrBulkActionRun updateAction(ArrBulkActionRun bulkActionRun) {
+        bulkActionRun = storeBulkActionRun(bulkActionRun);
         eventPublishBulkAction(bulkActionRun);
+        return bulkActionRun;
     }
 
     /**
@@ -88,7 +88,7 @@ public class BulkActionHelperService {
      * @param bulkActionRun the bulk action run
      */
     @Transactional(Transactional.TxType.MANDATORY)
-    public void storeBulkActionRun(final ArrBulkActionRun bulkActionRun) {
+    public ArrBulkActionRun storeBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         if (bulkActionRun.getBulkActionRunId() == null) {
             BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionRun.getBulkActionCode());
 
@@ -104,7 +104,7 @@ public class BulkActionHelperService {
             }
             bulkActionRun.setFundVersion(version);
         }
-        bulkActionRepository.save(bulkActionRun);
+        return bulkActionRepository.save(bulkActionRun);
     }
 
     /**
@@ -196,7 +196,7 @@ public class BulkActionHelperService {
             // on error -> action have to be marked as failed
             bulkActionRun.setState(ArrBulkActionRun.State.ERROR);
             bulkActionRun.setError(e.getLocalizedMessage());
-            storeBulkActionRun(bulkActionRun);
+            bulkActionRun = storeBulkActionRun(bulkActionRun);
             eventPublishBulkAction(bulkActionRun);
             return null;
         }

@@ -74,6 +74,7 @@ import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
+import cz.tacr.elza.service.dao.DaoServiceInternal;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
 import cz.tacr.elza.ws.types.v1.DaoImport;
@@ -115,6 +116,9 @@ public class DaoCoreServiceWsImpl {
 
     @Autowired
     private cz.tacr.elza.service.DaoService daoService;
+
+    @Autowired
+    private DaoServiceInternal daoServiceInternal;
 
     @Autowired
     private DaoSyncService daoSyncService;
@@ -362,7 +366,7 @@ public class DaoCoreServiceWsImpl {
             arrDaoBatchInfo = null;
         }
 
-        ArrDaoPackage arrDaoPackage = daoService.createDaoPackage(fundVersion.getFund(),
+        ArrDaoPackage arrDaoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(),
                                                                   impCtx.getRepository(),
                                                                   daoPackage.getIdentifier(),
                                                                   arrDaoBatchInfo);
@@ -792,7 +796,7 @@ public class DaoCoreServiceWsImpl {
         Collection<ArrDaoFile> daoFilesToDelete = codeFileMap.values();
         if (CollectionUtils.isNotEmpty(daoFilesToDelete)) {
             impCtx.removeDaoFiles(daoFilesToDelete);
-            daoService.deleteDaoFiles(daoFilesToDelete);
+            daoServiceInternal.deleteDaoFiles(daoFilesToDelete);
         }
 
     }

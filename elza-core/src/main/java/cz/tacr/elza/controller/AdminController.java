@@ -17,6 +17,10 @@ import cz.tacr.elza.controller.vo.LoggedUser;
 import cz.tacr.elza.controller.vo.LoggedUsers;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AccessPointService.AccessPointStats;
 import cz.tacr.elza.service.ArrangementService;
@@ -46,16 +50,32 @@ public class AdminController implements AdminApi {
     @Autowired
     private UserService userService;
 
-    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
-    public ResponseEntity<AdminInfo> getAdminInfo() {
+    @Override
+    public ResponseEntity<AdminInfo> adminInfo() {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if(userDetail==null) {
+            throw new AccessDeniedException("User not authorized.", null);
+        }
+        
         AdminInfo ai = new AdminInfo();
         
-        ArrangementStats arrStats = arrangementService.getStats();
-        ai.setFunds(arrStats.getFundCount());
-        ai.setLevels(arrStats.getLevelCount());
-
-        AccessPointStats apStats = accessPointService.getStats();
-        ai.setAccessPoints(apStats.getValidAccessPointCount());
+        AuthorizationRequest arFundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_ADMIN)
+                .or(Permission.FUND_ARR_ALL)
+                .or(Permission.FUND_RD_ALL);
+        if (arFundRead.matches(userDetail)) {
+            // read fund stats
+            ArrangementStats arrStats = arrangementService.getStats();
+            ai.setFunds(arrStats.getFundCount());
+            ai.setLevels(arrStats.getLevelCount());
+        }
+        
+        AuthorizationRequest arRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.AP_SCOPE_RD_ALL);
+        if (arRead.matches(userDetail)) {
+            AccessPointStats apStats = accessPointService.getStats();
+            ai.setAccessPoints(apStats.getValidAccessPointCount());
+        }
 
         UserStats userStats = userService.getStats();
         ai.setUsers(userStats.getActiveUserCount());
@@ -66,8 +86,9 @@ public class AdminController implements AdminApi {
         return new ResponseEntity<>(ai, HttpStatus.OK);
     }
 
+    @Override
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
-    public ResponseEntity<LoggedUsers> getAdminLoggedUsers() {
+    public ResponseEntity<LoggedUsers> adminLoggedUsers() {
 
         LoggedUsers lus = new LoggedUsers();
         List<Principal> sessions = clientOutboundChannelExecutor.getPrincipals();
@@ -84,9 +105,10 @@ public class AdminController implements AdminApi {
     /**
      * Vytvoření chybějících záznamů v arr_cached_node
      */
+    @Override
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     @Transactional
-    public ResponseEntity<Void> syncNodeCache() {
+    public ResponseEntity<Void> adminSyncNodeCache() {
         nodeCacheService.syncCache();
         return ResponseEntity.ok().build();
     }

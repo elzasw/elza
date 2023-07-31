@@ -28,6 +28,7 @@ import FormDescItemGroup from './FormDescItemGroup';
 import {goToAe} from "../../actions/registry/registry";
 import {withRouter} from "react-router";
 import { showConfirmDialog } from 'components/shared/dialog';
+import { RulItemTypeType } from 'api/RulItemTypeType';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -359,7 +360,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @param descItemTypeIndex {Integer} index atributu v seznamu
      */
-    handleDescItemTypeRemove(descItemGroupIndex, descItemTypeIndex) {
+    async handleDescItemTypeRemove(descItemGroupIndex, descItemTypeIndex) {
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -369,6 +370,7 @@ class SubNodeForm extends AbstractReactComponent {
         // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         let setFocusFunc;
         const {
+            dispatch,
             subNodeForm: {formData},
         } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
@@ -404,18 +406,21 @@ class SubNodeForm extends AbstractReactComponent {
             // nemůžeme žádný prvek najít, focus dostane accordion
             setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'accordion');
         }
-
-        // Smazání hodnoty
-        this.props.dispatch(
-            this.props.formActions.fundSubNodeFormDescItemTypeDelete(
-                this.props.versionId,
-                this.props.routingKey,
-                valueLocation,
-            ),
-        );
-
-        // Nyní pošleme focus
-        this.props.dispatch(setFocusFunc());
+        // pokud se maže povinný prvek, nutno potvrdit
+        const response = descItemType.itemType === RulItemTypeType.REQUIRED
+            ? await dispatch(showConfirmDialog(i18n('subNodeForm.deleteDescItemType.confirm')))
+            : true;
+        if (response) {
+            dispatch(
+                this.props.formActions.fundSubNodeFormDescItemTypeDelete(
+                    this.props.versionId,
+                    this.props.routingKey,
+                    valueLocation,
+                ),
+            );
+            // Nyní pošleme focus
+            this.props.dispatch(setFocusFunc());
+        }
     }
 
     getFlatDescItemTypes(onlyNotLocked) {

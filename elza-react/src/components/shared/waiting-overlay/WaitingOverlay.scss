@@ -1,0 +1,20 @@
+@import "../../../variables.scss";
+
+.waiting-overlay {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    background: $shade-0-opacity-50;
+    z-index: 1;
+    font-size: 1.5em;
+    flex-direction: column;
+
+    .waiting-icon {
+        font-size: 3em;
+        margin-bottom: 10px;
+    }
+
+}

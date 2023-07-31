@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.projection.ApStateInfo;
 
 @Repository
 public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, JpaSpecificationExecutor<ApState> {
@@ -100,15 +101,19 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
      */
     List<ApState> findByScope(ApScope scope);
 
-    @Query("SELECT s" +
-            " FROM ap_state s" +
-            " JOIN FETCH s.apType t" +
-            " JOIN FETCH s.scope sc" +
-            " JOIN FETCH s.createChange cc" +
-            " LEFT JOIN FETCH cc.user" +
-            " WHERE s.accessPoint = :accessPoint" +
-            " ORDER BY s.createChange DESC")
-    List<ApState> findByAccessPointFetch(@Param("accessPoint") ApAccessPoint accessPoint);
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApStateInfo(c.changeDate, s.stateApproval, rs.stateApproval, scope.name, tp.name, rtp.name, s.comment, rs.comment, usr)" +
+            " FROM ap_change c" +
+            " LEFT JOIN c.user usr" +
+            " LEFT JOIN ap_state s ON s.createChangeId = c.changeId" +
+            " LEFT JOIN s.apType tp" +
+            " LEFT JOIN s.scope scope" +
+            " LEFT JOIN ap_revision r ON r.createChangeId = c.changeId" +
+            " LEFT JOIN ap_rev_state rs ON rs.createChangeId = c.changeId" +
+            " LEFT JOIN rs.type rtp" +
+            " WHERE s.accessPoint = :accessPoint OR rs.revisionId IN" +
+            "   (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint))" +
+            " ORDER BY c.changeId DESC")
+    List<ApStateInfo> findInfoByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
     @Query("SELECT COUNT (s) FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.comment IS NOT NULL")
     Integer countCommentsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);

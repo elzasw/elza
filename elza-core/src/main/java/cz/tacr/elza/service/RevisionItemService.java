@@ -268,11 +268,11 @@ public class RevisionItemService {
                     objectId = origObjectId;
 
                     if (revItem.isDeleted()) {
-                        // delete item
+                        // delete item, set deleteChange from createChange RevItem
+                        currItem.setDeleteChange(revItem.getCreateChange());
                         deletedItems.add(currItem);
                         continue;
                     }
-
                 } else {
                     Validate.notNull(revItem.getObjectId());
                     Validate.isTrue(!revItem.isDeleted());
@@ -307,21 +307,17 @@ public class RevisionItemService {
 
         // Mark old items as deleted
         // Due to DB constrain have to be done before new items are in place
-        for (ApItem deleteItem : deletedItems) {
-            deleteItem.setDeleteChange(change);
-        }
         deletedItems = itemRepository.saveAll(deletedItems);
         itemRepository.flush();
 
         // Save new items
         dataRepository.saveAll(dataList);
         itemRepository.saveAll(itemsList);
-        
+
         accessPointItemService.changeBindingItemsItems(updatedItems, bindingItemList);
-        
         bindingItemRepository.flush();
-        // delete items 
-        accessPointItemService.deleteItems(deletedItems, change);
+
+        accessPointItemService.deleteBindingItems(deletedItems, change);
         bindingItemRepository.flush();
 
     }

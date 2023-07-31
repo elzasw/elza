@@ -22,7 +22,6 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 /**
  * Soubor k DAO.
  *
- * @author Martin Šlapa
  * @since 06.12.2016
  */
 @Table

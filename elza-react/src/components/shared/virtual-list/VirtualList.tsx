@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {ComponentClass, FunctionComponent} from 'react';
+import { ComponentClass, FunctionComponent } from 'react';
 import * as ReactDOM from 'react-dom';
 import Loading from '../loading/Loading';
 import utils from './utils';
@@ -19,7 +19,7 @@ type Props = {
     itemHeight?: number;
     /** pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt */
     scrollToIndex: number | IndexInterface;
-    renderItem: () => React.ReactNode;
+    renderItem: (item: any, index: number) => React.ReactNode;
     onViewChange?: (firstIndex: number, lastIndex: number) => void;
     container: any;
     tagName: FunctionComponent<any> | ComponentClass<any> | string;
@@ -45,7 +45,7 @@ class VirtualList extends React.Component<Props, State> {
     constructor(props) {
         super(props);
         this.state = {
-            ...this.getVirtualState(this.props, {prevFirstItemIndex: -1, isMounted: false}),
+            ...this.getVirtualState(this.props, { prevFirstItemIndex: -1, isMounted: false }),
             isMounted: false,
             itemHeight: this.props.itemHeight || DEFAULT_ITEM_HEIGHT,
         };
@@ -55,7 +55,7 @@ class VirtualList extends React.Component<Props, State> {
         items: PropTypes.array,
         lazyItemsCount: PropTypes.number,
         itemHeight: PropTypes.number,
-        scrollToIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({index: PropTypes.number})]),
+        scrollToIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({ index: PropTypes.number })]),
         renderItem: PropTypes.func.isRequired,
         onViewChange: PropTypes.func,
         container: PropTypes.object.isRequired,
@@ -118,10 +118,10 @@ class VirtualList extends React.Component<Props, State> {
 
         const listViewBox = VirtualList.getBox(viewBox, listBox);
 
-        // Selecting only even indexes because of interlacing 
+        // Selecting only even indexes because of interlacing
         // row colors (style with :nth-child(even) or :nth-child(odd))
-        const firstItemIndex = Math.max(0, Math.floor((listViewBox.top / itemHeight)/2)*2); 
-        const lastItemIndex = Math.ceil((listViewBox.bottom / itemHeight)/2)*2;
+        const firstItemIndex = Math.max(0, Math.floor((listViewBox.top / itemHeight) / 2) * 2);
+        const lastItemIndex = Math.ceil((listViewBox.bottom / itemHeight) / 2) * 2;
 
         const itemsInView = lastItemIndex - firstItemIndex + 1;
 
@@ -209,7 +209,7 @@ class VirtualList extends React.Component<Props, State> {
         } else {
             if (props.items!.length < 3) {
                 state.items = props.items;
-            }else {
+            } else {
                 state.items = props.items!.slice(renderStats.firstItemIndex, renderStats.lastItemIndex! + 1);
             }
         }
@@ -218,7 +218,7 @@ class VirtualList extends React.Component<Props, State> {
         state.prevFirstItemIndex = renderStats.firstItemIndex;
 
         if (renderStats.firstItemIndex !== currState.prevFirstItemIndex) {
-            const {onViewChange} = this.props;
+            const { onViewChange } = this.props;
             onViewChange && onViewChange(renderStats.firstItemIndex!, renderStats.lastItemIndex!);
         }
 
@@ -241,8 +241,8 @@ class VirtualList extends React.Component<Props, State> {
                 typeof nextProps.scrollToIndex === 'number'
                     ? nextProps.scrollToIndex
                     : nextProps.scrollToIndex !== null
-                    ? nextProps.scrollToIndex.index
-                    : null;
+                        ? nextProps.scrollToIndex.index
+                        : null;
 
             if (scrollToIndexNum !== null) {
                 this.setState(state, () => {
@@ -323,7 +323,7 @@ class VirtualList extends React.Component<Props, State> {
         return this.state.items;
     };
     render() {
-        const {tagName, fetching} = this.props;
+        const { tagName, fetching } = this.props;
         const Tag = tagName;
         let content;
         if (fetching || !this.state.items) {
@@ -335,7 +335,7 @@ class VirtualList extends React.Component<Props, State> {
             <Tag
                 className="virtual-list"
                 ref={ref => this.container = ref}
-                style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}}
+                style={{ boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart }}
             >
                 {content}
             </Tag>

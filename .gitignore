@@ -55,3 +55,6 @@ elza/elza-core/work/
 run.bat
 elza/elza-core/src/main/resources/xsd/META-INF/*.episode
 elza/elza-web/cz.tacr.elza.domain.ArrDescItem
+tsp-output
+node_modules
+/.vscode

@@ -3,7 +3,7 @@
  */
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import {
     AbstractReactComponent,
     Autocomplete,
@@ -13,32 +13,32 @@ import {
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes';
-import {indexById} from 'stores/app/utils';
+import { refRecordTypesFetchIfNeeded } from 'actions/refTables/recordTypes';
+import { indexById } from 'stores/app/utils';
 import {
     DEFAULT_REGISTRY_LIST_MAX_SIZE,
     registryListFetchIfNeeded,
     registryListFilter,
     registryListInvalidate,
 } from 'actions/registry/registry';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus';
-import {getTreeItemById} from './../../components/registry/registryUtils';
-import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
-import {RevStateApproval, RevStateApprovalCaption} from '../../api/RevStateApproval';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus';
+import { getTreeItemById } from './../../components/registry/registryUtils';
+import { StateApproval, StateApprovalCaption } from '../../api/StateApproval';
+import { RevStateApproval, RevStateApprovalCaption } from '../../api/RevStateApproval';
 import './RegistryList.scss';
 import RegistryListItem from './RegistryListItem';
 import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
-import {FOCUS_KEYS} from '../../constants.tsx';
-import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
-import {Col, Row} from 'react-bootstrap';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
-import {Area} from '../../api/Area';
+import { FOCUS_KEYS } from '../../constants.tsx';
+import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import { Col, Row } from 'react-bootstrap';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import { Area } from '../../api/Area';
 import ExtFilterModal from './modal/ExtFilterModal';
-import {Button} from '../ui';
-import {withRouter} from "react-router";
-import {Link} from "react-router-dom";
-import {goToAe, getArchiveEntityUrl} from "../../actions/registry/registry";
+import { Button } from '../ui';
+import { withRouter } from "react-router";
+import { Link } from "react-router-dom";
+import { goToAe, getArchiveEntityUrl } from "../../actions/registry/registry";
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
 
 class RegistryList extends AbstractReactComponent {
@@ -65,7 +65,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {maxSize} = props;
+        const { maxSize } = props;
         this.props.dispatch(refRecordTypesFetchIfNeeded());
         this.props.dispatch(registryListFetchIfNeeded(0, maxSize));
         this.props.dispatch(requestScopesIfNeeded());
@@ -73,7 +73,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     trySetFocus = (props = this.props) => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus() && focus) {
             if (isFocusFor(focus, null, 1)) {
@@ -106,7 +106,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterText = filterText => {
-        const {dispatch, registryList} = this.props;
+        const { dispatch, registryList } = this.props;
         let searchFilter = registryList.filter.searchFilter;
         const text = filterText && filterText.length === 0 ? null : filterText;
         if (searchFilter) {
@@ -168,7 +168,7 @@ class RegistryList extends AbstractReactComponent {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from >= DEFAULT_REGISTRY_LIST_MAX_SIZE) {
             from = this.props.registryList.filter.from - DEFAULT_REGISTRY_LIST_MAX_SIZE;
-            this.props.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+            this.props.dispatch(registryListFilter({ ...this.props.registryList.filter, from }));
         }
     };
 
@@ -176,16 +176,16 @@ class RegistryList extends AbstractReactComponent {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from < this.props.registryList.count - DEFAULT_REGISTRY_LIST_MAX_SIZE) {
             from = this.props.registryList.filter.from + DEFAULT_REGISTRY_LIST_MAX_SIZE;
-            this.props.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+            this.props.dispatch(registryListFilter({ ...this.props.registryList.filter, from }));
         }
     };
 
     filterRegistryTypeClear = () => {
-        this.handleFilterRegistryType({name: this.registryTypeDefaultValue});
+        this.handleFilterRegistryType({ name: this.registryTypeDefaultValue });
     };
 
     handleFilterTextClear = () => {
-        const {dispatch, registryList} = this.props;
+        const { dispatch, registryList } = this.props;
         let searchFilter = registryList.filter.searchFilter;
         if (searchFilter) {
             searchFilter.search = null;
@@ -202,23 +202,23 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryDetail = item => {
-        const {dispatch, history, select} = this.props;
+        const { dispatch, history, select } = this.props;
         dispatch(goToAe(history, item.id, false, !select));
     };
 
     renderListItem = props => {
-        const {item} = props;
-        const {eidTypes, apTypeIdMap, select} = this.props;
+        const { item } = props;
+        const { eidTypes, apTypeIdMap, select } = this.props;
 
         return (
-            <Link 
-                style={{textDecoration: "none"}} 
+            <Link
+                style={{ textDecoration: "none" }}
                 to={getArchiveEntityUrl(item.id)}
                 onClick={(e) => {
                     // Zabraneni zmeny adresy v adresnim radku, pokud
                     // je RegistryPage v rezimu modalu ( vyber entity
                     // pomoci tlacitka v RegistryField )
-                    if(select){
+                    if (select) {
                         e.preventDefault();
                         e.stopPropagation();
                         this.handleRegistryDetail(item);
@@ -229,7 +229,7 @@ class RegistryList extends AbstractReactComponent {
                     {...item}
                     eidTypes={eidTypes}
                     apTypeIdMap={apTypeIdMap}
-                    />
+                />
             </Link>
         );
     };
@@ -240,7 +240,7 @@ class RegistryList extends AbstractReactComponent {
      */
     getRegistryTypeActions = () => {
         const {
-            registryList: {filter},
+            registryList: { filter },
         } = this.props;
         const actions = [];
         if (filter.registryTypeId !== null && typeof filter.registryTypeId !== 'undefined') {
@@ -254,29 +254,28 @@ class RegistryList extends AbstractReactComponent {
     };
 
     filterScopes(scopes) {
-        const {fund, userDetail} = this.props;
-        return scopes.filter(scope =>
-            {
-                const hasFundRestriction = fund !== undefined;
-                const isAllowedInFund = hasFundRestriction && fund.apScopes?.find((fundScope)=>scope.id === fundScope.id);
-                return (!hasFundRestriction || isAllowedInFund) && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {
-                    type: perms.AP_SCOPE_RD,
-                    scopeId: scope.id,
-                })
-            }
+        const { fund, userDetail } = this.props;
+        return scopes.filter(scope => {
+            const hasFundRestriction = fund !== undefined;
+            const isAllowedInFund = hasFundRestriction && fund.apScopes?.find((fundScope) => scope.id === fundScope.id);
+            return (!hasFundRestriction || isAllowedInFund) && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {
+                type: perms.AP_SCOPE_RD,
+                scopeId: scope.id,
+            })
+        }
         );
     }
 
     getScopesWithAll(scopes) {
-        const defaultValue = {name: i18n('registry.all')};
+        const defaultValue = { name: i18n('registry.all') };
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return [defaultValue,...this.filterScopes([...scopes[0].scopes])];
+            return [defaultValue, ...this.filterScopes([...scopes[0].scopes])];
         }
         return [defaultValue];
     }
 
     getStateWithAll() {
-        const defaultValue = {name: i18n('party.allApStates')};
+        const defaultValue = { name: i18n('party.allApStates') };
         return [
             defaultValue,
             ...Object.values(StateApproval).map(item => {
@@ -289,7 +288,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getRevStateWithAll() {
-        const defaultValue = {name: i18n('registry.allRevisionStates')};
+        const defaultValue = { name: i18n('registry.allRevisionStates') };
         return [
             defaultValue,
             ...Object.values(RevStateApproval).map(item => {
@@ -317,7 +316,7 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleExtFilterClear = () => {
-        const {dispatch, registryList} = this.props;
+        const { dispatch, registryList } = this.props;
         dispatch(
             registryListFilter({
                 ...registryList.filter,
@@ -328,12 +327,12 @@ class RegistryList extends AbstractReactComponent {
     };
 
     getRuleSetsIds = () => {
-        const {scopes, ruleSet} = this.props;
+        const { scopes, ruleSet } = this.props;
         const rulSetsIds = [];
 
         scopes.forEach((scopeData) => scopeData.scopes.forEach((scope) => {
             const _ruleSet = ruleSet.items.find((_ruleSet) => _ruleSet.code === scope.ruleSetCode);
-            if(_ruleSet.id == undefined || rulSetsIds.includes(_ruleSet.id)){return;}
+            if (_ruleSet.id == undefined || rulSetsIds.includes(_ruleSet.id)) { return; }
             rulSetsIds.push(_ruleSet.id);
         }))
 
@@ -341,7 +340,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     handleExtFilter = () => {
-        const {dispatch, registryList} = this.props;
+        const { dispatch, registryList } = this.props;
 
         dispatch(
             modalDialogShow(
@@ -371,7 +370,7 @@ class RegistryList extends AbstractReactComponent {
     registryTypeDefaultValue = i18n('registry.all');
 
     render() {
-        const {registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes} = this.props;
+        const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes, userDetail } = this.props;
 
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
@@ -398,26 +397,29 @@ class RegistryList extends AbstractReactComponent {
             }
         }
 
-        const {filter} = registryList;
+        const { filter } = registryList;
 
         let apTypesWithAll = [...registryTypes];
-        apTypesWithAll.unshift({name: this.registryTypeDefaultValue});
+        apTypesWithAll.unshift({ name: this.registryTypeDefaultValue });
 
         let filterCls = 'mb-1 pt-1 pb-1';
         if (registryList.filter.searchFilter) {
             filterCls = filterCls + ' ext-filter-used';
         }
 
+        const visibleScopes = scopes.find((scopeData) => scopeData.versionId === -1)?.scopes || [];
+
         return (
             <div className="registry-list">
                 <div className="filter">
-                    <Autocomplete
+                    {visibleScopes.length > 1 && <Autocomplete
                         placeholder={this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope')}
                         items={this.getScopesWithAll(scopes)}
                         onChange={this.handleFilterRegistryScope}
                         value={filter.scopeId}
                         useIdAsValue
-                    />
+                    />}
+
                     <Autocomplete
                         placeholder={filter.state ? StateApprovalCaption(filter.state) : i18n('party.apState')}
                         items={this.getStateWithAll()}
@@ -492,17 +494,17 @@ class RegistryList extends AbstractReactComponent {
                     </span>
                 )}
                 {(
-                    registryList.count > maxSize || 
+                    registryList.count > maxSize ||
                     this.props.registryList.filter.from !== 0
                 ) && (
-                    <ListPager
-                        prev={this.handleFilterPrev}
-                        next={this.handleFilterNext}
-                        from={this.props.registryList.filter.from}
-                        pageSize={maxSize}
-                        totalCount={this.props.registryList.count}
-                    />
-                )}
+                        <ListPager
+                            prev={this.handleFilterPrev}
+                            next={this.handleFilterNext}
+                            from={this.props.registryList.filter.from}
+                            pageSize={maxSize}
+                            totalCount={this.props.registryList.count}
+                        />
+                    )}
             </div>
         );
     }
@@ -510,10 +512,10 @@ class RegistryList extends AbstractReactComponent {
 
 export default withRouter(connect(state => {
     const {
-        app: {registryList, registryDetail},
+        app: { registryList, registryDetail },
         userDetail,
         focus,
-        refTables: {recordTypes, scopesData, eidTypes, ruleSet},
+        refTables: { recordTypes, scopesData, eidTypes, ruleSet },
     } = state;
     return {
         focus,

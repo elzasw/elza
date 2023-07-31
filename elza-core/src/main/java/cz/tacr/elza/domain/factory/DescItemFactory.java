@@ -5,10 +5,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
@@ -82,7 +85,6 @@ import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DataUriRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.service.ItemService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
@@ -97,6 +99,11 @@ public class DescItemFactory implements InitializingBean {
 
     private final String PROPERTY_FORMAT = "format";
     public final static String ELZA_NODE = "elza-node";
+
+    /**
+     * Povolené protokoly
+     */
+    private final String PATTERN_PROTOCOL = "^(http://|https://|elza-node://)";
 
     /**
      * Povolenoné zkratky
@@ -934,10 +941,15 @@ public class DescItemFactory implements InitializingBean {
 
         if(data instanceof ArrDataUriRef) {
             ArrDataUriRef dataTemp = (ArrDataUriRef) data;
-            if(StringUtils.isEmpty(dataTemp.getUriRefValue())) {
+            String uriRefValue = dataTemp.getUriRefValue();
+            if(StringUtils.isEmpty(uriRefValue)) {
                 throw new IllegalArgumentException("Nebyl zadán odkaz, nebo je odkaz prázdný");
             }
-            URI tempUri = URI.create(dataTemp.getUriRefValue()).normalize();
+            if (!uriRefValue.matches(PATTERN_PROTOCOL)) {
+                throw new BusinessException("Zadan není platný odkaz URI, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
+                    .set("uri", uriRefValue);
+            }
+            URI tempUri = URI.create(uriRefValue).normalize();
             dataTemp.setSchema(tempUri.getScheme());
 
             if(!dataTemp.isDeletingProcess() && dataTemp.getSchema().equals(ELZA_NODE)) {
@@ -1036,16 +1048,19 @@ public class DescItemFactory implements InitializingBean {
 
             if(data instanceof ArrDataUriRef) {
                 ArrDataUriRef dataTemp = (ArrDataUriRef) data;
-                if(StringUtils.isEmpty(dataTemp.getUriRefValue())) {
+                String uriRefValue = dataTemp.getUriRefValue();
+                if (StringUtils.isEmpty(uriRefValue)) {
                     throw new IllegalArgumentException("Nebyl zadán odkaz, nebo je odkaz prázdný");
                 }
-                URI tempUri = URI.create(dataTemp.getUriRefValue()).normalize();
+                if (!uriRefValue.matches(PATTERN_PROTOCOL)) {
+                    throw new BusinessException("Zadan není platný odkaz URI, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
+                        .set("uri", uriRefValue);
+                }
+                URI tempUri = URI.create(uriRefValue).normalize();
                 dataTemp.setDataType(descItem.getItemType().getDataType());
                 if (StringUtils.isEmpty(tempUri.getScheme())) {
-                    throw new BusinessException("Nebylo zadáno schéma v souladu s RFC2396, hodnota: "
-                            + dataTemp.getUriRefValue(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("uri", dataTemp.getUriRefValue());
+                    throw new BusinessException("Nebylo zadáno schéma v souladu s RFC2396, hodnota: " + uriRefValue, BaseCode.PROPERTY_IS_INVALID)
+                        .set("uri", uriRefValue);
                 }
                 dataTemp.setSchema(tempUri.getScheme());
 

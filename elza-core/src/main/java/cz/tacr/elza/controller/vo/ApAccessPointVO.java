@@ -140,6 +140,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private List<Integer> replacedIds;
 
+    /**
+     * Komentář k revizi
+     */
+    private String revComment;
+
     public Integer getId() {
         return id;
     }
@@ -341,4 +346,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     public void setReplacedIds(List<Integer> replacedIds) {
         this.replacedIds = replacedIds;
     }
+
+    public String getRevComment() {
+        return revComment;
+    }
+
+    public void setRevComment(String revComment) {
+        this.revComment = revComment;
+    }
+
 }

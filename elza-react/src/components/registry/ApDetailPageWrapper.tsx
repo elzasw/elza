@@ -4,7 +4,7 @@ import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
 import * as registry from '../../actions/registry/registry';
-import {goToAe} from '../../actions/registry/registry';
+import { goToAe } from '../../actions/registry/registry';
 import { WebApi } from '../../actions/WebApi';
 import { ApAccessPointVO } from '../../api/ApAccessPointVO';
 import { ApPartVO } from '../../api/ApPartVO';
@@ -18,7 +18,7 @@ import { indexById } from '../../shared/utils';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import { Bindings, DetailStoreState } from '../../types';
 import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
-import { AppState } from '../../typings/store';
+import { AppState, ApExternalSystemSimpleVO } from '../../typings/store';
 import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
@@ -28,14 +28,15 @@ import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';
 import { RevisionPart, getRevisionParts } from './revision';
 import { ApStateVO } from 'api/ApStateVO';
-import {Api} from '../../api';
-import {RouteComponentProps, withRouter} from "react-router";
+import { Api } from '../../api';
+import { RouteComponentProps, withRouter } from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
 import Icon from 'components/shared/icon/FontIcon';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
 import { SyncProgress } from 'api/ApBindingVO';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
+import { WaitingOverlay } from 'components/shared/waiting-overlay';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -43,19 +44,19 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
         partsMap: {},
     };
 
-    const newItem = (id:number, sync:boolean, map: {[key:number]:boolean}) => 
-         (map[id] || true) && sync;
+    const newItem = (id: number, sync: boolean, map: { [key: number]: boolean }) =>
+        (map[id] || true) && sync;
 
     if (accessPoint) {
         const bindings = accessPoint.bindings || [];
         bindings.forEach(externalId => {
             const bindingItemList = externalId.bindingItemList || [];
             bindingItemList.forEach(item => {
-              if (item.itemId) {
-                bindingsMaps.itemsMap[item.itemId] = newItem(item.itemId, item.sync, bindingsMaps.itemsMap);
-              } else if (item.partId) {
-                bindingsMaps.partsMap[item.partId] = newItem(item.partId, item.sync, bindingsMaps.partsMap);
-              }
+                if (item.itemId) {
+                    bindingsMaps.itemsMap[item.itemId] = newItem(item.itemId, item.sync, bindingsMaps.itemsMap);
+                } else if (item.partId) {
+                    bindingsMaps.partsMap[item.partId] = newItem(item.partId, item.sync, bindingsMaps.partsMap);
+                }
             });
         });
     }
@@ -98,6 +99,7 @@ type OwnProps = {
     apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
     select: boolean;
+    onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
 };
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
@@ -110,25 +112,12 @@ export enum ExportState {
     COMPLETED = "COMPLETED",
 }
 
-const WaitingOverlay = ({
-    children,
-}:PropsWithChildren<{}>) => {
-    return <div className="waiting-overlay">
-        <div className="waiting-icon">
-            <Icon glyph="fa-spin fa-circle-o-notch"/>
-        </div>
-        <div>
-            {children}
-        </div>
-    </div>
-}
-
 /**
  * Detail globální archivní entity.
  */
 const ApDetailPageWrapper: React.FC<Props> = ({
     id, // ap id
-    editMode,    
+    editMode,
     globalCollapsed,
     apValidation,
     apViewSettings,
@@ -146,6 +135,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     showPartCreateModal,
     refTables,
     select,
+    onPushApToExt,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
@@ -166,26 +156,26 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }, [id, refreshDetail]);
 
     // show accesspoint export message on websocket message
-    useEffect(()=>{
+    useEffect(() => {
         const eventMap = {
             [WebsocketEventType.ACCESS_POINT_EXPORT_NEW]: ({ accessPointId }) => {
-                if(accessPointId.toString() === id.toString()){
+                if (accessPointId.toString() === id.toString()) {
                     setExportState(ExportState.PENDING);
                 }
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_STARTED]: ({ accessPointId }) => {
-                if(accessPointId.toString() === id.toString()){
+                if (accessPointId.toString() === id.toString()) {
                     setExportState(ExportState.STARTED);
                 }
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_COMPLETED]: ({ accessPointId }) => {
-                if(accessPointId.toString() === id.toString()){
+                if (accessPointId.toString() === id.toString()) {
                     setExportState(ExportState.COMPLETED);
                     refreshDetail(id, true, false);
                 }
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId }) => {
-                if(accessPointId.toString() === id.toString()){
+                if (accessPointId.toString() === id.toString()) {
                     dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), i18n("ap.push-to-ext.failed.message")))
                     setExportState(ExportState.COMPLETED);
                     refreshDetail(id, true, false);
@@ -193,15 +183,15 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             },
         }
 
-        const listener = websocket?.addListener((message:any) => { // TODO create websocket message types
+        const listener = websocket?.addListener((message: any) => { // TODO create websocket message types
             const handler = eventMap[message.eventType];
-            if(handler){ handler(message) }
+            if (handler) { handler(message) }
         })
 
         return () => {
             websocket?.removeListener(listener);
         }
-    },[id, websocket])
+    }, [id, websocket])
 
     // show accesspoint export message on bindings state
     useEffect(() => {
@@ -209,22 +199,22 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             [SyncProgress.UPLOAD_PENDING]: ExportState.PENDING,
             [SyncProgress.UPLOAD_STARTED]: ExportState.STARTED,
         }
-        bindings.forEach(({syncProgress}) => {
+        bindings.forEach(({ syncProgress }) => {
             const state = stateMap[syncProgress];
-            if(state){
+            if (state) {
                 setExportState(state);
             }
         })
-    },[bindings])
+    }, [bindings])
 
     useEffect(() => {
         fetchViewSettings();
-        if(detail.fetched && detail.data){
+        if (detail.fetched && detail.data) {
             refreshValidation(id, revisionActive);
         }
     }, [id, detail]);
 
-    const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) => 
+    const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) =>
         stores.some((store) => !store.fetched || store.isFetching)
 
     if (isStoreLoading([
@@ -244,11 +234,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     // Show message when entity with specified id does not exist
     if (id == null || (id && (!detail.id || !detail.data))) {
-        return <div  className="detail-page-wrapper missing-entity">
+        return <div className="detail-page-wrapper missing-entity">
             <div className="message-container">
                 <div className="message">
                     <div className="message-icon">
-                        <Icon glyph="fa-regular fa-times-circle-o"/>
+                        <Icon glyph="fa-regular fa-times-circle-o" />
                     </div>
                     <div className="message-text">
                         {i18n("ap.detail.entityMissing")}
@@ -258,7 +248,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         </div>;
     }
 
-    const handleSetPreferred = async ({part, updatedPart}: RevisionPart) => {
+    const handleSetPreferred = async ({ part, updatedPart }: RevisionPart) => {
         const nextPreferredPart = part ? part : updatedPart;
         if (nextPreferredPart?.id) {
             saveScrollPosition();
@@ -268,12 +258,12 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     };
 
-    const handleDelete = async ({part, updatedPart}: RevisionPart) => {
+    const handleDelete = async ({ part, updatedPart }: RevisionPart) => {
         const deletedPart = part ? part : updatedPart;
         const message = deletedPart?.value ? i18n("ap.detail.delete.confirm.value", deletedPart.value) : i18n("ap.detail.delete.confirm");
         const confirmResult = await showConfirmDialog(message);
 
-        if(confirmResult){
+        if (confirmResult) {
             if (deletedPart?.id) {
                 saveScrollPosition();
                 part ? await deletePart(id, deletedPart.id) : await deleteRevisionPart(id, deletedPart.id);
@@ -284,11 +274,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     };
 
-    const handleRevert = async ({part, updatedPart}: RevisionPart) => {
-        if(!part || !updatedPart){throw "No part to update."}
+    const handleRevert = async ({ part, updatedPart }: RevisionPart) => {
+        if (!part || !updatedPart) { throw "No part to update." }
         const confirmResult = await showConfirmDialog(i18n("ap.detail.revert.confirm"));
 
-        if(confirmResult){
+        if (confirmResult) {
             saveScrollPosition();
             await deleteRevisionPart(id, updatedPart.id);
             restoreScrollPosition();
@@ -301,7 +291,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     const restoreScrollPosition = () => {
-        if(containerRef.current && scrollTop){
+        if (containerRef.current && scrollTop) {
             containerRef.current.scrollTop = scrollTop;
             scrollTop = undefined;
         }
@@ -330,13 +320,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const handleAdd = (partType: RulPartTypeVO, parentPartId?: number, revParentPartId?: number) => {
-        if(detail.data){
+        if (detail.data) {
             saveScrollPosition();
             showPartCreateModal(
-                partType, 
-                id, 
-                apTypeId, 
-                detail.data.scopeId, 
+                partType,
+                id,
+                apTypeId,
+                detail.data.scopeId,
                 parentPartId,
                 () => restoreScrollPosition(),
                 revParentPartId
@@ -345,42 +335,42 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         refreshValidation(id, revisionActive);
     };
 
-    const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
+    const allParts = sortPrefer(detail.data ? detail.data.parts : [], detail.data?.preferredPart);
     const allRevisionParts = detail.data?.revStateApproval && revisionActive ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
-    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => 
-        !part?.partParentId 
-            && !updatedPart?.partParentId 
-            && !part?.revPartParentId 
-            && !updatedPart?.revPartParentId);
+    const filteredRevisionParts = allRevisionParts.filter(({ part, updatedPart }) =>
+        !part?.partParentId
+        && !updatedPart?.partParentId
+        && !part?.revPartParentId
+        && !updatedPart?.revPartParentId);
 
     const getRelatedPartSections = (parentParts: RevisionPart[]) => {
         if (parentParts.length === 0) { return []; }
         const parentIds: number[] = [];
         const updatedParentIds: number[] = [];
 
-        parentParts.forEach(({part, updatedPart})=>{
-            if(part){parentIds.push(part.id)}
-            if(updatedPart){updatedParentIds.push(updatedPart.id)}
+        parentParts.forEach(({ part, updatedPart }) => {
+            if (part) { parentIds.push(part.id) }
+            if (updatedPart) { updatedParentIds.push(updatedPart.id) }
         })
 
         console.log(allRevisionParts, parentParts, parentIds, updatedParentIds)
 
         return allRevisionParts
-            .filter(value => 
+            .filter(value =>
                 value.part?.partParentId && parentIds.includes(value.part?.partParentId)
                 || value.part?.partParentId && updatedParentIds.includes(value.part?.partParentId)
                 || value.updatedPart?.revPartParentId && parentIds.includes(value.updatedPart?.revPartParentId)
                 || value.updatedPart?.partParentId && parentIds.includes(value.updatedPart?.partParentId)
                 || value.updatedPart?.partParentId && updatedParentIds.includes(value.updatedPart?.partParentId)
                 || value.updatedPart?.revPartParentId && updatedParentIds.includes(value.updatedPart?.revPartParentId)
-        );
+            );
     };
 
     const bindingsMaps = createBindings(detail.data);
     const groupPartsByType = (data: RevisionPart[]) => {
         return data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
             const typeId = value.part?.typeId || value.updatedPart?.typeId;
-            if(typeId != undefined){
+            if (typeId != undefined) {
                 const currentValue = accumulator[typeId] || [];
                 accumulator[typeId.toString()] = [...currentValue, value];
             }
@@ -391,22 +381,22 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const groupedRevisionParts = groupPartsByType(filteredRevisionParts);
     const validationResult = apValidation.isFetching ? undefined : apValidation.data;
 
-    const getSectionValidationErrors = (parts:RevisionPart[] = []) => {
-        const errors:PartValidationErrorsVO[] = [];
-        parts.forEach(({part, updatedPart})=>{
+    const getSectionValidationErrors = (parts: RevisionPart[] = []) => {
+        const errors: PartValidationErrorsVO[] = [];
+        parts.forEach(({ part, updatedPart }) => {
             const error = part && objectByProperty(validationResult?.partErrors, part.id, "id");
             const updatedError = updatedPart && objectByProperty(validationResult?.partErrors, updatedPart.id, "id");
-            if(error){errors.push(error)}
-            if(updatedError){errors.push(updatedError)}
+            if (error) { errors.push(error) }
+            if (updatedError) { errors.push(updatedError) }
         })
         return errors;
     };
 
     const canEdit = () => {
         const revState = detail.data?.revStateApproval;
-        if(!revState){return editMode;}
-        if(revState === RevStateApproval.TO_APPROVE){ return false; }
-        return  editMode && revisionActive;
+        if (!revState) { return editMode; }
+        if (revState === RevStateApproval.TO_APPROVE) { return false; }
+        return editMode && revisionActive;
     }
 
     const sortedParts = detail.data && refTables.partTypes.items
@@ -417,8 +407,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         <div className={'detail-page-wrapper'} ref={containerRef}>
             {exportState !== "COMPLETED" && <WaitingOverlay>
                 {
-                    exportState === ExportState.PENDING 
-                        ? i18n("ap.push-to-ext.pending.message") 
+                    exportState === ExportState.PENDING
+                        ? i18n("ap.push-to-ext.pending.message")
                         : i18n("ap.push-to-ext.started.message")
                 }
             </WaitingOverlay>}
@@ -436,8 +426,29 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     validationPartErrors={validationResult?.partErrors}
                     onInvalidateDetail={() => refreshDetail(detail.data!.id)}
                     onInvalidateValidation={() => refreshValidation(id, !revisionActive)}
+                    onPushApToExt={onPushApToExt}
                     revisionActive={revisionActive}
                 />
+                {detail.data?.comment && <div>
+                    <div className="detail-multi-selection">
+                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.comment')}</div>
+                        <div className={`parts single-part`}>
+                            <div className="part comment">
+                                {detail.data.comment}
+                            </div>
+                        </div>
+                    </div>
+                </div>}
+                {detail.data?.revComment && revisionActive && <div>
+                    <div className="detail-multi-selection">
+                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.revComment')}</div>
+                        <div className={`parts single-part`}>
+                            <div className="part comment">
+                                {detail.data.revComment}
+                            </div>
+                        </div>
+                    </div>
+                </div>}
 
                 {allParts && (
                     <div key="part-sections">
@@ -446,21 +457,21 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                             const revisionParts = groupedRevisionParts[partType.id] || [];
 
                             const onAddRelated = partType.childPartId
-                            ? (parentPartId?:number, revParentPartId?:number) => {
-                                const childPartType = partType.childPartId ? objectByProperty(
-                                    refTables.partTypes.items,
-                                    partType.childPartId,
-                                    "id"
-                                ) : null;
-                                if (childPartType !== null) {
-                                    handleAdd(childPartType, parentPartId, revParentPartId);
-                                } else {
-                                    console.error('childPartType ' + partType.childPartId + ' not found');
+                                ? (parentPartId?: number, revParentPartId?: number) => {
+                                    const childPartType = partType.childPartId ? objectByProperty(
+                                        refTables.partTypes.items,
+                                        partType.childPartId,
+                                        "id"
+                                    ) : null;
+                                    if (childPartType !== null) {
+                                        handleAdd(childPartType, parentPartId, revParentPartId);
+                                    } else {
+                                        console.error('childPartType ' + partType.childPartId + ' not found');
+                                    }
                                 }
-                            }
-                            : undefined;
+                                : undefined;
                             const apViewSettingRule = apViewSettings.data!.rules[detail.data!.ruleSetId];
-                            if(partType.code === "PT_BODY" && revisionParts.length === 1){
+                            if (partType.code === "PT_BODY" && revisionParts.length === 1) {
                                 return (
                                     <DetailBodySection
                                         key={partType.code}
@@ -516,7 +527,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     );
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, {history, select}: RouteComponentProps & {select: boolean}) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, { history, select }: RouteComponentProps & { select: boolean }) => ({
     showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
         part: ApPartVO | undefined,
@@ -529,7 +540,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         refTables: unknown,
         apViewSettings: DetailStoreState<ApViewSettings>,
         revision: boolean,
-        onUpdateFinish: () => void = () => {},
+        onUpdateFinish: () => void = () => { },
     ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish, select)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
@@ -537,7 +548,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         apTypeId: number,
         scopeId: number,
         parentPartId?: number,
-        onUpdateFinish: () => void = () => {},
+        onUpdateFinish: () => void = () => { },
         revParentPartId?: number,
     ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
     setPreferred: async (apId: number, partId: number) => {
