@@ -233,11 +233,11 @@ public class StartupService implements SmartLifecycle {
         }
 
         // vyklizení složky for export xml dir
-        try {
-            FileUtils.cleanDirectory(resourcePathResolver.getExportXmlTrasnformDir().toFile());
-        } catch (IOException e) {
-            logger.error("Error cleanup folder {}", resourcePathResolver.getExportXmlTrasnformDir());
-        } 
+//        try {
+//            FileUtils.cleanDirectory(resourcePathResolver.getExportXmlTrasnformDir().toFile());
+//        } catch (IOException e) {
+//            logger.error("Error cleanup folder {}", resourcePathResolver.getExportXmlTrasnformDir());
+//        } 
 
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
