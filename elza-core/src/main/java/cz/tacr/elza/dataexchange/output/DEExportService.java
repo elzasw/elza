@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,8 +104,8 @@ public class DEExportService {
             NodeCacheService nodeCacheService,
             ApAccessPointRepository apRepository,
             ResourcePathResolver resourcePathResolver,
-                           ScopeRepository scopeRepository,
-                           final RuleService ruleService) {
+            ScopeRepository scopeRepository,
+            final RuleService ruleService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository,
                 resourcePathResolver);
@@ -194,14 +195,11 @@ public class DEExportService {
     }
 
     /**
-     * Export data
+     * Check global and access point(s) permission
      * 
-     * @param response
      * @param params
-     * @throws IOException
      */
-    @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    public void exportXmlData(HttpServletResponse response, DEExportParamsVO params) throws IOException {
+    private void checkGlobalAndAccessPointPermission(DEExportParams params) {
         UserDetail userDetail = initHelper.getUserService().getLoggedUserDetail();
 
         Collection<FundSections> sections = params.getFundsSections();
@@ -254,6 +252,46 @@ public class DEExportService {
                 });
             }
         }
+    }
+    
+    /**
+     * Export fund 
+     * 
+     * @param params
+     * @throws IOException
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
+    public void exportXmlData(IOExportRequest request) throws IOException {
+
+        checkGlobalAndAccessPointPermission(request);
+
+        ExportBuilder exportBuilder = new XmlExportBuilder();
+
+        Path exportXmlTrasnformDir = initHelper.getResourcePathResolver().getExportXmlTrasnformDir();
+        Files.createDirectories(exportXmlTrasnformDir);
+
+        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + ".xml"));
+
+        // write response
+        try (OutputStream os = Files.newOutputStream(xmlFile, StandardOpenOption.WRITE)) {
+            exportData(os, exportBuilder, request);
+        } catch(Exception e) {
+            log.error("Failed to export data", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Export data
+     * 
+     * @param response
+     * @param params
+     * @throws IOException
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
+    public void exportXmlData(HttpServletResponse response, DEExportParamsVO params) throws IOException {
+
+        checkGlobalAndAccessPointPermission(params);
 
         // file headers
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());

@@ -116,8 +116,20 @@ model ExportParams {
  */
 model FundSections {
 	fundVersionId: integer;
-	mergeSections?: boolean;
+	mergeSections?: boolean = false;
 	rootNodeIds?: integer[];
+}
+
+/**
+ * Error specification for the client
+ */
+model BaseException {
+	type: string;
+	code: string;
+	message?: string;
+	level?: string;
+	properties?: {};
+	stackTrace?: string;
 }
 
 @route("/daorepository")
@@ -190,24 +202,35 @@ namespace ElzaAPI.Fund {
 @tag("io")
 @route("/io")
 namespace ElzaAPI.Io {
-	/**
-	 * Create export file of funds or access points
-	 */ 
-	@route("/export")
-	@post op exportRequest(
-	   ...ExportParams
+    /**
+     * Create export file of funds or access points
+     */ 
+    @route("/export")
+    @post op exportRequest(
+        @body body: ExportParams
 	): integer;
 
-	/**
-	 * Getting the generated file by request id
-	 */
+    /**
+     * Getting the generated file by request id
+     */
 	@route("/file/{requestId}")
 	@get op getExportFile(
 		@path requestId: integer
 	): {
         @header contentType: "*/*";
         @body data: bytes;
-    };
+       } | {
+         /** Processing */ 
+         @Http.statusCode statusCode: 102;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException; 
+       } | { 
+          /** Failed to export requested data */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException; 
+       };
 }
 
 @service({
