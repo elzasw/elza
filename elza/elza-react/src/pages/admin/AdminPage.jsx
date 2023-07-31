@@ -20,6 +20,7 @@ import AbstractReactComponent from '../../components/AbstractReactComponent';
 import Ribbon from '../../components/page/Ribbon';
 import PageLayout from '../shared/layout/PageLayout';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { StatsAdmin } from 'components/shared/stats';
 
 class AdminPage extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps = nextProps => {
@@ -152,14 +153,12 @@ class AdminPage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
-        const centerPanel = <div>Administrace - HOME</div>;
-
         return (
             <PageLayout
                 splitter={splitter}
                 className="admin-packages-page"
                 ribbon={this.buildRibbon()}
-                centerPanel={centerPanel}
+                centerPanel={<StatsAdmin />}
             />
         );
     }

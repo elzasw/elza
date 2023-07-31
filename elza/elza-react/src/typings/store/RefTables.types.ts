@@ -4,8 +4,12 @@ import { BaseRefTableStore } from '../BaseRefTableStore';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
 
 export interface Scope {
-    versionId: number;
+    versionId?: number;
+    code?: string;
     id?: number | null;
+    name: string;
+    language: string | null;
+    ruleSetCode?: string;
 }
 
 export interface ScopeData {

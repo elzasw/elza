@@ -1,9 +1,9 @@
-import {AccesspointsApi, DaosApi, FundsApi} from 'elza-api';
-import globalAxios, {AxiosRequestConfig, AxiosResponse, AxiosError} from 'axios';
+import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi } from 'elza-api';
+import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
-import {createException} from 'components/ExceptionUtils.jsx';
-import {logout} from 'actions/global/login';
-import {store} from 'stores/index.jsx';
+import { createException } from 'components/ExceptionUtils.jsx';
+import { logout } from 'actions/global/login';
+import { store } from 'stores/index.jsx';
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
@@ -23,7 +23,7 @@ globalAxios.interceptors.request.use((config) => {
 const axios = globalAxios.create();
 
 axios.interceptors.response.use(undefined, error => {
-    if(error.config.overrideErrorHandler){ throw error; }
+    if (error.config.overrideErrorHandler) { throw error; }
 
     const exception = resolveException(error);
     if (exception.unauthorized && !error.config.noPending) {
@@ -53,7 +53,7 @@ function resolveException(error: AxiosError) {
     };
 
     if (error.response) {
-        const {status, data, statusText} = error.response;
+        const { status, data, statusText } = error.response;
 
         if (status == 422) {
             // pro validaci
@@ -143,7 +143,7 @@ export const continueRequests = () => {
     pendingRequests = [];
 };
 
-// Diagnosticky log 
+// Diagnosticky log
 try {
     console.log("Axios basePath:", basePath);
     console.log("Parsed url:", new URL(basePath, window.location.origin));
@@ -152,11 +152,15 @@ try {
 }
 
 export const Api: {
-    accesspoints: AccesspointsApi; 
+    accesspoints: AccesspointsApi;
+    admin: AdminApi;
     funds: FundsApi;
     daos: DaosApi;
+    default: DefaultApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
+    admin: new AdminApi(undefined, basePath, axios),
     funds: new FundsApi(undefined, basePath, axios),
     daos: new DaosApi(undefined, basePath, axios),
+    default: new DefaultApi(undefined, basePath, axios),
 };

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.service.AsyncRequestService;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.UserService;
 
@@ -104,7 +105,7 @@ public class BulkActionController {
             produces = MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
-        Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
+        Validate.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
         asyncRequestService.interruptBulkAction(bulkActionRunId);
     }
 

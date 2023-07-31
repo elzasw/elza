@@ -3,23 +3,25 @@ import './ArrDaoPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {indexById} from 'stores/app/utils';
-import {connect} from 'react-redux';
+import { indexById } from 'stores/app/utils';
+import { connect } from 'react-redux';
 
 import ArrDaoPackages from '../../components/arr/ArrDaoPackages';
 import Ribbon from '../../components/page/Ribbon';
 import FundTreeDaos from '../../components/arr/FundTreeDaos';
 import ArrDaos from '../../components/arr/ArrDaos';
 
-import {i18n, Icon, RibbonGroup, Tabs} from 'components/shared';
+import { i18n, Icon, RibbonGroup, Tabs } from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
-import {createFundRoot, getParentNode} from 'components/arr/ArrUtils';
-import {addNodeForm} from 'actions/arr/addNodeForm';
+import { createFundRoot, getParentNode } from 'components/arr/ArrUtils';
+import { addNodeForm } from 'actions/arr/addNodeForm';
 import ArrParentPage from './ArrParentPage';
-import {fundTreeSelectNode} from 'actions/arr/fundTree';
-import {Button} from '../../components/ui';
-import {WebApi} from 'actions/index';
-import {urlFundDaos, getFundVersion} from "../../constants";
+import { fundTreeSelectNode } from 'actions/arr/fundTree';
+import { Button } from '../../components/ui';
+import { WebApi } from 'actions/index';
+import { urlFundDaos, getFundVersion } from "../../constants";
+import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
+import { Api } from "api";
 
 /**
  * Stránka archivních pomůcek.
@@ -31,7 +33,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     state = {
-        selectedTab: '0',
+        selectedTab: 'unassignedPackages',
         selectedUnassignedPackage: null,
         selectedPackage: null,
         selectedDaoLeft: null, // vybrané dao v levé části
@@ -56,7 +58,7 @@ class ArrDaoPage extends ArrParentPage {
         this.resolveUrls();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
+    UNSAFE_componentWillReceiveProps(nextProps) { }
 
     getDestNode() {
         const fund = this.getActiveFund(this.props);
@@ -75,7 +77,7 @@ class ArrDaoPage extends ArrParentPage {
     handleCreateUnderAndLink = () => {
         const fund = this.getActiveFund(this.props);
         const node = this.getDestNode();
-        const {selectedDaoLeft} = this.state;
+        const { selectedDaoLeft } = this.state;
 
         let parentNode = getParentNode(node, fund.fundTreeDaosRight.nodes);
         if (parentNode == null) {
@@ -86,7 +88,7 @@ class ArrDaoPage extends ArrParentPage {
         const afterCreateCallback = (versionId, node, parentNode) => {
             // Připojení - link
             WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(() => {
-                this.setState({selectedDaoLeft: null});
+                this.setState({ selectedDaoLeft: null });
             });
 
             // Výběr node ve stromu
@@ -101,10 +103,10 @@ class ArrDaoPage extends ArrParentPage {
 
     handleLink = () => {
         const fund = this.getActiveFund(this.props);
-        const {selectedDaoLeft} = this.state;
+        const { selectedDaoLeft } = this.state;
 
         WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(() => {
-            this.setState({selectedDaoLeft: null});
+            this.setState({ selectedDaoLeft: null });
         });
     };
 
@@ -165,14 +167,14 @@ class ArrDaoPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
 
         if (unassigned) {
-            this.setState({selectedUnassignedPackage: pkg, selectedIndex});
+            this.setState({ selectedUnassignedPackage: pkg, selectedIndex });
         } else {
-            this.setState({selectedPackage: pkg, selectedIndex});
+            this.setState({ selectedPackage: pkg, selectedIndex });
         }
     };
 
     _renderPackages = (unassigned, selectedPackage, readMode) => {
-        const {selectedIndex} = this.state;
+        const { selectedIndex } = this.state;
         const fund = this.getActiveFund(this.props);
 
         return (
@@ -192,7 +194,7 @@ class ArrDaoPage extends ArrParentPage {
                         selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
                         daoPackageId={selectedPackage ? selectedPackage.id : null}
                         onSelect={(item, daoFileId) => {
-                            this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
+                            this.setState({ selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId });
                         }}
                     />
                 }
@@ -201,13 +203,13 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     renderUnassignedPackages = readMode => {
-        const {selectedUnassignedPackage} = this.state;
+        const { selectedUnassignedPackage } = this.state;
 
         return this._renderPackages(true, selectedUnassignedPackage, readMode);
     };
 
     renderPackages = readMode => {
-        const {selectedPackage} = this.state;
+        const { selectedPackage } = this.state;
 
         return this._renderPackages(false, selectedPackage, readMode);
     };
@@ -227,35 +229,76 @@ class ArrDaoPage extends ArrParentPage {
                     /*fund.fundTreeDaosLeft.selectedId !== null &&*/
                 }
                 <ArrDaos
-                        type="NODE"
-                        unassigned={false}
-                        selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
-                        selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
-                        fund={fund}
-                        readMode={readMode}
-                        nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
-                        onSelect={(item, daoFileId) => {
-                            this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
-                        }}
-                    />
+                    type="NODE"
+                    unassigned={false}
+                    selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
+                    selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
+                    fund={fund}
+                    readMode={readMode}
+                    nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
+                    onSelect={(item, daoFileId) => {
+                        this.setState({ selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId });
+                    }}
+                />
             </div>
         );
     };
 
+    renderFileSystemTree = (readMode) => {
+        const selectFileSystePath = (_item, fullPath) => {
+            this.setState({ selectedFilePath: fullPath });
+        }
+        const fund = this.getActiveFund(this.props);
+
+        return (
+            <div className="tree-left-container">
+                <FileSystemBrowser fundId={fund.id} onSelect={selectFileSystePath} />
+            </div>
+        )
+    }
+
     isDaoType = (type) => {
-        const {selectedDaoLeft} = this.state;
+        const { selectedDaoLeft } = this.state;
         return selectedDaoLeft && selectedDaoLeft.daoType === type;
     }
 
-    renderCenterButtons = (readMode) => {
-        const {selectedDaoLeft} = this.state;
+    handleFileLink = async () => {
+        const { selectedFilePath } = this.state;
         const fund = this.getActiveFund(this.props);
+
+        const [repoId, path] = extractRepoIdFromFullPath(selectedFilePath);
+        const result = await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
+        console.log("#### file link result", result);
+    }
+
+    renderCenterButtons = (readMode) => {
+        const { selectedDaoLeft, selectedFilePath, selectedTab } = this.state;
+        const fund = this.getActiveFund(this.props);
+
+        if (selectedTab === "fileSystemTree") {
+            const canLinkFile = selectedFilePath
+                && fund.fundTreeDaosRight.selectedId !== null
+                && !readMode;
+            return (
+                <Button
+                    key="0"
+                    onClick={this.handleFileLink}
+                    disabled={!canLinkFile}
+                >
+                    <Icon
+                        glyph="fa-thumb-tack"
+                    />
+                    <div>
+                        {i18n('arr.daos.link')}
+                    </div>
+                </Button>
+            )
+        }
 
         let canLink = selectedDaoLeft
             && fund.fundTreeDaosRight.selectedId !== null
             && !readMode;
-
-        if(this.isDaoType("LEVEL")){
+        if (this.isDaoType("LEVEL")) {
             return (
                 <Button
                     onClick={this.handleLink}
@@ -269,7 +312,8 @@ class ArrDaoPage extends ArrParentPage {
                     </div>
                 </Button>
             );
-        } else {
+        }
+        else {
             return [
                 <Button
                     key="0"
@@ -300,42 +344,47 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderSelectedTab = (readMode) => {
-        const {selectedTab} = this.state;
+        const { selectedTab } = this.state;
         switch (selectedTab) {
-            case '0':
+            case 'unassignedPackages':
                 return this.renderUnassignedPackages(readMode);
-            case '1':
+            case 'packages':
                 return this.renderPackages(readMode);
-            case '2':
+            case 'leftTree':
                 return this.renderLeftTree(readMode);
+            case 'fileSystemTree':
+                return this.renderFileSystemTree(readMode);
             default:
-                return <React.Fragment/>;
+                return <React.Fragment />;
         }
     }
 
     renderCenterPanel = (readMode, closed) => {
-        const {selectedTab} = this.state;
+        const { selectedTab } = this.state;
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
         let active = rightHasSelection && !readMode && !fund.closed;
 
         let tabs = [{
-            id: '0',
+            id: 'unassignedPackages',
             title: 'Nepřiřazené entity',
-        },{
-            id: '1',
+        }, {
+            id: 'packages',
             title: 'Balíčky'
-        },{
-            id: '2',
+        }, {
+            id: 'leftTree',
             title: 'Archivní strom'
+        }, {
+            id: 'fileSystemTree',
+            title: 'Souborovy system'
         }];
 
         return (
             <div className="daos-content-container">
                 <div key={1} className="left-container">
                     <Tabs.Container className="daos-tabs-container">
-                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
+                        <Tabs.Tabs items={tabs} activeItem={{ id: selectedTab }} onSelect={this.handleTabSelect} />
                         <Tabs.Content>
                             {this.renderSelectedTab(readMode)}
                         </Tabs.Content>
@@ -363,7 +412,7 @@ class ArrDaoPage extends ArrParentPage {
                                 }
                                 readMode={readMode}
                                 onSelect={(item, daoFileId) => {
-                                    this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId});
+                                    this.setState({ selectedDaoRight: item, selectedDaoRightFileId: daoFileId });
                                 }}
                                 nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                             />
@@ -376,7 +425,7 @@ class ArrDaoPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
+    const { splitter, arrRegion, refTables, form, focus, developer, userDetail, tab } = state;
     return {
         splitter,
         arrRegion,

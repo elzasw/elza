@@ -11,6 +11,8 @@ tags:
     description: Vyhledávání
   - name: admin
     description: Administrativní funkce
+  - name: io
+    description: Vstup a výstup informací
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -526,68 +528,357 @@ paths:
         "401":
           description: Unauthorized
         "403":
-          description: Forbidden
-  /admin/arrangement/missing-cached-nodes:
+          description: Forbidden          
+  /admin/admin/arrangement/missing-cached-nodes:
     get:
-      summary: Vytvoření chybějících záznamů v arr_cached_node
-      operationId: syncNodeCache
       tags:
         - admin
+      operationId: Admin_syncNodeCache
+      description: Creating missing items in arr_cached_node
+      parameters: []
       responses:
-        200:
-          description: Potvrzení o úspěšném stvoření
+        '200':
+          description: The request has succeeded.
   /admin/info:
     get:
-      summary: Základní statistické údaje
-      operationId: getAdminInfo
       tags:
         - admin
+      operationId: Admin_info
+      description: Return basic statistical info
+      parameters: []
       responses:
-        200:
-          description: Basic administration info
+        '200':
+          description: The request has succeeded.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AdminInfo"          
+                $ref: '#/components/schemas/AdminInfo'
   /admin/info/logged-users:
     get:
-      summary: Seznam přihlášených uživatelů
-      operationId: getAdminLoggedUsers
       tags:
         - admin
+      operationId: Admin_loggedUsers
+      description: Return list of logged users
+      parameters: []
       responses:
-        200:
-          description: List of logged users
+        '200':
+          description: The request has succeeded.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoggedUsers"          
+                $ref: '#/components/schemas/LoggedUsers'
+  /daorepository:
+    get:
+      operationId: DaoRepository_fsRepos
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FsRepo'
+                x-typespec-name: FsRepo[]
+  /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
+    get:
+      tags:
+        - funds
+      operationId: Fund_fsRepoItemData
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/FsRepoIdParameter'
+        - name: path
+          in: query
+          required: true
+          description: file path in the repository
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /fund/{fundId}/fsrepo/{fsrepoId}/items:
+    get:
+      tags:
+        - funds
+      operationId: Fund_fsRepoItems
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/FsRepoIdParameter'
+        - name: filterType
+          in: query
+          required: false
+          description: >-
+            Optional filter to return only folders or files. If not specified
+            all items are returned
+          schema:
+            type: string
+            enum:
+              - FOLDER
+              - FILE
+        - name: path
+          in: query
+          required: false
+          description: Optional path in the repository
+          schema:
+            type: string
+        - name: lastKey
+          in: query
+          required: false
+          description: >-
+            Optional parameter to return next batch of items. See FsItems for
+            more details.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FsItems'
+  /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}:
+    put:
+      tags:
+        - funds
+      operationId: Fund_fsCreateDAOLink
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/FsRepoIdParameter'
+        - $ref: '#/components/parameters/NodeIdParameter'
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+  /fund/{fundId}/fsrepos:
+    get:
+      tags:
+        - funds
+      operationId: Fund_fsRepos
+      description: Return list of filesystem repositories
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FsRepo'
+                x-typespec-name: FsRepo[]
+  /io/export:
+    post:
+      tags:
+        - io
+      operationId: exportRequest
+      description: Create export file of funds or access points
+      requestBody:
+        description: Export parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportParams'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+  /io/file/{requestId}:
+    get:
+      tags:
+        - io
+      operationId: getExportFile
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content: 
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '102':
+          description: The requested resource is being processed.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server error processing request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
 components:
+  parameters:
+    FsRepoIdParameter:
+      name: fsrepoId
+      in: path
+      required: true
+      description: FileSystem repository ID
+      schema:
+        type: integer
+    FundIdParameter:
+      name: fundId
+      in: path
+      required: true
+      description: Fund ID
+      schema:
+        type: integer
+    NodeIdParameter:
+      name: nodeId
+      in: path
+      required: true
+      description: Node ID
+      schema:
+        type: integer
   schemas:
     AdminInfo:
       type: object
-      description: Basic statistics about Elza instance
       properties:
         funds:
+          type: integer
+          format: int32
           description: Number of funds
-          type: integer
-          format: int32
         levels:
+          type: integer
+          format: int32
           description: Number of valid levels
-          type: integer
-          format: int32
         accessPoints:
+          type: integer
+          format: int32
           description: Number of valid access points
+        users:
           type: integer
           format: int32
-        users:        
           description: Number of users
+        loggedUsers:
           type: integer
           format: int32
-        loggedUsers:        
           description: Number of logged users
+      description: Basic statistics about Elza instance
+      required:
+        - funds
+        - levels
+        - accessPoints
+        - users
+        - loggedUsers
+    FsItem:
+      type: object
+      properties:
+        itemType:
+          allOf:
+            - $ref: '#/components/schemas/FsItemType'
+          description: 'Type of item: file or folder'
+        name:
+          type: string
+          description: File or folder name
+        size:
+          type: integer
+          description: File size
+        lastChange:
+          type: string
+          format: date-time
+          description: Time of last change
+      description: Single file system item
+      required:
+        - itemType
+        - name
+        - lastChange
+    FsItemType:
+      type: string
+      description: File system item type
+      enum:
+        - FOLDER
+        - FILE
+    FsItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FsItem'
+          x-typespec-name: FsItem[]
+        lastKey:
+          type: string
+          description: >-
+            Optional string to request next items. It is used if there are more
+            items.
+      description: Collection of file system items
+      required:
+        - items
+    FsRepo:
+      type: object
+      properties:
+        fsRepoId:
           type: integer
           format: int32
+          description: Repository ID
+        code:
+          type: string
+          description: Optional code of repository
+        name:
+          type: string
+          description: Repository name
+        path:
+          type: string
+          description: Repository path
+      required:
+        - fsRepoId
+        - name
+        - path
+    LoggedUser:
+      type: object
+      properties:
+        user:
+          type: string
+          description: username
+      description: Logged user
+      required:
+        - user
+    LoggedUsers:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoggedUser'
+          description: User list
+          x-typespec-name: LoggedUser[]
+        totalCount:
+          type: integer
+          format: int32
+          description: Total number of logged users
+      description: List of logged users
+      required:
+        - users
+        - totalCount
     CreateFund:
       required:
         - name
@@ -640,26 +931,6 @@ components:
           items:
             type: string
           minItems: 1
-    LoggedUser:
-      type: object
-      description: Přihlášený uživatel
-      properties:
-        user:
-          description: Uživatelské jméno
-          type: string
-    LoggedUsers:
-      type: object
-      description: Seznam přihlášených uživatelů
-      properties:
-        users:
-          description: Seznam uživatelů 
-          type: array
-          items:
-            $ref: '#/components/schemas/LoggedUser'
-        totalCount:
-          description: Celkový počet přihlášených uživatelů
-          type: integer
-          format: int32
     UpdateFund:
       type: object
       description: Změny archivního souboru
@@ -991,6 +1262,9 @@ components:
         state:
           description: Stav revize
           $ref: "#/components/schemas/RevisionState"
+        comment:
+          description: Komentář k revizi
+          type: string
     RevisionState:
       title: Stav revize
       type: string
@@ -1033,3 +1307,60 @@ components:
       required:
         - importType
         - dataFile
+    ExportParams:
+      type: object
+      properties:
+        apIds:
+          type: array
+          items:
+            type: integer
+        fundsSections:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundSections'
+        exportFilterId:
+          type: integer
+        includeUUID:
+          type: boolean
+          default: true
+        includeAccessPoints:
+          type: boolean
+          default: true
+      description: Parameters of archive file export
+      title: Export parameters
+    FundSections:
+      type: object
+      properties:
+        fundVersionId:
+          type: integer
+        mergeSections:
+          type: boolean
+          default: false
+        rootNodeIds:
+          type: array
+          items:
+            type: integer
+      description: Specifies multiple sections for fund version
+      required:
+        - fundVersionId
+    BaseException:
+      type: object
+      properties:
+        type:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        level:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: object
+        stackTrace:
+          type: string
+      description: Error specification for the client
+      required:
+        - type
+        - code

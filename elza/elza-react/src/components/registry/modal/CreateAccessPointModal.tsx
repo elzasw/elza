@@ -37,7 +37,7 @@ export interface CreateAccessPointModalProps {
     onSubmit: (data: any) => any;
 }
 
-const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
+const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
     onClose,
     apTypeId,
     apTypeFilter,
@@ -45,26 +45,32 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
 }) => {
     const partTypeCode = "PT_NAME";
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
-    const refTables = useSelector((state:AppState) => state.refTables);
-    const userDetail = useSelector((state:AppState) => state.userDetail);
-    const [values, setValues] = useState<CreateAccessPointModalFields>({partForm:{partTypeCode, items: []}});
-    const [availableAttributes, setAvailableAttributes] = useState<ApCreateTypeVO[] | undefined>();
-    const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
-
-    const loading = 
-        !refTables.apTypes.fetched || 
-        !refTables.scopesData.scopes || 
-        !refTables.partTypes.fetched || 
-        !refTables.rulDataTypes.fetched || 
-        !refTables.descItemTypes.fetched || 
-        !apViewSettings.fetched;
+    const refTables = useSelector((state: AppState) => state.refTables);
+    const userDetail = useSelector((state: AppState) => state.userDetail);
 
     const apTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
     const scopes = getScopes(refTables.scopesData.scopes, userDetail);
+    const visibleScopes = scopes.find((scopeData) => scopeData.versionId === -1)?.scopes || [];
     const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode) as number;
 
+    const [values, setValues] = useState<CreateAccessPointModalFields>({
+        scopeId: visibleScopes.length === 1 ? visibleScopes[0].id : undefined,
+        partForm: { partTypeCode, items: [] },
+    });
+    const [availableAttributes, setAvailableAttributes] = useState<ApCreateTypeVO[] | undefined>();
+    const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
+
+    const loading =
+        !refTables.apTypes.fetched ||
+        !refTables.scopesData.scopes ||
+        !refTables.partTypes.fetched ||
+        !refTables.rulDataTypes.fetched ||
+        !refTables.descItemTypes.fetched ||
+        !apViewSettings.fetched;
+
+
     const fetchAttributes = async (data: CreateAccessPointModalFields) => {
-        if(data.apType?.id == null || data.scopeId == null){return;}
+        if (data.apType?.id == null || data.scopeId == null) { return; }
         const items = data.partForm?.items ? [...data.partForm.items] : [];
         const form = data.partForm || {
             partTypeCode,
@@ -72,10 +78,10 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
         }
         const { attributes, errors, data: partForm } = await getUpdatedForm(
             form,
-            data.apType?.id, 
-            data.scopeId, 
-            apViewSettings, 
-            refTables, 
+            data.apType?.id,
+            data.scopeId,
+            apViewSettings,
+            refTables,
             partTypeId
         )
         setAvailableAttributes(attributes);
@@ -88,18 +94,18 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
 
     const debouncedFetchAttributes = debounce(fetchAttributes, 100) as typeof fetchAttributes;
 
-    if(loading){ return <Loading/> }
+    if (loading) { return <Loading /> }
 
     return (
-        <Form<CreateAccessPointModalFields> 
-            initialValues={values} 
+        <Form<CreateAccessPointModalFields>
+            initialValues={values}
             onSubmit={onSubmit}
             mutators={{
                 ...arrayMutators,
                 ...getValueChangeMutators(debouncedFetchAttributes),
             }}
         >
-            {({submitting, values: {apType, scopeId, partForm}, handleSubmit}) => {
+            {({ submitting, values: { apType, scopeId, partForm }, handleSubmit }) => {
                 return <>
                     <Modal.Body>
                         <p>
@@ -113,14 +119,16 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
                             tree
                             alwaysExpanded
                             allowSelectItem={(item: ApTypeVO) => item.addRecord}
-                            />
+                        />
 
-                        <FormScope
-                            name={'scopeId'}
-                            disabled={submitting}
-                            label={i18n('registry.scopeClass')}
-                            items={scopes}
+                        {visibleScopes.length > 1 &&
+                            <FormScope
+                                name={'scopeId'}
+                                disabled={submitting}
+                                label={i18n('registry.scopeClass')}
+                                items={scopes}
                             />
+                        }
 
                         {(apTypeId || (apType && apType.id)) && scopeId && partForm && partTypeId !== undefined && (
                             <>
@@ -137,8 +145,8 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
                                     availableAttributes={availableAttributes}
                                     editErrors={editErrors}
                                     arrayName="partForm.items"
-                                    />
-                                </>
+                                />
+                            </>
                         )}
                     </Modal.Body>
                     <Modal.Footer>
@@ -150,44 +158,44 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
                             {i18n('global.action.cancel')}
                         </Button>
                     </Modal.Footer>
-                    </>
+                </>
             }}
         </Form>
     );
 };
 
 const getPartTypeId = (partTypes: RulPartTypeVO[] = [], partTypeName: "PT_NAME") => {
-    const partType = partTypes.find((item:any)=>item.code === partTypeName);
+    const partType = partTypes.find((item: any) => item.code === partTypeName);
     return partType ? partType.id : undefined;
 }
 
 const getScopes = (scopes: ScopeData[] = [], userDetail: UserDetail) => {
     // Don't filter, when user is admin, or has permission to write to all scopes.
-    if(userDetail.isAdmin() || userDetail.permissionsMap.AP_SCOPE_WR_ALL){return scopes;}
+    if (userDetail.isAdmin() || userDetail.permissionsMap.AP_SCOPE_WR_ALL) { return scopes; }
     const userWritableScopes = userDetail.permissionsMap.AP_SCOPE_WR?.scopeIdsMap;
     // Return empty, when user doesn't have any permission to write in scopes.
-    if(!userWritableScopes){return [];}
+    if (!userWritableScopes) { return []; }
 
-    return [...scopes].map((scopeData)=>({
+    return [...scopes].map((scopeData) => ({
         ...scopeData,
-        scopes: scopeData.scopes.filter((scope) => 
-            scope.id !== undefined && 
-            scope.id !== null && 
+        scopes: scopeData.scopes.filter((scope) =>
+            scope.id !== undefined &&
+            scope.id !== null &&
             userWritableScopes[scope.id] !== undefined
         )
     }))
 }
 
 const filterApTypes = (apTypes: ApTypeVO[] = [], apTypeCodes: string[] = []) => {
-    if(apTypeCodes.length === 0){ return apTypes; }
+    if (apTypeCodes.length === 0) { return apTypes; }
 
     const filteredTypes: ApTypeVO[] = [];
-    apTypes.forEach((type)=>{
-        if(apTypeCodes.indexOf(type.code) >= 0){
+    apTypes.forEach((type) => {
+        if (apTypeCodes.indexOf(type.code) >= 0) {
             filteredTypes.push(type);
         } else if (type.children) {
             const children = filterApTypes(type.children, apTypeCodes);
-            if(children.length > 0){
+            if (children.length > 0) {
                 filteredTypes.push({
                     ...type,
                     children,

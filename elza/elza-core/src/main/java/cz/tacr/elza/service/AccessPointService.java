@@ -90,6 +90,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -114,6 +115,7 @@ import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
@@ -488,13 +490,15 @@ public class AccessPointService {
     }
 
     /**
-     * Obnovení neplatné entity a návrat do původního stavu
+     * Obnovení zneplatněné entity
+     * 
+     * Entita je vždy obnovena ve stavu nová
      * 
      * @param apState
      */
     public void restoreAccessPoint(ApState apState) {
 
-        checkPermissionForEdit(apState);
+        checkPermissionForRestore(apState);
 
         // check if access point is deleted
         validationDeleted(apState);
@@ -502,6 +506,8 @@ public class AccessPointService {
         // create new version of ApState 
         ApChange change = apDataService.createChange(ApChange.Type.AP_RESTORE);
         ApState restoreState = copyState(apState, change);
+        // access point is always restored as new
+        restoreState.setStateApproval(StateApproval.NEW);
         stateRepository.save(restoreState);
 
         // restore ApKeyValue(s)
@@ -1242,7 +1248,8 @@ public class AccessPointService {
         ArrData data = HibernateUtils.unproxy(revItem.getData());
         Validate.isTrue(data instanceof ArrDataRecordRef);
 
-        checkPermissionForEdit(revision.getState(), revision);
+        ApRevState revState = revisionService.findLastRevState(revision);
+        checkPermissionForEdit(revision.getState(), revState);
        
         // Mark revItem as deleted
         ArrDataRecordRef drr = new ArrDataRecordRef();
@@ -2151,8 +2158,8 @@ public class AccessPointService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public List<ApState> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
-        return apStateRepository.findByAccessPointFetch(apAccessPoint);
+    public List<ApStateInfo> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
+        return apStateRepository.findInfoByAccessPoint(apAccessPoint);
     }
 
     /**
@@ -2196,7 +2203,7 @@ public class AccessPointService {
             // nelze změnit třídu pokud existuje platná ApBindingState
             int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
             if (countBinding > 0) {
-                throw new SystemException("Třídu entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Třídu a podtřídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("typeId", oldApState.getApTypeId());
             }
@@ -2384,11 +2391,11 @@ public class AccessPointService {
      * revize
      *
      * @param apState
-     * @param revision
+     * @param revState
      * @return seznam stavů
      */
     public List<StateApproval> getNextStatesRevision(@NotNull ApState apState,
-                                                     @NotNull ApRevision revision) {
+                                                     @NotNull ApRevState revState) {
         
         ApScope apScope = apState.getScope();
         UserDetail user = userService.getLoggedUserDetail();
@@ -2417,11 +2424,11 @@ public class AccessPointService {
             }
         }
 
-        UsrUser createChangeUser = revision.getCreateChange().getUser();
+        UsrUser createChangeUser = revState.getCreateChange().getUser();
         Integer lastRevUserId = createChangeUser != null ? createChangeUser.getUserId() : null;
         // schvalování
         // jen jiny uzivatel nez tvurce revize muze schvalit
-        if (revision.getStateApproval() == RevStateApproval.TO_APPROVE) {
+        if (revState.getStateApproval() == RevStateApproval.TO_APPROVE) {
             // Kontrola, zda je odlišný uživatel, který změnil revizi
             if (!Objects.equals(user.getId(), lastRevUserId)) {
                 if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
@@ -2662,16 +2669,31 @@ public class AccessPointService {
      *
      * @param state
      *            state entity
-     * @param revision
-     *            active revision (if exists)
+     * @param revState
+     *            active revision state (if exists)
      */
     public void checkPermissionForEdit(final ApState state,
-                                       @Nullable final ApRevision revision) {
-        if (revision != null) {
-            checkPermissionForEdit(state, revision.getStateApproval());
+                                       @Nullable final ApRevState revState) {
+        if (revState != null) {
+            checkPermissionForEdit(state, revState.getStateApproval());
         } else {
             checkPermissionForEdit(state, (RevStateApproval) null);
         }
+    }
+
+    public void checkPermissionForRestore(final ApState state) {
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return;
+        }
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
+            return;
+        }
+
+        throw new SystemException("Nedostatečné oprávnění na obnovu přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
     }
 
     public void checkPermissionForEdit(final ApState state,
@@ -2691,12 +2713,9 @@ public class AccessPointService {
 
         switch (state.getStateApproval()) {
         case APPROVED:
-            if (revState != null) {
-                // approved with revision might be edited
-                if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
-                    return;
-                }
+            if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
+                return;
             }
             break;
         case NEW:

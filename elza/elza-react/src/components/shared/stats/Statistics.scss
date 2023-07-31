@@ -1,0 +1,49 @@
+@import '../../../variables.scss';
+
+.stats-flex-container {
+    display: flex;
+    justify-content: end;
+}
+
+.stats-box {
+    display: inline-flex;
+    padding: 15px;
+    background-color: $shade-1;
+    margin: 10px;
+    border-radius: 5px;
+    flex-wrap: wrap;
+
+    & > div {
+        margin: 8px;
+        line-height: 1em;
+
+        & > span {
+            font-weight: bold;
+        }
+    }
+}
+
+.stats-user-box {
+    display: inline-flex;
+    flex-direction: column;
+    background-color: $shade-1;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+.stats-user-list {
+    padding: 0 30px 30px;
+
+    .users {
+        background-color: $shade-4;
+        border-radius: 5px;
+        max-height: 250px;
+        overflow: auto;
+
+        & > div {
+            margin: 8px;
+            line-height: 1em;
+        }
+    }
+}
+

@@ -70,6 +70,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
+import cz.tacr.elza.service.dao.DaoServiceInternal;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.ChecksumType;
@@ -137,6 +138,9 @@ public class DaoSyncService {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private DaoServiceInternal daoServiceInternal;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -642,23 +646,17 @@ public class DaoSyncService {
 
     }
 
-    public ArrDao createDao(ArrDaoPackage arrDaoPackage, Dao dao) {
+    public ArrDao createDao(ArrDaoPackage daoPackage, Dao dao) {
         if (StringUtils.isBlank(dao.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("dao.identifier", dao.getIdentifier());
         }
-        ArrDao arrDao = new ArrDao();
-        arrDao.setCode(dao.getIdentifier());
-        arrDao.setLabel(dao.getLabel());
-        arrDao.setValid(true);
 
         String attrs = getDaoAttributes(dao);
-        arrDao.setAttributes(attrs);
-
         DaoType daoType = getDaoType(dao.getDaoType());
-        arrDao.setDaoType(daoType);
-        arrDao.setDaoPackage(arrDaoPackage);
-        return daoRepository.save(arrDao);
+
+        ArrDao arrDao = daoServiceInternal.createDao(daoPackage, dao.getIdentifier(), dao.getLabel(), attrs, daoType);
+        return daoServiceInternal.persistDao(arrDao);
     }
 
     static public DaoType getDaoType(cz.tacr.elza.ws.types.v1.DaoType xmlDaoType) {
@@ -674,11 +672,9 @@ public class DaoSyncService {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("relatedFileGroup.identifier", relatedFileGroup.getIdentifier());
         }
-        ArrDaoFileGroup arrDaoFileGroup = new ArrDaoFileGroup();
-        arrDaoFileGroup.setCode(relatedFileGroup.getIdentifier());
-        arrDaoFileGroup.setLabel(relatedFileGroup.getLabel());
-        arrDaoFileGroup.setDao(arrDao);
-        return daoFileGroupRepository.save(arrDaoFileGroup);
+        return daoServiceInternal.createDaoFileGroup(relatedFileGroup.getIdentifier(),
+                                                     relatedFileGroup.getLabel(),
+                                                     arrDao);
     }
 
     public ArrDaoFile createArrDaoFileGroup(ArrDaoFileGroup arrDaoFileGroup, File file) {
