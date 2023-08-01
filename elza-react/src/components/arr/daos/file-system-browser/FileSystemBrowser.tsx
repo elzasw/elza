@@ -75,8 +75,14 @@ export const FileSystemBrowser = ({
                     loadMoreListItems(item.parentFullPath || "", item.data.lastKey, index, item.depth)
                 }}
             >
-                {i18n("arr.daos.fileSystem.loadMore")}
+                <span className="item-part left" title={i18n("arr.daos.fileSystem.loadMore")}>
+                    {i18n("arr.daos.fileSystem.loadMore")}
+                </span>
             </div>
+        }
+
+        const buildDateString = (date: Date) => {
+            return `${date.toLocaleDateString([], { year: "2-digit", month: "numeric", day: "numeric" })}  ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
         }
 
         if (isListItem(item)) {
@@ -96,18 +102,18 @@ export const FileSystemBrowser = ({
                     onSelect(item.data, item.fullPath);
                 }}
             >
-                {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
-                <span className="item-part left">
+                <span className="item-part left no-shrink" title={item.data.name}>
+                    {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
+                </span>
+                <span className="item-part left" title={item.data.name}>
                     {item.data.name}
                 </span>
                 <span className="spacer" />
-                <span className="item-part right">
-                    {item.data.size != null && humanFileSize(item.data.size)}
-                </span>
-                <span className="item-part right">
-                    {lastChangeDate.toLocaleDateString([], { year: "2-digit", month: "numeric", day: "numeric" })}
-                    &nbsp;&nbsp;
-                    {lastChangeDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {item.data.size != null && <span className="item-part right no-shrink" style={{ width: "10ch" }} title={humanFileSize(item.data.size)}>
+                    {humanFileSize(item.data.size)}
+                </span>}
+                <span className="item-part right no-shrink" style={{ width: "18ch" }} title={buildDateString(lastChangeDate)}>
+                    {buildDateString(lastChangeDate)}
                 </span>
             </div>
         }
