@@ -1,12 +1,12 @@
 import * as types from 'actions/constants/ActionTypes';
 
 import React from 'react';
-import {i18n} from 'components/shared';
-import {Button} from '../../components/ui';
-import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
-import {fundOutputSelectOutput} from 'actions/arr/fundOutput';
-import {routerNavigate} from 'actions/router';
-import {indexById} from 'stores/app/utils';
+import { i18n } from 'components/shared';
+import { Button } from '../../components/ui';
+import { addToastr, addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { fundOutputSelectOutput } from 'actions/arr/fundOutput';
+import { routerNavigate } from 'actions/router';
+import { indexById } from 'stores/app/utils';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
@@ -22,17 +22,18 @@ import {
     preparedListInvalidate,
     queueListInvalidate,
 } from 'actions/arr/arrRequestActions';
-import {storeFromArea} from 'shared/utils';
+import { storeFromArea } from 'shared/utils';
 import {
     AREA_REGISTRY_DETAIL,
     AREA_REGISTRY_LIST,
     registryDetailInvalidate,
     registryListInvalidate,
 } from 'actions/registry/registry';
-import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
-import {structureTypeInvalidate} from '../arr/structureType';
-import {DetailActions} from '../../shared/detail';
-import {urlFundOutputs} from "../../constants";
+import { refExternalSystemListInvalidate } from 'actions/refTables/externalSystems';
+import { structureTypeInvalidate } from '../arr/structureType';
+import { DetailActions } from '../../shared/detail';
+import { getFundVersion, urlFundOutputs } from "../../constants";
+import { Link } from 'react-router-dom';
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -298,27 +299,22 @@ export function fundOutputStateChange(versionId, outputId, state) {
 
 export function fundOutputStateChangeToastr(versionId, entityId, state) {
     return (dispatch, getState) => {
-        const {arrRegion} = getState();
+        const { arrRegion } = getState();
         if (arrRegion.activeIndex != null) {
             const fund = arrRegion.funds[arrRegion.activeIndex];
             if (fund === null || fund.versionId !== versionId) {
                 return;
             }
 
-            var currentLocation = window.location.pathname;
-            // show butten only if on another page
-            var showBtn;
-            if(!currentLocation.endsWith(urlFundOutputs(fund.id))) {
+            // show button only if on another page
+            const isOutputVisible = window.location.pathname.endsWith(urlFundOutputs(fund.id, getFundVersion(fund), entityId));
+
+            let showBtn;
+            if (!isOutputVisible) {
                 showBtn = (
-                <Button
-                    variant="link"
-                    onClick={() => {
-                        dispatch(routerNavigate(urlFundOutputs(fund.id, entityId)));
-                        dispatch(fundOutputSelectOutput(versionId, entityId));
-                    }}
-                >
-                    {i18n('change.arr.output.clickToShow')}
-                </Button>
+                    <Link to={urlFundOutputs(fund.id, getFundVersion(fund), entityId)}>
+                        {i18n('change.arr.output.clickToShow')}
+                    </Link>
                 );
             } else {
                 showBtn = null;
@@ -328,11 +324,26 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
                 case 'GENERATING':
                     return dispatch(addToastrInfo(i18n('change.arr.output.generating.title'), showBtn));
                 case 'OUTDATED':
-                    return dispatch(addToastrSuccess(i18n('change.arr.output.outdated.title'), showBtn));
+                    return dispatch(addToastrSuccess(
+                        isOutputVisible
+                            ? i18n('change.arr.output.outdated.title')
+                            : <span dangerouslySetInnerHTML={{
+                                __html: i18n('^change.arr.output.outdated.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
+                            }} />, showBtn));
                 case 'FINISHED':
-                    return dispatch(addToastrSuccess(i18n('change.arr.output.finished.title'), showBtn));
+                    return dispatch(addToastrSuccess(
+                        isOutputVisible
+                            ? i18n('change.arr.output.finished.title')
+                            : <span dangerouslySetInnerHTML={{
+                                __html: i18n('^change.arr.output.finished.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
+                            }} />, showBtn, undefined, isOutputVisible ? undefined : null));
                 case 'ERROR':
-                    return dispatch(addToastrDanger(i18n('change.arr.output.error.title'), showBtn));
+                    return dispatch(addToastrDanger(
+                        isOutputVisible
+                            ? i18n('change.arr.output.error.title')
+                            : <span dangerouslySetInnerHTML={{
+                                __html: i18n('^change.arr.output.error.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
+                            }} />, showBtn));
                 default:
                     return;
             }

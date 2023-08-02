@@ -513,8 +513,11 @@ var messages = {
 
     "change.arr.output.generating.title": "Generuje se výstup",
     "change.arr.output.outdated.title": "Výstup byl vygenerován, ale data nejsou aktuální",
+    "change.arr.output.outdated.extended.title": "Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován, ale data nejsou aktuální",
     "change.arr.output.finished.title": "Výstup byl vygenerován",
+    "change.arr.output.finished.extended.title": "Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován",
     "change.arr.output.error.title": "Chyba při generování výstupu",
+    "change.arr.output.error.extended.title": "Chyba při generování výstupu <b>{0}</b> z archivního souboru <b>{1}</b>",
     "change.arr.output.clickToShow": "Klikněte zde pro zobrazení",
 
     "arr.fundAction.noSelection.title": "Není vybrána funkce",
