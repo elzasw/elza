@@ -38,17 +38,17 @@ export function addToastrExtended(
     };
 }
 
-export function addToastrDanger(title, message = null, size = 'lg') {
-    return addToastr(title, message, 'danger', size, null);
+export function addToastrDanger(title, message = null, size = 'lg', timeout = null) {
+    return addToastr(title, message, 'danger', size, timeout);
 }
-export function addToastrWarning(title, message = null, size = 'lg') {
-    return addToastr(title, message, 'warning', size, null);
+export function addToastrWarning(title, message = null, size = 'lg', timeout = null) {
+    return addToastr(title, message, 'warning', size, timeout);
 }
-export function addToastrInfo(title, message = null, size = 'lg') {
-    return addToastr(title, message, 'info', size, 2000);
+export function addToastrInfo(title, message = null, size = 'lg', timeout = 2000) {
+    return addToastr(title, message, 'info', size, timeout);
 }
-export function addToastrSuccess(title, message = null, size = 'lg') {
-    return addToastr(title, message, 'success', size, 2000);
+export function addToastrSuccess(title, message = null, size = 'lg', timeout = 2000) {
+    return addToastr(title, message, 'success', size, timeout);
 }
 
 export function removeToastr(index) {
