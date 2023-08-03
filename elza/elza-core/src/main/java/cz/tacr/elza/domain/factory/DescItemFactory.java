@@ -103,7 +103,7 @@ public class DescItemFactory implements InitializingBean {
     /**
      * Povolené protokoly
      */
-    private final String PATTERN_PROTOCOL = "^(http://|https://|elza-node://)";
+    private final String PATTERN_PROTOCOL = "^(https?|elza-node)://.*";
 
     /**
      * Povolenoné zkratky
