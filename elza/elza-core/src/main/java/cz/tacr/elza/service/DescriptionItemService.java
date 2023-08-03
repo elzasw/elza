@@ -1878,6 +1878,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param fundVersion      verze stromu
      * @param itemType         typ atributu
+     * @param nodes            seznam uzlů, které budou změněny
      * @param replaceValueId   id strukturovaného typu, jehož hodnota bude nastavena
      * @param valueIds         seznam id stukturovaných typů, které se mají nahradit
      * @param allNodes         vložit u všech JP
@@ -1924,7 +1925,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ignoreNodes = remainItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
-        if (!descItemsToReplaceText.isEmpty() || (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1))) {
+        // update an existing item(s) OR creation of new item(s) 
+        if (!descItemsToReplaceText.isEmpty() || CollectionUtils.isNotEmpty(dbNodes)) {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
@@ -1940,6 +1942,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 structuredObject = structuredObjects.get(0);
             }
 
+            // update an existing item(s)
             if (!descItemsToReplaceText.isEmpty()) {
 
                 for (ArrDescItem descItem: descItemsToReplaceText) {
@@ -1976,7 +1979,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 changeContext.flushIfNeeded();
             }
 
-            if (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1)) {
+            // creation of new item(s)
+            if (CollectionUtils.isNotEmpty(dbNodes)) {
                 for (ArrNode dbNode : dbNodes) {
 
                     if (ignoreNodes.contains(dbNode)) {
@@ -2014,7 +2018,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             changeContext.flush();
         }
-
     }
 
     /**
