@@ -1266,9 +1266,9 @@ export class WebApiCls {
         );
     }
 
-    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType) {
+    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType, append = false) {
         return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl + '/placeDataValues/' + versionId,
+            WebApiCls.arrangementUrl + '/placeDataValues/' + versionId + (append ? '?append=true' : ""),
             {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText},
             {nodes, specIds: specsIds, selectionType},
         );
