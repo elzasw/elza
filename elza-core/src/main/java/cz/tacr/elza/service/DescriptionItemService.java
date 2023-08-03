@@ -1695,12 +1695,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             changeContext.flush();
         }
 
-        //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
+        //pokud má specifikaci musíme zkontrolovat,
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
         //takovým nodům nenastavujeme novou hodnotu se specifikací
+        //
+        // ?? Je to k něčemu ?? Možná by šlo zcela odstranit
+        //
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if (itemType.hasSpecifications() && BooleanUtils.isNotTrue(itemType.getEntity().getRepeatable()) && nodes
-                .size() > 0) {
+        if (!append && itemType.hasSpecifications() && nodes.size() > 0) {
             List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
             ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
@@ -1715,7 +1717,25 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             dbNodes = nodeRepository.findAllById(nodesMap.keySet());
         }
 
+        // count max current position
+        Map<Integer, Integer> nodeIdToPos = Collections.emptyMap();
+        if (append) {
+            nodeIdToPos = new HashMap<>();
+            List<ArrDescItem> remainItems = descItemRepository.findOpenByNodesAndType(dbNodes, itemType.getEntity());
+            for (ArrDescItem descItem : remainItems) {
+                Integer position = nodeIdToPos.get(descItem.getNodeId());
+                if (position == null || descItem.getPosition() > position) {
+                    nodeIdToPos.put(descItem.getNodeId(), descItem.getPosition());
+                }
+            }
+        }
+
         for (ArrNode dbNode : dbNodes) {
+
+            // update position according current position
+            Integer lastPosition = nodeIdToPos.get(dbNode.getNodeId());
+            int position = (lastPosition != null) ? lastPosition + 1 : 1;
+
             if (ignoreNodes.contains(dbNode)) {
                 continue;
             }
@@ -1783,7 +1803,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-            newDescItem.setPosition(1);
+            newDescItem.setPosition(position);
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
             changeContext.addCreatedItem(savedItem);
