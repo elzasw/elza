@@ -624,6 +624,7 @@ var messages = {
     "arr.fund.bulkModifications.operationType": "Typ úpravy",
     "arr.fund.bulkModifications.operationType.findAndReplace": "Najít a nahradit část obsahu",
     "arr.fund.bulkModifications.operationType.replace": "Nastavit celý obsah prvku",
+    "arr.fund.bulkModifications.operationType.append": "Přidat obsah prvku popisu",
     "arr.fund.bulkModifications.operationType.setSpecification": "Nahradit specifikaci za jinou",
     "arr.fund.bulkModifications.operationType.setEnum": "Nahradit hodnotu za jinou",
     "arr.fund.bulkModifications.operationType.delete": "Odstranit celý prvek popisu",
@@ -766,6 +767,10 @@ var messages = {
     "arr.daos.node.sync.confirm-message": "Opravdu chcete synchronizovat digitální entity přiřazené k JP?",
     "arr.daos.node.sync.submitting-message": "Probíhá synchronizace DAO pro JP...",
 
+    "arr.daos.tab.unassignedPackages": "Nepřiřazené entity",
+    "arr.daos.tab.packages": "Balíčky",
+    "arr.daos.tab.leftTree": "Archivní strom",
+    "arr.daos.tab.fileSystemTree": "Souborový systém",
     "arr.daos.link": "Připojit k JP",
     "arr.daos.createUnderAndLink": "Vytvořit podřízenou JP",
     "arr.daos.unlink.confirm": "Opravdu chcete odpojit digitální entitu od jednotky popisu?",
