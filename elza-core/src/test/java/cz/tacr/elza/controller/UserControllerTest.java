@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import cz.tacr.elza.domain.UsrAuthentication;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -19,6 +22,7 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
@@ -131,7 +135,8 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.add(permissionVO);
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode()));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode(),
+                                                       fund.getFundNumber(), fund.getMark()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_ARR);
         permissionVOs.add(permissionVO);
 
@@ -175,7 +180,8 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.clear();
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode()));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode(),
+                                                       fund.getFundNumber(), fund.getMark()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_RD);
         permissionVOs.add(permissionVO);
 
