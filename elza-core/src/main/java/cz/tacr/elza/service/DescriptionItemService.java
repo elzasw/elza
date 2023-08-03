@@ -1641,6 +1641,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            text, který nahradí text v celém textu
      * @param allNodes
      *            vložit u všech JP
+     * @param append
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -1648,7 +1649,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                     final Collection<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
                                     final Set<RulItemSpec> specifications, final String text,
-                                    final boolean allNodes) {
+                                    final boolean allNodes,
+                                    final boolean append) {
         Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
         if (itemType.hasSpecifications()) {
             if(newItemSpecification == null) {
@@ -1680,15 +1682,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
-        for (ArrDescItem descItem : descItems) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
-                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+        if (!append) {
+            // remove old values
+            for (ArrDescItem descItem : descItems) {
+                if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+
+                deleteDescriptionItem(descItem, version, change, false, changeContext);
+                changeContext.flushIfNeeded();
             }
-        	
-            deleteDescriptionItem(descItem, version, change, false, changeContext);
-            changeContext.flushIfNeeded();
+            changeContext.flush();
         }
-        changeContext.flush();
 
         //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)

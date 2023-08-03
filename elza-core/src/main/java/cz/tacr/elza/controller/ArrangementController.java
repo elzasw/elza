@@ -2022,17 +2022,26 @@ public class ArrangementController {
     /**
      * Nastavení textu hodnotám atributu..
      *
-     * @param versionId         id verze stromu
-     * @param descItemTypeId    typ atributu
-     * @param newDescItemSpecId pokud se jedná o atribut se specifikací -> id specifikace, která bude nastavena
-     * @param text              text, který nahradí hledaný text v celém textu
-     * @param replaceDataBody   seznam uzlů, ve kterých hledáme a seznam specifikací
+     * @param versionId
+     *            id verze stromu
+     * @param descItemTypeId
+     *            typ atributu
+     * @param newDescItemSpecId
+     *            pokud se jedná o atribut se specifikací -> id specifikace, která
+     *            bude nastavena
+     * @param append
+     *            příznak, zda má dojít jen k přidání nových hodnot
+     * @param text
+     *            text, který nahradí hledaný text v celém textu
+     * @param replaceDataBody
+     *            seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/placeDataValues/{versionId}", method = RequestMethod.PUT)
     public void placeDataValues(@PathVariable("versionId") final Integer versionId,
                                 @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                 @RequestParam(value = "newDescItemSpecId", required = false) final Integer newDescItemSpecId,
+                                @RequestParam(value = "append", required = false) final Boolean append,
                                 @RequestParam("text") final String text,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
@@ -2052,7 +2061,8 @@ public class ArrangementController {
 
         descriptionItemService
                 .placeDescItemValues(fundVersion, itemType, nodesDO, newDescItemSpec, specifications, text,
-                                     replaceDataBody.getSelectionType() == SelectionType.FUND);
+                                     replaceDataBody.getSelectionType() == SelectionType.FUND,
+                                     append != null && append);
     }
 
     /**
