@@ -2042,7 +2042,7 @@ public class ArrangementController {
                                 @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                 @RequestParam(value = "newDescItemSpecId", required = false) final Integer newDescItemSpecId,
                                 @RequestParam(value = "append", required = false) final Boolean append,
-                                @RequestParam("text") final String text,
+                                @RequestParam(value = "text", required = false) final String text,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
