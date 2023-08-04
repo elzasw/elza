@@ -1651,7 +1651,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                     final Set<RulItemSpec> specifications, final String text,
                                     final boolean allNodes,
                                     final boolean append) {
-        Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+
         if (itemType.hasSpecifications()) {
             if(newItemSpecification == null) {
                 throw new BusinessException("Missing new specification.", BaseCode.PROPERTY_NOT_EXIST);
@@ -1743,58 +1743,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
             arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
-            ArrData data;
-            switch (itemType.getDataType()) {
-            case FORMATTED_TEXT:
-            case TEXT:
-                    ArrDataText dataText = new ArrDataText();
-                    dataText.setTextValue(text);
-                    data = dataText;
-                    break;
-                case STRING:
-                    ArrDataString itemString = new ArrDataString();
-                    itemString.setStringValue(text);
-                    data = itemString;
-                    break;
-                case INT:
-                    ArrDataInteger itemInteger = new ArrDataInteger();
-                    itemInteger.setIntegerValue(Integer.valueOf(text));
-                    data = itemInteger;
-                    break;
-                case UNITID:
-                    ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                    itemUnitid.setUnitId(text);
-                    data = itemUnitid;
-                    break;
-                case UNITDATE:
-                    ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
-                    data = itemUnitdate;
-                    break;
-                case RECORD_REF:
-                    ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
-                    itemRecordRef.setRecord(record);
-                    data = itemRecordRef;
-                    break;
-                case BIT:
-                    ArrDataBit itemBit = new ArrDataBit();
-                    itemBit.setBitValue(Boolean.valueOf(text));
-                    data = itemBit;
-                    break;
-                case URI_REF:
-                    ArrDataUriRef itemUriRef = new ArrDataUriRef();
-                    itemUriRef.setUriRefValue(text);
-                    data = itemUriRef;
-                    break;
-                case DECIMAL:
-                    ArrDataDecimal itemDecimal = new ArrDataDecimal();
-                    itemDecimal.setValue(new BigDecimal(text));
-                    data = itemDecimal;
-                    break;
-                default:
-                    throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(),
-                            BaseCode.INVALID_STATE);
-            }
+            ArrData data = createDataFromText(itemType.getDataType(), text);
 
             ArrDescItem newDescItem = new ArrDescItem();
             newDescItem.setData(data);
@@ -1812,6 +1761,64 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             changeContext.flushIfNeeded();
         }
         changeContext.flush();
+    }
+
+    private ArrData createDataFromText(DataType dataType, String text) {
+        switch (dataType) {
+        case FORMATTED_TEXT:
+        case TEXT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataText dataText = new ArrDataText();
+            dataText.setTextValue(text);
+            return dataText;
+        case STRING:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataString itemString = new ArrDataString();
+            itemString.setStringValue(text);
+            return itemString;
+        case INT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněna hodnota");
+            ArrDataInteger itemInteger = new ArrDataInteger();
+            itemInteger.setIntegerValue(Integer.valueOf(text));
+            return itemInteger;
+        case UNITID:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUnitid itemUnitid = new ArrDataUnitid();
+            itemUnitid.setUnitId(text);
+            return itemUnitid;
+        case UNITDATE:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
+            return itemUnitdate;
+        case RECORD_REF:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
+            ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
+            itemRecordRef.setRecord(record);
+            return itemRecordRef;
+        case BIT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataBit itemBit = new ArrDataBit();
+            itemBit.setBitValue(Boolean.valueOf(text));
+            return itemBit;
+        case URI_REF:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUriRef itemUriRef = new ArrDataUriRef();
+            itemUriRef.setUriRefValue(text);
+            return itemUriRef;
+        case DECIMAL:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataDecimal itemDecimal = new ArrDataDecimal();
+            itemDecimal.setValue(new BigDecimal(text));
+            return itemDecimal;
+        case ENUM:
+            Validate.isTrue(StringUtils.isBlank(text), "Pro výčtový typ nelze zadat ext");
+            ArrDataNull dataNull = new ArrDataNull();
+            return dataNull;
+        default:
+            throw new SystemException("Neplatný typ atributu " + dataType.getCode(),
+                    BaseCode.INVALID_STATE);
+        }
     }
 
     /**
