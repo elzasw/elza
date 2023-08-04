@@ -1,16 +1,16 @@
 openapi: 3.0.2
 info:
   title: ELZA API
-  version: "1.0.0"
+  version: 1.0.0
 tags:
+  - name: admin
+    description: Administrativní funkce
   - name: funds
     description: Archivní soubory
   - name: accesspoints
     description: Přístupové body a archivní entity
   - name: search
     description: Vyhledávání
-  - name: admin
-    description: Administrativní funkce
   - name: io
     description: Vstup a výstup informací
 servers:
@@ -580,7 +580,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-                x-typespec-name: FsRepo[]
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
@@ -681,20 +680,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-                x-typespec-name: FsRepo[]
   /io/export:
     post:
       tags:
         - io
-      operationId: exportRequest
+      operationId: Io_exportRequest
       description: Create export file of funds or access points
-      requestBody:
-        description: Export parameters
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExportParams'
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -702,11 +694,19 @@ paths:
             application/json:
               schema:
                 type: integer
-  /io/file/{requestId}:
+      requestBody:
+        description: Export request parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportParams'
+  /io/export-status/{requestId}:
     get:
       tags:
         - io
-      operationId: getExportFile
+      operationId: Io_getExportStatus
+      description: Getting the generated file by request id
       parameters:
         - name: requestId
           in: path
@@ -714,15 +714,19 @@ paths:
           schema:
             type: integer
       responses:
+        '102':
+          description: Informational
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportRequestStatus'
         '200':
           description: The request has succeeded.
-          content: 
-            '*/*':
+          content:
+            application/json:
               schema:
-                type: string
-                format: binary
-        '102':
-          description: The requested resource is being processed.
+                type: object
+                properties: {}
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -730,7 +734,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '500':
-          description: Server error processing request.
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /io/file/{requestId}:
+    get:
+      tags:
+        - io
+      operationId: Io_getExportFile
+      description: Getting the generated file by request id
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server Error
           content:
             application/json:
               schema:
@@ -789,6 +827,62 @@ components:
         - accessPoints
         - users
         - loggedUsers
+    BaseException:
+      type: object
+      properties:
+        type:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        level:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: object
+        stackTrace:
+          type: string
+      description: Error specification for the client
+      required:
+        - type
+        - code
+    ExportParams:
+      type: object
+      properties:
+        apIds:
+          type: array
+          items:
+            type: integer
+        fundsSections:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundSections'
+        exportFilterId:
+          type: integer
+        includeUUID:
+          type: boolean
+          default: true
+        includeAccessPoints:
+          type: boolean
+          default: true
+      description: Parameters of archive file export
+    ExportRequestState:
+      type: string
+      enum:
+        - PENDING
+        - PREPARING
+    ExportRequestStatus:
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ExportRequestState'
+        progress:
+          type: integer
+      description: Status of export
+      required:
+        - state
     FsItem:
       type: object
       properties:
@@ -824,7 +918,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FsItem'
-          x-typespec-name: FsItem[]
         lastKey:
           type: string
           description: >-
@@ -853,6 +946,21 @@ components:
         - fsRepoId
         - name
         - path
+    FundSections:
+      type: object
+      properties:
+        fundVersionId:
+          type: integer
+        mergeSections:
+          type: boolean
+          default: false
+        rootNodeIds:
+          type: array
+          items:
+            type: integer
+      description: Specifies multiple sections for fund version
+      required:
+        - fundVersionId
     LoggedUser:
       type: object
       properties:
@@ -870,7 +978,6 @@ components:
           items:
             $ref: '#/components/schemas/LoggedUser'
           description: User list
-          x-typespec-name: LoggedUser[]
         totalCount:
           type: integer
           format: int32
@@ -1307,60 +1414,3 @@ components:
       required:
         - importType
         - dataFile
-    ExportParams:
-      type: object
-      properties:
-        apIds:
-          type: array
-          items:
-            type: integer
-        fundsSections:
-          type: array
-          items:
-            $ref: '#/components/schemas/FundSections'
-        exportFilterId:
-          type: integer
-        includeUUID:
-          type: boolean
-          default: true
-        includeAccessPoints:
-          type: boolean
-          default: true
-      description: Parameters of archive file export
-      title: Export parameters
-    FundSections:
-      type: object
-      properties:
-        fundVersionId:
-          type: integer
-        mergeSections:
-          type: boolean
-          default: false
-        rootNodeIds:
-          type: array
-          items:
-            type: integer
-      description: Specifies multiple sections for fund version
-      required:
-        - fundVersionId
-    BaseException:
-      type: object
-      properties:
-        type:
-          type: string
-        code:
-          type: string
-        message:
-          type: string
-        level:
-          type: string
-        properties:
-          type: object
-          additionalProperties:
-            type: object
-        stackTrace:
-          type: string
-      description: Error specification for the client
-      required:
-        - type
-        - code

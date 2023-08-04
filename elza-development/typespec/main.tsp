@@ -111,6 +111,19 @@ model ExportParams {
     includeAccessPoints?: boolean = true;
 }
 
+enum ExportRequestState {
+    PENDING,
+    PREPARING
+}
+
+/**
+ * Status of export
+ */
+model ExportRequestStatus {
+    state: ExportRequestState;
+    progress?: integer;
+}
+
 /**
  * Specifies multiple sections for fund version
  */
@@ -207,8 +220,30 @@ namespace ElzaAPI.Io {
      */ 
     @route("/export")
     @post op exportRequest(
+        /** Export request parameters */
         @body body: ExportParams
 	): integer;
+
+    /**
+     * Getting the generated file by request id
+     */
+	@route("/export-status/{requestId}")
+	@get op getExportStatus(
+		@path requestId: integer
+	): {
+       } | {
+         /** Processing */ 
+         @Http.statusCode statusCode: 102;
+         @body data: ExportRequestStatus;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException; 
+       } | { 
+          /** Failed to export requested data */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException; 
+       };
 
     /**
      * Getting the generated file by request id
