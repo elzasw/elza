@@ -47,16 +47,7 @@ export function renderUserOrGroupLabel(item) {
 }
 
 export const EntityItem = props => {
-    const {item, getName, highlighted, selected, ...otherProps} = props;
-    let cls = 'item';
-    if (highlighted) {
-        cls += ' focus';
-        console.log('highlighted');
-    }
-    if (selected) {
-        cls += ' active';
-        console.log('selected');
-    }
+    const { item, getName } = props;
 
     let name = 'unknown';
 
@@ -66,12 +57,25 @@ export const EntityItem = props => {
         name = item.name;
     }
 
-    return (
-        <div {...otherProps} className={cls}>
-            <div className='name' title={name}>{name}</div>
-            <div className='item-row desc'>{item.internalCode}</div>
-        </div>
-    );
+    var fields = [];
+    if (item.internalCode) {
+        fields.push(item.internalCode);
+    }
+    if (item.fundNumber) {
+        fields.push(item.fundNumber);
+    }
+    if (item.mark) {
+        fields.push(item.mark);
+    }
+    var desc = fields.join(', ');
+    return [
+        <div className="item-row" key={item.id}>
+            <div className="name" title={name}>{name}</div>
+        </div>,
+        <div className="item-row desc" key={item.id + '-x'}>
+            <div>{desc}</div>
+        </div>,
+    ];
 };
 
 export function renderUserItem(props) {
