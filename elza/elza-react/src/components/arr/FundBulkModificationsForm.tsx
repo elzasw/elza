@@ -220,6 +220,8 @@ const FundBulkModificationsForm = ({
     const getIsAppendSupported = () => {
         // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
         switch (dataType.code) {
+            case RulDataTypeCodeEnum.ENUM:
+                return false;
             case RulDataTypeCodeEnum.TEXT:
             case RulDataTypeCodeEnum.STRING:
             case RulDataTypeCodeEnum.FORMATTED_TEXT:
@@ -495,9 +497,6 @@ const FundBulkModificationsForm = ({
         }
         return operationInputs;
     }
-
-    // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
-    console.log("#### bulk modifications", refType)
 
     return (
         <FinalForm<Fields>
