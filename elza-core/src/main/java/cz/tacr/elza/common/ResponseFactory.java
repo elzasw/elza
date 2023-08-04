@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -38,7 +39,7 @@ public class ResponseFactory {
         baseException.setCode("ID_NOT_EXISTS");
         baseException.setLevel("danger");
         baseException.setMessage(exception.getMessage());
-        baseException.setStackTrace(exception.getStackTrace().toString());
+        baseException.setStackTrace(ExceptionUtils.getStackTrace(exception));
         return baseException;
     }
 
