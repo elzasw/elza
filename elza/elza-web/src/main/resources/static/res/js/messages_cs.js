@@ -205,7 +205,7 @@ var messages = {
     "exception.reg.SCOPE_EXISTS": "Kod oblasti entit již existuje",
     "exception.reg.USING_SCOPE_CANT_DELETE": "Nelze smazat oblast, která obsahuje archivní entity",
     "exception.reg.CANT_DELETE_SCOPE_WITH_CONNECTED": "Nelze smazat oblast obsahující návazné oblasti",
-    "exception.reg.CANT_DELETE_CONNECTED_SCOPE": "Nelze smazat oblast která je návaznou oblastí jiné oblasti",
+    "exception.reg.CANT_DELETE_CONNECTED_SCOPE": "Nelze smazat oblast, která je návaznou oblastí jiné oblasti",
     "exception.reg.CANT_DELETE_SCOPE_RELATION_EXISTS":
         "Nelze zrušit návaznou oblast - existuje vztah mezi osobami těchto oblastí",
     "exception.reg.CANT_CONNECT_SCOPE_TO_SELF": "Nelze navázat třídu rejstříku sama na sebe",
@@ -1532,7 +1532,7 @@ var messages = {
     "admin.user.passwordAgain": "Opakovat heslo",
     "admin.user.passwordChange.title": "Změna hesla",
     "admin.user.passwordChange.success": "Heslo bylo změněno",
-    "admin.user.changeActive.confirm": "Jste si jisti že chcete změnit stav uživatele?",
+    "admin.user.changeActive.confirm": "Jste si jisti, že chcete změnit stav uživatele?",
     "admin.user.validation.passNotEqual": "Zadaná hesla nejsou stejná",
 
     "admin.fund.title": "Archivní soubor",
@@ -1543,7 +1543,7 @@ var messages = {
     "admin.group.title.name": "Název",
     "admin.group.title.code": "Kód",
     "admin.group.title.description": "Popis",
-    "admin.group.add.success": "Skupina byla vvytvořena",
+    "admin.group.add.success": "Skupina byla vytvořena",
     "admin.group.delete.success": "Skupina byla smazána",
     "admin.group.user.add.title": "Připojení uživatelů do skupiny",
     "admin.perm.advanced.control.entity.add.title": "Přidání uživatelů a skupin",
