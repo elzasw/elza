@@ -102,21 +102,18 @@ public class IOController implements IoApi {
             return ResponseEntity.notFound().build();
         }
 
-        ExportRequestStatus ers;
         switch (result.getState()) {
         case PENDING:
-            ers = new ExportRequestStatus();
-            ers.setState(ExportRequestState.PENDING);
-            return ResponseEntity.status(102).body(ers);
+            return ResponseEntity.status(102)
+                    .body(ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING));
         case PROCESSING:
-            // return ResponseEntity.status(102).build();
-            ers = new ExportRequestStatus();
-            ers.setState(ExportRequestState.PREPARING);
-            return ResponseEntity.status(102).body(ers);
+            return ResponseEntity.status(102)
+                    .body(ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING));
         case FINISHED:
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED));
         case ERROR:
-            return ResponseEntity.status(500).body(ResponseFactory.createBaseException(result.getException()));
+            return ResponseEntity.status(500)
+                    .body(ResponseFactory.createBaseException(result.getException()));
         default:
             throw new IllegalStateException();
         }

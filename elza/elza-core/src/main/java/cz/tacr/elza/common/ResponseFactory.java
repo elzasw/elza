@@ -17,6 +17,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.BaseException;
+import cz.tacr.elza.controller.vo.ExportRequestState;
+import cz.tacr.elza.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
@@ -31,6 +33,12 @@ public class ResponseFactory {
         } catch (JsonProcessingException e) {
             throw new SystemException("Problem with JSON generation", e, BaseCode.JSON_PARSE);
         }
+    }
+
+    public static ExportRequestStatus createExportRequestStatus(ExportRequestState state) {
+        ExportRequestStatus ers = new ExportRequestStatus();
+        ers.setState(state);
+        return ers;
     }
 
     public static BaseException createBaseException(Exception exception) {

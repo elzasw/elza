@@ -113,7 +113,8 @@ model ExportParams {
 
 enum ExportRequestState {
     PENDING,
-    PREPARING
+    PREPARING,
+    FINISHED
 }
 
 /**
@@ -225,24 +226,28 @@ namespace ElzaAPI.Io {
 	): integer;
 
     /**
-     * Getting the generated file by request id
+     * Getting the export status by request id
      */
 	@route("/export-status/{requestId}")
 	@get op getExportStatus(
 		@path requestId: integer
 	): {
        } | {
-         /** Processing */ 
+         /** Processing */
          @Http.statusCode statusCode: 102;
+         @body data: ExportRequestStatus;
+       } | {
+         /** Finishing */
+         @Http.statusCode statusCode: 200;
          @body data: ExportRequestStatus;
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       } | { 
+          @body data: BaseException;
+       } | {
           /** Failed to export requested data */
           @Http.statusCode statusCode: 500;
-          @body data: BaseException; 
+          @body data: BaseException;
        };
 
     /**
