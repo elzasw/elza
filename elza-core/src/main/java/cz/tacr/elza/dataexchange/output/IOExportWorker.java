@@ -134,10 +134,10 @@ public class IOExportWorker implements SmartLifecycle {
 
     public void run() {
 
-        while (status == ThreadStatus.RUNNING) {
-            IOExportRequest request;
+        synchronized (lock) {
+            while (status == ThreadStatus.RUNNING) {
+                IOExportRequest request;
 
-            synchronized (lock) {
                 // get next request
                 request = exportRequests.poll();
                 if (request == null) {
@@ -152,16 +152,15 @@ public class IOExportWorker implements SmartLifecycle {
                 } else {
                     request.setStateProcessing();
                 }
-            }
 
-            Exception exception = null;
-            try {
-                exportData(request);
-             } catch (Exception ex) {
-                 log.error("Error in export process.", ex);
-                 exception = ex;
-             }
-            synchronized (lock) {
+                Exception exception = null;
+                try {
+                    exportData(request);
+                 } catch (Exception ex) {
+                     log.error("Error in export process.", ex);
+                     exception = ex;
+                 }
+
                 // set result
                 if (exception == null) {
                     request.setFinished();
@@ -169,9 +168,9 @@ public class IOExportWorker implements SmartLifecycle {
                     request.setFailed(exception);
                 }
             }
+            status = ThreadStatus.STOPPED;
+            lock.notifyAll();
         }
-        status = ThreadStatus.STOPPED;
-        lock.notifyAll();        
     }
 
     @Override

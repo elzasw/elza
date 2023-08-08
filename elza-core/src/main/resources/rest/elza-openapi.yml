@@ -873,6 +873,7 @@ components:
       enum:
         - PENDING
         - PREPARING
+        - FINISHED
     ExportRequestStatus:
       type: object
       properties:
