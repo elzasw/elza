@@ -1523,7 +1523,7 @@ export class WebApiCls {
             '/login',
             {},
             'POST',
-            'username=' + username + '&password=' + password,
+            'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password),
             'application/x-www-form-urlencoded',
         );
     }
