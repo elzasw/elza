@@ -2214,7 +2214,7 @@ public class AccessPointService {
                     .set("typeId", oldApState.getApTypeId());
             }
             if (!hasPermissionToChangeType(oldStateApproval, oldApScope)) {
-                throw new SystemException("Požadovaný třídu entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Požadovanou třídu entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("state", oldStateApproval)
                     .set("scopeId", oldApScope.getScopeId());
