@@ -3,16 +3,17 @@
  */
 
 import {UrlFactory, WebApi} from 'actions/index.jsx';
-import {Api} from "../../api";
+import {Api, getFullPath} from "../../api";
 import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrDanger, addToastrInfo,addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {nodesReceive, nodesRequest} from 'actions/arr/node.jsx';
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {fundsSelectFund} from 'actions/fund/fund.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {storeLoadData} from 'actions/store/store.jsx';
-import {downloadAjaxFile} from '../global/download';
+import {downloadFile} from '../global/download';
+import { IoApiAxiosParamCreator } from 'elza-api';
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -141,14 +142,49 @@ export function deleteFundHistory(fundId) {
     };
 }
 
+// Export fondu, využití metod na získání id export requestu, zjistění stavu a adresy pro stažení
 export function exportFund(fundId, transformationName, exportFilterId) {
     let requestData = {
         fundsSections: [{fundVersionId: fundId}],
-        transformationName: transformationName,
         exportFilterId: exportFilterId,
     };
-    return dispatch => {
-        dispatch(downloadAjaxFile(UrlFactory.exportFund(), 'elza-data.xml', 'POST', requestData));
+
+    // opakovane dotazovani na stav exportu, konci stazenim souboru ci hlaskou o neuspechu
+    async function downloadExportFile (fileId, dispatch, interval = 4000) {
+        dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, interval));
+        const isPending = await checkExportStatus(fileId);
+        if (isPending === false) {
+            dispatch(addToastrSuccess(i18n('export.success'), undefined, undefined, 4000));
+            // ziskani cesty k souboru
+            const { url } = await IoApiAxiosParamCreator().ioGetExportFile(fileId);
+            // stazeni souboru 
+            dispatch(downloadFile(getFullPath(url)));
+        } else if (isPending === true) {
+            // opetovne zavolani funkce s danym intervalem
+            setTimeout(() => downloadExportFile(fileId, dispatch, interval), interval);
+        } 
+        else {
+            dispatch(addToastrDanger(i18n('export.fail')));
+        }
+    }
+
+    // zjisteni stavu exportu, navratova hodnota boolean (isPending) nebo null pri negativni odpovedi
+    async function checkExportStatus (fileId) {
+        try {
+            const { status } = await Api.io.ioGetExportStatus(fileId, { overrideErrorHandler: true });
+            if (status === 200) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (error) {
+            return null;
+        };
+    }
+
+    return async (dispatch) => {
+        const { data: fileId } = await Api.io.ioExportRequest(requestData);
+        dispatch(downloadExportFile(fileId, dispatch));
     };
 }
 

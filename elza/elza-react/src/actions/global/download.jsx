@@ -24,6 +24,21 @@ export function downloadFile(url) {
 }
 
 /**
+ *  Downloads binary file
+ *  @param file {String} binary file
+ *  @param name {String} name of the file
+ */
+export function downloadBlob(file, name) {
+    const blob = new Blob([file]);
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.parentElement.removeChild(link);
+}
+
+/**
  *  Downloads file from specified url using frame to open the link
  *  @param id {String} id for frame
  *  @param url {String} url of file

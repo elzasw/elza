@@ -1,4 +1,4 @@
-import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi } from 'elza-api';
+import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi, IoApi } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
 import { createException } from 'components/ExceptionUtils.jsx';
@@ -11,6 +11,13 @@ const serverContextPath = window.serverContextPath;
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
 const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
+
+export const getFullPath = (path: string) => {
+    if (path.startsWith('/')) { 
+        path = path.replace('/', ''); 
+    }
+    return `${basePath}/${path}`;
+}
 
 let pendingRequests: (() => void)[] = [];
 
@@ -157,10 +164,12 @@ export const Api: {
     funds: FundsApi;
     daos: DaosApi;
     default: DefaultApi;
+    io: IoApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
     funds: new FundsApi(undefined, basePath, axios),
     daos: new DaosApi(undefined, basePath, axios),
     default: new DefaultApi(undefined, basePath, axios),
+    io: new IoApi(undefined, basePath, axios),
 };
