@@ -220,6 +220,7 @@ const FundBulkModificationsForm = ({
     const getIsAppendSupported = () => {
         // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
         switch (dataType.code) {
+            case RulDataTypeCodeEnum.STRUCTURED:
             case RulDataTypeCodeEnum.ENUM:
                 return false;
             case RulDataTypeCodeEnum.TEXT:
