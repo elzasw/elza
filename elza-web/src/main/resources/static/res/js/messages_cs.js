@@ -1658,6 +1658,9 @@ var messages = {
 
     "export.title.fund": "Export archivního souboru",
     "export.exportFilter": "Exportní filtr",
+    "export.generating": "Generování exportu...",
+    "export.fail": "Soubor nelze stáhnout",
+    "export.success": "Soubor úspěšně vygenerován",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",
