@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ExportParams;
 import cz.tacr.elza.controller.vo.ExportRequestState;
-import cz.tacr.elza.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -67,8 +66,7 @@ public class IOController implements IoApi {
                 FundSections fundSection = new FundSections();
 
                 ArrFundVersion fundVersion = arrangementService.getFundVersionById(fs.getFundVersionId());
-                if (!userService.hasPermission(Permission.ADMIN) &&
-                        !userService.hasPermission(Permission.FUND_EXPORT_ALL) &&
+                if (!userService.hasPermission(Permission.FUND_EXPORT_ALL) &&
                         !userService.hasPermission(Permission.FUND_EXPORT, fundVersion.getFundId())) {
                     throw new SystemException("Nedostatečné oprávnění pro export",
                             BaseCode.INSUFFICIENT_PERMISSIONS)
