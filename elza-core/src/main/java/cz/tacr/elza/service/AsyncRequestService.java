@@ -52,6 +52,9 @@ import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -89,6 +92,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     @Autowired
     private ApplicationContext appCtx;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ArrAsyncRequestRepository asyncRequestRepository;
@@ -289,10 +295,16 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * @param bulkActionId Id hromadné akce
      */
     public void interruptBulkAction(final int bulkActionId) {
-        ArrBulkActionRun bulkActionRun = bulkActionRepository.findById(bulkActionId)
-                .orElseThrow(bulkAction(bulkActionId));
+        ArrBulkActionRun bulkActionRun = bulkActionRepository.findById(bulkActionId).orElseThrow(bulkAction(bulkActionId));
 
-        // TODO: Check permission to delete action 
+        // check permission to interrupt action 
+        if (!userService.hasPermission(Permission.FUND_BA_ALL) &&
+                !userService.hasPermission(Permission.FUND_BA, bulkActionRun.getFundVersion().getFundId())) {
+            throw new SystemException("Nedostatečné oprávnění pro přerušení hromadné akce.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("bulkActionRunId", bulkActionId)
+                            .set("fundId", bulkActionRun.getFundVersion().getFundId())
+                            .set("userId", bulkActionRun.getUserId());
+        }
 
         ArrBulkActionRun.State originalState = bulkActionRun.getState();
 
