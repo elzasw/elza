@@ -193,8 +193,13 @@ public class DeleteFundAction {
      */
     private void prepare() {
 
-        // Check if exists
+        // check if exists
         this.fund = fundRepository.findById(fundId).orElseThrow(fund(fundId));
+
+        // only superuser can delete the fund if fund.managed is true
+        if (fund.getManaged() && !userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+            throw new BusinessException("Only Superuser (admin) can delete the fund", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", fundId);
+        }
 
         // get last version and rootId
         this.fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);

@@ -67,6 +67,9 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
 	private List<ArrOutput> outputs;
 
+    @JoinColumn(nullable = true)
+	private Boolean managed;
+
 	public Integer getFundId() {
 		return fundId;
 	}
@@ -156,4 +159,12 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 	public void setOutputs(final List<ArrOutput> outputs) {
 		this.outputs = outputs;
 	}
+
+    public boolean getManaged() {
+        return managed != null? managed : false;
+    }
+
+    public void setManaged(Boolean managed) {
+        this.managed = managed;
+    }
 }
