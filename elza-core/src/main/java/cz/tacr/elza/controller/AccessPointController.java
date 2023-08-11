@@ -31,6 +31,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
