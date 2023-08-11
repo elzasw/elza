@@ -2266,6 +2266,11 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 		where p.key_value_id is null)</sql>
     </changeSet>
 
+    <changeSet id="20230421120500" author="sergey.iryupin">
+		<dropColumn tableName="ap_state" columnName="version" />
+		<delete tableName="ap_cached_access_point" />
+	</changeSet>
+
     <changeSet id="20230510143300" author="ppyt">
         <!-- Fulltext reindex -->
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
@@ -2393,7 +2398,7 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 				WHERE c.type = 'AP_UPDATE') s
 			WHERE ap_revision.revision_id = s.revision_id</sql>
     </changeSet>
-    
+
     <!-- Drop Unique constraint on column code in tables arr_dao, arr_dao_file, arr_dao_file_group -->
     <changeSet id="20230706222400" author="ppyt">
         <renameColumn tableName="arr_dao" oldColumnName="code" newColumnName="code_old"/>

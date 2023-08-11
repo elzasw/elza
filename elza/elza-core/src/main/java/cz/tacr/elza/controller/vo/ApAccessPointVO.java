@@ -24,6 +24,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private String uuid;
 
     /**
+     * Verze entity.
+     */
+    private Integer version;
+
+    /**
      * Typ rejstříku.
      */
     private Integer typeId;
@@ -159,6 +164,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     public Integer getTypeId() {

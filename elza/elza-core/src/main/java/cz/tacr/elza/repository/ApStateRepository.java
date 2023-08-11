@@ -77,7 +77,7 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
      List<Integer> findDeletedAccessPointIdsByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Modifying
-    @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
+    @Query("UPDATE ap_state s SET s.apType = :value WHERE s.apType = :key")
     void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
 
     @Modifying

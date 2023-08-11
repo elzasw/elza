@@ -1775,6 +1775,37 @@ public class AccessPointService {
     }
 
     /**
+     * Získání id přístupových bodů podle stavu
+     * 
+     * @param state
+     * @return ids
+     */
+    public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
+        return apAccessPointRepository.findAccessPointIdByState(state);
+    }
+
+    /**
+     * Zvýšení čísla verze archivní entity
+     * 
+     * @param accessPointId
+     * @param ctrlVersion
+     * @return version
+     */
+    public Integer lockAccessPoint(Integer accessPointId, Integer ctrlVersion) {
+        ApAccessPoint accessPoint = em.getReference(ApAccessPoint.class, accessPointId);
+        Integer version = accessPoint.getVersion();
+        // pokud verze je null - kontrola se neprovádí
+        if (ctrlVersion != null && version != ctrlVersion) {
+            throw new BusinessException("Nesprávná verze archivní entity", RegistryCode.INVALID_ENTITY_VERSION)
+            .set("accessPointId", accessPointId)
+            .set("version", version)
+            .set("control version", ctrlVersion);
+        }
+        em.lock(accessPoint, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+        return accessPoint.getVersion();
+    }
+
+    /**
      * Uložení AP s odverzováním.
      *
      * @param accessPoint přístupový bod

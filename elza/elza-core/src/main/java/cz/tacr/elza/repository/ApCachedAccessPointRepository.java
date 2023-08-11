@@ -12,9 +12,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApCachedAccessPointRepository extends ElzaJpaRepository<ApCachedAccessPoint, Integer>, ApCachedAccessPointRepositoryCustom {
 
-    @Query("SELECT cap FROM ap_cached_access_point cap WHERE cap.accessPoint.accessPointId = :accessPointId")
+    @Query("SELECT cap FROM ap_cached_access_point cap JOIN FETCH cap.accessPoint ap WHERE ap.accessPointId = :accessPointId")
     ApCachedAccessPoint findByAccessPointId(@Param("accessPointId") Integer accessPointId);
 
-    @Query("SELECT cap FROM ap_cached_access_point cap WHERE cap.accessPoint.accessPointId IN :accessPointIds")
+    @Query("SELECT cap FROM ap_cached_access_point cap JOIN FETCH cap.accessPoint ap WHERE ap.accessPointId IN :accessPointIds")
     List<ApCachedAccessPoint> findByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 }
