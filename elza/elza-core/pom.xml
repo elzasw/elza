@@ -637,6 +637,12 @@
 								<!--  disables default interface methods for testing  -->
                                 <useTags>true</useTags>
 							</configOptions>
+                            <importMappings>
+           						<schemaMapping>ApStateChangeVO=cz.tacr.elza.controller.vo.ApStateChangeVO</schemaMapping>
+           						<schemaMapping>ApPartFormVO=cz.tacr.elza.controller.vo.ApPartFormVO</schemaMapping>
+           						<schemaMapping>ApAccessPointEditVO=cz.tacr.elza.controller.vo.ApAccessPointEditVO</schemaMapping>
+           						<schemaMapping>ApAccessPointVO=cz.tacr.elza.controller.vo.ApAccessPointVO</schemaMapping>
+       						</importMappings>
 						</configuration>
 					</execution>
                     <execution>

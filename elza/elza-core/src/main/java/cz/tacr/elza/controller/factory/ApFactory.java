@@ -113,6 +113,7 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedBinding;
@@ -149,8 +150,6 @@ public class ApFactory {
 
     private final ApChangeRepository changeRepository;
 
-    private final ElzaLocale elzaLocale;
-
     private final ApRevPartRepository revPartRepository;
 
     private final ApRevItemRepository revItemRepository;
@@ -158,6 +157,10 @@ public class ApFactory {
     private final ApRevIndexRepository revIndexRepository;
 
     private final RevisionItemService revisionItemService;
+
+    private final AccessPointService accessPointService;
+
+    private final ElzaLocale elzaLocale;
 
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
@@ -178,6 +181,7 @@ public class ApFactory {
                      final ApRevItemRepository revItemRepository,
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
+                     final AccessPointService accessPointService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -197,6 +201,7 @@ public class ApFactory {
         this.revItemRepository = revItemRepository;
         this.revIndexRepository = revIndexRepository;
         this.revisionItemService = revisionItemService;
+        this.accessPointService = accessPointService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -442,6 +447,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
+        vo.setVersion(ap.getVersion());
         vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
         vo.setRuleSetId(apState.getScope().getRuleSetId());
@@ -455,13 +461,14 @@ public class ApFactory {
     public ApAccessPointVO createVO(final ApState apState,
                                     final CachedAccessPoint ap,
                                     final String name) {
-        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
+        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name);
     }
 
     public ApAccessPointVO createVO(final ApState apState,
                                     final Integer accessPointId,
                                     final List<Integer> replacedIds,
                                     final String uuid,
+                                    final Integer version,
                                     final String errorDescription,
                                     final ApStateEnum state,
                                     final String name) {
@@ -478,6 +485,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(uuid);
+        vo.setVersion(version);
         vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(errorDescription);
         vo.setRuleSetId(apState.getScope().getRuleSetId());
