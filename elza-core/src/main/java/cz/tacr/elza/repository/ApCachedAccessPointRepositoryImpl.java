@@ -258,6 +258,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         fullTextQuery.setMaxResults(count);
         fullTextQuery.setSort(sort);
 
+        // todo fetch ap_access_points
         return new QueryResults<ApCachedAccessPoint>(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
     }
 
