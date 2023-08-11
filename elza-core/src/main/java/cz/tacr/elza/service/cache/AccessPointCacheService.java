@@ -551,7 +551,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 		ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
 		CachedAccessPoint cachedAccessPoint = null;
 		if (apCachedAccessPoint != null) {
-			cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+			cachedAccessPoint = deserialize(apCachedAccessPoint.getData(), apCachedAccessPoint.getAccessPoint());
 		}
 		return cachedAccessPoint;
     }
@@ -563,7 +563,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         for (ApCachedAccessPoint apCachedAccessPoint : apCachedAccessPoints) {
             CachedAccessPoint cachedAccessPoint = null;
             if (apCachedAccessPoint != null) {
-                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+                cachedAccessPoint = deserialize(apCachedAccessPoint.getData(), apCachedAccessPoint.getAccessPoint());
                 cachedAccessPoints.add(cachedAccessPoint);
             }
         }
@@ -579,14 +579,21 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
      * @return
      */
     @Transactional(value = TxType.MANDATORY)
-    public CachedAccessPoint deserialize(String data) {
+    public CachedAccessPoint deserialize(String data, ApAccessPoint accessPoint) {
         try {
             CachedAccessPoint cap = mapper.readValue(data, CachedAccessPoint.class);
+            cap.setAccessPointId(accessPoint.getAccessPointId());
+            cap.setAccessPointVersion(accessPoint.getVersion());
+            cap.setUuid(accessPoint.getUuid());
+            cap.setState(accessPoint.getState());
+            cap.setErrorDescription(accessPoint.getErrorDescription());
+            cap.setLastUpdate(accessPoint.getLastUpdate());
+            cap.setPreferredPartId(accessPoint.getPreferredPartId());
+
             restoreLinks(cap);
             return cap;
         } catch (IOException e) {
-            logger.error("Failed to deserialize object, data: " +
-                    data);
+            logger.error("Failed to deserialize object, data: " + data);
             throw new SystemException("Nastal problĂ©m pĹ™i deserializaci objektu", e);
         }
     }
@@ -979,9 +986,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             return QueryResults.emptyResult(r.getRecordCount());
         }
 
+        List<ApAccessPoint> accessPoints = accessPointRepository.findAllById(r.getRecords().stream()
+                                                                             .map(i -> i.getAccessPointId()).collect(Collectors.toList()));
+        Map<Integer, Integer> apMap = accessPoints.stream().collect(Collectors.toMap(i -> i.getAccessPointId(), i -> i.getVersion()));
+
         List<CachedAccessPoint> capList = new ArrayList<>(r.getRecords().size());
         for (ApCachedAccessPoint capd : r.getRecords()) {
-            CachedAccessPoint cap = deserialize(capd.getData());
+            CachedAccessPoint cap = deserialize(capd.getData(), capd.getAccessPoint());
             capList.add(cap);
         }
         QueryResults<CachedAccessPoint> result = new QueryResults<>(r.getRecordCount(), capList);
