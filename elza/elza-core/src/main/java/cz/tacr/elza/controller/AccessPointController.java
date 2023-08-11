@@ -180,7 +180,7 @@ public class AccessPointController implements AccesspointsApi {
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.updateAndValidate(accessPointId);
         if (accessPointService.isRevalidaceRequired(state.getStateApproval(), stateChange.getState())) {
-            ruleService.revalidateNodes(accessPointId);
+            ruleService.revalidateNodes(accessPointId); // TODO temporary cover
         }
         apCacheService.createApCachedAccessPoint(accessPointId);
 
@@ -207,7 +207,7 @@ public class AccessPointController implements AccesspointsApi {
         CreatedPart result = new CreatedPart();
         if (revision != null) {
             // Permission check is part of revisionService
-            ApRevPart revPart = revisionService.createPart(state, revision, apPartForm);
+            ApRevPart revPart = revisionService.createPart(state, revision, apPartForm); // TODO temporary cover
             result.setPartId(revPart.getPartId());
         } else {
             accessPointService.checkPermissionForEdit(state);
@@ -316,7 +316,7 @@ public class AccessPointController implements AccesspointsApi {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
         if (revision != null) {
-            revisionService.setPreferName(state, revision, partId);
+            revisionService.setPreferName(state, revision, partId); // TODO temporary cover
         } else {
             accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
@@ -395,7 +395,7 @@ public class AccessPointController implements AccesspointsApi {
             nextTypeId = state.getApTypeId();
         }
 
-        revisionService.changeStateRevision(state, nextTypeId, revNextState);
+        revisionService.changeStateRevision(state, nextTypeId, revNextState); // TODO temporary cover
         Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
         return ResponseEntity.ok(version);
     }
@@ -430,7 +430,7 @@ public class AccessPointController implements AccesspointsApi {
         ApState state = accessPointService.getStateInternal(accessPointId);
         accessPointService.lockWrite(state.getAccessPoint());
 
-        revisionService.deletePart(state, partId);
+        revisionService.deletePart(state, partId); // TODO temporary cover
         Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
         return ResponseEntity.ok(version);
     }
@@ -440,7 +440,7 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<Integer> setPreferNameRevision(Integer accessPointId, Integer partId, Integer apVersion) {
         ApState state = accessPointService.getStateInternal(accessPointId);
         accessPointService.lockWrite(state.getAccessPoint());
-        revisionService.setPreferName(state, partId);
+        revisionService.setPreferName(state, partId); // TODO temporary cover
         Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
         return ResponseEntity.ok(version);
     }
@@ -500,7 +500,7 @@ public class AccessPointController implements AccesspointsApi {
         return resultAutoItems;
     }
 
-    @Override
+    //@Override // TODO temporary cover
     @Transactional
     public ResponseEntity<Void> setPreferNameRevision(Integer accessPointId, Integer partId) {
         ApState state = accessPointService.getStateInternal(accessPointId);

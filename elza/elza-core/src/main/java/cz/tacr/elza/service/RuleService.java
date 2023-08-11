@@ -2046,4 +2046,8 @@ public class RuleService {
     public RulExportFilter getExportFilter(Integer exportFilterId) {
         return exportFilterRepository.getOne(exportFilterId);
     }
+
+    public void revalidateNodes(Integer accessPointId) {
+        // TODO Auto-generated method stub
+    }
 }
