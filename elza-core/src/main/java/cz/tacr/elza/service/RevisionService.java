@@ -1066,4 +1066,29 @@ public class RevisionService {
     public List<ApRevision> findAllRevisionByStateIn(List<ApState> apStates) {
         return revisionRepository.findAllByStateIn(apStates);
     }
+
+    public ApRevPart createPart(ApState state, ApRevision revision, ApPartFormVO apPartForm) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void changeStateRevision(ApState state, Integer nextTypeId, RevStateApproval revNextState) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void deletePart(ApState state, Integer partId) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setPreferName(ApState state, Integer partId) {
+        // TODO Auto-generated method stub
+        
+    }
 }
