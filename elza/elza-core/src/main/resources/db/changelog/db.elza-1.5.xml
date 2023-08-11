@@ -2424,4 +2424,10 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         <dropColumn tableName="arr_dao_file_group" columnName="code_old" />
     </changeSet>
 
+    <changeSet id="20230811122500" author="sergey.iryupin">
+        <addColumn tableName="arr_fund">
+            <column name="managed" type="boolean" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
