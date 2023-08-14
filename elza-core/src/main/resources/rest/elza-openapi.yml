@@ -212,41 +212,41 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
-    put:
-      summary: Aktualizace přístupového bodu
-      operationId: updateAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Upravovaná data přístupového bodu
-        content:
-          'application/json':
-            schema:
-              $ref: '#ApAccessPointEditVO'
-      responses:
-        200:
-          description: Aktualizovaný záznam
-          content:
-            application/json:
-              schema:
-                $ref: '#ApAccessPointVO'
-        404:
-          description: AP nebo revize neexistuje
+#    put:
+#      summary: Aktualizace přístupového bodu
+#      operationId: updateAccessPoint
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Upravovaná data přístupového bodu
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApAccessPointEditVO'
+#      responses:
+#        200:
+#          description: Aktualizovaný záznam
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#ApAccessPointVO'
+#        404:
+#          description: AP nebo revize neexistuje
   /accesspoints/{id}/autoitems:
     get:
       summary: Vrátí seznam automaticky generovaných prvků popisu
@@ -334,123 +334,123 @@ paths:
           description: Entita byla ověřena
         404:
           description: AP neexistuje
-  /accesspoints/{id}/state:
-    post:
-      summary: Změna stavu přístupového bodu
-      operationId: changeState
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Nový stav přístupového bodu
-        content:
-          'application/json':
-            schema:
-              $ref: '#ApStateChangeVO'
-      responses:
-        200:
-          description: Aktualizované číslo verze archivní entity
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
-        404:
-          description: AP nebo revize neexistuje
-  /accesspoints/{id}/part:
-    post:
-      summary: Založení nové části přístupového bodu
-      operationId: createPart
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Data pro vytvoření části
-        content:
-          'application/json':
-            schema:
-              $ref: '#ApPartFormVO'
-      responses:
-        200:
-          description: Identifikátor vytvořené části + verze archivní entity
-          content:
-            application/json:
-              schema:
-                $ref: '#CreatedPart'
-        404:
-          description: AP nebo revize neexistuje
-  /accesspoints/{id}/part/{partId}:
-    post:
-      summary: Úprava části přístupového bodu
-      operationId: updatePart
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: partId
-          description: Identifikátor měněné části
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Data pro měněné části
-        content:
-          'application/json':
-            schema:
-              $ref: '#ApPartFormVO'
-      responses:
-        200:
-          description: Aktualizované číslo verze archivní entity
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
-        404:
-          description: AP neexistuje
+#  /accesspoints/{id}/state:
+#    post:
+#      summary: Změna stavu přístupového bodu
+#      operationId: changeState
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Nový stav přístupového bodu
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApStateChangeVO'
+#      responses:
+#        200:
+#          description: Aktualizované číslo verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                type: integer
+#                format: int32
+#        404:
+#          description: AP nebo revize neexistuje
+#  /accesspoints/{id}/part:
+#    post:
+#      summary: Založení nové části přístupového bodu
+#      operationId: createPart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro vytvoření části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApPartFormVO'
+#      responses:
+#        200:
+#          description: Identifikátor vytvořené části + verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#CreatedPart'
+#        404:
+#          description: AP nebo revize neexistuje
+#  /accesspoints/{id}/part/{partId}:
+#    post:
+#      summary: Úprava části přístupového bodu
+#      operationId: updatePart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: partId
+#          description: Identifikátor měněné části
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro měněné části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApPartFormVO'
+#      responses:
+#        200:
+#          description: Aktualizované číslo verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                type: integer
+#                format: int32
+#        404:
+#          description: AP neexistuje
     delete:
       summary: Smazání části přístupového bodu
       operationId: deletePart
@@ -639,50 +639,50 @@ paths:
                 $ref: "#/components/schemas/ResultAutoItems"
         404:
           description: AP neexistuje
-  /revision/{id}/part/{partId}:
-    post:
-      summary: Úprava části přístupového bodu z revize
-      operationId: updateRevisionPart
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: partId
-          description: Identifikátor části popisu
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Data pro úpravu části
-        content:
-          'application/json':
-            schema:
-              $ref: '#ApPartFormVO'
-      responses:
-         200:
-          description: Aktualizované číslo verze archivní entity
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
-         404:
-           description: AP nebo revize neexistuje
+#  /revision/{id}/part/{partId}:
+#    post:
+#      summary: Úprava části přístupového bodu z revize
+#      operationId: updateRevisionPart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: partId
+#          description: Identifikátor části popisu
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro úpravu části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApPartFormVO'
+#      responses:
+#         200:
+#          description: Aktualizované číslo verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                type: integer
+#                format: int32
+#         404:
+#           description: AP nebo revize neexistuje
     delete:
       summary: Smazání části popisu z revize
       operationId: deleteRevisionPart
