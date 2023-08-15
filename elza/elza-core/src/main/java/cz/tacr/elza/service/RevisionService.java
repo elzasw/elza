@@ -759,6 +759,40 @@ public class RevisionService {
         }
     }
 
+    @Transactional
+    public void setPreferName(ApState state, Integer revPartId) {
+
+        ApRevision revision = revisionRepository.findByState(state);
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
+
+        ApRevState revState = revStateRepository.findLastRevState(revision);
+        accessPointService.checkPermissionForEdit(state, revState);
+
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
+
+        ApRevPart revPart = revisionPartService.findById(revPartId);
+        List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
+
+        if (!revPart.getPartType().getCode().equals(defaultPartType.getCode())) {
+            throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
+        }
+
+        if (revPart.getParentPart() != null || revPart.getRevParentPart() != null) {
+            throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
+        }
+
+        if (CollectionUtils.isEmpty(revItems)) {
+            throw new IllegalArgumentException("Smazaný part nelze označit za preferovaný");
+        }
+
+        revState.setPreferredPart(null);
+        revState.setRevPreferredPart(revPart);
+        revStateRepository.save(revState);
+    }
+
     /**
      * Update part revision
      * 
@@ -1072,22 +1106,12 @@ public class RevisionService {
         return null;
     }
 
-    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
-        // TODO Auto-generated method stub
-        
-    }
-
     public void changeStateRevision(ApState state, Integer nextTypeId, RevStateApproval revNextState) {
         // TODO Auto-generated method stub
         
     }
 
-    public void deletePart(ApState state, Integer partId) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void setPreferName(ApState state, Integer partId) {
+    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
         // TODO Auto-generated method stub
         
     }

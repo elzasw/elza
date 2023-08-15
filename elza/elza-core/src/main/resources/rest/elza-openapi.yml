@@ -639,7 +639,7 @@ paths:
                 $ref: "#/components/schemas/ResultAutoItems"
         404:
           description: AP neexistuje
-#  /revision/{id}/part/{partId}:
+  /revision/{id}/part/{partId}:
 #    post:
 #      summary: Úprava části přístupového bodu z revize
 #      operationId: updateRevisionPart
