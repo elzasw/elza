@@ -430,7 +430,7 @@ public class AccessPointController implements AccesspointsApi {
         ApState state = accessPointService.getStateInternal(accessPointId);
         accessPointService.lockWrite(state.getAccessPoint());
 
-        revisionService.deletePart(state, partId); // TODO temporary cover
+        revisionService.deleteRevPart(state, partId);
         Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
         return ResponseEntity.ok(version);
     }
