@@ -474,7 +474,7 @@ class RegistryPage extends AbstractReactComponent {
                     typeId: newTypeId,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, data, history, select))
+                    await dispatch(registryChangeStateRevision(id, undefined, data, history, select)) // TODO - apVersion zatim neni dostupna
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));
