@@ -31,6 +31,7 @@ import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import {renderUserItem} from '../../components/admin/adminRenderUtils';
 import PasswordForm from '../../components/admin/PasswordForm';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { urlAdminUser } from '../../constants';
 
 /**
  * Stránka pro správu uživatelů.
@@ -63,12 +64,42 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.props.dispatch(requestScopesIfNeeded());
-        this.props.dispatch(usersFetchIfNeeded());
+        const {dispatch, match} = this.props;
+
+        dispatch(requestScopesIfNeeded());
+        dispatch(usersFetchIfNeeded());
+
+        const matchId = match.params.id;
+        this.resolveUrlParams(matchId)
+    }
+
+    componentDidUpdate(prevProps){
+        const { match } = this.props;
+        const { match: prevMatch } = prevProps
+
+        const matchId = match.params.id;
+        const prevMatchId = prevMatch.params.id;
+
+        this.resolveUrlParams(matchId, prevMatchId)
+    }
+
+    resolveUrlParams = (id, prevId) => {
+        const { dispatch, history, user } = this.props;
+
+        if((id != undefined || prevId != undefined) && id === prevId){
+            return;
+        }
+
+        if (id != null) {
+            dispatch(usersSelectUser(id));
+        } else if (user.userDetail?.id != null) {
+            history.replace(urlAdminUser(user.userDetail.id));
+        }
     }
 
     handleSelect(item) {
-        this.props.dispatch(usersSelectUser(item.id));
+        const {history} = this.props;
+        history.push(urlAdminUser(item.id));
     }
 
     handleSearch(filterText) {

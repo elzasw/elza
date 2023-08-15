@@ -30,6 +30,7 @@ import {indexById} from 'stores/app/utils';
 import {modalDialogShow} from 'actions/global/modalDialog';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions';
 import {renderGroupItem} from 'components/admin/adminRenderUtils';
+import { urlAdminGroup } from '../../constants';
 
 const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     constructor(props) {
@@ -55,13 +56,47 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.props.dispatch(groupsFetchIfNeeded());
-        this.props.dispatch(groupsGroupDetailFetchIfNeeded());
+        const {dispatch, match} = this.props;
+
+        dispatch(groupsFetchIfNeeded());
+        dispatch(groupsGroupDetailFetchIfNeeded());
+
+        const matchId = match.params.id;
+        this.resolveUrlParams(matchId)
+    }
+
+    componentDidUpdate(prevProps){
+        const { match } = this.props;
+        const { match: prevMatch } = prevProps
+
+        const matchId = match.params.id;
+        const prevMatchId = prevMatch.params.id;
+
+        this.resolveUrlParams(matchId, prevMatchId)
+    }
+
+    resolveUrlParams = (id, prevId) => {
+        const { dispatch, history, group } = this.props;
+
+        if((id != undefined || prevId != undefined) && id === prevId){
+            return;
+        }
+
+        if (id != null) {
+            dispatch(groupsSelectGroup(id));
+        } else if (group.groupDetail?.id != null) {
+            history.replace(urlAdminGroup(group.groupDetail.id));
+        }
     }
 
     handleSelect(item) {
-        this.props.dispatch(groupsSelectGroup(item.id));
+        const {history} = this.props;
+        history.push(urlAdminGroup(item.id));
     }
+
+    // handleSelect(item) {
+    //     this.props.dispatch(groupsSelectGroup(item.id));
+    // }
 
     handleSearch(filterText) {
         this.props.dispatch(groupsSearch(filterText));

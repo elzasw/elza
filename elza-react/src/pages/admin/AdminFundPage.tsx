@@ -1,20 +1,40 @@
 /**
  * Stránka pro správu uživatelů.
  */
-import React, {FC} from 'react';
-import {useSelector} from 'react-redux';
-import {Ribbon} from 'components/index.jsx';
+import React, { FC, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Ribbon } from 'components/index.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import { RibbonGroup } from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import {AREA_ADMIN_FUND} from '../../actions/admin/fund';
+import { AREA_ADMIN_FUND, selectFund } from '../../actions/admin/fund';
 import FundDetail from '../../components/admin/FundDetail';
 import { FundList } from '../../components/admin/funds';
 import { AppState } from '../../typings/store';
+import { useThunkDispatch } from 'utils/hooks';
+import { urlAdminFund } from '../../constants';
+import { useHistory, useRouteMatch } from 'react-router';
 
-export const AdminFundPage:FC = () => {
-    const splitter = useSelector((state:AppState) => state.splitter);
-    const fund = useSelector((state:AppState) => storeFromArea(state, AREA_ADMIN_FUND));
+interface AdminFundPageUrlParams {
+    id?: string;
+}
+
+export const AdminFundPage: FC = () => {
+    const dispatch = useThunkDispatch();
+    const splitter = useSelector((state: AppState) => state.splitter);
+    const fund = useSelector((state: AppState) => storeFromArea(state, AREA_ADMIN_FUND));
+    const history = useHistory();
+    const match = useRouteMatch<AdminFundPageUrlParams>();
+
+    useEffect(() => {
+        const id = match.params?.id;
+
+        if (id != null) {
+            dispatch(selectFund(id));
+        } else if (fund?.id != null) {
+            history.replace(urlAdminFund(fund.id));
+        }
+    }, [match.params.id])
 
     const buildRibbon = () => {
         const altActions = [];
@@ -46,8 +66,8 @@ export const AdminFundPage:FC = () => {
             splitter={splitter}
             className="admin-fund-page"
             ribbon={buildRibbon()}
-            leftPanel={<FundList activeFund={fund}/>}
-            centerPanel={fund.id !== null ? <FundDetail/> : undefined}
+            leftPanel={<FundList activeFund={fund} />}
+            centerPanel={fund.id !== null ? <FundDetail /> : undefined}
         />
     );
 }
