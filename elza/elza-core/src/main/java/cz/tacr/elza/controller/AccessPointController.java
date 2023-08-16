@@ -13,13 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApStateChangeVO;
+import cz.tacr.elza.controller.vo.ApStateChange;
 import cz.tacr.elza.controller.vo.AutoValue;
 import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
-import cz.tacr.elza.controller.vo.CreatedPart;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
@@ -30,8 +26,6 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApRevPart;
-import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -155,38 +149,39 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok().build();
     }
 
-//    /**
-//     * Změna stavu přístupového bodu.
-//     *
-//     * @param accessPointId identifikátor přístupového bodu
-//     * @param apVersion     verze přístupového bodu
-//     * @param ApStateChange nový stav přístupového bodu
-//     * @return nová verze = verze + 1
-//     */
-//    @Override
-//    @Transactional
-//    public ResponseEntity<Integer> changeState(Integer accessPointId, Integer apVersion, ApStateChangeVO stateChange) {
-//        Validate.notNull(stateChange.getState(), "AP State is null");
-//
-//        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-//        ApState state = accessPointService.getApState(accessPoint);
-//        ApRevision revision = revisionService.findRevisionByState(state);
-//
-//        // Nelze změnit stav archivní entity, která má revizi
-//        if (revision != null) {
-//            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
-//        }
-//
-//        accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
-//        accessPointService.updateAndValidate(accessPointId);
-//        if (accessPointService.isRevalidaceRequired(state.getStateApproval(), stateChange.getState())) {
-//            ruleService.revalidateNodes(accessPointId); // TODO temporary cover
-//        }
-//        apCacheService.createApCachedAccessPoint(accessPointId);
-//
-//        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-//        return ResponseEntity.ok(version);
-//    }
+    /**
+     * Změna stavu přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param apVersion     verze přístupového bodu
+     * @param stateChange   nový stav přístupového bodu
+     * @return nová verze = verze + 1
+     */
+    @Override
+    @Transactional
+    public ResponseEntity<Integer> changeState(Integer accessPointId, Integer apVersion, ApStateChange stateChange) {
+        Validate.notNull(stateChange.getState(), "AP State is null");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState state = accessPointService.getApState(accessPoint);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        StateApproval newState = StateApproval.valueOf(stateChange.getState().toString());
+
+        // Nelze změnit stav archivní entity, která má revizi
+        if (revision != null) {
+            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
+        }
+
+        accessPointService.updateApState(accessPoint, newState, stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
+        accessPointService.updateAndValidate(accessPointId);
+        if (accessPointService.isRevalidaceRequired(state.getStateApproval(), newState)) {
+            ruleService.revalidateNodes(accessPointId); // TODO temporary cover
+        }
+        apCacheService.createApCachedAccessPoint(accessPointId);
+
+        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(version);
+    }
 
 //    /**
 //     * Založení nové části přístupového bodu.
