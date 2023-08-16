@@ -722,7 +722,7 @@ paths:
            description: AP nebo revize neexistuje
   /revision/{id}/part/{partId}/prefer-name:
     post:
-      summary: Nastavení preferovaného jména
+      summary: Nastavení preferovaného jména revize přístupového bodu
       operationId: setPreferNameRevision
       tags:
         - accesspoints
