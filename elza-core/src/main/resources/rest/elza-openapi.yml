@@ -334,43 +334,43 @@ paths:
           description: Entita byla ověřena
         404:
           description: AP neexistuje
-#  /accesspoints/{id}/state:
-#    post:
-#      summary: Změna stavu přístupového bodu
-#      operationId: changeState
-#      tags:
-#        - accesspoints
-#      parameters:
-#        - name: id
-#          description: Identifikátor archivní entity
-#          in: path
-#          required: true
-#          schema:
-#            type: integer
-#            format: int32
-#        - name: apVersion
-#          description: Aktuální verze archivní entity
-#          in: query
-#          required: false
-#          schema:
-#            type: integer
-#            format: int32
-#      requestBody:
-#        description: Nový stav přístupového bodu
-#        content:
-#          'application/json':
-#            schema:
-#              $ref: '#ApStateChangeVO'
-#      responses:
-#        200:
-#          description: Aktualizované číslo verze archivní entity
-#          content:
-#            application/json:
-#              schema:
-#                type: integer
-#                format: int32
-#        404:
-#          description: AP nebo revize neexistuje
+  /accesspoints/{id}/state:
+    post:
+      summary: Změna stavu přístupového bodu
+      operationId: changeState
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: Nový stav přístupového bodu
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/ApStateChange'
+      responses:
+        200:
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        404:
+          description: AP nebo revize neexistuje
 #  /accesspoints/{id}/part:
 #    post:
 #      summary: Založení nové části přístupového bodu
@@ -1732,3 +1732,19 @@ components:
       required:
         - importType
         - dataFile
+    ApStateChange:
+      type: object
+      properties:
+        comment:
+          type: string
+        state:
+          type: string
+          enum:
+            - NEW
+            - TO_APPROVE
+            - APPROVED
+            - TO_AMEND
+        scopeId:
+          type: integer
+        typeId:
+          type: integer
