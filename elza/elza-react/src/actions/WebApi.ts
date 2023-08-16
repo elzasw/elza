@@ -999,22 +999,6 @@ export class WebApiCls {
     }
 
     /**
-     * Nastavení preferovaného jména přístupového bodu.
-     * Možné pouze pro části typu Označení.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
-     * @see ApController.setPreferName
-     */
-    setPreferPartName(accessPointId: number, partId: number): Promise<void> {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId + '/prefer-name',
-            null,
-            null,
-        );
-    }
-
-    /**
      * Validace přístupového bodu
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
