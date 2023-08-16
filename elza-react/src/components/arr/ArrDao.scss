@@ -120,7 +120,6 @@
                 /*margin-left: -8px;*/
             }
             .icon {
-                color: #000000;
                 width: 1.35em;
             }
             margin-top: 2px;
@@ -209,7 +208,7 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                     padding-left: 5px;
-                    background-color: #c0c0c0;
+                    background-color: var(--shade-5);
                     display: flex;
                     align-items: center;
                     height: 1.8em;
