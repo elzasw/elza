@@ -552,7 +552,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         revParentPartId?: number,
     ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
     setPreferred: async (apId: number, partId: number) => {
-        await WebApi.setPreferPartName(apId, partId);
+        await Api.accesspoints.setPreferName(apId, partId);
         return dispatch(goToAe(history, apId, true, !select));
     },
     setRevisionPreferred: async (apId: number, partId: number) => {
