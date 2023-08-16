@@ -605,6 +605,46 @@ public class RevisionService {
     }
 
     /**
+     * Nastavení preferovaného jména revize přístupového bodu
+     * 
+     * @param state
+     * @param revPartId
+     */
+    @Transactional
+    public void setPreferName(ApState state, Integer revPartId) {
+
+        ApRevision revision = revisionRepository.findByState(state);
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
+
+        ApRevState revState = revStateRepository.findLastRevState(revision);
+        accessPointService.checkPermissionForEdit(state, revState);
+
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
+
+        ApRevPart revPart = revisionPartService.findById(revPartId);
+        List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
+
+        if (!revPart.getPartType().getCode().equals(defaultPartType.getCode())) {
+            throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
+        }
+
+        if (revPart.getParentPart() != null || revPart.getRevParentPart() != null) {
+            throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
+        }
+
+        if (CollectionUtils.isEmpty(revItems)) {
+            throw new IllegalArgumentException("Smazaný part nelze označit za preferovaný");
+        }
+
+        revState.setPreferredPart(null);
+        revState.setRevPreferredPart(revPart);
+        revStateRepository.save(revState);
+    }
+
+    /**
      * Update revPart
      * 
      * @param apState
@@ -757,40 +797,6 @@ public class RevisionService {
 
             updatePartValue(revPart, revState);
         }
-    }
-
-    @Transactional
-    public void setPreferName(ApState state, Integer revPartId) {
-
-        ApRevision revision = revisionRepository.findByState(state);
-        if (revision == null) {
-            throw new IllegalArgumentException("Neexistuje revize");
-        }
-
-        ApRevState revState = revStateRepository.findLastRevState(revision);
-        accessPointService.checkPermissionForEdit(state, revState);
-
-        StaticDataProvider sdp = StaticDataProvider.getInstance();
-        RulPartType defaultPartType = sdp.getDefaultPartType();
-
-        ApRevPart revPart = revisionPartService.findById(revPartId);
-        List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
-
-        if (!revPart.getPartType().getCode().equals(defaultPartType.getCode())) {
-            throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
-        }
-
-        if (revPart.getParentPart() != null || revPart.getRevParentPart() != null) {
-            throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
-        }
-
-        if (CollectionUtils.isEmpty(revItems)) {
-            throw new IllegalArgumentException("Smazaný part nelze označit za preferovaný");
-        }
-
-        revState.setPreferredPart(null);
-        revState.setRevPreferredPart(revPart);
-        revStateRepository.save(revState);
     }
 
     /**
@@ -1030,7 +1036,7 @@ public class RevisionService {
      * Vyhodnocuje oprávnění přihlášeného uživatele k úpravám na přístupovém bodu
      * dle uvedené oblasti entit.
      *
-     * @param apScope
+     * @param scope
      *            oblast entit
      * @param oldStateApproval
      *            původní stav schvalování - při zakládání AP může být {@code null}
@@ -1099,20 +1105,5 @@ public class RevisionService {
 
     public List<ApRevision> findAllRevisionByStateIn(List<ApState> apStates) {
         return revisionRepository.findAllByStateIn(apStates);
-    }
-
-    public ApRevPart createPart(ApState state, ApRevision revision, ApPartFormVO apPartForm) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void changeStateRevision(ApState state, Integer nextTypeId, RevStateApproval revNextState) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void setPreferName(ApState state, ApRevision revision, Integer partId) {
-        // TODO Auto-generated method stub
-        
     }
 }
