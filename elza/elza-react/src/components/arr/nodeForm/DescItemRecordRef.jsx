@@ -16,9 +16,10 @@ import {
 } from 'actions/registry/registry.jsx';
 import classNames from 'classnames';
 import {objectById, storeFromArea} from 'shared/utils';
-import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx';
+import {MODAL_DIALOG_VARIANT, URL_ENTITY} from '../../../constants';
 import {withRouter} from "react-router";
 import {goToAe} from "../../../actions/registry/registry";
+import { Link } from 'react-router-dom';
 
 //import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 let RegistrySelectPage;
@@ -99,13 +100,11 @@ class DescItemRecordRef extends AbstractReactComponent {
         } = this.props;
         const record = descItem.record ? descItem.record : null;
         if (readMode) {
-            if (record) {
+            if (record && !descItem.undefined) {
                 return (
-                    <DescItemLabel
-                        onClick={onDetail.bind(this, record.id)}
-                        value={record.name}
-                        notIdentified={descItem.undefined}
-                    />
+                    <Link to={`${URL_ENTITY}/${record.id}`}>
+                        <DescItemLabel value={record.name} />
+                    </Link>
                 );
             } else {
                 return (
