@@ -51,9 +51,9 @@ export function addToastrSuccess(title, message = null, size = 'lg', timeout = 2
     return addToastr(title, message, 'success', size, timeout);
 }
 
-export function removeToastr(index) {
+export function removeToastr(key) {
     return {
         type: types.TOASTR_REMOVE,
-        index,
+        key,
     };
 }
