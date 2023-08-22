@@ -8,11 +8,15 @@ import java.nio.file.Path;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +43,8 @@ import cz.tacr.elza.service.UserService;
 @RestController
 @RequestMapping("/api/v1")
 public class IOController implements IoApi {
+
+    private static final Logger logger = LoggerFactory.getLogger(IOController.class);
 
     @Autowired
     private UserService userService;
@@ -121,26 +127,42 @@ public class IOController implements IoApi {
     @Override
     public ResponseEntity<Object> ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
 
+        logger.debug("Get export status: {}", requestId);
+
         IOExportRequest result = ioExportWorker.getExportState(requestId);
         if (result == null) {
             return ResponseEntity.notFound().build();
         }
 
+        HttpStatus status;
+        Object body = null;
         switch (result.getState()) {
         case PENDING:
-            return ResponseEntity.status(102)
-                    .body(ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING));
+            status = HttpStatus.PROCESSING;
+            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING);
+            break;
         case PROCESSING:
-            return ResponseEntity.status(102)
-                    .body(ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING));
+            status = HttpStatus.PROCESSING;
+            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING);
+            break;
         case FINISHED:
-            return ResponseEntity.ok(ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED));
+            status = HttpStatus.OK;
+            body = ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED);
+            break;
         case ERROR:
-            return ResponseEntity.status(500)
-                    .body(ResponseFactory.createBaseException(result.getException()));
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            body = ResponseFactory.createBaseException(result.getException());
+            break;
         default:
-            throw new IllegalStateException();
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            body = ResponseFactory.createBaseException(new IllegalStateException());
+            break;
         }
+
+        logger.debug("Get export status: {}, response: {}", requestId, status);
+
+        BodyBuilder resp = ResponseEntity.status(status);
+        return resp.body(body);
     }
 
     @Override
