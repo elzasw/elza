@@ -26,6 +26,7 @@ import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.IOExportRequest;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
@@ -74,7 +75,8 @@ public class IOController implements IoApi {
                                     .set("fundId", fundVersion.getFundId());
                 }
                 if (fileName == null) {
-                    fileName = fundVersion.getFund().getFundNumber() + ".xml";
+                    ArrFund fund = fundVersion.getFund();
+                    fileName = prepareFileName(fund);
                 }
 
                 fundSection.setFundVersionId(fs.getFundVersionId());
@@ -90,6 +92,30 @@ public class IOController implements IoApi {
 
         int id = ioExportWorker.addExportRequest(userId, fileName, deExportParams);
         return ResponseEntity.ok(id);
+    }
+
+    private String prepareFileName(ArrFund fund) {
+        StringBuilder sb = new StringBuilder();
+
+        boolean appendSep = false;
+        if (StringUtils.isNotEmpty(fund.getMark())) {
+            sb.append(fund.getMark());
+            appendSep = true;
+        }
+        if (fund.getFundNumber() != null) {
+            if (appendSep) {
+                sb.append("-");
+            }
+            sb.append(fund.getFundNumber());
+            appendSep = true;
+        }
+        if (!appendSep) {
+            sb.append("fundId-").append(fund.getFundId());
+        }
+        sb.append(".xml");
+        String fileName = sb.toString().replaceAll("[\\\\/:*?\"<>|]", "_");
+
+        return fileName;
     }
 
     @Override
