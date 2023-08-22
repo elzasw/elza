@@ -146,6 +146,27 @@ model BaseException {
 	stackTrace?: string;
 }
 
+/**
+ * Data for create ApAccessPoint
+ */
+model ApAccessPointCreate {
+    // TODO define the body
+}
+
+/**
+ * Data for update ApAccessPoint
+ */
+model ApAccessPointUpdate {
+    // TODO define the body
+}
+
+/**
+ * Data for changing revision state of ApAccessPoint
+ */
+model RevStateChange {
+    // TODO define the body
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -211,6 +232,79 @@ namespace ElzaAPI.Fund {
         @header contentType: "*/*";
         @body data: bytes;
     };
+}
+
+@tag("accesspoints")
+@route("/accesspoint")
+namespace ElzaAPI.Accesspoint {
+    /**
+     * Create ApAccessPoint
+     */
+    @route("/")
+    @post op createAccessPoint(
+        /** Data for create ApAccessPoint */
+        @body body: ApAccessPointCreate
+    ): integer;
+
+    /**
+     * Update ApAccessPoint
+     */
+    @route("/{id}")
+    @put op updateAccessPoint(
+        /** id of accesspoint */
+        @path id: integer,
+        /** Data for update ApAccessPoint */
+        @body body: ApAccessPointUpdate
+    ): integer;
+
+    /**
+     * Delete ApAccessPoint
+     */
+    @route("/{id}")
+    @delete op deleteAccessPoint(
+        /** id of accesspoint */
+        @path id: integer,
+    ): integer;
+
+    /**
+     * Change state of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/state")
+    @post op changeStateRevision(
+        /** id of revision */
+        @path id: integer,
+        /** RevStateChange */
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+        @body body: RevStateChange
+    ): integer;
+
+    /**
+     * Set the preferred name of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}/prefer-name")
+    @post op setPreferNameRevision(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+    ): integer;
+
+    /**
+     * Delete part of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}")
+    @delete op deleteRevisionPart(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+    ): integer;
+
 }
 
 @tag("io")
