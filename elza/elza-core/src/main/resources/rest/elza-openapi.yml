@@ -188,30 +188,26 @@ paths:
                 type: array
                 items:
                   type: integer
+#  /accesspoints:
+#     post:
+#      summary: Vytvoření přístupového bodu
+#      operationId: createAccessPoint
+#      tags:
+#        - accesspoints
+#      requestBody:
+#        description: Upravovaná data přístupového bodu
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApAccessPointCreateVO'
+#      responses:
+#        200:
+#          description: Aktualizovaný záznam
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#ApAccessPointVO'
   /accesspoints/{id}:
-    delete:
-      summary: Zneplatnění přístupového bodu
-      operationId: deleteAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Doplnění způsobu zneplatnění
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/DeleteAccessPointDetail'
-      responses:
-        200:
-          description: Potvrzení o úspěšném odstranění
-        404:
-          description: AP neexistuje
 #    put:
 #      summary: Aktualizace přístupového bodu
 #      operationId: updateAccessPoint
@@ -247,6 +243,29 @@ paths:
 #                $ref: '#ApAccessPointVO'
 #        404:
 #          description: AP nebo revize neexistuje
+    delete:
+      summary: Zneplatnění přístupového bodu
+      operationId: deleteAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Doplnění způsobu zneplatnění
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointDetail'
+      responses:
+        200:
+          description: Potvrzení o úspěšném odstranění
+        404:
+          description: AP neexistuje
   /accesspoints/{id}/autoitems:
     get:
       summary: Vrátí seznam automaticky generovaných prvků popisu
@@ -397,17 +416,17 @@ paths:
 #        content:
 #          'application/json':
 #            schema:
-#              $ref: '#ApPartFormVO'
+#              $ref: '#/components/schemas/ApPartForm'
 #      responses:
 #        200:
 #          description: Identifikátor vytvořené části + verze archivní entity
 #          content:
 #            application/json:
 #              schema:
-#                $ref: '#CreatedPart'
+#                $ref: '#/components/schemas/CreatedPart'
 #        404:
 #          description: AP nebo revize neexistuje
-#  /accesspoints/{id}/part/{partId}:
+  /accesspoints/{id}/part/{partId}:
 #    post:
 #      summary: Úprava části přístupového bodu
 #      operationId: updatePart
@@ -440,7 +459,7 @@ paths:
 #        content:
 #          'application/json':
 #            schema:
-#              $ref: '#ApPartFormVO'
+#              $ref: '#/components/schemas/ApPartForm'
 #      responses:
 #        200:
 #          description: Aktualizované číslo verze archivní entity
@@ -1748,3 +1767,51 @@ components:
           type: integer
         typeId:
           type: integer
+    ApPartForm:
+      type: object
+      properties:
+        partTypeCode:
+          description: Kód typu části
+          type: string
+        partId:
+          description: Identifikátor části
+          type: integer
+        parentPartId:
+          description: Identifikátor nadřízené části
+          type: integer
+        revParentPartId:
+          description: Identifikátor nadřízené části z revize
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApPartItem"
+    ApPartItem:
+      type: object
+      properties:
+        id:
+          description: Identifikátor
+          type: integer
+        objectId:
+          description: Identifikátor hodnoty atributu
+          type: integer
+        position:
+          description: Pozice atributu
+          type: integer
+        typeId:
+          description: Typ atributu
+          type: integer
+        specId:
+          description: Specifikace atributu
+          type: integer
+        origObjectId:
+          description: Identifikátor původní hodnoty atributu
+          type: integer
+        changeType:
+          description: Typ změny
+          type: string
+          enum:
+            - NEW
+            - UPDATED
+            - DELETED
+            - ORIGINAL
