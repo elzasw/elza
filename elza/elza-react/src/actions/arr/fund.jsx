@@ -150,28 +150,27 @@ export function exportFund(fundId, transformationName, exportFilterId) {
     };
 
     // opakovane dotazovani na stav exportu, konci stazenim souboru ci hlaskou o neuspechu
-    async function downloadExportFile (fileId, dispatch, interval = 4000) {
-        dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, interval));
-        const isPending = await checkExportStatus(fileId);
-        if (isPending === false) {
-            dispatch(addToastrSuccess(i18n('export.success'), undefined, undefined, 4000));
-            // ziskani cesty k souboru
-            const { url } = await IoApiAxiosParamCreator().ioGetExportFile(fileId);
-            // stazeni souboru 
-            dispatch(downloadFile(getFullPath(url)));
-        } else if (isPending === true) {
-            // opetovne zavolani funkce s danym intervalem
-            setTimeout(() => downloadExportFile(fileId, dispatch, interval), interval);
-        } 
-        else {
-            dispatch(addToastrDanger(i18n('export.fail')));
+    function downloadExportFile (fileId, interval = 4000) {
+        return async (dispatch) => {
+            dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, interval));
+            const isPending = await checkExportStatus(fileId);
+            if (isPending === false) {
+                dispatch(addToastrSuccess(i18n('export.success'), undefined, undefined, 4000));
+                // ziskani cesty k souboru
+                const { url } = await IoApiAxiosParamCreator().ioGetExportFile(fileId);
+                // stazeni souboru 
+                dispatch(downloadFile(getFullPath(url)));
+            } else if (isPending === true) {
+                // opetovne zavolani funkce s danym intervalem
+                setTimeout(() => downloadExportFile(fileId, interval), interval);
+            }
         }
     }
 
     // zjisteni stavu exportu, navratova hodnota boolean (isPending) nebo null pri negativni odpovedi
     async function checkExportStatus (fileId) {
         try {
-            const { status } = await Api.io.ioGetExportStatus(fileId, { overrideErrorHandler: true });
+            const { status } = await Api.io.ioGetExportStatus(fileId);
             if (status === 200) {
                 return false;
             } else {
@@ -184,7 +183,7 @@ export function exportFund(fundId, transformationName, exportFilterId) {
 
     return async (dispatch) => {
         const { data: fileId } = await Api.io.ioExportRequest(requestData);
-        dispatch(downloadExportFile(fileId, dispatch));
+        dispatch(downloadExportFile(fileId));
     };
 }
 
