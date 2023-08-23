@@ -161,6 +161,20 @@ model ApAccessPointUpdate {
 }
 
 /**
+ * Data for delete ApAccessPoint
+ */
+model DeleteAccessPoint {
+    // TODO define the body
+}
+
+/**
+ * List of ApAccessPoint to delete
+ */
+model DeleteAccessPoints {
+    // TODO define the body
+}
+
+/**
  * Data for create ApPart
  */
 model ApPartCreate {
@@ -171,6 +185,13 @@ model ApPartCreate {
  * Data for update ApPart
  */
 model ApPartUpdate {
+    // TODO define the body
+}
+
+/**
+ * Data for changing state of ApAccessPoint
+ */
+model ApStateChange {
     // TODO define the body
 }
 
@@ -256,7 +277,7 @@ namespace ElzaAPI.Accesspoint {
      */
     @route("/")
     @post op createAccessPoint(
-        /** Data for create ApAccessPoint */
+        /** data for create ApAccessPoint */
         @body body: ApAccessPointCreate
     ): integer;
 
@@ -267,7 +288,9 @@ namespace ElzaAPI.Accesspoint {
     @put op updateAccessPoint(
         /** id of accesspoint */
         @path id: integer,
-        /** Data for update ApAccessPoint */
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for update ApAccessPoint */
         @body body: ApAccessPointUpdate
     ): integer;
 
@@ -277,7 +300,31 @@ namespace ElzaAPI.Accesspoint {
     @route("/{id}")
     @delete op deleteAccessPoint(
         /** id of accesspoint */
+        @path id: string,
+        /** data for delete ApAccessPoint */
+        @body body: DeleteAccessPoint
+    ): boolean;
+
+    /**
+     * Delete list of ApAccessPoint
+     */
+    @route("/all")
+    @delete op deleteAccessPoints(
+        /** data for delete list of ApAccessPoint */
+        @body body: DeleteAccessPoints
+    ): boolean;
+
+    /**
+     * Change state of ApAccessPoint
+     */
+    @route("/{id}/state")
+    @put op changeState(
+        /** id of accesspoint */
         @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for change ApState */
+        @body body: ApStateChange
     ): integer;
 
     /**
@@ -302,6 +349,7 @@ namespace ElzaAPI.Accesspoint {
         @path id: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer,
+        /** data for create ApPart */
         @body body: ApPartCreate
     ): integer;
 
@@ -333,6 +381,24 @@ namespace ElzaAPI.Accesspoint {
     ): integer;
 
     /**
+     * Create revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @post op createRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
+    ): integer;
+
+    /**
+     * Delete revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @delete op deleteRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
+    ): integer;
+
+    /**
      * Change state of revision of ApAccessPoint
      */
     @route("/revision/{id}/state")
@@ -341,7 +407,7 @@ namespace ElzaAPI.Accesspoint {
         @path id: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
-        /** RevStateChange */
+        /** data for change state of revision of ApAccessPoint */
         @body body: RevStateChange
     ): integer;
 
@@ -356,6 +422,21 @@ namespace ElzaAPI.Accesspoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
+    ): integer;
+
+    /**
+     * Update part of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}")
+    @put op updateRevisionPart(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+        /** data for update ApRevPart */
+        @body body: ApPartUpdate
     ): integer;
 
     /**
