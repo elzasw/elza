@@ -355,26 +355,6 @@
   </ead:localcontrol>
 
   <#-- TODO: odstranit nebo přesunout -->
-  <#-- Pocet JP -->
-  <#--
-  <#list output.items?filter(item -> item.type.code=="ZP2015_UNIT_COUNT_SUM") as item>
-  <!-- Součet JP 
-  <ead:localcontrol localtype="TOTAL_UNIT_COUNT">
-    <ead:term>${item.serializedValue}</ead:term>
-  </ead:localcontrol>
-  </#list>
-
-  <#-- TODO: odstranit nebo přesunout -->
-  <#-- Rozsah archiválií - ZP2015_UNITS_AMOUNT -->
-  <#--
-  <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
-  <!-- Rozsah zpristupnenych archivalii 
-  <ead:localcontrol localtype="UNITS_AMOUNT">
-    <ead:term>${item.serializedValue}</ead:term>
-  </ead:localcontrol>
-  </#list> -->  
-
-  <#-- TODO: odstranit nebo přesunout -->
   <#-- Časové rozmezí v tiráži -->
   <#--
   <#list output.items?filter(item -> item.type.code=="ZP2015_DATE_RANGE") as item>
@@ -666,10 +646,10 @@
       <#case "ZP2015_IMPRINT_COUNT">        
         <#local needsCharakteristikaJP=true>
         <#break>
-      <#case "ZP2015_IMPRINT_ORDER">        
+      <#case "ZP2015_IMPRINT_ORDER">
         <#local needsCharakteristikaJP=true>
         <#break>
-      <#case "ZP2015_SIZE">        
+      <#case "ZP2015_SIZE">
         <#local needsCharakteristikaJP=true>
         <#break>
       <#case "ZP2015_SIZE_WIDTH">
@@ -679,6 +659,9 @@
         <#local needsCharakteristikaJP=true>
         <#break>
       <#case "ZP2015_SIZE_DEPTH">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_WRITING">
         <#local needsCharakteristikaJP=true>
         <#break>
       <#case "ZP2015_WEIGHT">
@@ -744,6 +727,24 @@
   </#if>
   <#if (languages?size>0) >
     <@writeLangMaterials languages />
+  </#if>
+  <#if (node.depth==1)>  
+    <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
+      <#lt>  <!-- Rozsah zpřístupněných archiválií -->
+      <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+      <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+      <#lt>    <ead:unittype>bm</ead:unittype>
+      <#lt>  </ead:physdescstructured>
+    </#list>
+    <#-- Pocet JP -->
+    <#list output.items?filter(item -> item.type.code=="ZP2015_UNIT_COUNT_SUM") as item>
+      <#lt>  <!-- Počet JP -->
+      <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+      <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+      <#lt>    <ead:unittype>desc_units</ead:unittype>
+      <#lt>  </ead:physdescstructured>
+    </#list>
+    
   </#if>
   <#-- zápis DAOs -->
   <#if (node.daos?size>0)>
@@ -857,6 +858,9 @@
         <#break>
       <#case "ZP2015_IMPRINT_ORDER">        
         <#lt>    <ead:physfacet localtype="IMPRINT_ORDER">${item.serializedValue}</ead:physfacet>  
+        <#break>
+      <#case "ZP2015_WRITING">
+        <#lt>    <ead:physfacet localtype="WRITTING">${item.serializedValue}</ead:physfacet>  
         <#break>
       <#case "ZP2015_SIZE">
         <#lt>    <ead:dimensions>${item.serializedValue}</ead:dimensions>  
