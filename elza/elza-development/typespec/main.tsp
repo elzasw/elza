@@ -326,12 +326,7 @@ namespace ElzaAPI.Io {
 	@get op getExportStatus(
 		@path requestId: integer
 	): {
-       } | {
-         /** Processing */
-         @Http.statusCode statusCode: 102;
-         @body data: ExportRequestStatus;
-       } | {
-         /** Finishing */
+         /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
          @body data: ExportRequestStatus;
        } | {
