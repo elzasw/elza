@@ -77,7 +77,7 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
      List<Integer> findDeletedAccessPointIdsByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Modifying
-    @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
+    @Query("UPDATE ap_state s SET s.apType = :value WHERE s.apType = :key")
     void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
 
     @Modifying
@@ -110,8 +110,10 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " LEFT JOIN ap_revision r ON r.createChangeId = c.changeId" +
             " LEFT JOIN ap_rev_state rs ON rs.createChangeId = c.changeId" +
             " LEFT JOIN rs.type rtp" +
-            " WHERE s.accessPoint = :accessPoint OR rs.revisionId IN" +
-            "   (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint))" +
+            " WHERE s.accessPoint = :accessPoint" +
+            "   OR rs.revisionId IN" +
+            "     (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint))" +
+            "   AND ((r.mergeState IS NULL AND r.deleteChange IS NULL) OR (r.mergeState IS NOT NULL AND r.deleteChange IS NOT NULL))" +
             " ORDER BY c.changeId DESC")
     List<ApStateInfo> findInfoByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 

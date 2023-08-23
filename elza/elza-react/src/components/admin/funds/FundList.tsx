@@ -2,7 +2,7 @@ import React, {FC, useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import { i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
 import {indexById} from 'stores/app/utils';
-import {fundsFetchIfNeeded, fundsFilter, selectFund} from '../../../actions/admin/fund';
+import {fundsFetchIfNeeded, fundsFilter} from '../../../actions/admin/fund';
 import {renderFundItem} from '../../admin/adminRenderUtils';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {AREA_ADMIN_FUNDS} from '../../../actions/admin/fund';
@@ -11,6 +11,9 @@ import { AdminFund } from 'typings/store';
 import { getFundRows } from './utils';
 
 import './FundList.scss';
+import { useHistory } from 'react-router';
+import { urlAdminFund } from '../../../constants';
+import { ArrFundBaseVO } from 'api/ArrFundBaseVO';
 
 export const FundList:FC<{
     activeFund?: AdminFund;
@@ -20,6 +23,7 @@ export const FundList:FC<{
     const dispatch = useDispatch();
     const funds = useSelector((state: any) => storeFromArea(state, AREA_ADMIN_FUNDS))
     const fundRows = getFundRows(funds);
+    const history = useHistory();
 
     useEffect(()=>{
         dispatch(fundsFilter('',0));
@@ -28,7 +32,7 @@ export const FundList:FC<{
     useEffect(()=>{
         dispatch(fundsFetchIfNeeded());
     },[
-        funds.filter.from, 
+        funds.filter.from,
         funds.filter.text,
         dispatch,
     ]);
@@ -37,7 +41,7 @@ export const FundList:FC<{
 
     const activeIndex = activeFund && activeFund.id !== null ? indexById(fundRows, activeFund.id) : undefined;
 
-    const handleSelect = (item: {id: number}) => dispatch(selectFund(item.id));
+    const handleSelect = (item: ArrFundBaseVO) => history.push(urlAdminFund(item.id));
     const handleSearch = (filterText: string) => dispatch(fundsFilter(filterText, from));
     const handleSearchClear = () => dispatch(fundsFilter('', from));
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(fundsFilter(text, nextFrom))

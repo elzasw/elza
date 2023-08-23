@@ -379,13 +379,11 @@ public class ApController {
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
-                state, from, count, sdp);
+                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
-
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
-            CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
+            CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
             String name = apFactory.findAeCachedEntityName(entity);
             accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name));
         }
@@ -910,7 +908,7 @@ public class ApController {
         } else {
             data = new ArrayList<>(records.size());
             for (ApCachedAccessPoint record : records) {
-                CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
+                CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData(), record.getAccessPoint());
                 if (entity == null) {
                     // entity found in index but not found in cache
                     // it should not happend - index is broken

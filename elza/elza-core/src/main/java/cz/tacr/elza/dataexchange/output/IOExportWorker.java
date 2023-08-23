@@ -48,11 +48,14 @@ public class IOExportWorker implements SmartLifecycle {
 
     private static int requestCount = 0; 
 
+    // queue of export requests
     private LinkedList<IOExportRequest> exportRequests = new LinkedList<>();
 
-    private Map<Integer, IOExportResult> mapExportResult = new HashMap<>();
+    // lookup by id
+    private Map<Integer, IOExportRequest> mapExportResult = new HashMap<>();
     
-    private LoadingCache<Integer, IOExportResult> mapCacheResult;    
+    // cach for timeout removal
+    private LoadingCache<Integer, IOExportRequest> mapCacheResult;
 
     private ThreadStatus status = ThreadStatus.STOPPED;
 
@@ -60,15 +63,21 @@ public class IOExportWorker implements SmartLifecycle {
 
     @PostConstruct
     protected void init() {
-        CacheLoader<Integer, IOExportResult> loader = new CacheLoader<Integer, IOExportResult>() {
+        CacheLoader<Integer, IOExportRequest> loader = new CacheLoader<Integer, IOExportRequest>() {
             @Override
-            public IOExportResult load(Integer key) throws Exception {
-                return mapExportResult.get(key);
+            public IOExportRequest load(Integer key) throws Exception {
+                IOExportRequest r = mapExportResult.get(key);
+                if (r != null) {
+                    if (r.getState() == IOExportState.FINISHED || r.getState() == IOExportState.ERROR) {
+                        return r;
+                    }
+                }
+                return null;
             }
         };
-        RemovalListener<Integer, IOExportResult> removalListener = new RemovalListener<Integer, IOExportResult>() {
+        RemovalListener<Integer, IOExportRequest> removalListener = new RemovalListener<Integer, IOExportRequest>() {
             @Override
-            public void onRemoval(RemovalNotification<Integer, IOExportResult> notification) {
+            public void onRemoval(RemovalNotification<Integer, IOExportRequest> notification) {
                 Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(notification.getKey() + ".xml");
                 try {
                     Files.delete(filePath);
@@ -86,32 +95,27 @@ public class IOExportWorker implements SmartLifecycle {
                 .build(loader);
     }
 
-    public int addExportRequest(IOExportRequest exportRequest) {
+    public int addExportRequest(final Integer userId, final String downloadFileName, DEExportParams exportParams) {
         synchronized (lock) {
-            exportRequest.setRequestId(++requestCount);
+            IOExportRequest exportRequest = new IOExportRequest(userId, ++requestCount, downloadFileName, exportParams);
+
+            // store result
+            mapExportResult.put(exportRequest.getRequestId(), exportRequest);
             exportRequests.add(exportRequest);         
             lock.notifyAll();
-            return requestCount;
+            return exportRequest.getRequestId();
         }        
     }
 
-    public IOExportResult getExportState(Integer requestId) {
-        boolean isProcessing = exportRequests.stream().anyMatch(i -> i.getRequestId().equals(requestId));
-        if (isProcessing) {
-            return new IOExportResult(IOExportState.PROCESSING);
-        }
+    public IOExportRequest getExportState(Integer requestId) {
 
         // activation of deletion of expired records
         mapCacheResult.cleanUp();
 
         synchronized (lock) {
-            IOExportResult result = mapExportResult.get(requestId);
-            if (result != null) {
-                return result;
-            }
+            IOExportRequest result = mapExportResult.get(requestId);
+            return result;
         }
-
-        return new IOExportResult(IOExportState.NOT_FOUND);
     }
 
     private void exportData(IOExportRequest request) throws IOException {
@@ -120,15 +124,23 @@ public class IOExportWorker implements SmartLifecycle {
         SecurityContext secCtx = userService.createSecurityContext(request.getUserId());
         SecurityContextHolder.setContext(secCtx);
 
-        exportService.exportXmlData(request);        
+        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
+        Files.createDirectories(exportXmlTrasnformDir);
+
+        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + ".xml"));
+
+        exportService.exportXmlDataToFile(request.getExportParams(), xmlFile);
     }
 
     public void run() {
-
-        while (status == ThreadStatus.RUNNING) {
-            IOExportRequest request;
+        while (true) {
+            IOExportRequest request = null;
 
             synchronized (lock) {
+                if (status != ThreadStatus.RUNNING) {
+                    break;
+                }
+
                 // get next request
                 request = exportRequests.poll();
                 if (request == null) {
@@ -141,26 +153,33 @@ public class IOExportWorker implements SmartLifecycle {
                     }
                     continue;
                 }
+
+                // mark as processing
+                request.setStateProcessing();
             }
 
-            IOExportResult result;
+            Exception exception = null;
             try {
                 exportData(request);
-                result = new IOExportResult(IOExportState.OK);
-             } catch (Exception ex) {
-                 // prepare result
-                 result = new IOExportResult(IOExportState.ERROR, ex);
-                 log.error("Error in export process.", ex);
-             }
+            } catch (Exception ex) {
+                log.error("Error in export process.", ex);
+                exception = ex;
+            }
+
             synchronized (lock) {
-                // store result
-                mapExportResult.put(request.getRequestId(), result);
-                // insert item from result map to cached map
-                mapCacheResult.getUnchecked(request.getRequestId());                
+                // set result
+                if (exception == null) {
+                    request.setFinished();
+                } else {
+                    request.setFailed(exception);
+                }
             }
         }
-        status = ThreadStatus.STOPPED;
-        lock.notifyAll();        
+
+        synchronized (lock) {
+            status = ThreadStatus.STOPPED;
+            lock.notifyAll();
+        }
     }
 
     @Override
@@ -198,26 +217,4 @@ public class IOExportWorker implements SmartLifecycle {
         return status == ThreadStatus.RUNNING;
     }
 
-    public static class IOExportResult {
-        private final IOExportState state;
-        private final Exception exception;
-
-        public IOExportResult(IOExportState state) {
-            this.state = state;
-            this.exception = null;
-        }
-
-        public IOExportResult(IOExportState state, Exception exception) {
-            this.state = state;
-            this.exception = exception;
-        }
-
-        public IOExportState getState() {
-            return state;
-        }
-
-        public Exception getException() {
-            return exception;
-        }
-    }
 }

@@ -406,19 +406,25 @@ public class AccessPointService {
     public void checkDeletion(final ApAccessPoint accessPoint) {
         // arr_data_record_ref
         if (institutionRepository.existsByAccessPointId(accessPoint.getAccessPointId())) {
+            logger.error("Přístupový bod je institucí a nelze ho smazat, accessPointId: {}",
+                         accessPoint.getAccessPointId());
+
             throw new BusinessException("Nelze smazat/zneplatnit přístupový bod, který je institucí.",
                                         RegistryCode.EXIST_INSTITUCI);
         }
         List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
+            List<Integer> itemIds = arrRecordItems.stream().map(ArrItem::getItemId)
+                    .collect(Collectors.toList());
+            
+            logger.error("Přístupový bod je připojen k jednotce popisu a nelze ho smazat, accessPointId: {}, počet výskytů: {}",
+                         accessPoint.getAccessPointId(), itemIds.size());
+
             throw new BusinessException(
-                    "Nelze smazat/zneplatnit přístupový bod, který má hodnotu v jednotce archivního popisu.",
+                    "Nelze smazat/zneplatnit přístupový bod, který je připojen k jednotce popisu.",
                     RegistryCode.EXIST_FOREIGN_DATA)
                             .set("accessPointId", accessPoint.getAccessPointId())
-                            .set("arrItems", arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors
-                                    .toList()))
-                            .set("fundIds", arrRecordItems.stream().map(ArrItem::getFundId).collect(Collectors
-                                    .toList()));
+                            .set("arrItems", itemIds);
         }
     }
 
@@ -1769,6 +1775,37 @@ public class AccessPointService {
     }
 
     /**
+     * Získání id přístupových bodů podle stavu
+     * 
+     * @param state
+     * @return ids
+     */
+    public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
+        return apAccessPointRepository.findAccessPointIdByState(state);
+    }
+
+    /**
+     * Zvýšení čísla verze archivní entity
+     * 
+     * @param accessPointId
+     * @param ctrlVersion
+     * @return version
+     */
+    public Integer lockAccessPoint(Integer accessPointId, Integer ctrlVersion) {
+        ApAccessPoint accessPoint = em.getReference(ApAccessPoint.class, accessPointId);
+        Integer version = accessPoint.getVersion();
+        // pokud verze je null - kontrola se neprovádí
+        if (ctrlVersion != null && version != ctrlVersion) {
+            throw new BusinessException("Nesprávná verze archivní entity", RegistryCode.INVALID_ENTITY_VERSION)
+            .set("accessPointId", accessPointId)
+            .set("version", version)
+            .set("control version", ctrlVersion);
+        }
+        em.lock(accessPoint, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+        return accessPoint.getVersion();
+    }
+
+    /**
      * Uložení AP s odverzováním.
      *
      * @param accessPoint přístupový bod
@@ -2208,7 +2245,7 @@ public class AccessPointService {
                     .set("typeId", oldApState.getApTypeId());
             }
             if (!hasPermissionToChangeType(oldStateApproval, oldApScope)) {
-                throw new SystemException("Požadovaný třídu entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Požadovanou třídu entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("state", oldStateApproval)
                     .set("scopeId", oldApScope.getScopeId());

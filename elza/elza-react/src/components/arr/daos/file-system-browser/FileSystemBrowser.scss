@@ -33,9 +33,25 @@
 
         .file-list, .tree {
             .list-item {
-                padding: 6px 6px;
                 line-height: 1em;
                 cursor: pointer;
+                display: flex;
+
+                .item-part {
+                    padding: 5px;
+                    white-space: pre;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex-grow: 0;
+
+                    &.right {
+                        text-align: right;
+                    }
+
+                    &.no-shrink {
+                        flex-shrink: 0;
+                    }
+                }
 
                 &:nth-child(even){
                     background: var(--shade-1);
@@ -51,7 +67,7 @@
         }
 
         .tree {
-            width: 200px;
+            width: 100px;
             max-height: 100%;
             overflow: auto;
         }
@@ -63,18 +79,8 @@
             overflow: auto;
             .list-item {
                 display: flex;
-                .item-part {
-                    padding: 0 10px;
-                    &.right {
-                        text-align: right;
-                        min-width: 18ch;
-                    }
-                }
                 .spacer {
                     flex-grow: 1;
-                }
-                .icon {
-                    padding-right: 5px;
                 }
             }
         }

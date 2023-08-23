@@ -892,10 +892,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
-    changeState(accessPointId, data) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/state', null, data);
-    }
-
     mergeRevision(accessPointId, state) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/merge', {state: state}, null);
     }
@@ -996,22 +992,6 @@ export class WebApiCls {
      */
     deletePart(accessPointId: number, partId: number): Promise<void> {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, null);
-    }
-
-    /**
-     * Nastavení preferovaného jména přístupového bodu.
-     * Možné pouze pro části typu Označení.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
-     * @see ApController.setPreferName
-     */
-    setPreferPartName(accessPointId: number, partId: number): Promise<void> {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId + '/prefer-name',
-            null,
-            null,
-        );
     }
 
     /**
@@ -1266,9 +1246,9 @@ export class WebApiCls {
         );
     }
 
-    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType) {
+    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType, append = false) {
         return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl + '/placeDataValues/' + versionId,
+            WebApiCls.arrangementUrl + '/placeDataValues/' + versionId + (append ? '?append=true' : ""),
             {descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText},
             {nodes, specIds: specsIds, selectionType},
         );
@@ -1523,7 +1503,7 @@ export class WebApiCls {
             '/login',
             {},
             'POST',
-            'username=' + username + '&password=' + password,
+            'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password),
             'application/x-www-form-urlencoded',
         );
     }

@@ -19,16 +19,28 @@ import cz.tacr.elza.domain.ApStateEnum;
 
 public class CachedAccessPoint {
 
+    @JsonIgnore
     private Integer accessPointId;
 
+    /**
+     * Verze AP by neměla být serializována
+     */
+    @JsonIgnore
+    private Integer accessPointVersion;
+
+    @JsonIgnore
     private String uuid;
 
+    @JsonIgnore
     private ApStateEnum state;
 
+    @JsonIgnore
     private String errorDescription;
 
+    @JsonIgnore
     private LocalDateTime lastUpdate;
 
+    @JsonIgnore
     private Integer preferredPartId;
 
     private ApState apState;
@@ -51,6 +63,14 @@ public class CachedAccessPoint {
 
     public void setAccessPointId(Integer accessPointId) {
         this.accessPointId = accessPointId;
+    }
+
+    public Integer getAccessPointVersion() {
+        return accessPointVersion;
+    }
+
+    public void setAccessPointVersion(Integer accessPointVersion) {
+        this.accessPointVersion = accessPointVersion;
     }
 
     public String getUuid() {

@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -112,11 +113,14 @@ public class ApStateSpecification implements Specification<ApState> {
         if (revState != null) {
             Root<ApRevision> revisionRoot = q.from(ApRevision.class);
             Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
+            Root<ApRevState> revStateRoot = q.from(ApRevState.class);
 
             condition = cb.and(condition,
                     cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
                     cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
-                    revisionRoot.get(ApRevision.FIELD_STATE_APPROVAL).in(revState));
+                    cb.equal(revStateRoot.get(ApRevState.FIELD_REVISION), revisionRoot),
+                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)),
+                    revStateRoot.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
         }
 
         // pouze aktuální state

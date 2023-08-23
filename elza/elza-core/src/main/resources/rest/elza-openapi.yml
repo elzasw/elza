@@ -1,16 +1,16 @@
 openapi: 3.0.2
 info:
   title: ELZA API
-  version: "1.0.0"
+  version: 1.0.0
 tags:
+  - name: admin
+    description: Administrativní funkce
   - name: funds
     description: Archivní soubory
   - name: accesspoints
     description: Přístupové body a archivní entity
   - name: search
     description: Vyhledávání
-  - name: admin
-    description: Administrativní funkce
   - name: io
     description: Vstup a výstup informací
 servers:
@@ -188,7 +188,61 @@ paths:
                 type: array
                 items:
                   type: integer
+#  /accesspoints:
+#     post:
+#      summary: Vytvoření přístupového bodu
+#      operationId: createAccessPoint
+#      tags:
+#        - accesspoints
+#      requestBody:
+#        description: Upravovaná data přístupového bodu
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApAccessPointCreateVO'
+#      responses:
+#        200:
+#          description: Aktualizovaný záznam
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#ApAccessPointVO'
   /accesspoints/{id}:
+#    put:
+#      summary: Aktualizace přístupového bodu
+#      operationId: updateAccessPoint
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Upravovaná data přístupového bodu
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApAccessPointEditVO'
+#      responses:
+#        200:
+#          description: Aktualizovaný záznam
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#ApAccessPointVO'
+#        404:
+#          description: AP nebo revize neexistuje
     delete:
       summary: Zneplatnění přístupového bodu
       operationId: deleteAccessPoint
@@ -299,6 +353,198 @@ paths:
           description: Entita byla ověřena
         404:
           description: AP neexistuje
+  /accesspoints/{id}/state:
+    post:
+      summary: Změna stavu přístupového bodu
+      operationId: changeState
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: Nový stav přístupového bodu
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/ApStateChange'
+      responses:
+        200:
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        404:
+          description: AP nebo revize neexistuje
+#  /accesspoints/{id}/part:
+#    post:
+#      summary: Založení nové části přístupového bodu
+#      operationId: createPart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro vytvoření části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#/components/schemas/ApPartForm'
+#      responses:
+#        200:
+#          description: Identifikátor vytvořené části + verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/CreatedPart'
+#        404:
+#          description: AP nebo revize neexistuje
+  /accesspoints/{id}/part/{partId}:
+#    post:
+#      summary: Úprava části přístupového bodu
+#      operationId: updatePart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: partId
+#          description: Identifikátor měněné části
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro měněné části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#/components/schemas/ApPartForm'
+#      responses:
+#        200:
+#          description: Aktualizované číslo verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                type: integer
+#                format: int32
+#        404:
+#          description: AP neexistuje
+    delete:
+      summary: Smazání části přístupového bodu
+      operationId: deletePart
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor mazané části
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        404:
+          description: AP neexistuje
+  /accesspoints/{id}/part/{partId}/prefer-name:
+    put:
+      summary: Nastavení preferovaného jména přístupového bodu
+      operationId: setPreferName
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor části, kterou nastavujeme jako preferovanou
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+        404:
+          description: AP neexistuje
   /accesspoints:
     delete:
       summary: Zneplatnění přístupovych bodu
@@ -367,6 +613,13 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
       requestBody:
         description: Nový stav revize
         content:
@@ -375,7 +628,12 @@ paths:
               $ref: '#/components/schemas/RevStateChange'
       responses:
         200:
-          description: Potvrzení o úspěšné změně stavu revize
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
         404:
           description: AP nebo revize neexistuje
   /revision/{id}/autoitems:
@@ -401,6 +659,49 @@ paths:
         404:
           description: AP neexistuje
   /revision/{id}/part/{partId}:
+#    post:
+#      summary: Úprava části přístupového bodu z revize
+#      operationId: updateRevisionPart
+#      tags:
+#        - accesspoints
+#      parameters:
+#        - name: id
+#          description: Identifikátor archivní entity
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: partId
+#          description: Identifikátor části popisu
+#          in: path
+#          required: true
+#          schema:
+#            type: integer
+#            format: int32
+#        - name: apVersion
+#          description: Aktuální verze archivní entity
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+#            format: int32
+#      requestBody:
+#        description: Data pro úpravu části
+#        content:
+#          'application/json':
+#            schema:
+#              $ref: '#ApPartFormVO'
+#      responses:
+#         200:
+#          description: Aktualizované číslo verze archivní entity
+#          content:
+#            application/json:
+#              schema:
+#                type: integer
+#                format: int32
+#         404:
+#           description: AP nebo revize neexistuje
     delete:
       summary: Smazání části popisu z revize
       operationId: deleteRevisionPart
@@ -421,14 +722,26 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
       responses:
          200:
-           description: Potvrzení o úspěšném smažání částí popisu
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
          404:
            description: AP nebo revize neexistuje
   /revision/{id}/part/{partId}/prefer-name:
     post:
-      summary: Nastavení preferovaného jména
+      summary: Nastavení preferovaného jména revize přístupového bodu
       operationId: setPreferNameRevision
       tags:
         - accesspoints
@@ -447,9 +760,21 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: apVersion
+          description: Aktuální verze archivní entity
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
       responses:
         200:
-          description: Potvrzení o úspěšném nastavení preferovaného jména
+          description: Aktualizované číslo verze archivní entity
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
         404:
           description: AP nebo revize neexistuje
   /daos/{id}/change-scenario:
@@ -580,7 +905,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-                x-typespec-name: FsRepo[]
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
@@ -681,20 +1005,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-                x-typespec-name: FsRepo[]
   /io/export:
     post:
       tags:
         - io
-      operationId: exportRequest
+      operationId: Io_exportRequest
       description: Create export file of funds or access points
-      requestBody:
-        description: Export parameters
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExportParams'
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -702,11 +1019,19 @@ paths:
             application/json:
               schema:
                 type: integer
-  /io/file/{requestId}:
+      requestBody:
+        description: Export request parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportParams'
+  /io/export-status/{requestId}:
     get:
       tags:
         - io
-      operationId: getExportFile
+      operationId: Io_getExportStatus
+      description: Getting the export status by request id
       parameters:
         - name: requestId
           in: path
@@ -716,13 +1041,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
-          content: 
-            '*/*':
+          content:
+            application/json:
               schema:
-                type: string
-                format: binary
-        '102':
-          description: The requested resource is being processed.
+                $ref: '#/components/schemas/ExportRequestStatus'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -730,7 +1052,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '500':
-          description: Server error processing request.
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /io/file/{requestId}:
+    get:
+      tags:
+        - io
+      operationId: Io_getExportFile
+      description: Getting the generated file by request id
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server Error
           content:
             application/json:
               schema:
@@ -789,6 +1145,63 @@ components:
         - accessPoints
         - users
         - loggedUsers
+    BaseException:
+      type: object
+      properties:
+        type:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        level:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            type: object
+        stackTrace:
+          type: string
+      description: Error specification for the client
+      required:
+        - type
+        - code
+    ExportParams:
+      type: object
+      properties:
+        apIds:
+          type: array
+          items:
+            type: integer
+        fundsSections:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundSections'
+        exportFilterId:
+          type: integer
+        includeUUID:
+          type: boolean
+          default: true
+        includeAccessPoints:
+          type: boolean
+          default: true
+      description: Parameters of archive file export
+    ExportRequestState:
+      type: string
+      enum:
+        - PENDING
+        - PREPARING
+        - FINISHED
+    ExportRequestStatus:
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ExportRequestState'
+        progress:
+          type: integer
+      description: Status of export
+      required:
+        - state
     FsItem:
       type: object
       properties:
@@ -824,7 +1237,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FsItem'
-          x-typespec-name: FsItem[]
         lastKey:
           type: string
           description: >-
@@ -853,6 +1265,21 @@ components:
         - fsRepoId
         - name
         - path
+    FundSections:
+      type: object
+      properties:
+        fundVersionId:
+          type: integer
+        mergeSections:
+          type: boolean
+          default: false
+        rootNodeIds:
+          type: array
+          items:
+            type: integer
+      description: Specifies multiple sections for fund version
+      required:
+        - fundVersionId
     LoggedUser:
       type: object
       properties:
@@ -870,7 +1297,6 @@ components:
           items:
             $ref: '#/components/schemas/LoggedUser'
           description: User list
-          x-typespec-name: LoggedUser[]
         totalCount:
           type: integer
           format: int32
@@ -1272,6 +1698,17 @@ components:
         - ACTIVE
         - TO_APPROVE
         - TO_AMEND
+    CreatedPart:
+      type: object
+      properties:
+        partId:
+          description: Identifikátor vytvořené částí archivní entity
+          type: integer
+          format: int32
+        apVersion:
+          description: Aktualizovaná verze archivní entity
+          type: integer
+          format: int32
     AutoValue:
       title: Jeden automaticky generovaný prvek popisu
       type: object
@@ -1307,60 +1744,67 @@ components:
       required:
         - importType
         - dataFile
-    ExportParams:
+    ApStateChange:
       type: object
       properties:
-        apIds:
-          type: array
-          items:
-            type: integer
-        fundsSections:
-          type: array
-          items:
-            $ref: '#/components/schemas/FundSections'
-        exportFilterId:
+        comment:
+          type: string
+        state:
+          type: string
+          enum:
+            - NEW
+            - TO_APPROVE
+            - APPROVED
+            - TO_AMEND
+        scopeId:
           type: integer
-        includeUUID:
-          type: boolean
-          default: true
-        includeAccessPoints:
-          type: boolean
-          default: true
-      description: Parameters of archive file export
-      title: Export parameters
-    FundSections:
+        typeId:
+          type: integer
+    ApPartForm:
       type: object
       properties:
-        fundVersionId:
+        partTypeCode:
+          description: Kód typu části
+          type: string
+        partId:
+          description: Identifikátor části
           type: integer
-        mergeSections:
-          type: boolean
-          default: false
-        rootNodeIds:
+        parentPartId:
+          description: Identifikátor nadřízené části
+          type: integer
+        revParentPartId:
+          description: Identifikátor nadřízené části z revize
+          type: integer
+        items:
           type: array
           items:
-            type: integer
-      description: Specifies multiple sections for fund version
-      required:
-        - fundVersionId
-    BaseException:
+            $ref: "#/components/schemas/ApPartItem"
+    ApPartItem:
       type: object
       properties:
-        type:
+        id:
+          description: Identifikátor
+          type: integer
+        objectId:
+          description: Identifikátor hodnoty atributu
+          type: integer
+        position:
+          description: Pozice atributu
+          type: integer
+        typeId:
+          description: Typ atributu
+          type: integer
+        specId:
+          description: Specifikace atributu
+          type: integer
+        origObjectId:
+          description: Identifikátor původní hodnoty atributu
+          type: integer
+        changeType:
+          description: Typ změny
           type: string
-        code:
-          type: string
-        message:
-          type: string
-        level:
-          type: string
-        properties:
-          type: object
-          additionalProperties:
-            type: object
-        stackTrace:
-          type: string
-      description: Error specification for the client
-      required:
-        - type
-        - code
+          enum:
+            - NEW
+            - UPDATED
+            - DELETED
+            - ORIGINAL

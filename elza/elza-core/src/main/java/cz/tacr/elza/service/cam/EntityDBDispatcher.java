@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ItemBinaryXml;
 import cz.tacr.cam.schema.cam.ItemBooleanXml;
@@ -383,27 +384,48 @@ public class EntityDBDispatcher {
         MultipleApChangeContext mcc = new MultipleApChangeContext(); 
 
         readBindingItems(prevBindingState.getBinding(), accessPoint);
-        // check if exists subparts without binding
-        // in such case we cannot run synchronization - subparts has to be resolve first
-        if (syncQueue && CollectionUtils.isNotEmpty(partsWithoutBinding)) {
-            for (ApPart partWithoutBinding : partsWithoutBinding) {
-                if (partWithoutBinding.getParentPart() != null) {
-                    // sub part without item and running in background
-                    // -> sync failed
-                    this.bindingState = externalSystemService.createBindingState(prevBindingState,
-                                                                                 procCtx.getApChange(),
-                                                                                 entity.getEns().value(),
-                                                                                 entity.getRevi().getRid().getValue(),
-                                                                                 entity.getRevi().getUsr().getValue(),
-                                                                                 null,
-                                                                                 SyncState.NOT_SYNCED,
-                                                                                 accessPoint.getPreferredPart(),
-                                                                                 state.getApType());
-                    this.procCtx = null;
-                    return;
+        if (syncQueue) {
+            boolean syncFailed = false;
+            // check if exists subparts without binding
+            // in such case we cannot run synchronization - subparts has to be resolve first
+            if (CollectionUtils.isNotEmpty(partsWithoutBinding)) {
+                for (ApPart partWithoutBinding : partsWithoutBinding) {
+                    if (partWithoutBinding.getParentPart() != null) {
+                        syncFailed = true;
+                        break;
+                    }
                 }
             }
+            // delete AP
+            if (!syncFailed && entity.getEns() == EntityRecordStateXml.ERS_INVALID) {
+                try {
+                    accessPointService.checkDeletion(accessPoint);
+                } catch (Exception e) {
+                    // entity cannot be deleted -> has to be mark as not synchronized
+                    // -> sync failed
+                    syncFailed = true;
+                }
+            }
+
+            if (syncFailed) {
+                // sub part without item and running in background
+                // -> sync failed
+                this.bindingState = externalSystemService.createBindingState(prevBindingState,
+                                                                             procCtx.getApChange(),
+                                                                             entity.getEns().value(),
+                                                                             entity.getRevi().getRid()
+                                                                                     .getValue(),
+                                                                             entity.getRevi().getUsr()
+                                                                                     .getValue(),
+                                                                             null,
+                                                                             SyncState.NOT_SYNCED,
+                                                                             accessPoint.getPreferredPart(),
+                                                                             state.getApType());
+                this.procCtx = null;
+                return;
+            }
         }
+
 
         // check s AP class/subclass was cha
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
@@ -452,7 +474,6 @@ public class EntityDBDispatcher {
                     state.setReplacedBy(replacedBy);
                 }
             }
-            // delete AP
             state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 

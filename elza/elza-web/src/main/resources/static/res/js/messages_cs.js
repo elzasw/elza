@@ -142,7 +142,7 @@ var messages = {
     "exception.base.PROPERTY_NOT_EXIST": "Pole '{property}' musí být vyplněno",
     "exception.base.PROPERTY_HAS_INVALID_TYPE": "Pole '{property}' není správného datového typu ({actual}, {expected})",
     "exception.base.PROPERTY_IS_INVALID": "Pole '{property}' není správně vyplněno",
-    "exception.base.INVALID_URI": "Zadan není platný odkaz URI",
+    "exception.base.INVALID_URI": "Zadaný odkaz URI není platný",
     "exception.base.DB_INTEGRITY_PROBLEM": "Problém s integritou databáze",
     "exception.base.BAD_REQUEST": "Neplatný požadavek",
     "exception.base.INVALID_STATE": "Neplatný stav",
@@ -205,7 +205,7 @@ var messages = {
     "exception.reg.SCOPE_EXISTS": "Kod oblasti entit již existuje",
     "exception.reg.USING_SCOPE_CANT_DELETE": "Nelze smazat oblast, která obsahuje archivní entity",
     "exception.reg.CANT_DELETE_SCOPE_WITH_CONNECTED": "Nelze smazat oblast obsahující návazné oblasti",
-    "exception.reg.CANT_DELETE_CONNECTED_SCOPE": "Nelze smazat oblast která je návaznou oblastí jiné oblasti",
+    "exception.reg.CANT_DELETE_CONNECTED_SCOPE": "Nelze smazat oblast, která je návaznou oblastí jiné oblasti",
     "exception.reg.CANT_DELETE_SCOPE_RELATION_EXISTS":
         "Nelze zrušit návaznou oblast - existuje vztah mezi osobami těchto oblastí",
     "exception.reg.CANT_CONNECT_SCOPE_TO_SELF": "Nelze navázat třídu rejstříku sama na sebe",
@@ -513,8 +513,11 @@ var messages = {
 
     "change.arr.output.generating.title": "Generuje se výstup",
     "change.arr.output.outdated.title": "Výstup byl vygenerován, ale data nejsou aktuální",
+    "change.arr.output.outdated.extended.title": "Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován, ale data nejsou aktuální",
     "change.arr.output.finished.title": "Výstup byl vygenerován",
+    "change.arr.output.finished.extended.title": "Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován",
     "change.arr.output.error.title": "Chyba při generování výstupu",
+    "change.arr.output.error.extended.title": "Chyba při generování výstupu <b>{0}</b> z archivního souboru <b>{1}</b>",
     "change.arr.output.clickToShow": "Klikněte zde pro zobrazení",
 
     "arr.fundAction.noSelection.title": "Není vybrána funkce",
@@ -621,6 +624,7 @@ var messages = {
     "arr.fund.bulkModifications.operationType": "Typ úpravy",
     "arr.fund.bulkModifications.operationType.findAndReplace": "Najít a nahradit část obsahu",
     "arr.fund.bulkModifications.operationType.replace": "Nastavit celý obsah prvku",
+    "arr.fund.bulkModifications.operationType.append": "Přidat obsah prvku popisu",
     "arr.fund.bulkModifications.operationType.setSpecification": "Nahradit specifikaci za jinou",
     "arr.fund.bulkModifications.operationType.setEnum": "Nahradit hodnotu za jinou",
     "arr.fund.bulkModifications.operationType.delete": "Odstranit celý prvek popisu",
@@ -763,6 +767,10 @@ var messages = {
     "arr.daos.node.sync.confirm-message": "Opravdu chcete synchronizovat digitální entity přiřazené k JP?",
     "arr.daos.node.sync.submitting-message": "Probíhá synchronizace DAO pro JP...",
 
+    "arr.daos.tab.unassignedPackages": "Nepřiřazené entity",
+    "arr.daos.tab.packages": "Balíčky",
+    "arr.daos.tab.leftTree": "Archivní strom",
+    "arr.daos.tab.fileSystemTree": "Souborový systém",
     "arr.daos.link": "Připojit k JP",
     "arr.daos.createUnderAndLink": "Vytvořit podřízenou JP",
     "arr.daos.unlink.confirm": "Opravdu chcete odpojit digitální entitu od jednotky popisu?",
@@ -1524,7 +1532,7 @@ var messages = {
     "admin.user.passwordAgain": "Opakovat heslo",
     "admin.user.passwordChange.title": "Změna hesla",
     "admin.user.passwordChange.success": "Heslo bylo změněno",
-    "admin.user.changeActive.confirm": "Jste si jisti že chcete změnit stav uživatele?",
+    "admin.user.changeActive.confirm": "Jste si jisti, že chcete změnit stav uživatele?",
     "admin.user.validation.passNotEqual": "Zadaná hesla nejsou stejná",
 
     "admin.fund.title": "Archivní soubor",
@@ -1535,7 +1543,7 @@ var messages = {
     "admin.group.title.name": "Název",
     "admin.group.title.code": "Kód",
     "admin.group.title.description": "Popis",
-    "admin.group.add.success": "Skupina byla vvytvořena",
+    "admin.group.add.success": "Skupina byla vytvořena",
     "admin.group.delete.success": "Skupina byla smazána",
     "admin.group.user.add.title": "Připojení uživatelů do skupiny",
     "admin.perm.advanced.control.entity.add.title": "Přidání uživatelů a skupin",
@@ -1650,6 +1658,9 @@ var messages = {
 
     "export.title.fund": "Export archivního souboru",
     "export.exportFilter": "Exportní filtr",
+    "export.generating": "Generování exportu...",
+    "export.fail": "Soubor nelze stáhnout",
+    "export.success": "Soubor úspěšně vygenerován",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",

@@ -31,8 +31,8 @@ class Toastr extends AbstractReactComponent {
         store: PropTypes.object.isRequired,
     };
 
-    handleDismiss = index => {
-        this.props.dispatch(removeToastr(index));
+    handleDismiss = (key) => {
+        this.props.dispatch(removeToastr(key));
     };
 
     static getIconStyle(style) {
@@ -51,38 +51,38 @@ class Toastr extends AbstractReactComponent {
     }
 
     render() {
-        const rows = this.props.store.toasts.map((t, index) => {
-            if (t.time != null) {
-                setTimeout(() => this.handleDismiss(index), t.time);
+        const rows = this.props.store.toasts.map((toast) => {
+            if (toast.time != null) {
+                setTimeout(() => this.handleDismiss(toast.key), toast.time);
             }
 
             let message;
-            if (t.extended) {
+            if (toast.extended) {
                 message = (
                     <div>
-                        {createElement(t.messageComponent, {
+                        {createElement(toast.messageComponent, {
                             key: 'message',
-                            ...t.messageComponentProps,
-                            onClose: () => this.handleDismiss(index),
+                            ...toast.messageComponentProps,
+                            onClose: () => this.handleDismiss(toast.key),
                         })}
                     </div>
                 );
             } else {
-                message = <div>{t.message}</div>;
+                message = <div>{toast.message}</div>;
             }
 
             return (
                 <Alert
-                    key={'toast-' + index}
-                    variant={t.style}
-                    className={t.visible && 'fade'}
+                    key={'toast-' + toast.key}
+                    variant={toast.style}
+                    className={toast.visible && 'fade'}
                     closeLabel={i18n('global.action.close')}
-                    onClose={() => this.handleDismiss(index)}
+                    onClose={() => this.handleDismiss(toast.key)}
                     dismissible
                 >
-                    <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
+                    <div className="icon-container">{Toastr.getIconStyle(toast.style)}</div>
                     <div className="content">
-                        <h4>{t.title}</h4>
+                        <h4>{toast.title}</h4>
                         {message}
                     </div>
                 </Alert>

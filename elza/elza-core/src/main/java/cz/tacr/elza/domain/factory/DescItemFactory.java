@@ -103,7 +103,7 @@ public class DescItemFactory implements InitializingBean {
     /**
      * Povolené protokoly
      */
-    private final String PATTERN_PROTOCOL = "^(http://|https://|elza-node://)";
+    private final String PATTERN_PROTOCOL = "^(https?|elza-node)://.*";
 
     /**
      * Povolenoné zkratky
@@ -946,7 +946,7 @@ public class DescItemFactory implements InitializingBean {
                 throw new IllegalArgumentException("Nebyl zadán odkaz, nebo je odkaz prázdný");
             }
             if (!uriRefValue.matches(PATTERN_PROTOCOL)) {
-                throw new BusinessException("Zadan není platný odkaz URI, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
+                throw new BusinessException("Zadaný odkaz URI není platný, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
                     .set("uri", uriRefValue);
             }
             URI tempUri = URI.create(uriRefValue).normalize();
@@ -1053,7 +1053,7 @@ public class DescItemFactory implements InitializingBean {
                     throw new IllegalArgumentException("Nebyl zadán odkaz, nebo je odkaz prázdný");
                 }
                 if (!uriRefValue.matches(PATTERN_PROTOCOL)) {
-                    throw new BusinessException("Zadan není platný odkaz URI, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
+                    throw new BusinessException("Zadaný odkaz URI není platný, hodnota: " + uriRefValue, BaseCode.INVALID_URI)
                         .set("uri", uriRefValue);
                 }
                 URI tempUri = URI.create(uriRefValue).normalize();

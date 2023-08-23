@@ -32,6 +32,7 @@ export enum OperationType {
     SET_VALUE = "setValue",
     FIND_AND_REPLACE = "findAndReplace",
     REPLACE = "replace",
+    APPEND = "append",
 }
 
 const getDefaultItemsArea = ({
@@ -75,6 +76,7 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
             }
             break;
         case OperationType.REPLACE:
+        case OperationType.APPEND:
             if (!values.replaceText) {
                 errors.replaceText = i18n('global.validation.required');
             }
@@ -215,6 +217,27 @@ const FundBulkModificationsForm = ({
         }
     };
 
+    const getIsAppendSupported = () => {
+        // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
+        switch (dataType.code) {
+            case RulDataTypeCodeEnum.STRUCTURED:
+            case RulDataTypeCodeEnum.ENUM:
+                return false;
+            case RulDataTypeCodeEnum.TEXT:
+            case RulDataTypeCodeEnum.STRING:
+            case RulDataTypeCodeEnum.FORMATTED_TEXT:
+            case RulDataTypeCodeEnum.UNITID:
+            case RulDataTypeCodeEnum.INT:
+            case RulDataTypeCodeEnum.DECIMAL:
+            case RulDataTypeCodeEnum.DATE:
+            case RulDataTypeCodeEnum.UNITDATE:
+            case RulDataTypeCodeEnum.RECORD_REF:
+                return refType.useSpecification;
+            default:
+                return true;
+        }
+    };
+
     const getIsSetSpecificationSupported = () => {
         return refType.useSpecification;
     };
@@ -351,6 +374,7 @@ const FundBulkModificationsForm = ({
                     />,
                 );
                 break;
+            case OperationType.APPEND:
             case OperationType.REPLACE:
                 if (refType.useSpecification) {
                     operationInputs.push(
@@ -565,6 +589,11 @@ const FundBulkModificationsForm = ({
                                 {getIsReplaceSupported() && (
                                     <option key="replace" value={OperationType.REPLACE}>
                                         {i18n('arr.fund.bulkModifications.operationType.replace')}
+                                    </option>
+                                )}
+                                {getIsAppendSupported() && (
+                                    <option key="append" value={OperationType.APPEND}>
+                                        {i18n('arr.fund.bulkModifications.operationType.append')}
                                     </option>
                                 )}
                                 {getIsSetSpecificationSupported() && (

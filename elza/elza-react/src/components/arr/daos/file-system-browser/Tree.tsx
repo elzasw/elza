@@ -137,14 +137,22 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                         return workingTreeItem.fullPath === item.fullPath;
                     })
                     loadMoreItems(item.parentFullPath || "", item.data.lastKey, index, item.depth)
-                }} // needs proper index
+                }}
             >
-                <span style={{
-                    // paddingLeft: `${item.depth * TREE_INDENT_PX}px` ,
-                    width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
-                    display: "inline-block",
-                }} />
-                {i18n("arr.daos.fileSystem.loadMore")}
+                <span className="item-part no-shrink">
+                    <span
+                        style={{
+                            visibility: childrenMap[item.fullPath] ? "visible" : "hidden",
+                            width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
+                            display: "inline-flex",
+                            justifyContent: "flex-end",
+                        }}
+                    >
+                    </span>
+                </span>
+                <span className="item-part">
+                    {i18n("arr.daos.fileSystem.loadMore")}
+                </span>
             </div>
         }
         if (isRepoItem(item) || isListItem(item)) {
@@ -152,6 +160,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
             const isSelected = item.fullPath === selectedItemPath;
 
             return <div
+                title={item.data.name}
                 className={classNames(
                     "list-item", {
                     "selected": isSelected,
@@ -162,25 +171,27 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                     onSelect(item);
                 }}
             >
-                <span
-                    style={{
-                        // paddingLeft: `${item.depth * TREE_INDENT_PX}px`,
-                        visibility: childrenMap[item.fullPath] ? "visible" : "hidden",
-                        width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
-                        display: "inline-flex",
-                        justifyContent: "flex-end",
-                    }}
-                    onClick={(e) => {
-                        if (childrenMap[item.fullPath]) {
-                            e.stopPropagation();
-                            toggleItem(item);
-                        }
-                    }}
-                >
-                    {isExpanded ? <Icon glyph="fa-minus-square-o" /> : <Icon glyph="fa-plus-square-o" />}
+                <span className="item-part no-shrink">
+                    <span
+                        style={{
+                            visibility: childrenMap[item.fullPath] ? "visible" : "hidden",
+                            width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
+                            display: "inline-flex",
+                            justifyContent: "flex-end",
+                        }}
+                        onClick={(e) => {
+                            if (childrenMap[item.fullPath]) {
+                                e.stopPropagation();
+                                toggleItem(item);
+                            }
+                        }}
+                    >
+                        {isExpanded ? <Icon glyph="fa-minus-square-o" /> : <Icon glyph="fa-plus-square-o" />}
+                    </span>
                 </span>
-                &nbsp;
-                {item.data.name}
+                <span className="item-part">
+                    {item.data.name}
+                </span>
             </div>
         }
     }

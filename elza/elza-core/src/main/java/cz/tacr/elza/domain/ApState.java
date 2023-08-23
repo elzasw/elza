@@ -16,12 +16,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_state")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class ApState extends AbstractVersionableEntity implements IApScope, Versionable, AccessPointCacheSerializable {
+public class ApState implements IApScope, AccessPointCacheSerializable {
 
     public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";

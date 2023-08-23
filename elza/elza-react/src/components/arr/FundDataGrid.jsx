@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import {
     AbstractReactComponent,
     DataGrid,
@@ -17,13 +17,13 @@ import {
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
-import FundBulkModificationsForm from './FundBulkModificationsForm';
+import FundBulkModificationsForm, { OperationType } from './FundBulkModificationsForm';
 import FundFilterSettings from './FundFilterSettings';
 import FundDataGridCellForm from './FundDataGridCellForm';
 import ArrSearchForm from './ArrSearchForm';
-import {Dropdown} from 'react-bootstrap';
-import {Button} from '../ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import { Dropdown } from 'react-bootstrap';
+import { Button } from '../ui';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import {
     FILTER_NULL_VALUE,
     fundBulkModifications,
@@ -47,12 +47,12 @@ import {
     fundDataGridSetSelection,
     fundDataInitIfNeeded,
 } from 'actions/arr/fundDataGrid';
-import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu';
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
-import {structureTypesFetchIfNeeded} from 'actions/refTables/structureTypes';
-import {nodeFormActions} from 'actions/arr/subNodeForm';
-import {fundSelectSubNode} from 'actions/arr/node';
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
+import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu';
+import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
+import { structureTypesFetchIfNeeded } from 'actions/refTables/structureTypes';
+import { nodeFormActions } from 'actions/arr/subNodeForm';
+import { fundSelectSubNode } from 'actions/arr/node';
+import { refRulDataTypesFetchIfNeeded } from 'actions/refTables/rulDataTypes';
 import {
     createFundRoot,
     createReferenceMarkFromArray,
@@ -60,21 +60,21 @@ import {
     getValueIds,
     hasDescItemTypeValue,
 } from 'components/arr/ArrUtils';
-import {getMapFromList, getSetFromIdsList} from 'stores/app/utils';
-import {propsEquals} from 'components/Utils';
-import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from './FundDataGridConst';
+import { getMapFromList, getSetFromIdsList } from 'stores/app/utils';
+import { propsEquals } from 'components/Utils';
+import { COL_DEFAULT_WIDTH, COL_REFERENCE_MARK } from './FundDataGridConst';
 import './FundDataGrid.scss';
-import {getPagesCount} from '../shared/datagrid/DataGridPagination';
-import {toDuration} from '../validate';
-import {DisplayType, urlFundGrid} from '../../constants';
+import { getPagesCount } from '../shared/datagrid/DataGridPagination';
+import { toDuration } from '../validate';
+import { DisplayType, urlFundGrid } from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
-import {JAVA_ATTR_CLASS} from '../../constants';
-import {WebApi} from "../../actions/WebApi";
+import { JAVA_ATTR_CLASS } from '../../constants';
+import { WebApi } from "../../actions/WebApi";
 import { showConfirmDialog } from 'components/shared/dialog';
-import {withRouter} from "react-router";
-import {storeSave} from "../../actions/store/storeEx";
-import {fundDataGridFilterSet} from "../../actions/arr/fundDataGrid";
+import { withRouter } from "react-router";
+import { storeSave } from "../../actions/store/storeEx";
+import { fundDataGridFilterSet } from "../../actions/arr/fundDataGrid";
 
 export const serializeJson = (json) => {
     let s = JSON.stringify(json);
@@ -137,16 +137,16 @@ class FundDataGrid extends AbstractReactComponent {
             'fetchData',
         );
 
-        var colState = this.getColsStateFromProps(props, {fundDataGrid: {}});
+        var colState = this.getColsStateFromProps(props, { fundDataGrid: {} });
         if (!colState) {
-            colState = {cols: [], itemTypeCodes: []};
+            colState = { cols: [], itemTypeCodes: [] };
         }
 
         this.state = colState;
     }
 
     componentDidMount() {
-        const {versionId, fundDataGrid} = this.props;
+        const { versionId, fundDataGrid } = this.props;
         this.props.dispatch(fundDataGridFilterChange(versionId, this.getFilterFromUrl()));
 
         this.fetchData(this.props);
@@ -159,7 +159,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     fetchData(props) {
-        const {fundDataGrid, descItemTypes, fund, versionId, ruleSet, location} = props;
+        const { fundDataGrid, descItemTypes, fund, versionId, ruleSet, location } = props;
 
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(structureTypesFetchIfNeeded(this.props.versionId));
@@ -177,7 +177,7 @@ class FundDataGrid extends AbstractReactComponent {
                 Object.keys(fundDataGrid.visibleColumns).length === 0 &&
                 Object.keys(fundDataGrid.columnInfos).length === 0
             ) {
-                const initData = {visibleColumns: [], columnInfos: []};
+                const initData = { visibleColumns: [], columnInfos: [] };
                 const ruleMap = getMapFromList(ruleSet.items);
                 const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
@@ -206,7 +206,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     getFilterFromUrl = () => {
-        const {location} = this.props;
+        const { location } = this.props;
 
         const params = new URLSearchParams(location.search);
         const urlFilter = params.get("filter");
@@ -215,7 +215,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     setFilterUrl = (filter) => {
-        const {fund, history} = this.props;
+        const { fund, history } = this.props;
         const encodeFilter = serializeJson(filter);
         let url = urlFundGrid(fund.id, undefined, encodeFilter);
 
@@ -336,7 +336,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     supportBulkModifications(refType, dataType) {
-        const {closed} = this.props;
+        const { closed } = this.props;
 
         if (refType.id === COL_REFERENCE_MARK) {
             return false;
@@ -361,7 +361,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     headerColRenderer(col) {
-        const {fundDataGrid, readMode} = this.props;
+        const { fundDataGrid, readMode } = this.props;
 
         var cls = 'cell';
 
@@ -394,7 +394,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     getColsStateFromProps(nextProps, props) {
-        const {fundDataGrid, descItemTypes, rulDataTypes} = nextProps;
+        const { fundDataGrid, descItemTypes, rulDataTypes } = nextProps;
 
         if (descItemTypes.fetched) {
             if (
@@ -412,7 +412,7 @@ class FundDataGrid extends AbstractReactComponent {
                     descItemTypes,
                     rulDataTypes,
                 );
-                return {cols: cols};
+                return { cols: cols };
             }
         }
         return null;
@@ -455,7 +455,7 @@ class FundDataGrid extends AbstractReactComponent {
     getColumnsOrder(fundDataGrid, refTypesMap) {
         // Pořadí sloupečků - musíme brát i variantu, kdy není definované nebo kdy v něm některé atributy chybí
         var columnsOrder = [];
-        var map = {...refTypesMap};
+        var map = { ...refTypesMap };
         fundDataGrid.columnsOrder.forEach(id => {
             delete map[id];
             columnsOrder.push(id);
@@ -532,29 +532,29 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleColumnResize(colIndex, width) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataGridSetColumnSize(versionId, this.state.cols[colIndex].id, width));
     }
 
     handleSelectedIdsChange(ids) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataGridSetSelection(versionId, ids));
     }
 
     handleFilterClearAll() {
-        const {versionId, dispatch, fundId, history} = this.props;
+        const { versionId, dispatch, fundId, history } = this.props;
         dispatch(fundDataGridFilterClearAll(versionId));
         dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
         history.push(urlFundGrid(fundId));
     }
 
     handleFilterUpdateData() {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataGridRefreshRows(versionId));
     }
 
     handleColumnSettings() {
-        const {fundDataGrid, descItemTypes, fund, ruleSet} = this.props;
+        const { fundDataGrid, descItemTypes, fund, ruleSet } = this.props;
 
         var ruleMap = getMapFromList(ruleSet.items);
         var rule = ruleMap[fund.activeVersion.ruleSetId];
@@ -598,9 +598,9 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterSettings(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props;
+        const { versionId, fundDataGrid } = this.props;
 
-        const otherFilters = {...fundDataGrid.filter};
+        const otherFilters = { ...fundDataGrid.filter };
         delete otherFilters[refType.id];
 
         this.props.dispatch(
@@ -621,7 +621,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleChangeFilter(versionId, refType, _filter) {
-        const filter = {...(this.props.fundDataGrid?.filter || {})};
+        const filter = { ...(this.props.fundDataGrid?.filter || {}) };
 
         if (refType != null) {
             // null je pro případ, kdy jen chceme aktualizovat data
@@ -638,7 +638,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid, structureTypes, dispatch} = this.props;
+        const { versionId, fundDataGrid, structureTypes, dispatch } = this.props;
 
         const submit = async (data) => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
@@ -646,7 +646,7 @@ class FundDataGrid extends AbstractReactComponent {
             let selectionType;
             switch (data.itemsArea) {
                 case 'page':
-                    nodes = fundDataGrid.items.map(i => ({id: i.node.id, version: i.node.version}));
+                    nodes = fundDataGrid.items.map(i => ({ id: i.node.id, version: i.node.version }));
                     selectionType = 'NODES';
                     break;
                 case 'selected': {
@@ -655,7 +655,7 @@ class FundDataGrid extends AbstractReactComponent {
                     selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
                         if (set[i.id]) {
-                            nodes.push({id: i.node.id, version: i.node.version});
+                            nodes.push({ id: i.node.id, version: i.node.version });
                         }
                     });
                     break;
@@ -666,7 +666,7 @@ class FundDataGrid extends AbstractReactComponent {
                     const set = getSetFromIdsList(fundDataGrid.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
-                            nodes.push({id: i.node.id, version: i.node.version});
+                            nodes.push({ id: i.node.id, version: i.node.version });
                         }
                     });
                     break;
@@ -735,7 +735,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleChangeColumnsSettings(columns) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
 
         var visibleColumns = {};
         var columnsOrder = [];
@@ -771,11 +771,11 @@ class FundDataGrid extends AbstractReactComponent {
             </ul>
         );
 
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, { x: e.clientX, y: e.clientY }));
     }
 
     handleEdit(row, rowIndex, col, colIndex) {
-        const {versionId, fundId, closed} = this.props;
+        const { versionId, fundId, closed } = this.props;
         const parentNodeId = row.parentNode ? row.parentNode.id : null;
 
         if (typeof col.id === 'undefined') {
@@ -811,7 +811,7 @@ class FundDataGrid extends AbstractReactComponent {
                     fundId={fundId}
                     routingKey="DATA_GRID"
                     closed={closed}
-                    position={{x, y}}
+                    position={{ x, y }}
                 />,
                 'fund-data-grid-cell-edit',
                 this.handleEditClose,
@@ -820,7 +820,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleEditClose() {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
 
         this.props.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
@@ -834,7 +834,7 @@ class FundDataGrid extends AbstractReactComponent {
      * @param row {Object} řádek dat
      */
     handleSelectInNewTab(row) {
-        const {versionId, fund} = this.props;
+        const { versionId, fund } = this.props;
         this.props.dispatch(contextMenuHide());
 
         var parentNode = row.parentNode;
@@ -847,32 +847,32 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFulltextChange(value) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataFulltextClear(versionId));
     }
 
     handleFulltextSearch(value) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataFulltextSearch(versionId, value, false, null, this.props.fundDataGrid.data));
     }
 
     handleFulltextPrevItem() {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataFulltextPrevItem(versionId));
     }
 
     handleFulltextNextItem() {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataFulltextNextItem(versionId));
     }
 
     handleChangeFocus(row, col) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataChangeCellFocus(versionId, row, col));
     }
 
     handleChangeRowIndexes(indexes) {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataChangeRowIndexes(versionId, indexes));
     }
 
@@ -881,7 +881,7 @@ class FundDataGrid extends AbstractReactComponent {
      * @param row {Object} řádek dat
      */
     handleSelectInTab(row) {
-        const {versionId, fund} = this.props;
+        const { versionId, fund } = this.props;
         this.props.dispatch(contextMenuHide());
 
         var parentNode = row.parentNode;
@@ -894,7 +894,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleToggleExtendedSearch() {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundDataFulltextExtended(versionId));
     }
 
@@ -912,7 +912,7 @@ class FundDataGrid extends AbstractReactComponent {
     };
 
     handleExtendedSearchData = result => {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
 
         let params = [];
 
@@ -953,8 +953,8 @@ class FundDataGrid extends AbstractReactComponent {
     };
 
     render() {
-        const {fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode} = this.props;
-        const {cols} = this.state;
+        const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode } = this.props;
+        const { cols } = this.state;
 
         // Hledání
         var search = (
@@ -1051,7 +1051,7 @@ class FundDataGrid extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter} = state;
+    const { splitter } = state;
     return {
         splitter,
     };

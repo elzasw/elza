@@ -152,4 +152,9 @@ public enum RegistryCode implements ErrorCode {
      * Nelze vytvořit revizi, protože archivní entita má nevhodný stav
      */
     CANT_CREATE_REVISION,
+    
+    /**
+     * Nesprávná verze archivní entity
+     */
+    INVALID_ENTITY_VERSION,
 }

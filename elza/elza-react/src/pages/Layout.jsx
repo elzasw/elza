@@ -39,10 +39,10 @@ import {
     ACTIONS,
     DAOS,
     FOCUS_KEYS,
-    getFundVersion, 
+    getFundVersion,
     GRID,
     MOVEMENTS,
-    OUTPUTS, 
+    OUTPUTS,
     REQUESTS,
     NODE,
     TREE,
@@ -63,7 +63,7 @@ import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvide
 let _gameRunner = null;
 
 const IntegrationPanel = ({
-    integrationFunction, 
+    integrationFunction,
     id,
     children
 }) => {
@@ -242,8 +242,11 @@ class Layout extends AbstractReactComponent {
                                 <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                                 <Route path="/admin">
                                     <Switch>
+                                        <Route path="/admin/user/:id" component={AdminUserPage} />
                                         <Route path="/admin/user" component={AdminUserPage} />
+                                        <Route path="/admin/group/:id" component={AdminGroupPage} />
                                         <Route path="/admin/group" component={AdminGroupPage} />
+                                        <Route path="/admin/fund/:id" component={AdminFundPage} />
                                         <Route path="/admin/fund" component={AdminFundPage} />
                                         <Route path="/admin/packages" component={AdminPackagesPage} />
                                         <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />

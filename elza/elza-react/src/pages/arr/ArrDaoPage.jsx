@@ -368,16 +368,16 @@ class ArrDaoPage extends ArrParentPage {
 
         let tabs = [{
             id: 'unassignedPackages',
-            title: 'Nepřiřazené entity',
+            title: i18n("arr.daos.tab.unassignedPackages"),
         }, {
             id: 'packages',
-            title: 'Balíčky'
+            title: i18n("arr.daos.tab.packages"),
         }, {
             id: 'leftTree',
-            title: 'Archivní strom'
+            title: i18n("arr.daos.tab.leftTree"),
         }, {
             id: 'fileSystemTree',
-            title: 'Souborovy system'
+            title: i18n("arr.daos.tab.fileSystemTree"),
         }];
 
         return (
