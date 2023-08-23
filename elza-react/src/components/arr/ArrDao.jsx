@@ -229,8 +229,7 @@ class ArrDao extends AbstractReactComponent {
                     </div>
                 )}
                 <div className="dao-info-container">
-                    {this.renderDaoDetail()}
-                    {daoFile && this.renderDaoFileDetail()}
+                    {daoFile ? this.renderDaoFileDetail() : this.renderDaoDetail()}
                 </div>
             </div>
         );

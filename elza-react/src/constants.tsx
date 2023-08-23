@@ -166,10 +166,14 @@ export const URL_FUND_ACTIONS_PATH = `${URL_FUND}/:id/${ACTIONS}/:actionId`;
 export const URL_FUND_REQUESTS_PATH = `${URL_FUND}/:id/${REQUESTS}/:requestId`;
 export const URL_FUND_DAOS_PATH = `${URL_FUND}/:id/${DAOS}`;
 
-export const URL_NODE = '/node'
+export const URL_NODE = '/node';
+export const URL_ADMIN = '/admin';
+export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
+export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
+export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 
 export const getFundVersion = (fund: Fund) => {
-    if(!fund?.activeVersion){ 
+    if(!fund?.activeVersion){
         // console.error("No active version on fund", fund);
         // throw Error("No active version on fund")
         return undefined;
@@ -187,7 +191,7 @@ export const urlFundWithVersion = (fundId: number, versionId: number) => {
 }
 
 export const urlFundBase = (fundId: number, versionId?: number) => {
-    return versionId === undefined 
+    return versionId === undefined
         ? urlFund(fundId)
         : urlFundWithVersion(fundId, versionId);
 }
@@ -235,4 +239,16 @@ export const urlFundRequests = (fundId: number, versionId?: number, requestId?: 
 
 export const urlFundDaos = (fundId: number, versionId?: number, daoId?: number) => {
     return fundSub(fundId, versionId, DAOS, daoId);
+}
+
+export const urlAdminUser = (userId: number) => {
+    return `${URL_ADMIN_USER}/${userId}`;
+}
+
+export const urlAdminGroup = (groupId: number) => {
+    return `${URL_ADMIN_GROUP}/${groupId}`;
+}
+
+export const urlAdminFund = (fundId: number) => {
+    return `${URL_ADMIN_FUND}/${fundId}`;
 }

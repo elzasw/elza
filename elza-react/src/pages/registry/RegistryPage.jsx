@@ -432,7 +432,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await WebApi.changeState(id, finalData);
+                    await Api.accesspoints.changeState(id, undefined, finalData); // TODO - apVersion zatim neni dostupna
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));
@@ -474,7 +474,7 @@ class RegistryPage extends AbstractReactComponent {
                     typeId: newTypeId,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, data, history, select))
+                    await dispatch(registryChangeStateRevision(id, undefined, data, history, select)) // TODO - apVersion zatim neni dostupna
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));
@@ -566,6 +566,8 @@ class RegistryPage extends AbstractReactComponent {
                             </div>
                         </Button>,
                     );
+                }
+                if (extSystems && extSystems.length > 0 && (!hasOnlyCompleteExternalSystems || userDetail.hasOne(perms.ADMIN))) {
                     altActions.push(
                         <Button key="ext-syncs" onClick={this.handleExtSyncs}>
                             <Icon glyph="fa-gg" />

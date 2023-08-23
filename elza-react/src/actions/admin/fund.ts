@@ -16,8 +16,8 @@ export function fundsFetchIfNeeded() {
         {
             const {text, from, pageSize} = filter;
             return WebApi.findControlFunds(
-                text || "", 
-                pageSize, 
+                text || "",
+                pageSize,
                 from && from > 0 ? from : 0
             )
         }
@@ -28,7 +28,7 @@ export function fundFetchIfNeeded(id: number) {
     return DetailActions.fetchIfNeeded(AREA_ADMIN_FUND, id, (id:number) => WebApi.getFundDetail(id));
 }
 
-export function selectFund(id: number) {
+export function selectFund(id: number | string) {
     return DetailActions.select(AREA_ADMIN_FUND, id);
 }
 

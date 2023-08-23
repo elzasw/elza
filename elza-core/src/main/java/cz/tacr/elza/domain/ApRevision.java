@@ -17,7 +17,6 @@ import javax.persistence.ManyToOne;
 public class ApRevision {
 
     public static final String FIELD_STATE = "state";
-    public static final String FIELD_STATE_APPROVAL = "stateApproval";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id

@@ -111,6 +111,20 @@ model ExportParams {
     includeAccessPoints?: boolean = true;
 }
 
+enum ExportRequestState {
+    PENDING,
+    PREPARING,
+    FINISHED
+}
+
+/**
+ * Status of export
+ */
+model ExportRequestStatus {
+    state: ExportRequestState;
+    progress?: integer;
+}
+
 /**
  * Specifies multiple sections for fund version
  */
@@ -130,6 +144,62 @@ model BaseException {
 	level?: string;
 	properties?: {};
 	stackTrace?: string;
+}
+
+/**
+ * Data for create ApAccessPoint
+ */
+model ApAccessPointCreate {
+    // TODO define the body
+}
+
+/**
+ * Data for update ApAccessPoint
+ */
+model ApAccessPointUpdate {
+    // TODO define the body
+}
+
+/**
+ * Data for delete ApAccessPoint
+ */
+model DeleteAccessPoint {
+    // TODO define the body
+}
+
+/**
+ * List of ApAccessPoint to delete
+ */
+model DeleteAccessPoints {
+    // TODO define the body
+}
+
+/**
+ * Data for create ApPart
+ */
+model ApPartCreate {
+    // TODO define the body
+}
+
+/**
+ * Data for update ApPart
+ */
+model ApPartUpdate {
+    // TODO define the body
+}
+
+/**
+ * Data for changing state of ApAccessPoint
+ */
+model ApStateChange {
+    // TODO define the body
+}
+
+/**
+ * Data for changing revision state of ApAccessPoint
+ */
+model RevStateChange {
+    // TODO define the body
 }
 
 @route("/daorepository")
@@ -199,6 +269,190 @@ namespace ElzaAPI.Fund {
     };
 }
 
+@tag("accesspoints")
+@route("/accesspoint")
+namespace ElzaAPI.Accesspoint {
+    /**
+     * Create ApAccessPoint
+     */
+    @route("/")
+    @post op createAccessPoint(
+        /** data for create ApAccessPoint */
+        @body body: ApAccessPointCreate
+    ): integer;
+
+    /**
+     * Update ApAccessPoint
+     */
+    @route("/{id}")
+    @put op updateAccessPoint(
+        /** id of accesspoint */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for update ApAccessPoint */
+        @body body: ApAccessPointUpdate
+    ): integer;
+
+    /**
+     * Delete ApAccessPoint
+     */
+    @route("/{id}")
+    @delete op deleteAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** data for delete ApAccessPoint */
+        @body body: DeleteAccessPoint
+    ): boolean;
+
+    /**
+     * Delete list of ApAccessPoint
+     */
+    @route("/all")
+    @delete op deleteAccessPoints(
+        /** data for delete list of ApAccessPoint */
+        @body body: DeleteAccessPoints
+    ): boolean;
+
+    /**
+     * Change state of ApAccessPoint
+     */
+    @route("/{id}/state")
+    @put op changeState(
+        /** id of accesspoint */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for change ApState */
+        @body body: ApStateChange
+    ): integer;
+
+    /**
+     * Set the preferred name of ApAccessPoint
+     */
+    @route("{id}/part/{partId}/prefer-name")
+    @put op setPreferName(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer
+    ): integer;
+
+    /**
+     * Create part of ApAccessPoint
+     */
+    @route("/{id}/part")
+    @post op createPart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for create ApPart */
+        @body body: ApPartCreate
+    ): integer;
+
+    /**
+     * Update part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @put op updatePart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        @body body: ApPartUpdate
+    ): integer;
+
+    /**
+     * Delete part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @delete op deletePart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer
+    ): integer;
+
+    /**
+     * Create revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @post op createRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
+    ): integer;
+
+    /**
+     * Delete revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @delete op deleteRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
+    ): integer;
+
+    /**
+     * Change state of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/state")
+    @post op changeStateRevision(
+        /** id of revision */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+        /** data for change state of revision of ApAccessPoint */
+        @body body: RevStateChange
+    ): integer;
+
+    /**
+     * Set the preferred name of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}/prefer-name")
+    @post op setPreferNameRevision(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+    ): integer;
+
+    /**
+     * Update part of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}")
+    @put op updateRevisionPart(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+        /** data for update ApRevPart */
+        @body body: ApPartUpdate
+    ): integer;
+
+    /**
+     * Delete part of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}")
+    @delete op deleteRevisionPart(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+    ): integer;
+}
+
 @tag("io")
 @route("/io")
 namespace ElzaAPI.Io {
@@ -207,8 +461,29 @@ namespace ElzaAPI.Io {
      */ 
     @route("/export")
     @post op exportRequest(
+        /** Export request parameters */
         @body body: ExportParams
 	): integer;
+
+    /**
+     * Getting the export status by request id
+     */
+	@route("/export-status/{requestId}")
+	@get op getExportStatus(
+		@path requestId: integer
+	): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: ExportRequestStatus;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       } | {
+          /** Failed to export requested data */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+       };
 
     /**
      * Getting the generated file by request id

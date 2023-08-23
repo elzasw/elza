@@ -94,6 +94,10 @@ body {
     color: $fg-color;
 }
 
+a, a:hover {
+    color: $color-link;
+}
+
 .btn {
     height: 1.8em;
     line-height: 1.8em;

@@ -3,8 +3,6 @@ package cz.tacr.elza.common.db;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-
 public class QueryResults<T> {
 
     /**

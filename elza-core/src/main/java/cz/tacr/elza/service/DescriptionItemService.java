@@ -1641,6 +1641,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            text, který nahradí text v celém textu
      * @param allNodes
      *            vložit u všech JP
+     * @param append
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -1648,8 +1649,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                     final Collection<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
                                     final Set<RulItemSpec> specifications, final String text,
-                                    final boolean allNodes) {
-        Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+                                    final boolean allNodes,
+                                    final boolean append) {
+
         if (itemType.hasSpecifications()) {
             if(newItemSpecification == null) {
                 throw new BusinessException("Missing new specification.", BaseCode.PROPERTY_NOT_EXIST);
@@ -1680,22 +1682,27 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
-        for (ArrDescItem descItem : descItems) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
-                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
-            }
-        	
-            deleteDescriptionItem(descItem, version, change, false, changeContext);
-            changeContext.flushIfNeeded();
-        }
-        changeContext.flush();
+        if (!append) {
+            // remove old values
+            for (ArrDescItem descItem : descItems) {
+                if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
 
-        //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
+                deleteDescriptionItem(descItem, version, change, false, changeContext);
+                changeContext.flushIfNeeded();
+            }
+            changeContext.flush();
+        }
+
+        //pokud má specifikaci musíme zkontrolovat,
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
         //takovým nodům nenastavujeme novou hodnotu se specifikací
+        //
+        // ?? Je to k něčemu ?? Možná by šlo zcela odstranit
+        //
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if (itemType.hasSpecifications() && BooleanUtils.isNotTrue(itemType.getEntity().getRepeatable()) && nodes
-                .size() > 0) {
+        if (!append && itemType.hasSpecifications() && nodes.size() > 0) {
             List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
             ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
@@ -1710,7 +1717,25 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             dbNodes = nodeRepository.findAllById(nodesMap.keySet());
         }
 
+        // count max current position
+        Map<Integer, Integer> nodeIdToPos = Collections.emptyMap();
+        if (append) {
+            nodeIdToPos = new HashMap<>();
+            List<ArrDescItem> remainItems = descItemRepository.findOpenByNodesAndType(dbNodes, itemType.getEntity());
+            for (ArrDescItem descItem : remainItems) {
+                Integer position = nodeIdToPos.get(descItem.getNodeId());
+                if (position == null || descItem.getPosition() > position) {
+                    nodeIdToPos.put(descItem.getNodeId(), descItem.getPosition());
+                }
+            }
+        }
+
         for (ArrNode dbNode : dbNodes) {
+
+            // update position according current position
+            Integer lastPosition = nodeIdToPos.get(dbNode.getNodeId());
+            int position = (lastPosition != null) ? lastPosition + 1 : 1;
+
             if (ignoreNodes.contains(dbNode)) {
                 continue;
             }
@@ -1718,58 +1743,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
             arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
-            ArrData data;
-            switch (itemType.getDataType()) {
-            case FORMATTED_TEXT:
-            case TEXT:
-                    ArrDataText dataText = new ArrDataText();
-                    dataText.setTextValue(text);
-                    data = dataText;
-                    break;
-                case STRING:
-                    ArrDataString itemString = new ArrDataString();
-                    itemString.setStringValue(text);
-                    data = itemString;
-                    break;
-                case INT:
-                    ArrDataInteger itemInteger = new ArrDataInteger();
-                    itemInteger.setIntegerValue(Integer.valueOf(text));
-                    data = itemInteger;
-                    break;
-                case UNITID:
-                    ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                    itemUnitid.setUnitId(text);
-                    data = itemUnitid;
-                    break;
-                case UNITDATE:
-                    ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
-                    data = itemUnitdate;
-                    break;
-                case RECORD_REF:
-                    ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                    ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
-                    itemRecordRef.setRecord(record);
-                    data = itemRecordRef;
-                    break;
-                case BIT:
-                    ArrDataBit itemBit = new ArrDataBit();
-                    itemBit.setBitValue(Boolean.valueOf(text));
-                    data = itemBit;
-                    break;
-                case URI_REF:
-                    ArrDataUriRef itemUriRef = new ArrDataUriRef();
-                    itemUriRef.setUriRefValue(text);
-                    data = itemUriRef;
-                    break;
-                case DECIMAL:
-                    ArrDataDecimal itemDecimal = new ArrDataDecimal();
-                    itemDecimal.setValue(new BigDecimal(text));
-                    data = itemDecimal;
-                    break;
-                default:
-                    throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(),
-                            BaseCode.INVALID_STATE);
-            }
+            ArrData data = createDataFromText(itemType.getDataType(), text);
 
             ArrDescItem newDescItem = new ArrDescItem();
             newDescItem.setData(data);
@@ -1778,7 +1752,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-            newDescItem.setPosition(1);
+            newDescItem.setPosition(position);
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
             changeContext.addCreatedItem(savedItem);
@@ -1787,6 +1761,64 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             changeContext.flushIfNeeded();
         }
         changeContext.flush();
+    }
+
+    private ArrData createDataFromText(DataType dataType, String text) {
+        switch (dataType) {
+        case FORMATTED_TEXT:
+        case TEXT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataText dataText = new ArrDataText();
+            dataText.setTextValue(text);
+            return dataText;
+        case STRING:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataString itemString = new ArrDataString();
+            itemString.setStringValue(text);
+            return itemString;
+        case INT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněna hodnota");
+            ArrDataInteger itemInteger = new ArrDataInteger();
+            itemInteger.setIntegerValue(Integer.valueOf(text));
+            return itemInteger;
+        case UNITID:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUnitid itemUnitid = new ArrDataUnitid();
+            itemUnitid.setUnitId(text);
+            return itemUnitid;
+        case UNITDATE:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
+            return itemUnitdate;
+        case RECORD_REF:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
+            ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
+            itemRecordRef.setRecord(record);
+            return itemRecordRef;
+        case BIT:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataBit itemBit = new ArrDataBit();
+            itemBit.setBitValue(Boolean.valueOf(text));
+            return itemBit;
+        case URI_REF:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataUriRef itemUriRef = new ArrDataUriRef();
+            itemUriRef.setUriRefValue(text);
+            return itemUriRef;
+        case DECIMAL:
+            Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
+            ArrDataDecimal itemDecimal = new ArrDataDecimal();
+            itemDecimal.setValue(new BigDecimal(text));
+            return itemDecimal;
+        case ENUM:
+            Validate.isTrue(StringUtils.isBlank(text), "Pro výčtový typ nelze zadat ext");
+            ArrDataNull dataNull = new ArrDataNull();
+            return dataNull;
+        default:
+            throw new SystemException("Neplatný typ atributu " + dataType.getCode(),
+                    BaseCode.INVALID_STATE);
+        }
     }
 
     /**
@@ -1878,6 +1910,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param fundVersion      verze stromu
      * @param itemType         typ atributu
+     * @param nodes            seznam uzlů, které budou změněny
      * @param replaceValueId   id strukturovaného typu, jehož hodnota bude nastavena
      * @param valueIds         seznam id stukturovaných typů, které se mají nahradit
      * @param allNodes         vložit u všech JP
@@ -1924,7 +1957,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ignoreNodes = remainItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
-        if (!descItemsToReplaceText.isEmpty() || (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1))) {
+        // update an existing item(s) OR creation of new item(s) 
+        if (!descItemsToReplaceText.isEmpty() || CollectionUtils.isNotEmpty(dbNodes)) {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
@@ -1940,6 +1974,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 structuredObject = structuredObjects.get(0);
             }
 
+            // update an existing item(s)
             if (!descItemsToReplaceText.isEmpty()) {
 
                 for (ArrDescItem descItem: descItemsToReplaceText) {
@@ -1976,7 +2011,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 changeContext.flushIfNeeded();
             }
 
-            if (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1)) {
+            // creation of new item(s)
+            if (CollectionUtils.isNotEmpty(dbNodes)) {
                 for (ArrNode dbNode : dbNodes) {
 
                     if (ignoreNodes.contains(dbNode)) {
@@ -2014,7 +2050,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             changeContext.flush();
         }
-
     }
 
     /**

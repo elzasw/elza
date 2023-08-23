@@ -357,7 +357,8 @@ public class ArrangementService {
     /**
      * @param fund
      * @param ruleSet
-     * @param scopes  @return Upravená archivní pomůcka
+     * @param scopes  
+     * @return Upravená archivní pomůcka
      */
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
@@ -369,8 +370,19 @@ public class ArrangementService {
         Validate.notNull(fund, "AS musí být vyplněn");
         Validate.notNull(ruleSet, "Pravidla musí být vyplněna");
 
-        ArrFund originalFund = fundRepository.findById(fund.getFundId())
-                .orElseThrow(fund(fund.getFundId()));
+        ArrFund originalFund = fundRepository.findById(fund.getFundId()).orElseThrow(fund(fund.getFundId()));
+
+        // only superuser can change the four parameters if fund.managed is true
+        if (originalFund.getManaged() && !userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+            if (!Objects.equals(fund.getName(), originalFund.getName())
+                    || !Objects.equals(fund.getFundNumber(), originalFund.getFundNumber())
+                    || !Objects.equals(fund.getMark(), originalFund.getMark())
+                    || !Objects.equals(fund.getUnitdate(), originalFund.getUnitdate())) {
+                throw new SystemException("Parameters: name, fundNumber, mark, unitdate - can change only Superuser (admin)", 
+                                          BaseCode.INSUFFICIENT_PERMISSIONS)
+                                          .set("fundId", fund.getFundId());
+            }
+        }
 
         originalFund.setName(fund.getName());
         originalFund.setInternalCode(fund.getInternalCode());

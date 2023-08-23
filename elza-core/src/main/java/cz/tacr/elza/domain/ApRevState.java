@@ -17,6 +17,10 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "ap_rev_state")
 public class ApRevState {
 
+    public static final String FIELD_REVISION = "revision";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_STATE_APPROVAL = "stateApproval";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

@@ -2,10 +2,10 @@
  * Akce pro hromadné tabulkové zobrazení a úpravy AS.
  */
 
-import {WebApi} from 'actions/index';
+import { WebApi } from 'actions/index';
 import * as types from 'actions/constants/ActionTypes';
-import {objectById} from 'stores/app/utils';
-import {COL_REFERENCE_MARK} from 'components/arr/FundDataGridConst';
+import { objectById } from 'stores/app/utils';
+import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = '____$<NULL>$___';
@@ -86,6 +86,17 @@ export function fundBulkModifications(
                     replaceSpecId,
                     nodes,
                     selectionType,
+                );
+            case 'append':
+                return WebApi.placeDataValues(
+                    versionId,
+                    descItemTypeId,
+                    specsIds,
+                    replaceText,
+                    replaceSpecId,
+                    nodes,
+                    selectionType,
+                    true
                 );
             case 'delete':
                 return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, valueIds);
@@ -301,7 +312,7 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize, fo
                         if (newDataKey === dataKey) {
                             // ještě je pořád v tom stavu, pro jaký se načítala data
                             var items = nodes.map(node => {
-                                const {valuesMap, ...nodeRest} = node;
+                                const { valuesMap, ...nodeRest } = node;
                                 return {
                                     id: nodeRest.node.id,
                                     ...nodeRest,
@@ -401,14 +412,14 @@ export function fundDataGridFilter(versionId, filter) {
 }
 
 export function createFilterStructure(filter) {
-    const callFilter = {columnFilters: {filters: {}}};
+    const callFilter = { columnFilters: { filters: {} } };
 
     // Ladění objektu filtru pro server
     Object.keys(filter).forEach(key => {
         if (key === COL_REFERENCE_MARK) {
             callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
         } else {
-            callFilter.columnFilters.filters[key] = {...filter[key]};
+            callFilter.columnFilters.filters[key] = { ...filter[key] };
             const filterData = callFilter.columnFilters.filters[key];
 
             // Typy selected a unselected na velká písmena

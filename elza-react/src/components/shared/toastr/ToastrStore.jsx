@@ -37,9 +37,10 @@ export default function toastr(state = initialState, action = {}) {
                 ],
             };
         case types.TOASTR_REMOVE:
+            const index = state.toasts.findIndex(({ key }) => action.key === key);
             return {
                 ...state,
-                toasts: [...state.toasts.splice(0, action.index), ...state.toasts.splice(action.index + 1)],
+                toasts: [...state.toasts.splice(0, index), ...state.toasts.splice(index + 1)],
             };
         default:
             return state;

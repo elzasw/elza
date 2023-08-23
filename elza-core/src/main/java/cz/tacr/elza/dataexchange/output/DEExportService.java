@@ -45,9 +45,9 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
+import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilterConfig;
-import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -261,16 +261,11 @@ public class DEExportService {
      * @throws IOException
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    public void exportXmlData(IOExportRequest request) throws IOException {
+    public void exportXmlDataToFile(DEExportParams request, Path xmlFile) throws IOException {
 
         checkGlobalAndAccessPointPermission(request);
 
         ExportBuilder exportBuilder = new XmlExportBuilder();
-
-        Path exportXmlTrasnformDir = initHelper.getResourcePathResolver().getExportXmlTrasnformDir();
-        Files.createDirectories(exportXmlTrasnformDir);
-
-        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + ".xml"));
 
         // write response
         try (OutputStream os = Files.newOutputStream(xmlFile, StandardOpenOption.WRITE)) {

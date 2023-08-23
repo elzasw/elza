@@ -4,16 +4,13 @@ import { AdminInfo, LoggedUser } from 'elza-api';
 import React, { useEffect, useState } from 'react';
 import './Statistics.scss';
 
-const getHorizontalListItems = <T extends keyof AdminInfo>(
-    selectedStats: T[],
-    data: AdminInfo,
-): HorizontalListItem<T>[] => {
+const getHorizontalListItems = <T extends Object>(selectedStats: (keyof T)[], data: T): HorizontalListItem<T>[] => {
     const listItems: HorizontalListItem<T>[] = selectedStats
         .map(stat => {
             const value = data[stat];
             if (value != undefined) {
                 return {
-                    title: i18n(`stats.${stat}.title`),
+                    title: i18n(`stats.${stat.toString()}.title`),
                     value,
                 };
             }
@@ -24,12 +21,12 @@ const getHorizontalListItems = <T extends keyof AdminInfo>(
 };
 
 export const StatsHome = () => {
-    const [stats, setStats] = useState<HorizontalListItem<keyof AdminInfo>[]>([]);
+    const [stats, setStats] = useState<HorizontalListItem<AdminInfo>[]>([]);
     const selectedStats: (keyof AdminInfo)[] = ['funds', 'levels', 'accessPoints'];
 
     useEffect(() => {
         Api.admin.adminInfo({ overrideErrorHandler: true }).then(({ data }) => {
-            const arrItems: HorizontalListItem<keyof AdminInfo>[] = getHorizontalListItems(selectedStats, data);
+            const arrItems: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(selectedStats, data);
             setStats(arrItems);
         });
     }, []);
@@ -43,16 +40,16 @@ export const StatsHome = () => {
 
 export const StatsAdmin = () => {
     const [loggedUsers, setLoggedUsers] = useState<LoggedUser[]>([]);
-    const [statsGeneral, setStatsGeneral] = useState<HorizontalListItem<keyof AdminInfo>[]>([]);
-    const [statsUsers, setStatsUsers] = useState<HorizontalListItem<keyof AdminInfo>[]>([]);
+    const [statsGeneral, setStatsGeneral] = useState<HorizontalListItem<AdminInfo>[]>([]);
+    const [statsUsers, setStatsUsers] = useState<HorizontalListItem<AdminInfo>[]>([]);
 
     useEffect(() => {
         Api.admin.adminInfo({ overrideErrorHandler: true }).then(({ data }) => {
-            const arrItemsGeneral: HorizontalListItem<keyof AdminInfo>[] = getHorizontalListItems(
+            const arrItemsGeneral: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(
                 ['funds', 'levels', 'accessPoints'],
                 data,
             );
-            const arrItemsUsers: HorizontalListItem<keyof AdminInfo>[] = getHorizontalListItems(
+            const arrItemsUsers: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(
                 ['users', 'loggedUsers'],
                 data,
             );
@@ -66,29 +63,24 @@ export const StatsAdmin = () => {
 
     return (
         <>
-            <div>
+            <div style={{ margin: '10px' }}>
                 <HorizontalList items={statsGeneral} />
             </div>
-            <div>
-                <div className="stats-user-box">
-                    <HorizontalList items={statsUsers} />
-                    <LoggedUsersList users={loggedUsers} />
-                </div>
-            </div>
+            <HorizontalListWithUsers statsUsers={statsUsers} loggedUsers={loggedUsers} />
         </>
     );
 };
 
-interface HorizontalListItem<T extends keyof AdminInfo> {
+interface HorizontalListItem<T extends Object> {
     title: string;
-    value: AdminInfo[T];
+    value: T[keyof T];
 }
 
-interface HorizontalListProps<T extends keyof AdminInfo> {
+interface HorizontalListProps<T extends Object> {
     items: HorizontalListItem<T>[];
 }
 
-export const HorizontalList = <T extends keyof AdminInfo>({ items }: HorizontalListProps<T>) => {
+export const HorizontalList = <T extends Object>({ items }: HorizontalListProps<T>) => {
     if (items.length === 0) {
         return <></>;
     }
@@ -112,14 +104,32 @@ export const LoggedUsersList = ({ users }: LoggedUsersListProps) => {
         return <></>;
     }
     return (
-        <div className="stats-user-list">
-            <h5>{i18n('loggedUsers.title')}</h5>
-            <div className="users">
-                {users.map((user, index) => (
-                    <div key={index}>
-                        <span>{user.user}</span>
-                    </div>
-                ))}
+        <div className="stats-box" style={{ paddingTop: 0 }}>
+            <div>
+                <h6>{i18n('loggedUsers.title')}</h6>
+                <div className="users">
+                    {users.map((user, index) => (
+                        <div key={index}>
+                            <span>{user.user}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+interface HorizontalListWithUsersProps {
+    statsUsers: HorizontalListItem<AdminInfo>[];
+    loggedUsers: LoggedUser[];
+}
+
+export const HorizontalListWithUsers = ({ statsUsers, loggedUsers }: HorizontalListWithUsersProps) => {
+    return (
+        <div className="stats-user-box">
+            <div className="background-box">
+                <HorizontalList items={statsUsers} />
+                <LoggedUsersList users={loggedUsers} />
             </div>
         </div>
     );

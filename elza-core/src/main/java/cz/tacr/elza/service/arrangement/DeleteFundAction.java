@@ -127,6 +127,15 @@ public class DeleteFundAction {
     private DmsService dmsService;
 
     @Autowired
+    private ArrRefTemplateRepository arrRefTemplateRepository;
+
+    @Autowired
+    private ArrRefTemplateMapTypeRepository arrRefTemplateMapTypeRepository;
+
+    @Autowired
+    private ArrRefTemplateMapSpecRepository arrRefTemplateMapSpecRepository;
+
+    @Autowired
     private OutputResultRepository outputResultRepository;
 
     @Autowired
@@ -184,8 +193,13 @@ public class DeleteFundAction {
      */
     private void prepare() {
 
-        // Check if exists
+        // check if exists
         this.fund = fundRepository.findById(fundId).orElseThrow(fund(fundId));
+
+        // only superuser can delete the fund if fund.managed is true
+        if (fund.getManaged() && !userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+            throw new BusinessException("Only Superuser (admin) can delete the fund", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", fundId);
+        }
 
         // get last version and rootId
         this.fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
@@ -243,6 +257,12 @@ public class DeleteFundAction {
         // TODO: delete files from DMS - prepare list and do drop at the end of
         // transaction
         dmsService.deleteFilesByFund(fund);
+
+        // Odstranění šablony pro mapování prvků popisu:
+        // arr_ref_template_map_spec & arr_ref_template_map_type & arr_ref_template 
+        arrRefTemplateMapSpecRepository.deleteByFund(fund);
+        arrRefTemplateMapTypeRepository.deleteByFund(fund);
+        arrRefTemplateRepository.deleteByFund(fund);
 
         em.flush();
 
@@ -396,7 +416,7 @@ public class DeleteFundAction {
     }
 
     /**
-     * Smaz�n� protokol�, p�ipom�nek, koment��� a opr�v�n� u�ivatel� pro p��stup k protokol�m
+     * Smazání protokolů připomínek, komentáři a oprávnění uživatelů pro přístup k protokolům
      */
     private void dropIssues() {
 
