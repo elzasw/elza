@@ -161,6 +161,20 @@ model ApAccessPointUpdate {
 }
 
 /**
+ * Data for create ApPart
+ */
+model ApPartCreate {
+    // TODO define the body
+}
+
+/**
+ * Data for update ApPart
+ */
+model ApPartUpdate {
+    // TODO define the body
+}
+
+/**
  * Data for changing revision state of ApAccessPoint
  */
 model RevStateChange {
@@ -267,15 +281,67 @@ namespace ElzaAPI.Accesspoint {
     ): integer;
 
     /**
+     * Set the preferred name of ApAccessPoint
+     */
+    @route("{id}/part/{partId}/prefer-name")
+    @put op setPreferName(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer
+    ): integer;
+
+    /**
+     * Create part of ApAccessPoint
+     */
+    @route("/{id}/part")
+    @post op createPart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        @body body: ApPartCreate
+    ): integer;
+
+    /**
+     * Update part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @put op updatePart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        @body body: ApPartUpdate
+    ): integer;
+
+    /**
+     * Delete part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @delete op deletePart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer
+    ): integer;
+
+    /**
      * Change state of revision of ApAccessPoint
      */
     @route("/revision/{id}/state")
     @post op changeStateRevision(
         /** id of revision */
         @path id: integer,
-        /** RevStateChange */
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
+        /** RevStateChange */
         @body body: RevStateChange
     ): integer;
 
@@ -304,7 +370,6 @@ namespace ElzaAPI.Accesspoint {
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
     ): integer;
-
 }
 
 @tag("io")
