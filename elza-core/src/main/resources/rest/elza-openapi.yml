@@ -1031,7 +1031,7 @@ paths:
       tags:
         - io
       operationId: Io_getExportStatus
-      description: Getting the generated file by request id
+      description: Getting the export status by request id
       parameters:
         - name: requestId
           in: path
@@ -1039,19 +1039,12 @@ paths:
           schema:
             type: integer
       responses:
-        '102':
-          description: Informational
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExportRequestStatus'
         '200':
           description: The request has succeeded.
           content:
             application/json:
               schema:
-                type: object
-                properties: {}
+                $ref: '#/components/schemas/ExportRequestStatus'
         '404':
           description: The server cannot find the requested resource.
           content:

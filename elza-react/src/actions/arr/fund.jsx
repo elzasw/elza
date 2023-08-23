@@ -170,8 +170,9 @@ export function exportFund(fundId, transformationName, exportFilterId) {
     // zjisteni stavu exportu, navratova hodnota boolean (isPending) nebo null pri negativni odpovedi
     async function checkExportStatus (fileId) {
         try {
-            const { status } = await Api.io.ioGetExportStatus(fileId);
-            if (status === 200) {
+            const st = await Api.io.ioGetExportStatus(fileId);
+            const { status, data } = st;
+            if (status === 200 && data.state==='FINISHED' ) {
                 return false;
             } else {
                 return true;

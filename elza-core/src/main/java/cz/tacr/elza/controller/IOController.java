@@ -125,28 +125,26 @@ public class IOController implements IoApi {
     }
 
     @Override
-    public ResponseEntity<Object> ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
+    public ResponseEntity ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
 
         logger.debug("Get export status: {}", requestId);
 
         IOExportRequest result = ioExportWorker.getExportState(requestId);
         if (result == null) {
+            logger.error("Get export status: {} - request not found!!!", requestId);
             return ResponseEntity.notFound().build();
         }
 
-        HttpStatus status;
+        HttpStatus status = HttpStatus.OK;
         Object body = null;
         switch (result.getState()) {
         case PENDING:
-            status = HttpStatus.PROCESSING;
             body = ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING);
             break;
         case PROCESSING:
-            status = HttpStatus.PROCESSING;
             body = ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING);
             break;
         case FINISHED:
-            status = HttpStatus.OK;
             body = ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED);
             break;
         case ERROR:
@@ -162,7 +160,8 @@ public class IOController implements IoApi {
         logger.debug("Get export status: {}, response: {}", requestId, status);
 
         BodyBuilder resp = ResponseEntity.status(status);
-        return resp.body(body);
+        ResponseEntity<Object> ret = resp.body(body);
+        return ret;
     }
 
     @Override
