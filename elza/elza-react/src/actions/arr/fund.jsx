@@ -162,7 +162,7 @@ export function exportFund(fundId, transformationName, exportFilterId) {
                 dispatch(downloadFile(getFullPath(url)));
             } else if (isPending === true) {
                 // opetovne zavolani funkce s danym intervalem
-                setTimeout(() => downloadExportFile(fileId, interval), interval);
+                setTimeout(() => dispatch(downloadExportFile(fileId, interval)), interval);
             }
         }
     }
