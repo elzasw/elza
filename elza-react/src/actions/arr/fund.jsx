@@ -2,18 +2,18 @@
  * Akce pro záložky otevřených stromů AS.
  */
 
-import {UrlFactory, WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 import {Api, getFullPath} from "../../api";
 import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
-import {addToastrDanger, addToastrInfo,addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrInfo,addToastrSuccess, removeToastr} from 'components/shared/toastr/ToastrActions.jsx';
 import {nodesReceive, nodesRequest} from 'actions/arr/node.jsx';
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {fundsSelectFund} from 'actions/fund/fund.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {storeLoadData} from 'actions/store/store.jsx';
 import {downloadFile} from '../global/download';
-import { IoApiAxiosParamCreator } from 'elza-api';
+import {ExportRequestState, IoApiAxiosParamCreator} from 'elza-api';
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -150,11 +150,20 @@ export function exportFund(fundId, transformationName, exportFilterId) {
     };
 
     // opakovane dotazovani na stav exportu, konci stazenim souboru ci hlaskou o neuspechu
-    function downloadExportFile (fileId, interval = 4000) {
-        return async (dispatch) => {
-            dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, interval));
+    function downloadExportFile (fileId, interval = 4000, toastKey = undefined) {
+        return async (dispatch, getState) => {
+            // toastKey obsahuje key posledne vytvoreneho toastu, coz je info toast o generovani
+            if (!toastKey) {
+                // pokud toastKey neni predan, vytvorim info toast
+                dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, null));
+                const { toastr } = getState();
+                // ziskani lastKey ze statu, pomoci nehoz toast odstranime pri (ne)uspechu exportu
+                toastKey = toastr.lastKey;
+            }
             const isPending = await checkExportStatus(fileId);
             if (isPending === false) {
+                // odstraneni info toastu pomoci toastKey o generovani exportu
+                dispatch(removeToastr(toastKey));
                 dispatch(addToastrSuccess(i18n('export.success'), undefined, undefined, 4000));
                 // ziskani cesty k souboru
                 const { url } = await IoApiAxiosParamCreator().ioGetExportFile(fileId);
@@ -162,7 +171,10 @@ export function exportFund(fundId, transformationName, exportFilterId) {
                 dispatch(downloadFile(getFullPath(url)));
             } else if (isPending === true) {
                 // opetovne zavolani funkce s danym intervalem
-                setTimeout(() => dispatch(downloadExportFile(fileId, interval)), interval);
+                setTimeout(() => dispatch(downloadExportFile(fileId, interval, toastKey)), interval);
+            } else {
+                // pri chybe (catch z checkExportStatus vraci null) odstranime info toast o generovani exportu
+                dispatch(removeToastr(toastKey));
             }
         }
     }
@@ -170,9 +182,8 @@ export function exportFund(fundId, transformationName, exportFilterId) {
     // zjisteni stavu exportu, navratova hodnota boolean (isPending) nebo null pri negativni odpovedi
     async function checkExportStatus (fileId) {
         try {
-            const st = await Api.io.ioGetExportStatus(fileId);
-            const { status, data } = st;
-            if (status === 200 && data.state==='FINISHED' ) {
+            const { data } = await Api.io.ioGetExportStatus(fileId);
+            if (data.state === ExportRequestState.Finished) {
                 return false;
             } else {
                 return true;
