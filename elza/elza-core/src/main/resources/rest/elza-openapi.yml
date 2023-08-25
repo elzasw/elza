@@ -208,41 +208,6 @@ paths:
 #              schema:
 #                $ref: '#ApAccessPointVO'
   /accesspoints/{id}:
-#    put:
-#      summary: Aktualizace přístupového bodu
-#      operationId: updateAccessPoint
-#      tags:
-#        - accesspoints
-#      parameters:
-#        - name: id
-#          description: Identifikátor archivní entity
-#          in: path
-#          required: true
-#          schema:
-#            type: integer
-#            format: int32
-#        - name: apVersion
-#          description: Aktuální verze archivní entity
-#          in: query
-#          required: false
-#          schema:
-#            type: integer
-#            format: int32
-#      requestBody:
-#        description: Upravovaná data přístupového bodu
-#        content:
-#          'application/json':
-#            schema:
-#              $ref: '#ApAccessPointEditVO'
-#      responses:
-#        200:
-#          description: Aktualizovaný záznam
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#ApAccessPointVO'
-#        404:
-#          description: AP nebo revize neexistuje
     delete:
       summary: Zneplatnění přístupového bodu
       operationId: deleteAccessPoint

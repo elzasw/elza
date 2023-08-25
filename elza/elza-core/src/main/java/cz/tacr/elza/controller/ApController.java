@@ -510,32 +510,6 @@ public class ApController {
     }
 
     /**
-     * Aktualizace přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param editVo upravovaná data přístupového bodu
-     * @return aktualizovaný záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}", method = RequestMethod.PUT)
-    public ApAccessPointVO updateAccessPoint(@PathVariable final Integer accessPointId,
-                                             @RequestBody final ApAccessPointEditVO editVo) {
-        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Validate.notNull(editVo);
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState oldState = accessPointService.getStateInternal(accessPoint);
-        ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        accessPointService.updateAndValidate(accessPointId);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
-        if (cachedAccessPoint != null) {
-            return apFactory.createVO(cachedAccessPoint);
-        }
-        return apFactory.createVO(newState, true);
-    }
-
-    /**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
      * 
      * @param accessPointId
