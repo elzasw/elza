@@ -263,7 +263,7 @@ class Layout extends AbstractReactComponent {
                             <Toastr.Toastr />
                         </div>
                         <ContextMenu {...this.props.contextMenu} />
-                        <ModalDialog {...this.props.modalDialog} />
+                        <ModalDialog />
                         <WebSocket />
                         <Login />
                         <AppRouter />
@@ -278,10 +278,9 @@ class Layout extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {contextMenu, modalDialog, login, arrRegion} = state;
+    const {contextMenu, login, arrRegion} = state;
     return {
         contextMenu,
-        modalDialog,
         login,
         activeFund: arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null,
     };

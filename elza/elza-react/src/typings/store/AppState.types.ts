@@ -1,6 +1,7 @@
 import { ArrFundBaseVO } from "../../api/ArrFundBaseVO";
 import { RefTablesState } from "./RefTables.types";
 import { UserDetail } from "./UserDetail.types";
+import { ModalDialogState } from "./ModalDialog.types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -313,7 +314,7 @@ export interface AppState {
     form: unknown;
     fundRegion: unknown;
     login: LoginState;
-    modalDialog: unknown;
+    modalDialog: ModalDialogState;
     refTables: RefTablesState;
     router: unknown;
     stateRegion: unknown;
