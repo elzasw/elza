@@ -508,6 +508,7 @@ const FundBulkModificationsForm = ({
                 itemsArea: getDefaultItemsArea({ allItemsCount, checkedItemsCount }),
                 specs: { type: 'unselected' },
             }}
+            keepDirtyOnReinitialize={true}
         >
             {({ handleSubmit, form, submitting }) => {
 
