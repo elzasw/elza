@@ -221,7 +221,7 @@ model ApPartCreateUpdate {
     revParentPartId?: integer;
     /** code of type of part */
     partTypeCode: string;
-    items: ApItemVO[];
+    items: ApItemCreateUpdate[];
 }
 
 /**
