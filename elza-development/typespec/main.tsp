@@ -147,16 +147,9 @@ model BaseException {
 }
 
 /**
- * Data for update ApAccessPoint
+ * States of ApState
  */
-model ApAccessPointUpdate {
-    /** id of type of ApAccessPoint */
-    typeId: integer;
-}
-/**
- * States of ApAccessPoint
- */
-enum StateOfAccessPoint {
+enum AccessPointState {
     NEW,
     TO_APPROVE,
     APPROVED,
@@ -164,7 +157,7 @@ enum StateOfAccessPoint {
 }
 
 /**
- * States of Revision
+ * States of ApRevState
  */
 enum RevisionState {
     ACTIVE,
@@ -172,14 +165,17 @@ enum RevisionState {
     TO_AMEND
 }
 
-enum ChangeType {
+/**
+ * Types of PartItem
+ */
+enum ApPartItemType {
     NEW, UPDATED, DELETED, ORIGINAL
 }
 
 /**
  * Data for create/update ApItem
  */
-model ApItemCreateUpdate {
+model ApPartItem {
     /** id of ApItem */
     id: integer;
     /** id of object */
@@ -192,7 +188,8 @@ model ApItemCreateUpdate {
     specId: integer;
     /** id of original object */
     origObjectId: integer;
-    cnahgeType: ChangeType;
+    /** type of item */
+    cnahgeType: ApPartItemType;
 }
 
 /**
@@ -206,7 +203,7 @@ model ApStateChange {
     /** comment */
     comment?: string;
     /** state of ApState */
-    state: StateOfAccessPoint;
+    state: AccessPointState;
 }
 
 /**
@@ -221,7 +218,7 @@ model ApPartCreateUpdate {
     revParentPartId?: integer;
     /** code of type of part */
     partTypeCode: string;
-    items: ApItemCreateUpdate[];
+    items: ApPartItem[];
 }
 
 /**
@@ -306,19 +303,6 @@ namespace ElzaAPI.Fund {
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.Accesspoint {
-    /**
-     * Update ApAccessPoint
-     */
-    @route("/{id}")
-    @put op updateAccessPoint(
-        /** id of accesspoint */
-        @path id: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer,
-        /** data for update ApAccessPoint */
-        @body body: ApAccessPointUpdate
-    ): integer;
-
     /**
      * Change state of ApAccessPoint
      */

@@ -161,13 +161,6 @@ model ApAccessPointCreate {
 }
 
 /**
- * Data for update ApAccessPoint
- */
-model ApAccessPointUpdate {
-    // TODO define the body
-}
-
-/**
  * Data for delete ApAccessPoint
  */
 model DeleteAccessPoint {
@@ -286,19 +279,6 @@ namespace ElzaAPI.Accesspoint {
     @post op createAccessPoint(
         /** data for create ApAccessPoint */
         @body body: ApAccessPointCreate
-    ): integer;
-
-    /**
-     * Update ApAccessPoint
-     */
-    @route("/{id}")
-    @put op updateAccessPoint(
-        /** id of accesspoint */
-        @path id: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer,
-        /** data for update ApAccessPoint */
-        @body body: ApAccessPointUpdate
     ): integer;
 
     /**
