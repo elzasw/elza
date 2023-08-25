@@ -1206,7 +1206,7 @@ var messages = {
     "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
     "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
     "ap.push-to-ext.failed.title": "Chyba při odesílání entity",
-    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Synchronizace s externími systémy",
+    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Fronta synchronizace (Synchronizace s externími systémy)",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",
