@@ -26,8 +26,14 @@ model AdminInfo {
 /** Logged user */
 model LoggedUser {
 
+    /** User ID */
+    userId: integer;
+
     /** username */
     user: string;
+
+    /** Remote address */
+    remoteAddr: string;
 }
 
 /** List of logged users */
