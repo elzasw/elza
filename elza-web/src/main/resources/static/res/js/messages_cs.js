@@ -400,7 +400,7 @@ var messages = {
     "stats.levels.title": "Počet JP",
     "stats.accessPoints.title": "Počet arch. entit",
     "stats.users.title": "Počet uživatelů",
-    "stats.loggedUsers.title": "Počet přihlášených uživatelů",
+    "stats.loggedUsers.title": "Počet aktivních relací",
     "loggedUsers.title": "Přihlášení uživatelé",
 
     "toggle.action.minimize": "Minimalizovat",
