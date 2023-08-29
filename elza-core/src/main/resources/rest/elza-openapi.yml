@@ -1248,12 +1248,20 @@ components:
     LoggedUser:
       type: object
       properties:
+        userId:
+          type: integer
+          description: User ID
         user:
           type: string
           description: username
+        remoteAddr:
+          type: string
+          description: Remote address
       description: Logged user
       required:
+        - userId
         - user
+        - remoteAddr
     LoggedUsers:
       type: object
       properties:
