@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApStateChange;
+import cz.tacr.elza.controller.vo.ApStateUpdate;
 import cz.tacr.elza.controller.vo.AutoValue;
 import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
@@ -154,28 +154,28 @@ public class AccessPointController implements AccesspointsApi {
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param apVersion     verze přístupového bodu
-     * @param stateChange   nový stav přístupového bodu
+     * @param stateUpdate   nový stav přístupového bodu
      * @return nová verze = verze + 1
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> changeState(Integer accessPointId, Integer apVersion, ApStateChange stateChange) {
-        Validate.notNull(stateChange.getState(), "AP State is null");
+    public ResponseEntity<Integer> accessPointChangeState(Integer accessPointId, Integer apVersion, ApStateUpdate stateUpdate) {
+        Validate.notNull(stateUpdate.getStateApproval(), "AP State is null");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getApState(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
-        StateApproval newState = StateApproval.valueOf(stateChange.getState().toString());
+        StateApproval newState = StateApproval.valueOf(stateUpdate.getStateApproval().toString());
 
         // Nelze změnit stav archivní entity, která má revizi
         if (revision != null) {
             throw new BusinessException("Nelze změnit stav archivní entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        accessPointService.updateApState(accessPoint, newState, stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
+        accessPointService.updateApState(accessPoint, newState, stateUpdate.getComment(), stateUpdate.getTypeId(), stateUpdate.getScopeId());
         accessPointService.updateAndValidate(accessPointId);
         if (accessPointService.isRevalidaceRequired(state.getStateApproval(), newState)) {
-            ruleService.revalidateNodes(accessPointId); // TODO temporary cover
+            ruleService.revalidateNodes(accessPointId);
         }
         apCacheService.createApCachedAccessPoint(accessPointId);
 

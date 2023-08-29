@@ -428,7 +428,7 @@ class RegistryPage extends AbstractReactComponent {
                 onSubmit={async (data) => {
                     const finalData = {
                         comment: data.comment,
-                        state: data.state,
+                        stateApproval: data.state,
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };

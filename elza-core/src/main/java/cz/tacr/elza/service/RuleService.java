@@ -713,6 +713,25 @@ public class RuleService {
     }
 
     /**
+     * Provádění validaci nody, které mají odkaz na ApAccessPoint
+     * 
+     * @param accessPointId
+     */
+    public void revalidateNodes(final Integer accessPointId) {
+        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
+        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
+                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
+                                               Collectors.mapping(i -> i.getNodeId(), 
+                                                                  Collectors.toList())));
+        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
+            List<ArrNode> nodes = new ArrayList<>();
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            asyncRequestService.enqueue(version, nodes);
+        }
+    }
+
+    /**
      * Smaže všechny vybrané stavy.
      *
      * 
@@ -2045,9 +2064,5 @@ public class RuleService {
     @Transactional(TxType.MANDATORY)
     public RulExportFilter getExportFilter(Integer exportFilterId) {
         return exportFilterRepository.getOne(exportFilterId);
-    }
-
-    public void revalidateNodes(Integer accessPointId) {
-        // TODO Auto-generated method stub
     }
 }
