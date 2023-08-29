@@ -318,43 +318,6 @@ paths:
           description: Entita byla ověřena
         404:
           description: AP neexistuje
-  /accesspoints/{id}/state:
-    post:
-      summary: Změna stavu přístupového bodu
-      operationId: changeState
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-        - name: apVersion
-          description: Aktuální verze archivní entity
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Nový stav přístupového bodu
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/ApStateChange'
-      responses:
-        200:
-          description: Aktualizované číslo verze archivní entity
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
-        404:
-          description: AP nebo revize neexistuje
 #  /accesspoints/{id}/part:
 #    post:
 #      summary: Založení nové části přístupového bodu
@@ -819,6 +782,39 @@ paths:
           description: Unauthorized
         "403":
           description: Forbidden          
+  /accesspoint/{id}/state:
+    put:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_changeState
+      description: Change state of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: true
+          description: actual version of ApAccessPoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+      requestBody:
+        description: data for change ApState
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApStateUpdate'
   /admin/admin/arrangement/missing-cached-nodes:
     get:
       tags:
@@ -1110,6 +1106,35 @@ components:
         - accessPoints
         - users
         - loggedUsers
+    ApStateApproval:
+      type: string
+      description: States of ApState
+      enum:
+        - NEW
+        - TO_APPROVE
+        - APPROVED
+        - TO_AMEND
+    ApStateUpdate:
+      type: object
+      properties:
+        typeId:
+          type: integer
+          description: id of type
+        scopeId:
+          type: integer
+          description: id of scope
+        comment:
+          type: string
+          description: comment
+        stateApproval:
+          allOf:
+            - $ref: '#/components/schemas/ApStateApproval'
+          description: state of ApState
+      description: Data for changing state of ApAccessPoint
+      required:
+        - typeId
+        - scopeId
+        - stateApproval
     BaseException:
       type: object
       properties:
@@ -1717,28 +1742,9 @@ components:
       required:
         - importType
         - dataFile
-    ApStateChange:
-      type: object
-      properties:
-        comment:
-          type: string
-        state:
-          type: string
-          enum:
-            - NEW
-            - TO_APPROVE
-            - APPROVED
-            - TO_AMEND
-        scopeId:
-          type: integer
-        typeId:
-          type: integer
     ApPartForm:
       type: object
       properties:
-        partTypeCode:
-          description: Kód typu části
-          type: string
         partId:
           description: Identifikátor části
           type: integer
@@ -1748,6 +1754,9 @@ components:
         revParentPartId:
           description: Identifikátor nadřízené části z revize
           type: integer
+        partTypeCode:
+          description: Kód typu části
+          type: string
         items:
           type: array
           items:
@@ -1775,9 +1784,13 @@ components:
           type: integer
         changeType:
           description: Typ změny
-          type: string
-          enum:
-            - NEW
-            - UPDATED
-            - DELETED
-            - ORIGINAL
+          allOf:
+            - $ref: '#/components/schemas/ApPartItemType'
+    ApPartItemType:
+      type: string
+      description: types of PartItem
+      enum:
+        - NEW
+        - UPDATED
+        - DELETED
+        - ORIGINAL

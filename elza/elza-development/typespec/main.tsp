@@ -155,7 +155,7 @@ model BaseException {
 /**
  * States of ApState
  */
-enum AccessPointState {
+enum ApStateApproval {
     NEW,
     TO_APPROVE,
     APPROVED,
@@ -195,13 +195,13 @@ model ApPartItem {
     /** id of original object */
     origObjectId: integer;
     /** type of item */
-    cnahgeType: ApPartItemType;
+    changeType: ApPartItemType;
 }
 
 /**
  * Data for changing state of ApAccessPoint
  */
-model ApStateChange {
+model ApStateUpdate {
     /** id of type */
     typeId: integer;
     /** id of scope */
@@ -209,7 +209,7 @@ model ApStateChange {
     /** comment */
     comment?: string;
     /** state of ApState */
-    state: AccessPointState;
+    stateApproval: ApStateApproval;
 }
 
 /**
@@ -308,7 +308,7 @@ namespace ElzaAPI.Fund {
 
 @tag("accesspoints")
 @route("/accesspoint")
-namespace ElzaAPI.Accesspoint {
+namespace ElzaAPI.AccessPoint {
     /**
      * Change state of ApAccessPoint
      */
@@ -319,7 +319,7 @@ namespace ElzaAPI.Accesspoint {
         /** actual version of ApAccessPoint */
         @query apVersion: integer,
         /** data for change ApState */
-        @body body: ApStateChange
+        @body body: ApStateUpdate;
     ): integer;
 
     /**

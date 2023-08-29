@@ -50,6 +50,7 @@ import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -195,6 +196,32 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         eventPublishBulkAction(bulkActionRun);
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, bulkActionRun, 1);
         dispatchRequest(request);
+    }
+
+    /**
+     * Přidání JP do fronty ke zpracování s výchozí prioritou.
+     */
+    @Transactional
+    public void enqueue(final ArrFundVersion fundVersion,
+                        final List<ArrNode> nodeList) {
+        enqueue(fundVersion, nodeList, null);
+    }
+
+    /**
+     * Přidání JP do fronty ke zpracování.
+     */
+    @Transactional
+    public void enqueue(final ArrFundVersion fundVersion,
+                        final List<ArrNode> nodeList,
+                        final Integer priority) {
+        List<ArrAsyncRequest> reqList = new ArrayList<>(nodeList.size());
+        int pri = (priority == null) ? 1 : priority;
+        for (ArrNode node : nodeList) {
+            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, pri);
+            reqList.add(request);
+        }
+
+        dispatchRequests(AsyncTypeEnum.NODE, reqList);
     }
 
     /**
