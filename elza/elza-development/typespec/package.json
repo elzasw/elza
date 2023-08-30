@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@typespec/compiler": "latest",
-    "@typespec/rest": "latest",
-    "@typespec/openapi3": "latest"
+    "@typespec/compiler": "^0.47.1",
+    "@typespec/openapi3": "latest",
+    "@typespec/rest": "latest"
   },
   "private": true
 }

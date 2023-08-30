@@ -172,33 +172,6 @@ enum RevisionState {
 }
 
 /**
- * Types of PartItem
- */
-enum ApPartItemType {
-    NEW, UPDATED, DELETED, ORIGINAL
-}
-
-/**
- * Data for create/update ApItem
- */
-model ApPartItem {
-    /** id of ApItem */
-    id: integer;
-    /** id of object */
-    objectId: integer;
-    /** position */
-    position: integer;
-    /** id of type  */
-    typeId: integer;
-    /** id of specification */
-    specId: integer;
-    /** id of original object */
-    origObjectId: integer;
-    /** type of item */
-    changeType: ApPartItemType;
-}
-
-/**
  * Data for changing state of ApAccessPoint
  */
 model ApStateUpdate {
@@ -210,21 +183,6 @@ model ApStateUpdate {
     comment?: string;
     /** state of ApState */
     stateApproval: ApStateApproval;
-}
-
-/**
- * Data for create/update ApPart
- */
-model ApPartCreateUpdate {
-    /** id of part */
-    partId?: integer;
-    /** id of parent part */
-    parentPartId?: integer;
-    /** id of paren part in revision */
-    revParentPartId?: integer;
-    /** code of type of part */
-    partTypeCode: string;
-    items: ApPartItem[];
 }
 
 /**
@@ -336,33 +294,6 @@ namespace ElzaAPI.AccessPoint {
     ): integer;
 
     /**
-     * Create part of ApAccessPoint
-     */
-    @route("/{id}/part")
-    @post op createPart(
-        /** id of ApAccessPoint */
-        @path id: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer,
-        /** data for create ApPart */
-        @body body: ApPartCreateUpdate
-    ): integer;
-
-    /**
-     * Update part of ApAccessPoint
-     */
-    @route("/{id}/part/{partId}")
-    @put op updatePart(
-        /** id of ApAccessPoint */
-        @path id: integer,
-        /** partId of ApAccessPoint */
-        @path partId: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer,
-        @body body: ApPartCreateUpdate
-    ): integer;
-
-    /**
      * Delete part of ApAccessPoint
      */
     @route("/{id}/part/{partId}")
@@ -379,7 +310,7 @@ namespace ElzaAPI.AccessPoint {
      * Change state of revision of ApAccessPoint
      */
     @route("/revision/{id}/state")
-    @post op changeStateRevision(
+    @put op changeStateRevision(
         /** id of revision */
         @path id: integer,
         /** actual version of ApAccessPoint */
@@ -392,28 +323,13 @@ namespace ElzaAPI.AccessPoint {
      * Set the preferred name of revision of ApAccessPoint
      */
     @route("/revision/{id}/part/{partId}/prefer-name")
-    @post op setPreferNameRevision(
+    @put op setPreferNameRevision(
         /** id of revision */
         @path id: integer,
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
-    ): integer;
-
-    /**
-     * Update part of revision of ApAccessPoint
-     */
-    @route("/revision/{id}/part/{partId}")
-    @put op updateRevisionPart(
-        /** id of revision */
-        @path id: integer,
-        /** partId of revision */
-        @path partId: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer;
-        /** data for update ApRevPart */
-        @body body: ApPartCreateUpdate;
     ): integer;
 
     /**
@@ -427,7 +343,15 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
-    ): integer;
+    ): {
+         /** actual version of ApAccessPoint */
+         @Http.statusCode statusCode: 200;
+         @body data: integer;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException; 
+       };
 }
 
 @tag("io")

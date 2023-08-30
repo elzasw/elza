@@ -27,13 +27,11 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
-import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -42,10 +40,11 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.ApStateApproval;
+import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.response.Response;
 
@@ -509,6 +508,7 @@ public class ApControllerTest extends AbstractControllerTest {
         List<ApTypeVO> types = getRecordTypes();
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
+        Integer typeId = getApType(types, "PERSON_BEING").getId();
 
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
@@ -521,12 +521,11 @@ public class ApControllerTest extends AbstractControllerTest {
         itemReplace.add(buildApItem(NM_SUP_GEN, null, "ApRecordA complement", null, null));
 
         ApAccessPointCreateVO replacedRecord = new ApAccessPointCreateVO();
-        replacedRecord.setTypeId(getApType(types, "PERSON_BEING").getId());
-        replacedRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplace));
+        replacedRecord.setTypeId(typeId);
         replacedRecord.setScopeId(scopeId);
+        replacedRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplace));
         ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
         assertNotNull(replacedRecordCreated.getId());
-
 
         // AP B: Vytvoření replacement
         List<ApItemVO> itemReplacement = new ArrayList<>();
@@ -534,9 +533,9 @@ public class ApControllerTest extends AbstractControllerTest {
         itemReplacement.add(buildApItem(NM_SUP_GEN, null, "ApRecordB complement", null, null));
 
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
-        replacementRecord.setTypeId(getApType(types, "PERSON_BEING").getId());
-        replacementRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplacement));
+        replacementRecord.setTypeId(typeId);
         replacementRecord.setScopeId(scopeId);
+        replacementRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplacement));
 
         ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
         Assert.assertNotNull(replacementRecordCreated.getId());
@@ -553,9 +552,9 @@ public class ApControllerTest extends AbstractControllerTest {
         nameItemsC.add(buildApItem(NM_SUP_GEN, null, "ApRecordC complement", null, null));
 
         ApAccessPointCreateVO recordC = new ApAccessPointCreateVO();
-        recordC.setTypeId(getApType(types, "PERSON_BEING").getId());
-        recordC.setPartForm(createPartFormVO(null, ptName.getCode(), null, nameItemsC));
+        recordC.setTypeId(typeId);
         recordC.setScopeId(scopeId);
+        recordC.setPartForm(createPartFormVO(null, ptName.getCode(), null, nameItemsC));
 
         ApAccessPointVO recordCCreated = createAccessPoint(recordC);
         assertNotNull(recordCCreated.getId());
@@ -578,9 +577,9 @@ public class ApControllerTest extends AbstractControllerTest {
         itemsD.add(buildApItem(NM_SUP_GEN, null, "ApRecordD complement", null, null));
 
         ApAccessPointCreateVO recordD = new ApAccessPointCreateVO();
-        recordD.setTypeId(getApType(types, "PERSON_BEING").getId());
-        recordD.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsD));
+        recordD.setTypeId(typeId);
         recordD.setScopeId(scopeId);
+        recordD.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsD));
 
         ApAccessPointVO recordDCreated = createAccessPoint(recordD);
         Assert.assertNotNull(recordDCreated.getId());
@@ -598,10 +597,11 @@ public class ApControllerTest extends AbstractControllerTest {
         assertNotNull(partRelDId);
 
         // mark as approved
-        ApStateVO stateD = recordDCreated.getState();
-        ApStateChangeVO stateChangeD = new ApStateChangeVO();
-        stateChangeD.setState(StateApproval.APPROVED);
-        this.changeState(recordDCreated.getId(), stateChangeD);
+        ApStateUpdate stateUpdate = new ApStateUpdate();
+        stateUpdate.setTypeId(typeId);
+        stateUpdate.setScopeId(scopeId);
+        stateUpdate.setStateApproval(ApStateApproval.APPROVED);
+        this.changeState(recordDCreated.getId(), stateUpdate);
 
         // Dohledání usages
         RecordUsageVO usage = usagesRecord(replacedRecordCreated.getId());

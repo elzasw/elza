@@ -203,7 +203,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         Integer revPartId = createPart(ap1.getAccessPointId(), partFormVO);
         assertNotNull(revPartId);
 
-        accesspointsApi.setPreferNameRevision(apVo.getId(), revPartId, null);
+        accesspointsApi.accessPointSetPreferNameRevision(apVo.getId(), revPartId, null);
 
         // merge
         mergeRevision(ap1.getAccessPointId(), null);
