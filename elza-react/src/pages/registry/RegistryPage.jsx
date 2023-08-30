@@ -432,7 +432,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.changeState(id, undefined, finalData); // TODO - apVersion zatim neni dostupna
+                    await Api.accesspoints.accessPointChangeState(id, finalData); // TODO - apVersion zatim neni dostupna
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));

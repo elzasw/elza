@@ -552,11 +552,11 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         revParentPartId?: number,
     ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
     setPreferred: async (apId: number, partId: number) => {
-        await Api.accesspoints.setPreferName(apId, partId);
+        await Api.accesspoints.accessPointSetPreferName(apId, partId); // TODO - apVersion zatim neni dostupna
         return dispatch(goToAe(history, apId, true, !select));
     },
     setRevisionPreferred: async (apId: number, partId: number) => {
-        await Api.accesspoints.setPreferNameRevision(apId, partId);
+        await Api.accesspoints.accessPointSetPreferNameRevision(apId, partId); // TODO - apVersion zatim neni dostupna
         return dispatch(goToAe(history, apId, true, !select));
     },
     deletePart: async (apId: number, partId: number) => {
@@ -564,7 +564,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         return dispatch(goToAe(history, apId, true, !select));
     },
     deleteRevisionPart: async (apId: number, partId: number) => {
-        await Api.accesspoints.deleteRevisionPart(apId, partId);
+        await Api.accesspoints.accessPointDeleteRevisionPart(apId, partId); // TODO - apVersion zatim neni dostupna
         return dispatch(goToAe(history, apId, true, !select));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {

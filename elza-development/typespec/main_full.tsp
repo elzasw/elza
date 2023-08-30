@@ -157,7 +157,7 @@ model ApAccessPointCreate {
     /** id of scope */
     scopeId: integer;
     /** data for ApPart(s) */
-    partForm: ApPartCreate;
+    partForm: ApPartCreateUpdate;
 }
 
 /**
@@ -175,18 +175,47 @@ model DeleteAccessPoints {
 }
 
 /**
- * Data for create ApPart
+ * Types of PartItem
  */
-model ApPartCreate {
-    // TODO define the body
+enum ApPartItemType {
+    NEW, UPDATED, DELETED, ORIGINAL
 }
 
 /**
- * Data for update ApPart
+ * Data for create/update ApItem
  */
-model ApPartUpdate {
-    // TODO define the body
+model ApPartItem {
+    /** id of ApItem */
+    id: integer;
+    /** id of object */
+    objectId: integer;
+    /** position */
+    position: integer;
+    /** id of type  */
+    typeId: integer;
+    /** id of specification */
+    specId: integer;
+    /** id of original object */
+    origObjectId: integer;
+    /** type of item */
+    changeType: ApPartItemType;
 }
+
+/**
+ * Data for create/update ApPart
+ */
+model ApPartCreateUpdate {
+    /** id of part */
+    partId?: integer;
+    /** id of parent part */
+    parentPartId?: integer;
+    /** id of paren part in revision */
+    revParentPartId?: integer;
+    /** code of type of part */
+    partTypeCode: string;
+    items: ApPartItem[];
+}
+
 
 /**
  * Data for changing state of ApAccessPoint
@@ -337,7 +366,7 @@ namespace ElzaAPI.Accesspoint {
         /** actual version of ApAccessPoint */
         @query apVersion: integer,
         /** data for create ApPart */
-        @body body: ApPartCreate
+        @body body: ApPartCreateUpdate
     ): integer;
 
     /**
@@ -351,7 +380,7 @@ namespace ElzaAPI.Accesspoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion: integer,
-        @body body: ApPartUpdate
+        @body body: ApPartCreateUpdate
     ): integer;
 
     /**
@@ -423,7 +452,7 @@ namespace ElzaAPI.Accesspoint {
         /** actual version of ApAccessPoint */
         @query apVersion: integer;
         /** data for update ApRevPart */
-        @body body: ApPartUpdate
+        @body body: ApPartCreateUpdate;
     ): integer;
 
     /**
