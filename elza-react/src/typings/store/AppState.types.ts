@@ -91,10 +91,11 @@ export interface AdminFund {
     currentDataKey?: number | string;
     data?: FundData | null;
     getDataKey?: () => number | string;
-    id?: number;
+    id?: number | string;
     fetched?: boolean;
     isFetching?: boolean;
-    reducer: unknown;
+    reducer?: unknown;
+    name?: string;
 }
 
 export interface SubNode {
