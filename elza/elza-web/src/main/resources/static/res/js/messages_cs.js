@@ -147,6 +147,7 @@ var messages = {
     "exception.base.BAD_REQUEST": "Neplatný požadavek",
     "exception.base.INVALID_STATE": "Neplatný stav",
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
+    "exception.base.GENERATING_EXPORT_FAILED": "Generování exportu selhalo",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
