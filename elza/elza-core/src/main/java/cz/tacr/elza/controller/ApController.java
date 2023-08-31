@@ -968,7 +968,7 @@ public class ApController {
     public void mergeRevision(@PathVariable final Integer id,
                               @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
         ApState apState = accessPointService.getStateInternal(id);
-        revisionService.mergeRevision(apState, state);
+        revisionService.mergeRevision(apState, state, null);
     }
 
     /**
