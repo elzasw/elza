@@ -188,113 +188,6 @@ paths:
                 type: array
                 items:
                   type: integer
-  /accesspoint/revision/{id}/part/{partId}:
-    delete:
-      tags:
-        - accesspoints
-      operationId: AccessPoint_deleteRevisionPart
-      description: Delete part of revision of ApAccessPoint
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: id of revision
-          schema:
-            type: integer
-        - name: partId
-          in: path
-          required: true
-          description: partId of revision
-          schema:
-            type: integer
-        - name: apVersion
-          in: query
-          required: false
-          description: actual version of ApAccessPoint
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: integer
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-  /accesspoint/revision/{id}/part/{partId}/prefer-name:
-    put:
-      tags:
-        - accesspoints
-      operationId: AccessPoint_setPreferNameRevision
-      description: Set the preferred name of revision of ApAccessPoint
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: id of revision
-          schema:
-            type: integer
-        - name: partId
-          in: path
-          required: true
-          description: partId of revision
-          schema:
-            type: integer
-        - name: apVersion
-          in: query
-          required: false
-          description: actual version of ApAccessPoint
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: integer
-        404:
-          description: AP nebo revize neexistuje
-  /accesspoint/revision/{id}/state:
-    put:
-      tags:
-        - accesspoints
-      operationId: AccessPoint_changeStateRevision
-      description: Change state of revision of ApAccessPoint
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: id of revision
-          schema:
-            type: integer
-        - name: apVersion
-          in: query
-          required: false
-          description: actual version of ApAccessPoint
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: integer
-        404:
-          description: AP nebo revize neexistuje
-      requestBody:
-        description: data for change state of revision of ApAccessPoint
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RevStateChange'
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -305,7 +198,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: id of ApAccessPoint
+          description: id of accesspoint
           schema:
             type: integer
         - name: partId
@@ -339,7 +232,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: id of ApAccessPoint
+          description: id of accesspoint
           schema:
             type: integer
         - name: partId
@@ -361,6 +254,146 @@ paths:
             application/json:
               schema:
                 type: integer
+  /accesspoint/{id}/revision/merge:
+    post:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_mergeRevision
+      description: Merge ApRevision & ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: actual version of ApAccessPoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+      requestBody:
+        description: data for change ApState
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApStateUpdate'
+  /accesspoint/{id}/revision/part/{partId}:
+    delete:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_deleteRevisionPart
+      description: Delete part of revision of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: partId
+          in: path
+          required: true
+          description: partId of revision
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: actual version of ApAccessPoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /accesspoint/{id}/revision/part/{partId}/prefer-name:
+    put:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_setPreferNameRevision
+      description: Set the preferred name of revision of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: partId
+          in: path
+          required: true
+          description: partId of revision
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: actual version of ApAccessPoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: AP nebo revize neexistuje
+  /accesspoint/{id}/revision/state:
+    put:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_changeStateRevision
+      description: Change state of revision of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: actual version of ApAccessPoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: AP nebo revize neexistuje
+      requestBody:
+        description: data for change state of revision of ApAccessPoint
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevStateChange'
   /accesspoint/{id}/state:
     put:
       tags:
@@ -975,8 +1008,6 @@ components:
           description: state of ApState
       description: Data for changing state of ApAccessPoint
       required:
-        - typeId
-        - scopeId
         - stateApproval
     BaseException:
       type: object
@@ -1161,7 +1192,6 @@ components:
           description: state of ApRevision
       description: Data for changing revision state of ApAccessPoint
       required:
-        - typeId
         - state
     RevisionState:
       type: string
@@ -1589,55 +1619,3 @@ components:
       required:
         - importType
         - dataFile
-    ApPartForm:
-      type: object
-      properties:
-        partId:
-          description: Identifikátor části
-          type: integer
-        parentPartId:
-          description: Identifikátor nadřízené části
-          type: integer
-        revParentPartId:
-          description: Identifikátor nadřízené části z revize
-          type: integer
-        partTypeCode:
-          description: Kód typu části
-          type: string
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/ApPartItem"
-    ApPartItem:
-      type: object
-      properties:
-        id:
-          description: Identifikátor
-          type: integer
-        objectId:
-          description: Identifikátor hodnoty atributu
-          type: integer
-        position:
-          description: Pozice atributu
-          type: integer
-        typeId:
-          description: Typ atributu
-          type: integer
-        specId:
-          description: Specifikace atributu
-          type: integer
-        origObjectId:
-          description: Identifikátor původní hodnoty atributu
-          type: integer
-        changeType:
-          description: Typ změny
-          allOf:
-            - $ref: '#/components/schemas/ApPartItemType'
-    ApPartItemType:
-      type: string
-      description: types of PartItem
-      enum:
-        - NEW
-        - UPDATED
-        - DELETED
-        - ORIGINAL
