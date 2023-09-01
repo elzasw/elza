@@ -176,9 +176,9 @@ enum RevisionState {
  */
 model ApStateUpdate {
     /** id of type */
-    typeId: integer;
+    typeId?: integer;
     /** id of scope */
-    scopeId: integer;
+    scopeId?: integer;
     /** comment */
     comment?: string;
     /** state of ApState */
@@ -190,7 +190,7 @@ model ApStateUpdate {
  */
 model RevStateChange {
     /** id of type */
-    typeId: integer;
+    typeId?: integer;
     /** comment */
     comment?: string;
     /** state of ApRevision */
@@ -274,10 +274,10 @@ namespace ElzaAPI.AccessPoint {
     @put op changeState(
         /** id of accesspoint */
         @path id: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer,
         /** data for change ApState */
         @body body: ApStateUpdate;
+        /** actual version of ApAccessPoint */
+        @query apVersion?: integer,
     ): integer;
 
     /**
@@ -285,12 +285,12 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("{id}/part/{partId}/prefer-name")
     @put op setPreferName(
-        /** id of ApAccessPoint */
+        /** id of accesspoint */
         @path id: integer,
         /** partId of ApAccessPoint */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion: integer
+        @query apVersion?: integer
     ): integer;
 
     /**
@@ -298,51 +298,51 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("/{id}/part/{partId}")
     @delete op deletePart(
-        /** id of ApAccessPoint */
+        /** id of accesspoint */
         @path id: integer,
         /** partId of ApAccessPoint */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion: integer
+        @query apVersion?: integer
     ): integer;
 
     /**
      * Change state of revision of ApAccessPoint
      */
-    @route("/revision/{id}/state")
+    @route("/{id}/revision/state")
     @put op changeStateRevision(
-        /** id of revision */
+        /** id of accesspoint */
         @path id: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion: integer;
         /** data for change state of revision of ApAccessPoint */
         @body body: RevStateChange;
+        /** actual version of ApAccessPoint */
+        @query apVersion?: integer;
     ): integer;
 
     /**
      * Set the preferred name of revision of ApAccessPoint
      */
-    @route("/revision/{id}/part/{partId}/prefer-name")
+    @route("/{id}/revision/part/{partId}/prefer-name")
     @put op setPreferNameRevision(
-        /** id of revision */
+        /** id of accesspoint */
         @path id: integer,
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion: integer;
+        @query apVersion?: integer;
     ): integer;
 
     /**
      * Delete part of revision of ApAccessPoint
      */
-    @route("/revision/{id}/part/{partId}")
+    @route("/{id}/revision/part/{partId}")
     @delete op deleteRevisionPart(
-        /** id of revision */
+        /** id of accesspoint */
         @path id: integer,
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion: integer;
+        @query apVersion?: integer;
     ): {
          /** actual version of ApAccessPoint */
          @Http.statusCode statusCode: 200;
@@ -352,6 +352,19 @@ namespace ElzaAPI.AccessPoint {
           @Http.statusCode statusCode: 404;
           @body data: BaseException; 
        };
+
+    /**
+     * Merge ApRevision & ApAccessPoint
+     */
+    @route("/{id}/revision/merge")
+    @post op mergeRevision(
+        /** id of accesspoint */
+        @path id: integer,
+        /** data for change ApState */
+        @body body: ApStateUpdate;
+        /** actual version of ApAccessPoint */
+        @query apVersion?: integer;
+    ): integer;
 }
 
 @tag("io")

@@ -325,35 +325,6 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok(version);
     }
 
-//    /**
-//     * Aktualizace přístupového bodu.
-//     *
-//     * @param accessPointId identifikátor přístupového bodu
-//     * @param apVersion     verze přístupového bodu
-//     * @param editVo        upravovaná data přístupového bodu
-//     * @return aktualizovaný záznam
-//     */
-//    @Override
-//    @Transactional
-//    public ResponseEntity<ApAccessPointVO> updateAccessPoint(Integer accessPointId, Integer apVersion, ApAccessPointEditVO editVo) {
-//        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-//        Validate.notNull(editVo);
-//
-//        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-//        ApState oldState = accessPointService.getStateInternal(accessPoint);
-//        ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-//
-//        accessPointService.updateAndValidate(accessPointId);
-//        apCacheService.createApCachedAccessPoint(accessPointId);
-//        CachedAccessPoint cachedAccessPoint = apCacheService.findCachedAccessPoint(accessPointId);
-//        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-//        if (cachedAccessPoint != null) {
-//            cachedAccessPoint.setAccessPointVersion(version);
-//            return ResponseEntity.ok(apFactory.createVO(cachedAccessPoint));
-//        }
-//        return ResponseEntity.ok(apFactory.createVO(newState, true));
-//    }
-
     @Override
     @Transactional
     public ResponseEntity<Void> createRevision(Integer id) {
@@ -377,6 +348,17 @@ public class AccessPointController implements AccesspointsApi {
 
         revisionService.deleteRevision(state);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Integer> accessPointMergeRevision(Integer accessPointId, ApStateUpdate stateUpdate, Integer apVersion) {
+        ApState apState = accessPointService.getStateInternal(accessPointId);
+        StateApproval state = StateApproval.valueOf(stateUpdate.getStateApproval().toString());
+        revisionService.mergeRevision(apState, state, stateUpdate.getComment());
+
+        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(version);
     }
 
     @Override
