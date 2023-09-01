@@ -11,6 +11,7 @@ import {WebApi} from 'actions/index.jsx';
 
 import './ArrDao.scss';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { addToastrInfo } from 'components/shared/toastr/ToastrActions';
 
 class ArrDao extends AbstractReactComponent {
     static propTypes = {
@@ -56,13 +57,11 @@ class ArrDao extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('arr.request.dao.form.title'), form));
     };
 
-    copyToClipboard = url => {
-        const el = document.createElement('textarea');
-        el.value = url;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+    copyToClipboard = async (url) => {
+        // ponechej adresu zacinajici na http(s), jinak dopln hosta pred url + osetreni '/' na zacatku
+        let fullPath = /^https?:\/\//.test(url) ? url : `${location.host}/${url.replace(/^\//, '')}`;
+        await navigator.clipboard.writeText(fullPath);
+        this.props.dispatch(addToastrInfo(i18n('global.action.copyToClipboard.finished')));
     };
 
     renderDaoDetail = () => {
