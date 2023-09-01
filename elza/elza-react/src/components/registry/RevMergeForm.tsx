@@ -1,119 +1,95 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import {DecoratedFormProps, Field, FormErrors, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
-import {i18n} from 'components/shared';
-import {Form, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
+import React, { useEffect, useState } from 'react';
+import { i18n } from 'components/shared';
+import { Form, Modal } from 'react-bootstrap';
+import { Form as FinalForm, Field } from 'react-final-form';
+import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
-import {connect} from 'react-redux';
-import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
-import {AppState} from "typings/store";
-import {WebApi} from 'actions';
+import { StateApprovalCaption } from '../../api/StateApproval';
+import { WebApi } from 'actions';
+import { ApStateUpdate, ApStateApproval } from 'elza-api';
 
-const stateToOption = (item: StateApproval) => ({
+const stateToOption = (item: ApStateApproval) => ({
     id: item,
     name: StateApprovalCaption(item),
 });
 
-type OwnProps = {
+type Props = {
     accessPointId: number;
-    versionId?: number;
-    hideType?: boolean;
     onClose?: Function;
+    onSubmit: (values: ApStateUpdate) => void;
     states: string[];
+    initialValues: ApStateUpdate;
 };
 
-type RevMergeStateVO = {
-    state: StateApproval;
-};
+export function RevMergeFormFn({
+    accessPointId,
+    onClose,
+    onSubmit,
+    initialValues
+}: Props) {
 
-type ConnectedProps = ReturnType<typeof mapStateToProps>;
-type Props = OwnProps & ConnectedProps & InjectedFormProps<RevMergeStateVO, OwnProps, FormErrors<RevMergeStateVO>>;
+    const [states, setStates] = useState<ApStateApproval[]>([]);
 
-class RevMergeForm extends React.Component<Props> {
-    static propTypes = {
-        accessPointId: PropTypes.number.isRequired,
-        versionId: PropTypes.number,
-        hideType: PropTypes.bool,
-    };
-
-    static defaultProps = {
-        hideType: false,
-    };
-
-    getStateWithAll() {
-        if (this.props.states) {
-            return Object.values(this.props.states).map(stateToOption);
+    function getStateWithAll() {
+        if (states) {
+            return Object.values(states).map(stateToOption);
         } else {
             return [];
         }
     }
 
-    componentDidMount() {
-        WebApi.getStateApprovalRevision(this.props.accessPointId).then(data => {
-            this.props.change('states', data);
-        });
-    }
+    function validate(values: ApStateUpdate) {
+        const errors: Partial<Record<keyof ApStateUpdate, string>> = {};
 
-    render() {
-        const {
-            handleSubmit,
-            onClose,
-            submitting,
-        } = this.props;
-
-        return (
-            <Form onSubmit={handleSubmit}>
-                <Modal.Body>
-                    <Field
-                        component={FormInputField}
-                        type="autocomplete"
-                        disabled={submitting}
-                        useIdAsValue
-                        required
-                        label={i18n('ap.state.title.state')}
-                        items={this.getStateWithAll()}
-                        name={'state'}
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.store')}
-                    </Button>
-                    <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
-                    </Button>
-                </Modal.Footer>
-            </Form>
-        );
-    }
-}
-
-const mapStateToProps = (state:AppState) => {
-    const selector = formValueSelector('revMergeForm');
-
-    return {
-        state: selector(state, 'state'),
-        refTables: state.refTables,
-        userDetail: state.userDetail as any,
-        states: selector(state, 'states'),
-    };
-};
-
-const form = reduxForm<RevMergeStateVO, OwnProps, FormErrors<RevMergeStateVO>>({
-    form: 'revMergeForm',
-    validate(
-        values: RevMergeStateVO,
-        props: DecoratedFormProps<RevMergeStateVO, Props, FormErrors<RevMergeStateVO>>,
-    ): FormErrors<RevMergeStateVO, FormErrors<RevMergeStateVO>> {
-        const errors: FormErrors<RevMergeStateVO, FormErrors<RevMergeStateVO>> = {};
-
-        if (!values.state) {
-            errors.state = i18n('global.validation.required');
+        if (!values.stateApproval) {
+            errors.stateApproval = i18n('global.validation.required');
         }
 
         return errors;
-    },
-})(RevMergeForm as any);
+    }
 
-export default connect(mapStateToProps)(form);
+    useEffect(() => {
+        (async () => {
+            const data: ApStateApproval[] = await WebApi.getStateApprovalRevision(accessPointId);
+            setStates(data);
+        })()
+    }, [accessPointId])
+
+    return (
+        <FinalForm<ApStateUpdate> initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+            {({ handleSubmit, submitting }) => {
+                return <Form onSubmit={handleSubmit}>
+                    <Modal.Body>
+                        <Field
+                            component={FormInputField}
+                            type="autocomplete"
+                            disabled={submitting}
+                            useIdAsValue
+                            required
+                            label={i18n('ap.state.title.state')}
+                            items={getStateWithAll()}
+                            name={'stateApproval'}
+                        />
+                        <Field
+                            component={FormInputField}
+                            disabled={submitting}
+                            type="textarea"
+                            label={i18n('ap.state.title.comment')}
+                            name={'comment'}
+                        />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="button" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
+                            {i18n('global.action.store')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
+                    </Modal.Footer>
+                </Form>
+            }}
+        </FinalForm>
+    );
+}
+
+export default RevMergeFormFn

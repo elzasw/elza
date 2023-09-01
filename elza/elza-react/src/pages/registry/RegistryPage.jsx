@@ -496,12 +496,11 @@ class RegistryPage extends AbstractReactComponent {
         const form = (
             <RevMergeForm
                 initialValues={{
-                    state: stateApproval,
+                    stateApproval,
                 }}
-                onSubmit={data => {
-                    return WebApi.mergeRevision(id, data.state);
-                }}
-                onSubmitSuccess={() => {
+                onSubmit={async (data) => {
+                    await Api.accesspoints.accessPointMergeRevision(id, data);
+
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
                     this.props.dispatch(goToAe(history, id, true, !select));
