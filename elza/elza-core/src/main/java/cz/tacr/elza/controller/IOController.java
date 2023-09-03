@@ -65,6 +65,9 @@ public class IOController implements IoApi {
 
         // convert ExportParams to IOExportRequest
         DEExportParams deExportParams = new DEExportParams();
+        if (exportParams.getExportFilterId() != null) {
+            deExportParams.setExportFilterId(exportParams.getExportFilterId());
+        }
 
         String fileName = null;
 
