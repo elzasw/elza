@@ -566,7 +566,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                 }
-                if (extSystems && extSystems.length > 0 && (!hasOnlyCompleteExternalSystems || userDetail.hasOne(perms.ADMIN))) {
+                if (extSystems && extSystems.length > 0 /*&& (!hasOnlyCompleteExternalSystems || userDetail.hasOne(perms.ADMIN))*/) {
                     altActions.push(
                         <Button key="ext-syncs" onClick={this.handleExtSyncs}>
                             <Icon glyph="fa-gg" />
