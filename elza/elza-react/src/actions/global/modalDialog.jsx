@@ -2,9 +2,9 @@
  * Akce pro zobrazení a skrytí modálního dialogu.
  */
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import * as types from 'actions/constants/ActionTypes';
-import {Modal} from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import i18n from '../../components/i18n';
 
 const AsyncWaitingDialog = connect()(
@@ -12,7 +12,7 @@ const AsyncWaitingDialog = connect()(
         constructor(props) {
             super(props);
 
-            const {dispatch, callAsync, resultCallback, errorCallback} = props;
+            const { dispatch, callAsync, resultCallback, errorCallback } = props;
 
             callAsync
                 .then((...data) => {
@@ -27,7 +27,7 @@ const AsyncWaitingDialog = connect()(
         }
 
         render() {
-            const {title, message} = this.props;
+            const { title, message } = this.props;
 
             let tit;
             if (title) {
@@ -37,8 +37,8 @@ const AsyncWaitingDialog = connect()(
                 typeof message === 'string'
                     ? message
                     : typeof message === 'object'
-                    ? message
-                    : React.createElement(message);
+                        ? message
+                        : React.createElement(message);
             return (
                 <div>
                     <Modal.Body>
@@ -91,8 +91,9 @@ export function modalDialogShow(component, title, content, dialogClassName = '',
         onClose,
     };
 }
-export function modalDialogHide() {
+export function modalDialogHide(key) {
     return {
+        key,
         type: types.GLOBAL_MODAL_DIALOG_HIDE,
     };
 }

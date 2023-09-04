@@ -1,12 +1,9 @@
 package cz.tacr.elza.websocket;
 
-import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -142,11 +139,12 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 		}
 	}
 
-    public List<Principal> getPrincipals() {
-        Set<Principal> result = new HashSet<>();
+    public Collection<WebSocketSession> getSessions() {
+        /*Set<Principal> result = new HashSet<>();
         sessions.forEach((sId, wss) -> {
             result.add(wss.getPrincipal());
         });
-        return new ArrayList<>(result);
+        return new ArrayList<>(result);*/
+        return new ArrayList<>(sessions.values());
     }
 }

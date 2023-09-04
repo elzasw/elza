@@ -47,7 +47,7 @@ class FundGroupsPanel extends AbstractReactComponent {
         }
 
         // Check if the selected permission in props changed.
-        if (this.props.selectedPermission !== nextProps.selectedPermission) {
+        if (this.props.selectedPermission.id !== nextProps.selectedPermission.id) {
             propsSelectedPermissionChanged = true;
         }
 
@@ -76,7 +76,9 @@ class FundGroupsPanel extends AbstractReactComponent {
 
         let permission = permissions[newSelectedIndex] || {id: null};
 
-        this.selectItem(permission, newSelectedIndex);
+        if(propsSelectedPermissionChanged){
+            this.selectItem(permission, newSelectedIndex);
+        }
 
         this.setState(newState);
     }
@@ -198,13 +200,14 @@ class FundGroupsPanel extends AbstractReactComponent {
 
     render() {
         const {fundId, groups} = this.props;
-        const {selectedPermission, permissions} = this.state;
+        const {permissions} = this.state;
 
         if (!groups.fetched) {
             return <HorizontalLoader />;
         }
 
-        const group = selectedPermission.index !== null ? permissions[selectedPermission.index] : null;
+        const selectedPermission = this.props.selectedPermission ? this.props.selectedPermission : this.state.selectedPermission;
+        const group = selectedPermission.index != null ? permissions[selectedPermission.index] : null;
 
         return (
             <AdminRightsContainer

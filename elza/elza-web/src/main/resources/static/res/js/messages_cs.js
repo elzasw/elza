@@ -147,6 +147,7 @@ var messages = {
     "exception.base.BAD_REQUEST": "Neplatný požadavek",
     "exception.base.INVALID_STATE": "Neplatný stav",
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
+    "exception.base.GENERATING_EXPORT_FAILED": "Generování exportu selhalo",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
@@ -400,7 +401,7 @@ var messages = {
     "stats.levels.title": "Počet JP",
     "stats.accessPoints.title": "Počet arch. entit",
     "stats.users.title": "Počet uživatelů",
-    "stats.loggedUsers.title": "Počet přihlášených uživatelů",
+    "stats.loggedUsers.title": "Počet aktivních relací",
     "loggedUsers.title": "Přihlášení uživatelé",
 
     "toggle.action.minimize": "Minimalizovat",
@@ -1206,7 +1207,7 @@ var messages = {
     "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
     "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
     "ap.push-to-ext.failed.title": "Chyba při odesílání entity",
-    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Synchronizace s externími systémy",
+    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Fronta synchronizace (Synchronizace s externími systémy)",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",

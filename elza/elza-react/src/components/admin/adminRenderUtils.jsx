@@ -46,9 +46,7 @@ export function renderUserOrGroupLabel(item) {
     }
 }
 
-export const EntityItem = props => {
-    const { item, getName } = props;
-
+export function EntityItem({ item, getName, onClick, onMouseEnter }) {
     let name = 'unknown';
 
     if (getName) {
@@ -68,14 +66,16 @@ export const EntityItem = props => {
         fields.push(item.mark);
     }
     var desc = fields.join(', ');
-    return [
-        <div className="item-row" key={item.id}>
+
+    return <div onClick={onClick} onMouseEnter={onMouseEnter} className="item" key={item.id}>
+        <div className="item-row">
             <div className="name" title={name}>{name}</div>
-        </div>,
-        <div className="item-row desc" key={item.id + '-x'}>
+        </div>
+        <div className="item-row desc">
             <div>{desc}</div>
-        </div>,
-    ];
+        </div>
+    </div>
+
 };
 
 export function renderUserItem(props) {

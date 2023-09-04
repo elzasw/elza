@@ -26,14 +26,8 @@ model AdminInfo {
 /** Logged user */
 model LoggedUser {
 
-    /** User ID */
-    userId: integer;
-
     /** username */
     user: string;
-
-    /** Remote address */
-    remoteAddr: string;
 }
 
 /** List of logged users */
@@ -153,48 +147,88 @@ model BaseException {
 }
 
 /**
- * States of ApState
+ * Data for create ApAccessPoint
  */
-enum ApStateApproval {
-    NEW,
-    TO_APPROVE,
-    APPROVED,
-    TO_AMEND
+model ApAccessPointCreate {
+    /** id of ApAccessPoint */
+    accessPointId?: integer;
+    /** id of type */
+    typeId: integer;
+    /** id of scope */
+    scopeId: integer;
+    /** data for ApPart(s) */
+    partForm: ApPartCreateUpdate;
 }
 
 /**
- * States of ApRevState
+ * Data for delete ApAccessPoint
  */
-enum RevisionState {
-    ACTIVE,
-    TO_APPROVE,
-    TO_AMEND
+model DeleteAccessPoint {
+    // TODO define the body
 }
+
+/**
+ * List of ApAccessPoint to delete
+ */
+model DeleteAccessPoints {
+    // TODO define the body
+}
+
+/**
+ * Types of PartItem
+ */
+enum ApPartItemType {
+    NEW, UPDATED, DELETED, ORIGINAL
+}
+
+/**
+ * Data for create/update ApItem
+ */
+model ApPartItem {
+    /** id of ApItem */
+    id: integer;
+    /** id of object */
+    objectId: integer;
+    /** position */
+    position: integer;
+    /** id of type  */
+    typeId: integer;
+    /** id of specification */
+    specId: integer;
+    /** id of original object */
+    origObjectId: integer;
+    /** type of item */
+    changeType: ApPartItemType;
+}
+
+/**
+ * Data for create/update ApPart
+ */
+model ApPartCreateUpdate {
+    /** id of part */
+    partId?: integer;
+    /** id of parent part */
+    parentPartId?: integer;
+    /** id of paren part in revision */
+    revParentPartId?: integer;
+    /** code of type of part */
+    partTypeCode: string;
+    items: ApPartItem[];
+}
+
 
 /**
  * Data for changing state of ApAccessPoint
  */
-model ApStateUpdate {
-    /** id of type */
-    typeId?: integer;
-    /** id of scope */
-    scopeId?: integer;
-    /** comment */
-    comment?: string;
-    /** state of ApState */
-    stateApproval: ApStateApproval;
+model ApStateChange {
+    // TODO define the body
 }
 
 /**
  * Data for changing revision state of ApAccessPoint
  */
 model RevStateChange {
-    /** id of type */
-    typeId?: integer;
-    /** comment */
-    comment?: string;
-    /** state of ApRevision */
-    state: RevisionState;
+    // TODO define the body
 }
 
 @route("/daorepository")
@@ -266,7 +300,36 @@ namespace ElzaAPI.Fund {
 
 @tag("accesspoints")
 @route("/accesspoint")
-namespace ElzaAPI.AccessPoint {
+namespace ElzaAPI.Accesspoint {
+    /**
+     * Create ApAccessPoint
+     */
+    @route("/")
+    @post op createAccessPoint(
+        /** data for create ApAccessPoint */
+        @body body: ApAccessPointCreate
+    ): integer;
+
+    /**
+     * Delete ApAccessPoint
+     */
+    @route("/{id}")
+    @delete op deleteAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** data for delete ApAccessPoint */
+        @body body: DeleteAccessPoint
+    ): boolean;
+
+    /**
+     * Delete list of ApAccessPoint
+     */
+    @route("/all")
+    @delete op deleteAccessPoints(
+        /** data for delete list of ApAccessPoint */
+        @body body: DeleteAccessPoints
+    ): boolean;
+
     /**
      * Change state of ApAccessPoint
      */
@@ -274,10 +337,10 @@ namespace ElzaAPI.AccessPoint {
     @put op changeState(
         /** id of accesspoint */
         @path id: integer,
-        /** data for change ApState */
-        @body body: ApStateUpdate;
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer,
+        @query apVersion: integer,
+        /** data for change ApState */
+        @body body: ApStateChange
     ): integer;
 
     /**
@@ -285,12 +348,39 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("{id}/part/{partId}/prefer-name")
     @put op setPreferName(
-        /** id of accesspoint */
+        /** id of ApAccessPoint */
         @path id: integer,
         /** partId of ApAccessPoint */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer
+        @query apVersion: integer
+    ): integer;
+
+    /**
+     * Create part of ApAccessPoint
+     */
+    @route("/{id}/part")
+    @post op createPart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        /** data for create ApPart */
+        @body body: ApPartCreateUpdate
+    ): integer;
+
+    /**
+     * Update part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @put op updatePart(
+        /** id of ApAccessPoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer,
+        @body body: ApPartCreateUpdate
     ): integer;
 
     /**
@@ -298,72 +388,84 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("/{id}/part/{partId}")
     @delete op deletePart(
-        /** id of accesspoint */
+        /** id of ApAccessPoint */
         @path id: integer,
         /** partId of ApAccessPoint */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer
+        @query apVersion: integer
+    ): integer;
+
+    /**
+     * Create revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @post op createRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
+    ): integer;
+
+    /**
+     * Delete revision of ApAccessPoint
+     */
+    @route("/revision/{id}")
+    @delete op deleteRevision(
+        /** id of ApAccessPoint */
+        @path id: integer
     ): integer;
 
     /**
      * Change state of revision of ApAccessPoint
      */
-    @route("/{id}/revision/state")
-    @put op changeStateRevision(
-        /** id of accesspoint */
+    @route("/revision/{id}/state")
+    @post op changeStateRevision(
+        /** id of revision */
         @path id: integer,
-        /** data for change state of revision of ApAccessPoint */
-        @body body: RevStateChange;
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion: integer;
+        /** data for change state of revision of ApAccessPoint */
+        @body body: RevStateChange
     ): integer;
 
     /**
      * Set the preferred name of revision of ApAccessPoint
      */
-    @route("/{id}/revision/part/{partId}/prefer-name")
-    @put op setPreferNameRevision(
-        /** id of accesspoint */
+    @route("/revision/{id}/part/{partId}/prefer-name")
+    @post op setPreferNameRevision(
+        /** id of revision */
         @path id: integer,
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion: integer;
+    ): integer;
+
+    /**
+     * Update part of revision of ApAccessPoint
+     */
+    @route("/revision/{id}/part/{partId}")
+    @put op updateRevisionPart(
+        /** id of revision */
+        @path id: integer,
+        /** partId of revision */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion: integer;
+        /** data for update ApRevPart */
+        @body body: ApPartCreateUpdate;
     ): integer;
 
     /**
      * Delete part of revision of ApAccessPoint
      */
-    @route("/{id}/revision/part/{partId}")
+    @route("/revision/{id}/part/{partId}")
     @delete op deleteRevisionPart(
-        /** id of accesspoint */
+        /** id of revision */
         @path id: integer,
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): {
-         /** actual version of ApAccessPoint */
-         @Http.statusCode statusCode: 200;
-         @body data: integer;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       };
-
-    /**
-     * Merge ApRevision & ApAccessPoint
-     */
-    @route("/{id}/revision/merge")
-    @post op mergeRevision(
-        /** id of accesspoint */
-        @path id: integer,
-        /** data for change ApState */
-        @body body: ApStateUpdate;
-        /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion: integer;
     ): integer;
 }
 

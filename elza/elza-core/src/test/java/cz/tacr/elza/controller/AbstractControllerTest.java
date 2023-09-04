@@ -42,7 +42,6 @@ import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
-import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -151,6 +150,7 @@ import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.IoApi;
+import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.RestAssured;
@@ -332,7 +332,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
-    protected static final String CHANGE_STATE = AP_CONTROLLER_URL + "/{recordId}/state";
+    protected static final String CHANGE_STATE = REST_CONTROLLER_URL + "/accesspoint/{recordId}/state";
 
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
@@ -346,8 +346,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     // PART
     protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
     protected static final String UPDATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
-    protected static final String DELETE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
-    protected static final String SET_PREFER_NAME = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}/prefer-name";
+    protected static final String DELETE_PART = REST_CONTROLLER_URL + "/accesspoint/{accessPointId}/part/{partId}";
+    protected static final String SET_PREFER_NAME = REST_CONTROLLER_URL + "/accesspoint/{accessPointId}/part/{partId}/prefer-name";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -2089,8 +2089,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
     }
 
-    protected Response changeState(final Integer apId, ApStateChangeVO stateChange) {
-        return post(spec -> spec.pathParam("recordId", apId).body(stateChange), CHANGE_STATE);
+    protected Response changeState(final Integer apId, ApStateUpdate stateUpdate) {
+        return put(spec -> spec.pathParam("recordId", apId).body(stateUpdate), CHANGE_STATE);
     }
 
     /**
