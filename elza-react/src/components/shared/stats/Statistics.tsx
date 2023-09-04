@@ -2,7 +2,11 @@ import { Api } from 'api';
 import { i18n } from 'components';
 import { AdminInfo, LoggedUser } from 'elza-api';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { urlAdminUser } from '../../../../src/constants';
 import './Statistics.scss';
+
+type LoggedUserWithCount = LoggedUser & { count: number };
 
 const getHorizontalListItems = <T extends Object>(selectedStats: (keyof T)[], data: T): HorizontalListItem<T>[] => {
     const listItems: HorizontalListItem<T>[] = selectedStats
@@ -103,16 +107,37 @@ export const LoggedUsersList = ({ users }: LoggedUsersListProps) => {
     if (users.length === 0) {
         return <></>;
     }
+
+    const uniqueUsers: LoggedUserWithCount[] = users.reduce((result: LoggedUserWithCount[], user) => {
+        const index = result.findIndex(_user => _user.user === user.user);
+
+        if (index !== -1) {
+            result[index].count++;
+        } else {
+            result.push({ ...user, count: 1 });
+        }
+
+        return result;
+    }, []);
+
     return (
         <div className="stats-box" style={{ paddingTop: 0 }}>
             <div>
                 <h6>{i18n('loggedUsers.title')}</h6>
                 <div className="users">
-                    {users.map((user, index) => (
-                        <div key={index}>
-                            <span>{user.user}</span>
-                        </div>
-                    ))}
+                    {uniqueUsers.map((user, index) =>
+                        user?.userId != undefined ? (
+                            <Link key={index} to={urlAdminUser(user.userId)}>
+                                <span>{user.user}</span>
+                                {user.count > 1 ? ` (${user.count})` : ''}
+                            </Link>
+                        ) : (
+                            <div key={index}>
+                                <span>{user.user}</span>
+                                {user.count > 1 ? ` (${user.count})` : ''}
+                            </div>
+                        ),
+                    )}
                 </div>
             </div>
         </div>

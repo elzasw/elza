@@ -48,7 +48,6 @@ import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
@@ -58,7 +57,6 @@ import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
-import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -510,32 +508,6 @@ public class ApController {
     }
 
     /**
-     * Aktualizace přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param editVo upravovaná data přístupového bodu
-     * @return aktualizovaný záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}", method = RequestMethod.PUT)
-    public ApAccessPointVO updateAccessPoint(@PathVariable final Integer accessPointId,
-                                             @RequestBody final ApAccessPointEditVO editVo) {
-        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Validate.notNull(editVo);
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState oldState = accessPointService.getStateInternal(accessPoint);
-        ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        accessPointService.updateAndValidate(accessPointId);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
-        if (cachedAccessPoint != null) {
-            return apFactory.createVO(cachedAccessPoint);
-        }
-        return apFactory.createVO(newState, true);
-    }
-
-    /**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
      * 
      * @param accessPointId
@@ -837,34 +809,6 @@ public class ApController {
     }
 
     /**
-     * Změna stavu přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/state", method = RequestMethod.POST)
-    public void changeState(@PathVariable("accessPointId") final Integer accessPointId,
-                            @RequestBody ApStateChangeVO stateChange) {
-        Validate.notNull(stateChange.getState(), "AP State is null");
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getApState(accessPoint);
-        ApRevision revision = revisionService.findRevisionByState(state);
-
-        // Nelze změnit stav archivní entity, která má revizi
-        if (revision != null) {
-            throw new BusinessException("Nelze změnit stav archivní entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
-        }
-
-        accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
-        accessPointService.updateAndValidate(accessPointId);
-        if (accessPointService.isRevalidaceRequired(state.getStateApproval(), stateChange.getState())) {
-            ruleService.revalidateNodesWithApRef(accessPointId);
-        }
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
-    }
-
-    /**
      * Vyhledání přístupových bodů pro návazný vztah
      *
      * @param from od které položky vyhledávat
@@ -1024,58 +968,7 @@ public class ApController {
     public void mergeRevision(@PathVariable final Integer id,
                               @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
         ApState apState = accessPointService.getStateInternal(id);
-        revisionService.mergeRevision(apState, state);
-    }
-
-
-    /**
-     * Smazání části přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor mazané části
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
-    public void deletePart(@PathVariable final Integer accessPointId,
-                           @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.deletePart(state, revision, partId);
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-            partService.deletePart(apAccessPoint, partId);
-            accessPointService.updateAndValidate(accessPointId);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        }
-    }
-
-    /**
-     * Nastavení preferovaného jména přístupového bodu.
-     * Možné pouze pro části typu Označení.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}/prefer-name", method = RequestMethod.PUT)
-    public void setPreferName(@PathVariable final Integer accessPointId,
-                              @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApRevState revState = revisionService.findRevStateByState(state);
-        if (revState != null) {
-            revisionService.setPreferName(state, revState, partId, null);
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-            ApPart apPart = partService.getPart(partId);
-            accessPointService.setPreferName(apAccessPoint, apPart);
-            accessPointService.updateAndValidate(accessPointId);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        }
+        revisionService.mergeRevision(apState, state, null);
     }
 
     /**

@@ -876,9 +876,18 @@ public class RevisionService {
         }
     }
 
+    /**
+     * Merge revision
+     * 
+     * @param apState
+     * @param newStateApproval
+     * @param comment
+     *            optional description, might be null
+     */
     @Transactional(TxType.MANDATORY)
     public void mergeRevision(ApState apState,
-                              ApState.StateApproval newStateApproval) {
+                              ApState.StateApproval newStateApproval,
+                              String comment) {
         Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
 
         if (newStateApproval == null) {
@@ -939,6 +948,8 @@ public class RevisionService {
         ApState newState = accessPointService.copyState(apState, change);
         newState.setStateApproval(newStateApproval);
         newState.setApType(revState.getType());
+        // Reset posledního komentáře
+        newState.setComment(comment);
         newState = stateRepository.save(newState);
 
         // smazání revize

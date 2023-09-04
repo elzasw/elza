@@ -892,10 +892,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
-    mergeRevision(accessPointId, state) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/merge', {state: state}, null);
-    }
-
     updateAccessPoint(accessPointId, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
     }

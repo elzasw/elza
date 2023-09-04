@@ -2,6 +2,8 @@
  * Stav přístupového bodu.
  */
 
+import { ApStateApproval } from "elza-api";
+
 export enum StateApproval {
     NEW = 'NEW',
     TO_APPROVE = 'TO_APPROVE',
@@ -18,15 +20,19 @@ export enum StateApprovalEx {
     REPLACED = 'REPLACED'
 }
 
-export const StateApprovalCaption = (value: StateApproval | StateApprovalEx): string => {
+export const StateApprovalCaption = (value: StateApproval | StateApprovalEx | ApStateApproval): string => {
     switch (value) {
         case StateApproval.NEW:
+        case ApStateApproval.New:
             return 'Nová';
         case StateApproval.TO_APPROVE:
+        case ApStateApproval.ToApprove:
             return 'Ke schválení';
         case StateApproval.APPROVED:
+        case ApStateApproval.Approved:
             return "Schválená";
         case StateApproval.TO_AMEND:
+        case ApStateApproval.ToAmend:
             return "K doplnění";
         case StateApprovalEx.INVALID:
             return "Zneplatněná";

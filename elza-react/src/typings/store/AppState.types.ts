@@ -1,6 +1,7 @@
 import { ArrFundBaseVO } from "../../api/ArrFundBaseVO";
 import { RefTablesState } from "./RefTables.types";
 import { UserDetail } from "./UserDetail.types";
+import { ModalDialogState } from "./ModalDialog.types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -90,10 +91,11 @@ export interface AdminFund {
     currentDataKey?: number | string;
     data?: FundData | null;
     getDataKey?: () => number | string;
-    id?: number;
+    id?: number | string;
     fetched?: boolean;
     isFetching?: boolean;
-    reducer: unknown;
+    reducer?: unknown;
+    name?: string;
 }
 
 export interface SubNode {
@@ -313,7 +315,7 @@ export interface AppState {
     form: unknown;
     fundRegion: unknown;
     login: LoginState;
-    modalDialog: unknown;
+    modalDialog: ModalDialogState;
     refTables: RefTablesState;
     router: unknown;
     stateRegion: unknown;

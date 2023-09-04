@@ -458,21 +458,15 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         let permission;
         if (fundId) {
-            const i = this.getIndexById(fundId, permissions);
-            if (i !== -1) {
-                permission = permissions[i];
-            } else {
-                permission = {
+            permission = permissions.find((permission) => permission.id.toString() === fundId.toString())
+                || {
                     id: fundId,
                     fund: {
                         id: fundId,
                     },
                 };
-            }
-        } else {
-            if (selectedPermission.index !== null) {
+        } else if (selectedPermission.index != null) {
                 permission = permissions[selectedPermission.index];
-            }
         }
         return permission;
     };

@@ -12,6 +12,7 @@ export interface ModalDialogWraperProps {
     title?: string;
     onHide?: () => void;
     closeOnClickOutside?: boolean;
+    visible?: boolean;
 }
 
 export const ModalDialogWrapper:FC<ModalDialogWraperProps> = ({
@@ -20,6 +21,7 @@ export const ModalDialogWrapper:FC<ModalDialogWraperProps> = ({
     children,
     onHide = () => {return;},
     closeOnClickOutside = false,
+    visible = true,
 }) => {
     const modalBody = useRef<HTMLDivElement>(null);
     const hide = useRef(false);
@@ -43,7 +45,7 @@ export const ModalDialogWrapper:FC<ModalDialogWraperProps> = ({
     return (
         <Modal
             backdrop={closeOnClickOutside ? undefined : 'static'}
-            className={className}
+            className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${className}`}
             show={true}
             onHide={handleHide}
             maskClosable={false}

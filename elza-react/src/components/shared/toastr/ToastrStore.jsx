@@ -10,16 +10,16 @@ import * as types from 'actions/constants/ActionTypes';
  * Výchozí stav store
  */
 const initialState = {
-    lastKey: 0,
+    lastKey: undefined,
     toasts: [],
 };
 
 export default function toastr(state = initialState, action = {}) {
     switch (action.type) {
         case types.TOASTR_ADD:
-            var key = state.toasts.length === 0 ? 0 : state.lastKey;
+            const key = !state.lastKey ? 1 : state.lastKey + 1;
             return {
-                lastKey: state.lastKey + 1,
+                lastKey: key,
                 toasts: [
                     ...state.toasts,
                     {
@@ -31,16 +31,18 @@ export default function toastr(state = initialState, action = {}) {
                         messageComponentProps: action.messageComponentProps,
                         size: action.size,
                         time: action.time,
-                        key: key + 1,
+                        key: key,
                         visible: true,
                     },
                 ],
             };
         case types.TOASTR_REMOVE:
             const index = state.toasts.findIndex(({ key }) => action.key === key);
+            const toasts = [...state.toasts.splice(0, index), ...state.toasts.splice(index + 1)];
             return {
                 ...state,
-                toasts: [...state.toasts.splice(0, index), ...state.toasts.splice(index + 1)],
+                lastKey: toasts.length === 0 ? undefined : state.lastKey,
+                toasts,
             };
         default:
             return state;

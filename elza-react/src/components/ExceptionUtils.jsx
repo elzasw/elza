@@ -68,8 +68,8 @@ function resolveBase(data) {
                 return <LongText text={m} />;
             });
         }
-        case 'ID_NOT_EXISTS': {
-            return createToaster(i18n('exception.base.ID_NOT_EXIST'), data, (p, m) => {
+        case 'GENERATING_EXPORT_FAILED': {
+            return createToaster(i18n('exception.base.GENERATING_EXPORT_FAILED'), data, (p, m) => {
                 return <LongText text={m} />;
             });
         }

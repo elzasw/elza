@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller;
 
+import java.net.InetSocketAddress;
 import java.security.Principal;
-import java.util.List;
+import java.util.Collection;
 
 import javax.transaction.Transactional;
 
@@ -9,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.WebSocketSession;
 
 import cz.tacr.elza.controller.vo.AdminInfo;
 import cz.tacr.elza.controller.vo.LoggedUser;
@@ -80,7 +83,7 @@ public class AdminController implements AdminApi {
         UserStats userStats = userService.getStats();
         ai.setUsers(userStats.getActiveUserCount());
 
-        List<Principal> sessions = clientOutboundChannelExecutor.getPrincipals();
+        Collection<WebSocketSession> sessions = clientOutboundChannelExecutor.getSessions();
         ai.setLoggedUsers(sessions.size());
 
         return new ResponseEntity<>(ai, HttpStatus.OK);
@@ -91,10 +94,20 @@ public class AdminController implements AdminApi {
     public ResponseEntity<LoggedUsers> adminLoggedUsers() {
 
         LoggedUsers lus = new LoggedUsers();
-        List<Principal> sessions = clientOutboundChannelExecutor.getPrincipals();
-        for(Principal session: sessions) {
+        Collection<WebSocketSession> sessions = clientOutboundChannelExecutor.getSessions();
+        for (WebSocketSession session : sessions) {
+            InetSocketAddress remoteAddr = session.getRemoteAddress();
+
             LoggedUser lu = new LoggedUser();
-            lu.setUser(session.getName());
+            if (remoteAddr != null) {
+                lu.setRemoteAddr(remoteAddr.toString());
+            }
+            Principal principal = session.getPrincipal();
+            Authentication auth = (Authentication) principal;
+            UserDetail userDetail = (UserDetail) auth.getDetails();
+
+            lu.setUserId(userDetail.getId());
+            lu.setUser(userDetail.getUsername());
             lus.addUsersItem(lu);
         }        
         

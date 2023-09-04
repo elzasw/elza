@@ -112,8 +112,8 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " LEFT JOIN rs.type rtp" +
             " WHERE s.accessPoint = :accessPoint" +
             "   OR rs.revisionId IN" +
-            "     (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint))" +
-            "   AND ((r.mergeState IS NULL AND r.deleteChange IS NULL) OR (r.mergeState IS NOT NULL AND r.deleteChange IS NOT NULL))" +
+            "     (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint)" +
+            "       AND ((mergeState IS NULL AND deleteChange IS NULL) OR (mergeState IS NOT NULL AND deleteChange IS NOT NULL)))" +
             " ORDER BY c.changeId DESC")
     List<ApStateInfo> findInfoByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
