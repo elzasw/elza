@@ -279,7 +279,12 @@
 	.addValueWithTitle("ZP2015_EDITION")
 	.addValueWithTitle("ZP2015_NOTE")
 	.addValueWithTitle("ZP2015_ARRANGER")
-	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")]]></defaultValueExpression>
+	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
+    .beginBlock()
+	  .setItemSeparator(", ")
+	  .addValueWithTitle("ZP2015_APPLIED_RESTRICTION")
+	.endBlock()
+]]></defaultValueExpression>
 	</parameter>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -396,8 +401,7 @@
 	.end()
    	.setItemSeparator(", ")
     .setSpecFormat("", ": ", false)
-   	.addValue("ZP2015_EXTRA_UNITS")
-]]></defaultValueExpression>
+   	.addValue("ZP2015_EXTRA_UNITS")]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[]]>
@@ -437,8 +441,7 @@
   ))||(
   	$V{isJednotlivost}&&($F{node}.getItemsFromParent(java.util.Arrays.asList("ZP2015_FOLDER_TYPE"),java.util.Arrays.asList("ZP2015_FOLDER_UNITS","ZP2015_FOLDER_SINGLE_TYPE")).size()==0)&&($F{node}.getItemsWithSpec("ZP2015_UNIT_TYPE","ZP2015_UNIT_TYPE_OTHER").size()==0)
   )
-):false
-]]></variableExpression>
+):false]]></variableExpression>
 	</variable>
 	<variable name="isContentNode" class="java.lang.Boolean">
 		<variableDescription><![CDATA[Je uzel přímou součástí pomůcky?]]></variableDescription>

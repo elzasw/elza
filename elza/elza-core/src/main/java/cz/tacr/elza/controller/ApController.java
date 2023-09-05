@@ -972,6 +972,33 @@ public class ApController {
     }
 
     /**
+     * Smazání části přístupového bodu.
+     *
+     * @param accessPointId
+     *            identifikátor přístupového bodu (PK)
+     * @param partId
+     *            identifikátor mazané části
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
+    public void deletePart(@PathVariable final Integer accessPointId,
+                           @PathVariable final Integer partId) {
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
+                .orElseThrow(ap(accessPointId));
+        ApState state = accessPointService.getStateInternal(apAccessPoint);
+
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.deletePart(state, revision, partId);
+        } else {
+            accessPointService.checkPermissionForEdit(state);
+            partService.deletePart(apAccessPoint, partId);
+            accessPointService.updateAndValidate(accessPointId);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
+    }
+
+    /**
      * Validace přístupového bodu
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
