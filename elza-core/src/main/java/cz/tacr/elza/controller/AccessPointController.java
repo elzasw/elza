@@ -163,7 +163,7 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<Integer> accessPointChangeState(Integer accessPointId, ApStateUpdate stateUpdate, Integer apVersion) {
         Validate.notNull(stateUpdate.getStateApproval(), "AP State is null");
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getApState(accessPoint);
         ApRevision revision = revisionService.findRevisionByState(state);
         StateApproval newState = StateApproval.valueOf(stateUpdate.getStateApproval().toString());
@@ -174,14 +174,13 @@ public class AccessPointController implements AccesspointsApi {
         }
 
         accessPointService.updateApState(accessPoint, newState, stateUpdate.getComment(), stateUpdate.getTypeId(), stateUpdate.getScopeId());
-        accessPointService.updateAndValidate(accessPointId);
+        accessPoint = accessPointService.updateAndValidate(accessPoint);
         if (accessPointService.isRevalidaceRequired(state.getStateApproval(), newState)) {
-            ruleService.revalidateNodes(accessPointId);
+            ruleService.revalidateNodes(accessPoint.getAccessPointId());
         }
-        apCacheService.createApCachedAccessPoint(accessPointId);
+        apCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
 //    /**
@@ -231,7 +230,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Integer> accessPointDeletePart(Integer accessPointId, Integer partId, Integer apVersion) {
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(accessPoint);
 
         ApRevision revision = revisionService.findRevisionByState(state);
@@ -240,12 +239,11 @@ public class AccessPointController implements AccesspointsApi {
         } else {
             accessPointService.checkPermissionForEdit(state);
             partService.deletePart(accessPoint, partId);
-            accessPointService.updateAndValidate(accessPointId);
-            apCacheService.createApCachedAccessPoint(accessPointId);
+            accessPoint = accessPointService.updateAndValidate(accessPoint);
+            apCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
         }
 
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
 //    /**
@@ -308,7 +306,8 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Integer> accessPointSetPreferName(Integer accessPointId, Integer partId, Integer apVersion) {
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApRevState revState = revisionService.findRevStateByState(state);
         if (revState != null) {
@@ -316,13 +315,12 @@ public class AccessPointController implements AccesspointsApi {
         } else {
             accessPointService.checkPermissionForEdit(state);
             ApPart apPart = partService.getPart(partId);
-            accessPointService.setPreferName(accessPoint, apPart);
-            accessPointService.updateAndValidate(accessPointId);
-            apCacheService.createApCachedAccessPoint(accessPointId);
+            accessPoint = accessPointService.setPreferName(accessPoint, apPart);
+            accessPoint = accessPointService.updateAndValidate(accessPoint);
+            apCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
         }
 
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
     @Override
@@ -365,8 +363,8 @@ public class AccessPointController implements AccesspointsApi {
         StateApproval state = StateApproval.valueOf(stateUpdate.getStateApproval().toString());
         revisionService.mergeRevision(apState, state, stateUpdate.getComment());
 
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
     /**
@@ -390,8 +388,8 @@ public class AccessPointController implements AccesspointsApi {
         }
 
         revisionService.changeStateRevision(state, nextTypeId, revNextState, revStateChange.getComment());
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
 //    /**
@@ -433,8 +431,8 @@ public class AccessPointController implements AccesspointsApi {
         accessPointService.lockWrite(state.getAccessPoint());
 
         revisionService.deleteRevPart(state, partId);
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
     /**
@@ -451,8 +449,8 @@ public class AccessPointController implements AccesspointsApi {
         ApState state = accessPointService.getStateInternal(accessPointId);
         accessPointService.lockWrite(state.getAccessPoint());
         revisionService.setPreferName(state, partId);
-        Integer version = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        return ResponseEntity.ok(version);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+        return ResponseEntity.ok(accessPoint.getVersion());
     }
 
     @Override
