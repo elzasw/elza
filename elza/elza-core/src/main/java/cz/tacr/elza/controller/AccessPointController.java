@@ -350,6 +350,14 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Sloučení revize a přístupového bodu.
+     * 
+     * @param accessPointId  identifikátor přístupového bodu
+     * @param stateUpdate    nový stav rvize přístupového bodu + komentář
+     * @param apVersion      verze přístupového bodu
+     * @return nová verze = verze + 1
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> accessPointMergeRevision(Integer accessPointId, ApStateUpdate stateUpdate, Integer apVersion) {
@@ -361,6 +369,14 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok(version);
     }
 
+    /**
+     * Změna stavu revize přístupového bodu.
+     *
+     * @param accessPointId  identifikátor přístupového bodu
+     * @param revStateChange nový stav rvize přístupového bodu
+     * @param apVersion      verze přístupového bodu
+     * @return nová verze = verze + 1
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> accessPointChangeStateRevision(Integer accessPointId, RevStateChange revStateChange, Integer apVersion) {
@@ -402,6 +418,14 @@ public class AccessPointController implements AccesspointsApi {
 //        return ResponseEntity.ok(version);
 //    }
 
+    /**
+     * Smazání části revize přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId        identifikátor mazané části revize
+     * @param apVersion     verze přístupového bodu
+     * @return nová verze = verze + 1
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId, Integer apVersion) {
@@ -413,6 +437,14 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok(version);
     }
 
+    /**
+     * Nastavení preferovaného jména revizi přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId        identifikátor části, kterou nastavujeme jako preferovanou
+     * @param apVersion     verze přístupového bodu
+     * @return nová verze = verze + 1
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> accessPointSetPreferNameRevision(Integer accessPointId, Integer partId, Integer apVersion) {

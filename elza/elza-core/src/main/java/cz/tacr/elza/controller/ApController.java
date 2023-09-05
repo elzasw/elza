@@ -963,6 +963,7 @@ public class ApController {
      * @param id identifikátor přístupového bodu (PK)
      * @param state stav do kterého se má entita po merge uvést
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
     public void mergeRevision(@PathVariable final Integer id,
@@ -979,6 +980,7 @@ public class ApController {
      * @param partId
      *            identifikátor mazané části
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
     public void deletePart(@PathVariable final Integer accessPointId,
