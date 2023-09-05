@@ -489,7 +489,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: { id, stateApproval },
+                data: { id, stateApproval, version },
             },
             select = false,
         } = this.props;
@@ -499,7 +499,7 @@ class RegistryPage extends AbstractReactComponent {
                     stateApproval,
                 }}
                 onSubmit={async (data) => {
-                    await Api.accesspoints.accessPointMergeRevision(id, data);
+                    await Api.accesspoints.accessPointMergeRevision(id, data, version);
 
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
