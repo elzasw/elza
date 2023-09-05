@@ -220,10 +220,10 @@ export function registryDeleteRevision(id, history, select) {
     };
 }
  
-export function registryChangeStateRevision(id, versionId, revisionState, history, select) {
+export function registryChangeStateRevision(id, apVersion, revisionState, history, select) {
     return (dispatch, getState) => {
 
-        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, versionId).then(() => {
+        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, apVersion).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);

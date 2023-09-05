@@ -413,7 +413,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, typeId, scopeId, stateApproval },
+                data: { id, typeId, scopeId, stateApproval, version },
             },
             select = false,
         } = this.props;
@@ -432,7 +432,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.accessPointChangeState(id, finalData); // TODO - apVersion zatim neni dostupna
+                    await Api.accesspoints.accessPointChangeState(id, finalData, version);
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));
@@ -463,7 +463,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, newTypeId, revStateApproval },
+                data: { id, newTypeId, revStateApproval, version },
             },
             select = false,
         } = this.props;
@@ -474,7 +474,7 @@ class RegistryPage extends AbstractReactComponent {
                     typeId: newTypeId,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, undefined, data, history, select)) // TODO - apVersion zatim neni dostupna
+                    await dispatch(registryChangeStateRevision(id, version, data, history, select))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select));
@@ -812,6 +812,7 @@ class RegistryPage extends AbstractReactComponent {
             <div className="registry-page">
                 {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
                     <ApDetailPageWrapper
+                        apVersion={registryDetail?.data?.version}
                         select={select}
                         id={registryDetail?.data?.id}
                         editMode={this.getEditMode()}
