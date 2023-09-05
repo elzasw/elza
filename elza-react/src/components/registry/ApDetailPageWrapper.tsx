@@ -268,7 +268,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         if (confirmResult) {
             if (deletedPart?.id) {
                 saveScrollPosition();
-                part ? await deletePart(id, deletedPart.id) : await deleteRevisionPart(id, deletedPart.id, apVersion);
+                part ? await deletePart(id, deletedPart.id, apVersion) : await deleteRevisionPart(id, deletedPart.id, apVersion);
                 restoreScrollPosition();
             }
 
@@ -561,8 +561,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         await Api.accesspoints.accessPointSetPreferNameRevision(apId, partId, apVersion);
         return dispatch(goToAe(history, apId, true, !select));
     },
-    deletePart: async (apId: number, partId: number) => {
-        await WebApi.deletePart(apId, partId);
+    deletePart: async (apId: number, partId: number, apVersion: number) => {
+        await Api.accesspoints.accessPointDeletePart(apId, partId, apVersion);
         return dispatch(goToAe(history, apId, true, !select));
     },
     deleteRevisionPart: async (apId: number, partId: number, apVersion: number) => {
@@ -572,7 +572,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
     deleteParts: async (apId: number, parts: ApPartVO[]) => {
         for (let part of parts) {
             if (part.id) {
-                await WebApi.deletePart(apId, part.id);
+                await Api.accesspoints.accessPointDeletePart(apId, part.id);
             }
         }
 
