@@ -151,7 +151,7 @@ public class ElzaWebController {
         String pathItems[] = path.split("/");
         String requestedItemId = pathItems[pathItems.length - 1];
 
-        if (StringUtils.isNotEmpty(requestedItemId)) {
+        if (StringUtils.isNotBlank(requestedItemId)) {
             ApAccessPoint ap = accessPointService.getAccessPointByIdOrUuid(requestedItemId);
             String itemId = ap.getAccessPointId().toString();
             if (!itemId.equals(requestedItemId)) {
