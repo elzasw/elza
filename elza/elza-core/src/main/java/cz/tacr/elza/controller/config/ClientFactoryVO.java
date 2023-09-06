@@ -1847,11 +1847,7 @@ public class ClientFactoryVO {
             daoLinkMap.put(daoLink.getDaoId(), daoLink);
         }
 
-        List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
-        for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap));
-        }
-        return voList;
+        return createDaoList(contextPath, arrDaoList, detail, version, daoLinkMap);
     }
 
     public List<ArrDaoVO> createDaoList(String contextPath,
@@ -1915,7 +1911,10 @@ public class ClientFactoryVO {
             vo.setDaoLink(daoLinkVo);
         }
 
-        ArrDigitalRepository digitalRepository = dao.getDaoPackage().getDigitalRepository();
+        ArrDaoPackage daoPackage = dao.getDaoPackage();
+        vo.setDaoPackage(ArrDaoPackageVO.newInstance(daoPackage));
+
+        ArrDigitalRepository digitalRepository = daoPackage.getDigitalRepository();
         String url = daoService.getDaoUrl(contextPath, dao, daoLink, digitalRepository);
         vo.setUrl(url);
 

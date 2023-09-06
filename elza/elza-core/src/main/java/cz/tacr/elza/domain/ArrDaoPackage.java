@@ -37,6 +37,9 @@ public class ArrDaoPackage {
     @JoinColumn(name = "digitalRepositoryId", nullable = false)
     private ArrDigitalRepository digitalRepository;
 
+    @Column(name = "digitalRepositoryId", nullable = false, insertable = false, updatable = false)
+    private Integer digitalRepositoryId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDaoBatchInfo.class)
     @JoinColumn(name = "daoBatchInfoId")
     private ArrDaoBatchInfo daoBatchInfo;
@@ -66,6 +69,11 @@ public class ArrDaoPackage {
 
     public void setDigitalRepository(final ArrDigitalRepository digitalRepository) {
         this.digitalRepository = digitalRepository;
+        this.digitalRepositoryId = digitalRepository == null ? null : digitalRepository.getExternalSystemId();
+    }
+
+    public Integer getDigitalRepositoryId() {
+        return digitalRepositoryId;
     }
 
     public ArrDaoBatchInfo getDaoBatchInfo() {
