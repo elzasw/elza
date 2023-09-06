@@ -34,13 +34,14 @@ public class ArrDaoVO {
     private long fileCount;
     private long fileGroupCount;
 
+    private ArrDaoPackageVO daoPackage;
+
     private ArrDaoLinkVO daoLink; // null pokud vazba neexistuje
 
     /**
      * Collection of scenarios for the link
      */
     private List<String> scenarios;
-
 
     public ArrDaoVO() {
     }
@@ -88,6 +89,14 @@ public class ArrDaoVO {
     public void addAllFileGroup(Collection<ArrDaoFileGroupVO> daoFileGroups) {
         fileGroupList.addAll(daoFileGroups);
         fileGroupCount = fileList.size();
+    }
+
+    public ArrDaoPackageVO getDaoPackage() {
+        return daoPackage;
+    }
+
+    public void setDaoPackage(ArrDaoPackageVO daoPackage) {
+        this.daoPackage = daoPackage;
     }
 
     public ArrDaoLinkVO getDaoLink() {
