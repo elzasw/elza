@@ -150,7 +150,6 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
      */
     private void createUpdateEntityChanges(Collection<ApPart> partList,
                                            Map<Integer, List<ApItem>> itemMap) {
-        List<ApBindingItem> deletedParts = new ArrayList<>();
         List<ApBindingItem> partsWithPossibleChange = new ArrayList<>();
         List<ApPart> newParts = new ArrayList<>();
         // Mapping from partUUID to binding value
@@ -158,9 +157,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         for (ApBindingItem bindingPart : bindingParts) {
             ApPart part = bindingPart.getPart();
-            if (part.getDeleteChangeId() != null) {
-                deletedParts.add(bindingPart);
-            } else {
+            if (part.getDeleteChangeId() == null) {
                 partUuidMap.put(part.getPartId(), bindingPart.getValue());
                 partsWithPossibleChange.add(bindingPart);
                 existingParts.add(bindingPart.getValue());
@@ -178,8 +175,6 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         for (PartXml part : parts) {
             addUpdate(part);
         }
-
-        createDeletePartList(deletedParts);
 
         createChangedPartList(partsWithPossibleChange, itemMap);
     }
@@ -202,7 +197,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         for (ApBindingItem changedPart : changedParts) {
             Integer partId =  changedPart.getPartId();
             BindingPartInfo bi = this.bindingMap.get(partId);
-            if(bi==null) {
+            if (bi == null) {
                 logger.error("Failed to get binging info, partId: {}", partId);
                 throw new BusinessException("Failed to get binging info", 
                                             BaseCode.DB_INTEGRITY_PROBLEM);
@@ -214,20 +209,8 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
     }
 
     private void createChangedPartList(ApBindingItem changedPart,
-                                               List<ApItem> itemList,
+                                       List<ApItem> itemList,
                                        BindingPartInfo bi) {
-        /*
-        List<Object> changes = new ArrayList<>();
-        List<ApBindingItem> changedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(bi)) {
-            for (ApBindingItem bindingItem : bi) {
-                if (bindingItem.getItem().getCreateChangeId() > bindingState.getSyncChangeId()) {
-                    changedItems.add(bindingItem);
-                    itemList.remove(bindingItem.getItem());
-                }
-            }
-        }
-        */
 
         itemList = filterOutItemsWithoutExtSysMapping(changedPart.getPart(), itemList);
         if (CollectionUtils.isNotEmpty(itemList)) {
@@ -243,14 +226,6 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             }
         }
 
-        List<ApBindingItem> deletedItems = bi.getDeletedBindedItems();
-        if (CollectionUtils.isNotEmpty(deletedItems)) {
-            DeleteItemsXml deleteItems = createDeleteItems(changedPart, deletedItems);
-            if (deleteItems != null) {
-                addUpdate(deleteItems);
-            }
-        }
-
         List<ApBindingItem> activeItems = bi.getActiveBindedItems();
         if (CollectionUtils.isNotEmpty(activeItems)) {
             // filter binded items
@@ -262,6 +237,14 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
                 if (updateItems != null) {
                     addUpdate(updateItems);
                 }
+            }
+        }
+
+        List<ApBindingItem> deletedItems = bi.getDeletedBindedItems();
+        if (CollectionUtils.isNotEmpty(deletedItems)) {
+            DeleteItemsXml deleteItems = createDeleteItems(changedPart, deletedItems);
+            if (deleteItems != null) {
+                addUpdate(deleteItems);
             }
         }
     }
@@ -287,16 +270,22 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         return ret;
     }
 
-    private void createDeletePartList(List<ApBindingItem> deletedParts) {
-        if (CollectionUtils.isEmpty(deletedParts)) {
-            return;
+    /**
+     * Create deleted part list
+     */
+    private void createDeletePartList() {
+        List<ApBindingItem> deletedParts = new ArrayList<>();
+        for (ApBindingItem bindingPart : bindingParts) {
+            ApPart part = bindingPart.getPart();
+            if (part.getDeleteChangeId() != null) {
+                deletedParts.add(bindingPart);
+            }
         }
 
         for (ApBindingItem deletedPart : deletedParts) {
             DeletePartXml dpx = new DeletePartXml(new UuidXml(deletedPart.getValue()),
                     // TODO: improve with sdp
-                    PartTypeXml.fromValue(
-                                          deletedPart.getPart().getPartType().getCode()));
+                    PartTypeXml.fromValue(deletedPart.getPart().getPartType().getCode()));
             addUpdate(dpx);
         }
     }
@@ -374,7 +363,9 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
             setPrefName(new UuidXml(prefPartUuid));
         }
-        
+
+        createDeletePartList();
+
         return trgList;
     }
 }
