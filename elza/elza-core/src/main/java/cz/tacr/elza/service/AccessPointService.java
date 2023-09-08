@@ -2174,6 +2174,7 @@ public class AccessPointService {
 
     private void publishQueueEvent(final ExtSyncsQueueItem item, final EventType type) {
         EventApQueue eaq = new EventApQueue(type,
+                item.getStateMessage(),
                 item.getAccessPointId(),
                 item.getExtSyncsQueueItemId(),
                 item.getExternalSystemId());
