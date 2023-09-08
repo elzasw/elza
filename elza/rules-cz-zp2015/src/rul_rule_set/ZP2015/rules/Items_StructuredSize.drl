@@ -88,9 +88,54 @@ then
   $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Jine rozmery - listiny - doporucene"
+rule "Jine rozmery - průměr - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - možné"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ", "ZP2015_UNIT_TYPE_OTD", "ZP2015_UNIT_TYPE_OTC", "ZP2015_UNIT_TYPE_STO", "ZP2015_UNIT_TYPE_PNP", "ZP2015_UNIT_TYPE_PFP", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // průměr
+        "ZP2015_SIZE_DIAMETER",
+        // obrazové pole (průměr)
+        "ZP2015_SIZE_IMAGE_DIAMETER"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - průměr - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ", "ZP2015_UNIT_TYPE_OTD", "ZP2015_UNIT_TYPE_OTC", "ZP2015_UNIT_TYPE_STO", "ZP2015_UNIT_TYPE_PNP", "ZP2015_UNIT_TYPE_PFP", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // průměr
+        "ZP2015_SIZE_DIAMETER",
+        // obrazové pole (průměr)
+        "ZP2015_SIZE_IMAGE_DIAMETER"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "Jine rozmery - plika - listiny - možné"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $ownItems 
+    $itemType: RulItemTypeExt( code in ("ZP2015_SIZE_OTHER") )
+    $itemSpec: RulItemSpecExt( code in (
+        // plika
+        "ZP2015_SIZE_PLICA"        
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - plika - listiny - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $ownItems 
     $itemType: RulItemTypeExt( code in ("ZP2015_SIZE_OTHER") )
     $itemSpec: RulItemSpecExt( code in (
@@ -101,9 +146,25 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Jine rozmery - mapy a atlasy - doporucene"
+rule "Jine rozmery - zrcadlo - mapy a atlasy - možné"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // zrcadlo (šířka)
+        "ZP2015_SIZE_MAP_WIDTH",
+        // zrcadlo (výška)
+        "ZP2015_SIZE_MAP_HEIGHT"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - zrcadlo - mapy a atlasy - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
     $itemSpec: RulItemSpecExt( code in (
@@ -116,9 +177,25 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Jine rozmery - technické výkresy, grafické listy, kresby, fotografické archiválie, kinematografické záznamy, plakáty, jiné - doporucene"
+rule "Jine rozmery - obrazové pole - technické výkresy, grafické listy, kresby, fotografické archiválie, kinematografické záznamy, plakáty, jiné - možné"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY", "ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE", "ZP2015_UNIT_TYPE_FSN", "ZP2015_UNIT_TYPE_FSD", "ZP2015_UNIT_TYPE_LFI", "ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_MFIS", "ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_PKT", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // obrazové pole (šířka)
+        "ZP2015_SIZE_IMAGE_WIDTH",
+        // obrazové pole (výška)
+        "ZP2015_SIZE_IMAGE_HEIGHT"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - obrazové pole - technické výkresy, grafické listy, kresby, fotografické archiválie, kinematografické záznamy, plakáty, jiné - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY", "ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE", "ZP2015_UNIT_TYPE_FSN", "ZP2015_UNIT_TYPE_FSD", "ZP2015_UNIT_TYPE_LFI", "ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_MFIS", "ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_PKT", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
     $itemSpec: RulItemSpecExt( code in (
@@ -131,9 +208,23 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "Jine rozmery - svitkové filmy, kinofilmy, mikrofilmy, kinematografické záznamy, zvukové záznamy - doporucene"
+rule "Jine rozmery - metráž - svitkové filmy, kinofilmy, mikrofilmy, kinematografické záznamy, zvukové záznamy - možné"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // metráž
+        "ZP2015_SIZE_METRAGE"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - metráž - svitkové filmy, kinofilmy, mikrofilmy, kinematografické záznamy, zvukové záznamy - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
     $itemSpec: RulItemSpecExt( code in (
