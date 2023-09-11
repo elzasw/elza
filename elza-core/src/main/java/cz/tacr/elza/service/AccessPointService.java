@@ -3129,16 +3129,18 @@ public class AccessPointService {
                                                        String externalSystemCode, 
                                                        SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states;
-        if(CollectionUtils.isNotEmpty(filter.getStates())) {
+        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states = null;
+        if (CollectionUtils.isNotEmpty(filter.getStates())) {
             states = filter.getStates().stream()
                     .map(s -> cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.fromValue(s.name()))
                     .collect(Collectors.toList());
-        } else {
-            states = null;
         }
-        
-        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, filter.getScopes(), from, max);
+        List<ApScope> scopes = null;
+        if (CollectionUtils.isNotEmpty(filter.getScopes())) {
+            scopes = scopeRepository.findByCodes(filter.getScopes());
+        }
+
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, scopes, from, max);
 
         result.setTotal(items.size());
         result.setData(createExtSyncsQueueItemVOList(items));
