@@ -25,6 +25,7 @@ public class ApState implements IApScope, AccessPointCacheSerializable {
     public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_AP_TYPE_ID = "apTypeId";
+    public static final String FIELD_SCOPE = "scope";
     public static final String FIELD_SCOPE_ID = "scopeId";
     public static final String FIELD_STATE_APPROVAL = "stateApproval";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
