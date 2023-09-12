@@ -311,6 +311,11 @@
     <ead:agencyname>${output.fund.institution.record.preferredPart.getSingleItem("NM_MAIN").serializedValue}</ead:agencyname>
   </ead:maintenanceagency>
 
+  <!-- Verze profilu EAD -->
+  <ead:localcontrol localtype="CZ_FINDING_AID_EAD_PROFILE">
+    <ead:term identifier="CZ_EAD3_PROFILE_20230601">${item.specification.name}</ead:term>
+  </ead:localcontrol>
+
   <#-- 2.6. Druh archivní pomůcky, control/localcontrol -->
   <#list output.items?filter(item -> item.type.code=="ZP2015_OUTPUT_TYPE") as item>
     <#switch item.specification.name?lower_case>
