@@ -33,6 +33,8 @@ interface Props {
     bindings: Bindings;
     partValidationErrors?: PartValidationErrorsVO[];
     itemTypeSettings: ItemType[];
+    // Typ vykreslovaneho partu
+    // vsechny party jsou tohoto typu
     partType: RulPartTypeVO;
     select: boolean;
 }
@@ -150,29 +152,21 @@ const DetailMultiSection: FC<Props> = ({
     };
 
     const renderPartActions = (part: RevisionPart, forceRender: boolean = false) => {
-        /*
-        if(singlePart && !forceRender){
-            return undefined;
-        }
-        */
-        const typeId = part.updatedPart ? part.updatedPart.typeId : part.part?.typeId;
-        const id = part.updatedPart ? part.updatedPart.id : part.part?.id;
 
-        if(typeId == undefined || id == undefined) {
+        // mozna zbytecne?? - jen kontrola vstupu
+        if(!part.updatedPart && !part.part){
             return;
         }
 
-        let showPreferredSwitch = false;
-        if (typeId === partType.id && partType?.code === 'PT_NAME') {
-            showPreferredSwitch = !singlePart;
-        }
+        // Nastaveni jako preferovane se zobrazi jen u jmena
+        const showPreferredSwitch = partType.code === 'PT_NAME';
         const isPreferred = isPartPreferred(part.part, part.updatedPart);
+        
         const isDeleted = part.updatedPart?.changeType === "DELETED";
         const isModified = part.updatedPart?.changeType === "UPDATED";
-        const isNew = part.updatedPart?.changeType === "NEW";
-
-        const partId = isNew ? undefined : id;
-        const revPartId = isNew ? id : undefined;
+        
+        const partId = part.part?.id;
+        const revPartId = part.updatedPart?.id;
 
         return <>
             {editMode &&
