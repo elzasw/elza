@@ -151,10 +151,12 @@ public class ElzaWebController {
         String pathItems[] = path.split("/");
         String requestedItemId = pathItems[pathItems.length - 1];
 
-        ApAccessPoint ap = accessPointService.getAccessPointByIdOrUuid(requestedItemId);
-        String itemId = ap.getAccessPointId().toString();
-        if (!itemId.equals(requestedItemId)) {
-            return "redirect:" + itemId;
+        if (StringUtils.isNotBlank(requestedItemId) && !requestedItemId.equals("entity")) {
+            ApAccessPoint ap = accessPointService.getAccessPointByIdOrUuid(requestedItemId);
+            String itemId = ap.getAccessPointId().toString();
+            if (!itemId.equals(requestedItemId)) {
+                return "redirect:" + itemId;
+            }
         }
 
         // prepare model

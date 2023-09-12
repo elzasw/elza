@@ -311,6 +311,11 @@
     <ead:agencyname>${output.fund.institution.record.preferredPart.getSingleItem("NM_MAIN").serializedValue}</ead:agencyname>
   </ead:maintenanceagency>
 
+  <!-- Verze profilu EAD -->
+  <ead:localcontrol localtype="CZ_FINDING_AID_EAD_PROFILE">
+    <ead:term identifier="CZ_EAD3_PROFILE_20230601">profil platný od června 2023</ead:term>
+  </ead:localcontrol>
+
   <#-- 2.6. Druh archivní pomůcky, control/localcontrol -->
   <#list output.items?filter(item -> item.type.code=="ZP2015_OUTPUT_TYPE") as item>
     <#switch item.specification.name?lower_case>
@@ -476,6 +481,25 @@
   </#if>
 </#macro>
 
+<#-- Funkce vrati prvky popisu daneho typu z vyssi JP.
+     Rekurzivne se prochazeji nadrazene JP az do doby nez se najde
+     prvni PP daneho typu.
+     -->
+<#function getItemsFromParent node itemTypeCode>
+  <#local result=[]>
+  <#list node.items?filter(item -> item.type.code==itemTypeCode) as item>
+    <#local result=result+[item]>        
+  </#list>
+  <#-- call parent if nothing found -->
+  <#if result?size==0>
+    <#if node.parentNode?has_content>
+      <#local result=getItemsFromParent(node.parentNode, itemTypeCode)>
+    </#if>
+  </#if>  
+  <#return result>
+</#function>
+
+
 <#-- Zápis jednoho uzlu -->
 <#macro writeNode node>
   <@writeDid node />
@@ -484,6 +508,7 @@
   </#if>
   <#-- Elements outside did -->
   <#local relations=[]>
+  <#local existingcopies=[]>
   <#list node.items as item>
     <#switch item.type.code>
     <#case "ZP2015_POSITION">
@@ -523,7 +548,7 @@
       <#lt>  <ead:relatedmaterial><ead:p>${item.serializedValue}</ead:p></ead:relatedmaterial>
       <#break>
     <#case "ZP2015_EXISTING_COPY">
-      <#lt>  <ead:altformavail><ead:p>${item.serializedValue}</ead:p></ead:altformavail>
+      <#local existingcopies=existingcopies+[item]>      
       <#break>
     <#case "ZP2015_ARRANGEMENT_INFO">
       <#lt>  <ead:processinfo localtype="ARCHIVIST_NOTE"><ead:p>${item.serializedValue}</ead:p></ead:processinfo>
@@ -539,6 +564,17 @@
       <#break>
     </#switch>
   </#list>
+  <#-- Zapis kopii JP -->
+  <#local existingcopiesInherited=false>
+  <#if existingcopies?size==0>
+    <#if node.parentNode?has_content>
+      <#local existingcopiesInherited=true>
+      <#local existingcopies=getItemsFromParent(node, "ZP2015_EXISTING_COPY")>
+    </#if>
+  </#if>
+  <#list existingcopies as item>
+    <#lt>  <ead:altformavail<#if existingcopiesInherited><#lt> altrender="inherited"</#if>><ead:p>${item.serializedValue}</ead:p></ead:altformavail>
+  </#list>
   <#if (relations?size>0)>
     <@writeRelations relations />
   </#if>
@@ -549,11 +585,13 @@
 <#macro writeDid node>
   <#-- Proměná určující, zda se bude vypisovat charakteristika JP -->
   <#local needsCharakteristikaJP=false>
-  <#-- Určení počtu datací -->
-  <#local unitDates=[]>
+  <#-- Určení počtu datací vzniku -->
+  <#local unitDatesCreated=[]>
   <#local unitTitles=[]>
   <#local unitPublicTitles=[]>
   <#local languages=[]>
+  <#local originators=[]>
+  <#local containers=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -587,10 +625,11 @@
         <#lt>  <ead:unittitle localtype="FORMAL_TITLE">${item.serializedValue}</ead:unittitle>
         <#break>        
       <#case "ZP2015_UNIT_DATE">
-        <#local unitDates=unitDates+[item]>        
+        <@writeUnitDate item />
+        <#local unitDatesCreated=unitDatesCreated+[item]>        
         <#break>
       <#case "ZP2015_DATE_OTHER">
-        <#local unitDates=unitDates+[item]>
+        <@writeUnitDate item />
         <#break>
       <#case "ZP2015_UNIT_DATE_TEXT">
         <#lt>  <ead:unitdate>${item.serializedValue}</ead:unitdate>
@@ -614,16 +653,14 @@
         <#lt>  <ead:materialspec localtype="VOLUME">${item.serializedValue}</ead:materialspec>
         <#break>
       <#case "ZP2015_ORIGINATOR">
-        <#lt>  <ead:origination localtype="ORIGINATOR">
-        <@writeAp item.record "ORIGINATOR" />
-        <#lt>  </ead:origination>        
+        <#local originators=originators+[item]>
         <#break>
       <#case "ZP2015_LANGUAGE">
         <#local languages=languages+[item]>
         <#break>
       <#case "ZP2015_STORAGE_ID">
-      <#-- Ukladaci jednotka -->
-      <#lt>  <ead:container>${item.serializedValue}</ead:container>
+        <#-- Ukladaci jednotka -->
+        <#local containers=containers+[item]>
         <#break>
       <#-- Prvky popisu pro charakteristiku JP -->
       <#case "ZP2015_UNIT_TYPE">
@@ -719,14 +756,51 @@
       <#lt>  <ead:unittitle>${unitTitle.serializedValue}</ead:unittitle>
     </#list>
   </#if>
-  <#if (unitDates?size>0) >
-    <@writeUnitDates unitDates />
+  <#-- Zapis zdedene datace -->
+  <#if (unitDatesCreated?size==0)>
+    <#if node.parentNode?has_content>
+      <#local inheritedDates=getItemsFromParent(node.parentNode, "ZP2015_UNIT_DATE")>
+      <#list inheritedDates as inheritedDate>
+        <@writeUnitDate inheritedDate true />      
+      </#list>
+    </#if>
   </#if>
+  <#-- Zapis ukladacich jednotek -->
+  <#local containerInherited=false>
+  <#if containers?size==0>
+    <#if node.parentNode?has_content>
+      <#local containerInherited=true>
+      <#local containers=getItemsFromParent(node.parentNode, "ZP2015_STORAGE_ID")>
+    </#if>
+  </#if>
+  <#list containers as item>
+        <#lt>  <ead:container<#if containerInherited><#lt> altrender="inherited"</#if>>${item.serializedValue}</ead:container>
+  </#list>
+  <#-- Zapis puvodcu -->
+  <#local originatorsInherited = false>
+  <#if (originators?size)==0>
+    <#if node.parentNode?has_content>
+      <#local originators = getItemsFromParent(node.parentNode, "ZP2015_ORIGINATOR")>
+      <#local originatorsInherited = true>
+    </#if>
+  </#if>
+  <#list originators as item>    
+    <#lt>  <ead:origination <#if originatorsInherited><#lt> altrender="inherited"</#if> >
+        <@writeAp item.record "ORIGINATOR" />
+    <#lt>  </ead:origination>
+  </#list>
+
   <#if (needsCharakteristikaJP)>
     <@writeCharakteristika node />
   </#if>
+  <#-- Zapis jazyku -->
   <#if (languages?size>0) >
     <@writeLangMaterials languages />
+  <#else>
+    <#local languages=getItemsFromParent(node.parentNode, "ZP2015_LANGUAGE")>
+    <#if (languages?size==0) >
+      <@writeLangMaterials languages true/>
+    </#if>
   </#if>
   <#if (node.depth==1)>  
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
@@ -889,11 +963,11 @@
 </#macro>
 
 <#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
-<#macro writeLangMaterials items>
+<#macro writeLangMaterials items inherited=false>
   <!-- Jazyky JP -->
   <ead:langmaterial>
   <#list items as langItem>
-    <ead:language langcode="${langItem.specification.code[4..]}">${langItem.specification.name}</ead:language>
+    <ead:language langcode="${langItem.specification.code[4..]}"<#if inherited><#lt> altrender="inherited"</#if>>${langItem.specification.name}</ead:language>
   </#list>
   </ead:langmaterial>
 </#macro>
@@ -913,7 +987,7 @@
     <#local tagname="name">
     <#break>
 </#switch>
-        <ead:${tagname} localtype="${localtype}">          
+        <ead:${tagname} localtype="${localtype}">
           <ead:part><ead:ref target="ap${ap.id?c}">${ap.preferredPart.value}</ead:ref></ead:part>
         </ead:${tagname}>
 </#macro>
@@ -1082,22 +1156,24 @@
 </#macro>-->
 
 <#-- Zapis dataci -->
-<#macro writeUnitDates unitDates>
-  <ead:unitdatestructured>
-  <#if (unitDates?size>1)>
+<#macro writeUnitDates unitDates inheritedUnitDates>
+  <#local unitDateCount = unitDates?size+inheritedUnitDates?size>
+  <#if (unitDateCount>1)>
   <ead:dateset>
   </#if>
   <#list unitDates as unitDate>
   <@writeUnitDate unitDate />
   </#list>
-  <#if (unitDates?size>1)>
+  <#list inheritedUnitDates as unitDate>
+  <@writeUnitDate unitDate />
+  </#list>
+  <#if (unitDateCount>1)>
   </ead:dateset>
   </#if>
-  </ead:unitdatestructured>
 </#macro>
 
 <#-- Zapis datace -->
-<#macro writeUnitDate unitDate>
+<#macro writeUnitDate unitDate inherited=false>
 <#local fromAttr="standarddate">
 <#local toAttr="standarddate">
 <#local dateRangeLocaltype="">
@@ -1112,10 +1188,12 @@
 <#if unitDate.unitDate.valueToEstimated>
   <#local toAttr="notafter">
 </#if>
-    <ead:daterange altrender="${unitDate.unitDate.format}" <#if dateRangeLocaltype!="">localtype="${dateRangeLocaltype}"</#if> >
-      <ead:fromdate ${fromAttr}="${unitDate.unitDate.valueFrom}">${unitDate.valueFrom}</ead:fromdate>
-      <ead:todate ${toAttr}="${unitDate.unitDate.valueTo}">${unitDate.valueTo}</ead:todate>
-    </ead:daterange>
+<#lt>  <ead:unitdatestructured<#if inherited><#lt> altrender="inherited"</#if>>
+<#lt>    <ead:daterange altrender="${unitDate.unitDate.format}"<#if dateRangeLocaltype!=""><#lt> localtype="${dateRangeLocaltype}"</#if>>
+<#lt>      <ead:fromdate ${fromAttr}="${unitDate.unitDate.valueFrom}">${unitDate.valueFrom}</ead:fromdate>
+<#lt>      <ead:todate ${toAttr}="${unitDate.unitDate.valueTo}">${unitDate.valueTo}</ead:todate>
+<#lt>    </ead:daterange>
+<#lt>  </ead:unitdatestructured>
 </#macro>
 
 <#macro writeRelations relations>

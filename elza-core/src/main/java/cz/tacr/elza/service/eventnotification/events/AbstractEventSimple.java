@@ -29,6 +29,10 @@ public abstract class AbstractEventSimple {
     private String code;
 
     public AbstractEventSimple(final EventType eventType) {
+        this(eventType, null);
+    }
+
+    public AbstractEventSimple(final EventType eventType, final String state) {
         // Check if event type match
         if (!eventType.getEventClass().equals(this.getClass())) {
             throw new BusinessException("Incorrect class", BaseCode.INVALID_STATE)
@@ -37,6 +41,7 @@ public abstract class AbstractEventSimple {
         }
 
         this.eventType = eventType;
+        this.state = state;
     }
 
     public EventType getEventType() {

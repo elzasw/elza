@@ -130,4 +130,9 @@ export interface ApAccessPointVO {
      * Seznam částí přístupového bodu z revize
      */
     revParts: ApPartVO[];
+
+    /**
+     * Poslední číslo verze entity
+     */
+    version: number;
 }

@@ -985,6 +985,7 @@ export class WebApiCls {
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param partId identifikátor mazané části
+     * @deprecated next use Api.accesspoints.accessPointDeletePart()
      */
     deletePart(accessPointId: number, partId: number): Promise<void> {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, null);

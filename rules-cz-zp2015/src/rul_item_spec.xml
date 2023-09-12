@@ -2512,4 +2512,28 @@
         <shortcut>zrcadlo (výška)</shortcut>
         <item-type-assign code="ZP2015_SIZE_OTHER"/>
     </item-spec>
+    <item-spec code="ZP2015_SIZE_IMAGE_WIDTH">
+        <name>obrazové pole (šířka)</name>
+        <description>šířka obrazového pole</description>
+        <shortcut>obraz (šířka)</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_IMAGE_HEIGHT">
+        <name>obrazové pole (výška)</name>
+        <description>výška obrazového pole</description>
+        <shortcut>obraz (výška)</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_IMAGE_DIAMETER">
+        <name>obrazové pole (průměr)</name>
+        <description>průměr obrazového pole</description>
+        <shortcut>obraz (průměr)</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_SIZE_METRAGE">
+        <name>metráž</name>
+        <description>metráž</description>
+        <shortcut>metráž</shortcut>
+        <item-type-assign code="ZP2015_SIZE_OTHER"/>
+    </item-spec>
 </item-specs>

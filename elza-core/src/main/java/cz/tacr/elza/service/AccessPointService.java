@@ -1791,7 +1791,7 @@ public class AccessPointService {
      * @param ctrlVersion
      * @return version
      */
-    public Integer lockAccessPoint(Integer accessPointId, Integer ctrlVersion) {
+    public ApAccessPoint lockAccessPoint(Integer accessPointId, Integer ctrlVersion) {
         ApAccessPoint accessPoint = em.getReference(ApAccessPoint.class, accessPointId);
         Integer version = accessPoint.getVersion();
         // pokud verze je null - kontrola se neprovádí
@@ -1802,7 +1802,7 @@ public class AccessPointService {
             .set("control version", ctrlVersion);
         }
         em.lock(accessPoint, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
-        return accessPoint.getVersion();
+        return accessPoint;
     }
 
     /**
@@ -2174,6 +2174,7 @@ public class AccessPointService {
 
     private void publishQueueEvent(final ExtSyncsQueueItem item, final EventType type) {
         EventApQueue eaq = new EventApQueue(type,
+                item.getStateMessage(),
                 item.getAccessPointId(),
                 item.getExtSyncsQueueItemId(),
                 item.getExternalSystemId());
@@ -2972,13 +2973,17 @@ public class AccessPointService {
 
     public ApAccessPoint updateAndValidate(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+        return updateAndValidate(accessPoint);
+    }
+    
+    public ApAccessPoint updateAndValidate(ApAccessPoint accessPoint) {
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        return updateAndValidate(accessPoint, apState, partList, itemMap, false);
-    }
+        return updateAndValidate(accessPoint, apState, partList, itemMap, false);        
+    }    
 
     /**
      * Updates parts and validate AccessPoint
@@ -3124,16 +3129,18 @@ public class AccessPointService {
                                                        String externalSystemCode, 
                                                        SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states;
-        if(CollectionUtils.isNotEmpty(filter.getStates())) {
+        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states = null;
+        if (CollectionUtils.isNotEmpty(filter.getStates())) {
             states = filter.getStates().stream()
                     .map(s -> cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.fromValue(s.name()))
                     .collect(Collectors.toList());
-        } else {
-            states = null;
         }
-        
-        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, filter.getScopes(), from, max);
+        List<ApScope> scopes = null;
+        if (CollectionUtils.isNotEmpty(filter.getScopes())) {
+            scopes = scopeRepository.findByCodes(filter.getScopes());
+        }
+
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, scopes, from, max);
 
         result.setTotal(items.size());
         result.setData(createExtSyncsQueueItemVOList(items));
@@ -3680,4 +3687,6 @@ public class AccessPointService {
     public List<Integer> findByState(ApStateEnum init) {
         return apAccessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
     }
+
+
 }
