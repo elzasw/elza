@@ -50,6 +50,7 @@ import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilterConfig;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.UsrPermission;
@@ -57,6 +58,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -246,8 +248,9 @@ public class DEExportService {
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 ObjectListIterator.forEachPage(accessPointIds, page -> {
                     if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
-                        throw new BusinessException("Entity(es) has been deleted", BaseCode.INVALID_STATE)
-                            .set("IDs", stateRepository.findDeletedAccessPointIdsByAccessPointIds(page));
+                        List<Integer> deletedApIds = stateRepository.findDeletedAccessPointIdsByAccessPointIds(page);
+                        throw new BusinessException("Entity(es) has been deleted", RegistryCode.CANT_EXPORT_DELETED_AP)
+                                        .set(ApAccessPoint.FIELD_ACCESS_POINT_ID, deletedApIds);
                     }
                 });
             }
