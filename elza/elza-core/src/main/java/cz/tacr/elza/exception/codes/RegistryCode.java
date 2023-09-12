@@ -3,7 +3,6 @@ package cz.tacr.elza.exception.codes;
 /**
  * Kódy pro rejstříky.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 21. 12. 2016
  */
 public enum RegistryCode implements ErrorCode {
@@ -20,6 +19,10 @@ public enum RegistryCode implements ErrorCode {
     
     /**
      * Deleted AP cannot be exported
+     * 
+     * ID of exported AP has to be attached in object
+     * ApAccessPoint.FIELD_ACCESS_POINT_ID. It is possible to send several IDs at
+     * once as a list.
      */
     CANT_EXPORT_DELETED_AP,
 
