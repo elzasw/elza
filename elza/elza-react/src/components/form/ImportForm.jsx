@@ -16,6 +16,7 @@ import Icon from '../shared/icon/Icon';
 import FormInputField from '../shared/form/FormInputField';
 import FF from '../shared/form/FF';
 import FileInput from '../shared/form/FileInput';
+import * as perms from "../../actions/user/Permission.jsx";
 
 /**
  * Formulář importu rejstříkových hesel
@@ -91,6 +92,19 @@ class ImportForm extends AbstractReactComponent {
         this.props.dispatch(importForm(formData, messageType));
     };
 
+    getAvailableScopes = (scopes) => {
+        const availableScopes = [];
+        scopes.forEach(scope => {
+            if (this.props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_WR,
+                scopeId: scope.id,
+            })) {
+                availableScopes.push(scope);
+            }
+        })
+        return availableScopes;
+    };
+
     render() {
         const {onClose, handleSubmit} = this.props;
 
@@ -121,7 +135,7 @@ class ImportForm extends AbstractReactComponent {
                                         //{...decorateFormField(recordScope)}
                                         help={null} /// TODO odstranit z decorateFormField help
                                         label={i18n('import.registryScope')}
-                                        items={this.state.defaultScopes}
+                                        items={this.getAvailableScopes(this.state.defaultScopes)}
                                         getItemId={this.getItemId}
                                         getItemName={item => (item ? item.name : '')}
                                     />
@@ -162,8 +176,8 @@ class ImportForm extends AbstractReactComponent {
 }
 
 export default connect(state => ({
-    defaultScopes: state.defaultScopes,
     refTables: state.refTables,
+    userDetail: state.userDetail,
 }))(
     reduxForm({
         form: 'importForm',

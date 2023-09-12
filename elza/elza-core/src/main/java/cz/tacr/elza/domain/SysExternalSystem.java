@@ -29,6 +29,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 public abstract class SysExternalSystem {
 
+    public static final String PK = "externalSystemId";
+
     public static final String CODE = "code";
 
     @Id
@@ -59,8 +61,6 @@ public abstract class SysExternalSystem {
 
     @Column(length = StringLength.LENGTH_250)
     private String apiKeyValue;
-
-    public static final String PK = "externalSystemId";
 
     public Integer getExternalSystemId() {
         return externalSystemId;

@@ -1,6 +1,9 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 
@@ -20,7 +23,7 @@ public class ExtSyncsQueueItemRepositoryImpl implements ExtSyncsQueueItemReposit
     @Override
     public List<ExtSyncsQueueItem> findExtSyncsQueueItemsByExternalSystemAndScopesAndState(String externalSystemCode,
                                                                                            List<ExtAsyncQueueState> states,
-                                                                                           List<String> scopes,
+                                                                                           List<ApScope> scopes,
                                                                                            Integer firstResult,
                                                                                            Integer maxResults) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -32,12 +35,20 @@ public class ExtSyncsQueueItemRepositoryImpl implements ExtSyncsQueueItemReposit
                                                                                  JoinType.INNER);
 
         Predicate condition = builder.equal(externalSystemJoin.get(ApExternalSystem.CODE), externalSystemCode);
-        // Add state filter
+        // add state filter
         if (CollectionUtils.isNotEmpty(states)) {
             Predicate stateIn = from.get(ExtSyncsQueueItem.STATE).in(states);
             condition = builder.and(condition, stateIn);
         }
-        // TODO: Add scope filter
+        // add scope filter
+        if (CollectionUtils.isNotEmpty(scopes)) {
+            Root<ApState> state = query.from(ApState.class);
+            Join<ApState, ApAccessPoint> joinAp = state.join(ApState.FIELD_ACCESS_POINT, JoinType.INNER);
+            Predicate accessPoint = builder.equal(joinAp.get(ApState.FIELD_ACCESS_POINT_ID), from.get(ApState.FIELD_ACCESS_POINT_ID));
+            Predicate stateValid = state.get(ApState.FIELD_DELETE_CHANGE_ID).isNull();
+            Predicate scopeIn = state.get(ApState.FIELD_SCOPE).in(scopes);
+            condition = builder.and(condition, stateValid, accessPoint, scopeIn);
+        }
 
         query.select(from);
         query.where(condition);

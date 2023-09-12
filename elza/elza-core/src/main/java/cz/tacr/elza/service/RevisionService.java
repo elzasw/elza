@@ -995,8 +995,15 @@ public class RevisionService {
                 Validate.isTrue(!revPart.isDeleted()); // cannot be marked as deleted
                 // Check if linked to revision
                 if (revPart.getRevParentPart() != null) {
-                    // parent part has to be null
-                    Validate.isTrue(revPart.getParentPart() == null);
+                    // parent part should be null
+                    if (revPart.getParentPart() != null) {
+                        // might happen is parent part is also modified
+                        // exists orig part and its revision
+                        // check that parentPart equals origPart in revision                      
+                        if (!revPart.getParentPartId().equals(revPart.getRevParentPart().getOriginalPartId())) {
+                            Validate.isTrue(false, "Inconsistancy between revision parent part and original part");
+                        }
+                    }
                     createSubParts.add(revPart);
                 } else {
                     // might be subpart to existing part or new part
@@ -1006,8 +1013,13 @@ public class RevisionService {
                 }
             } else {
                 // Existing part
-                // Cannot have rev as parent
-                Validate.isTrue(revPart.getRevParentPart() == null);
+                // Parent should be only original part
+                // might happen that parent is also modified real part
+                // This case requires special check
+                if (revPart.getRevParentPart() != null) {
+                    // TODO: check that we can find orig. part
+                    Validate.isTrue(revPart.getRevParentPart() == null);
+                }
 
                 // only add id to map
                 revPartMap.put(revPart.getPartId(), revPart.getOriginalPart());

@@ -12,8 +12,9 @@
     max-height: 250em;
     overflow: auto;
     width: auto;
-    display: flex;
-    align-items: center;
+    // rozbiji zobrazeni pri dlouhych textech
+    // display: flex;
+    // align-items: center;
   }
 
   .desc-item-spec-label {

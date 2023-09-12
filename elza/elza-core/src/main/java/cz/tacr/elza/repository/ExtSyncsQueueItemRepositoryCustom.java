@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 
@@ -9,7 +10,7 @@ public interface ExtSyncsQueueItemRepositoryCustom {
 
     List<ExtSyncsQueueItem> findExtSyncsQueueItemsByExternalSystemAndScopesAndState(final String externalSystemCode,
                                                                                     final List<ExtAsyncQueueState> states,
-                                                                                    final List<String> scopes,
+                                                                                    final List<ApScope> scopes,
                                                                                     final Integer firstResult,
                                                                                     final Integer maxResults);
 

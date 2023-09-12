@@ -12,6 +12,7 @@ import cz.tacr.elza.domain.ArrDaoPackage;
 public class ArrDaoPackageVO {
     private Integer id;
     private String code;
+    private Integer digitalRepositoryId;
     private String batchInfoCode;
     private String batchInfoLabel;
     private long daoCount;
@@ -23,6 +24,7 @@ public class ArrDaoPackageVO {
     public ArrDaoPackageVO(final ArrDaoPackage arrDaoPackage, ArrDaoBatchInfo daoBatchInfo) {
         id = arrDaoPackage.getDaoPackageId();
         code = arrDaoPackage.getCode();
+        digitalRepositoryId = arrDaoPackage.getDigitalRepositoryId();
         if (daoBatchInfo != null) {
             batchInfoCode = daoBatchInfo.getCode();
             batchInfoLabel = daoBatchInfo.getLabel();
@@ -43,6 +45,14 @@ public class ArrDaoPackageVO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Integer getDigitalRepositoryId() {
+        return digitalRepositoryId;
+    }
+
+    public void setDigitalRepositoryId(Integer digitalRepositoryId) {
+        this.digitalRepositoryId = digitalRepositoryId;
     }
 
     public String getBatchInfoCode() {
