@@ -197,6 +197,135 @@ model RevStateChange {
     state: RevisionState;
 }
 
+/**
+ * ItemData classes extensions
+ */
+model DataBit extends ItemData {
+    bitValue: boolean;
+}
+
+model DataCoordinates extends ItemData {
+    value: string;
+}
+
+model DataDate extends ItemData {
+    value: offsetDateTime;
+}
+
+model DataDecimal extends ItemData {
+    value: decimal;
+}
+
+model DataFileRef extends ItemData {
+    fileId: integer;
+}
+
+model DataInteger extends ItemData {
+    integerValue: integer;
+}
+
+model DataJsonTable extends ItemData {
+    value: string;
+}
+
+model DataNull extends ItemData {
+}
+
+model DataRecordRef extends ItemData {
+    recordId: integer;
+    bindingId: integer;
+}
+
+model DataString extends ItemData {
+    stringValue: string;
+}
+
+model DataStructureRef extends ItemData {
+    structuredObjectId: integer;
+}
+
+model DataText extends ItemData {
+    textValue: string;
+}
+
+model DataUnitdate extends ItemData {
+    valueFrom: string;
+    valueFromEstimated: boolean;
+    valueTo: string;
+    valueToEstimated: boolean;
+    format: string;
+    normalizedFrom: int64;
+    normalizedTo: int64;
+}
+
+model DataUnitid extends ItemData {
+    unitId: string;
+}
+
+model DataUriRef extends ItemData {
+    schema: string;
+    uriRefValue: string;
+    description: string;
+    nodeId: integer;
+    refTemplateId: integer;
+}
+
+/**
+ * Item data
+ */
+model ItemData {
+    /** data id */
+    dataId: integer;
+    /** data type id */
+    dataTypeId: integer;
+}
+
+/**
+ * Type of change Item
+ */
+enum ChangeType {
+    NEW,
+    UPDATED,
+    DELETED,
+    ORIGINAL
+}
+
+/**
+ * Data for item of ApPart
+ */
+model Item {
+    /** id of item */
+    itemId: integer;
+    /** id of attribute value */
+    objectId: integer;
+    /** attribute type */
+    typeId: integer;
+    /** attribute specification */
+    specId: integer;
+    /** position */
+    position: integer;
+    /** type of change */
+    changeType: ChangeType;
+    /** item data */
+    data: ItemData;
+}
+
+/**
+ * Data for create/update ApPart and ReviPart
+ */
+model ApPartForm {
+    /** id of part */
+    partId?: integer;
+    /** id of parent part */
+    parentPartId?: integer;
+    /** id of parent part revizion */
+    revParentPartId?: integer;
+    /** code type of part */
+    partTypeCode: string;
+    /** list of all attribute values */
+    items: Item[];
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
