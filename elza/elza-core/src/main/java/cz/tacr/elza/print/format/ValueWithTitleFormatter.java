@@ -26,6 +26,13 @@ public class ValueWithTitleFormatter implements FormatAction {
     private boolean titleLowerCase = true;
 
     /**
+     * Flag to append item type title.
+     * 
+     * This is useful to write only specification title
+     */
+    private boolean appendItemTypeTitle = true;
+
+    /**
      * Optional other title which can overried default item type title
      */
 	private String otherTitle;
@@ -43,8 +50,18 @@ public class ValueWithTitleFormatter implements FormatAction {
         return titleLowerCase;
     }
 
-    public void setTitleLowerCase(boolean titleLowerCase) {
+    public ValueWithTitleFormatter setTitleLowerCase(boolean titleLowerCase) {
         this.titleLowerCase = titleLowerCase;
+        return this;
+    }
+
+    public boolean isAppendItemTypeTitle() {
+        return appendItemTypeTitle;
+    }
+
+    public ValueWithTitleFormatter setAppendItemTypeTitle(boolean appendItemTypeTitle) {
+        this.appendItemTypeTitle = appendItemTypeTitle;
+        return this;
     }
 
     @Override
@@ -82,7 +99,7 @@ public class ValueWithTitleFormatter implements FormatAction {
         }
 
         // Append title
-        if (firstItem) {
+        if (firstItem && appendItemTypeTitle) {
             // get name
             String name = otherTitle!=null?otherTitle:item.getType().getName();
 
