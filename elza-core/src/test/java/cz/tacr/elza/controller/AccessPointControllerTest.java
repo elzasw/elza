@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -200,7 +201,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
 
-        Integer revPartId = createPart(ap1.getAccessPointId(), partFormVO);
+        CreatedPartVO createdPart = createPart(ap1.getAccessPointId(), partFormVO);
+        Integer revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
 
         accesspointsApi.accessPointSetPreferNameRevision(apVo.getId(), revPartId, null);

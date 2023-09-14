@@ -62,6 +62,7 @@ import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -872,19 +873,24 @@ public class ApController {
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
+     * @param apVersion?
+     * 
+     * @return partId, apVersion
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
-    public Integer createPart(@PathVariable final Integer accessPointId,
-                              @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
+    public CreatedPartVO createPart(@PathVariable final Integer accessPointId,
+                              @RequestBody final ApPartFormVO apPartFormVO,
+                              @RequestParam(required = false) Integer apVersion) {
+
+        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         ApRevState revState = revisionService.findRevStateByState(state);
 
         if (revState != null) {
             // Permission check is part of revisionService
             ApRevPart revPart = revisionService.createPart(state, revState, apPartFormVO);
-            return revPart.getPartId();
+            return new CreatedPartVO(revPart.getPartId(), apAccessPoint.getVersion());
         } else {
             accessPointService.checkPermissionForEdit(state);
 
@@ -892,7 +898,7 @@ public class ApController {
             accessPointService.generateSync(state, apPart);
             accessPointCacheService.createApCachedAccessPoint(accessPointId);
 
-            return apPart.getPartId();
+            return new CreatedPartVO(apPart.getPartId(), apAccessPoint.getVersion());
         }
     }
 
@@ -914,19 +920,21 @@ public class ApController {
      * item neprijde
      * </ul>
      * 
-     * @param accessPointId
-     *            identifikátor přístupového bodu (PK)
-     * @param partId
-     *            identifikátor upravované části
-     * @param apPartFormVO
-     *            data pro úpravu části
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId        identifikátor upravované části
+     * @param apPartFormVO  data pro úpravu části
+     * @param apVersion?
+     * 
+     * @return apVersion
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
-    public void updatePart(@PathVariable final Integer accessPointId,
-                           @PathVariable final Integer partId,
-                           @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
+    public Integer updatePart(@PathVariable final Integer accessPointId,
+                              @PathVariable final Integer partId,
+                              @RequestBody final ApPartFormVO apPartFormVO,
+                              @RequestParam(required = false) Integer apVersion) {
+
+        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         ApPart apPart = partService.getPart(partId);
         ApRevision revision = revisionService.findRevisionByState(state);
@@ -937,6 +945,7 @@ public class ApController {
                 accessPointCacheService.createApCachedAccessPoint(accessPointId);
             }
         }
+        return apAccessPoint.getVersion();
     }
 
     /**
@@ -945,16 +954,24 @@ public class ApController {
      * @param id identifikátor přístupového bodu (PK)
      * @param partId identifikátor upravované části
      * @param apPartFormVO data pro úpravu části
+     * @param apVersion?
+     * 
+     * @return apVersion
      */
     @Transactional
     @RequestMapping(value = "/revision/{id}/part/{partId}", method = RequestMethod.POST)
-    public void updateRevisionPart(@PathVariable final Integer id,
-                              @PathVariable final Integer partId,
-                              @RequestBody final ApPartFormVO apPartFormVO) {
+    public Integer updateRevisionPart(@PathVariable final Integer id,
+                                      @PathVariable final Integer partId,
+                                      @RequestBody final ApPartFormVO apPartFormVO,
+                                      @RequestParam(required = false) Integer apVersion) {
+
         ApState state = accessPointService.getStateInternal(id);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(state.getAccessPointId(), apVersion);
         ApRevision revision = revisionService.findRevisionByState(state);
         ApRevPart revPart = revisionPartService.findById(partId);
         revisionService.updatePart(state, revision, revPart, apPartFormVO);
+
+        return accessPoint.getVersion();
     }
 
     /**
@@ -1413,5 +1430,4 @@ public class ApController {
     public List<MapLayerVO> mapLayerConfiguration() {
         return layersConfig.getLayers();
     }
-
 }
