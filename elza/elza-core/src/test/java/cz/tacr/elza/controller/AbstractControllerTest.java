@@ -57,6 +57,7 @@ import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.CreateUserVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -3388,11 +3389,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      */
-    protected Integer createPart(final Integer accessPointId,
+    protected CreatedPartVO createPart(final Integer accessPointId,
                               final ApPartFormVO apPartFormVO) {
         return post(spec -> spec.pathParam("accessPointId", accessPointId)
-                .body(apPartFormVO), CREATE_PART)
-                        .as(Integer.class);
+                    .body(apPartFormVO), CREATE_PART)
+                .as(CreatedPartVO.class);
     }
 
     /**
