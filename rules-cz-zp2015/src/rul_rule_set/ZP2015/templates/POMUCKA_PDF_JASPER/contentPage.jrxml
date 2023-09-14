@@ -245,8 +245,17 @@
       	  .addValue("ZP2015_SIZE_UNITS")
     	.end()
 	.endBlock()
+	// jiné rozměry s jednotkou
+    .beginBlock()
+        .when(cz.tacr.elza.print.format.ExpressionBuilder.hasValue("ZP2015_SIZE_OTHER"))
+          .setItemSeparator(" ")
+    	  .addValueWithSpecTitle("ZP2015_SIZE_OTHER")
+          .setItemSeparator(", ")
+      	  .addValue("ZP2015_SIZE_UNITS")
+    	.end()
+	.endBlock()
     .setItemSeparator(", ")
-	.setSpecFormat(" ", "", true)		
+	.setSpecFormat(" ", "", true)	
     .beginBlock()
     	.addValueWithTitle("ZP2015_WEIGHT")
 	.endBlock()
@@ -283,8 +292,7 @@
     .beginBlock()
 	  .setItemSeparator(", ")
 	  .addValueWithTitle("ZP2015_APPLIED_RESTRICTION")
-	.endBlock()
-]]></defaultValueExpression>
+	.endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
