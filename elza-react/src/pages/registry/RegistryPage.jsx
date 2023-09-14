@@ -77,6 +77,7 @@ class RegistryPage extends AbstractReactComponent {
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
         fund: PropTypes.object,
+        revisionActive: PropTypes.boolean,
     };
 
     state = { items: [] };
@@ -817,6 +818,7 @@ class RegistryPage extends AbstractReactComponent {
                         id={registryDetail?.data?.id}
                         editMode={this.getEditMode()}
                         onPushApToExt={this.handlePushApToExt}
+                        revisionActive={this.props.revisionActive}
                     />}
             </div>
         );

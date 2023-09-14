@@ -235,6 +235,7 @@ class Layout extends AbstractReactComponent {
                                 </Route>
                                 <Route path={`${URL_FUND}/`} component={FundPage}/>
                                 <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
+                                <Route path={URL_ENTITY + "/:id/revision"} component={(props) => <RegistryPage revisionActive={true} {...props}/>}  />
                                 <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
                                 <Route path={URL_ENTITY} component={RegistryPage} />
                                 <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />

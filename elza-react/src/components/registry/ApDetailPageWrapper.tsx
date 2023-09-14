@@ -12,7 +12,7 @@ import { ApValidationErrorsVO } from '../../api/ApValidationErrorsVO';
 import { ApViewSettingRule, ApViewSettings } from '../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../api/PartValidationErrorsVO';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
-import { AP_VALIDATION, AP_VIEW_SETTINGS } from '../../constants';
+import { AP_VALIDATION, AP_VIEW_SETTINGS, urlEntity, urlEntityRevision } from '../../constants';
 import { DetailActions } from '../../shared/detail';
 import { indexById } from '../../shared/utils';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -27,9 +27,8 @@ import i18n from 'components/i18n';
 import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';
 import { RevisionPart, getRevisionParts } from './revision';
-import { ApStateVO } from 'api/ApStateVO';
 import { Api } from '../../api';
-import { RouteComponentProps, withRouter } from "react-router";
+import { RouteComponentProps, useHistory, withRouter } from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
 import Icon from 'components/shared/icon/FontIcon';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
@@ -100,6 +99,7 @@ type OwnProps = {
     apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
     select: boolean;
+    revisionActive?: boolean;
     onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
 };
 
@@ -138,11 +138,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     refTables,
     select,
     onPushApToExt,
+    revisionActive,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [revisionActive, setRevisionActive] = useState<boolean>(false);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -150,12 +150,20 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const websocket = useWebsocket();
     const bindings = detail.data?.bindings || [];
     const dispatch = useDispatch();
+    const history = useHistory();
 
     useEffect(() => {
         if (id) {
             refreshDetail(id, false, false);
         }
     }, [id, refreshDetail]);
+
+    // pri neexistenci revize dojde k zobrazeni samotne entity
+    useEffect(() => {
+        if (!detail.data?.revStateApproval) {
+            history.replace(urlEntity(id));
+        }
+    }, [revisionActive]);
 
     // show accesspoint export message on websocket message
     useEffect(() => {
@@ -421,7 +429,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     collapsed={collapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
                     onToggleRevision={() => {
-                        setRevisionActive(!revisionActive);
+                        history.replace(revisionActive ? urlEntity(id) : urlEntityRevision(id));
                         refreshValidation(id, !revisionActive);
                     }}
                     validationErrors={validationResult?.errors}
