@@ -184,9 +184,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     refreshDetail(id, true, false);
                 }
             },
-            [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId }) => {
+            [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId, state }) => {
                 if (accessPointId.toString() === id.toString()) {
-                    dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), i18n("ap.push-to-ext.failed.message")))
+                    dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), state ? state : i18n("ap.push-to-ext.failed.message")))
                     setExportState(ExportState.COMPLETED);
                     refreshDetail(id, true, false);
                 }
