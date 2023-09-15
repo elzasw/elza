@@ -16,6 +16,7 @@ import { RevisionApPartForm } from '../form';
 export const showPartCreateModal = (
     partType: RulPartTypeVO,
     apId: number,
+    apVersion: number,
     apTypeId: number,
     scopeId: number,
     history: H.History<H.LocationState>,
@@ -63,7 +64,7 @@ export const showPartCreateModal = (
 
                 // console.log('SUBMIT ADD', apId, submitData);
 
-                await WebApi.createPart(apId, submitData)
+                await WebApi.createPart(apId, submitData, apVersion)
                 onClose();
                 await dispatch(goToAe(history, apId, true, !select))
                 onUpdateFinish();

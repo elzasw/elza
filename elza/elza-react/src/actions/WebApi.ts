@@ -956,8 +956,8 @@ export class WebApiCls {
      * @param apVersion verze přístupového bodu
      * @return poartId,apVersion
      */
-    createPart(accessPointId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', null, apPartFormVO);
+    createPart(accessPointId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', { apVersion: apVersion ? apVersion - 1 : undefined }, apPartFormVO);
     }
 
     /**
@@ -969,8 +969,8 @@ export class WebApiCls {
      * @param apVersion verze přístupového bodu
      * @return apVersion
      */
-    updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**
@@ -982,8 +982,8 @@ export class WebApiCls {
      * @param apVersion verze přístupového bodu
      * @return apVersion
      */
-    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**

@@ -1098,6 +1098,7 @@ var messages = {
     "registry.update.type": "Třída / podtřída archivní entity",
     "registry.type": "Třída / podtřída entity",
     "registry.scopeClass": "Oblast",
+    "registry.version": "Verze",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
 
