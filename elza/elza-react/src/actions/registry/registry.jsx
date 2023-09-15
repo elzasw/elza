@@ -169,7 +169,7 @@ export function registryUpdate(id, typeId, callback = null) {
 
 export function registryDelete(id) {
     return (dispatch, getState) => {
-        Api.accesspoints.deleteAccessPoint(id).then(() => {
+        Api.accesspoints.accessPointDeleteAccessPoint(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
