@@ -64,9 +64,10 @@ public class ResponseFactory {
         if (errorCode == null) {
             errorCode = BaseCode.EXPORT_FAILED;
         }
-
         baseException.setLevel(level.toString());
-        baseException.setCode(errorCode.toString());
+
+        baseException.setType(errorCode.getType());
+        baseException.setCode(errorCode.getCode());
         return baseException;
     }
 
