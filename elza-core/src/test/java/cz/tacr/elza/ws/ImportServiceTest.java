@@ -84,7 +84,7 @@ public class ImportServiceTest extends AbstractControllerTest {
 
         // delete entity
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
-        accesspointsApi.deleteAccessPoint(apvo.getId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(apvo.getId().toString(), deleteAPDetail);
 
         // run reimport
         importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_URL);

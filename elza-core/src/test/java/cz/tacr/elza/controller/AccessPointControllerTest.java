@@ -37,6 +37,7 @@ import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
+import cz.tacr.elza.test.controller.vo.ReplaceType;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
 
@@ -129,7 +130,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
 
-        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         // check if deleted
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
@@ -166,9 +167,9 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
-        deleteAPDetail.setReplaceType(DeleteAccessPointDetail.ReplaceTypeEnum.COPY_ALL);
+        deleteAPDetail.setReplaceType(ReplaceType.COPY_ALL);
 
-        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);

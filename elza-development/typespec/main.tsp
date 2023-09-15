@@ -326,6 +326,24 @@ model ApPartForm {
     items: Item[];
 }
 
+/**
+ * Method of replacing ApAccessPoint
+ */
+enum ReplaceType {
+    SIMPLE,
+    COPY_ALL
+}
+
+/**
+ * Data for detele/replace ApAccessPoint
+ */
+model DeleteAccessPointDetail {
+    /** Id of the entity being replaced */
+    replacedBy?: string;
+    /** method of replacing */
+    replaceType?: ReplaceType;
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -397,6 +415,37 @@ namespace ElzaAPI.Fund {
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
     /**
+     * Invalidation of ApAccessPoint (delete/replace)
+     */
+    @route("/{id}")
+    @delete op deleteAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** addition for method of invalidation */
+        @body body?: DeleteAccessPointDetail;
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Delete part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @delete op deletePart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion?: integer
+    ): integer;
+
+    /**
      * Change state of ApAccessPoint
      */
     @route("/{id}/state")
@@ -414,19 +463,6 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("{id}/part/{partId}/prefer-name")
     @put op setPreferName(
-        /** id of accesspoint */
-        @path id: integer,
-        /** partId of ApAccessPoint */
-        @path partId: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion?: integer
-    ): integer;
-
-    /**
-     * Delete part of ApAccessPoint
-     */
-    @route("/{id}/part/{partId}")
-    @delete op deletePart(
         /** id of accesspoint */
         @path id: integer,
         /** partId of ApAccessPoint */
