@@ -180,12 +180,12 @@ export function exportFund(fundId, transformationName, exportFilterId) {
                 }
             } catch (error) {
                 // pri chybe/neuspechu odstranim info toast a vypisi informace o chybe
-                // definovani kodu 'GENERATING_EXPORT_FAILED', ktery se odchytava v resolveBase
+                const code = error.response.data.code;
                 dispatch(removeToastr(toastKey));
                 dispatch(
                     createException({
                         ...error.response.data,
-                        code: 'GENERATING_EXPORT_FAILED',
+                        code: code === 'CANT_EXPORT_DELETED_AP' ? 'CANT_EXPORT_DELETED_AP' : 'GENERATING_EXPORT_FAILED',
                     }),
                 );
             }
