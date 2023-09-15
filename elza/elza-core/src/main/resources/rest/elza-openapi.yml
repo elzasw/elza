@@ -188,6 +188,35 @@ paths:
                 type: array
                 items:
                   type: integer
+  /accesspoint/{id}:
+    delete:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_deleteAccessPoint
+      description: Invalidation of ApAccessPoint (delete/replace)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: addition for method of invalidation
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointDetail'
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -427,30 +456,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
-  /accesspoints/{id}:
-    delete:
-      summary: Zneplatnění přístupového bodu
-      operationId: deleteAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Doplnění způsobu zneplatnění
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/DeleteAccessPointDetail'
-      responses:
-        200:
-          description: Potvrzení o úspěšném odstranění
-        404:
-          description: AP neexistuje
   /accesspoints/{id}/autoitems:
     get:
       summary: Vrátí seznam automaticky generovaných prvků popisu
@@ -1030,6 +1035,17 @@ components:
       required:
         - type
         - code
+    DeleteAccessPointDetail:
+      type: object
+      properties:
+        replacedBy:
+          type: string
+          description: Id of the entity being replaced
+        replaceType:
+          allOf:
+            - $ref: '#/components/schemas/ReplaceType'
+          description: method of replacing
+      description: Data for detele/replace ApAccessPoint
     ExportParams:
       type: object
       properties:
@@ -1177,6 +1193,12 @@ components:
       required:
         - users
         - totalCount
+    ReplaceType:
+      type: string
+      description: Method of replacing ApAccessPoint
+      enum:
+        - SIMPLE
+        - COPY_ALL
     RevStateChange:
       type: object
       properties:
@@ -1401,19 +1423,6 @@ components:
           type: array
           items:
             type: integer
-    DeleteAccessPointDetail:
-      type: object
-      description: Doplňující informace k požadavku na zneplatnění přístupového bodu
-      properties:
-        replacedBy:
-          description: Id entity, kterou je odstraňovaná nahrazena
-          type: string
-        replaceType:
-          description: Způsob provedení náhrady
-          type: string
-          enum:
-            - SIMPLE
-            - COPY_ALL
     DeleteAccessPointsDetail:
       type: object
       description: Seznam přístupových bodů
