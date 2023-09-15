@@ -137,6 +137,7 @@ const DetailHeader: FC<Props> = ({
                                     content={
                                         <>
                                             <div>id: {id}</div>
+                                            <div>{i18n("registry.version").toLowerCase()}: {item.version}</div>
                                             <div>uuid: {item.uuid}</div>
                                             {itemScope && <div>{i18n("registry.scopeClass").toLowerCase()}: {itemScope.name}</div>}
                                         </>

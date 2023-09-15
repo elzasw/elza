@@ -318,6 +318,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 part.updatedPart,
                 partType,
                 id,
+                apVersion,
                 apTypeId,
                 detail.data.ruleSetId,
                 detail.data.scopeId,
@@ -335,6 +336,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             showPartCreateModal(
                 partType,
                 id,
+                apVersion,
                 apTypeId,
                 detail.data.scopeId,
                 parentPartId,
@@ -544,6 +546,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         updatedPart: ApPartVO | undefined,
         partType: unknown,
         apId: number,
+        apVersion: number,
         apTypeId: number,
         ruleSetId: number,
         scopeId: number,
@@ -551,16 +554,17 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         apViewSettings: DetailStoreState<ApViewSettings>,
         revision: boolean,
         onUpdateFinish: () => void = () => { },
-    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish, select)),
+    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apVersion, apTypeId, ruleSetId, scopeId, history, refTables as any, apViewSettings, revision, onUpdateFinish, select)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,
+        apVersion: number,
         apTypeId: number,
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => { },
         revParentPartId?: number,
-    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
+    ) => dispatch(showPartCreateModal(partType, apId, apVersion, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
     setPreferred: async (apId: number, partId: number, apVersion: number) => {
         await Api.accesspoints.accessPointSetPreferName(apId, partId, apVersion);
         return dispatch(goToAe(history, apId, true, !select));
@@ -586,13 +590,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
 
         dispatch(goToAe(history, apId, true, !select));
     },
-    updateRevisionPart: async (apId: number, part: ApPartVO, typeCode: string) => {
+    updateRevisionPart: async (apId: number, part: ApPartVO, typeCode: string, apVersion: number) => {
         await WebApi.updateRevisionPart(apId, part.id, {
             parentPartId: part.partParentId,
             partId: part.id,
             items: part.items?.filter((item) => item) || [],
             partTypeCode: typeCode,
-        })
+        }, apVersion)
     },
     refreshValidation: (apId: number, includeRevision?: boolean) => {
         dispatch(DetailActions.fetchIfNeeded(
