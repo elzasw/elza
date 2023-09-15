@@ -19,8 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.controller.vo.BaseException;
 import cz.tacr.elza.controller.vo.ExportRequestState;
 import cz.tacr.elza.controller.vo.ExportRequestStatus;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 
 public class ResponseFactory {
@@ -43,11 +46,27 @@ public class ResponseFactory {
 
     public static BaseException createBaseException(Exception exception) {
         BaseException baseException = new BaseException();
-        baseException.setType("BaseCode");
-        baseException.setCode("ID_NOT_EXISTS");
-        baseException.setLevel("danger");
         baseException.setMessage(exception.getMessage());
         baseException.setStackTrace(ExceptionUtils.getStackTrace(exception));
+
+        Level level = null;
+        ErrorCode errorCode = null;
+        if (exception instanceof AbstractException) {
+            AbstractException abException = (AbstractException) exception;
+            level = abException.getLevel();
+            errorCode = abException.getErrorCode();
+            // check if it is Elze specific exception
+            baseException.setProperties(abException.getProperties());
+        }
+        if (level == null) {
+            level = Level.DANGER;
+        }
+        if (errorCode == null) {
+            errorCode = BaseCode.EXPORT_FAILED;
+        }
+
+        baseException.setLevel(level.toString());
+        baseException.setCode(errorCode.toString());
         return baseException;
     }
 
