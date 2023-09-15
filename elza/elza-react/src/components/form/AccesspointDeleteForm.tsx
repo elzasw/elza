@@ -9,7 +9,7 @@ import {useDispatch} from 'react-redux';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 
 import { Api, ApAccessPointVO } from "../../api";
-import { DeleteAccessPointDetailReplaceTypeEnum as ReplaceType} from "elza-api";
+import { ReplaceType } from "elza-api";
 import Icon from 'components/shared/icon/FontIcon';
 import './UsageForm.scss';
 
@@ -33,8 +33,8 @@ interface RegistryUsage {
     nodes: Node[];
 }
 
-// Workaround pro rozbite typy v kombinaci 
-// typovaneho 'withRouter' z 'react-router' 
+// Workaround pro rozbite typy v kombinaci
+// typovaneho 'withRouter' z 'react-router'
 // a netypovaneho 'UsageForm.jsx'
 const UsageForm = UsageFormUntyped as any;
 
@@ -53,7 +53,7 @@ export const AccessPointDeleteForm:FC<{
     const deleteAccessPoint = (newNode: ApAccessPointVO, replaceType: ReplaceType) => {
         if (newNode) {
             setInProgress(true);
-            Api.accesspoints.deleteAccessPoint(detail.id.toString(), {
+            Api.accesspoints.accessPointDeleteAccessPoint(detail.id.toString(), {
                 replacedBy: newNode.id.toString(),
                 replaceType,
             }).then(() => {
@@ -100,5 +100,5 @@ export const AccessPointDeleteForm:FC<{
         replaceType="delete"
         nameLabel={`${i18n('accesspoint.removeDuplicity.replacedAccesspoint')}:`}
         data={data}
-        /> 
+        />
 }
