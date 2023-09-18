@@ -95,9 +95,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
     $itemSpec: RulItemSpecExt( code in (
         // průměr
-        "ZP2015_SIZE_DIAMETER",
-        // obrazové pole (průměr)
-        "ZP2015_SIZE_IMAGE_DIAMETER"
+        "ZP2015_SIZE_DIAMETER"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
@@ -111,9 +109,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
     $itemSpec: RulItemSpecExt( code in (
         // průměr
-        "ZP2015_SIZE_DIAMETER",
-        // obrazové pole (průměr)
-        "ZP2015_SIZE_IMAGE_DIAMETER"
+        "ZP2015_SIZE_DIAMETER"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
@@ -203,6 +199,33 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_SIZE_IMAGE_WIDTH",
         // obrazové pole (výška)
         "ZP2015_SIZE_IMAGE_HEIGHT"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "Jine rozmery - obrazové pole (průměr) - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - možné"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ", "ZP2015_UNIT_TYPE_OTD", "ZP2015_UNIT_TYPE_OTC", "ZP2015_UNIT_TYPE_STO", "ZP2015_UNIT_TYPE_PNP", "ZP2015_UNIT_TYPE_PFP", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // obrazové pole (průměr)
+        "ZP2015_SIZE_IMAGE_DIAMETER"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Jine rozmery - obrazové pole (průměr) - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - doporucene"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ", "ZP2015_UNIT_TYPE_OTD", "ZP2015_UNIT_TYPE_OTC", "ZP2015_UNIT_TYPE_STO", "ZP2015_UNIT_TYPE_PNP", "ZP2015_UNIT_TYPE_PFP", "ZP2015_UNIT_TYPE_JIN") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SIZE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // obrazové pole (průměr)
+        "ZP2015_SIZE_IMAGE_DIAMETER"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
