@@ -528,6 +528,7 @@ class RegistryPage extends AbstractReactComponent {
             customRibbon,
             registryDetail,
             select,
+            revisionActive,
         } = this.props;
 
         const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
@@ -704,7 +705,7 @@ class RegistryPage extends AbstractReactComponent {
 
                 if (hasRevision) {
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={this.handleDeleteRevision}>
                             <Icon glyph="fa-undo" />
                             <div>
                                 <span className="btnText">{i18n('registry.deleteRevision')}</span>
@@ -712,7 +713,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
                             <Icon glyph="fa-pencil" />
                             <div>
                                 <span className="btnText">{i18n('registry.changeStateRevision')}</span>
@@ -720,7 +721,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={this.handleMergeRevision}>
                             <Icon glyph="fa-check" />
                             <div>
                                 <span className="btnText">{i18n('registry.mergeRevision')}</span>
