@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import { Button } from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl, AREA_REGISTRY_DETAIL
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import { refRecordTypesFetchIfNeeded } from '../../actions/refTables/recordTypes.jsx';
@@ -20,7 +20,7 @@ import { PropTypes } from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, URL_ENTITY } from '../../constants.tsx';
+import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, urlEntity } from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
@@ -119,13 +119,13 @@ class RegistryPage extends AbstractReactComponent {
 
             // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
             if (registryDetail.id !== null && matchId == null) {
-                history.replace(`${URL_ENTITY}/${registryDetail.id}`);
+                history.replace(urlEntity(registryDetail.id));
             }
 
             if (isUuid(matchId)) {
                 dispatch(registryDetailFetchIfNeeded(matchId)).then((data) => {
                     if (data) {
-                        dispatch(routerNavigate(getArchiveEntityUrl(data.id), "REPLACE"));
+                        dispatch(routerNavigate(urlEntity(data.id), "REPLACE"));
                     }
                 });
             } else if (isInteger(matchId)) {

@@ -1,5 +1,5 @@
 import { WebApi } from "actions";
-import { getArchiveEntityUrl } from "actions/registry/registry";
+import { urlEntity } from "../../../../constants";
 import { ApAccessPointVO } from 'api/ApAccessPointVO';
 import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
@@ -33,7 +33,7 @@ export const DescriptionEntityRef: FC<Props> = ({
         }
         >
             {`${i18n("ap.detail.replacedBy")}: `}
-            <Link to={getArchiveEntityUrl(entityId)}>
+            <Link to={urlEntity(entityId)}>
                 {replacedByItem ? replacedByItem.name : entityId}
             </Link>
         </TooltipTrigger>
