@@ -327,6 +327,7 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
             deleteEntityQuery.executeUpdate();
+            
             Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
             updateEntityQuery.executeUpdate();
         }
@@ -336,8 +337,8 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
             deleteEntityQuery.executeUpdate();
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension",
-                                                                    toChange);
+            
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
             updateEntityQuery.executeUpdate();
         }
         sw.stop();
@@ -346,8 +347,8 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
             deleteEntityQuery.executeUpdate();
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link",
-                                                                    toChange);
+
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
             updateEntityQuery.executeUpdate();
         }
         sw.stop();
@@ -387,7 +388,8 @@ public class RevertingChangesService {
         }
         sw.stop();
 
-        sw.start("delete from struct objs");
+        // strukt typy lze smazat az po vymazani vsech ref. na ne
+        sw.start("delete from struct objects");
         if (nodeId == null) {
 
             structuredItemDelete(fund, toChange);
@@ -397,6 +399,19 @@ public class RevertingChangesService {
 
             structuredObjectUpdate(fund, toChange);
 
+            asyncRequestDelete(fund, toChange);
+
+            itemDelete(fund, toChange);
+
+            dataStructureRefDelete(fund, toChange);
+
+            structuredObjectDelete(fund, toChange);
+        }
+        sw.stop();
+
+        sw.start("delete from arr_file");
+        if (nodeId == null) {
+
             List<Integer> ids = arrFileRepository.findIdByFundAndGreaterOrEqualCreateChange(fund, toChange);
             if (!CollectionUtils.isEmpty(ids)) {
                 dmsService.deleteFilesAfterCommitByIds(ids);
@@ -404,7 +419,6 @@ public class RevertingChangesService {
 
             arrFileDeleteChangeUndo(fund, toChange);
             arrFileCreateChangeUndo(fund, toChange);
-
         }
         sw.stop();
 
@@ -449,19 +463,6 @@ public class RevertingChangesService {
 
         sw.start("flushing");
         entityManager.flush();
-        sw.stop();
-
-        // strukt typy lze smazat az po vymazani vsech ref. na ne
-        sw.start("deleting struct objects");
-        if (nodeId == null) {
-
-            asyncRequestDelete(fund, toChange);
-
-            dataStructureRefDelete(fund, toChange);
-
-            structuredObjectDelete(fund, toChange);
-
-        }
         sw.stop();
 
         sw.start("deleting unused nodes");
@@ -917,6 +918,19 @@ public class RevertingChangesService {
         String hql = "DELETE FROM arr_async_request r" +
                 " WHERE r.structuredObject IN (" +
                 " SELECT so FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change" +
+                ")";
+
+        executeRequestWithParameters(hql, fund, toChange);
+    }
+
+    private void itemDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_item i" +
+                " WHERE i.dataId IN (" +
+                " SELECT r.dataId FROM arr_data_structure_ref r" +
+                " JOIN arr_structured_object so ON so.structuredObjectId = r.structuredObjectId" +
                 " WHERE so.fund = :fund" +
                 " AND so.createChange >= :change" +
                 ")";
