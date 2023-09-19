@@ -957,7 +957,7 @@ export class WebApiCls {
      * @return poartId,apVersion
      */
     createPart(accessPointId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', { apVersion: apVersion ? apVersion - 1 : undefined }, apPartFormVO);
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', { apVersion }, apPartFormVO);
     }
 
     /**
