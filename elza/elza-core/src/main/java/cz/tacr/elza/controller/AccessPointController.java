@@ -457,7 +457,7 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<ResultAutoItems> getAutoitems(String id) {
+    public ResponseEntity<ResultAutoItems> accessPointGetAutoitems(String id) {
         Integer accessPointId = Integer.parseInt(id);
         ApState state;
         try {
