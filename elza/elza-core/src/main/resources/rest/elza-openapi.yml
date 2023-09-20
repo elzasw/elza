@@ -243,6 +243,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+  /accesspoints/{id}/copy:
+    put:
+      summary: Kopírování archivní entity
+      operationId: copyAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Další možnosti kopírování
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/CopyAccessPointDetail'
+      responses:
+        200:
+          description: Návratová hodnota
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityRef"
+        404:
+          description: AP neexistuje
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -482,35 +511,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
-  /accesspoints/{id}/copy:
-    put:
-      summary: Kopírování archivní entity
-      operationId: copyAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Další možnosti kopírování
-        required: true
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/CopyAccessPointDetail'
-      responses:
-        200:
-          description: Návratová hodnota
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EntityRef"
-        404:
-          description: AP neexistuje
   /accesspoints/{id}/restore:
     put: 
       summary: Obnovení neplatné entity a návrat do původního stavu
@@ -1031,10 +1031,6 @@ components:
           type: string
           description: value of the element
       description: Automatically generated elements of the description
-      required:
-        - itemTypeId
-        - itemSpecId
-        - value
     BaseException:
       type: object
       properties:
@@ -1228,8 +1224,6 @@ components:
           items:
             $ref: '#/components/schemas/AutoValue'
       description: List of automatically generated items
-      required:
-        - items
     RevStateChange:
       type: object
       properties:
