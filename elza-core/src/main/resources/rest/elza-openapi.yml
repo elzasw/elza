@@ -217,6 +217,32 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointDetail'
+  /accesspoint/{id}/autoitems:
+    get:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_getAutoitems
+      description: List of automatically generated elements of the description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultAutoItems'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -456,28 +482,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
-  /accesspoints/{id}/autoitems:
-    get:
-      summary: Vrátí seznam automaticky generovaných prvků popisu
-      operationId: getAutoitems
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Seznam navržených prvků popisu
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResultAutoItems"
-        404:
-          description: AP neexistuje
   /accesspoints/{id}/copy:
     put:
       summary: Kopírování archivní entity
@@ -1014,6 +1018,23 @@ components:
       description: Data for changing state of ApAccessPoint
       required:
         - stateApproval
+    AutoValue:
+      type: object
+      properties:
+        itemTypeId:
+          type: integer
+          description: identifier of the type of the description element
+        itemSpecId:
+          type: integer
+          description: identifier of the specification of the description element
+        value:
+          type: string
+          description: value of the element
+      description: Automatically generated elements of the description
+      required:
+        - itemTypeId
+        - itemSpecId
+        - value
     BaseException:
       type: object
       properties:
@@ -1199,6 +1220,16 @@ components:
       enum:
         - SIMPLE
         - COPY_ALL
+    ResultAutoItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutoValue'
+      description: List of automatically generated items
+      required:
+        - items
     RevStateChange:
       type: object
       properties:
@@ -1593,28 +1624,6 @@ components:
           description: Aktualizovaná verze archivní entity
           type: integer
           format: int32
-    AutoValue:
-      title: Jeden automaticky generovaný prvek popisu
-      type: object
-      properties:
-        itemTypeId:
-          description: Identifikátor typu prvku popisu
-          type: integer
-          format: int32
-        itemSpecId:
-          description: Identifikátor specifikace prvku popisu
-          type: integer
-          format: int32
-        value:
-          type: string
-          description: Item value
-    ResultAutoItems:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/AutoValue"
     ImportFundData:
       type: object
       properties:

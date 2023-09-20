@@ -344,6 +344,25 @@ model DeleteAccessPointDetail {
     replaceType?: ReplaceType;
 }
 
+/**
+ * Automatically generated elements of the description
+ */
+model AutoValue {
+    /** identifier of the type of the description element */
+    itemTypeId: integer;
+    /** identifier of the specification of the description element */
+    itemSpecId: integer;
+    /** value of the element */
+    value: string;
+}
+
+/**
+ * List of automatically generated items
+ */
+model ResultAutoItems {
+    items: AutoValue[];
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -426,6 +445,23 @@ namespace ElzaAPI.AccessPoint {
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * List of automatically generated elements of the description
+     */
+    @route("/{id}/autoitems")
+    @get op getAutoitems(
+        /** id of accesspoint */
+        @path id: string,
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: ResultAutoItems;
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
