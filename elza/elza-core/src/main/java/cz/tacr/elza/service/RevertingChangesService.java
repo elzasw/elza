@@ -388,7 +388,6 @@ public class RevertingChangesService {
         }
         sw.stop();
 
-        // strukt typy lze smazat az po vymazani vsech ref. na ne
         sw.start("delete from struct objects");
         if (nodeId == null) {
 
@@ -398,14 +397,6 @@ public class RevertingChangesService {
             sobjVrequestDelete(fund, toChange);
 
             structuredObjectUpdate(fund, toChange);
-
-            asyncRequestDelete(fund, toChange);
-
-            itemDelete(fund, toChange);
-
-            dataStructureRefDelete(fund, toChange);
-
-            structuredObjectDelete(fund, toChange);
         }
         sw.stop();
 
@@ -426,6 +417,9 @@ public class RevertingChangesService {
         {
             Query updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
             updateEntityQuery.executeUpdate();
+            
+            Query deleteEntityQuery = createDeleteOutputItem(fund, toChange);
+            deleteEntityQuery.executeUpdate();
         }
         sw.stop();
 
@@ -463,6 +457,19 @@ public class RevertingChangesService {
 
         sw.start("flushing");
         entityManager.flush();
+
+        sw.stop();
+        // strukt typy lze smazat az po vymazani vsech ref. na ne
+        sw.start("deleting struct objects");
+        if (nodeId == null) {
+
+            asyncRequestDelete(fund, toChange);
+
+            dataStructureRefDelete(fund, toChange);
+
+            structuredObjectDelete(fund, toChange);
+
+        }
         sw.stop();
 
         sw.start("deleting unused nodes");
@@ -671,6 +678,28 @@ public class RevertingChangesService {
     }
 
     /**
+     * Odstranění ArrOutputItem spojených s odstraněnými strukturálními objekty.
+     * 
+     * @param fund      AS nad kterým provádím obnovu
+     * @param toChange  změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteOutputItem(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_output_item oi WHERE oi.itemId in (" +
+                " SELECT i.itemId FROM arr_item i" +
+                " JOIN arr_data_structure_ref r ON i.dataId = r.dataId" +
+                " JOIN arr_structured_object so ON so.structuredObjectId = r.structuredObjectId" +
+                " WHERE so.fund = :fund AND so.createChange >= :change" +
+                ")");
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+
+        return query;
+    }
+
+    /**
      * Smazání návazných entity hromadné akce.
      *
      * @param fund     AS nad kterým provádím obnovu
@@ -700,14 +729,11 @@ public class RevertingChangesService {
      * @return
      */
     private Query createDeleteActionRunQuery(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
-
-        String hql = "DELETE FROM arr_bulk_action_run rd WHERE rd IN (" +
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_run rd WHERE rd IN (" +
                 " SELECT r FROM arr_bulk_action_run r" +
                 " JOIN r.fundVersion v" +
                 " WHERE v.fund = :fund AND r.change >= :change" +
-                ")";
-
-        Query query = entityManager.createQuery(hql);
+                ")");
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
@@ -918,19 +944,6 @@ public class RevertingChangesService {
         String hql = "DELETE FROM arr_async_request r" +
                 " WHERE r.structuredObject IN (" +
                 " SELECT so FROM arr_structured_object so" +
-                " WHERE so.fund = :fund" +
-                " AND so.createChange >= :change" +
-                ")";
-
-        executeRequestWithParameters(hql, fund, toChange);
-    }
-
-    private void itemDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
-
-        String hql = "DELETE FROM arr_item i" +
-                " WHERE i.dataId IN (" +
-                " SELECT r.dataId FROM arr_data_structure_ref r" +
-                " JOIN arr_structured_object so ON so.structuredObjectId = r.structuredObjectId" +
                 " WHERE so.fund = :fund" +
                 " AND so.createChange >= :change" +
                 ")";
@@ -1190,6 +1203,7 @@ public class RevertingChangesService {
             if (descItemTypes.size() != descItemTypeCodes.size()) {
                 List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
                 Collection<Integer> missingCodes = new HashSet<>(descItemTypeCodes);
+                // TODO: to investigate because it doesn't work
                 missingCodes.removeAll(foundCodes);
 
                 logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
