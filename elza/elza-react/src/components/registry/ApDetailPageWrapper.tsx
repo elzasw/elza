@@ -154,7 +154,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     useEffect(() => {
         if (id) {
-            refreshDetail(id, false, false);
+            refreshDetail(id, false, false, revisionActive);
         }
     }, [id, refreshDetail]);
 
@@ -181,14 +181,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             [WebsocketEventType.ACCESS_POINT_EXPORT_COMPLETED]: ({ accessPointId }) => {
                 if (accessPointId.toString() === id.toString()) {
                     setExportState(ExportState.COMPLETED);
-                    refreshDetail(id, true, false);
+                    refreshDetail(id, true, false, revisionActive);
                 }
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId, state }) => {
                 if (accessPointId.toString() === id.toString()) {
                     dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), state ? state : i18n("ap.push-to-ext.failed.message")))
                     setExportState(ExportState.COMPLETED);
-                    refreshDetail(id, true, false);
+                    refreshDetail(id, true, false, revisionActive);
                 }
             },
         }
@@ -262,7 +262,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         const nextPreferredPart = part ? part : updatedPart;
         if (nextPreferredPart?.id) {
             saveScrollPosition();
-            part ? await setPreferred(id, nextPreferredPart.id, apVersion) : await setRevisionPreferred(id, nextPreferredPart.id, apVersion);
+            part ? await setPreferred(id, nextPreferredPart.id, apVersion, revisionActive) : await setRevisionPreferred(id, nextPreferredPart.id, apVersion, revisionActive);
             restoreScrollPosition();
             refreshValidation(id, revisionActive);
         }
@@ -276,7 +276,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         if (confirmResult) {
             if (deletedPart?.id) {
                 saveScrollPosition();
-                part ? await deletePart(id, deletedPart.id, apVersion) : await deleteRevisionPart(id, deletedPart.id, apVersion);
+                part ? await deletePart(id, deletedPart.id, apVersion, revisionActive) : await deleteRevisionPart(id, deletedPart.id, apVersion, revisionActive);
                 restoreScrollPosition();
             }
 
@@ -290,7 +290,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
         if (confirmResult) {
             saveScrollPosition();
-            await deleteRevisionPart(id, updatedPart.id, apVersion);
+            await deleteRevisionPart(id, updatedPart.id, apVersion, revisionActive);
             restoreScrollPosition();
             refreshValidation(id, revisionActive);
         }
@@ -341,7 +341,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 detail.data.scopeId,
                 parentPartId,
                 () => restoreScrollPosition(),
-                revParentPartId
+                revParentPartId,
+                revisionActive,
             );
         }
         refreshValidation(id, revisionActive);
@@ -436,7 +437,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     }}
                     validationErrors={validationResult?.errors}
                     validationPartErrors={validationResult?.partErrors}
-                    onInvalidateDetail={() => refreshDetail(detail.data!.id)}
+                    onInvalidateDetail={() => refreshDetail(detail.data!.id, true, true, revisionActive)}
                     onInvalidateValidation={() => refreshValidation(id, !revisionActive)}
                     onPushApToExt={onPushApToExt}
                     revisionActive={revisionActive}
@@ -564,31 +565,32 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         parentPartId?: number,
         onUpdateFinish: () => void = () => { },
         revParentPartId?: number,
-    ) => dispatch(showPartCreateModal(partType, apId, apVersion, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId)),
-    setPreferred: async (apId: number, partId: number, apVersion: number) => {
+        revisionActive?: boolean,
+    ) => dispatch(showPartCreateModal(partType, apId, apVersion, apTypeId, scopeId, history, select, parentPartId, onUpdateFinish, revParentPartId, revisionActive)),
+    setPreferred: async (apId: number, partId: number, apVersion: number, revisionActive: boolean = false) => {
         await Api.accesspoints.accessPointSetPreferName(apId, partId, apVersion);
-        return dispatch(goToAe(history, apId, true, !select));
+        return dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
-    setRevisionPreferred: async (apId: number, partId: number, apVersion: number) => {
+    setRevisionPreferred: async (apId: number, partId: number, apVersion: number, revisionActive: boolean = false) => {
         await Api.accesspoints.accessPointSetPreferNameRevision(apId, partId, apVersion);
-        return dispatch(goToAe(history, apId, true, !select));
+        return dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
-    deletePart: async (apId: number, partId: number, apVersion: number) => {
+    deletePart: async (apId: number, partId: number, apVersion: number, revisionActive: boolean = false) => {
         await Api.accesspoints.accessPointDeletePart(apId, partId, apVersion);
-        return dispatch(goToAe(history, apId, true, !select));
+        return dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
-    deleteRevisionPart: async (apId: number, partId: number, apVersion: number) => {
+    deleteRevisionPart: async (apId: number, partId: number, apVersion: number, revisionActive: boolean = false) => {
         await Api.accesspoints.accessPointDeleteRevisionPart(apId, partId, apVersion);
-        return dispatch(goToAe(history, apId, true, !select));
+        return dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
-    deleteParts: async (apId: number, parts: ApPartVO[]) => {
+    deleteParts: async (apId: number, parts: ApPartVO[], revisionActive: boolean = false) => {
         for (let part of parts) {
             if (part.id) {
                 await Api.accesspoints.accessPointDeletePart(apId, part.id);
             }
         }
 
-        dispatch(goToAe(history, apId, true, !select));
+        dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
     updateRevisionPart: async (apId: number, part: ApPartVO, typeCode: string, apVersion: number) => {
         await WebApi.updateRevisionPart(apId, part.id, {
@@ -606,8 +608,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
             true
         ));
     },
-    refreshDetail: (apId: number, force: boolean = true, redirect: boolean = true) => {
-        dispatch(goToAe(history, apId, force, redirect));
+    refreshDetail: (apId: number, force: boolean = true, redirect: boolean = true, revisionActive: boolean = false) => {
+        dispatch(goToAe(history, apId, force, redirect, revisionActive));
     },
     fetchViewSettings: () => {
         dispatch(

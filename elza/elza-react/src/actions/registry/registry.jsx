@@ -6,7 +6,7 @@ import {SimpleListActions} from 'shared/list';
 import {DetailActions} from '../../shared/detail';
 import {indexById, storeFromArea} from 'shared/utils';
 
-import {DEFAULT_LIST_SIZE, urlEntity} from '../../constants.tsx';
+import {DEFAULT_LIST_SIZE, urlEntity, urlEntityRevision} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -96,14 +96,14 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
-export function goToAe(history, id, force = false, redirect = true) {
+export function goToAe(history, id, force = false, redirect = true, revisionActive = false) {
     return dispatch => {
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
         // Zabraneni zmeny adresy v adresnim radku, pokud
         // je RegistryPage v rezimu modalu ( vyber entity
         // pomoci tlacitka v RegistryField )
         if (redirect) {
-            history.push(urlEntity(id));
+            history.push(revisionActive ? urlEntityRevision(id) : urlEntity(id));
         }
         return result;
     };

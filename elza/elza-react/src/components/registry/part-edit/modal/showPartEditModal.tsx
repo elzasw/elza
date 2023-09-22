@@ -70,7 +70,7 @@ export const showPartEditModal = (
                         ? await WebApi.updatePart(apId, modifiedPart.id, submitData, apVersion)
                         : await WebApi.updateRevisionPart(apId, modifiedPart.id, submitData, apVersion);
                 onClose();
-                await dispatch(goToAe(history, apId, true, !select))
+                await dispatch(goToAe(history, apId, true, !select, revision))
                 onUpdateFinish();
                 return result
             }
