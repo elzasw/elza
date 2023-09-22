@@ -245,33 +245,37 @@ paths:
                 $ref: '#/components/schemas/BaseException'
   /accesspoints/{id}/copy:
     put:
-      summary: Kopírování archivní entity
-      operationId: copyAccessPoint
       tags:
         - accesspoints
+      operationId: copyAccessPoint
+      description: Copying an archive entity
       parameters:
         - name: id
-          description: Identifikátor archivní entity
           in: path
           required: true
+          description: id of accesspoint
           schema:
             type: string
-      requestBody:
-        description: Další možnosti kopírování
-        required: true
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/CopyAccessPointDetail'
       responses:
-        200:
-          description: Návratová hodnota
+        '200':
+          description: The request has succeeded.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EntityRef"
-        404:
-          description: AP neexistuje
+                $ref: '#/components/schemas/EntityRef'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: additional copy options
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyAccessPointDetail'
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -1052,6 +1056,23 @@ components:
       required:
         - type
         - code
+    CopyAccessPointDetail:
+      type: object
+      properties:
+        scope:
+          type: string
+          description: code of scope or id
+        replace:
+          type: boolean
+          description: if the original AP should be replaced
+        skipItems:
+          type: array
+          items:
+            type: integer
+          description: list of description element IDs not to copy
+      description: Additional copy options
+      required:
+        - scope
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -1063,6 +1084,22 @@ components:
             - $ref: '#/components/schemas/ReplaceType'
           description: method of replacing
       description: Data for detele/replace ApAccessPoint
+    EntityRef:
+      type: object
+      properties:
+        id:
+          type: string
+          description: id of entity
+        label:
+          type: string
+          description: visible name of entity
+        note:
+          type: string
+          description: optional description of entity
+      description: Return value when copying ApAccessPoint
+      required:
+        - id
+        - label
     ExportParams:
       type: object
       properties:
@@ -1430,24 +1467,6 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
-    CopyAccessPointDetail:
-      required:
-        - scope
-      type: object
-      description: Další možnosti kopírování archivní entity
-      properties:
-        scope:
-          description: Kód oblasti nebo její ID
-          type: string
-        replace:
-          description: Příznak, zda se má původní AP nahradit
-          type: boolean
-          default: false
-        skipItems:
-          description: Seznam ID prvků popisu, které se nemají kopírovat
-          type: array
-          items:
-            type: integer
     DeleteAccessPointsDetail:
       type: object
       description: Seznam přístupových bodů
@@ -1577,23 +1596,6 @@ components:
             - desc
       required:
         - field
-    EntityRef:
-      title: EntityRef
-      description: Found entity
-      type: object
-      properties:
-        id:
-          description: ID of entity
-          type: string
-        label:
-          description: Visible name of entity
-          type: string
-        note:
-          description: Optional description of entity
-          type: string
-      required:
-        - id
-        - label
     Result_EntityRef:
       type: object
       properties:

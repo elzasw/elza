@@ -349,18 +349,42 @@ model DeleteAccessPointDetail {
  */
 model AutoValue {
     /** identifier of the type of the description element */
-    itemTypeId: integer;
+    itemTypeId?: integer;
     /** identifier of the specification of the description element */
-    itemSpecId: integer;
+    itemSpecId?: integer;
     /** value of the element */
-    value: string;
+    value?: string;
 }
 
 /**
  * List of automatically generated items
  */
 model ResultAutoItems {
-    items: AutoValue[];
+    items?: AutoValue[];
+}
+
+/**
+ * Additional copy options
+ */
+model CopyAccessPointDetail {
+    /** code of scope or id */
+    scope: string;
+    /** if the original AP should be replaced */
+    replace?: boolean;
+    /** list of description element IDs not to copy */
+    skipItems?: integer[];
+}
+
+/**
+ * Return value when copying ApAccessPoint
+ */
+model EntityRef {
+    /** id of entity */
+    id: string;
+    /** visible name of entity */
+    label: string;
+    /** optional description of entity */
+    note?: string;
 }
 
 @route("/daorepository")
@@ -441,7 +465,7 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: string,
         /** addition for method of invalidation */
-        @body body?: DeleteAccessPointDetail;
+        @body body?: DeleteAccessPointDetail
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
@@ -457,11 +481,30 @@ namespace ElzaAPI.AccessPoint {
     @route("/{id}/autoitems")
     @get op getAutoitems(
         /** id of accesspoint */
-        @path id: string,
+        @path id: string
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
          @body data: ResultAutoItems;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Copying an archive entity
+     */
+    @route("{id}/copy")
+    @put op copyAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** additional copy options */
+        @body body: CopyAccessPointDetail
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: EntityRef;
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
