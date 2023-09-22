@@ -316,6 +316,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             select = false,
+            revisionActive
         } = this.props;
         const result = item.revStateApproval != null
             ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation')))
@@ -335,7 +336,7 @@ class RegistryPage extends AbstractReactComponent {
                                 throw Error(e);
                             }
                             dispatch(modalDialogHide());
-                            dispatch(goToAe(history, item.id, true, !select));
+                            dispatch(goToAe(history, item.id, true, !select, revisionActive));
                             return;
                         }}
                         extSystems={extSystems}
@@ -346,7 +347,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleApCopy = () => {
-        const { dispatch, detail, history } = this.props;
+        const { dispatch, detail, history, revisionActive } = this.props;
         if (!detail) { throw Error("No accesspoint detail.") }
         dispatch(
             modalDialogShow(
@@ -357,7 +358,7 @@ class RegistryPage extends AbstractReactComponent {
                         const id = detail.id;
                         const result = await Api.accesspoints.copyAccessPoint(id, data);
                         dispatch(modalDialogHide())
-                        dispatch(goToAe(history, result.data.id, true, true));
+                        dispatch(goToAe(history, result.data.id, true, true, revisionActive));
                         return;
                     }}
                     detail={detail.data}
@@ -417,6 +418,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, typeId, scopeId, stateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <ApStateChangeForm
@@ -436,7 +438,7 @@ class RegistryPage extends AbstractReactComponent {
                     await Api.accesspoints.accessPointChangeState(id, finalData, version);
 
                     dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select));
+                    dispatch(goToAe(history, id, true, !select, revisionActive));
                 }}
             />
         );
@@ -467,6 +469,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, newTypeId, revStateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <RevStateChangeForm
@@ -478,7 +481,7 @@ class RegistryPage extends AbstractReactComponent {
                     await dispatch(registryChangeStateRevision(id, version, data, history, select))
 
                     dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select));
+                    dispatch(goToAe(history, id, true, !select, revisionActive));
                     dispatch(registryListInvalidate());
                 }}
             />
@@ -493,6 +496,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, stateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <RevMergeForm
@@ -504,7 +508,7 @@ class RegistryPage extends AbstractReactComponent {
 
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
-                    this.props.dispatch(goToAe(history, id, true, !select));
+                    this.props.dispatch(goToAe(history, id, true, !select, revisionActive));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}

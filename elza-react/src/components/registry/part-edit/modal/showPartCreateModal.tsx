@@ -24,6 +24,7 @@ export const showPartCreateModal = (
     parentPartId?: number,
     onUpdateFinish: () => void = () => { },
     revParentPartId?: number,
+    revisionActive?: boolean,
 ) => (dispatch: any) => dispatch(
     modalDialogShow(
         this,
@@ -66,7 +67,7 @@ export const showPartCreateModal = (
 
                 await WebApi.createPart(apId, submitData, apVersion)
                 onClose();
-                await dispatch(goToAe(history, apId, true, !select))
+                await dispatch(goToAe(history, apId, true, !select, revisionActive))
                 onUpdateFinish();
             }
 
