@@ -4,7 +4,7 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<import value="org.apache.commons.lang.StringUtils"/>
+	<import value="org.apache.commons.lang3.StringUtils"/>
 	<style name="Serie1">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$F{depth}==2]]></conditionExpression>
@@ -818,7 +818,7 @@ StringUtils.isNotBlank($V{unitType})&&
 								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
-							<textFieldExpression><![CDATA[($F{description}!=null)?$F{description}:$F{value}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[(StringUtils.isBlank($F{description}))?$F{value}:$F{description}]]></textFieldExpression>
 							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
 						</textField>
@@ -852,7 +852,7 @@ StringUtils.isNotBlank($V{unitType})&&
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</reportElement>
 							<box topPadding="0"/>
-							<textFieldExpression><![CDATA[($F{description}!=null)?($F{description}):$F{item}.getValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[(StringUtils.isBlank($F{description}))?$F{item}.getValue():($F{description})]]></textFieldExpression>
 							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 						</textField>
 					</jr:listContents>
