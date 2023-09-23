@@ -249,10 +249,12 @@
 	// jiné rozměry s jednotkou
     .beginBlock()
         .when(cz.tacr.elza.print.format.ExpressionBuilder.hasValue("ZP2015_SIZE_OTHER"))
-          .setItemSeparator(" ")
-    	  .addValueWithSpecTitle("ZP2015_SIZE_OTHER")
           .setItemSeparator(", ")
-      	  .addValue("ZP2015_SIZE_UNITS")
+    	  .addValueWithSpecTitle("ZP2015_SIZE_OTHER", 
+    	  	       new cz.tacr.elza.print.format.HtmlFormatter()
+    	  	       	.setItemSeparator(" ")
+    	  	       	.addValue("ZP2015_SIZE_UNITS")
+    	  )
     	.end()
 	.endBlock()
     .setItemSeparator(", ")
