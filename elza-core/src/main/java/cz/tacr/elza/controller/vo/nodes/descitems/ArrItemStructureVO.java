@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
@@ -48,7 +50,11 @@ public class ArrItemStructureVO extends ArrItemVO {
         ArrDataStructureRef data = new ArrDataStructureRef();
 
         if (structureData != null) {
-            throw new BusinessException("Inconsistent data, structureData is not null", BaseCode.PROPERTY_IS_INVALID);
+            if (!Objects.equals(structureData.getId(), value)) {
+                throw new BusinessException("Inconsistent data, structureData is not null",
+                        BaseCode.PROPERTY_IS_INVALID)
+                                .set("value", value).set("structureData.id", structureData.getId());
+            }
         }
 
         // get reference
