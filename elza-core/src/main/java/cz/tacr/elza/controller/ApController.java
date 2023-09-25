@@ -384,7 +384,8 @@ public class ApController {
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
             String name = apFactory.findAeCachedEntityName(entity);
-            accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name));
+            String description = apFactory.getDescription(entity);
+            accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
         }
 
         return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
