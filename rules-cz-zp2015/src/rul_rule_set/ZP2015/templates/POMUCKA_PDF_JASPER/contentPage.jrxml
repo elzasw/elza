@@ -253,6 +253,7 @@
     	  .addValueWithSpecTitle("ZP2015_SIZE_OTHER", 
     	  	       new cz.tacr.elza.print.format.HtmlFormatter()
     	  	       	.setItemSeparator(" ")
+    	  	       	.addStaticValue(" ")
     	  	       	.addValue("ZP2015_SIZE_UNITS")
     	  )
     	.end()
