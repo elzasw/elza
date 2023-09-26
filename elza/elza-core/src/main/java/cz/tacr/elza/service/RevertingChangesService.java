@@ -7,13 +7,11 @@ import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +43,8 @@ import org.springframework.util.StopWatch;
 
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -74,7 +74,6 @@ import cz.tacr.elza.repository.ArrFileRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -119,9 +118,6 @@ public class RevertingChangesService {
     private ConfigView configView;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
@@ -162,6 +158,9 @@ public class RevertingChangesService {
 
     @Autowired
     private DmsService dmsService;
+    
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -1194,23 +1193,22 @@ public class RevertingChangesService {
         }
 
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
-        Set<Integer> descItemTypeCodes = viewTitles.getTreeItem().getIds() == null ? Collections.emptySet()
-                : new LinkedHashSet<>(viewTitles.getTreeItem().getIds());
-
-        List<RulItemType> descItemTypes = Collections.emptyList();
-        if (!descItemTypeCodes.isEmpty()) {
-            descItemTypes = itemTypeRepository.findAllById(descItemTypeCodes);
-            if (descItemTypes.size() != descItemTypeCodes.size()) {
-                List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
-                Collection<Integer> missingCodes = new HashSet<>(descItemTypeCodes);
-                // TODO: to investigate because it doesn't work
-                missingCodes.removeAll(foundCodes);
-
-                logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
-                        + " konfiguraci.");
+        
+        // TODO is it still needed?
+        List<RulItemType> descItemTypes;
+        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getIds())) {
+            descItemTypes = Collections.emptyList();
+        } else {
+            StaticDataProvider dataProvider = staticDataService.getData();
+            descItemTypes = new ArrayList<>(viewTitles.getTreeItem().getIds().size());
+            for(Integer itemTypeId: viewTitles.getTreeItem().getIds()) {
+                RulItemType itemType = dataProvider.getItemType(itemTypeId);
+                Validate.notNull(itemType, "Missing item type, id: %s", itemTypeId);
+                descItemTypes.add(itemType);
             }
         }
 
+        // TODO předělat createNodeLabels()
         HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes,
                 fundVersion.getRuleSetId(),
                 fundVersion.getFund()
