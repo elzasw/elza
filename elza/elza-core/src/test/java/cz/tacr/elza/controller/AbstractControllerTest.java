@@ -191,7 +191,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
     protected static final String DE_IMPORT_CONTROLLER_URL = "/api/import";
-    protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
+    //protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
     protected static final String USER_CONTROLLER_URL = "/api/user";
     protected static final String GROUP_CONTROLLER_URL = "/api/group";
     protected static final String ISSUE_CONTROLLER_URL = "/api/issue";
@@ -370,7 +370,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // Import/Export
     protected final static String DE_IMPORT = DE_IMPORT_CONTROLLER_URL + "/import";
-    protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
+    //protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
 
     // Import coodrinates
     protected static final String IMPORT_COORDINATES = AP_CONTROLLER_URL + "/import/coordinates";
