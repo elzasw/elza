@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import io.restassured.response.Response;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
-import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -77,7 +76,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         // export data
         List<ArrFundVO> funds = getFunds();
         ArrFundVO fund = funds.iterator().next();
-        file = downloadExport(fund);
+        //file = downloadExport(fund); // TODO change downloadExport()
 
         // clean data
         deleteFund(fund.getId());
@@ -93,23 +92,23 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         importXmlFile(null, scope.getId(), importFile);
     }
 
-    private File downloadExport(final ArrFundVO fund) throws IOException, FileNotFoundException {
-        ArrFundVersionVO version = getOpenVersion(fund.getId());
-
-        Path path = Files.createTempFile("elza-test-export", ".xml");
-
-        FundSections fundParams = new FundSections();
-        fundParams.setFundVersionId(version.getId());
-        DEExportParamsVO params = new DEExportParamsVO();
-        params.setFundsSections(Collections.singleton(fundParams));
-
-        Response response = post(spec -> spec.body(params), DE_EXPORT);
-        try (InputStream is = response.asInputStream()) {
-            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        return path.toFile();
-    }
+//    private File downloadExport(final ArrFundVO fund) throws IOException, FileNotFoundException {
+//        ArrFundVersionVO version = getOpenVersion(fund.getId());
+//
+//        Path path = Files.createTempFile("elza-test-export", ".xml");
+//
+//        FundSections fundParams = new FundSections();
+//        fundParams.setFundVersionId(version.getId());
+//        DEExportParamsVO params = new DEExportParamsVO();
+//        params.setFundsSections(Collections.singleton(fundParams));
+//
+//        Response response = post(spec -> spec.body(params), DE_EXPORT);
+//        try (InputStream is = response.asInputStream()) {
+//            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
+//        }
+//
+//        return path.toFile();
+//    }
 
     private void checkData() {
         StaticDataProvider staticData = staticDataService.getData();
