@@ -1,8 +1,8 @@
 package cz.tacr.elza.filter.condition;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.util.Assert;
 
 /**
  * Rovno.
@@ -18,7 +18,7 @@ public class EqDescItemCondition<T> extends AbstractDescItemConditionWithValue<T
 
     @Override
     public Query createLuceneQuery(QueryBuilder queryBuilder) {
-        Assert.notNull(queryBuilder);
+        Validate.notNull(queryBuilder);
 
         return queryBuilder.keyword().onField(getAttributeName()).ignoreAnalyzer().matching(getValue()).createQuery();
     }
