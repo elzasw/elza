@@ -340,7 +340,15 @@ public class ClientFactoryDO {
                     break;
                 }
                 case EQ: {
-                    if (dataType == DataType.UNITDATE) {
+                    if (dataType == DataType.INT) {
+                        Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                        String attributeName = ArrDescItem.INTGER_ATT;
+                        condition = new EqDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.DECIMAL) {
+                        Double conditionValue = getConditionValueDouble(filter.getCondition());
+                        String attributeName = ArrDescItem.DECIMAL_ATT;
+                        condition = new EqDescItemCondition<>(conditionValue, attributeName);
+                    } else if (dataType == DataType.UNITDATE) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDesCitemCondition<>(conditionValue,
                                 ArrDescItem.NORMALIZED_FROM_ATT,
