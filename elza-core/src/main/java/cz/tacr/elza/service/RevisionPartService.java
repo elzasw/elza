@@ -122,6 +122,31 @@ public class RevisionPartService {
         return revPartRepository.save(revPart);
     }
 
+    /**
+     * Create new RevPart with ApPart Type
+     * 
+     * @param revision
+     * @param apChange
+     * @param origPart
+     * @param revParentPart
+     * 
+     * @return
+     */
+    public ApRevPart createPart(final ApRevision revision,
+                                final ApChange apChange,
+                                final ApPart origPart,
+                                final ApRevPart revParentPart) {
+
+        ApRevPart revPart = new ApRevPart();
+        revPart.setRevision(revision);
+        revPart.setPartType(origPart.getPartType());
+        revPart.setCreateChange(apChange);
+        revPart.setRevParentPart(revParentPart);
+        revPart.setDeleted(false);
+
+        return revPartRepository.save(revPart);
+    }
+
     public void updatePartValue(ApRevPart part,
                                 GroovyResult result) {
 
