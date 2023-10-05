@@ -109,6 +109,12 @@ public class RevisionService {
 
     @Transactional
     public ApRevision createRevision(ApState state) {
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+        return createRevision(state, change);
+    }
+
+    @Transactional
+    public ApRevision createRevision(ApState state, ApChange change) {
         ApRevision revision = findRevisionByState(state);
         if (revision != null) {
             throw new BusinessException("Revize pro přístupový bod již existuje, apStateId: " + state.getStateId(),
@@ -133,8 +139,6 @@ public class RevisionService {
                 }
             }
         }
-
-        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
 
         revision = new ApRevision();
         revision.setState(state);
