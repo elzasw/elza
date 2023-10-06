@@ -293,9 +293,6 @@ public class AccessPointService {
     private RevisionItemService revisionItemService;
 
     @Autowired
-    private ItemService itemService;
-
-    @Autowired
     private EntityManager em;
 
     @Value("${elza.scope.deleteWithEntities:false}")
@@ -482,12 +479,13 @@ public class AccessPointService {
             // kopírování všechny Part z accessPoint->replacedBy
             if (mergeAp) {
                 // pokud nahrazující entita je schválena - vytvořime revizi, nebo pokud má revizi - používáme revizi
-                ApRevision revision = revisionService.findRevisionByState(replacedByState);
-                if (replacedByState.getStateApproval() == StateApproval.APPROVED || revision != null) {
-                    if (revision == null) {
-                        revision = revisionService.createRevision(replacedByState, change);
+                ApRevState revState = revisionService.findRevStateByState(replacedByState);
+                validationMergePossibility(revState);
+                if (replacedByState.getStateApproval() == StateApproval.APPROVED || revState != null) {
+                    if (revState == null) {
+                        revState = revisionService.createRevision(replacedByState, change);
                     }
-                    mergeParts(accessPoint, replacedBy, change, revision);
+                    mergeParts(accessPoint, replacedBy, change, revState);
                 } else {
                     mergeParts(accessPoint, replacedBy, change);
                 }
@@ -552,6 +550,21 @@ public class AccessPointService {
             throw new BusinessException("Cílová entita čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
                 .set("stateApproval", state.getStateApproval());
+        }
+    }
+
+    /**
+     * Validace možnosti sloučení podle stavu revizi
+     * 
+     * @param revState
+     */
+    private void validationMergePossibility(final ApRevState revState) {
+        if (revState != null) {
+            if (revState.getStateApproval() == RevStateApproval.TO_APPROVE) {
+                throw new BusinessException("Cílová entita má revizi, která čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
+                .set("accessPointId", revState.getRevision().getState().getAccessPointId())
+                .set("revStateApproval", revState.getStateApproval());
+            }
         }
     }
 
@@ -1148,7 +1161,8 @@ public class AccessPointService {
             ApRevision revision = revisionByApId.get(apId);
             if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
                 // prepare revision
-                revision = revisionService.createRevision(apState);
+                ApRevState revState = revisionService.createRevision(apState);
+                revision = revState.getRevision();
                 revisionByApId.put(apId, revision);
             }
             if (revision != null) {
@@ -3361,9 +3375,9 @@ public class AccessPointService {
      * @param accessPoint
      * @param targetAccessPoint
      * @param change
-     * @param revision
+     * @param revState
      */
-    private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevision revision) {
+    private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevState revState) {
         List<ApPart> fromParts = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> fromItemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
@@ -3378,7 +3392,7 @@ public class AccessPointService {
         Map<Integer, PartWithSubParts> toWSMapParts = toWSParts.stream()
                 .collect(Collectors.toMap(p -> p.getPart().getPartId(), p -> p));
 
-        ApRevState revState = revisionService.findLastRevState(revision);
+        ApRevision revision = revState.getRevision();
 
         for (PartWithSubParts fromWSPart : fromWSParts) {
             ApPart partFrom = fromWSPart.getPart();
@@ -3761,6 +3775,4 @@ public class AccessPointService {
     public List<Integer> findByState(ApStateEnum init) {
         return apAccessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
     }
-
-
 }
