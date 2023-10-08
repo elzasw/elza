@@ -10,7 +10,8 @@ export const getRevisionParts = (parts: ApPartVO[] = [], updatedParts: ApPartVO[
         // nalezeni odpovidajiciho partu v updatedParts
         const updatedPart = updatedParts.find((updatedPart) => updatedPart.origPartId === part.id);
 
-        if(updatedPart?.items && updatedPart.items.length > 0){
+        if( (updatedPart?.items && updatedPart.items.length > 0) ||
+            (updatedPart?.value && updatedPart?.value!=part?.value) ) {
             revisionItems.push({part, updatedPart});
         } else {
             revisionItems.push({part});

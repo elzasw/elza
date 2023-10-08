@@ -952,24 +952,27 @@ public class ApController {
     /**
      * Úprava části přístupového bodu.
      *
-     * @param id identifikátor přístupového bodu (PK)
-     * @param partId identifikátor upravované části
-     * @param apPartFormVO data pro úpravu části
+     * @param id
+     *            identifikátor přístupového bodu (PK)
+     * @param revPartId
+     *            identifikátor upravované části
+     * @param apPartFormVO
+     *            data pro úpravu části
      * @param apVersion?
      * 
      * @return apVersion
      */
     @Transactional
-    @RequestMapping(value = "/revision/{id}/part/{partId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/revision/{id}/part/{revPartId}", method = RequestMethod.POST)
     public Integer updateRevisionPart(@PathVariable final Integer id,
-                                      @PathVariable final Integer partId,
+                                      @PathVariable final Integer revPartId,
                                       @RequestBody final ApPartFormVO apPartFormVO,
                                       @RequestParam(required = false) Integer apVersion) {
 
         ApState state = accessPointService.getStateInternal(id);
         ApAccessPoint accessPoint = accessPointService.lockAccessPoint(state.getAccessPointId(), apVersion);
         ApRevision revision = revisionService.findRevisionByState(state);
-        ApRevPart revPart = revisionPartService.findById(partId);
+        ApRevPart revPart = revisionPartService.findById(revPartId);
         revisionService.updatePart(state, revision, revPart, apPartFormVO);
 
         return accessPoint.getVersion();

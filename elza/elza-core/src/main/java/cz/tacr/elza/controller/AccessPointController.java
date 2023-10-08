@@ -427,7 +427,8 @@ public class AccessPointController implements AccesspointsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId, Integer apVersion) {
+    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId,
+                                                                 Integer apVersion) {
         ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(accessPoint);
 
