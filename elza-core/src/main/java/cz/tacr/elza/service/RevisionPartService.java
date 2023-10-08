@@ -147,8 +147,14 @@ public class RevisionPartService {
         return revPartRepository.save(revPart);
     }
 
-    public void updatePartValue(ApRevPart part,
-                                GroovyResult result) {
+    /**
+     * Update indexed for given part
+     * 
+     * @param part
+     * @param result
+     *            Result of Groovy
+     */
+    public void updateRevIndexes(ApRevPart part, GroovyResult result) {
 
         Map<String, String> indexMap = result.getIndexes();
 
@@ -157,7 +163,8 @@ public class RevisionPartService {
             throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
         }
 
-        Map<String, ApRevIndex> indexMapByType = revIndexRepository.findByPart(part).stream()
+        List<ApRevIndex> oldDbIndexes = revIndexRepository.findByPart(part);
+        Map<String, ApRevIndex> indexMapByType = oldDbIndexes.stream()
                 .collect(Collectors.toMap(ApRevIndex::getIndexType, Function.identity()));
 
         for (Map.Entry<String, String> entry : indexMap.entrySet()) {

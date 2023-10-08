@@ -1635,7 +1635,16 @@ public class AccessPointService {
         List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
         GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childParts, accessPointItemList, preferred);
 
-        return partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred);
+        boolean success = partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred);
+        if (success) {
+            // update parent part indexes
+            ApPart parentPart = apPart.getParentPart();
+            if (parentPart != null) {
+                success = updatePartValue(state, parentPart);
+            }
+        }
+
+        return success;
     }
 
     /**
@@ -3413,14 +3422,14 @@ public class AccessPointService {
                 // vytvoření nového ApRevPart
                 ApRevPart revPartTo = revisionPartService.createPart(revision, change, partFrom, null);
                 revisionItemService.createItems(change, revPartTo, fromItemMap.get(partFrom.getPartId()));
-                revisionService.updatePartValue(revPartTo, revState);
+                revisionService.updatePartValue(revPartTo, revState, change);
 
                 // kopírování podřízených ApRevPart
                 List<ApPart> fromSubParts = fromWSPart.getSubParts();
                 for (ApPart subPart : fromSubParts) {
                     ApRevPart revPart = revisionPartService.createPart(revision, change, subPart, revPartTo);
                     revisionItemService.createItems(change, revPart, fromItemMap.get(subPart.getPartId()));
-                    revisionService.updatePartValue(revPart, revState);
+                    revisionService.updatePartValue(revPart, revState, change);
                 }
             } else {
                 // získání nebo vytvoření nového ApRevPart na základě targetPart
@@ -3429,7 +3438,7 @@ public class AccessPointService {
                     revPartTo = revisionPartService.createPart(revision, change, targetPart, false);
                 }
                 revisionItemService.createItems(change, revPartTo, fromItemMap.get(partFrom.getPartId()), toItemMap.get(targetPart.getPartId()));
-                revisionService.updatePartValue(revPartTo, revState);
+                revisionService.updatePartValue(revPartTo, revState, change);
 
                 // přidání chybějících podřízených ApRevPart
                 List<ApPart> targetSubParts = toWSMapParts.get(targetPart.getPartId()).getSubParts();
@@ -3439,7 +3448,7 @@ public class AccessPointService {
                     if (findPart == null) {
                         ApRevPart revPart = revisionPartService.createPart(revision, change, fromSubPart, revPartTo);
                         revisionItemService.createItems(change, revPart, fromItemMap.get(fromSubPart.getPartId()));
-                        revisionService.updatePartValue(revPart, revState);
+                        revisionService.updatePartValue(revPart, revState, change);
                     }
                 }
             }
