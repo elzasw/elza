@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -17,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.google.common.base.Objects;
 
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -464,26 +463,6 @@ public class RevisionItemService {
     }
 
     /**
-     * Create new ApRevItem
-     * 
-     * @param change
-     * @param revPart
-     * @param apItem
-     * @return
-     */
-    public ApRevItem createItem(ApChange change, ApRevPart revPart, ApItem apItem) {
-        ApRevItem newItem = createItem(revPart, apItem.getData(),
-                                       apItem.getItemType(),
-                                       apItem.getItemSpec(),
-                                       change,
-                                       apItem.getObjectId(),
-                                       apItem.getPosition(),
-                                       null,
-                                       false);
-        return revItemRepository.saveAndFlush(newItem);
-    }
-
-    /**
      * Create list of ApRevItem with all new ApRevItem
      * 
      * @param change
@@ -492,9 +471,12 @@ public class RevisionItemService {
      * @return
      */
     public List<ApRevItem> createItems(ApChange change, ApRevPart revPart, List<ApItem> items) {
-        List<ApRevItem> revItems = new ArrayList<ApRevItem>(items.size());
+        List<ApRevItem> revItems = new ArrayList<>(items.size());
+        List<ArrData> dataList = new ArrayList<>(items.size());
         for (ApItem item : items) {
-            ApRevItem newItem = createItem(revPart, item.getData(),
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            dataList.add(newData);
+            ApRevItem newItem = createItem(revPart, newData,
                                            item.getItemType(),
                                            item.getItemSpec(),
                                            change,
@@ -504,6 +486,7 @@ public class RevisionItemService {
                                            false);
             revItems.add(newItem);
         }
+        dataRepository.saveAll(dataList);
         return revItemRepository.saveAll(revItems);
     }
 
@@ -517,19 +500,27 @@ public class RevisionItemService {
      * @return
      */
     public List<ApRevItem> createItems(ApChange change, ApRevPart revPart, List<ApItem> fromItems, List<ApItem> toItems) {
-        List<ApRevItem> revItems = new ArrayList<ApRevItem>(fromItems.size());
+        List<ApRevItem> revItems = new ArrayList<>();
+        List<ArrData> dataList = new ArrayList<>();
         ApRevItem newItem;
         for (ApItem item : fromItems) {
-            ApItem findItem = findByTypeAndSpec(item, toItems);
-            // pokud ApItem již má revizi - vytvoříme nový RevApItem
-            if (findItem != null) {
-                if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
-                    findItem = null;
-                }
+            // pokud takový ApItem již existuje - nekopírovat
+            if (isApItemInList(item, toItems)) {
+                continue;
             }
+            ApItem findItem = findByTypeAndSpec(item, toItems);
+//            // pokud ApItem již má revizi - vytvoříme nový RevApItem
+//            if (findItem != null) {
+//                if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
+//                    findItem = null;
+//                }
+//            }
+            //ApItem findItem = null;
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            dataList.add(newData);
             if (findItem == null) {
                 // nový RevApItem
-                newItem = createItem(revPart, item.getData(), // new item
+                newItem = createItem(revPart, newData, // new item
                                      item.getItemType(),
                                      item.getItemSpec(),
                                      change,
@@ -539,7 +530,7 @@ public class RevisionItemService {
                                      false);
             } else {
                 // RevApItem na základě ApItem
-                newItem = createItem(revPart, item.getData(), // new data to findItem
+                newItem = createItem(revPart, newData, // new data to findItem
                                      item.getItemType(),
                                      item.getItemSpec(),
                                      change,
@@ -550,6 +541,7 @@ public class RevisionItemService {
             }
             revItems.add(newItem);
         }
+        dataRepository.saveAll(dataList);
         return revItemRepository.saveAll(revItems);
     }
 
@@ -560,13 +552,27 @@ public class RevisionItemService {
      * @param items
      * @return
      */
-    private ApItem findByTypeAndSpec(ApItem apItem, List<ApItem> items) {
-        for (ApItem item : items) {
-            if (Objects.equal(apItem.getItemTypeId(), item.getItemTypeId()) 
-                    && Objects.equal(apItem.getItemSpecId(), item.getItemSpecId())) {
+    private ApItem findByTypeAndSpec(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId()) 
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())) {
                 return item;
             }
         }
         return null;
+    }
+
+    //
+    // TODO common (already exists in AccessPointService)
+    //
+    private boolean isApItemInList(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId())
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())
+                    && item.getData().isEqualValue(i.getData())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
