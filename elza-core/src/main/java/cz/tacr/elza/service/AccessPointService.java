@@ -466,7 +466,10 @@ public class AccessPointService {
             	}
             }
 
-            // při sloučení nahrazující entita nemůže být ve stavu TO_APPROVE (Ke schválení)
+            // při sloučení nahrazující entita nemůže být ve stavu TO_APPROVE (Ke schválení) // nebo má revizi
+            //
+            // TODO: dočasně zakázana možnost sloučení s entitou, která má revizi.
+            //
             if (mergeAp) {
                 validationMergePossibility(replacedByState);
             }
@@ -550,6 +553,13 @@ public class AccessPointService {
             throw new BusinessException("Cílová entita čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
                 .set("stateApproval", state.getStateApproval());
+        }
+        ApRevState revState = revisionService.findRevStateByState(state);
+        if (revState != null) {
+            throw new BusinessException("Cílová entita má revizi a nelze ji měnit sloučením", RegistryCode.CANT_MERGE)
+            .set("accessPointId", state.getAccessPointId())
+            .set("stateApproval", state.getStateApproval())
+            .set("revisionId", revState.getRevisionId());
         }
     }
 
