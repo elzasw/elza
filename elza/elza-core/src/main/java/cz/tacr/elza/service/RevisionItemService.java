@@ -521,7 +521,14 @@ public class RevisionItemService {
         ApRevItem newItem;
         for (ApItem item : fromItems) {
             ApItem findItem = findByTypeAndSpec(item, toItems);
+            // pokud ApItem již má revizi - vytvoříme nový RevApItem
+            if (findItem != null) {
+                if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
+                    findItem = null;
+                }
+            }
             if (findItem == null) {
+                // nový RevApItem
                 newItem = createItem(revPart, item.getData(), // new item
                                      item.getItemType(),
                                      item.getItemSpec(),
@@ -531,6 +538,7 @@ public class RevisionItemService {
                                      null,
                                      false);
             } else {
+                // RevApItem na základě ApItem
                 newItem = createItem(revPart, item.getData(), // new data to findItem
                                      item.getItemType(),
                                      item.getItemSpec(),
