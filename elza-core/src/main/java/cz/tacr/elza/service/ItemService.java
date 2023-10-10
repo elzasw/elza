@@ -45,10 +45,8 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.utils.MapyCzUtils;
 
@@ -59,12 +57,6 @@ import cz.tacr.elza.utils.MapyCzUtils;
 public class ItemService {
 
     private final Logger log = LoggerFactory.getLogger(ItemService.class);
-
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;

@@ -148,9 +148,12 @@ public class DescItem {
     }
 
     /**
-     * Je atribut označen jako efektivní?
+     * Je atribut poděděn.
+     * 
+     * Příznak není vhodné využívat při vyhodnocování pravidel.
+     * Hrozí omyl při použití !!!
      *
-     * @return je efektivní?
+     * @return vrací příznak, zda je atribut zděděn z vyšší úrovně
      */
     public boolean isInherited() {
         return nodeId != null;

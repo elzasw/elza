@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import {goToAe, getArchiveEntityUrl } from '../../../../actions/registry/registry';
+import {goToAe} from '../../../../actions/registry/registry';
 import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
@@ -28,6 +28,7 @@ import { SyncState } from '../../../../api/SyncState';
 import {RouteComponentProps, withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import {diffChars, diffWords} from "diff";
+import { urlEntity } from '../../../../constants';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -141,7 +142,7 @@ const DetailItemContent: FC<Props> = ({
             if (recordRefItem.value) {
                 valueField = (
                     <Link 
-                        to={getArchiveEntityUrl(recordRefItem.value)} 
+                        to={urlEntity(recordRefItem.value)} 
                     >
                         {displayValue}
                     </Link>

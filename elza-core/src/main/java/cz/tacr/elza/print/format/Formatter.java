@@ -102,11 +102,38 @@ public class Formatter {
 		return addAction(new ValueWithTitleFormatter(itemType));
 	}
 
-	/**
-	 * Add specification and value for given type with additional format
-	 * @param itemType
-	 * @return
-	 */
+    /**
+     * Add specification and value for given type
+     * 
+     * @param itemType
+     * @param formatter
+     *            Postfix formatter
+     * @return
+     */
+    public Formatter addValueWithSpecTitle(String itemType, Formatter formatter) {
+        return addAction(new ValueWithTitleFormatter(itemType, formatter)
+                .setAppendItemTypeTitle(false));
+    }
+
+    /**
+     * Add specification and value for given type followed by postfix
+     * 
+     * @param itemType
+     * @param
+     * @return
+     */
+    public Formatter addValueWithSpecTitle(String itemType) {
+        return addAction(new ValueWithTitleFormatter(itemType).setAppendItemTypeTitle(false));
+    }
+
+    /**
+     * Add specification and value for given type with additional format (postfix)
+     * 
+     * @param itemType
+     * @param formatter
+     *            Postfix formatter
+     * @return
+     */
 	public Formatter addValueWithTitle(String itemType, Formatter formatter) {
 		return addAction(new ValueWithTitleFormatter(itemType, formatter));
 	}

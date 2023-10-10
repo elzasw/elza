@@ -29,6 +29,7 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -279,7 +280,8 @@ public class ApControllerTest extends AbstractControllerTest {
 
         ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
 
-        Integer revPartId = createPart(accessPoint.getId(), partFormVO);
+        CreatedPartVO createdPart = createPart(accessPoint.getId(), partFormVO);
+        Integer revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
 
         // drop revision
@@ -292,7 +294,8 @@ public class ApControllerTest extends AbstractControllerTest {
         accessPoint = getAccessPoint(accessPoint.getId());
         assertEquals(accessPoint.getRevStateApproval(), RevStateApproval.ACTIVE);
 
-        revPartId = createPart(accessPoint.getId(), partFormVO);
+        createdPart = createPart(accessPoint.getId(), partFormVO);
+        revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
         // check revPart
         accessPoint = getAccessPoint(accessPoint.getId());
@@ -542,8 +545,9 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApItemVO> bodyItemsB = new ArrayList<>();
         bodyItemsB.add(buildApItem(BRIEF_DESC, null, "ApRecordB desc", null, null));
-        Integer partBodyBId = createPart(replacementRecordCreated.getId(),
-                                         createPartFormVO(null, ptBody.getCode(), null, bodyItemsB));
+        CreatedPartVO createdPart = createPart(replacementRecordCreated.getId(),
+                                               createPartFormVO(null, ptBody.getCode(), null, bodyItemsB));
+        Integer partBodyBId = createdPart.getPartId();
         assertNotNull(partBodyBId);
 
         // AP C: Vytvoření AP s vazbou na replaced
@@ -561,14 +565,14 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApItemVO> bodyItemsC = new ArrayList<>();
         bodyItemsC.add(buildApItem(BRIEF_DESC, null, "ApRecordC desc", null, null));
-        Integer partBodyCId = createPart(recordCCreated.getId(), createPartFormVO(null, ptBody.getCode(), null,
-                                                                                  bodyItemsC));
+        createdPart = createPart(recordCCreated.getId(), createPartFormVO(null, ptBody.getCode(), null, bodyItemsC));
+        Integer partBodyCId = createdPart.getPartId();
         assertNotNull(partBodyCId);
 
         List<ApItemVO> relItemsC = new ArrayList<>();
         relItemsC.add(buildApItem(REL_ENTITY, RT_BROTHER, replacedRecordCreated, null, null));
-        Integer partRelCId = createPart(recordCCreated.getId(), createPartFormVO(null, ptRel.getCode(), null,
-                                                                                 relItemsC));
+        createdPart = createPart(recordCCreated.getId(), createPartFormVO(null, ptRel.getCode(), null, relItemsC));
+        Integer partRelCId = createdPart.getPartId();
         assertNotNull(partRelCId);
 
         // AP D: Vytvoření schváleného AP s vazbou na replaced
@@ -586,14 +590,14 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApItemVO> bodyItemsD = new ArrayList<>();
         bodyItemsD.add(buildApItem(BRIEF_DESC, null, "ApRecordD desc", null, null));
-        Integer partBodyDId = createPart(recordDCreated.getId(), createPartFormVO(null, ptBody.getCode(), null,
-                                                                                  bodyItemsD));
+        createdPart = createPart(recordDCreated.getId(), createPartFormVO(null, ptBody.getCode(), null, bodyItemsD));
+        Integer partBodyDId = createdPart.getPartId();
         assertNotNull(partBodyDId);
 
         List<ApItemVO> relItemsD = new ArrayList<>();
         relItemsD.add(buildApItem(REL_ENTITY, RT_BROTHER, replacedRecordCreated, null, null));
-        Integer partRelDId = createPart(recordDCreated.getId(), createPartFormVO(null, ptRel.getCode(), null,
-                                                                                 relItemsD));
+        createdPart = createPart(recordDCreated.getId(), createPartFormVO(null, ptRel.getCode(), null, relItemsD));
+        Integer partRelDId = createdPart.getPartId(); 
         assertNotNull(partRelDId);
 
         // mark as approved

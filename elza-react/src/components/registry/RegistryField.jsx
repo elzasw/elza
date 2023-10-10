@@ -159,7 +159,7 @@ class RegistryField extends AbstractReactComponent {
         return (
             <TooltipTrigger
                 key={item.id}
-                content={item.characteristics}
+                content={item.description}
                 holdOnHover
                 placement="horizontal"
                 className="tooltip-container"

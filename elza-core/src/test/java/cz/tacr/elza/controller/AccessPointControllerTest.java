@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -36,6 +37,7 @@ import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
+import cz.tacr.elza.test.controller.vo.ReplaceType;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
 
@@ -128,7 +130,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
 
-        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         // check if deleted
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
@@ -165,9 +167,9 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
-        deleteAPDetail.setReplaceType(DeleteAccessPointDetail.ReplaceTypeEnum.COPY_ALL);
+        deleteAPDetail.setReplaceType(ReplaceType.COPY_ALL);
 
-        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);
@@ -200,7 +202,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
 
-        Integer revPartId = createPart(ap1.getAccessPointId(), partFormVO);
+        CreatedPartVO createdPart = createPart(ap1.getAccessPointId(), partFormVO);
+        Integer revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
 
         accesspointsApi.accessPointSetPreferNameRevision(apVo.getId(), revPartId, null);

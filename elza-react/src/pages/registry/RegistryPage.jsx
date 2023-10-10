@@ -8,7 +8,7 @@ import RegistryList from '../../components/registry/RegistryList';
 import { Button } from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, getArchiveEntityUrl, AREA_REGISTRY_DETAIL
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import { refRecordTypesFetchIfNeeded } from '../../actions/refTables/recordTypes.jsx';
@@ -20,7 +20,7 @@ import { PropTypes } from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, URL_ENTITY } from '../../constants.tsx';
+import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, urlEntity } from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
@@ -77,6 +77,7 @@ class RegistryPage extends AbstractReactComponent {
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
         fund: PropTypes.object,
+        revisionActive: PropTypes.boolean,
     };
 
     state = { items: [] };
@@ -118,13 +119,13 @@ class RegistryPage extends AbstractReactComponent {
 
             // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
             if (registryDetail.id !== null && matchId == null) {
-                history.replace(`${URL_ENTITY}/${registryDetail.id}`);
+                history.replace(urlEntity(registryDetail.id));
             }
 
             if (isUuid(matchId)) {
                 dispatch(registryDetailFetchIfNeeded(matchId)).then((data) => {
                     if (data) {
-                        dispatch(routerNavigate(getArchiveEntityUrl(data.id), "REPLACE"));
+                        dispatch(routerNavigate(urlEntity(data.id), "REPLACE"));
                     }
                 });
             } else if (isInteger(matchId)) {
@@ -315,6 +316,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             select = false,
+            revisionActive
         } = this.props;
         const result = item.revStateApproval != null
             ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation')))
@@ -334,7 +336,7 @@ class RegistryPage extends AbstractReactComponent {
                                 throw Error(e);
                             }
                             dispatch(modalDialogHide());
-                            dispatch(goToAe(history, item.id, true, !select));
+                            dispatch(goToAe(history, item.id, true, !select, revisionActive));
                             return;
                         }}
                         extSystems={extSystems}
@@ -345,7 +347,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleApCopy = () => {
-        const { dispatch, detail, history } = this.props;
+        const { dispatch, detail, history, revisionActive } = this.props;
         if (!detail) { throw Error("No accesspoint detail.") }
         dispatch(
             modalDialogShow(
@@ -356,7 +358,7 @@ class RegistryPage extends AbstractReactComponent {
                         const id = detail.id;
                         const result = await Api.accesspoints.copyAccessPoint(id, data);
                         dispatch(modalDialogHide())
-                        dispatch(goToAe(history, result.data.id, true, true));
+                        dispatch(goToAe(history, result.data.id, true, true, revisionActive));
                         return;
                     }}
                     detail={detail.data}
@@ -416,6 +418,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, typeId, scopeId, stateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <ApStateChangeForm
@@ -435,7 +438,7 @@ class RegistryPage extends AbstractReactComponent {
                     await Api.accesspoints.accessPointChangeState(id, finalData, version);
 
                     dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select));
+                    dispatch(goToAe(history, id, true, !select, revisionActive));
                 }}
             />
         );
@@ -466,6 +469,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, newTypeId, revStateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <RevStateChangeForm
@@ -477,7 +481,7 @@ class RegistryPage extends AbstractReactComponent {
                     await dispatch(registryChangeStateRevision(id, version, data, history, select))
 
                     dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select));
+                    dispatch(goToAe(history, id, true, !select, revisionActive));
                     dispatch(registryListInvalidate());
                 }}
             />
@@ -492,6 +496,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: { id, stateApproval, version },
             },
             select = false,
+            revisionActive,
         } = this.props;
         const form = (
             <RevMergeForm
@@ -503,7 +508,7 @@ class RegistryPage extends AbstractReactComponent {
 
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
-                    this.props.dispatch(goToAe(history, id, true, !select));
+                    this.props.dispatch(goToAe(history, id, true, !select, revisionActive));
                     this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
@@ -527,6 +532,7 @@ class RegistryPage extends AbstractReactComponent {
             customRibbon,
             registryDetail,
             select,
+            revisionActive,
         } = this.props;
 
         const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
@@ -703,7 +709,7 @@ class RegistryPage extends AbstractReactComponent {
 
                 if (hasRevision) {
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={this.handleDeleteRevision}>
                             <Icon glyph="fa-undo" />
                             <div>
                                 <span className="btnText">{i18n('registry.deleteRevision')}</span>
@@ -711,7 +717,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
                             <Icon glyph="fa-pencil" />
                             <div>
                                 <span className="btnText">{i18n('registry.changeStateRevision')}</span>
@@ -719,7 +725,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                     revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
+                        <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={this.handleMergeRevision}>
                             <Icon glyph="fa-check" />
                             <div>
                                 <span className="btnText">{i18n('registry.mergeRevision')}</span>
@@ -817,6 +823,7 @@ class RegistryPage extends AbstractReactComponent {
                         id={registryDetail?.data?.id}
                         editMode={this.getEditMode()}
                         onPushApToExt={this.handlePushApToExt}
+                        revisionActive={this.props.revisionActive}
                     />}
             </div>
         );

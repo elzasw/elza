@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -144,14 +145,40 @@ public class GroovyService {
         return new GroovyAe(apType.getCode(), groovyParts);
     }
 
+    /**
+     * 
+     * @param apTypeId
+     * @param part
+     * @param childrenParts
+     * @param items
+     *            List of item. Might contain also items from another part.
+     *            At least should contain items for this part and its childrenParts.
+     * @param preferred
+     * @return
+     */
     public GroovyResult processGroovy(@NotNull final Integer apTypeId,
-                                      @NotNull final AccessPointPart part,
+                                      @NotNull final ApPart part,
                                       @Nullable final List<? extends AccessPointPart> childrenParts,
                                       @NotNull final List<? extends AccessPointItem> items,
                                       final boolean preferred) {
         return processGroovy(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
     }
 
+    /**
+     * 
+     * @param apTypeId
+     * @param part
+     * @param childrenParts
+     * @param items
+     *            List of item. Might contain also items from another part.
+     *            At least should contain items for this part and its childrenParts.
+     * @param revItems
+     *            List of revItems. Might contain also revItems from another part.
+     *            At least should contain revItems for this part and its
+     *            childrenParts.
+     * @param preferred
+     * @return
+     */
     public GroovyResult processGroovy(@NotNull final Integer apTypeId,
                                       @NotNull final AccessPointPart part,
                                       @Nullable final List<? extends AccessPointPart> childrenParts,
@@ -184,24 +211,61 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
+    /**
+     * 
+     * @param apTypeId
+     * @param part
+     * @param childrenParts
+     * @param items
+     *            List of item. Might contain also items from another part.
+     *            At least should contain items for this part and its childrenParts.
+     * @param revItems
+     *            List of revItems. Might contain also revItems from another part.
+     *            At least should contain revItems for this part and its
+     *            childrenParts.
+     * @param preferred
+     * @return
+     */
     public GroovyPart convertPart(@NotNull final Integer apTypeId,
                                   @NotNull final AccessPointPart part,
                                   @Nullable final List<? extends AccessPointPart> childrenParts,
                                   @NotNull final List<? extends AccessPointItem> items,
                                   @NotNull final List<ApRevItem> revItems,
                                   final boolean preferred) {
+        if (part == null) {
+            throw new IllegalArgumentException("part cannot be null");
+        }
+        AccessPointPart rawPart = HibernateUtils.unproxy(part);
+        ApPart apPart = null;
+        ApRevPart apRevPart = null;
+        if (rawPart instanceof ApPart) {
+            apPart = (ApPart) rawPart;
+        } else if (rawPart instanceof ApRevPart) {
+            apRevPart = (ApRevPart) rawPart;
+        }
+
         StaticDataProvider sdp = staticDataService.getData();
 
         // příprava seznamů změněných a přidaných ApRevItem
         HashMap<Integer, ApRevItem> modifiedItems = new HashMap<>();
         List<ApRevItem> appendedItems = new ArrayList<>();
         for (ApRevItem revItem : revItems) {
-            if (revItem.getOrigObjectId() == null) {
-                if (Objects.equals(part.getPartId(), revItem.getPart().getOriginalPartId())) {
+            ApRevPart itemPart = revItem.getPart();
+            boolean ownRevItem = false;
+            // check if revItem belongs to the part
+            if (apRevPart != null && Objects.equals(apRevPart.getRevParentPartId(), itemPart.getPartId())) {
+                // parent is revision everything is ok
+                ownRevItem = true;
+            } else if (apPart != null && Objects.equals(apPart.getPartId(), itemPart.getOriginalPartId())) {
+                // parent is origPart, everything is ok
+                ownRevItem = true;
+            }
+            if (ownRevItem) {
+                if (revItem.getOrigObjectId() == null) {
                     appendedItems.add(revItem);
+                } else {
+                    modifiedItems.put(revItem.getOrigObjectId(), revItem);
                 }
-            } else {
-                modifiedItems.put(revItem.getOrigObjectId(), revItem);
             }
         }
 
@@ -230,7 +294,7 @@ public class GroovyService {
 
         List<GroovyPart> groovyParts = Collections.emptyList();
         if (childrenParts != null) {
-            groovyParts = new ArrayList<>();
+            groovyParts = new ArrayList<>(childrenParts.size());
             for (AccessPointPart childPart : childrenParts) {
                 groovyParts.add(convertPart(apTypeId, childPart, null, items, revItems, false));
             }

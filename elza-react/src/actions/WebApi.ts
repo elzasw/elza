@@ -953,9 +953,11 @@ export class WebApiCls {
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
+     * @param apVersion verze přístupového bodu
+     * @return poartId,apVersion
      */
-    createPart(accessPointId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', null, apPartFormVO);
+    createPart(accessPointId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', { apVersion }, apPartFormVO);
     }
 
     /**
@@ -964,9 +966,11 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param partId identifikátor upravované části
      * @param apPartFormVO data pro úpravu části
+     * @param apVersion verze přístupového bodu
+     * @return apVersion
      */
-    updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**
@@ -975,9 +979,11 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param partId identifikátor upravované části
      * @param apPartFormVO data pro úpravu části
+     * @param apVersion verze přístupového bodu
+     * @return apVersion
      */
-    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**

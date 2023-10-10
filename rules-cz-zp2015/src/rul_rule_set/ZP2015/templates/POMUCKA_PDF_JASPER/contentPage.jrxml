@@ -4,7 +4,7 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<import value="org.apache.commons.lang.StringUtils"/>
+	<import value="org.apache.commons.lang3.StringUtils"/>
 	<style name="Serie1">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$F{depth}==2]]></conditionExpression>
@@ -135,6 +135,7 @@
 		<field name="item" class="cz.tacr.elza.print.item.ItemUriRef">
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
+		<field name="value" class="java.lang.String"/>
 	</subDataset>
 	<subDataset name="ItemCoords" uuid="99f11d1e-0c0e-4dd3-a896-388b6014c8ed">
 		<parameter name="node" class="cz.tacr.elza.print.Node"/>
@@ -245,8 +246,20 @@
       	  .addValue("ZP2015_SIZE_UNITS")
     	.end()
 	.endBlock()
+	// jiné rozměry s jednotkou
+    .beginBlock()
+        .when(cz.tacr.elza.print.format.ExpressionBuilder.hasValue("ZP2015_SIZE_OTHER"))
+          .setItemSeparator(", ")
+    	  .addValueWithSpecTitle("ZP2015_SIZE_OTHER", 
+    	  	       new cz.tacr.elza.print.format.HtmlFormatter()
+    	  	       	.setItemSeparator(" ")
+    	  	       	.addStaticValue(" ")
+    	  	       	.addValue("ZP2015_SIZE_UNITS")
+    	  )
+    	.end()
+	.endBlock()
     .setItemSeparator(", ")
-	.setSpecFormat(" ", "", true)		
+	.setSpecFormat(" ", "", true)	
     .beginBlock()
     	.addValueWithTitle("ZP2015_WEIGHT")
 	.endBlock()
@@ -283,8 +296,7 @@
     .beginBlock()
 	  .setItemSeparator(", ")
 	  .addValueWithTitle("ZP2015_APPLIED_RESTRICTION")
-	.endBlock()
-]]></defaultValueExpression>
+	.endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -796,7 +808,7 @@ StringUtils.isNotBlank($V{unitType})&&
 								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
-							<textFieldExpression><![CDATA[$F{description}+ "; " + 
+							<textFieldExpression><![CDATA[($F{description}!=null)?($F{description}+ "; "):"" + 
 ($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") ))]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
@@ -809,7 +821,7 @@ StringUtils.isNotBlank($V{unitType})&&
 								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
-							<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[(StringUtils.isBlank($F{description}))?$F{value}:$F{description}]]></textFieldExpression>
 							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
 						</textField>
@@ -838,15 +850,13 @@ StringUtils.isNotBlank($V{unitType})&&
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{node}.getItems( java.util.Collections.singletonList("ZP2015_DAO_LINK") ))]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="13" width="397">
-						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
+						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
 							<reportElement style="Item" x="0" y="0" width="394" height="13" uuid="741a3653-62b2-4056-b1ee-7244a5113787">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							</reportElement>
 							<box topPadding="0"/>
-							<textFieldExpression><![CDATA[$F{description}+ "; " + 
-( $F{node}!=null?($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") )):$F{item}.getValue() )]]></textFieldExpression>
-							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
-							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
+							<textFieldExpression><![CDATA[(StringUtils.isBlank($F{description}))?$F{item}.getValue():($F{description})]]></textFieldExpression>
+							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>

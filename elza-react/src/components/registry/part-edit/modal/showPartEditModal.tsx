@@ -23,6 +23,7 @@ export const showPartEditModal = (
     updatedPart: ApPartVO | undefined,
     partType: PartType,
     apId: number,
+    apVersion: number,
     apTypeId: number,
     ruleSetId: number,
     scopeId: number,
@@ -65,16 +66,16 @@ export const showPartEditModal = (
 
                 // console.log('SUBMIT EDIT', apId, modifiedPart.id, submitData);
 
-                const result = !updatedPart 
-                        ? await WebApi.updatePart(apId, modifiedPart.id, submitData) 
-                        : await WebApi.updateRevisionPart(apId, modifiedPart.id, submitData);
+                const result = !updatedPart
+                        ? await WebApi.updatePart(apId, modifiedPart.id, submitData, apVersion)
+                        : await WebApi.updateRevisionPart(apId, modifiedPart.id, submitData, apVersion);
                 onClose();
-                await dispatch(goToAe(history, apId, true, !select))
+                await dispatch(goToAe(history, apId, true, !select, revision))
                 onUpdateFinish();
                 return result
             }
             const items = getRevisionItems(
-                    revision ? part?.items || [] : undefined, 
+                    revision ? part?.items || [] : undefined,
                     revision ? updatedPart?.items || [] : part?.items || [])
 
             /*

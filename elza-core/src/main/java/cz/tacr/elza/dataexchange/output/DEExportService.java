@@ -37,7 +37,6 @@ import com.google.common.net.HttpHeaders;
 
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -276,41 +275,6 @@ public class DEExportService {
         } catch(Exception e) {
             log.error("Failed to export data", e);
             throw e;
-        }
-    }
-
-    /**
-     * Export data
-     * 
-     * @param response
-     * @param params
-     * @throws IOException
-     */
-    @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    public void exportXmlData(HttpServletResponse response, DEExportParamsVO params) throws IOException {
-
-        checkGlobalAndAccessPointPermission(params);
-
-        // file headers
-        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType(MediaType.APPLICATION_XML_VALUE);
-        FileDownload.addContentDispositionAsAttachment(response, "elza-data.xml");
-
-        // cache headers
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
-        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
-        response.setDateHeader(HttpHeaders.EXPIRES, 0);
-
-        ExportBuilder exportBuilder = new XmlExportBuilder();
-
-        // write response
-        try (ServletOutputStream os = response.getOutputStream()) {
-            response.flushBuffer();
-            exportData(os, exportBuilder, params);
-            response.flushBuffer();
-        } catch(Exception e) {
-        	log.error("Failed to export data", e);
-        	throw e;
         }
     }
 

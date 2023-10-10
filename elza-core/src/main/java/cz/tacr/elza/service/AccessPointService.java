@@ -293,9 +293,6 @@ public class AccessPointService {
     private RevisionItemService revisionItemService;
 
     @Autowired
-    private AsyncRequestService asyncRequestService;
-
-    @Autowired
     private EntityManager em;
 
     @Value("${elza.scope.deleteWithEntities:false}")
@@ -469,19 +466,32 @@ public class AccessPointService {
             	}
             }
 
-            // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED
+            // při sloučení nahrazující entita nemůže být ve stavu TO_APPROVE (Ke schválení) // nebo má revizi
+            //
+            // TODO: dočasně zakázana možnost sloučení s entitou, která má revizi.
+            //
             if (mergeAp) {
                 validationMergePossibility(replacedByState);
             }
-            
+
             MultipleApChangeContext macc = new MultipleApChangeContext();
-            
+
             replace(apState, replacedByState, extSystem, macc);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
             if (mergeAp) {
-                mergeParts(accessPoint, replacedBy, change);
+                // pokud nahrazující entita je schválena - vytvořime revizi, nebo pokud má revizi - používáme revizi
+                ApRevState revState = revisionService.findRevStateByState(replacedByState);
+                validationMergePossibility(revState);
+                if (replacedByState.getStateApproval() == StateApproval.APPROVED || revState != null) {
+                    if (revState == null) {
+                        revState = revisionService.createRevision(replacedByState, change);
+                    }
+                    mergeParts(accessPoint, replacedBy, change, revState);
+                } else {
+                    mergeParts(accessPoint, replacedBy, change);
+                }
                 // vygenerování indexů
                 updateAndValidate(replacedBy.getAccessPointId());
                 // je třeba aktualizovat ap cache
@@ -539,21 +549,32 @@ public class AccessPointService {
      * @param state stav přístupového bodu
      */
     private void validationMergePossibility(final ApState state) {
-        if (state.getStateApproval() == StateApproval.TO_APPROVE
-                || state.getStateApproval() == StateApproval.APPROVED) {
-            throw new BusinessException("Cílová entita je schválená nebo čeká na schválení a nelze ji měnit",
-                    RegistryCode.CANT_MERGE)
+        if (state.getStateApproval() == StateApproval.TO_APPROVE) {
+            throw new BusinessException("Cílová entita čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
                 .set("stateApproval", state.getStateApproval());
         }
-        // check revision 
-        ApRevision revision = revisionRepository.findByState(state);
-        if (revision != null) {
-            throw new BusinessException("Cílová entita má rozpracovanou revizi a nelze do ní slučovat.",
-                    RegistryCode.CANT_MERGE)
-                            .set("accessPointId", state.getAccessPointId())
-                            .set("stateApproval", state.getStateApproval());
+        ApRevState revState = revisionService.findRevStateByState(state);
+        if (revState != null) {
+            throw new BusinessException("Cílová entita má revizi a nelze ji měnit sloučením", RegistryCode.CANT_MERGE)
+            .set("accessPointId", state.getAccessPointId())
+            .set("stateApproval", state.getStateApproval())
+            .set("revisionId", revState.getRevisionId());
+        }
+    }
 
+    /**
+     * Validace možnosti sloučení podle stavu revizi
+     * 
+     * @param revState
+     */
+    private void validationMergePossibility(final ApRevState revState) {
+        if (revState != null) {
+            if (revState.getStateApproval() == RevStateApproval.TO_APPROVE) {
+                throw new BusinessException("Cílová entita má revizi, která čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
+                .set("accessPointId", revState.getRevision().getState().getAccessPointId())
+                .set("revStateApproval", revState.getStateApproval());
+            }
         }
     }
 
@@ -1150,7 +1171,8 @@ public class AccessPointService {
             ApRevision revision = revisionByApId.get(apId);
             if (revision == null && apState.getStateApproval() == StateApproval.APPROVED) {
                 // prepare revision
-                revision = revisionService.createRevision(apState);
+                ApRevState revState = revisionService.createRevision(apState);
+                revision = revState.getRevision();
                 revisionByApId.put(apId, revision);
             }
             if (revision != null) {
@@ -1186,7 +1208,7 @@ public class AccessPointService {
         Validate.isTrue(data instanceof ArrDataRecordRef);
 
         checkPermissionForEdit(apState);
-        // Mark revItem as deleted
+        // mark revItem as deleted
         ArrDataRecordRef drr = new ArrDataRecordRef();
         drr.setDataType(data.getDataType());
         drr.setRecord(replacement);
@@ -1227,14 +1249,14 @@ public class AccessPointService {
                 return;
             }
         }
-        // Mark revItem as deleted
+        // mark revItem as deleted
         ArrDataRecordRef drr = new ArrDataRecordRef();
         drr.setDataType(data.getDataType());
         drr.setRecord(replacement);
+        drr = dataRepository.save(drr);
 
         // create item
         revisionItemService.createItem(change, revPart, apItem, drr);
-        
     }
 
     /**
@@ -1623,7 +1645,16 @@ public class AccessPointService {
         List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
         GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childParts, accessPointItemList, preferred);
 
-        return partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred);
+        boolean success = partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred);
+        if (success) {
+            // update parent part indexes
+            ApPart parentPart = apPart.getParentPart();
+            if (parentPart != null) {
+                success = updatePartValue(state, parentPart);
+            }
+        }
+
+        return success;
     }
 
     /**
@@ -3358,6 +3389,83 @@ public class AccessPointService {
     }
 
     /**
+     * Sloučení Parts z accessPoint do targetAccessPoint s využití revizi
+     * 
+     * @param accessPoint
+     * @param targetAccessPoint
+     * @param change
+     * @param revState
+     */
+    private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevState revState) {
+        List<ApPart> fromParts = partService.findPartsByAccessPoint(accessPoint);
+        Map<Integer, List<ApItem>> fromItemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        List<ApPart> toParts = partService.findPartsByAccessPoint(targetAccessPoint);
+        Map<Integer, List<ApItem>> toItemMap = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        // příprava seznamu objektů ke sloučení
+        List<PartWithSubParts> fromWSParts = prepareListPartWithSubParts(fromParts);
+        List<PartWithSubParts> toWSParts = prepareListPartWithSubParts(toParts);
+        Map<Integer, PartWithSubParts> toWSMapParts = toWSParts.stream()
+                .collect(Collectors.toMap(p -> p.getPart().getPartId(), p -> p));
+
+        ApRevision revision = revState.getRevision();
+
+        for (PartWithSubParts fromWSPart : fromWSParts) {
+            ApPart partFrom = fromWSPart.getPart();
+            ApPart targetPart = null;
+            if (!partFrom.getPartType().getRepeatable()) {
+                targetPart = partService.findFirstPartByCode(partFrom.getPartType().getCode(), toParts);
+            } else {
+                // try to find the absolute same part
+                PartWithSubParts targetPartWS = findPartWSInList(fromWSPart, toWSParts, fromItemMap, toItemMap);
+                // if exists -> merge is not needed
+                if (targetPartWS != null) {
+                    continue;
+                }
+            }
+
+            // kopírování Part
+            if (targetPart == null) {
+                // vytvoření nového ApRevPart
+                ApRevPart revPartTo = revisionPartService.createPart(revision, change, partFrom, null);
+                revisionItemService.createItems(change, revPartTo, fromItemMap.get(partFrom.getPartId()));
+                revisionService.updatePartValue(revPartTo, revState, change);
+
+                // kopírování podřízených ApRevPart
+                List<ApPart> fromSubParts = fromWSPart.getSubParts();
+                for (ApPart subPart : fromSubParts) {
+                    ApRevPart revPart = revisionPartService.createPart(revision, change, subPart, revPartTo);
+                    revisionItemService.createItems(change, revPart, fromItemMap.get(subPart.getPartId()));
+                    revisionService.updatePartValue(revPart, revState, change);
+                }
+            } else {
+                // získání nebo vytvoření nového ApRevPart na základě targetPart
+                ApRevPart revPartTo = revisionPartService.findByOriginalPart(targetPart);
+                if (revPartTo == null) {
+                    revPartTo = revisionPartService.createPart(revision, change, targetPart, false);
+                }
+                revisionItemService.createItems(change, revPartTo, fromItemMap.get(partFrom.getPartId()), toItemMap.get(targetPart.getPartId()));
+                revisionService.updatePartValue(revPartTo, revState, change);
+
+                // přidání chybějících podřízených ApRevPart
+                List<ApPart> targetSubParts = toWSMapParts.get(targetPart.getPartId()).getSubParts();
+                List<ApPart> fromSubParts = fromWSPart.getSubParts();
+                for (ApPart fromSubPart : fromSubParts) {
+                    ApPart findPart = findApPartInList(fromSubPart, targetSubParts, fromItemMap.get(fromSubPart.getPartId()), toItemMap);
+                    if (findPart == null) {
+                        ApRevPart revPart = revisionPartService.createPart(revision, change, fromSubPart, revPartTo);
+                        revisionItemService.createItems(change, revPart, fromItemMap.get(fromSubPart.getPartId()));
+                        revisionService.updatePartValue(revPart, revState, change);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Získání seznamu objektů PartWithSubParts ze seznamu objektů ApPart
      * 
      * @param parts
@@ -3528,7 +3636,6 @@ public class AccessPointService {
      * @param change
      */
     private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
-
         for (ApItem item : itemsFrom) {
             copyItem(item, partTo, change, item.getPosition());
         }
@@ -3687,6 +3794,4 @@ public class AccessPointService {
     public List<Integer> findByState(ApStateEnum init) {
         return apAccessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
     }
-
-
 }

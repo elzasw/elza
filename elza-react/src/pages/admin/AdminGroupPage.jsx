@@ -173,37 +173,36 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     handleCreateGroupForm() {
-        this.props.dispatch(
+        const {dispatch} = this.props;
+        dispatch(
             modalDialogShow(
                 this,
                 i18n('admin.group.add.title'),
-                <AddGroupForm create onSubmitForm={this.handleCreateGroup} />,
+                <AddGroupForm
+                    create={true}
+                    onSubmit={({name, code, description}) => {
+                        return dispatch(groupCreate(name, code, description));
+                    }}
+                />,
             ),
         );
     }
 
     handleEditGroupForm() {
-        const {group} = this.props;
-        this.props.dispatch(
+        const {group, dispatch} = this.props;
+        dispatch(
             modalDialogShow(
                 this,
                 i18n('admin.group.edit.title'),
-                <AddGroupForm initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup} />,
+                <AddGroupForm
+                    initialValues={group.groupDetail}
+                    onSubmit={({name, description}) => {
+                        const { group: { groupDetail: { id } } } = this.props;
+                        return dispatch(groupUpdate(id, name, description));
+                    }}
+                />,
             ),
         );
-    }
-
-    handleCreateGroup(data) {
-        return this.props.dispatch(groupCreate(data.name, data.code, data.description));
-    }
-
-    handleUpdateGroup(data) {
-        const {
-            group: {
-                groupDetail: {id},
-            },
-        } = this.props;
-        return this.props.dispatch(groupUpdate(id, data.name, data.description));
     }
 
     render() {

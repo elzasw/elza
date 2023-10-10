@@ -252,3 +252,11 @@ export const urlAdminGroup = (groupId: number) => {
 export const urlAdminFund = (fundId: number) => {
     return `${URL_ADMIN_FUND}/${fundId}`;
 }
+
+export const urlEntity = (entityId?: number | string) => {
+    return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}`
+}
+
+export const urlEntityRevision = (entityId?: number | string) => {
+    return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}/revision`
+}

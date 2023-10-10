@@ -7,13 +7,11 @@ import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +43,8 @@ import org.springframework.util.StopWatch;
 
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -74,7 +74,6 @@ import cz.tacr.elza.repository.ArrFileRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -119,9 +118,6 @@ public class RevertingChangesService {
     private ConfigView configView;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
@@ -162,6 +158,9 @@ public class RevertingChangesService {
 
     @Autowired
     private DmsService dmsService;
+    
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -327,6 +326,7 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_level", toChange);
             deleteEntityQuery.executeUpdate();
+            
             Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_level", toChange);
             updateEntityQuery.executeUpdate();
         }
@@ -336,8 +336,8 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
             deleteEntityQuery.executeUpdate();
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension",
-                                                                    toChange);
+            
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
             updateEntityQuery.executeUpdate();
         }
         sw.stop();
@@ -346,8 +346,8 @@ public class RevertingChangesService {
         {
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_dao_link", toChange);
             deleteEntityQuery.executeUpdate();
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link",
-                                                                    toChange);
+
+            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_dao_link", toChange);
             updateEntityQuery.executeUpdate();
         }
         sw.stop();
@@ -387,7 +387,7 @@ public class RevertingChangesService {
         }
         sw.stop();
 
-        sw.start("delete from struct objs");
+        sw.start("delete from struct objects");
         if (nodeId == null) {
 
             structuredItemDelete(fund, toChange);
@@ -396,6 +396,11 @@ public class RevertingChangesService {
             sobjVrequestDelete(fund, toChange);
 
             structuredObjectUpdate(fund, toChange);
+        }
+        sw.stop();
+
+        sw.start("delete from arr_file");
+        if (nodeId == null) {
 
             List<Integer> ids = arrFileRepository.findIdByFundAndGreaterOrEqualCreateChange(fund, toChange);
             if (!CollectionUtils.isEmpty(ids)) {
@@ -404,7 +409,6 @@ public class RevertingChangesService {
 
             arrFileDeleteChangeUndo(fund, toChange);
             arrFileCreateChangeUndo(fund, toChange);
-
         }
         sw.stop();
 
@@ -412,6 +416,9 @@ public class RevertingChangesService {
         {
             Query updateEntityQuery = createUpdateOutputQuery(fund, node, toChange);
             updateEntityQuery.executeUpdate();
+            
+            Query deleteEntityQuery = createDeleteOutputItem(fund, toChange);
+            deleteEntityQuery.executeUpdate();
         }
         sw.stop();
 
@@ -449,8 +456,8 @@ public class RevertingChangesService {
 
         sw.start("flushing");
         entityManager.flush();
-        sw.stop();
 
+        sw.stop();
         // strukt typy lze smazat az po vymazani vsech ref. na ne
         sw.start("deleting struct objects");
         if (nodeId == null) {
@@ -670,6 +677,28 @@ public class RevertingChangesService {
     }
 
     /**
+     * Odstranění ArrOutputItem spojených s odstraněnými strukturálními objekty.
+     * 
+     * @param fund      AS nad kterým provádím obnovu
+     * @param toChange  změna ke které se provádí revert
+     * @return
+     */
+    private Query createDeleteOutputItem(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
+        Query query = entityManager.createQuery("DELETE FROM arr_output_item oi WHERE oi.itemId in (" +
+                " SELECT i.itemId FROM arr_item i" +
+                " JOIN arr_data_structure_ref r ON i.dataId = r.dataId" +
+                " JOIN arr_structured_object so ON so.structuredObjectId = r.structuredObjectId" +
+                " WHERE so.fund = :fund AND so.createChange >= :change" +
+                ")");
+
+        // nastavení parametrů dotazu
+        query.setParameter("fund", fund);
+        query.setParameter("change", toChange);
+
+        return query;
+    }
+
+    /**
      * Smazání návazných entity hromadné akce.
      *
      * @param fund     AS nad kterým provádím obnovu
@@ -699,14 +728,11 @@ public class RevertingChangesService {
      * @return
      */
     private Query createDeleteActionRunQuery(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
-
-        String hql = "DELETE FROM arr_bulk_action_run rd WHERE rd IN (" +
+        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_run rd WHERE rd IN (" +
                 " SELECT r FROM arr_bulk_action_run r" +
                 " JOIN r.fundVersion v" +
                 " WHERE v.fund = :fund AND r.change >= :change" +
-                ")";
-
-        Query query = entityManager.createQuery(hql);
+                ")");
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
@@ -1167,22 +1193,22 @@ public class RevertingChangesService {
         }
 
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
-        Set<Integer> descItemTypeCodes = viewTitles.getTreeItem().getIds() == null ? Collections.emptySet()
-                : new LinkedHashSet<>(viewTitles.getTreeItem().getIds());
-
-        List<RulItemType> descItemTypes = Collections.emptyList();
-        if (!descItemTypeCodes.isEmpty()) {
-            descItemTypes = itemTypeRepository.findAllById(descItemTypeCodes);
-            if (descItemTypes.size() != descItemTypeCodes.size()) {
-                List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
-                Collection<Integer> missingCodes = new HashSet<>(descItemTypeCodes);
-                missingCodes.removeAll(foundCodes);
-
-                logger.warn("Nepodařilo se nalézt typy atributů s kódy " + org.apache.commons.lang.StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
-                        + " konfiguraci.");
+        
+        // TODO is it still needed?
+        List<RulItemType> descItemTypes;
+        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getIds())) {
+            descItemTypes = Collections.emptyList();
+        } else {
+            StaticDataProvider dataProvider = staticDataService.getData();
+            descItemTypes = new ArrayList<>(viewTitles.getTreeItem().getIds().size());
+            for(Integer itemTypeId: viewTitles.getTreeItem().getIds()) {
+                RulItemType itemType = dataProvider.getItemType(itemTypeId);
+                Validate.notNull(itemType, "Missing item type, id: %s", itemTypeId);
+                descItemTypes.add(itemType);
             }
         }
 
+        // TODO předělat createNodeLabels()
         HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes,
                 fundVersion.getRuleSetId(),
                 fundVersion.getFund()
