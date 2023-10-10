@@ -343,16 +343,16 @@
 
   <#-- 2.6.1. Pravidla tvorby archivního popisu -->
   <#list output.createFlatNodeIterator()?filter(node -> node.depth==1) as node>
-    <#switch node.getSingleItem("ZP2015_ARRANGEMENT_TYPE").specification.code>
-    <#case "ZP2015_ARRANGEMENT_OTHER">
-      <#assign rules="CZ_ZP1958">
-      <#assign description="základní pravidla z roku 1958">
-      <#break>
-    <#default>
-      <#assign rules="CZ_ZP2013">
-      <#assign description="základní pravidla od roku 2013">
-      <#break>
-    </#switch>  
+    <#assign rules="CZ_ZP2013">
+    <#assign description="základní pravidla od roku 2013">
+    <#if (node.getSingleItem("ZP2015_ARRANGEMENT_TYPE")?has_content)>
+      <#switch node.getSingleItem("ZP2015_ARRANGEMENT_TYPE").specification.code>
+        <#case "ZP2015_ARRANGEMENT_OTHER">
+          <#assign rules="CZ_ZP1958">
+          <#assign description="základní pravidla z roku 1958">
+          <#break>
+      </#switch>
+    </#if>
   </#list>
   <!-- Pravidla tvorby archivního popisu -->
   <ead:localcontrol localtype="RULES">
