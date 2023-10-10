@@ -32,7 +32,6 @@ then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka (pravidlo UJ_012)", "ZP2015_POL_STORAGE_ID");
 end
 
-
 rule "HP_015 Větev archivního popisu zakončená složkou má složku s EJ"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
@@ -89,6 +88,24 @@ then
 end
 */
 
+
+rule "UJ_016 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka."
+when
+	$activeLevel: ActiveLevel( )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.ownDescItems
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.ownDescItems
+	DescItem(type=="ZP2015_STORAGE_ID" && structured != null && $struct: structured ) from $activeLevel.ownDescItems
+	StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $struct.items
+	// není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
+    // neni ulozeno v DA
+    not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
+then
+	results.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016)", "ZP2015_POL_STORAGE_ID");
+end
+
 // uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku a složku manipulačního seznamu
 rule "Počet archiválií musí být větší nebo roven 2"
 when
@@ -132,10 +149,10 @@ no-loop
 when
 	$activeLevel : ActiveLevel( $items: descItems )
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
-	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !isInherited()) from $items
+	not DescItem(type=="ZP2015_SERIAL_NUMBER") from $activeLevel.ownDescItems
 	// Výjimka pro nejvyšší série a kořen
 	not (
-	  DescItem(type=="ZP2015_UNIT_ID" && !isInherited() ) from $items
+	  DescItem(type=="ZP2015_UNIT_ID" ) from $activeLevel.ownDescItems
 	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
 	)
 then
@@ -150,7 +167,7 @@ no-loop
 when
 	$activeLevel: ActiveLevel( parent!=null )
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-	not DescItem(type=="ZP2015_UNIT_ID" && !isInherited()) from $activeLevel.descItems
+	not DescItem(type=="ZP2015_UNIT_ID") from $activeLevel.ownDescItems
 then
 	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "ZP2015_POL_REF_NO");
 end

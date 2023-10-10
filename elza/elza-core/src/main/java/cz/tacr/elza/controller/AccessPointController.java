@@ -19,6 +19,7 @@ import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
+import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.core.data.ItemType;
@@ -90,7 +91,7 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> deleteAccessPoint(String id, @Valid DeleteAccessPointDetail deleteAccessPointDetail) {
+    public ResponseEntity<Void> accessPointDeleteAccessPoint(String id, @Valid DeleteAccessPointDetail deleteAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         accessPointService.lockWrite(accessPoint);
         ApState apState = accessPointService.getStateInternal(accessPoint);
@@ -101,7 +102,7 @@ public class AccessPointController implements AccesspointsApi {
                 replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());
             }
             copyAll = deleteAccessPointDetail.getReplaceType() != null 
-                    && deleteAccessPointDetail.getReplaceType() == DeleteAccessPointDetail.ReplaceTypeEnum.COPY_ALL;
+                    && deleteAccessPointDetail.getReplaceType() == ReplaceType.COPY_ALL;
         }
         ApRevision revision = revisionService.findRevisionByState(apState);
         if (revision != null) {
@@ -426,7 +427,8 @@ public class AccessPointController implements AccesspointsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId, Integer apVersion) {
+    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId,
+                                                                 Integer apVersion) {
         ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(accessPoint);
 
@@ -456,7 +458,7 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<ResultAutoItems> getAutoitems(String id) {
+    public ResponseEntity<ResultAutoItems> accessPointGetAutoitems(String id) {
         Integer accessPointId = Integer.parseInt(id);
         ApState state;
         try {

@@ -25,6 +25,8 @@ public class TitleBuilder {
 
     private String separator = " ";
 
+    // TODO: append doc
+    // ? item_type_id
     private List<Integer> ids = new ArrayList<>();    
 
     private Map<Integer, Integer> maxCountMap = new HashMap<>();

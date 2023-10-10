@@ -197,6 +197,196 @@ model RevStateChange {
     state: RevisionState;
 }
 
+/**
+ * ItemData classes extensions
+ */
+model DataBit extends ItemData {
+    bitValue: boolean;
+}
+
+model DataCoordinates extends ItemData {
+    value: string;
+}
+
+model DataDate extends ItemData {
+    value: offsetDateTime;
+}
+
+model DataDecimal extends ItemData {
+    value: decimal;
+}
+
+model DataFileRef extends ItemData {
+    fileId: integer;
+}
+
+model DataInteger extends ItemData {
+    integerValue: integer;
+}
+
+model DataJsonTable extends ItemData {
+    value: string;
+}
+
+model DataNull extends ItemData {
+}
+
+model DataRecordRef extends ItemData {
+    recordId: integer;
+    bindingId: integer;
+}
+
+model DataString extends ItemData {
+    stringValue: string;
+}
+
+model DataStructureRef extends ItemData {
+    structuredObjectId: integer;
+}
+
+model DataText extends ItemData {
+    textValue: string;
+}
+
+model DataUnitdate extends ItemData {
+    valueFrom: string;
+    valueFromEstimated: boolean;
+    valueTo: string;
+    valueToEstimated: boolean;
+    format: string;
+    normalizedFrom: int64;
+    normalizedTo: int64;
+}
+
+model DataUnitid extends ItemData {
+    unitId: string;
+}
+
+model DataUriRef extends ItemData {
+    schema: string;
+    uriRefValue: string;
+    description: string;
+    nodeId: integer;
+    refTemplateId: integer;
+}
+
+/**
+ * Item data
+ */
+model ItemData {
+    /** data id */
+    dataId: integer;
+    /** data type id */
+    dataTypeId: integer;
+}
+
+/**
+ * Type of change Item
+ */
+enum ChangeType {
+    NEW,
+    UPDATED,
+    DELETED,
+    ORIGINAL
+}
+
+/**
+ * Data for item of ApPart
+ */
+model Item {
+    /** id of item */
+    itemId: integer;
+    /** id of attribute value */
+    objectId: integer;
+    /** attribute type */
+    typeId: integer;
+    /** attribute specification */
+    specId: integer;
+    /** position */
+    position: integer;
+    /** type of change */
+    changeType: ChangeType;
+    /** item data */
+    data: ItemData;
+}
+
+/**
+ * Data for create/update ApPart and ReviPart
+ */
+model ApPartForm {
+    /** id of part */
+    partId?: integer;
+    /** id of parent part */
+    parentPartId?: integer;
+    /** id of parent part revizion */
+    revParentPartId?: integer;
+    /** code type of part */
+    partTypeCode: string;
+    /** list of all attribute values */
+    items: Item[];
+}
+
+/**
+ * Method of replacing ApAccessPoint
+ */
+enum ReplaceType {
+    SIMPLE,
+    COPY_ALL
+}
+
+/**
+ * Data for detele/replace ApAccessPoint
+ */
+model DeleteAccessPointDetail {
+    /** Id of the entity being replaced */
+    replacedBy?: string;
+    /** method of replacing */
+    replaceType?: ReplaceType;
+}
+
+/**
+ * Automatically generated elements of the description
+ */
+model AutoValue {
+    /** identifier of the type of the description element */
+    itemTypeId?: integer;
+    /** identifier of the specification of the description element */
+    itemSpecId?: integer;
+    /** value of the element */
+    value?: string;
+}
+
+/**
+ * List of automatically generated items
+ */
+model ResultAutoItems {
+    items?: AutoValue[];
+}
+
+/**
+ * Additional copy options
+ */
+model CopyAccessPointDetail {
+    /** code of scope or id */
+    scope: string;
+    /** if the original AP should be replaced */
+    replace?: boolean;
+    /** list of description element IDs not to copy */
+    skipItems?: integer[];
+}
+
+/**
+ * Return value when copying ApAccessPoint
+ */
+model EntityRef {
+    /** id of entity */
+    id: string;
+    /** visible name of entity */
+    label: string;
+    /** optional description of entity */
+    note?: string;
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -268,6 +458,73 @@ namespace ElzaAPI.Fund {
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
     /**
+     * Invalidation of ApAccessPoint (delete/replace)
+     */
+    @route("/{id}")
+    @delete op deleteAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** addition for method of invalidation */
+        @body body?: DeleteAccessPointDetail
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * List of automatically generated elements of the description
+     */
+    @route("/{id}/autoitems")
+    @get op getAutoitems(
+        /** id of accesspoint */
+        @path id: string
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: ResultAutoItems;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Copying an archive entity
+     */
+    @route("{id}/copy")
+    @put op copyAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+        /** additional copy options */
+        @body body: CopyAccessPointDetail
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: EntityRef;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Delete part of ApAccessPoint
+     */
+    @route("/{id}/part/{partId}")
+    @delete op deletePart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** partId of ApAccessPoint */
+        @path partId: integer,
+        /** actual version of ApAccessPoint */
+        @query apVersion?: integer
+    ): integer;
+
+    /**
      * Change state of ApAccessPoint
      */
     @route("/{id}/state")
@@ -285,19 +542,6 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("{id}/part/{partId}/prefer-name")
     @put op setPreferName(
-        /** id of accesspoint */
-        @path id: integer,
-        /** partId of ApAccessPoint */
-        @path partId: integer,
-        /** actual version of ApAccessPoint */
-        @query apVersion?: integer
-    ): integer;
-
-    /**
-     * Delete part of ApAccessPoint
-     */
-    @route("/{id}/part/{partId}")
-    @delete op deletePart(
         /** id of accesspoint */
         @path id: integer,
         /** partId of ApAccessPoint */

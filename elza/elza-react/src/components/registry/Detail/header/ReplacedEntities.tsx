@@ -1,5 +1,5 @@
 import { WebApi } from 'actions';
-import { getArchiveEntityUrl } from "actions/registry/registry";
+import { urlEntity } from '../../../../constants';
 import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
 import React, { useState } from 'react';
@@ -45,7 +45,7 @@ export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
                     <div>{`${i18n("ap.detail.replacingEntities")}: `}</div>
                     {entities?.map((entity) => {
                         return <div>
-                            <Link style={{color: "#33afff"}} to={getArchiveEntityUrl(entity.id)}> {`${entity.id}: ${entity.name || i18n("ap.detail.replacedEntity.noName")}`} </Link>
+                            <Link style={{color: "#33afff"}} to={urlEntity(entity.id)}> {`${entity.id}: ${entity.name || i18n("ap.detail.replacedEntity.noName")}`} </Link>
                         </div>
                     })
                 }

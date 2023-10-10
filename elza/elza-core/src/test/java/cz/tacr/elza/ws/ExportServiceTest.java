@@ -80,7 +80,7 @@ public class ExportServiceTest extends AbstractControllerTest {
         assertNotNull(ap1);
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
-        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
+        accesspointsApi.accessPointDeleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         idents = new IdentifierList();
         idents.getIdentifier().add("9f783015-b9af-42fc-bff4-11ff57cdb072");

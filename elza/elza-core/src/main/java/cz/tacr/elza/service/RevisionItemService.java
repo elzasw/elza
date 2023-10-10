@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -413,11 +414,11 @@ public class RevisionItemService {
     }
 
     /**
-     * Update revItem with new value
+     * Update ApRevItem with new value
      * 
      * @param change
      * @param revItem
-     * @param drr
+     * @param data
      * @return
      */
     public ApRevItem updateItem(ApChange change,
@@ -440,9 +441,16 @@ public class RevisionItemService {
         return revItemRepository.saveAndFlush(newItem);
     }
 
+    /**
+     * Create new ApRevItem related to existing with new data 
+     * 
+     * @param change
+     * @param revPart
+     * @param apItem
+     * @param data
+     * @return
+     */
     public ApRevItem createItem(ApChange change, ApRevPart revPart, ApItem apItem, ArrData data) {
-        data = dataRepository.save(data);
-
         ApRevItem newItem = createItem(revPart, data,
                                        apItem.getItemType(),
                                        apItem.getItemSpec(),
@@ -452,5 +460,119 @@ public class RevisionItemService {
                                        apItem.getObjectId(),
                                        false);
         return revItemRepository.saveAndFlush(newItem);
+    }
+
+    /**
+     * Create list of ApRevItem with all new ApRevItem
+     * 
+     * @param change
+     * @param revPart
+     * @param items
+     * @return
+     */
+    public List<ApRevItem> createItems(ApChange change, ApRevPart revPart, List<ApItem> items) {
+        List<ApRevItem> revItems = new ArrayList<>(items.size());
+        List<ArrData> dataList = new ArrayList<>(items.size());
+        for (ApItem item : items) {
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            dataList.add(newData);
+            ApRevItem newItem = createItem(revPart, newData,
+                                           item.getItemType(),
+                                           item.getItemSpec(),
+                                           change,
+                                           item.getObjectId(),
+                                           item.getPosition(),
+                                           null,
+                                           false);
+            revItems.add(newItem);
+        }
+        dataRepository.saveAll(dataList);
+        return revItemRepository.saveAll(revItems);
+    }
+
+    /**
+     * Create list of ApRevItem with merging ApItem
+     * 
+     * @param change
+     * @param revPart
+     * @param fromItems
+     * @param toItems
+     * @return
+     */
+    public List<ApRevItem> createItems(ApChange change, ApRevPart revPart, List<ApItem> fromItems, List<ApItem> toItems) {
+        List<ApRevItem> revItems = new ArrayList<>();
+        List<ArrData> dataList = new ArrayList<>();
+        ApRevItem newItem;
+        for (ApItem item : fromItems) {
+            // pokud takový ApItem již existuje - nekopírovat
+            if (isApItemInList(item, toItems)) {
+                continue;
+            }
+            ApItem findItem = findByTypeAndSpec(item, toItems);
+//            // pokud ApItem již má revizi - vytvoříme nový RevApItem
+//            if (findItem != null) {
+//                if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
+//                    findItem = null;
+//                }
+//            }
+            //ApItem findItem = null;
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            dataList.add(newData);
+            if (findItem == null) {
+                // nový RevApItem
+                newItem = createItem(revPart, newData, // new item
+                                     item.getItemType(),
+                                     item.getItemSpec(),
+                                     change,
+                                     item.getObjectId(),
+                                     item.getPosition(),
+                                     null,
+                                     false);
+            } else {
+                // RevApItem na základě ApItem
+                newItem = createItem(revPart, newData, // new data to findItem
+                                     item.getItemType(),
+                                     item.getItemSpec(),
+                                     change,
+                                     null,
+                                     item.getPosition(),
+                                     findItem.getObjectId(),
+                                     false);
+            }
+            revItems.add(newItem);
+        }
+        dataRepository.saveAll(dataList);
+        return revItemRepository.saveAll(revItems);
+    }
+
+    /**
+     * Vyhledávání v seznamu ApItem podle ItemType & ItemSpec
+     * 
+     * @param apItem
+     * @param items
+     * @return
+     */
+    private ApItem findByTypeAndSpec(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId()) 
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    //
+    // TODO common (already exists in AccessPointService)
+    //
+    private boolean isApItemInList(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId())
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())
+                    && item.getData().isEqualValue(i.getData())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

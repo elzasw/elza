@@ -3,6 +3,8 @@ import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 import LongText from './LongText';
 import i18n from './i18n';
 import Exception from './shared/exception/Exception';
+import { urlEntity } from '../constants';
+import { Link } from 'react-router-dom';
 
 const TYPE2GROUP = {
     ArrangementCode: 'arr',
@@ -33,6 +35,10 @@ export function createException(data) {
         }
         case 'ArrangementCode': {
             toaster = resolveArrangement(data);
+            break;
+        }
+        case 'RegistryCode': {
+            toaster = resolveRegistry(data);
             break;
         }
         default:
@@ -77,6 +83,35 @@ function resolveBase(data) {
             break;
     }
 }
+
+/**
+ * Vytvoření netypické vyjímky pro RegistryCode.
+ *
+ * @param data data výjimky
+ */
+function resolveRegistry(data) {
+    switch (data.code) {
+        case 'CANT_EXPORT_DELETED_AP': {
+            const entityBtn = (id) => (
+                <Link to={urlEntity(id)}>
+                    <span>{id}</span>
+                </Link>
+            );
+            return createToaster(i18n('exception.base.EXPORT_FAILED_DELETED_AP'), data, p => {
+                return (
+                    <>
+                        <b>{i18n('exception.base.EXPORT_FAILED_DELETED_AP.detail')}:</b>
+                        <ul>
+                            {p.accessPointId && p.accessPointId.map((item) => <li key={item}>{entityBtn(item)}</li>)}
+                        </ul>
+                    </>
+                );
+            });
+        }
+        default:
+            break;
+    }
+} 
 
 /**
  * Vytvoření netypické vyjímky pro ArrangementCode.

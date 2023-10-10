@@ -23,4 +23,7 @@ public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
 
     @Query("SELECT i FROM ApRevItem i JOIN FETCH i.part p JOIN FETCH p.revision r JOIN FETCH r.state s JOIN FETCH s.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApRevItem> findItemByEntity(@Param("record") ApAccessPoint replaced);
+
+    @Query("SELECT COUNT(i) > 0 FROM ApRevItem i WHERE i.partId = :partId AND i.origObjectId = :objectId AND i.deleteChange IS NULL")
+    boolean existByPartIdAndOrigObjectId(@Param("partId") Integer partId, @Param("objectId") Integer objectId);
 }

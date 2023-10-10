@@ -399,10 +399,8 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(CachedAccessPoint cachedAccessPoint) {
         String name = findAeCachedEntityName(cachedAccessPoint);
-        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name);
-
-        // description
         String description = getDescription(cachedAccessPoint);
+        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name, description);
 
         // prepare last change - include deleted items
         Integer lastChangeId = apRepository.getLastChange(cachedAccessPoint.getAccessPointId());
@@ -423,9 +421,6 @@ public class ApFactory {
         fillBindingUrls(bindingsVO);
 
         apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
-        if (description != null) {
-            apVO.setDescription(description);
-        }
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
         apVO.setLastChange(createVO(lastChange));
 
@@ -460,8 +455,9 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(final ApState apState,
                                     final CachedAccessPoint ap,
-                                    final String name) {
-        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name);
+                                    final String name,
+                                    final String description) {
+        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
     }
 
     public ApAccessPointVO createVO(final ApState apState,
@@ -471,7 +467,8 @@ public class ApFactory {
                                     final Integer version,
                                     final String errorDescription,
                                     final ApStateEnum state,
-                                    final String name) {
+                                    final String name,
+                                    final String description) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
@@ -492,6 +489,7 @@ public class ApFactory {
 
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
+        vo.setDescription(description);
         return vo;
     }
 
@@ -535,7 +533,7 @@ public class ApFactory {
         return null;
     }
 
-    private String getDescription(CachedAccessPoint cachedAccessPoint) {
+    public String getDescription(CachedAccessPoint cachedAccessPoint) {
         StaticDataProvider sdp = staticDataService.getData();
 
         if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {

@@ -57,6 +57,7 @@ import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.CreateUserVO;
+import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -190,7 +191,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
     protected static final String DE_IMPORT_CONTROLLER_URL = "/api/import";
-    protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
+    //protected static final String DE_EXPORT_CONTROLLER_URL = "/api/export";
     protected static final String USER_CONTROLLER_URL = "/api/user";
     protected static final String GROUP_CONTROLLER_URL = "/api/group";
     protected static final String ISSUE_CONTROLLER_URL = "/api/issue";
@@ -369,7 +370,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // Import/Export
     protected final static String DE_IMPORT = DE_IMPORT_CONTROLLER_URL + "/import";
-    protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
+    //protected final static String DE_EXPORT = DE_EXPORT_CONTROLLER_URL + "/create";
 
     // Import coodrinates
     protected static final String IMPORT_COORDINATES = AP_CONTROLLER_URL + "/import/coordinates";
@@ -3388,11 +3389,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      */
-    protected Integer createPart(final Integer accessPointId,
+    protected CreatedPartVO createPart(final Integer accessPointId,
                               final ApPartFormVO apPartFormVO) {
         return post(spec -> spec.pathParam("accessPointId", accessPointId)
-                .body(apPartFormVO), CREATE_PART)
-                        .as(Integer.class);
+                    .body(apPartFormVO), CREATE_PART)
+                .as(CreatedPartVO.class);
     }
 
     /**

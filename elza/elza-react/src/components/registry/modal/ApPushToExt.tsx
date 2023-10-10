@@ -11,8 +11,7 @@ import { ApExternalSystemSimpleVO } from 'typings/store';
 import { Form } from 'react-final-form';
 import Icon from 'components/shared/icon/FontIcon';
 import { Link } from 'react-router-dom';
-import { getArchiveEntityUrl } from 'actions/registry/registry';
-import { AP_EXT_SYSTEM_TYPE } from '../../../constants';
+import { AP_EXT_SYSTEM_TYPE, urlEntity } from '../../../constants';
 
 const getRelatedEntitiesDetails = async (parts: ApPartVO[]) => {
     const relatedEntitiesIds: number[] = [];
@@ -135,7 +134,7 @@ export const ApPushToExt = ({
                         <ul>
                             {unsyncedEntities.map((unsyncedEntity) => {
                                 return <li>
-                                    <Link className="error-link" to={getArchiveEntityUrl(unsyncedEntity.id)} target="blank">
+                                    <Link className="error-link" to={urlEntity(unsyncedEntity.id)} target="blank">
                                         {unsyncedEntity.name}
                                     </Link>
                                 </li>

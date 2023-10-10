@@ -188,6 +188,94 @@ paths:
                 type: array
                 items:
                   type: integer
+  /accesspoint/{id}:
+    delete:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_deleteAccessPoint
+      description: Invalidation of ApAccessPoint (delete/replace)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: addition for method of invalidation
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointDetail'
+  /accesspoint/{id}/autoitems:
+    get:
+      tags:
+        - accesspoints
+      operationId: AccessPoint_getAutoitems
+      description: List of automatically generated elements of the description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultAutoItems'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /accesspoints/{id}/copy:
+    put:
+      tags:
+        - accesspoints
+      operationId: copyAccessPoint
+      description: Copying an archive entity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityRef'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: additional copy options
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyAccessPointDetail'
   /accesspoint/{id}/part/{partId}:
     delete:
       tags:
@@ -427,81 +515,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
-  /accesspoints/{id}:
-    delete:
-      summary: Zneplatnění přístupového bodu
-      operationId: deleteAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Doplnění způsobu zneplatnění
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/DeleteAccessPointDetail'
-      responses:
-        200:
-          description: Potvrzení o úspěšném odstranění
-        404:
-          description: AP neexistuje
-  /accesspoints/{id}/autoitems:
-    get:
-      summary: Vrátí seznam automaticky generovaných prvků popisu
-      operationId: getAutoitems
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Seznam navržených prvků popisu
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResultAutoItems"
-        404:
-          description: AP neexistuje
-  /accesspoints/{id}/copy:
-    put:
-      summary: Kopírování archivní entity
-      operationId: copyAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Další možnosti kopírování
-        required: true
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/CopyAccessPointDetail'
-      responses:
-        200:
-          description: Návratová hodnota
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EntityRef"
-        404:
-          description: AP neexistuje
   /accesspoints/{id}/restore:
     put: 
       summary: Obnovení neplatné entity a návrat do původního stavu
@@ -1009,6 +1022,19 @@ components:
       description: Data for changing state of ApAccessPoint
       required:
         - stateApproval
+    AutoValue:
+      type: object
+      properties:
+        itemTypeId:
+          type: integer
+          description: identifier of the type of the description element
+        itemSpecId:
+          type: integer
+          description: identifier of the specification of the description element
+        value:
+          type: string
+          description: value of the element
+      description: Automatically generated elements of the description
     BaseException:
       type: object
       properties:
@@ -1030,6 +1056,50 @@ components:
       required:
         - type
         - code
+    CopyAccessPointDetail:
+      type: object
+      properties:
+        scope:
+          type: string
+          description: code of scope or id
+        replace:
+          type: boolean
+          description: if the original AP should be replaced
+        skipItems:
+          type: array
+          items:
+            type: integer
+          description: list of description element IDs not to copy
+      description: Additional copy options
+      required:
+        - scope
+    DeleteAccessPointDetail:
+      type: object
+      properties:
+        replacedBy:
+          type: string
+          description: Id of the entity being replaced
+        replaceType:
+          allOf:
+            - $ref: '#/components/schemas/ReplaceType'
+          description: method of replacing
+      description: Data for detele/replace ApAccessPoint
+    EntityRef:
+      type: object
+      properties:
+        id:
+          type: string
+          description: id of entity
+        label:
+          type: string
+          description: visible name of entity
+        note:
+          type: string
+          description: optional description of entity
+      description: Return value when copying ApAccessPoint
+      required:
+        - id
+        - label
     ExportParams:
       type: object
       properties:
@@ -1177,6 +1247,20 @@ components:
       required:
         - users
         - totalCount
+    ReplaceType:
+      type: string
+      description: Method of replacing ApAccessPoint
+      enum:
+        - SIMPLE
+        - COPY_ALL
+    ResultAutoItems:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AutoValue'
+      description: List of automatically generated items
     RevStateChange:
       type: object
       properties:
@@ -1383,37 +1467,6 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
-    CopyAccessPointDetail:
-      required:
-        - scope
-      type: object
-      description: Další možnosti kopírování archivní entity
-      properties:
-        scope:
-          description: Kód oblasti nebo její ID
-          type: string
-        replace:
-          description: Příznak, zda se má původní AP nahradit
-          type: boolean
-          default: false
-        skipItems:
-          description: Seznam ID prvků popisu, které se nemají kopírovat
-          type: array
-          items:
-            type: integer
-    DeleteAccessPointDetail:
-      type: object
-      description: Doplňující informace k požadavku na zneplatnění přístupového bodu
-      properties:
-        replacedBy:
-          description: Id entity, kterou je odstraňovaná nahrazena
-          type: string
-        replaceType:
-          description: Způsob provedení náhrady
-          type: string
-          enum:
-            - SIMPLE
-            - COPY_ALL
     DeleteAccessPointsDetail:
       type: object
       description: Seznam přístupových bodů
@@ -1543,23 +1596,6 @@ components:
             - desc
       required:
         - field
-    EntityRef:
-      title: EntityRef
-      description: Found entity
-      type: object
-      properties:
-        id:
-          description: ID of entity
-          type: string
-        label:
-          description: Visible name of entity
-          type: string
-        note:
-          description: Optional description of entity
-          type: string
-      required:
-        - id
-        - label
     Result_EntityRef:
       type: object
       properties:
@@ -1584,28 +1620,6 @@ components:
           description: Aktualizovaná verze archivní entity
           type: integer
           format: int32
-    AutoValue:
-      title: Jeden automaticky generovaný prvek popisu
-      type: object
-      properties:
-        itemTypeId:
-          description: Identifikátor typu prvku popisu
-          type: integer
-          format: int32
-        itemSpecId:
-          description: Identifikátor specifikace prvku popisu
-          type: integer
-          format: int32
-        value:
-          type: string
-          description: Item value
-    ResultAutoItems:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/AutoValue"
     ImportFundData:
       type: object
       properties:

@@ -436,6 +436,8 @@ public class CamService {
     	for (ExtSyncsQueueItem item : items) {
             if (state != null) {
                 item.setState(state);
+                item.setDate(dateTime);
+                item.setStateMessage(message);
                 switch (state) {
                 case EXPORT_START:
                     accessPointService.publishExtQueueProcessStartedEvent(item);
@@ -448,8 +450,6 @@ public class CamService {
                     break;
                 }
             }
-            item.setDate(dateTime);
-            item.setStateMessage(message);
         }
         extSyncsQueueItemRepository.saveAll(items);
     }

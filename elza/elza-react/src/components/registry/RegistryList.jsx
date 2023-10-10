@@ -29,7 +29,7 @@ import './RegistryList.scss';
 import RegistryListItem from './RegistryListItem';
 import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
-import { FOCUS_KEYS } from '../../constants.tsx';
+import { FOCUS_KEYS, urlEntity } from '../../constants.tsx';
 import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
 import { Col, Row } from 'react-bootstrap';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
@@ -38,7 +38,7 @@ import ExtFilterModal from './modal/ExtFilterModal';
 import { Button } from '../ui';
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
-import { goToAe, getArchiveEntityUrl } from "../../actions/registry/registry";
+import { goToAe } from "../../actions/registry/registry";
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
 
 class RegistryList extends AbstractReactComponent {
@@ -213,7 +213,7 @@ class RegistryList extends AbstractReactComponent {
         return (
             <Link
                 style={{ textDecoration: "none" }}
-                to={getArchiveEntityUrl(item.id)}
+                to={urlEntity(item.id)}
                 onClick={(e) => {
                     // Zabraneni zmeny adresy v adresnim radku, pokud
                     // je RegistryPage v rezimu modalu ( vyber entity

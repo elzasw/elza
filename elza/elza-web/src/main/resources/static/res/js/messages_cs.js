@@ -148,6 +148,8 @@ var messages = {
     "exception.base.INVALID_STATE": "Neplatný stav",
     "exception.base.CYCLE_DETECT": "Nelze provést kvůli detekci cyklické závislosti",
     "exception.base.GENERATING_EXPORT_FAILED": "Generování exportu selhalo",
+    "exception.base.EXPORT_FAILED_DELETED_AP": "Generování exportu selhalo z důvodu přítomnosti zneplatněných archivních entit",
+    "exception.base.EXPORT_FAILED_DELETED_AP.detail": "Zneplatněné archivní entity",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
@@ -218,6 +220,7 @@ var messages = {
     "exception.reg.INVALID_ENTITY_SCOPE": "Archivní entita má nevhodné scope",
     "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION": "Nelze změnit stav archivní entity, která má revizi",
     "exception.reg.CANT_CREATE_REVISION": "Nelze vytvořit revizi, protože archivní entita má nevhodný stav",
+    "exception.reg.INVALID_ENTITY_VERSION": "Nesprávná verze archivní entity",
 
     "exception.sobj.NO_VALID_ITEMS":
         "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
@@ -1098,6 +1101,7 @@ var messages = {
     "registry.update.type": "Třída / podtřída archivní entity",
     "registry.type": "Třída / podtřída entity",
     "registry.scopeClass": "Oblast",
+    "registry.version": "Verze",
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
 
