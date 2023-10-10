@@ -152,7 +152,7 @@ public class FundController implements FundsApi {
                 .createFundWithScenario(createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
                                         institution, createFund.getFundNumber(),
                                         createFund.getUnitdate(), createFund.getMark(),
-                                        createFund.getUuid(),
+                                        createFund.getUuid(), null,
                                         scopes, createFund.getAdminUsers(), createFund.getAdminGroups());
 
         UserDetail userDetail = userService.getLoggedUserDetail();
