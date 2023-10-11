@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -503,7 +504,8 @@ public class RevisionItemService {
     public List<ApRevItem> createItems(ApChange change, ApRevPart revPart, List<ApItem> fromItems, List<ApItem> toItems) {
         List<ApRevItem> revItems = new ArrayList<>();
         List<ArrData> dataList = new ArrayList<>();
-        List<String> textTypes = Arrays.asList("STRING", "TEXT");
+        List<DataType> textTypes = Arrays.asList(DataType.TEXT, DataType.STRING);
+        StaticDataProvider sdp = staticDataService.getData();
         ApRevItem newItem;
         for (ApItem item : fromItems) {
             // pokud takový ApItem již existuje - nekopírovat
@@ -512,7 +514,8 @@ public class RevisionItemService {
             }
             ApItem findItem = null;
             // pokud typ ApItem je STRING nebo TEXT - pokusíme se udělat revizi
-            if (textTypes.contains(item.getData().getDataType().getCode())) {
+            ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+            if (textTypes.contains(itemType.getDataType())) {
                 findItem = apItemService.findByTypeAndSpec(item, toItems);
             }
             // pokud ApItem již má revizi - vytvoříme nový RevApItem
