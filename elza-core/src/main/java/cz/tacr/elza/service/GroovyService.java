@@ -253,11 +253,11 @@ public class GroovyService {
             ApRevPart itemPart = revItem.getPart();
             boolean ownRevItem = false;
             // check if revItem belongs to the part
-            if (apRevPart != null && Objects.equals(apRevPart.getRevParentPartId(), itemPart.getPartId())) {
-                // parent is revision everything is ok
+            if (apRevPart != null && Objects.equals(apRevPart.getPartId(), itemPart.getPartId())) {
+                // item is from this revision part everything is ok
                 ownRevItem = true;
             } else if (apPart != null && Objects.equals(apPart.getPartId(), itemPart.getOriginalPartId())) {
-                // parent is origPart, everything is ok
+                // item is from origPart, everything is ok
                 ownRevItem = true;
             }
             if (ownRevItem) {
