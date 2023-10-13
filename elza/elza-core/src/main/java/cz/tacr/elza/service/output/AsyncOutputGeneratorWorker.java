@@ -202,11 +202,14 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     private void validate(String validationSchema, ArrOutputResult result) {
         if (!CollectionUtils.isEmpty(result.getOutputFiles())) {
             for (ArrOutputFile file : result.getOutputFiles()) {
-                try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(String.valueOf(file.getFileId())).toString())) {
+                Path dmsFilePath = resourcePathResolver.getDmsFile(String.valueOf(file.getFileId()));
+                logger.debug("Validating file: {}", dmsFilePath);
+                try (FileInputStream fis = new FileInputStream(dmsFilePath.toString())) {
                     Schema schema = schemaManager.getSchema(validationSchema);
                     Validator validator = schema.newValidator();
                     validator.validate(new StreamSource(fis));
                   } catch (SAXException | IOException e) {
+                      logger.error("Validation failed, file: {}", dmsFilePath, e);
                       throw new SystemException("Failed to validate file", e, OutputCode.INVALID_FORMAT);
                   }
             }
