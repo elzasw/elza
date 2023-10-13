@@ -150,6 +150,10 @@ public class ElzaWebController {
         String path = request.getRequestURI();
         String pathItems[] = path.split("/");
         String requestedItemId = pathItems[pathItems.length - 1];
+        // for revisions we have to read prev item
+        if ("revision".equals(requestedItemId)) {
+            requestedItemId = pathItems[pathItems.length - 2];
+        }
 
         if (StringUtils.isNotBlank(requestedItemId) && !requestedItemId.equals("entity")) {
             ApAccessPoint ap = accessPointService.getAccessPointByIdOrUuid(requestedItemId);
