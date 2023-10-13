@@ -1621,10 +1621,10 @@ then
 end
 
 // Povolení všech jazyků
-rule "Povolení všech jazyků (ZP2015_LANGUAGE)"
+rule "Povolení všech jazyků (ZP2015_LANGUAGE, ZP2015_MAJOR_LANG)"
 no-loop
 when
-    $itemType : RulItemTypeExt(code == "ZP2015_LANGUAGE")
+    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_MAJOR_LANG") )
     $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
