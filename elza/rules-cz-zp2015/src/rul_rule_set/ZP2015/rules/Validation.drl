@@ -211,16 +211,3 @@ when
 then
 	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
 end
-
-// Kontrola, zda každý list má určen jazyk
-rule "List musí mít směrem ke kořeni alespoň jeden jazyk"
-when
-	$activeLevel: ActiveLevel( !hasChildren )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
-	not ( $level: Level( $items: descItems ) and 
-		DescItem(type in 
-		  ( "ZP2015_LANGUAGE" ) )
-		  from $items )
-then
-	results.createMissing("ZP2015_LANGUAGE", "Není uveden jazyk", "ZP2015_POL_BASIC");
-end
