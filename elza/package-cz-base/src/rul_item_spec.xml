@@ -938,6 +938,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_per">
@@ -949,6 +950,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_abk">
@@ -959,6 +961,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_afr">
@@ -970,6 +973,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_akk">
@@ -981,6 +985,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_alb">
@@ -992,6 +997,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gsw">
@@ -1003,6 +1009,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_amh">
@@ -1014,6 +1021,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_eng">
@@ -1025,6 +1033,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ara">
@@ -1036,6 +1045,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_arc">
@@ -1047,6 +1057,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_arm">
@@ -1058,6 +1069,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_asm">
@@ -1069,6 +1081,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0as">
@@ -1080,6 +1093,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_aze">
@@ -1091,6 +1105,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ba">
@@ -1102,6 +1117,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bur">
@@ -1112,6 +1128,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_baq">
@@ -1122,6 +1139,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bak">
@@ -1133,6 +1151,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bel">
@@ -1144,6 +1163,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ben">
@@ -1155,6 +1175,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dzo">
@@ -1165,6 +1186,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bih">
@@ -1176,6 +1198,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_afa">
@@ -1186,6 +1209,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tut">
@@ -1196,6 +1220,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_aav">
@@ -1206,6 +1231,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_map">
@@ -1216,6 +1242,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bat">
@@ -1227,6 +1254,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dra">
@@ -1237,6 +1265,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_esx">
@@ -1247,6 +1276,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gem">
@@ -1258,6 +1288,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ni">
@@ -1268,6 +1299,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_inc">
@@ -1279,6 +1311,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ine">
@@ -1289,6 +1322,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_iir">
@@ -1300,6 +1334,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0nz">
@@ -1310,6 +1345,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ccs">
@@ -1320,6 +1356,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cel">
@@ -1331,6 +1368,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_crs">
@@ -1341,6 +1379,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_xgn">
@@ -1352,6 +1391,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mun">
@@ -1363,6 +1403,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nic">
@@ -1373,6 +1414,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_roa">
@@ -1384,6 +1426,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sem">
@@ -1395,6 +1438,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ccn">
@@ -1405,6 +1449,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sla">
@@ -1416,6 +1461,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tai">
@@ -1426,6 +1472,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sit">
@@ -1436,6 +1483,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_trk">
@@ -1447,6 +1495,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0uj">
@@ -1457,6 +1506,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_urj">
@@ -1467,6 +1517,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_brx">
@@ -1477,6 +1528,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bos">
@@ -1488,6 +1540,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bre">
@@ -1499,6 +1552,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_bul">
@@ -1510,6 +1564,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cze">
@@ -1521,6 +1576,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_chi">
@@ -1531,6 +1587,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dan">
@@ -1542,6 +1599,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_doi">
@@ -1553,6 +1611,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nds">
@@ -1564,6 +1623,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_egy">
@@ -1574,6 +1634,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_epo">
@@ -1584,6 +1645,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_est">
@@ -1594,6 +1656,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fao">
@@ -1605,6 +1668,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fin">
@@ -1615,6 +1679,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fre">
@@ -1626,6 +1691,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_fry">
@@ -1637,6 +1703,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gag">
@@ -1648,6 +1715,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_glg">
@@ -1659,6 +1727,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kal">
@@ -1669,6 +1738,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_geo">
@@ -1679,6 +1749,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_guj">
@@ -1690,6 +1761,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hau">
@@ -1701,6 +1773,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_zkz">
@@ -1712,6 +1785,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hin">
@@ -1723,6 +1797,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dut">
@@ -1734,6 +1809,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hit">
@@ -1745,6 +1821,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hrv">
@@ -1756,6 +1833,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ido">
@@ -1766,6 +1844,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ind">
@@ -1776,6 +1855,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ina">
@@ -1786,6 +1866,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ile">
@@ -1796,6 +1877,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gle">
@@ -1807,6 +1889,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ice">
@@ -1818,6 +1901,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ita">
@@ -1829,6 +1913,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_jpn">
@@ -1839,6 +1924,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_yid">
@@ -1850,6 +1936,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0jd">
@@ -1861,6 +1948,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kan">
@@ -1871,6 +1959,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kas">
@@ -1882,6 +1971,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_csb">
@@ -1893,6 +1983,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cat">
@@ -1904,6 +1995,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
 	<item-spec code="LNG_kaz">
@@ -1915,6 +2007,7 @@
 		<item-type-assign code="NM_LANG"/>
 		<item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
 	</item-spec>
     <item-spec code="LNG_khm">
@@ -1925,6 +2018,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kok">
@@ -1936,6 +2030,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cop">
@@ -1946,6 +2041,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kor">
@@ -1956,6 +2052,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_cos">
@@ -1967,6 +2064,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_crh">
@@ -1978,6 +2076,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kur">
@@ -1989,6 +2088,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_kir">
@@ -2000,6 +2100,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lao">
@@ -2010,6 +2111,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lat">
@@ -2021,6 +2123,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lit">
@@ -2032,6 +2135,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_liv">
@@ -2042,6 +2146,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_lav">
@@ -2053,6 +2158,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ltz">
@@ -2064,6 +2170,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_dsb">
@@ -2075,6 +2182,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hsb">
@@ -2086,6 +2194,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hun">
@@ -2096,6 +2205,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mac">
@@ -2107,6 +2217,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mal">
@@ -2117,6 +2228,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_may">
@@ -2127,6 +2239,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mlt">
@@ -2138,6 +2251,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mni">
@@ -2148,6 +2262,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mar">
@@ -2159,6 +2274,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mol">
@@ -2170,6 +2286,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_mon">
@@ -2181,6 +2298,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ger">
@@ -2192,6 +2310,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nor">
@@ -2203,6 +2322,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_oci">
@@ -2214,6 +2334,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_nep">
@@ -2225,6 +2346,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pan">
@@ -2236,6 +2358,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pus">
@@ -2247,6 +2370,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pol">
@@ -2258,6 +2382,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_por">
@@ -2269,6 +2394,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_roh">
@@ -2280,6 +2406,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rom">
@@ -2291,6 +2418,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rum">
@@ -2302,6 +2430,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0ru">
@@ -2313,6 +2442,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_rus">
@@ -2324,6 +2454,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gre">
@@ -2335,6 +2466,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_san">
@@ -2346,6 +2478,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sat">
@@ -2357,6 +2490,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_snd">
@@ -2368,6 +2502,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sin">
@@ -2379,6 +2514,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_gla">
@@ -2390,6 +2526,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_slo">
@@ -2401,6 +2538,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_slv">
@@ -2412,6 +2550,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0sl">
@@ -2422,6 +2561,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_0sc">
@@ -2433,6 +2573,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_srp">
@@ -2444,6 +2585,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_hbo">
@@ -2455,6 +2597,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_peo">
@@ -2466,6 +2609,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_chu">
@@ -2477,6 +2621,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_pal">
@@ -2488,6 +2633,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_sux">
@@ -2499,6 +2645,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_swa">
@@ -2509,6 +2656,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_spa">
@@ -2520,6 +2668,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_swe">
@@ -2531,6 +2680,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tgk">
@@ -2542,6 +2692,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tam">
@@ -2552,6 +2703,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tat">
@@ -2563,6 +2715,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tel">
@@ -2573,6 +2726,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tha">
@@ -2583,6 +2737,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tib">
@@ -2593,6 +2748,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tur">
@@ -2604,6 +2760,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_tuk">
@@ -2615,6 +2772,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_uig">
@@ -2626,6 +2784,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ukr">
@@ -2637,6 +2796,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_urd">
@@ -2648,6 +2808,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_ori">
@@ -2659,6 +2820,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_uzb">
@@ -2670,6 +2832,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_wel">
@@ -2681,6 +2844,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_vie">
@@ -2691,6 +2855,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="LNG_vol">
@@ -2701,6 +2866,7 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
         <item-type-assign code="ZP2015_LANGUAGE"/>
+        <item-type-assign code="ZP2015_MAJOR_LANG"/>
         <item-type-assign code="ZP2015_ARCHDESC_LANG"/>
     </item-spec>
     <item-spec code="NT_OFFICIAL">
