@@ -215,6 +215,7 @@
                 <type code="ZP2015_PART" width="1"/>
                 <!--  5.2.10 Jazyk -->
                 <type code="ZP2015_LANGUAGE" width="2"/>
+                <type code="ZP2015_MAJOR_LANG" width="2"/>
                 <!--  5.2.10 písmo -->
                 <type code="ZP2015_WRITING" width="2"/>
                 <!-- 5.2.11 Edice a literatura -->
