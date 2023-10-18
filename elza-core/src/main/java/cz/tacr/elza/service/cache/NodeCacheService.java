@@ -131,9 +131,6 @@ public class NodeCacheService {
 	private StaticDataService staticDataService;
 
     @Autowired
-    private DataUriRefRepository dataUriRefRepository;
-
-    @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
 
     public NodeCacheService() {
@@ -633,7 +630,7 @@ public class NodeCacheService {
                 fundFileRepository,
                 daoRepository,
                 nodeRepository,
-                dataUriRefRepository,
+                descItemRepository,
                 refTemplateRepository);
         ra.restore(cachedNodes);
     }

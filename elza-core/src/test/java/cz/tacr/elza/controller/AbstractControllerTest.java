@@ -1125,8 +1125,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(),
-                node.getVersion());
+        return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(), node.getVersion());
     }
 
     /**
@@ -1313,13 +1312,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param value            hodnota
      * @param position         pozice
      * @param descItemObjectId identifikátor hodnoty atributu
+     * @param undefined        nezjištěný (bez hodnoty)
      * @return vytvořený object hodnoty atributu
      */
     protected ArrItemVO buildDescItem(final String typeCode,
                                       final String specCode,
                                       final Object value,
                                       final Integer position,
-                                      final Integer descItemObjectId) {
+                                      final Integer descItemObjectId,
+                                      final Boolean undefined) {
         org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
         RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1442,6 +1443,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         descItem.setPosition(position);
         descItem.setDescItemObjectId(descItemObjectId);
+        descItem.setUndefined(undefined);
 
         return descItem;
     }

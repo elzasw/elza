@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.RulItemType;
 public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
 
     @Query("SELECT COUNT(i) FROM ApItem i WHERE i.itemType = ?1")
-    long getCountByType(RulItemType dbItemType);
+    long countByType(RulItemType dbItemType);
 
     @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.part = :part")
     List<ApItem> findValidItemsByPart(@Param("part") ApPart part);

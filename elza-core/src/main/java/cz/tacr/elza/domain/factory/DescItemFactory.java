@@ -173,6 +173,9 @@ public class DescItemFactory implements InitializingBean {
     public DescItemFactory() {
     }
 
+    public DescItemRepository getDescItemRepository() {
+        return descItemRepository;
+    }
 
     @Override
     public void afterPropertiesSet() {
