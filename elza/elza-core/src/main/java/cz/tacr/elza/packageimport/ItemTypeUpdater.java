@@ -784,8 +784,8 @@ public class ItemTypeUpdater {
      */
     long countUsage(RulItemType dbItemType) {
         // check items
-        long result = itemRepository.getCountByType(dbItemType);
-        result += apItemRepository.getCountByType(dbItemType);
+        long result = itemRepository.countByType(dbItemType);
+        result += apItemRepository.countByType(dbItemType);
         return result;
     }
 

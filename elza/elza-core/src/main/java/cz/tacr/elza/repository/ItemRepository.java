@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.arrangement.DeleteFundHistory;
@@ -37,7 +38,7 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     ArrItem findByItemObjectIdAndChangeFetchData(@Param("descItemObjectId") int descItemObjectId, @Param("lockChange") ArrChange lockChange);
 
     @Query("SELECT COUNT(i) FROM arr_item i JOIN i.itemType t WHERE i.itemType = ?1")
-    long getCountByType(RulItemType itemType);
+    long countByType(RulItemType itemType);
 
     @Query("SELECT i FROM arr_item i "
             + "LEFT JOIN arr_desc_item di ON di.itemId = i.itemId "

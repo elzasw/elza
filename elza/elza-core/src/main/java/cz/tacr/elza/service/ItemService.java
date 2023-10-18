@@ -45,6 +45,7 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -75,6 +76,9 @@ public class ItemService {
 
     @Autowired
     private ApStateRepository stateRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     @Autowired
     private EntityManager em;
@@ -125,7 +129,14 @@ public class ItemService {
 
         // check if defined specification
         Integer itemSpecId = arrItem.getItemSpecId();
-        if (itemType.hasSpecifications()) {
+
+        // exception for element without itemSpecId
+        boolean isException = itemType.hasSpecifications()
+                && data == null
+                && itemSpecId == null
+                && descItemRepository.countByNodeIdAndItemTypeId(arrItem.getNodeId(), arrItem.getItemTypeId()) == 0;
+
+        if (itemType.hasSpecifications() && !isException) {
 
             if (itemSpecId == null) {
                 throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
