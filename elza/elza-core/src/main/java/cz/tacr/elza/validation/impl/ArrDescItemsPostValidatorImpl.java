@@ -74,7 +74,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
         List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
-        // Create validator and validate
+        // create validator and validate
         Validator validator = new Validator(nodeTypes, descItems, descItemFactory, stateRepository);
         validator.validate();
 

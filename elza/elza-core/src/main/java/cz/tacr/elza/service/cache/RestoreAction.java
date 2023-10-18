@@ -42,7 +42,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DataUriRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -68,7 +68,7 @@ public class RestoreAction {
 
     final private DaoRepository daoRepository;
 
-    final private DataUriRefRepository dataUriRefRepository;
+    final private DescItemRepository descItemRepository;
 
     final private NodeRepository nodeRepository;
 
@@ -83,7 +83,7 @@ public class RestoreAction {
                          final FundFileRepository fundFileRepository,
                          final DaoRepository daoRepository,
                          final NodeRepository nodeRepository,
-                         final DataUriRefRepository dataUriRefRepository,
+                         final DescItemRepository descItemRepository,
                          final ArrRefTemplateRepository refTemplateRepository) {
         this.sdp = sdp;
         this.em = em;
@@ -92,7 +92,7 @@ public class RestoreAction {
         this.fundFileRepository = fundFileRepository;
         this.daoRepository = daoRepository;
         this.nodeRepository = nodeRepository;
-        this.dataUriRefRepository = dataUriRefRepository;
+        this.descItemRepository = descItemRepository;
         this.refTemplateRepository = refTemplateRepository;
     }
 
@@ -133,8 +133,15 @@ public class RestoreAction {
         descItem.setItemType(itemType.getEntity());
 
         Integer itemSpecId = descItem.getItemSpecId();
+
+        // exception for element without itemSpecId
+        boolean isException = itemType.hasSpecifications()
+                && descItem.getData() == null
+                && itemSpecId == null
+                && descItemRepository.countByNodeIdAndItemTypeId(descItem.getNodeId(), descItem.getItemTypeId()) < 2;
+
         // check if specification should be set
-        if (itemType.hasSpecifications()) {
+        if (itemType.hasSpecifications() && !isException) {
             Validate.notNull(itemSpecId);
         } else {
             Validate.isTrue(itemSpecId == null);
