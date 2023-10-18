@@ -123,7 +123,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
-        ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null);
+        ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null, null);
         StructureController.StructureItemResult siNumberCreated = createStructureItem(itemNumber, fundVersion.getId(),
                                                                                       typeNumber.getId(),
                                                                                       structureData.getId());
@@ -137,7 +137,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("SRD_PACKET_PREFIX");
-        ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null);
+        ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null, null);
         StructureController.StructureItemResult siPrefixCreated = createStructureItem(itemPrefix, fundVersion.getId(),
                                                                                       typePrefix.getId(),
                                                                                       structureData.getId());
@@ -146,7 +146,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("SRD_PACKET_POSTFIX");
-        ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null);
+        ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null, null);
         StructureController.StructureItemResult siPostfixCreated = createStructureItem(itemPostfix, fundVersion.getId(),
                                                                                        typePostfix.getId(),
                                                                                        structureData.getId());
@@ -155,7 +155,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("SRD_PACKET_TYPE");
-        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null);
+        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null, null);
         StructureController.StructureItemResult siPacketTypeCreated = createStructureItem(itemPacketType,
                                                                                           fundVersion.getId(),
                                                                                           typePacketType.getId(),
@@ -180,13 +180,13 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     private StructureController.StructureItemResult createStructureItemPacketType(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
         RulDescItemTypeExtVO typePacketType = findDescItemTypeByCode("SRD_PACKET_TYPE");
-        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null);
+        ArrItemVO itemPacketType = buildDescItem(typePacketType.getCode(), "SRD_PACKET_TYPE_BOX", null, null, null, null);
         return createStructureItem(itemPacketType, fundVersion.getId(), typePacketType.getId(), structureData.getId());
     }
 
     private StructureController.StructureItemResult createStructureItemPacketPostfix(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
         RulDescItemTypeExtVO typePostfix = findDescItemTypeByCode("SRD_PACKET_POSTFIX");
-        ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null);
+        ArrItemVO itemPostfix = buildDescItem(typePostfix.getCode(), null, POSTFIX_VALUE, null, null, null);
         StructureController.StructureItemResult siPostfixCreated = createStructureItem(itemPostfix, fundVersion.getId(),
                                                                                        typePostfix.getId(),
                                                                                        structureData.getId());
@@ -197,7 +197,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     private StructureController.StructureItemResult createStructureItemPacketPrefix(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
         RulDescItemTypeExtVO typePrefix = findDescItemTypeByCode("SRD_PACKET_PREFIX");
-        ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null);
+        ArrItemVO itemPrefix = buildDescItem(typePrefix.getCode(), null, PREFIX_VALUE, null, null, null);
         StructureController.StructureItemResult siPrefixCreated = createStructureItem(itemPrefix, fundVersion.getId(),
                                                                                       typePrefix.getId(),
                                                                                       structureData.getId());
@@ -208,7 +208,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     private StructureController.StructureItemResult createStructureItemPacketNumber(final ArrFundVersionVO fundVersion, final ArrStructureDataVO structureData) {
         RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
-        ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null);
+        ArrItemVO itemNumber = buildDescItem(typeNumber.getCode(), null, NUMBER_VALUE_1, null, null, null);
         StructureController.StructureItemResult structureItem = createStructureItem(itemNumber, fundVersion.getId(),
                                                                                     typeNumber.getId(),
                                                                                     structureData.getId());

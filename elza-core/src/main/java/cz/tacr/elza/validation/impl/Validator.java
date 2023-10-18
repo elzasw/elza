@@ -90,35 +90,42 @@ public class Validator {
             }
         }
 
-        //musí mít hodnoty specifikaci?
+        // musí mít hodnoty specifikaci?
         if (type.getUseSpecification()) {
-            //seznam požadovaných,ale chybějících hodnot
+            // seznam požadovaných, ale chybějících hodnot
             Set<RulItemSpecExt> missingSpecs = new HashSet<>(specExtMap.values());
 
             for (ArrDescItem descItem : descItemsOfType) {
 
                 RulItemSpec itemSpec = descItem.getItemSpec();
+
                 if (itemSpec == null) {
-                    throw new IllegalStateException(
+                    // exception for element without itemSpec
+                    int countExItem = descItemFactory.getDescItemRepository().countByNodeIdAndItemTypeId(descItem.getNodeId(), 
+                                                                                                         descItem.getItemTypeId());
+                    // výjimka : v rámci jednoho Node může být jen jeden Item bez itemSpec
+                    if (countExItem > 1) {
+                        throw new IllegalStateException(
                             "Missing item spec for itemTypeCode:" + type.getCode() + ", descItemId:" + descItem.getItemId());
+                    }
+                } else {
+                    RulItemSpecExt extSpec = specExtMap.get(itemSpec.getItemSpecId());
+                    if (extSpec == null) {
+                        continue;
+                    } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
+                        validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
+                                + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.",
+                                                                extSpec.getPolicyTypeCode());
+                    }
+    
+                    List<ArrDescItem> specItems = specItemsMap.get(descItem.getItemSpec());
+                    if (specItems == null) {
+                        specItems = new LinkedList<>();
+                        specItemsMap.put(extSpec, specItems);
+                    }
+                    specItems.add(descItem);
                 }
-                RulItemSpecExt extSpec = specExtMap.get(itemSpec.getItemSpecId());
-                if (extSpec == null) {
-                    continue;
-                } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
-                    validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
-                            + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.",
-                                                            extSpec.getPolicyTypeCode());
-                }
-
-                List<ArrDescItem> specItems = specItemsMap.get(descItem.getItemSpec());
-                if (specItems == null) {
-                    specItems = new LinkedList<>();
-                    specItemsMap.put(extSpec, specItems);
-                }
-                specItems.add(descItem);
             }
-
 
             for (Map.Entry<RulItemSpecExt, List<ArrDescItem>> specItemsEntry : specItemsMap.entrySet()) {
                 missingSpecs.remove(specItemsEntry.getKey());

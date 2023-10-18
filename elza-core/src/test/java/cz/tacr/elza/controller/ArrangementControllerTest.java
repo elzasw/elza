@@ -4,6 +4,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.output;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -30,7 +31,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -76,6 +79,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiException;
@@ -205,7 +209,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = createLevels(fundVersion);
 
         for (int j = 0; j < count; j++) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null);
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null, null);
             ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
         }
 
@@ -547,7 +551,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření hodnoty
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
                 type);
         rootNode = descItemResult.getParent();
@@ -605,7 +609,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         // vytvoření další hodnoty
         type = findDescItemTypeByCode("SRD_SCALE");
-        descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
         rootNode = descItemResult.getParent();
         descItemCreated = descItemResult.getItem();
@@ -631,15 +635,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_OTHER_ID");
         RulDescItemSpecExtVO spec = findDescItemSpecByCode("SRD_OTHERID_CJ", type);
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null);
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "2", 1, null);
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "2", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "3", 1, null);
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "3", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
         descItemCreated = descItemResult.getItem();
@@ -653,30 +657,30 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), nodes.get(2));
 
         type = findDescItemTypeByCode("SRD_UNIT_DATE");
-        descItem = buildDescItem(type.getCode(), null, "1920", 1, null);
+        descItem = buildDescItem(type.getCode(), null, "1920", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
         LocalDate dateNow = LocalDate.now();
         type = findDescItemTypeByCode("SRD_SIMPLE_DATE");
-        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null);
+        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
         type = findDescItemTypeByCode("SRD_LEGEND");
-        descItem = buildDescItem(type.getCode(), null, "legenda", 1, null);
+        descItem = buildDescItem(type.getCode(), null, "legenda", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_POSITION"); //TODO : co to je
-        descItem = buildDescItem(type.getCode(), null, "POINT (14 49)", 1, null);
+        descItem = buildDescItem(type.getCode(), null, "POINT (14 49)", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_COLL_EXTENT_LENGTH");
-        descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null);
+        descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null, null);
         Thread.sleep(1000);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -687,7 +691,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));
 
-        descItem = buildDescItem(type.getCode(), null, table, 1, null);
+        descItem = buildDescItem(type.getCode(), null, table, 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
@@ -1092,7 +1096,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
         int index = 0;
         for (ArrNodeVO node : nodes) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null);
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
             ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index++;
@@ -1167,7 +1171,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 1;
         String value = "value";
         for (ArrNodeVO node : nodes) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null);
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null, null);
             ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
                     typeVo);
             index = -index;
@@ -1207,7 +1211,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_TITLE");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
                 type);
         ArrItemVO descItemCreated = descItemResult.getItem();
@@ -1312,11 +1316,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrRefTemplateMapTypeVO mapTypeVO2 = updateRefTemplateMapType(temp.getId(), mapType.getId(), mapType);
         deleteRefTemplateMapType(temp.getId(), mapType.getId());
 
-
         deleteRefTemplate(refTemplateVO.getId());
 
     }
-
 
     @Test
     public void createDescItemBit() throws ApiException {
@@ -1328,9 +1330,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření itemu typu bit
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZVEREJNENO");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, true, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
-                type);
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, true, null, null, null);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
         ArrItemVO descItemCreated = descItemResult.getItem();
 
         assertEquals(((ArrItemBitVO) descItem).isValue(), ((ArrItemBitVO) descItemCreated).isValue());
@@ -1338,4 +1339,30 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(descItemCreated.getDescItemObjectId());
     }
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();    
+
+    @Test
+    public void createDescItemEnumEmpty() throws ApiException {
+        Fund fundSource = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
+
+        List<ArrNodeVO> nodesSource = createLevels(fundVersion);
+        ArrNodeVO node = nodesSource.get(1);
+
+        // vytvoření itemu typu enum empty value
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_ARCHDESC_LANG");
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, null, null, null, true);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node, type);
+        ArrItemVO descItemCreated = descItemResult.getItem();
+
+        assertEquals(descItemCreated.getItemTypeId(), type.getId());
+        assertNotNull(descItemCreated.getPosition());
+        assertNotNull(descItemCreated.getDescItemObjectId());
+
+        // pokus o opakované přidání by měl způsobit chybu
+        node.setVersion(1);
+        exceptionRule.expect(AssertionError.class);
+        createDescItem(descItem, fundVersion, node, type);
+    }
 }
