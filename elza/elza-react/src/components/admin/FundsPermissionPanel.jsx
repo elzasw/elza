@@ -422,7 +422,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                         this.props.dispatch(modalDialogHide());
                     }}
                     fieldComponent={FundField}
-                    renderItem={renderFundItem}
+                    renderItem={({item}) => item?.name}
                 />,
             ),
         );

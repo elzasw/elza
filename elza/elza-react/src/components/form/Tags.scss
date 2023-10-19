@@ -10,7 +10,8 @@
         border: 1px solid $dragger-border;
         margin: 0 5px 5px 0;
         line-height: 2em;
-        height: 2em;
+        height: auto;
+        max-width: 100%;
         //position: relative;
 
         .data-label {
