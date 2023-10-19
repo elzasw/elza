@@ -332,7 +332,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                     }}
                     fieldComponent={ScopeField}
                     fieldComponentProps={{scopes}}
-                    renderItem={renderScopeItem}
+                    renderItem={({item}) => item?.name}
                 />,
             ),
         );
