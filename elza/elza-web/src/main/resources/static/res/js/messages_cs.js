@@ -994,6 +994,10 @@ var messages = {
     "subNodeForm.refSync": "Synchronizovat JP ze zdrojových AS",
 
     "subNodeForm.descItem.edited": "Editováno",
+    "subNodeForm.descItem.conflict": "Konflikt změn - obnovit hodnotu",
+    "subNodeForm.descItem.conflict.alert.message": "Hodnota prvku byla na pozadí změněna, a proto nedojde k uložení Vašich změn. Vložená hodnota zůstane do opuštění jednotky popisu v upravovaném poli, odkud si ji můžete zkopírovat.",
+    "subNodeForm.descItem.conflict.alert.title": "Upozornění",
+    "subNodeForm.descItem.resolveConflict.confirm.message": "Po potvrzení bude načtena aktuální uložená hodnota.",
 
     "subNodeForm.descItem.coordinates.action.add": "Nahrát souřadnice",
 
