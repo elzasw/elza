@@ -116,6 +116,9 @@ $descItemDraggerSize: 6px;
                         position:relative;
                         display: flex;
                         flex-direction: row;
+                        .spacer {
+                            flex-grow: 1;
+                        }
                         .title {
                             margin-right: 10px;
                             white-space: nowrap;
@@ -168,8 +171,19 @@ $descItemDraggerSize: 6px;
                             }
                         }
                         .desc-item-type-edited {
+                            margin-left: 5px;
                             font-size: 0.8em;
                             color: #a0a0a0;
+                            margin: 2px;
+
+                            &.conflict {
+                                background-color: $color-red;
+                                color: $accent-color-fg;
+                                border-radius: 3px;
+                                font-weight: bold;
+                                cursor: pointer;
+                                padding: 1px 5px;
+                            }
                         }
 
                     }
