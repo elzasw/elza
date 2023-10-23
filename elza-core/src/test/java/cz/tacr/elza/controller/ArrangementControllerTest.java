@@ -1360,7 +1360,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(descItemCreated.getDescItemObjectId());
 
         // pokus o opakované přidání by měl způsobit chybu
-        node.setVersion(1);
+        node.setVersion(descItemResult.getParent().getVersion());
         try {
             descItemResult = createDescItem(descItem, fundVersion, node, type);
         } catch (BusinessException e) {
