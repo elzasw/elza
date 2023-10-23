@@ -4,6 +4,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.output;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -80,6 +81,7 @@ import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiException;
@@ -1339,9 +1341,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(descItemCreated.getDescItemObjectId());
     }
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();    
-
     @Test
     public void createDescItemEnumEmpty() throws ApiException {
         Fund fundSource = createdFund();
@@ -1362,7 +1361,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // pokus o opakované přidání by měl způsobit chybu
         node.setVersion(1);
-        exceptionRule.expect(AssertionError.class);
-        createDescItem(descItem, fundVersion, node, type);
+        try {
+            descItemResult = createDescItem(descItem, fundVersion, node, type);
+        } catch (BusinessException e) {
+            descItemResult = null;
+            assertEquals(e.getErrorCode(), ArrangementCode.ITEM_SPEC_NOT_FOUND);
+        }
+        assertNull(descItemResult);
     }
 }
