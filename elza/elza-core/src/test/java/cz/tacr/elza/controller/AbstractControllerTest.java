@@ -1114,12 +1114,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(), node.getVersion());
     }
 
@@ -1198,12 +1197,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
             final Integer fundVersionId,
             final Integer descItemObjectId) {
 
-        Response response = get(spec ->
-                        spec
-                                .pathParam("fundVersionId", fundVersionId)
-                                .param("descItemObjectId", descItemObjectId)
-                , DESC_ITEM_CSV_EXPORT);
-
+        Response response = get(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .param("descItemObjectId", descItemObjectId), DESC_ITEM_CSV_EXPORT);
         return response.getBody().asInputStream();
     }
 
