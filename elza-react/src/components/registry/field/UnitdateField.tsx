@@ -115,7 +115,7 @@ export const convertToEstimate = (value: string) => {
 }
 
 /**
-* Shows a confirmation dialog, when the value meets the right criteria (century not formatted as estimate). 
+* Shows a confirmation dialog, when the value meets the right criteria (century not formatted as estimate).
 * If confirmed, converts the value to an estimate format.
 * If canceled, returns undefined.
 */
@@ -143,7 +143,7 @@ type Props = {
 };
 
 const UnitdateField: ForwardRefExoticComponent<Props> = forwardRef(({name, ...rest}, ref) => {
-    return <ItemTooltipWrapper tooltipTitle="dataType.unitdate.format" style={{width: '100%'}}>
+    return <ItemTooltipWrapper holdOnHover={false} showDelay={1000} tooltipTitle="dataType.unitdate.format" style={{width: '100%'}}>
         <FormInput {...rest} ref={ref}/>
     </ItemTooltipWrapper>
 });
