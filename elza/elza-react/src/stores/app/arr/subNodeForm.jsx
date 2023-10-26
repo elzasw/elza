@@ -352,11 +352,9 @@ function addItemType(state, itemTypeId) {
 }
 
 function addValue(state, loc) {
-    prepareNextFormKey(loc.descItemType);
     let refType = state.refTypesMap[loc.descItemType.id];
 
-    let descItem = createDescItem(loc.descItemType, refType, true);
-    descItem.position = loc.descItemType.descItems.length + 1;
+    let descItem = createDescItem(refType, true, loc.descItemType.descItems.length + 1);
     loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
 
     state.formData = { ...state.formData };
@@ -690,7 +688,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 const newDescItems = newItemTypeDescItems.filter((item) =>
                     !item.undefined && (item.value === null || item.descItemSpecId == "")
                 ).map((item) => ({
-                    ...createDescItem(itemType, refTypesMap[itemTypeId], true),
+                    ...createDescItem(refTypesMap[itemTypeId], true, item.position),
                     ...item,
                 }))
 

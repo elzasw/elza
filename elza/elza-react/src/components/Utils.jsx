@@ -603,6 +603,18 @@ export function objectFromWKT(value) {
 }
 
 /**
+ * Converts text coordinate form to decimal
+ * 45.5819594N -> 45.5819594
+ * 122.3479922W -> -122.3479922
+ */
+export function convertTextCoordinateToDecimal(value) {
+    if (value.indexOf("W") >= 0 || value.indexOf("S") >= 0) {
+        return `-${value.substring(-1)}`;
+    }
+    return value.substring(-1);
+}
+
+/**
  * Převádí typ a body na WKT
  *
  * Vyžaduje funkci normalizeDoubleWithDot
@@ -625,7 +637,7 @@ export function wktFromTypeAndData(type, value) {
         const xy = pair
             .split(',')
             .map(function(dat) {
-                return normalizeDoubleWithDot(dat);
+                return normalizeDoubleWithDot(convertTextCoordinateToDecimal(dat));
             });
         if (xy.length == 2) {
             points.push(xy[1] + ' ' + xy[0]); // výměna párů hodnot

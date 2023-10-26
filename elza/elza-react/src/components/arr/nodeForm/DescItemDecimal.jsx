@@ -6,7 +6,7 @@ import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {normalizeDouble} from 'components/validate.jsx';
 import {decorateValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {CLS_CALCULABLE} from "../../../constants";
 

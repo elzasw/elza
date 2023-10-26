@@ -11,9 +11,11 @@ import {
 } from '../../../shared/factory/factoryConsts';
 import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils';
 import {RulItemTypeType} from '../../../api/RulItemTypeType';
-import {DescItem, DescItemGroup, DescItemType, DescItemWithSpec, ItemSpec} from '../../../typings/DescItem';
+import {DescItem, DescItemGroup, DescItemType, ItemSpec} from '../../../typings/DescItem';
 import {ItemTypeLiteVO} from '../../../api/ItemTypeLiteVO';
 import {RulDescItemTypeVO} from '../../../api/RulDescItemTypeVO';
+import { DescItemTypeRef } from 'typings/store';
+import { RulDataTypeVO } from 'api/RulDataTypeVO';
 
 interface FormData {
     descItemGroups: DescItemGroup[];
@@ -133,12 +135,6 @@ function createDataMap(formData: FormData) {
     };
 }
 
-export function createImplicitDescItem(descItemType, refType, addedByUser = false): DescItem {
-    let descItem = createDescItem(descItemType, refType, addedByUser);
-    descItem.position = 1;
-    return descItem;
-}
-
 export function getFocusDescItemLocation(subNodeFormStore) {
     const formData = subNodeFormStore.formData;
 
@@ -184,8 +180,7 @@ export function createDescItemFromDb(descItemType, descItem) {
         result.prevRefTemplateId = descItem.refTemplateId;
     }
 
-    prepareNextFormKey(descItemType);
-    initFormKey(descItemType, result);
+    result.formKey = getNewFormKey(result);
 
     return result;
 }
@@ -194,7 +189,7 @@ function prevDescItemHasSamePrevValue(prevDescItem: DescItem, newDescItem: DescI
     return (
         prevDescItem.prevValue === newDescItem.value &&
         // Kontrola Spec (pokud není jsou obě hodnoty undefined a vše je ok)
-        (prevDescItem as DescItemWithSpec).prevDescItemSpecId === (prevDescItem as DescItemWithSpec).descItemSpecId
+        prevDescItem.prevDescItemSpecId === prevDescItem.descItemSpecId
     );
 }
 
@@ -208,19 +203,18 @@ function addUid(descItem: DescItem, index) {
 
 const _formKeys: {[key: number]: number} = {};
 
-export function prepareNextFormKey(descItemType: {id: number}) {
-    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
-}
-
-export function initFormKey(descItemType: {id: number}, descItem: {formKey?: string}) {
+export function getNewFormKey(descItem: DescItem) {
+    // nevydavame novy klic, pokud je uz pridelen
     if (descItem.formKey) {
         return;
     }
 
-    if (!_formKeys[descItemType.id]) {
-        _formKeys[descItemType.id] = 1;
-    }
-    descItem.formKey = 'fk_' + _formKeys[descItemType.id];
+    // vytvori novy klic pokud neexistuje v seznamu _formKeys
+    let formKey = _formKeys[descItem.itemType];
+    formKey = !formKey ? 1 : (formKey + 1);
+
+    _formKeys[descItem.itemType] = formKey;
+    return `fk_${descItem.itemType}_${formKey}`;
 }
 
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
@@ -234,7 +228,7 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
     if (resultDescItemType.descItems.length === 0) {
-        resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType, addedByUser));
+        resultDescItemType.descItems.push(createDescItem(refType, addedByUser));
     }
 
     if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
@@ -263,7 +257,7 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
  * Uvažujeme POUZE descItemType, které mají specifikaci a MAJÍ i hodnotu, né pouze specifikaci.
  */
 export function addForcedSpecifications(
-    resultDescItemType: DescItemType<DescItemWithSpec>,
+    resultDescItemType: DescItemType,
     infoType,
     refType,
     emptySystemSpecToKeyMap = {},
@@ -289,7 +283,7 @@ export function addForcedSpecifications(
         const forceVisibility = isType(infoSpec.type, 'REQUIRED') || isType(infoSpec.type, 'RECOMMENDED');
         if (forceVisibility && !existingSpecIds[spec.id]) {
             // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
-            const descItem = createImplicitDescItem(resultDescItemType, refType, false) as DescItemWithSpec;
+            const descItem = createDescItem(refType);
             descItem.descItemSpecId = spec.id;
 
             // Ponechání původního form key, pokud existovala tato položka již na klientovi a nebylo na ní šáhnuto
@@ -418,8 +412,7 @@ export function mergeDescItems(
                     if (prevDescItem) {
                         item.formKey = prevDescItem.formKey;
                     } else {
-                        prepareNextFormKey(resultDescItemType);
-                        initFormKey(resultDescItemType, item);
+                        item.formKey = getNewFormKey(item);
                     }
                     resultDescItemType.descItems.push(item);
                 }
@@ -448,7 +441,7 @@ export function mergeDescItems(
                     if (isSystemValue) {
                         // nebudeme ji uvažovat, jen se pro ni budeme snažit zachovat formKey, aby nám položky na formuláři neskákaly - jedná se o systémnově přidané atributy s povinnou nebo doporučenou specifikací
                         if (refType.useSpecification && hasDescItemTypeValue(refType.dataType)) {
-                            emptySystemSpecToKeyMap[(descItem as DescItemWithSpec).descItemSpecId!] = descItem.formKey;
+                            emptySystemSpecToKeyMap[(descItem as DescItem).descItemSpecId!] = descItem.formKey;
                         }
                     } else {
                         if (prevDescItem) {
@@ -845,7 +838,7 @@ class FlatFormData {
         for (let i = 0; i < items.ids.length; i++) {
             const itemId = items.ids[i];
             const item = items[itemId];
-            const isEmpty = item.value === null || (item as DescItemWithSpec).descItemSpecId === null;
+            const isEmpty = item.value === null || (item as DescItem).descItemSpecId === null;
             const isFromDb = item.descItemObjectId! >= 0;
 
             if (isEmpty && !item.addedByUser && !isFromDb) {
@@ -880,7 +873,7 @@ class FlatFormData {
             if (forceVisible) {
                 let refType = refTypesMap[typeId];
                 refType.dataType = refDataTypesMap[refType.dataTypeId];
-                let newItem;
+                let newItem: DescItem;
                 let nextEmptyItemIdBase = 'item_';
                 let nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
                 let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
@@ -893,10 +886,9 @@ class FlatFormData {
 
                     for (let s = 0; s < unusedForcedSpecs.length; s++) {
                         nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
-                        newItem = createDescItem(type, refType, false);
+                        newItem = createDescItem(refType, false, lastPosition + 1);
                         newItem.descItemSpecId = unusedForcedSpecs[s];
                         newItem.itemType = typeId;
-                        newItem.position = lastPosition + 1;
                         lastPosition++;
 
                         newItems[nextEmptyItemId] = newItem;
@@ -907,8 +899,7 @@ class FlatFormData {
                 }
                 //Add forced itemTypes
                 else if (!typeItems) {
-                    newItem = createDescItem(type, refType, false);
-                    newItem.position = 1;
+                    newItem = createDescItem(refType, false);
                     newItem.itemType = typeId;
 
                     newItems[nextEmptyItemId] = newItem;
@@ -945,7 +936,7 @@ class FlatFormData {
         for (let i = 0; i < itemIds.length; i++) {
             let itemId = itemIds[i];
             let item = this.descItems[itemId];
-            let specIndex = unusedSpecIds.indexOf((item as DescItemWithSpec).descItemSpecId!);
+            let specIndex = unusedSpecIds.indexOf(item.descItemSpecId!);
             if (specIndex >= 0) {
                 unusedSpecIds.splice(specIndex, 1);
             }
@@ -1361,8 +1352,14 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
     }
 }
 
-export function createDescItem(descItemType, refType, addedByUser): DescItem {
-    const result: DescItem = ({
+//
+export function createDescItem(
+    refType: DescItemTypeRef,
+    addedByUser: boolean = false,
+    position: number = 1,
+    specId: number | undefined = undefined
+): DescItem {
+    const result: DescItem = {
         [JAVA_ATTR_CLASS]: getItemClass(refType.dataType),
         prevValue: null,
         hasFocus: false,
@@ -1372,14 +1369,16 @@ export function createDescItem(descItemType, refType, addedByUser): DescItem {
         value: null,
         error: {hasError: false},
         addedByUser,
-    } as any) as DescItem;
+        itemType: refType.id,
+        position,
+    };
 
-    prepareNextFormKey(descItemType);
-    initFormKey(descItemType, result);
+    result.formKey = getNewFormKey(result);
 
     if (refType.useSpecification) {
-        // TODO proč je tu string ? @stanekpa?
-        (result as DescItemWithSpec).descItemSpecId = '' as any;
+        result.descItemSpecId = specId;
+    } else if(specId != undefined){
+        throw Error(`Cannot set specId on type '${refType.code}'`)
     }
 
     // Inicializační hodnoty pro nově vytvořenou položku
@@ -1394,7 +1393,7 @@ export function createDescItem(descItemType, refType, addedByUser): DescItem {
     return result;
 }
 
-export function getItemClass(dataType) {
+export function getItemClass(dataType: RulDataTypeVO) {
     switch (dataType.code) {
         case 'TEXT':
             return '.ArrItemTextVO';
@@ -1430,7 +1429,7 @@ export function getItemClass(dataType) {
             return CLS_ITEM_BIT;
         default:
             console.error('Unsupported data type', dataType);
-            return null;
+            throw Error(`Unsupported data type - ${dataType.code}`)
     }
 }
 

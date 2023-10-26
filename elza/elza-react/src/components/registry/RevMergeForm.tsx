@@ -7,6 +7,10 @@ import FormInputField from '../../components/shared/form/FormInputField';
 import { StateApprovalCaption } from '../../api/StateApproval';
 import { WebApi } from 'actions';
 import { ApStateUpdate, ApStateApproval } from 'elza-api';
+import { useSelector } from 'react-redux';
+import { AppState } from 'typings/store';
+import * as perms from 'actions/user/Permission';
+import { ApBindingVO } from 'api/ApBindingVO';
 
 const stateToOption = (item: ApStateApproval) => ({
     id: item,
@@ -18,6 +22,7 @@ type Props = {
     onClose?: Function;
     onSubmit: (values: ApStateUpdate) => void;
     states: string[];
+    bindings?: ApBindingVO[];
     initialValues: ApStateUpdate;
 };
 
@@ -25,10 +30,12 @@ export function RevMergeFormFn({
     accessPointId,
     onClose,
     onSubmit,
+    bindings,
     initialValues
 }: Props) {
 
     const [states, setStates] = useState<ApStateApproval[]>([]);
+    const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
     function getStateWithAll() {
         if (states) {
@@ -77,6 +84,16 @@ export function RevMergeFormFn({
                             label={i18n('ap.state.title.comment')}
                             name={'comment'}
                         />
+                        {bindings && bindings.length === 1
+                            && userDetail.hasOne(perms.AP_EXTERNAL_WR)
+                            &&  <Field<boolean>
+                                    name={'sendToCam'}
+                                    component={FormInputField}
+                                    label={<span>{`Změny zapsat do ${bindings[0].externalSystemCode}`}</span>}
+                                    type='checkbox'
+                                    defaultValue={true}>
+                                </Field>
+                        }
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="button" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>

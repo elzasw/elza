@@ -5,7 +5,7 @@
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 import './DescItemDate.scss';

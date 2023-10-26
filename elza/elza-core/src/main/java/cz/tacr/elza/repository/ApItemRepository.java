@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.RulItemType;
 public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
 
     @Query("SELECT COUNT(i) FROM ApItem i WHERE i.itemType = ?1")
-    long getCountByType(RulItemType dbItemType);
+    long countByType(RulItemType dbItemType);
 
     @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.part = :part")
     List<ApItem> findValidItemsByPart(@Param("part") ApPart part);
@@ -89,6 +89,6 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
            + "WHERE p.accessPointId IN :apIds AND p.deleteChange IS NULL AND i.deleteChange IS NULL")
     List<RefRecordsFromIds> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("apIds") Collection<Integer> apIds);
 
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.binding = :binding AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p JOIN FETCH p.parentPart JOIN FETCH p.accessPoint JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d WHERE d.binding = :binding AND i.deleteChange IS NULL")
     List<ApItem> findUnbindedItemByBinding(@Param("binding") ApBinding binding);
 }

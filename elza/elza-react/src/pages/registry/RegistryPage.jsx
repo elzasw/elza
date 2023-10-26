@@ -117,9 +117,14 @@ class RegistryPage extends AbstractReactComponent {
         if (!select) {
             const matchId = this.props.match.params.id;
 
+            // presmerovani na entitu pokud neexistuje revize
+            if (this.props.revisionActive && registryDetail && registryDetail.data && registryDetail.id != undefined && !registryDetail.data.revStateApproval) {
+                dispatch(goToAe(history, registryDetail.id, false, !select));
+            }
+
             // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
             if (registryDetail.id !== null && matchId == null) {
-                history.replace(urlEntity(registryDetail.id));
+                dispatch(goToAe(history, registryDetail.id, false, !select))
             }
 
             if (isUuid(matchId)) {
@@ -493,7 +498,7 @@ class RegistryPage extends AbstractReactComponent {
         const {
             history,
             registryDetail: {
-                data: { id, stateApproval, version },
+                data: { id, stateApproval, version, bindings },
             },
             select = false,
             revisionActive,
@@ -505,12 +510,20 @@ class RegistryPage extends AbstractReactComponent {
                 }}
                 onSubmit={async (data) => {
                     await Api.accesspoints.accessPointMergeRevision(id, data, version);
-
+                    // prime odeslani do CAM
+                    if (data.sendToCam && bindings.length === 1) {
+                        try {
+                            await WebApi.updateArchiveEntity(id, bindings[0].externalSystemCode);
+                        } catch (e) {
+                            throw Error(e);
+                        }
+                    }
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailInvalidate());
                     this.props.dispatch(goToAe(history, id, true, !select, revisionActive));
                     this.props.dispatch(registryListInvalidate());
                 }}
+                bindings={bindings}
                 accessPointId={id}
             />
         );

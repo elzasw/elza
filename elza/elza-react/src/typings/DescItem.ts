@@ -1,39 +1,61 @@
-import {ApItemVO} from '../api/ApItemVO';
 import {RulItemTypeType} from '../api/RulItemTypeType';
+import { ApAccessPointVO } from 'api';
 
-export interface DescItemPlain<T = any> extends ApItemVO {
-    prevValue?: T;
-    hasFocus: boolean;
-    touched: boolean;
-    visited: boolean;
-    saving: boolean;
+export interface DescItem<T = unknown> {
+    "@class": string;
+    id?: number;
     value?: T;
-    error: {hasError: boolean; value?: string};
-    addedByUser: boolean;
     descItemObjectId?: number;
+    position?: number;
 
     /** CLIENT ATTRS */
     formKey?: string;
     _uid?: string | number;
     undefined?: boolean;
-    position: number;
+    prevValue?: T;
+    hasFocus: boolean;
+    touched: boolean;
+    visited: boolean;
+    saving: boolean;
+    error: {hasError: boolean; value?: string};
+    addedByUser: boolean;
 
     //
-    itemType?: number;
-}
-
-export interface DescItemWithSpec<T = any> extends DescItemPlain<T> {
+    itemType: number;
     prevDescItemSpecId?: number;
     descItemSpecId?: number;
 }
 
-export type DescItem = DescItemPlain | DescItemWithSpec;
+// export interface DescItemRecordRef extends DescItem<number>{
+//     record: ApAccessPointVO;
+// }
+//
+// export function isRecordRef(descItem: any): descItem is DescItemRecordRef {
+//     return descItem.record != undefined;
+// }
+//
+// export interface DescItemUriRef extends DescItem<string>{
+//     nodeId?: number;
+//     description?: string;
+//     refTemplateId?: number;
+// }
+//
+// export function isUriRef(descItem: any): descItem is DescItemUriRef {
+//     return descItem.nodeId != undefined || descItem.description != undefined || descItem.refTemplateId != undefined;
+// }
 
-export interface DescItemType<T = DescItem> {
+// export interface DescItemWithSpec<T = any> extends DescItemPlain<T> {
+//     prevDescItemSpecId?: number;
+//     descItemSpecId?: number;
+// }
+
+// export type DescItem = DescItemPlain;
+
+export interface DescItemType {
     cal: number;
     calSt: number;
     descItemSpecsMap: {[key: number]: any};
-    descItems: T[];
+    descItems: DescItem[];
     favoriteSpecIds: number[];
     group: string;
     hasFocus: boolean;

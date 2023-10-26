@@ -466,10 +466,7 @@ public class AccessPointService {
             	}
             }
 
-            // při sloučení nahrazující entita nemůže být ve stavu TO_APPROVE (Ke schválení) // nebo má revizi
-            //
-            // TODO: dočasně zakázana možnost sloučení s entitou, která má revizi.
-            //
+            // při sloučení nahrazující entita nemůže být ve stavu TO_APPROVE (Ke schválení)
             if (mergeAp) {
                 validationMergePossibility(replacedByState);
             }
@@ -553,13 +550,6 @@ public class AccessPointService {
             throw new BusinessException("Cílová entita čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
                 .set("accessPointId", state.getAccessPointId())
                 .set("stateApproval", state.getStateApproval());
-        }
-        ApRevState revState = revisionService.findRevStateByState(state);
-        if (revState != null) {
-            throw new BusinessException("Cílová entita má revizi a nelze ji měnit sloučením", RegistryCode.CANT_MERGE)
-            .set("accessPointId", state.getAccessPointId())
-            .set("stateApproval", state.getStateApproval())
-            .set("revisionId", revState.getRevisionId());
         }
     }
 
@@ -3564,29 +3554,11 @@ public class AccessPointService {
             return false;
         }
         for (ApItem itemOne : itemsOne) {
-            if (!isApItemInList(itemOne, itemsTwo)) {
+            if (!apItemService.isApItemInList(itemOne, itemsTwo)) {
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Kontrola, zda seznam ApItems obsahuje prvek ApItem
-     * 
-     * @param item
-     * @param items
-     * @return boolean
-     */
-    private boolean isApItemInList(ApItem item, List<ApItem> items) {
-        for (ApItem i : items) {
-            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId())
-                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())
-                    && item.getData().isEqualValue(i.getData())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

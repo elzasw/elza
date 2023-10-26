@@ -30,6 +30,7 @@ import {RulItemTypeType} from '../../../api/RulItemTypeType';
 import {registerField, unregisterField} from "../text-fragments";
 import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
 import ImportCoordinateModal from "../../registry/Detail/coordinate/ImportCoordinateModal";
+import { showConfirmDialog, showInfoDialog } from 'components/shared/dialog';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -112,6 +113,8 @@ class DescItemType extends AbstractReactComponent {
             currentEditDescItemIndex: null,
             descItemType: {...props.descItemType},
             coordinatesUpdate: null,
+            formKey: undefined, // formKey of the currently edited descItem
+            descItemWithConflictObjectId: undefined,
         };
         this.bindMethods(
             'focus',
@@ -143,9 +146,12 @@ class DescItemType extends AbstractReactComponent {
         );
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
+    async UNSAFE_componentWillReceiveProps(nextProps) {
         const newDescItemType = {...nextProps.descItemType};
-        const {formKey, value, currentEditDescItemIndex} = this.state;
+        const {formKey, value, currentEditDescItemIndex, descItemType} = this.state;
+        const { dispatch } = nextProps;
+
+        // formKey
         if (formKey && currentEditDescItemIndex !== null) {
             if (newDescItemType.descItems[currentEditDescItemIndex]) {
                 newDescItemType.descItems = [...newDescItemType.descItems];
@@ -156,6 +162,19 @@ class DescItemType extends AbstractReactComponent {
                 // Nutno nasetovat všechny klíče reálné hodnoty do DescItemu
                 for (let key of Object.keys(value)) {
                     di[key] = value[key];
+                }
+
+                const currentDescItem = descItemType.descItems[currentEditDescItemIndex];
+
+                const isTouchedDescItem = di?.descItemObjectId === currentDescItem?.descItemObjectId;
+                const isTouchedDescItemDirty = isTouchedDescItem && di?.id !== currentDescItem?.id;
+
+                if (isTouchedDescItemDirty) {
+                    dispatch(showInfoDialog({
+                        title: i18n('subNodeForm.descItem.conflict.alert.title'),
+                        message:i18n('subNodeForm.descItem.conflict.alert.message')
+                    }));
+                    this.setState({descItemWithConflictObjectId: currentDescItem?.descItemObjectId});
                 }
                 di.touched = true;
             }
@@ -414,39 +433,59 @@ class DescItemType extends AbstractReactComponent {
         return value
     }
 
+    handleResolveConflict = async () => {
+        const { descItemType, dispatch } = this.props;
+
+        const result = await dispatch(showConfirmDialog(i18n('subNodeForm.descItem.resolveConflict.confirm.message')));
+
+        if(result){
+            this.setState({
+                descItemType,
+                value: null,
+                formKey: null,
+                error: null,
+                currentEditDescItemIndex: null,
+                descItemWithConflictObjectId: undefined,
+            });
+        }
+    }
+
     /**
      * Opuštení focusu hodnoty atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
     async handleBlur(descItemIndex) {
         const {onBlur, onChange, rulDataType} = this.props;
-        let {value, error} = this.state;
+        let {value, descItemWithConflictObjectId, error} = this.state;
 
         const newValue = await this.interceptValue(value, rulDataType, descItemIndex);
         if(!newValue && newValue !== value){return;} // Cancel the value change when null
 
-        // Calls the onChange in handleBlur to prevent too frequent re-renders
-        value &&
-            onChange(
-                descItemIndex,
-                value && Object.keys(value).length === 1 && value.value !== undefined ? value.value : value,
-                error,
-            );
+        if (descItemWithConflictObjectId == undefined) {
+            // Calls the onChange in handleBlur to prevent too frequent re-renders
+            value &&
+                onChange(
+                    descItemIndex,
+                    value && Object.keys(value).length === 1 && value.value !== undefined ? value.value : value,
+                    error,
+                );
+            onBlur(descItemIndex);
 
-        onBlur(descItemIndex);
+            // resets the modified value and error
+            this.setState({
+                value: null,
+                formKey: null,
+                error: null,
+                currentEditDescItemIndex: null,
+            });
 
-        // resets the modified value and error
-        this.setState({
-            value: null,
-            formKey: null,
-            error: null,
-            currentEditDescItemIndex: null,
-        });
+            const itemElement = this.containers[descItemIndex];
+            // returns back the "draggable" attribute
+            itemElement.setAttribute('draggable', true);
+            unregisterField();
+        }
 
-        const itemElement = this.containers[descItemIndex];
-        // returns back the "draggable" attribute
-        itemElement.setAttribute('draggable', true);
-        unregisterField();
+
     }
 
     /**
@@ -1009,7 +1048,7 @@ class DescItemType extends AbstractReactComponent {
             customActions,
             arrPerm,
         } = this.props;
-        const {descItemType} = this.state;
+        const {descItemType, descItemWithConflictObjectId} = this.state;
 
         const actions = [];
 
@@ -1194,6 +1233,9 @@ class DescItemType extends AbstractReactComponent {
             );
         }
 
+        const isEdited = descItemType.descItems.filter((descItem) => descItem.touched).length > 0;
+        const isConflict = descItemType.descItems.filter((descItem) => descItem.descItemObjectId != undefined && descItem.descItemObjectId === descItemWithConflictObjectId).length > 0;
+
         // Render
         return (
             <div key="label" className="desc-item-type-label">
@@ -1204,9 +1246,17 @@ class DescItemType extends AbstractReactComponent {
                     {actions}
                     {customActions}
                 </div>
-                {descItemType.descItems.filter(i => i.touched).length > 0 && (
+                <div className="spacer"/>
+                {isEdited && !isConflict && (
                     <span key="edited" className="desc-item-type-edited">
                         {i18n('subNodeForm.descItem.edited')}
+                    </span>
+                )}
+                {isConflict && (
+                    <span onClick={() => this.handleResolveConflict(descItemWithConflictObjectId)} key="conflict" className="desc-item-type-edited conflict">
+                        <Icon glyph="fa-exclamation-circle"/>
+                        &nbsp;
+                        {i18n('subNodeForm.descItem.conflict')}
                     </span>
                 )}
             </div>
@@ -1274,7 +1324,7 @@ class DescItemType extends AbstractReactComponent {
                 // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
                 if (!readMode && editable) {
                     // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
-                    if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind && onDescItemNotIdentified) {
+                    if (infoType.rep === 1 && infoType.ind && onDescItemNotIdentified) {
                         actions.push(
                             <NoFocusButton
                                 key="notIdentified"
