@@ -138,12 +138,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     refTables,
     select,
     onPushApToExt,
-    revisionActive,
+    revisionActive: revisionActiveUrl,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
+    const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl || false);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -160,8 +161,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     // pri neexistenci revize dojde k zobrazeni samotne entity
     useEffect(() => {
+        if (revisionActive !== revisionActiveUrl && !select) {
+            dispatch(goToAe(history, id, false, !select, revisionActive))
+        }
         if (!detail.data?.revStateApproval) {
-            history.replace(urlEntity(id));
+            dispatch(goToAe(history, id, false, !select, false))
         }
     }, [revisionActive]);
 
@@ -432,7 +436,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     collapsed={collapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
                     onToggleRevision={() => {
-                        history.replace(revisionActive ? urlEntity(id) : urlEntityRevision(id));
+                        setRevisionActive(!revisionActive);
                         refreshValidation(id, !revisionActive);
                     }}
                     validationErrors={validationResult?.errors}
