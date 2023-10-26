@@ -118,13 +118,13 @@ class RegistryPage extends AbstractReactComponent {
             const matchId = this.props.match.params.id;
 
             // presmerovani na entitu pokud neexistuje revize
-            if (this.props.revisionActive && registryDetail && registryDetail.data) {
-                !registryDetail.data.revStateApproval && history.replace(urlEntity(registryDetail.id));
+            if (this.props.revisionActive && registryDetail && registryDetail.data && registryDetail.id != undefined && !registryDetail.data.revStateApproval) {
+                dispatch(goToAe(history, registryDetail.id, false, !select));
             }
 
             // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
             if (registryDetail.id !== null && matchId == null) {
-                history.replace(urlEntity(registryDetail.id));
+                dispatch(goToAe(history, registryDetail.id, false, !select))
             }
 
             if (isUuid(matchId)) {
