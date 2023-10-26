@@ -1008,8 +1008,7 @@ public class ArrangementController {
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
-        ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
-                fundVersionId);
+        ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(factoryVo.createItem(descItemCreated));

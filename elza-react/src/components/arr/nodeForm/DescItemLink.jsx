@@ -5,7 +5,7 @@ import { AbstractReactComponent, i18n } from 'components/shared';
 import { connect, DispatchProp } from 'react-redux';
 import { normalizeString } from 'components/validate.jsx';
 import { decorateValue, inputValue } from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import { IDescItemBaseProps } from 'components/arr/nodeForm/DescItemTypes';
 import Icon from '../../shared/icon/Icon';
 import { Button } from 'react-bootstrap';

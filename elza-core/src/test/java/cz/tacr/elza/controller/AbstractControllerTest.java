@@ -142,6 +142,9 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ExceptionResponse;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
@@ -529,57 +532,45 @@ public abstract class AbstractControllerTest extends AbstractTest {
         logger.info(text + ": #" + count);
     }
 
-    public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
-    }
-
-    public static Response post(final Function<RequestSpecification, RequestSpecification> params,
-                                final String url,
-                                final HttpStatus status) {
-        return httpMethod(params, url, HttpMethod.POST, status);
-    }
-
-    public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
-    }
-
-    public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
-    }
-
-    public static Response putError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    public static Response put(final Function<RequestSpecification, RequestSpecification> params,
-                               final String url,
-                               final HttpStatus status) {
-        return httpMethod(params, url, HttpMethod.PUT, status);
+    public static Response get(final String url) {
+        return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
     }
 
     public static Response get(final Function<RequestSpecification, RequestSpecification> params, final String url) {
         return httpMethod(params, url, HttpMethod.GET, HttpStatus.OK);
     }
 
-    public static Response getError(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.GET, HttpStatus.INTERNAL_SERVER_ERROR);
+    public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url) {
+        return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
     }
 
-    public static Response get(final String url) {
-        return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
+    public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url, final HttpStatus status) {
+        return httpMethod(params, url, HttpMethod.POST, status);
+    }
+
+    public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url) {
+        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
+    }
+
+    public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url, final HttpStatus status) {
+        return httpMethod(params, url, HttpMethod.PUT, status);
+    }
+
+    public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
+        return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
     }
 
     public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
                                       final String url,
                                       final HttpMethod method,
-                                      final HttpStatus status) {
-        return httpMethod(params, url, method, status, JSON_CT_HEADER);
+                                      final HttpStatus expectedStatus) {
+        return httpMethod(params, url, method, expectedStatus, JSON_CT_HEADER);
     }
 
     public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
                                       final String url,
                                       final HttpMethod method,
-                                      final HttpStatus status,
+                                      final HttpStatus expectedStatus,
                                       final Header header) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
@@ -619,18 +610,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
 
-        if (status.value() != response.statusCode()) {
-            // Log request if status code failed
-            requestSpecification.log().all();
-
-            String msg = formatResponse(response);
-            logger.info(msg);
-
-            StringBuilder msgBuilder = new StringBuilder();
-            msgBuilder.append("Received unexpected status code: ")
-                    .append(response.statusCode()).append(", expected: ").append(status.value())
-                    .append(", detail: ").append(msg);
-            Assert.fail(msgBuilder.toString());
+        // if the expected status is defined, check it
+        if (expectedStatus != null) {
+            if (expectedStatus.value() != response.statusCode()) {
+                // Log request if status code failed
+                requestSpecification.log().all();
+    
+                String msg = formatResponse(response);
+                logger.info(msg);
+    
+                StringBuilder msgBuilder = new StringBuilder();
+                msgBuilder.append("Received unexpected status code: ")
+                        .append(response.statusCode()).append(", expected: ").append(expectedStatus.value())
+                        .append(", detail: ").append(msg);
+                Assert.fail(msgBuilder.toString());
+            }
         }
 
         return response;
@@ -1120,13 +1114,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(),
-                node.getVersion());
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(), node.getVersion());
     }
 
     /**
@@ -1146,10 +1139,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final Integer nodeVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
-                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("fundVersionId", fundVersionId) 
                 .pathParam("descItemTypeId", descItemTypeId)
                 .pathParam("nodeId", nodeId)
-                .pathParam("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
+                .pathParam("nodeVersion", nodeVersion), CREATE_DESC_ITEM, null);
+
+        if (response.getStatusCode() == 500) {
+            ExceptionResponse exResponse = response.getBody().as(ExceptionResponse.class);
+            throw new BusinessException(exResponse.getMessage(), ArrangementCode.valueOf(exResponse.getCode()));
+        }
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -1199,12 +1197,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
             final Integer fundVersionId,
             final Integer descItemObjectId) {
 
-        Response response = get(spec ->
-                        spec
-                                .pathParam("fundVersionId", fundVersionId)
-                                .param("descItemObjectId", descItemObjectId)
-                , DESC_ITEM_CSV_EXPORT);
-
+        Response response = get(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .param("descItemObjectId", descItemObjectId), DESC_ITEM_CSV_EXPORT);
         return response.getBody().asInputStream();
     }
 
@@ -1313,13 +1308,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param value            hodnota
      * @param position         pozice
      * @param descItemObjectId identifikátor hodnoty atributu
+     * @param undefined        nezjištěný (bez hodnoty)
      * @return vytvořený object hodnoty atributu
      */
     protected ArrItemVO buildDescItem(final String typeCode,
                                       final String specCode,
                                       final Object value,
                                       final Integer position,
-                                      final Integer descItemObjectId) {
+                                      final Integer descItemObjectId,
+                                      final Boolean undefined) {
         org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
         RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1442,6 +1439,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         descItem.setPosition(position);
         descItem.setDescItemObjectId(descItemObjectId);
+        descItem.setUndefined(undefined);
 
         return descItem;
     }

@@ -527,6 +527,7 @@ public class ArrangementService {
      * @param unitdate
      * @param mark
      * @param uuid
+     * @param managed is true pokud data přišla přes WSDL
      * @param scopes
      *            Seznam oblastí, může být null
      * @param userIds
@@ -543,6 +544,7 @@ public class ArrangementService {
                                           final String unitdate,
                                           final String mark,
                                           String uuid,
+                                          Boolean managed,
                                           List<ApScope> scopes,
                                           List<Integer> userIds,
                                           List<Integer> groupIds) {

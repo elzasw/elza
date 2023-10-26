@@ -491,7 +491,7 @@
     <#local result=result+[item]>        
   </#list>
   <#-- call parent if nothing found -->
-  <#if result?size==0>
+  <#if (result?size==0) >
     <#if node.parentNode?has_content>
       <#local result=getItemsFromParent(node.parentNode, itemTypeCode)>
     </#if>
@@ -569,7 +569,7 @@
   <#if existingcopies?size==0>
     <#if node.parentNode?has_content>
       <#local existingcopiesInherited=true>
-      <#local existingcopies=getItemsFromParent(node, "ZP2015_EXISTING_COPY")>
+      <#local existingcopies=getItemsFromParent(node.parentNode, "ZP2015_EXISTING_COPY")>
     </#if>
   </#if>
   <#list existingcopies as item>
@@ -590,6 +590,7 @@
   <#local unitTitles=[]>
   <#local unitPublicTitles=[]>
   <#local languages=[]>
+  <#local majorLanguages=[]>
   <#local originators=[]>
   <#local containers=[]>
 <ead:did>
@@ -657,6 +658,9 @@
         <#break>
       <#case "ZP2015_LANGUAGE">
         <#local languages=languages+[item]>
+        <#break>
+      <#case "ZP2015_MAJOR_LANG">
+        <#local majorLanguages=majorLanguages+[item]>
         <#break>
       <#case "ZP2015_STORAGE_ID">
         <#-- Ukladaci jednotka -->
@@ -767,7 +771,7 @@
   </#if>
   <#-- Zapis ukladacich jednotek -->
   <#local containerInherited=false>
-  <#if containers?size==0>
+  <#if (containers?size==0)>
     <#if node.parentNode?has_content>
       <#local containerInherited=true>
       <#local containers=getItemsFromParent(node.parentNode, "ZP2015_STORAGE_ID")>
@@ -797,10 +801,15 @@
   <#if (languages?size>0) >
     <@writeLangMaterials languages />
   <#else>
-    <#local languages=getItemsFromParent(node.parentNode, "ZP2015_LANGUAGE")>
-    <#if (languages?size==0) >
-      <@writeLangMaterials languages true/>
+    <#if node.parentNode?has_content>
+      <#local languages=getItemsFromParent(node.parentNode, "ZP2015_LANGUAGE")>
+      <#if (languages?size>0) >
+        <@writeLangMaterials languages true/>
+      </#if>
     </#if>
+  </#if>
+  <#if (majorLanguages?size>0) >
+    <@writeLangMaterials majorLanguages false "majority"/>
   </#if>
   <#if (node.depth==1)>  
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
@@ -962,14 +971,16 @@
   </ead:physdescstructured>
 </#macro>
 
-<#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk -->
-<#macro writeLangMaterials items inherited=false>
+<#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk
+  -->
+<#macro writeLangMaterials items inherited=false altrender="">
   <!-- Jazyky JP -->
-  <ead:langmaterial>
+  <#if items?size==0><#stop "Empty item list"></#if>
+  <#lt>  <ead:langmaterial<#if (altrender?length>0)><#lt> altrender="${altrender}"</#if>>     
   <#list items as langItem>
-    <ead:language langcode="${langItem.specification.code[4..]}"<#if inherited><#lt> altrender="inherited"</#if>>${langItem.specification.name}</ead:language>
+    <#lt>   <ead:language langcode="${langItem.specification.code[4..]}"<#if inherited><#lt> altrender="inherited"</#if>>${langItem.specification.name}</ead:language>
   </#list>
-  </ead:langmaterial>
+  <#lt>  </ead:langmaterial>
 </#macro>
 
 <#macro writeAp ap localtype>

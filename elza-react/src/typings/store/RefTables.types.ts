@@ -2,6 +2,7 @@ import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { ApTypeVO } from '../../api/ApTypeVO';
 import { BaseRefTableStore } from '../BaseRefTableStore';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
+import { RulDataTypeVO } from 'api/RulDataTypeVO';
 
 export interface Scope {
     versionId?: number;
@@ -56,9 +57,13 @@ export interface StructureTypes {
     }]
 }
 
+export interface DescItemTypeRef extends RulDescItemTypeExtVO {
+    dataType: RulDataTypeVO;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
-    descItemTypes: BaseRefTableStore<RulDescItemTypeExtVO>;
+    descItemTypes: BaseRefTableStore<DescItemTypeRef>;
     eidTypes: unknown;
     externalSystems: unknown;
     groups: unknown;
@@ -68,7 +73,7 @@ export interface RefTablesState {
     outputTypes: unknown;
     partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: BaseRefTableStore<unknown>;
-    rulDataTypes: BaseRefTableStore<unknown>;
+    rulDataTypes: BaseRefTableStore<RulDataTypeVO>;
     ruleSet: unknown;
     scopesData: ScopesData;
     structureTypes: StructureTypes;

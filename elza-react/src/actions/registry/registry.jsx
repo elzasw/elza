@@ -98,6 +98,7 @@ export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
 export function goToAe(history, id, force = false, redirect = true, revisionActive = false) {
     return dispatch => {
+        if(id == undefined){throw Error("No entity id specified.")}
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
         // Zabraneni zmeny adresy v adresnim radku, pokud
         // je RegistryPage v rezimu modalu ( vyber entity
@@ -215,7 +216,7 @@ export function registryDeleteRevision(id, history, select) {
         });
     };
 }
- 
+
 export function registryChangeStateRevision(id, apVersion, revisionState, history, select) {
     return (dispatch, getState) => {
 

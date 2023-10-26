@@ -6,7 +6,7 @@ import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {normalizeString} from 'components/validate.jsx';
 import {decorateValue, inputValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {CLS_CALCULABLE} from '../../../constants';
 import {DescItemComponentProps} from './DescItemTypes';
@@ -27,8 +27,8 @@ class DescItemUnitid extends AbstractReactComponent<Props> {
 
     public render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? 
-            i18n('subNodeForm.descItemType.calculable') : 
+        let value = cal && descItem.value == null ?
+            i18n('subNodeForm.descItemType.calculable') :
             inputValue(descItem.value);
 
         if (readMode) {

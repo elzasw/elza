@@ -5,7 +5,7 @@ import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import './DescItemRecordRef.scss';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -50,10 +50,10 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history} = this.props;
+        const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history, dispatch} = this.props;
         const oldFilter = {...registryList.filter};
 
-        this.props.dispatch(
+        dispatch(
             registryListFilter({
                 ...registryList.filter,
                 registryTypeId: null,
@@ -64,8 +64,12 @@ class DescItemRecordRef extends AbstractReactComponent {
             }),
         );
 
-        this.props.dispatch(goToAe(history, value ? value.id : null, false, false));
-        this.props.dispatch(
+        // preselect entity, when value exists
+        if(value?.id != undefined) {
+            dispatch(goToAe(history, value ? value.id : null, false, false));
+        }
+
+        dispatch(
             modalDialogShow(
                 this,
                 null,
@@ -74,13 +78,13 @@ class DescItemRecordRef extends AbstractReactComponent {
                     fund={fund}
                     onSelect={data => {
                         onSelect(data);
-                        this.props.dispatch(registryListFilter({...oldFilter}));
-                        this.props.dispatch(registryDetailClear());
+                        dispatch(registryListFilter({...oldFilter}));
+                        dispatch(registryDetailClear());
                     }}
                 />,
                 classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
                 () => {
-                    this.props.dispatch(registryListFilter({...oldFilter}));
+                    dispatch(registryListFilter({...oldFilter}));
                 },
             ),
         );

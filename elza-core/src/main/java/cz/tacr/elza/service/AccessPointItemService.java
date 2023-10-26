@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -721,4 +722,38 @@ public class AccessPointItemService {
         return ret;
     }
 
+    /**
+     * Kontrola, zda seznam ApItems obsahuje prvek ApItem
+     * 
+     * @param item
+     * @param items
+     * @return boolean
+     */
+    public boolean isApItemInList(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId())
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())
+                    && item.getData().isEqualValue(i.getData())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Vyhledávání v seznamu ApItem podle ItemType & ItemSpec
+     * 
+     * @param apItem
+     * @param items
+     * @return
+     */
+    public ApItem findByTypeAndSpec(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId()) 
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())) {
+                return i;
+            }
+        }
+        return null;
+    }
 }
