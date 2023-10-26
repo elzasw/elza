@@ -5,7 +5,7 @@ import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import './DescItemRecordRef.scss';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';

@@ -5,7 +5,7 @@ import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/share
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {Button} from '../../ui';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
