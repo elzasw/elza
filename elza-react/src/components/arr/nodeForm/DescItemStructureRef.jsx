@@ -15,7 +15,7 @@ import {
 import Loading from '../../shared/loading/Loading';
 import {Button} from '../../ui';
 import StructureSubNodeForm from '../structure/StructureSubNodeForm';
-import DescItemLabel from './DescItemLabel.jsx';
+import {DescItemLabel} from './DescItemLabel';
 import './DescItemStructureRef.scss';
 import {IDescItemBaseProps} from './DescItemTypes';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
