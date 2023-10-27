@@ -35,7 +35,7 @@ export function getObjectInfo(objectInfo) {
 
 export function importForm(data, messageType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.xmlImport(data))
+        return savingApiWrapper(dispatch, WebApi.xmlImport(data))
             .then(() => {
                 dispatch(modalDialogHide());
                 dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));

@@ -74,8 +74,10 @@ export function addNodeForm(
                             afterCreateCallback,
                             emptyItemTypeIds,
                         ),
-                    );
-                    dispatch(modalDialogHide());
+                    ).then(() => {
+                            cb();
+                            dispatch(modalDialogHide());
+                        });
                     break;
                 }
                 case 'FILE': {
@@ -86,7 +88,7 @@ export function addNodeForm(
                             formData.append(key, value);
                         }
                     }
-                    dispatch(importForm(formData, 'Fund'));
+                    dispatch(importForm(formData, 'Fund')).then(() => {cb();});
                     break;
                 }
                 case 'OTHER': {
