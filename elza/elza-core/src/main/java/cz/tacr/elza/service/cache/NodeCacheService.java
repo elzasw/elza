@@ -59,7 +59,6 @@ import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DataUriRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
@@ -630,7 +629,6 @@ public class NodeCacheService {
                 fundFileRepository,
                 daoRepository,
                 nodeRepository,
-                descItemRepository,
                 refTemplateRepository);
         ra.restore(cachedNodes);
     }
