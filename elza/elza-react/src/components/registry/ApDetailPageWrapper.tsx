@@ -138,13 +138,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     refTables,
     select,
     onPushApToExt,
-    revisionActive: revisionActiveUrl,
+    revisionActive: revisionActiveUrl = false,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
-    const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl || false);
+    const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
