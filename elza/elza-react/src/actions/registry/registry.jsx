@@ -96,7 +96,9 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
-export function goToAe(history, id, force = false, redirect = true, revisionActive = false) {
+export function goToAe(history, id, force = false, redirect = true, revisionActive = false, replaceUrl = false) {
+    const historyFn = replaceUrl ? history.replace : history.push;
+
     return dispatch => {
         if(id == undefined){throw Error("No entity id specified.")}
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
@@ -104,7 +106,7 @@ export function goToAe(history, id, force = false, redirect = true, revisionActi
         // je RegistryPage v rezimu modalu ( vyber entity
         // pomoci tlacitka v RegistryField )
         if (redirect) {
-            history.push(revisionActive ? urlEntityRevision(id) : urlEntity(id));
+            historyFn(revisionActive ? urlEntityRevision(id) : urlEntity(id));
         }
         return result;
     };
