@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -119,6 +119,13 @@
 .put("pfp", "předměty faleristické povahy")
 .put("jin", "jiné")
 .build()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="majorLanguageFormatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+	.setTitleSeparator(": ")
+	.setItemSeparator(", ")
+	.setBlockSeparators("","; ")
+	.beginBlock().addValue("ZP2015_MAJOR_LANG").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<detail>
 		<band height="50">
@@ -395,7 +402,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Jazyk:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Jazyk archiválií:"]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">
@@ -408,6 +415,33 @@
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{languageFormatter}.format( $P{output} )]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[$P{output}.getRootNode().getItems( java.util.Collections.singletonList("ZP2015_MAJOR_LANG") ).size()>0]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d6988573-7915-4e8e-82ae-125f95ef9988">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement markup="none">
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Jazyk archivního souboru (v evidenci NAD):"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f3b9ac16-5ee5-4581-b444-f354d8b5fce5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				</reportElement>
+				<box bottomPadding="7"/>
+				<textElement markup="none">
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{majorLanguageFormatter}.format( $P{output}.getRootNode() )]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="62">
