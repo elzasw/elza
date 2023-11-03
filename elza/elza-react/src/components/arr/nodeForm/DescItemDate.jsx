@@ -39,7 +39,7 @@ class DescItemDate extends AbstractReactComponent {
                 <DescItemLabel
                     value={Moment(descItem.value).format('l')}
                     cal={cal}
-                    notIdentified={descItem.undefined}
+                    isValueUndefined={descItem.undefined}
                 />
             );
         }

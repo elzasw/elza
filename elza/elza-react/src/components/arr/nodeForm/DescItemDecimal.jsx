@@ -70,7 +70,7 @@ class DescItemDecimal extends AbstractReactComponent {
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
-            return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
+            return <DescItemLabel value={value} cal={cal} isValueUndefined={descItem.undefined} />;
         }
 
         let cls = [];
@@ -89,7 +89,7 @@ class DescItemDecimal extends AbstractReactComponent {
                         type="text"
                         disabled={locked || descItem.undefined}
                         onChange={this.handleChange}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
                     />
                 </ItemTooltipWrapper>
             </div>

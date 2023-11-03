@@ -216,7 +216,7 @@ class RegistryField extends AbstractReactComponent {
 
         let tmpVal = '';
         if (this.props.undefined) {
-            tmpVal = i18n('subNodeForm.descItemType.notIdentified');
+            tmpVal = i18n('subNodeForm.descItemType.undefinedValue');
         }
 
         let items = this.state.registryList;
