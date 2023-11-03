@@ -418,7 +418,7 @@
 			</textField>
 		</band>
 		<band height="50">
-			<printWhenExpression><![CDATA[$P{output}.getRootNode().getItems( java.util.Collections.singletonList("ZP2015_MAJOR_LANG") ).size()>0]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$P{fund}.getRootNode().getItems( java.util.Collections.singletonList("ZP2015_MAJOR_LANG") ).size()>0]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d6988573-7915-4e8e-82ae-125f95ef9988">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -441,7 +441,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{majorLanguageFormatter}.format( $P{output}.getRootNode() )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{majorLanguageFormatter}.format( $P{fund}.getRootNode() )]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="62">
