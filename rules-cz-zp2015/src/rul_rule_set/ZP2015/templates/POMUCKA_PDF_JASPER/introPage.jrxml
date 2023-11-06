@@ -396,7 +396,6 @@
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0f41d8e8-4da9-47bd-9559-16558580bc4d">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
@@ -408,7 +407,6 @@
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
@@ -423,7 +421,6 @@
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d6988573-7915-4e8e-82ae-125f95ef9988">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
@@ -435,7 +432,6 @@
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f3b9ac16-5ee5-4581-b444-f354d8b5fce5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 				</reportElement>
 				<box bottomPadding="7"/>
 				<textElement markup="none">
