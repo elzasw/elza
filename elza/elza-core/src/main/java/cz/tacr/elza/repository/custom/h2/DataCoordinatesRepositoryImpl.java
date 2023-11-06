@@ -1,8 +1,8 @@
 package cz.tacr.elza.repository.custom.h2;
 
-import org.geotools.geometry.jts.WKBReader;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 

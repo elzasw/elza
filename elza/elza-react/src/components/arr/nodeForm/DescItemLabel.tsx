@@ -9,7 +9,7 @@ interface Props {
     value: string;
     onClick?: () => void;
     cal?: boolean;
-    notIdentified?: boolean;
+    isValueUndefined?: boolean;
     hideTooltip?: boolean;
 }
 
@@ -17,7 +17,7 @@ export const DescItemLabel = ({
     value,
     onClick,
     cal,
-    notIdentified,
+    isValueUndefined,
     hideTooltip,
 }: Props) => {
     // Sestavení hodnoty - změna znaku < na entitu, nahrazení enterů <br/>
@@ -39,8 +39,8 @@ export const DescItemLabel = ({
         );
     }
 
-    if (notIdentified) {
-        renderItem = <i>{i18n('subNodeForm.descItemType.notIdentified')}</i>;
+    if (isValueUndefined) {
+        renderItem = <i>{i18n('subNodeForm.descItemType.undefinedValue')}</i>;
     }
 
     return (

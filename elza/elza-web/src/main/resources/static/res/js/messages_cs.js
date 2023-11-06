@@ -985,7 +985,7 @@ var messages = {
     "subNodeForm.descItemType.calculable": "Hodnota počítána funkcí",
     "subNodeForm.descItemType.spec.favorite": "Oblíbené",
     "subNodeForm.descItemType.spec.all": "Všechny záznamy",
-    "subNodeForm.descItemType.notIdentified": "výjimka",
+    "subNodeForm.descItemType.undefinedValue": "výjimka",
     "subNodeForm.descItemType.title.importCoord": "Načtení souřadnic ze souboru",
     "subNodeForm.addNodeAfter": "JP za",
     "subNodeForm.digitizationRequest": "Požadavek na digitalizaci",

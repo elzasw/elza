@@ -148,21 +148,15 @@ $descItemDraggerSize: 6px;
                                         font-size: inherit;
                                     }
                                 }
-                                .identified, .unlocked, .nocopy {
+                                .inactive {
                                     color: $node-form-actions-active-color;
                                 }
 
-                                .notIdentified, .locked, .copy {
+                                .active {
                                     color: $node-form-actions-color;
                                     background-color:$node-form-actions-hover;
                                 }
-                                .locked {
-                                    visibility: visible;
-                                }
-                                .notIdentified {
-                                    visibility: visible;
-                                }
-                                .copy {
+                                .active {
                                     visibility: visible;
                                 }
                                 .messages {
@@ -283,14 +277,14 @@ $descItemDraggerSize: 6px;
                                         vertical-align: middle;
                                     }
                                 }
-                                .identified {
+                                .inactive {
                                     color: $node-form-actions-active-color;
                                 }
-                                .notIdentified {
+                                .active {
                                     color: $node-form-actions-color;
                                     background-color:$node-form-actions-hover;
                                 }
-                                .notIdentified {
+                                .active {
                                     visibility: visible;
                                 }
                             }

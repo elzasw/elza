@@ -97,7 +97,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
 
         if (readMode) {
             if(descItem.undefined){
-                return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
+                return <DescItemLabel value={value} cal={cal} isValueUndefined={descItem.undefined} />;
             }
 
             return <CoordinatesDisplay
@@ -125,7 +125,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             ref={this.focusEl}
                             disabled={locked || descItem.undefined}
                             onChange={this.handleChangeData}
-                            value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
+                            value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : data}
                             />
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (

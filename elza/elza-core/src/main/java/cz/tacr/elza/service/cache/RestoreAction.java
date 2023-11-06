@@ -42,7 +42,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -68,8 +67,6 @@ public class RestoreAction {
 
     final private DaoRepository daoRepository;
 
-    final private DescItemRepository descItemRepository;
-
     final private NodeRepository nodeRepository;
 
     final private ArrRefTemplateRepository refTemplateRepository;
@@ -83,7 +80,6 @@ public class RestoreAction {
                          final FundFileRepository fundFileRepository,
                          final DaoRepository daoRepository,
                          final NodeRepository nodeRepository,
-                         final DescItemRepository descItemRepository,
                          final ArrRefTemplateRepository refTemplateRepository) {
         this.sdp = sdp;
         this.em = em;
@@ -92,7 +88,6 @@ public class RestoreAction {
         this.fundFileRepository = fundFileRepository;
         this.daoRepository = daoRepository;
         this.nodeRepository = nodeRepository;
-        this.descItemRepository = descItemRepository;
         this.refTemplateRepository = refTemplateRepository;
     }
 
@@ -134,17 +129,20 @@ public class RestoreAction {
 
         Integer itemSpecId = descItem.getItemSpecId();
 
-        // exception for element without itemSpecId
-        boolean isException = itemType.hasSpecifications()
-                && descItem.getData() == null
-                && itemSpecId == null
-                && descItemRepository.countByNodeIdAndItemTypeId(descItem.getNodeId(), descItem.getItemTypeId()) < 2;
-
         // check if specification should be set
-        if (itemType.hasSpecifications() && !isException) {
-            Validate.notNull(itemSpecId);
+        if (itemType.hasSpecifications()) {
+            // exception for element without itemSpecId
+            if (descItem.getData() == null ^ itemSpecId == null) {
+                Validate.notNull(itemSpecId,
+                                 "Item without specification or data was found. nodeId=%s, itemTypeId=%s, itemId=%s",
+                                 descItem.getNodeId(),
+                                 descItem.getItemTypeId(),
+                                 descItem.getItemId());
+            }
         } else {
-            Validate.isTrue(itemSpecId == null);
+            Validate.isTrue(itemSpecId == null, "Item with unexpected specifiaction. nodeId=%s, itemTypeId=%s",
+                            descItem.getNodeId(),
+                            descItem.getItemTypeId());
         }
         // prepare specification
         if (itemSpecId != null) {

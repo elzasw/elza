@@ -38,7 +38,7 @@ class DescItemString extends AbstractReactComponent {
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
         if (readMode) {
-            return <DescItemLabel value={descItem.value} cal={cal} notIdentified={descItem.undefined} />;
+            return <DescItemLabel value={descItem.value} cal={cal} isValueUndefined={descItem.undefined} />;
         }
 
         let cls = [];
@@ -54,7 +54,7 @@ class DescItemString extends AbstractReactComponent {
                         ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
                         onChange={this.handleChange}
                     />
                 </ItemTooltipWrapper>

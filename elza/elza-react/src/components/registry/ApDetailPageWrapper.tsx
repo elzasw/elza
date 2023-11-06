@@ -138,13 +138,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     refTables,
     select,
     onPushApToExt,
-    revisionActive: revisionActiveUrl,
+    revisionActive: revisionActiveUrl = false,
 }) => {
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
-    const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl || false);
+    const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -161,13 +161,18 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     // pri neexistenci revize dojde k zobrazeni samotne entity
     useEffect(() => {
+        // change url when revisionActive changes
         if (revisionActive !== revisionActiveUrl && !select) {
-            dispatch(goToAe(history, id, false, !select, revisionActive))
-        }
-        if (!detail.data?.revStateApproval) {
-            dispatch(goToAe(history, id, false, !select, false))
+            dispatch(goToAe(history, id, false, !select, revisionActive, true))
         }
     }, [revisionActive]);
+
+    useEffect(() => {
+        // redirect to url without revision, when the entity is not in revision state
+        if (detail.fetched && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
+            dispatch(goToAe(history, id, false, !select, false, true))
+        }
+    }, [detail])
 
     // show accesspoint export message on websocket message
     useEffect(() => {
@@ -613,7 +618,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         ));
     },
     refreshDetail: (apId: number, force: boolean = true, redirect: boolean = true, revisionActive: boolean = false) => {
-        dispatch(goToAe(history, apId, force, redirect, revisionActive));
+        dispatch(goToAe(history, apId, force, redirect, revisionActive, true));
     },
     fetchViewSettings: () => {
         dispatch(

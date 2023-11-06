@@ -210,7 +210,7 @@ class DescItemStructureRef extends React.Component {
                 <DescItemLabel
                     value={structureData ? structureData.value : calValue}
                     cal={cal}
-                    notIdentified={descItem.undefined}
+                    isValueUndefined={descItem.undefined}
                 />
             );
         }
@@ -256,7 +256,7 @@ class DescItemStructureRef extends React.Component {
                         onChange={onChange}
                         renderItem={
                             descItem.undefined
-                                ? {name: i18n('subNodeForm.descItemType.notIdentified')}
+                                ? {name: i18n('subNodeForm.descItemType.undefinedValue')}
                                 : this.renderItem
                         }
                         getItemName={item => (item ? item.value : '')}

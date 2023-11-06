@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -672,11 +673,12 @@ public class EntityDBDispatcher {
         StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, state, apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();        
-        
+
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
 
-        // TODO kontrola a aktualizace odkazů arr_data_record_ref
+        // update records referencing newly created AP (arr_data_record_ref)
         List<ApItem> items = itemRepository.findUnbindedItemByBinding(binding);
+        Set<Integer> updatedApIds = new HashSet<Integer>(); 
         for (ApItem item : items) {
             ArrDataRecordRef dataRef = (ArrDataRecordRef) item.getData();
             if (dataRef.getRecord() == null) {
@@ -684,16 +686,11 @@ public class EntityDBDispatcher {
                 dataRecordRefRepository.save(dataRef);
                 ApPart part = item.getPart();
                 accessPointService.updatePartValue(apState, part);
-                if (part.getParentPartId() != null) {
-                    // Item was in some cases dettached proxy
-                    // we have to fetch part from DB
-                    ApPart parentPart = this.partService.getPart(part.getParentPartId());
-                    Validate.notNull(parentPart, "Failed to read parent part, partId: ", part.getParentPartId());
-                    accessPointService.updatePartValue(apState, parentPart);
-                }
-                accessPointCacheService.createApCachedAccessPoint(part.getAccessPointId());
+                updatedApIds.add(part.getAccessPointId());                
             }
         }
+        // regeneration cache of the updated entities
+        updatedApIds.forEach(accessPointId -> accessPointCacheService.createApCachedAccessPoint(accessPointId));
 
         return apState;
     }
