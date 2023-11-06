@@ -143,11 +143,11 @@ class FormDescItemType extends AbstractReactComponent {
             }
         }
 
-        let notIdentified = false;
+        let isValueUndefined = false;
 
         descItemType.descItems.forEach(descItem => {
             if (!descItemType.rep && descItem.undefined) {
-                notIdentified = true;
+                isValueUndefined = true;
             }
         });
 
@@ -207,7 +207,7 @@ class FormDescItemType extends AbstractReactComponent {
                 readMode={readMode}
                 arrPerm={arrPerm}
                 strictMode={strictMode}
-                notIdentified={notIdentified}
+                isValueUndefined={isValueUndefined}
                 customActions={customActions}
                 descItemFactory={descItemFactory}
             />

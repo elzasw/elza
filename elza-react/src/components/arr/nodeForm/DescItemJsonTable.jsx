@@ -244,7 +244,7 @@ class DescItemJsonTable extends AbstractReactComponent {
                             {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
                             ref={ref => (this.focusEl = ref)}
                             type="text"
-                            value={i18n('subNodeForm.descItemType.notIdentified')}
+                            value={i18n('subNodeForm.descItemType.undefinedValue')}
                         />
                     ) : (
                         <DataGrid

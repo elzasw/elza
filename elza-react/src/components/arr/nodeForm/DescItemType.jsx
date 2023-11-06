@@ -78,7 +78,7 @@ class DescItemType extends AbstractReactComponent {
         hideDelete: PropTypes.bool,
         readMode: PropTypes.bool.isRequired,
         arrPerm: PropTypes.bool,
-        notIdentified: PropTypes.bool,
+        isValueUndefined: PropTypes.bool,
         onDescItemNotIdentified: PropTypes.func,
         closed: PropTypes.bool,
         copy: PropTypes.bool,
@@ -293,6 +293,9 @@ class DescItemType extends AbstractReactComponent {
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {infoType, refType, readMode, strictMode} = this.props;
 
+        if(refType.dataType?.code === "ENUM" && descItem.undefined){
+            return <input className="form-control" disabled={true} value={i18n('subNodeForm.descItemType.undefinedValue')}/>
+        }
         return (
             <DescItemTypeSpec
                 key={key}
@@ -1042,7 +1045,7 @@ class DescItemType extends AbstractReactComponent {
             conformityInfoMissings,
             closed,
             readMode,
-            notIdentified,
+            isValueUndefined,
             rulDataType,
             onDescItemNotIdentified,
             customActions,
@@ -1070,14 +1073,14 @@ class DescItemType extends AbstractReactComponent {
                         key="copy"
                         onClick={this.handleDescItemTypeCopy}
                     >
-                        <Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" />
+                        <Icon className={copy ? 'active' : 'inactive'} glyph="fa-files-o" />
                     </NoFocusButton>,
                     <NoFocusButton
                         title={i18n('subNodeForm.descItemType.lock')}
                         key="lock"
                         onClick={this.handleDescItemTypeLock}
                     >
-                        <Icon className={locked ? 'locked' : 'unlocked'} glyph="fa-lock" />
+                        <Icon className={locked ? 'active' : 'inactive'} glyph="fa-lock" />
                     </NoFocusButton>,
                 );
             }
@@ -1143,7 +1146,41 @@ class DescItemType extends AbstractReactComponent {
         }
         const tooltip = <div dangerouslySetInnerHTML={{__html: titleText}}></div>;
 
-        if (hasPermission) {
+
+        // actions for undefined values (exceptions)
+        const _isValueUndefined = isValueUndefined || descItemType.descItems.find((descItem) => descItem.undefined)
+        const isRepeatable = infoType.rep;
+        const isRepeatableEnum = infoType.rep && rulDataType.code === 'ENUM';
+        const isRepeatableValueWithoutSpec = infoType.rep && !refType.useSpecification;
+
+        if (
+            !closed
+                && !readMode
+                && (
+                    !isRepeatable
+                        || isRepeatableValueWithoutSpec
+                        || isRepeatableEnum
+                )
+                && infoType.ind
+                && onDescItemNotIdentified
+                && descItemType.descItems.length <= 1
+        ) {
+            actions.push(
+                <NoFocusButton
+                    key="undefinedValue"
+                    onClick={() => {
+                        if (descItemType.descItems.length === 1) {
+                            onDescItemNotIdentified(0, descItemType.descItems[0]);
+                        }
+                    }}
+                    title={i18n('subNodeForm.descItemType.title.undefinedValue')}
+                >
+                    <Icon glyph="fa-low-vision" className={_isValueUndefined ? 'active' : 'inactive'} />
+                </NoFocusButton>,
+            );
+        }
+
+        if (hasPermission && !_isValueUndefined) {
             if (infoType.rep === 1 && !(locked || closed || readMode)) {
                 const {onDescItemAdd} = this.props;
                 if (this.props.rulDataType.code === 'COORDINATES') {
@@ -1210,28 +1247,6 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
-        if (
-            !closed &&
-            !readMode &&
-            !infoType.rep &&
-            infoType.ind &&
-            rulDataType.code !== 'ENUM' &&
-            onDescItemNotIdentified
-        ) {
-            actions.push(
-                <NoFocusButton
-                    key="notIdentified"
-                    onClick={() => {
-                        if (descItemType.descItems.length === 1) {
-                            onDescItemNotIdentified(0, descItemType.descItems[0]);
-                        }
-                    }}
-                    title={i18n('subNodeForm.descItemType.title.notIdentified')}
-                >
-                    <Icon glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'} />
-                </NoFocusButton>,
-            );
-        }
 
         const isEdited = descItemType.descItems.filter((descItem) => descItem.touched).length > 0;
         const isConflict = descItemType.descItems.filter((descItem) => descItem.descItemObjectId != undefined && descItem.descItemObjectId === descItemWithConflictObjectId).length > 0;
@@ -1305,6 +1320,7 @@ class DescItemType extends AbstractReactComponent {
             readMode,
             onDescItemNotIdentified,
             arrPerm,
+            refType,
         } = this.props;
         const {descItemType} = this.state;
 
@@ -1324,13 +1340,18 @@ class DescItemType extends AbstractReactComponent {
                 // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
                 if (!readMode && editable) {
                     // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
-                    if (infoType.rep === 1 && infoType.ind && onDescItemNotIdentified) {
+                    if (infoType.rep === 1
+                        && rulDataType.code !== 'ENUM'
+                        && refType.useSpecification
+                        && infoType.ind
+                        && onDescItemNotIdentified
+                    ) {
                         actions.push(
                             <NoFocusButton
-                                key="notIdentified"
-                                className={descItem.undefined ? 'notIdentified' : 'identified'}
+                                key="undefinedValue"
+                                className={descItem.undefined ? 'active' : 'inactive'}
                                 onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
-                                title={i18n('subNodeForm.descItemType.title.notIdentified')}
+                                title={i18n('subNodeForm.descItemType.title.undefinedValue')}
                             >
                                 <Icon glyph="fa-low-vision" />
                             </NoFocusButton>,

@@ -11,7 +11,7 @@ import {connect} from 'react-redux';
 import {Button} from '../../ui';
 import {Col, Form, FormControl, FormGroup, FormLabel, Modal, Row} from 'react-bootstrap';
 import {WebApi} from 'actions/index';
-import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils';
 import {getSetFromIdsList, indexById} from 'stores/app/utils';
 import './AddNodeForm.scss';
@@ -193,7 +193,7 @@ class AddNodeForm extends AbstractReactComponent {
 
     handleCountChange = (e) => {
         if(
-            (Number.isInteger(parseInt(e.target.value)) 
+            (Number.isInteger(parseInt(e.target.value))
                 && e.target.value > 0)
                 || !e.target.value
         ){
@@ -324,7 +324,10 @@ class AddNodeForm extends AbstractReactComponent {
                 }
             }
 
-            onSubmit(submitData, 'NEW', null, emptyItemTypeIds);
+            this.setState({submitting: true});
+            onSubmit(submitData, 'NEW', () => {
+                this.setState({submitting: false});
+            }, emptyItemTypeIds);
         } else if (this.state.selectedSourceAS === 'FILE') {
             const submitData = {
                 xmlFile: this.state.importXml,
@@ -350,7 +353,10 @@ class AddNodeForm extends AbstractReactComponent {
                 type: 'application/json',
             });
 
-            onSubmit(submitData, 'FILE');
+            this.setState({submitting: true});
+            onSubmit(submitData, 'FILE', () => {
+                this.setState({submitting: false});
+            });
         } else if (this.state.selectedSourceAS === 'OTHER') {
             const newNode = {
                 id: node.id,
@@ -541,7 +547,7 @@ class AddNodeForm extends AbstractReactComponent {
                         type="submit"
                         onClick={this.handleFormSubmit}
                     >
-                        {i18n('global.action.store')}
+                        {submitting ? <Icon glyph={"fa-circle-o-notch fa-spin"}/> : i18n('global.action.store')}
                     </Button>
                     <Button disabled={submitting} variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}

@@ -115,7 +115,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                     <DescItemLabel
                         value={cal ? i18n('subNodeForm.descItemType.calculable') : ''}
                         cal={cal}
-                        notIdentified={descItem.undefined}
+                        isValueUndefined={descItem.undefined}
                     />
                 );
             }

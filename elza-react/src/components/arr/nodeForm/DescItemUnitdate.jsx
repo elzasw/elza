@@ -33,9 +33,9 @@ class DescItemUnitdate extends AbstractReactComponent {
 
         if (readMode) {
             if (value !== null) {
-                return <DescItemLabel value={value} cal={false} notIdentified={descItem.undefined} />;
+                return <DescItemLabel value={value} cal={false} isValueUndefined={descItem.undefined} />;
             } else {
-                return <DescItemLabel value="" cal={cal} notIdentified={descItem.undefined} />;
+                return <DescItemLabel value="" cal={cal} isValueUndefined={descItem.undefined} />;
             }
         }
 
@@ -46,7 +46,7 @@ class DescItemUnitdate extends AbstractReactComponent {
 
         return (
             <div className="desc-item-value desc-item-value-parts">
-                <UnitdateField 
+                <UnitdateField
                     {...decorateValue(
                         this,
                         descItem.hasFocus,
@@ -56,7 +56,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                     )}
                     ref={ref => (this.focusEl = ref)}
                     type="text"
-                    value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value || ''}
+                    value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value || ''}
                     onChange={this.handleValueChange}
                 />
             </div>

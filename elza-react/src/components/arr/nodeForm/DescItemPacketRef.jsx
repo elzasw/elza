@@ -63,7 +63,7 @@ class DescItemPacketRef extends AbstractReactComponent {
         let name = this.formatPacketName(item);
 
         if (descItem.undefined) {
-            name = i18n('subNodeForm.descItemType.notIdentified');
+            name = i18n('subNodeForm.descItemType.undefinedValue');
         }
         var cls = 'item';
 
@@ -170,7 +170,7 @@ class DescItemPacketRef extends AbstractReactComponent {
                 <DescItemLabel
                     value={packet ? this.pf.format(packet) : calValue}
                     cal={cal}
-                    notIdentified={descItem.undefined}
+                    isValueUndefined={descItem.undefined}
                 />
             );
         }

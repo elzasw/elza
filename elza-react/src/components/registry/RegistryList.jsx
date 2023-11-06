@@ -208,21 +208,18 @@ class RegistryList extends AbstractReactComponent {
 
     renderListItem = props => {
         const { item } = props;
-        const { eidTypes, apTypeIdMap, select } = this.props;
+        const { eidTypes, apTypeIdMap } = this.props;
 
         return (
             <Link
                 style={{ textDecoration: "none" }}
                 to={urlEntity(item.id)}
                 onClick={(e) => {
-                    // Zabraneni zmeny adresy v adresnim radku, pokud
-                    // je RegistryPage v rezimu modalu ( vyber entity
-                    // pomoci tlacitka v RegistryField )
-                    if (select) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.handleRegistryDetail(item);
-                    }
+                    // Zabraneni zmeny adresy v adresnim radku
+                    // kolize s onFocus u ListBox.
+                    // Link slouzi jen k otevreni v jinem tabu.
+                    e.preventDefault();
+                    e.stopPropagation();
                 }}
             >
                 <RegistryListItem

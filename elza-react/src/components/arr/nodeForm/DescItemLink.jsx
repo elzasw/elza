@@ -111,7 +111,7 @@ class DescItemLink extends AbstractReactComponent {
                     onClick={hasNodeLink ? this.handleNavigate : null}
                     value={descItem.description || descItem.value}
                     cal={cal}
-                    notIdentified={descItem.undefined}
+                    isValueUndefined={descItem.undefined}
                 />
             );
         }
@@ -131,7 +131,7 @@ class DescItemLink extends AbstractReactComponent {
                         ref={ref => (this.focusEl = ref)}
                         type="text"
                         disabled={locked || descItem.undefined}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
                         onChange={this.handleChange}
                         placeholder={i18n('subNodeForm.descItem.link.uri')}
                     />
@@ -150,7 +150,7 @@ class DescItemLink extends AbstractReactComponent {
                         ref={ref => (this.focusEl2 = ref)}
                         type="text"
                         disabled={locked || descItem.undefined}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : description}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : description}
                         onChange={this.handleDesc}
                         placeholder={i18n('subNodeForm.descItem.link.description')}
                     />
