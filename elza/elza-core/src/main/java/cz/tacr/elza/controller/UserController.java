@@ -103,12 +103,14 @@ public class UserController {
         List<UISettings> settingsList = factoryDO.createSettingsList(settings);
         UsrUser user = userService.getLoggedUser();
         if (user != null) {
-            settingsService.setSettings(user, settingsList);
+            settingsList = settingsService.setSettings(user, settingsList);
         } else {
             // create fake IDs for admin
             int i = 1;
             for (UISettings uiSettings : settingsList) {
-                uiSettings.setSettingsId(i++);
+                if (uiSettings.getSettingsId() == null) {
+                    uiSettings.setSettingsId(i++);
+                }
             }
         }
         return factoryVO.createSettingsList(settingsList);

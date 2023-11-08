@@ -91,7 +91,10 @@ public class UISettingsVO {
     public static UISettings createEntity(UISettingsVO vo) {
         UISettings entity = new UISettings();
         entity.setSettingsId(vo.getId());
-        entity.setSettingsType(vo.getSettingsType().name());
+        // ?? Settings type could be also other value, not only enum
+        String settingsType = vo.getSettingsType().name();
+        entity.setSettingsType(settingsType);
+        entity.setEntityType(vo.getEntityType());
         entity.setEntityId(vo.getEntityId());
         entity.setValue(vo.getValue());
         return entity;

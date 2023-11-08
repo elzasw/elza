@@ -248,12 +248,24 @@ public class SettingsService {
     /**
      * Nastaví parametry pro uživatele.
      *
-     * @param user         uživatel
-     * @param settingsList seznam nastavení
+     * @param user
+     *            uživatel
+     * @param settingsList
+     *            seznam nastavení
+     * @return Return new user settings.
+     * 
      */
     @Transactional
-    public void setSettings(@NotNull final UsrUser user,
+    public List<UISettings> setSettings(@NotNull final UsrUser user,
                             @NotNull final List<UISettings> settingsList) {
+
+        List<UISettings> result = new ArrayList<>();
+
+        List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
+        Map<Integer, UISettings> globalSettingsMap = menuSettingsList.stream()
+                .collect(Collectors.toMap(UISettings::getSettingsId, Function.identity()));
+        result.addAll(menuSettingsList);
+
         List<UISettings> settingsListDB = settingsRepository.findByUser(user);
 
         // Lookup map
@@ -269,6 +281,11 @@ public class SettingsService {
                 settings.setUser(user);
                 settingsListAdd.add(settings);
             } else {
+                // check if globalSettings
+                UISettings globalSetting = globalSettingsMap.get(settings.getSettingsId());
+                if (globalSetting != null) {
+                    continue;
+                }
                 UISettings settingsDB = settingsMap.remove(settings.getSettingsId());
                 if (settingsDB == null) {
                     throw new ObjectNotFoundException("Entita nastavení s id=" + settings.getSettingsId() + " neexistuje v DB", BaseCode.ID_NOT_EXIST);
@@ -285,8 +302,10 @@ public class SettingsService {
             settingsRepository.deleteAll(settingsListDelete);
         }
 
-        settingsRepository.saveAll(settingsListAdd);
-        settingsRepository.saveAll(settingsListUpdate);
+        result.addAll(settingsRepository.saveAll(settingsListAdd));
+        result.addAll(settingsRepository.saveAll(settingsListUpdate));
+
+        return result;
     }
 
     /**
