@@ -297,8 +297,10 @@ public class ClientFactoryVO {
      * @return
      */
     public List<UISettingsVO> createSettingsList(final List<UISettings> settings) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(settings, UISettingsVO.class);
+        if (settings == null) {
+            return null;
+        }
+        return settings.stream().map(UISettingsVO::newInstance).collect(Collectors.toList());
     }
 
     /**
