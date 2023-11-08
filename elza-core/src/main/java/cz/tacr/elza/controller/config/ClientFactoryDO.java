@@ -799,12 +799,15 @@ public class ClientFactoryDO {
     /**
      * Převod seznamu nastavení VO na DO.
      *
-     * @param settings seznam nastavení
+     * @param settings
+     *            seznam nastavení
      * @return seznam DO
      */
     public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(settings, UISettings.class);
+        if (CollectionUtils.isEmpty(settings)) {
+            return Collections.emptyList();
+        }
+        return settings.stream().map(UISettingsVO::createEntity).collect(Collectors.toList());
     }
 
     public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {
