@@ -401,7 +401,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Jazyk archiválií:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Jazyk archiválií popsaných pomůckou:"]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">
