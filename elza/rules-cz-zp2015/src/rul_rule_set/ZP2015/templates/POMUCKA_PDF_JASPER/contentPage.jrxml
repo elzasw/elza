@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.0.final using JasperReports Library version 6.20.0-2bc7ab61c56f459e8176eb05c7705e145cd400ad  -->
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -803,24 +803,30 @@ StringUtils.isNotBlank($V{unitType})&&
 					</datasetRun>
 					<jr:listContents height="13" width="414">
 						<textField textAdjust="StretchHeight" hyperlinkType="LocalAnchor">
-							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
+							<reportElement style="Item" x="0" y="0" width="414" height="13" forecolor="#242E52" uuid="ff61cb62-0b7f-448f-affb-c6a9eb6fb8f3">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 								<printWhenExpression><![CDATA[$F{node}!=null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
+							<textElement>
+								<font isUnderline="true"/>
+							</textElement>
 							<textFieldExpression><![CDATA[($F{description}!=null)?($F{description}+ "; "):"" + 
 ($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") ))]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
 						</textField>
 						<textField textAdjust="StretchHeight" hyperlinkType="Reference">
-							<reportElement style="Item" x="0" y="0" width="414" height="13" uuid="78a4d976-06fc-4724-95bc-b641c265ec96">
+							<reportElement style="Item" x="0" y="0" width="414" height="13" forecolor="#242E52" uuid="78a4d976-06fc-4724-95bc-b641c265ec96">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 								<property name="com.jaspersoft.studio.unit.x" value="px"/>
 								<property name="com.jaspersoft.studio.unit.y" value="px"/>
 								<printWhenExpression><![CDATA[$F{node}==null]]></printWhenExpression>
 							</reportElement>
 							<box topPadding="0"/>
+							<textElement>
+								<font isUnderline="true"/>
+							</textElement>
 							<textFieldExpression><![CDATA[(StringUtils.isBlank($F{description}))?$F{value}:$F{description}]]></textFieldExpression>
 							<hyperlinkReferenceExpression><![CDATA[$F{item}.getValue()]]></hyperlinkReferenceExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}!=null?$F{node}.getUuid():""]]></hyperlinkAnchorExpression>
