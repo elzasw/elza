@@ -101,8 +101,7 @@ public class Validator {
 
                 if (itemSpec == null) {
                     // exception for element without itemSpec
-                    int countExItem = descItemFactory.getDescItemRepository().countByNodeIdAndItemTypeId(descItem.getNodeId(), 
-                                                                                                         descItem.getItemTypeId());
+                    int countExItem = descItemFactory.getDescItemRepository().countByNodeIdAndItemTypeId(descItem.getNodeId(), descItem.getItemTypeId());
                     // výjimka : v rámci jednoho Node může být jen jeden Item bez itemSpec
                     if (countExItem > 1) {
                         throw new IllegalStateException(

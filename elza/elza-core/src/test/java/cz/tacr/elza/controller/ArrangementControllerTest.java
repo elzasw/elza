@@ -1355,7 +1355,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node, type);
         ArrItemVO descItemCreated = descItemResult.getItem();
 
-        assertEquals(descItemCreated.getItemTypeId(), type.getId());
+        assertEquals(type.getId(), descItemCreated.getItemTypeId());
         assertNotNull(descItemCreated.getPosition());
         assertNotNull(descItemCreated.getDescItemObjectId());
 
@@ -1365,7 +1365,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             descItemResult = createDescItem(descItem, fundVersion, node, type);
         } catch (BusinessException e) {
             descItemResult = null;
-            assertEquals(e.getErrorCode(), ArrangementCode.ITEM_SPEC_NOT_FOUND);
+            assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
         }
         assertNull(descItemResult);
     }
