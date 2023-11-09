@@ -50,6 +50,8 @@ import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
 import { ApCopyModal } from 'components/registry/modal/ap-copy';
 import { AP_EXT_SYSTEM_TYPE } from '../../constants';
+import { isMenuItemHidden } from 'api/settings/utils';
+import { MenuOptions } from 'api/settings/MenuOption';
 
 /**
  * Stránka rejstříků.
@@ -585,7 +587,7 @@ class RegistryPage extends AbstractReactComponent {
                         </Button>,
                     );
                 }
-                if (extSystems && extSystems.length > 0 /*&& (!hasOnlyCompleteExternalSystems || userDetail.hasOne(perms.ADMIN))*/) {
+                if (extSystems && extSystems.length > 0 && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_EXT_SYNCS_HIDDEN)) {
                     altActions.push(
                         <Button key="ext-syncs" onClick={this.handleExtSyncs}>
                             <Icon glyph="fa-gg" />
@@ -658,6 +660,7 @@ class RegistryPage extends AbstractReactComponent {
                         type: perms.AP_SCOPE_WR,
                         scopeId: data ? data.scopeId : null,
                     })
+                    && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
                 ) {
                     itemActions.push(
                         <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
