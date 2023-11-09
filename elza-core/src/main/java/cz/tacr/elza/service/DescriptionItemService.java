@@ -727,7 +727,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         checkFundVersionLock(fundContext.getFundVersion());
 
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(fundContext, descItem);
+        itemService.checkValidTypeAndSpec(fundContext, descItem, null);
 
         int maxPosition = getMaxPosition(descItem, nodeItems);
 
@@ -1338,8 +1338,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param changeContext
      */
     public ArrDescItem updateValue(final ArrFundVersion fundVersion, final ArrDescItem descItem,
-                                   BatchChangeContext changeContext)
-    {
+                                   BatchChangeContext changeContext) {
 		// fetch item from DB
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
@@ -1364,7 +1363,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, descItem);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, false, changeContext);
@@ -1463,7 +1462,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, descItemDB);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);
