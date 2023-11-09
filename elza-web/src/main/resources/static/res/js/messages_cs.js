@@ -1198,6 +1198,7 @@ var messages = {
     "ap.detail.replacedEntity.noName": "Bez názvu",
     "ap.detail.entityMissing": "Entita neexistuje",
 
+    "ap.validation.errors": "Chyby validace",
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
