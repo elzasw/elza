@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,7 +205,7 @@ public class StructObjInternalService {
     }
 
     private ArrData copyData(final ArrStructuredItem item) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         ArrData newData = data;
         if (data != null) {
             newData = ArrData.makeCopyWithoutId(data);

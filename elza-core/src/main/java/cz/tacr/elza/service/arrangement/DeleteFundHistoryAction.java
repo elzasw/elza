@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.arrangement;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
@@ -232,7 +233,7 @@ public class DeleteFundHistoryAction {
         final List<ArrItem> arrItemList = itemRepository.findHistoricalByFund(fund);
         final List<ArrData> arrDataList = new ArrayList<>();
         for (ArrItem arrItem : arrItemList) {
-            final ArrData data = arrItem.getData();
+            final ArrData data = HibernateUtils.unproxy(arrItem.getData());
             if (data != null) {
                 arrDataList.add(data);
             }

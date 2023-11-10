@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -1890,7 +1891,7 @@ public class ArrangementService {
 
     public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion, ArrChange change) {
         if (descItem.getData().getDataType().getCode().equals(DataType.URI_REF.getCode())) {
-            ArrDataUriRef dataUriRef = (ArrDataUriRef) descItem.getData();
+            ArrDataUriRef dataUriRef = HibernateUtils.unproxy(descItem.getData());
 
             if (dataUriRef.getRefTemplate() != null && dataUriRef.getArrNode() != null &&
                     dataUriRef.getRefTemplate().getItemNodeRef().getItemTypeId().equals(descItem.getItemType().getItemTypeId())) {
@@ -2025,7 +2026,8 @@ public class ArrangementService {
         String coordinates;
 
         if (fileType.equals(FileType.WKT)) {
-            coordinates = item.getData().getFulltextValue();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            coordinates = data.getFulltextValue();
         } else {
             coordinates = convertCoordinates(fileType, item.getData().getDataId());
         }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.Item;
@@ -15,7 +16,7 @@ public class StructuredObjectRefItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.STRUCTURED) {
             return null;
         }
-        ArrDataStructureRef data = (ArrDataStructureRef) item.getData();
+        ArrDataStructureRef data = HibernateUtils.unproxy(item.getData());
         Structured structObj = context.getStructured(data.getStructuredObject());
 
         return new ItemStructuredRef(structObj);

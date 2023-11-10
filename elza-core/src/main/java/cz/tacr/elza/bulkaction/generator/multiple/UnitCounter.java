@@ -151,7 +151,7 @@ public class UnitCounter {
                 if (!itemCount.getItemTypeId().equals(item.getItemTypeId())) {
                     continue;
                 }
-                ArrData data = item.getData();
+                ArrData data = HibernateUtils.unproxy(item.getData());
                 Integer vCnt = ((ArrDataInteger) data).getIntegerValue();
                 defaultCount = vCnt;
             }
@@ -170,7 +170,8 @@ public class UnitCounter {
                 int count = defaultCount;
                 // read count from int value
                 if (itemType.getDataType() == DataType.INT) {
-                    Integer vCnt = ((ArrDataInteger) item.getData()).getIntegerValue();
+                    ArrData data = HibernateUtils.unproxy(item.getData());
+                    Integer vCnt = ((ArrDataInteger) data).getIntegerValue();
                     count = vCnt;
                 }
                 // get mapping

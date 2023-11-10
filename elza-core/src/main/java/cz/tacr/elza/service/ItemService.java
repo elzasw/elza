@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -103,7 +104,7 @@ public class ItemService {
         newItem.setDeleteChange(null);
         newItem.setItemId(null);
 
-        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+        ArrData newData = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(item.getData()));
         newItem.setData(newData);
 
         em.persist(newData);
@@ -128,7 +129,7 @@ public class ItemService {
         Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
 
         // extra check for data
-        ArrData data = arrItem.getData();
+        ArrData data = HibernateUtils.unproxy(arrItem.getData());
         RulItemType rulItemType = itemType.getEntity();
 
         // check if defined specification
@@ -258,7 +259,7 @@ public class ItemService {
 
         // prohledávám pouze entity, které mají návazné data
         for (ArrItem dataItem : dataItems) {
-            ArrData data = dataItem.getData();
+            ArrData data = HibernateUtils.unproxy(dataItem.getData());
             if (data != null) {
                 if (data instanceof ArrDataStructureRef) {
                     ArrDataStructureRef structDataRef = (ArrDataStructureRef) data;

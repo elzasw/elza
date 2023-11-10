@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -97,7 +98,7 @@ public class DescriptionItemServiceInternal {
             itemSpec = staticData.getItemSpecById(descItem.getItemSpecId());
         }
         // create new title value
-        TitleValue titleValue = createTitleValueInternal(descItem.getData(), itemSpec, accessPointNames, dataExport);
+        TitleValue titleValue = createTitleValueInternal(HibernateUtils.unproxy(descItem.getData()), itemSpec, accessPointNames, dataExport);
         // set common values
         titleValue.setPosition(descItem.getPosition());
         if (itemSpec != null) {

@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -74,9 +75,9 @@ public class ApBuilder {
 
     /**
      * Create new AccessPoint for drools
-     * 
+     *
      * Accesspoint might have all fields null.
-     * 
+     *
      * @return
      */
     public Ap build() {
@@ -89,16 +90,16 @@ public class ApBuilder {
         DataType dataType = itemType.getDataType();
         String itemSpecCode = item.getItemSpecId() != null ? itemType.getItemSpecById(item.getItemSpecId()).getCode() : null;
 
-        return createItem(item.getObjectId(), item.getItemId(), dataType, itemType, itemSpecCode, item.getData());
+        return createItem(item.getObjectId(), item.getItemId(), dataType, itemType, itemSpecCode, HibernateUtils.unproxy(item.getData()));
     }
 
     private AbstractItem createItem(ApRevItem revItem) {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(revItem.getItemTypeId());
         DataType dataType = itemType.getDataType();
         String itemSpecCode = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId()).getCode() : null;
-        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();  
+        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();
 
-        return createItem(objectId, null, dataType, itemType, itemSpecCode, revItem.getData());
+        return createItem(objectId, null, dataType, itemType, itemSpecCode, HibernateUtils.unproxy(revItem.getData()));
     }
 
     private AbstractItem createItem(Integer objectId,
@@ -183,7 +184,7 @@ public class ApBuilder {
         }
 
         Part parentPart = getParentPart(revPart);
-        Part result = new Part(revPart.getPartId(), 
+        Part result = new Part(revPart.getPartId(),
                                PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
                                itemList, parentPart, preferred);
         this.parts.add(result);
@@ -201,8 +202,8 @@ public class ApBuilder {
 
         Integer parentPartId = part.getParentPartId();
         boolean preferred = part.getPartId().equals(preferredPartId);
-        Part result = new Part(part.getPartId(), 
-                               PartType.fromValue(part.getPartTypeCode()), 
+        Part result = new Part(part.getPartId(),
+                               PartType.fromValue(part.getPartTypeCode()),
                                abstractItemList, partIdMap.get(parentPartId), preferred);
         this.parts.add(result);
         this.partIdMap.put(part.getPartId(), result);
@@ -355,7 +356,7 @@ public class ApBuilder {
                 // is new subpart of old part
                 if (revPart.getParentPartId() != null) {
                     part = createPart(revPart, items, false);
-                } else 
+                } else
                 // is new main part
                 if (revPart.getRevParentPartId() == null) {
                     part = createPart(revPart, items, false);
@@ -410,7 +411,7 @@ public class ApBuilder {
 
     private Part getParentPart(ApRevPart revPart) {
         Integer parentPartId = revPart.getParentPartId();
-        Integer revParentPartId = revPart.getRevParentPartId(); 
+        Integer revParentPartId = revPart.getRevParentPartId();
         if (parentPartId != null) {
             return partIdMap.get(parentPartId);
         }

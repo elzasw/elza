@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -134,7 +135,8 @@ public class ArrIOService {
         try (OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
                 CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
 
-            ElzaTable table = ((ArrDataJsonTable) item.getData()).getValue();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            ElzaTable table = ((ArrDataJsonTable) data).getValue();
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
@@ -360,7 +362,7 @@ public class ArrIOService {
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         Class<?> cls = Hibernate.getClass(data);
 
         if (!ArrDataCoordinates.class.isAssignableFrom(cls)) {

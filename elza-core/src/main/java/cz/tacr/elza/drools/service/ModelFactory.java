@@ -72,7 +72,7 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
-				ArrData data = descItem.getData();
+				ArrData data = HibernateUtils.unproxy(descItem.getData());
 				if (data.getType() == DataType.STRUCTURED) {
                     ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
                     ArrStructuredObject structObj = structureRef.getStructuredObject();
@@ -143,7 +143,7 @@ public class ModelFactory {
         result.setSpecCode(structuredItem.getItemSpec() == null ? null : structuredItem.getItemSpec().getCode());
         result.setDataType(structuredItem.getItemType().getDataType().getCode());
         if (!structuredItem.isUndefined()) {
-            ArrData data = structuredItem.getData();
+            ArrData data = HibernateUtils.unproxy(structuredItem.getData());
             if (data.getType() == DataType.INT) {
                 ArrDataInteger integer = HibernateUtils.unproxy(data);
                 result.setInteger(integer.getIntegerValue());
@@ -160,7 +160,7 @@ public class ModelFactory {
         for (ApItem item : items) {
             RulItemType itemType = item.getItemType();
             RulItemSpec itemSpec = item.getItemSpec();
-            ArrData data = item.getData();
+            ArrData data = HibernateUtils.unproxy(item.getData());
             String value = null;
             if (data != null) {
                 if (data.getType() == DataType.ENUM) {

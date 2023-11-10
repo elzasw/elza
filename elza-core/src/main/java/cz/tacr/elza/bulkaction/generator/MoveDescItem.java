@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -102,7 +103,7 @@ public class MoveDescItem extends BulkActionDFS {
 
 		ArrDescItem srcDescItem = loadSingleDescItem(currNode, srcItemType);
 		if (srcDescItem != null) {
-			ArrDataString srcData = (ArrDataString) srcDescItem.getData();
+			ArrDataString srcData = HibernateUtils.unproxy(srcDescItem.getData());
 			// store as new desc item
 			ArrDescItem descItem = new ArrDescItem();
 			descItem.setItemType(this.trgItemType);

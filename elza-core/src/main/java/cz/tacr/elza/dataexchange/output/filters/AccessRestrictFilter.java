@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
@@ -104,7 +105,7 @@ public class AccessRestrictFilter implements ExportFilter {
                 Collection<ArrItem> restrItems;
                 if (itemType.getDataType().equals(DataType.STRUCTURED)) {
                     // Load real structured level
-                    ArrData data = restrictionItem.getData();
+                    ArrData data = HibernateUtils.unproxy(restrictionItem.getData());
                     ArrDataStructureRef sdr = (ArrDataStructureRef) data;
                     Integer restrictionId = sdr.getStructuredObjectId();
                     StructObjectInfo soi = readSoiFromDB(restrictionId);

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.validation.constraints.NotNull;
@@ -267,7 +268,7 @@ public class DaoSyncService {
         }
 
         private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
-            ArrData dbData = dbItem.getData();
+            ArrData dbData = HibernateUtils.unproxy(dbItem.getData());
 
             for (ArrDescItem scenarioItem : scenarioItems) {
                 if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
@@ -281,7 +282,7 @@ public class DaoSyncService {
                         // item without data might be removed
                         return true;
                     }
-                    ArrData data = scenarioItem.getData();
+                    ArrData data = HibernateUtils.unproxy(scenarioItem.getData());
                     if (data != null && data.isEqualValue(dbData)) {
                         return true;
                     }

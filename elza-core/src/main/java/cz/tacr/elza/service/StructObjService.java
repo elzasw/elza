@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -367,7 +368,7 @@ public class StructObjService {
                                          Integer position,
                                          ArrChange change) {
 
-        ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
+        ArrData data = createData(HibernateUtils.unproxy(structureItem.getData()), structureItem.getItemType().getDataType());
 
         ArrStructuredItem createStructureItem = new ArrStructuredItem();
         createStructureItem.setData(data);
@@ -421,7 +422,7 @@ public class StructObjService {
         if (createNewDataVersion) {
             List<ArrData> resultDataList = new ArrayList<>(resultStructureItems.size());
             for (ArrStructuredItem newStructureItem : resultStructureItems) {
-                ArrData newData = ArrData.makeCopyWithoutId(newStructureItem.getData());
+                ArrData newData = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(newStructureItem.getData()));
                 newStructureItem.setData(newData);
                 resultDataList.add(newData);
             }
@@ -507,7 +508,7 @@ public class StructObjService {
             }
 
 
-            ArrData updateData = updateData(structureItem.getData(), structureItemDB.getItemType().getDataType());
+            ArrData updateData = updateData(HibernateUtils.unproxy(structureItem.getData()), structureItemDB.getItemType().getDataType());
 
             updateStructureItem = new ArrStructuredItem();
             updateStructureItem.setData(updateData);
@@ -521,9 +522,9 @@ public class StructObjService {
             updateStructureItem = structureItemDB;
             updateStructureItem.setItemSpec(structureItem.getItemSpec());
             // db data item
-            ArrData updateData = updateStructureItem.getData();
+            ArrData updateData = HibernateUtils.unproxy(updateStructureItem.getData());
             // prepare dataToDb
-            updateData.merge(structureItem.getData());
+            updateData.merge(HibernateUtils.unproxy(structureItem.getData()));
             dataRepository.save(updateData);
         }
 
@@ -1084,7 +1085,7 @@ public class StructObjService {
             for (ArrStructuredObject newStructureData : structureDataList) {
                 for (ArrStructuredItem structureItem : structureItems) {
                     ArrStructuredItem copyStructureItem = new ArrStructuredItem();
-                    ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
+                    ArrData newData = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(structureItem.getData()));
                     Integer val = autoincrementMap.get(structureItem.getItemType());
                     if (val != null) {
                         val++;
@@ -1132,7 +1133,8 @@ public class StructObjService {
         for (RulItemType itemType : itemTypes) {
             for (ArrStructuredItem structureItem : structureItems) {
                 if (structureItem.getItemType().equals(itemType)) {
-                    result.put(itemType, structureItem.getData().getValueInt());
+                    ArrData data = HibernateUtils.unproxy(structureItem.getData());
+                    result.put(itemType, data.getValueInt());
                     break;
                 }
             }
@@ -1234,7 +1236,7 @@ public class StructObjService {
                 itemTypePositionMap.put(structureItem.getItemType(), position);
 
                 ArrStructuredItem copyStructureItem = new ArrStructuredItem();
-                ArrData newData = ArrData.makeCopyWithoutId(structureItem.getData());
+                ArrData newData = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(structureItem.getData()));
                 newData.setDataType(structureItem.getItemType().getDataType());
                 Integer val = autoincrementMap.get(structureItem.getItemType());
                 if (val != null) {

@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -58,47 +59,47 @@ public class CamServiceTest extends AbstractControllerTest {
     static public final String EXT_UUID_1 = UUID.randomUUID().toString();
     static public final Long EXT_ID_2 = 2L;
     static public final String EXT_UUID_2 = UUID.randomUUID().toString();
-    
+
     @Autowired
     CamService camService;
-    
+
     @Autowired
     private PlatformTransactionManager transactionManager;
-    
+
     @Autowired
     private AccessPointService accessPointService;
-    
+
     @Autowired
     ExternalSystemService externalSystemService;
-    
+
     @Autowired
     StaticDataService staticDataService;
-    
+
     @Autowired
     ScopeRepository scopeRepository;
-    
+
     @Autowired
     AccessPointCacheService accessPointCacheService;
-    
+
     static public final EntitiesXml IMPORT_ENTITIES = new EntitiesXml();
     // prepare test data
     static {
         EntityXml ent1 = createEntity(EXT_ID_1, EXT_UUID_1, "ent1");
     	IMPORT_ENTITIES.getList().add(ent1);
-    	// ent2 
+    	// ent2
     	EntityXml ent2 = createEntity(EXT_ID_2, EXT_UUID_2, "ent2");
     	// add ref to ent1
     	PartXml refPart = new PartXml(new ItemsXml(), null, null, new UuidXml(UUID.randomUUID().toString()), PartTypeXml.PT_REL);
-    	
+
     	EntityRecordRefXml refEntity = new EntityRecordRefXml(new EntityIdXml(EXT_ID_1), new UuidXml(EXT_UUID_1));
-    	
+
     	ItemEntityRefXml refItem = new ItemEntityRefXml(refEntity, new CodeXml("RT_FATHER"), new CodeXml("REL_ENTITY"), new UuidXml(UUID.randomUUID().toString()));
     	refPart.getItms().getItems().add(refItem);
     	ent2.getPrts().getList().add(refPart);
-    	
-    	IMPORT_ENTITIES.getList().add(ent2);    	
+
+    	IMPORT_ENTITIES.getList().add(ent2);
     }
-	
+
 	private static EntityXml createEntity(Long extId, String uuid, String prefName) {
 		EntityXml ent = new EntityXml();
 		ent.setEid(new EntityIdXml(extId));
@@ -106,20 +107,20 @@ public class CamServiceTest extends AbstractControllerTest {
 		ent.setEns(EntityRecordStateXml.ERS_NEW);
 		ent.setEnt(new CodeXml("PERSON_BEING"));
 		ent.setPrts(new PartsXml());
-		
+
 		PartXml prefNamePart = new PartXml(new ItemsXml(), null, null, new UuidXml(uuid), PartTypeXml.PT_NAME);
-		prefNamePart.getItms().getItems().add(new ItemStringXml(new StringXml(prefName), null, 
+		prefNamePart.getItms().getItems().add(new ItemStringXml(new StringXml(prefName), null,
 				new CodeXml("NM_MAIN"), new UuidXml(uuid)));
 		ent.getPrts().getList().add(prefNamePart);
-		
+
 		ent.setRevi(new RevInfoXml(new UuidXml(uuid), new LongStringXml("user"), null, new DateTimeXml(LocalDateTime.now())));
 		return ent;
 	}
 
-	@Test    
+	@Test
 	public void importNewTest() {
     	ApScopeVO scopeVo = createScope();
-    	
+
         // create external system
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode(SYSTEM_CODE);
@@ -131,14 +132,14 @@ public class CamServiceTest extends AbstractControllerTest {
         externalSystemVO.setScope(scopeVo.getId());
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         assertNotNull(externalSystemCreatedVO.getId());
-    	
+
         // create transaction
         TransactionTemplate tt = new TransactionTemplate(transactionManager).execute(a -> {
         	// prepare bindings
         	ApScope scope = scopeRepository.getOne(scopeVo.getId());
-        	
+
             ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(SYSTEM_CODE);
-            
+
             ApBinding binding1 = externalSystemService.createApBinding(EXT_ID_1.toString(), externalSystem, true);
             ApBinding binding2 = externalSystemService.createApBinding(EXT_ID_2.toString(), externalSystem, true);
 
@@ -161,16 +162,16 @@ public class CamServiceTest extends AbstractControllerTest {
 
         // check results
         tt = new TransactionTemplate(transactionManager).execute(a -> {
-        	ApAccessPoint ap1 = accessPointService.getAccessPointByUuid(EXT_UUID_1);        	
+        	ApAccessPoint ap1 = accessPointService.getAccessPointByUuid(EXT_UUID_1);
         	CachedAccessPoint cachedAp1 = accessPointCacheService.findCachedAccessPoint(ap1.getAccessPointId());
-        	ApAccessPoint ap2 = accessPointService.getAccessPointByUuid(EXT_UUID_2);        	
+        	ApAccessPoint ap2 = accessPointService.getAccessPointByUuid(EXT_UUID_2);
         	CachedAccessPoint cachedAp2 = accessPointCacheService.findCachedAccessPoint(ap2.getAccessPointId());
-        	
+
         	// check if cachedAp2 points to cachecAp1
         	CachedPart secondPart = cachedAp2.getParts().get(1);
         	assertEquals(secondPart.getPartTypeCode(), PartTypeXml.PT_REL.toString());
         	ApItem item = secondPart.getItems().get(0);
-        	ArrData data = item.getData();
+        	ArrData data = HibernateUtils.unproxy(item.getData());
         	ArrDataRecordRef dataRr = (ArrDataRecordRef)data;
         	assertEquals(ap1.getAccessPointId(), dataRr.getRecordId());
         	return null;

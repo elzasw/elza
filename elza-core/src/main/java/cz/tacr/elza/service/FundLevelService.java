@@ -498,7 +498,7 @@ public class FundLevelService {
             //pokud se item bude mazat, není potřeba u něj předělávat UriRef
             if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem
                     .getNodeId()))) {
-                ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                ArrDataUriRef arrDataUriRef = new ArrDataUriRef(HibernateUtils.unproxy(arrDescItem.getData()));
                 arrDataUriRef.setDataId(null);
                 arrDataUriRef.setArrNode(null);
                 arrDataUriRef.setDeletingProcess(true);

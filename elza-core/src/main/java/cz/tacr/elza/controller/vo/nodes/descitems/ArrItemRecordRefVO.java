@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 
 import java.util.Objects;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -82,7 +83,7 @@ public class ArrItemRecordRefVO extends ArrItemVO {
     }
 
     public static ArrItemRecordRefVO newInstance(ArrItem item, ApFactory apFactory) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         ApAccessPointVO value = null;
         if (data != null) {
             if (!(data instanceof ArrDataRecordRef)) {

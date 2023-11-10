@@ -616,13 +616,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrData data = null;
 
         if (fromDataType == toDataType) {
-            data = ArrData.makeCopyWithoutId(sourceItem.getData());
+            data = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(sourceItem.getData()));
         } else {
             boolean error = false;
 
             switch (fromDataType) {
                 case DATE:
-                    ArrDataDate sourceDataDate = (ArrDataDate) sourceItem.getData();
+                    ArrDataDate sourceDataDate = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
@@ -641,7 +641,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 case INT:
                 case DECIMAL:
                 case UNITDATE:
-                    ArrData sourceData = sourceItem.getData();
+                    ArrData sourceData = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
@@ -672,7 +672,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     }
                     break;
                 case STRING:
-                    ArrDataString sourceDataString = (ArrDataString) sourceItem.getData();
+                    ArrDataString sourceDataString = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
@@ -791,7 +791,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         RulStructuredType structuredType = itemType.getEntity().getStructuredType();
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
-                ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
+                ArrDataStructureRef data = HibernateUtils.unproxy(retDescItem.getData());
                 structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
             }
         }
@@ -1032,7 +1032,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     public ArrData copyItemData(final ArrItem itemFrom) {
-        ArrData data = itemFrom.getData();
+        ArrData data = HibernateUtils.unproxy(itemFrom.getData());
         ArrData resultData;
         boolean deepCopy = false;
         if (data instanceof ArrDataStructureRef) {
@@ -1049,7 +1049,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     private ArrData deepCopyItemData(final ArrItem itemFrom) {
-        ArrData srcData = itemFrom.getData();
+        ArrData srcData = HibernateUtils.unproxy(itemFrom.getData());
         if (srcData == null) {
             return null;
         }
@@ -1073,7 +1073,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 *         item method will return null.
 	 */
 	private ArrData withoutDeepCopyItemData(final ArrItem itemFrom) {
-		ArrData srcData = itemFrom.getData();
+		ArrData srcData = HibernateUtils.unproxy(itemFrom.getData());
 		if (srcData == null) {
 			return null;
 		}
@@ -1137,7 +1137,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             saveNode(node, change);
 
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
-                                                          descItem.getData(), descItem.getPosition(),
+                                                          HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
                                                           changeContext);
 		} else {
@@ -1433,7 +1433,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
-		ArrData data = descItem.getData();
+		ArrData data = HibernateUtils.unproxy(descItem.getData());
 		// save new data
 		data = descItemFactory.saveData(descItem.getItemType(), data);
 
@@ -1494,7 +1494,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		}
 
 		// save new data
-		ArrData dataCurr = descItem.getData();
+		ArrData dataCurr = HibernateUtils.unproxy(descItem.getData());
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
                                            descItem.getPosition(), descItem.getReadOnly(), batchChangeContext);
@@ -1576,7 +1576,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         Set<ApAccessPoint> accessPoints = descItems.stream()
                 .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
-                .map(item -> ((ArrDataRecordRef) item.getData()).getRecord())
+                .map(item -> ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecord())
                 .collect(Collectors.toSet());
 
         Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
@@ -1927,7 +1927,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
-                                                                      descItem.getData(), descItem.getPosition(),
+                                                                      HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                                       descItem.getReadOnly(),
                                                                       changeContext);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
@@ -2030,7 +2030,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     dbNodes.remove(clientNode);
                     arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
                     Validate.notNull(data, "item without data");
 
                     ArrData dataNew = ArrData.makeCopyWithoutId(data);
@@ -2113,7 +2113,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                       final String replaceString, final ArrChange change,
                                       BatchChangeContext changeContext) {
 
-        ArrData data = descItem.getData();
+        ArrData data = HibernateUtils.unproxy(descItem.getData());
 		Validate.notNull(data, "item without data");
 
 		ArrData dataNew = ArrData.makeCopyWithoutId(data);

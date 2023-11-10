@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.Item;
@@ -15,7 +16,7 @@ public class UnitDateItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.UNITDATE) {
             return null;
         }
-        ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
+        ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         UnitDate unitDate = new UnitDate(data);
 
         return new ItemUnitdate(unitDate);

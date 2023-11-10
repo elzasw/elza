@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import cz.tacr.elza.service.cache.RestoredNode;
 /**
  * Serviska pro operace nad JP, která současně propisuje změny do cache.
  *
- * 
+ *
  */
 @Service
 public class ArrangementCacheService {
@@ -238,7 +239,7 @@ public class ArrangementCacheService {
                 ArrDescItem descItemLocal = descItems.get(i);
                 if (descItemLocal.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
                     if (move) {
-                        descItem.setData(descItemLocal.getData());
+                        descItem.setData(HibernateUtils.unproxy(descItemLocal.getData()));
                     }
                     index = i;
                     break;

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -115,7 +116,7 @@ public class TextAggregationAction extends Action {
 			// check if item is in inputItemTypes set
 			ItemType itemType = inputItemTypes.get(item.getItemTypeId());
 			if (itemType != null) {
-                ArrData data = item.getData();
+                ArrData data = HibernateUtils.unproxy(item.getData());
 
 				if (item.isUndefined()) {
 					// skip if not defined

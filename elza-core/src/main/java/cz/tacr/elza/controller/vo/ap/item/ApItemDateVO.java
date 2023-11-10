@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
@@ -28,7 +29,7 @@ public class ApItemDateVO extends ApItemVO {
     }
 
     final public LocalDate getLocalDateValue(final AccessPointItem item) {
-        ArrDataDate data = (ArrDataDate) item.getData();
+        ArrDataDate data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getValue();
     }
 

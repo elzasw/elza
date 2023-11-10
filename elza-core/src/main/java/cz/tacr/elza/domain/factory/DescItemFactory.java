@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -1026,7 +1027,7 @@ public class DescItemFactory implements InitializingBean {
      * @return uložená hodnota atributu
      */
     public ArrDescItem saveItemVersionWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
-        ArrData data = descItem.getData();
+        ArrData data = HibernateUtils.unproxy(descItem.getData());
         ArrData savedData;
 
         if (data != null) {
@@ -1062,7 +1063,7 @@ public class DescItemFactory implements InitializingBean {
                 dataNew = saveDataAsNew(descItem.getItemType(), data);
                 descItem.setData(dataNew);
             } else {
-                dataNew = descItem.getData();
+                dataNew = HibernateUtils.unproxy(descItem.getData());
             }
 
             savedData = saveData(descItem.getItemType(), dataNew);

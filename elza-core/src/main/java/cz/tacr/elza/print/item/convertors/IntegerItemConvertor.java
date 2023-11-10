@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.Item;
@@ -14,7 +15,7 @@ public class IntegerItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.INT) {
             return null;
         }
-        ArrDataInteger data = (ArrDataInteger) item.getData();
+        ArrDataInteger data = HibernateUtils.unproxy(item.getData());
 
         return new ItemInteger(data.getIntegerValue());
     }

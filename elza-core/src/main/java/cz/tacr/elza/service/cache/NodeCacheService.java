@@ -355,7 +355,7 @@ public class NodeCacheService {
             List<ArrDescItem> descItems = result.getDescItems();
             if (CollectionUtils.isNotEmpty(descItems)) {
                 for (ArrDescItem descItem : descItems) {
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
 
                     if (data instanceof ArrDataUriRef) {
                         ArrDataUriRef dataRef = (ArrDataUriRef) data;
@@ -394,7 +394,7 @@ public class NodeCacheService {
             List<ArrDescItem> descItems = result.getDescItems();
             if (CollectionUtils.isNotEmpty(descItems)) {
                 for (ArrDescItem descItem : descItems) {
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
 
                     if (data instanceof ArrDataUriRef) {
                         ArrDataUriRef dataRef = (ArrDataUriRef) data;
