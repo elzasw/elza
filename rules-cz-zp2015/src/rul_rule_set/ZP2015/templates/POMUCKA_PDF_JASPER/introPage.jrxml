@@ -74,6 +74,7 @@
 	.setTitleSeparator(": ")
 	.setItemSeparator("; ")
 	.setBlockSeparators("","; ")
+	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
 	.beginBlock().addValueWithSpecTitle("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="unitTypeMapper" class="java.util.Map">
