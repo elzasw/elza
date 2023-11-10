@@ -158,7 +158,7 @@ public class SectionsContext {
             fundNum = fundInfo.getNum().intValue();
         }
         ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution,
-                                             fundNum, fundInfo.getTr(), fundInfo.getMrk());
+                                             fundNum, fundInfo.getTr(), fundInfo.getMrk(), null);
         arrService.addScopeToFund(fund, importScope);
 
         FundRootAdapter adapter = new FundRootAdapter(fund,

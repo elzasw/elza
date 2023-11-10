@@ -103,7 +103,7 @@ public class FundServiceWsImpl {
                                                                  fundNumber,
                                                                  fundInfo.getDateRange(),
                                                                  fundInfo.getMark(),
-                                                                 uuid, true, scopes, userIds, groupIds);
+                                                                 uuid, Boolean.TRUE, scopes, userIds, groupIds);
         FundIdentifiers fi = new FundIdentifiers();
         fi.setId(fund.getFundId().toString());
         fi.setUuid(uuid);
