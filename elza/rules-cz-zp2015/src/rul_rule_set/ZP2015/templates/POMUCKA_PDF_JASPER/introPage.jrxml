@@ -72,9 +72,9 @@
 	<parameter name="damageFormatter" class="cz.tacr.elza.print.format.Formatter">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator(", ")
+	.setItemSeparator("; ")
 	.setBlockSeparators("","; ")
-	.beginBlock().addValue("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
+	.beginBlock().addValueWithSpecTitle("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="unitTypeMapper" class="java.util.Map">
 		<defaultValueExpression><![CDATA[com.google.common.collect.ImmutableMap.builder()
