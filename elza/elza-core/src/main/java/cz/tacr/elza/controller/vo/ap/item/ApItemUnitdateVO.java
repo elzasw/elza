@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import java.util.Objects;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.domain.AccessPointItem;
@@ -22,7 +23,7 @@ public class ApItemUnitdateVO extends ApItemVO {
 
     public ApItemUnitdateVO(final AccessPointItem item) {
         super(item);
-        ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
+        ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             value = UnitDateConvertor.convertToString(data);
         }
@@ -45,7 +46,7 @@ public class ApItemUnitdateVO extends ApItemVO {
     @Override
     public boolean equalsValue(AccessPointItem item) {
         String value = null;
-        ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
+        ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             value = UnitDateConvertor.convertToString(data);
         }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -45,7 +46,7 @@ public class ApItemUriRefVO extends ApItemVO {
 
     public ApItemUriRefVO(final AccessPointItem item) {
         super(item);
-        ArrDataUriRef data = (ArrDataUriRef) item.getData();
+        ArrDataUriRef data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             value = data.getUriRefValue();
             schema = data.getSchema();
@@ -86,7 +87,7 @@ public class ApItemUriRefVO extends ApItemVO {
         String schema = null;
         String description = null;
         Integer nodeId = null;
-        ArrDataUriRef data = (ArrDataUriRef) item.getData();
+        ArrDataUriRef data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             value = data.getUriRefValue();
             schema = data.getSchema();

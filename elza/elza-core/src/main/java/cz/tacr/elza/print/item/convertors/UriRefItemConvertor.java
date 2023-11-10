@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrNode;
@@ -16,7 +17,7 @@ public class UriRefItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.URI_REF) {
             return null;
         }
-        ArrDataUriRef data = (ArrDataUriRef) item.getData();
+        ArrDataUriRef data = HibernateUtils.unproxy(item.getData());
         ArrNode linkedNode = data.getArrNode();
         Node node = null;
         if (linkedNode != null) {

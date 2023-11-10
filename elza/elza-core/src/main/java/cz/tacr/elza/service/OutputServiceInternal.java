@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -589,7 +590,7 @@ public class OutputServiceInternal {
 
         if (CollectionUtils.isNotEmpty(outputItems)) {
             for (ArrOutputItem outputItem : outputItems) {
-                ArrData data = outputItem.getData();
+                ArrData data = HibernateUtils.unproxy(outputItem.getData());
                 if (data instanceof ArrDataRecordRef) {
                     ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
                     if (dataRecordRef.getRecord() != null) {

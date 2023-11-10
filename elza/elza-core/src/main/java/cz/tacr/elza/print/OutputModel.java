@@ -559,7 +559,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
             Collection<? extends ArrItem> soiItems;
             if (itemType.getDataType().equals(DataType.STRUCTURED)) {
-                ArrData data = restrictionItem.getData();
+                ArrData data = HibernateUtils.unproxy(restrictionItem.getData());
                 if (data == null) {
                     continue;
                 }

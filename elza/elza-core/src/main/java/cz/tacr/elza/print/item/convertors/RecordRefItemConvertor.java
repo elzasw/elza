@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
@@ -19,7 +20,7 @@ public class RecordRefItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.RECORD_REF) {
             return null;
         }
-        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        ArrDataRecordRef data = HibernateUtils.unproxy(item.getData());
         Integer referencedRecordId = data.getRecordId();
         if (referencedRecordId != null) {
             Record record = context.getRecordById(referencedRecordId);

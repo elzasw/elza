@@ -98,7 +98,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
     @Override
     public boolean equalsValue(AccessPointItem item) {
-        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        ArrDataRecordRef data = HibernateUtils.unproxy(item.getData());
         return equalsBase(item) && Objects.equals(value, data.getRecordId());
     }
 }

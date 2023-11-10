@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -26,7 +27,7 @@ public class ApItemTextVO extends ApItemVO {
     }
 
     final public String getStringValue(final AccessPointItem item) {
-        ArrDataText data = (ArrDataText) item.getData();
+        ArrDataText data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getTextValue();
     }
 

@@ -21,6 +21,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ArrData;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -1683,7 +1685,7 @@ public class RuleService {
             return null;
         }
         ApItem aeItem = items.get(0);
-        ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
+        ArrDataRecordRef recordRef = HibernateUtils.unproxy(aeItem.getData());
         return recordRef.getRecordId();
     }
 
@@ -1777,7 +1779,8 @@ public class RuleService {
                     if (CollectionUtils.isNotEmpty(idnValueItemList)) {
                         for (ApItem aeItem : idnValueItemList) {
                             if (aeItem.getPartId().equals(idnTypeItem.getPartId())) {
-                                return aeItem.getData().getFulltextValue();
+                                ArrData data = HibernateUtils.unproxy(aeItem.getData());
+                                return data.getFulltextValue();
                             }
                         }
                     }

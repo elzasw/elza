@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -207,8 +208,9 @@ public class RevisionItemService {
             List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
 
             for (ApRevItem revItem : revItems) {
-                if (!revItem.isDeleted() && revItem.getData() != null) {
-                    ArrData newData = revItem.getData().makeCopy();
+                ArrData oldData = HibernateUtils.unproxy(revItem.getData());
+                if (!revItem.isDeleted() && oldData != null) {
+                    ArrData newData = oldData.makeCopy();
                     dataList.add(newData);
                     createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
                             newData, revItem.getItemType(), revItem.getItemSpec(),
@@ -287,7 +289,8 @@ public class RevisionItemService {
                     currItem = null;
                 }
 
-                ArrData newData = revItem.getData().makeCopy();
+                ArrData oldData = HibernateUtils.unproxy(revItem.getData());
+                ArrData newData = oldData.makeCopy();
                 dataList.add(newData);
                 ApItem newItem = accessPointItemService.createItem(targetPart,
                                                                    newData,

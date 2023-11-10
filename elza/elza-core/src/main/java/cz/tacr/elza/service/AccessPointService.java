@@ -2780,7 +2780,8 @@ public class AccessPointService {
         String coordinates;
 
         if (fileType.equals(FileType.WKT)) {
-            coordinates = item.getData().getFulltextValue();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            coordinates = data.getFulltextValue();
         } else {
             coordinates = convertCoordinates(fileType, item.getData().getDataId());
         }
@@ -3416,7 +3417,8 @@ public class AccessPointService {
     }
 
     private ApItem copyItem(ApItem item, ApPart partTo, ApChange change, int position) {
-        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+        ArrData oldData = HibernateUtils.unproxy(item.getData());
+        ArrData newData = ArrData.makeCopyWithoutId(oldData);
 
         // zvláštní ošetření pro entity - kontrola deduplikace,
         // resp. kopie platné entity

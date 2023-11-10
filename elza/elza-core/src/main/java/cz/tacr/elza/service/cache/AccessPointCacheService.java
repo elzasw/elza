@@ -850,7 +850,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                             cachedAccessPoint.getAccessPointId(),
                             item.getItemId());
             	}
-                ArrData data = item.getData();
+                ArrData data = HibernateUtils.unproxy(item.getData());
                 if (data != null) {
                     data.validate();
                 }

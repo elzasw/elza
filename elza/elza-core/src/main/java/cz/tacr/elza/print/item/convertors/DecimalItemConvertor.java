@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.Item;
@@ -14,7 +15,7 @@ public class DecimalItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.DECIMAL) {
             return null;
         }
-        ArrDataDecimal data = (ArrDataDecimal) item.getData();
+        ArrDataDecimal data = HibernateUtils.unproxy(item.getData());
 
         return new ItemDecimal(data.getValue());
     }

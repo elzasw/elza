@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
@@ -1116,7 +1117,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         assertTrue(nodesContainingText.size() == nodeIds.size());
         for (ArrDescItem descItem : nodesContainingText) {
-            ArrDataText data = (ArrDataText) descItem.getData();
+            ArrDataText data = HibernateUtils.unproxy(descItem.getData());
             assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getTextValue()).matches());
             assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
@@ -1133,7 +1134,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
             if (descItem.getItemTypeId().equals(typeVo.getId())) {
-                ArrDataText text = (ArrDataText) descItem.getData();
+                ArrDataText text = HibernateUtils.unproxy(descItem.getData());
                 assertTrue(text.getTextValue().equals("nova_value"));
             }
         }

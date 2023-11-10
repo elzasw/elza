@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
@@ -120,7 +121,7 @@ public class RevisionService {
         CachedAccessPoint apCached = this.accessPointCacheService.findCachedAccessPoint(state.getAccessPointId());
         for (CachedPart cachedPart : apCached.getParts()) {
             for (ApItem item : cachedPart.getItems()) {
-                ArrData data = item.getData();
+                ArrData data = HibernateUtils.unproxy(item.getData());
                 if (data != null) {
                     if (data instanceof ArrDataRecordRef) {
                         ArrDataRecordRef drr = (ArrDataRecordRef) data;

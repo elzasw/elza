@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 
@@ -912,7 +913,7 @@ public class OutputService {
         }
 
         // save data
-        ArrData savedData = this.saveData(outputItem.getItemType(), outputItem.getData());
+        ArrData savedData = this.saveData(outputItem.getItemType(), HibernateUtils.unproxy(outputItem.getData()));
 
         outputItem.setCreateChange(change);
         outputItem.setData(savedData);
@@ -1144,7 +1145,7 @@ public class OutputService {
             outputItemRepository.save(outputItemDB);
             outputItemRepository.flush();
 
-            ArrData newData = this.saveData(descItemNew.getItemType(), outputItem.getData());
+            ArrData newData = this.saveData(descItemNew.getItemType(), HibernateUtils.unproxy(outputItem.getData()));
 
             descItemNew.setItemId(null);
             descItemNew.setCreateChange(change);

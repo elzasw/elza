@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -144,7 +145,7 @@ public class AccessPointAggregationAction extends Action {
         for (ArrItem item : items) {
             ItemType itemType = inputItemTypes.get(item.getItemTypeId());
             if (itemType != null && itemType.getDataType().equals(DataType.RECORD_REF)) {
-                ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+                ArrDataRecordRef data = HibernateUtils.unproxy(item.getData());
                 processAP(data.getRecordId());
             }
         }

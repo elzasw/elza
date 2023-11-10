@@ -601,7 +601,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         ArrItemVO itemVO = null;
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
         switch (dataType) {
@@ -685,7 +685,7 @@ public class ClientFactoryVO {
         List<ArrItemVO> result = new ArrayList<>(items.size());
         List<ApAccessPoint> apList = new ArrayList<>();
         for (T item : items) {
-            ArrData data = item.getData();
+            ArrData data = HibernateUtils.unproxy(item.getData());
             if (data instanceof ArrDataRecordRef) {
                 ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
                 apList.add(ap);
@@ -697,7 +697,7 @@ public class ClientFactoryVO {
 
         for (T item : items) {
             ArrItemVO itemVO = createItem(item);
-            ArrData data = item.getData();
+            ArrData data = HibernateUtils.unproxy(item.getData());
             if (data instanceof ArrDataRecordRef) {
                 ApAccessPointVO apVo = apVoIt.next();
                 ((ArrItemRecordRefVO) itemVO).setRecord(apVo);

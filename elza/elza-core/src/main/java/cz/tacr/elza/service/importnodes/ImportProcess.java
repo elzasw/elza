@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -560,7 +561,7 @@ public class ImportProcess {
                 .findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceObj);
         for (ArrStructuredItem srcItem : srcItems) {
             // make data copy
-            ArrData srcData = srcItem.getData();
+            ArrData srcData = HibernateUtils.unproxy(srcItem.getData());
             ArrData trgData = null;
             if (srcData != null) {
                 trgData = ArrData.makeCopyWithoutId(srcData);

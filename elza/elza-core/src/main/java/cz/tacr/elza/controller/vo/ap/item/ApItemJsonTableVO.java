@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
@@ -27,7 +28,7 @@ public class ApItemJsonTableVO extends ApItemVO {
     }
 
     final public ElzaTable getElzaTableValue(final AccessPointItem item) {
-        ArrDataJsonTable data = (ArrDataJsonTable) item.getData();
+        ArrDataJsonTable data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getValue();
     }
 

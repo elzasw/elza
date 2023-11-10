@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,7 +164,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
                         "Data type does not match, dataTypeId1:" + type.getDataTypeId() + ", dataTypeId2:" + rsit.getDataTypeId());
             }
 
-            ArrData data = ArrData.makeCopyWithoutId(item.getData());
+            ArrData data = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(item.getData()));
 
             addOutputItem(data, rsit, item.getItemSpecId());
         }
@@ -202,7 +203,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
             }
 
             if (type.getDataType().equals(DataType.RECORD_REF)) {
-                ArrDataRecordRef recordRef = (ArrDataRecordRef) item.getData();
+                ArrDataRecordRef recordRef = HibernateUtils.unproxy(item.getData());
                 ApAccessPoint apProxy = itemService.getApProxy(recordRef.getRecordId());
                 recordRef.setRecord(apProxy);
             }

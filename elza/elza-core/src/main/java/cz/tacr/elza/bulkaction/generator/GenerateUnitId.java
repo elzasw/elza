@@ -131,7 +131,7 @@ public class GenerateUnitId extends BulkAction {
             for (ArrLockedValue uv : lockedItems) {
                 try {
                     ArrItem item = uv.getItem();
-                    ArrData data = item.getData();
+                    ArrData data = HibernateUtils.unproxy(item.getData());
                     ArrDataUnitid unitId = HibernateUtils.unproxy(data);
                     String value = unitId.getUnitId();
 

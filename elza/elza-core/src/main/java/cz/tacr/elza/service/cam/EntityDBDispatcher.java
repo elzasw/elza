@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -648,7 +649,7 @@ public class EntityDBDispatcher {
         // TODO kontrola a aktualizace odkazů arr_data_record_ref
         List<ApItem> items = accessPointItemService.findUnbindedItemByBinding(binding);
         for (ApItem item : items) {
-            ArrDataRecordRef dataRef = (ArrDataRecordRef) item.getData();
+            ArrDataRecordRef dataRef = HibernateUtils.unproxy(item.getData());
             if (dataRef.getRecord() == null) {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
@@ -1421,7 +1422,7 @@ public class EntityDBDispatcher {
                 	result.addNewItem(itemInteger);
                 } else {
                     ApItem ii = bindingItem.getItem();
-                    ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
+                    ArrDataInteger dataInteger = HibernateUtils.unproxy(ii.getData());
                     if (!(ii.getItemType().getCode().equals(itemInteger.getT().getValue()) &&
                             compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
                             dataInteger.getIntegerValue().equals(itemInteger.getValue().getValue().intValue()))) {
@@ -1439,7 +1440,7 @@ public class EntityDBDispatcher {
                 	result.addNewItem(itemLink);
                 } else {
                     ApItem il = bindingItem.getItem();
-                    ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
+                    ArrDataUriRef dataUriRef = HibernateUtils.unproxy(il.getData());
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
@@ -1461,15 +1462,15 @@ public class EntityDBDispatcher {
                     String value;
                     switch (DataType.fromCode(is.getItemType().getDataType().getCode())) {
                     case STRING:
-                        ArrDataString dataString = (ArrDataString) is.getData();
+                        ArrDataString dataString = HibernateUtils.unproxy(is.getData());
                         value = dataString.getStringValue();
                         break;
                     case TEXT:
-                        ArrDataText dataText = (ArrDataText) is.getData();
+                        ArrDataText dataText = HibernateUtils.unproxy(is.getData());
                         value = dataText.getTextValue();
                         break;
                     case COORDINATES:
-                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                        ArrDataCoordinates dataCoordinates = HibernateUtils.unproxy(is.getData());
                         value = GeometryConvertor.convert(dataCoordinates.getValue());
                         break;
                     default:
@@ -1493,7 +1494,7 @@ public class EntityDBDispatcher {
                     result.addNewItem(itemUnitDate);
                 } else {
                     ApItem iud = bindingItem.getItem();
-                    ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
+                    ArrDataUnitdate dataUnitdate = HibernateUtils.unproxy(iud.getData());
                     if (compareUnitDate(iud, dataUnitdate, itemUnitDate)) {
                         result.addNotChanged(bindingItem);
                     } else {
@@ -1513,7 +1514,7 @@ public class EntityDBDispatcher {
         	result.addNewItem(itemBoolean);
         } else {
             ApItem ib = bindingItem.getItem();
-            ArrDataBit dataBit = (ArrDataBit) ib.getData();
+            ArrDataBit dataBit = HibernateUtils.unproxy(ib.getData());
             if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
                     compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
                     dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
@@ -1557,7 +1558,7 @@ public class EntityDBDispatcher {
             ApItem is = bindingItem.getItem();
             boolean processed = false;
             if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
-                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                ArrDataCoordinates dataCoordinates = HibernateUtils.unproxy(is.getData());
                 Geometry value = dataCoordinates.getValue();
                 Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
                 // try to compare coordinates
@@ -1585,7 +1586,7 @@ public class EntityDBDispatcher {
         } else {
         	// we found mapping
             ApItem ier = bindingItem.getItem();
-            ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
+            ArrDataRecordRef dataRecordRef = HibernateUtils.unproxy(ier.getData());
             EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
             String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
             // get binding for record

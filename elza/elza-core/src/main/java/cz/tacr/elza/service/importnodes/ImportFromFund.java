@@ -11,6 +11,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -304,7 +305,7 @@ public class ImportFromFund implements ImportSource {
     private Item convertDescItem(final ArrDescItem item) {
         Item result;
 
-        ArrData itemData = item.getData();
+        ArrData itemData = HibernateUtils.unproxy(item.getData());
 
         if (itemData instanceof ArrDataNull) {
             result = new ItemEnumImpl(item);

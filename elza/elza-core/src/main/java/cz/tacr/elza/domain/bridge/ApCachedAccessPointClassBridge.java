@@ -11,6 +11,8 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ArrData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
@@ -96,13 +98,14 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
                 String value;
 
                 if (dataType == DataType.RECORD_REF) {
-                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
+                    ArrDataRecordRef dataRecordRef = HibernateUtils.unproxy(item.getData());
                     if (dataRecordRef == null || dataRecordRef.getRecordId() == null) {
                         continue;
                     }
                     value = dataRecordRef.getRecordId().toString();
                 } else {
-                    value = item.getData().getFulltextValue();
+                    ArrData data = HibernateUtils.unproxy(item.getData());
+                    value = data.getFulltextValue();
                 }
 
                 if (value == null) {
