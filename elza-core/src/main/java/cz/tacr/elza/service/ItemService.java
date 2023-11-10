@@ -137,7 +137,7 @@ public class ItemService {
 
         if (itemType.hasSpecifications()) {
 
-            if (data == null) {
+            if (data == null && itemType.getDataType() == DataType.ENUM) {
                 if (itemSpecId != null) {
                     throw new BusinessException("Při neexistují data specifikaci by neměla být",
                             ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
