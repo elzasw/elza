@@ -236,7 +236,8 @@ public class ArrangementService {
     @Autowired
     private DataCoordinatesRepository dataCoordinatesRepository;
 
-    public static final String UNDEFINED = "Nezjištěno";
+    //TODO: add translation or refactor
+    public static final String UNDEFINED = "výjimka";
 
     /**
      * Načtení verze na základě id.
