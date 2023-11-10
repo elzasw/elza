@@ -237,7 +237,7 @@ public abstract class BulkAction {
      * @return nalezený atribut
      */
     public ArrDescItem loadSingleDescItem(final ArrNode node, RulItemType descItemType) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(
+        List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(
                                                                                                       node, descItemType
                                                                                                               .getItemTypeId());
         if (descItems.size() == 0) {

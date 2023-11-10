@@ -102,6 +102,9 @@ public class RevisionService {
     @Autowired
     private ApStateRepository stateRepository;
 
+    @Autowired
+    private AccessPointItemService itemService;
+
     @Transactional
     public ApRevision createRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
@@ -348,7 +351,7 @@ public class RevisionService {
             result = groovyService.processGroovy(revision.getTypeId(), revPart, childRevParts, revItems, preferred);
         } else {
             List<ApPart> childParts = partService.findPartsByParentPart(apPart);
-            List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+            List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
 
             result = groovyService.processGroovy(revision.getTypeId(), apPart, childParts, apItems, revItems, preferred);
         }
@@ -412,7 +415,7 @@ public class RevisionService {
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         List<ApRevPart> childRevParts = revisionPartService.findPartsByParentPart(apPart);
 
-        List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
 
         // pokud existují podřízené ApPart je nutné ověřit, zda nebyly odstraněny
@@ -499,7 +502,7 @@ public class RevisionService {
         ApPart apPart = partService.getPart(partId);
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         List<ApRevItem> revItems = revPart != null ? revisionItemService.findByPart(revPart) : null;
-        List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
 
         if (!apPart.getPartType().getCode().equals(defaultPartType.getCode())) {
             throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
@@ -591,7 +594,7 @@ public class RevisionService {
         Map<Integer, ApItem> apItemObjectMap;
 
         if (revPart.getOriginalPart() != null) {
-            apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
             apItemObjectMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
         } else {
             apItems = Collections.emptyList();
@@ -666,7 +669,7 @@ public class RevisionService {
                 } else {
                     // keep original item if not updated
                     if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
-                        // simply skip item 
+                        // simply skip item
                         continue;
                     }
                     // origItem exists but not revItem
@@ -735,7 +738,7 @@ public class RevisionService {
 
             revPart = revisionPartService.createPart(revision, change, apPart, false);
 
-            List<ApItem> apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            List<ApItem> apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
             // Map objectId -> ApItem
             Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.service.StructObjService;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
@@ -98,6 +99,9 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     ExportConfig exportConfig;
 
+    @Autowired
+    StructObjService structObjService;
+
     // test output with structObjs
     @Test
     @Transactional(TxType.REQUIRES_NEW)
@@ -170,7 +174,7 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, em);
+                daoLinkRepository, exportConfig, structObjService, em);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

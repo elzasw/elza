@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -121,6 +122,7 @@ public class OutputServiceInternal {
 
     private final ApStateRepository stateRepository;
     private final StructObjService structObjService;
+    private final DataService dataService;
 
     @Autowired
     @Lazy
@@ -149,7 +151,8 @@ public class OutputServiceInternal {
                                  final OutputTemplateRepository outputTemplateRepository,
                                  final TemplateRepository templateRepository,
                                  final OutputFileRepository outputFileRepository,
-                                 final DmsService dmsService) {
+                                 final DmsService dmsService,
+                                 final DataService dataService) {
         this.eventNotificationService = eventNotificationService;
         this.outputRepository = outputRepository;
         this.outputResultRepository = outputResultRepository;
@@ -171,6 +174,7 @@ public class OutputServiceInternal {
         this.templateRepository = templateRepository;
         this.outputFileRepository = outputFileRepository;
         this.dmsService = dmsService;
+        this.dataService = dataService;
     }
 
     /**
@@ -249,9 +253,35 @@ public class OutputServiceInternal {
     public List<ArrOutputItem> getOutputItems(ArrOutput output, ArrChange change) {
         Validate.notNull(output);
         if (change == null) {
-            return outputItemRepository.findByOutputAndDeleteChangeIsNull(output);
+            return findByOutputAndDeleteChangeIsNull(output);
         }
-        return outputItemRepository.findByOutputAndChange(output, change);
+        return findByOutputAndChange(output, change);
+    }
+
+    public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
+        return dataService.findItemWithData(() -> outputItemRepository.findOpenOutputItem(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findOpenOutputItems(Integer descItemObjectId) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findOpenOutputItems(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findByOutputAndChange(ArrOutput output, ArrChange change) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndChange(output, change),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(ArrOutput output) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndDeleteChangeIsNull(output),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrOutputItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**

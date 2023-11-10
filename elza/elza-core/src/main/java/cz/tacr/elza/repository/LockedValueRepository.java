@@ -19,7 +19,8 @@ public interface LockedValueRepository extends JpaRepository<ArrLockedValue, Int
 
     @Query("select lv from arr_locked_value lv " +
             "join fetch lv.item it " +
-            "join fetch it.data dt " +
+            "join fetch it.itemType ity " +
+            "join fetch ity.dataType " +
             "where lv.fund = :fund and it.itemType = :itemType")
     List<ArrLockedValue> findByFundAndItemType(@Param("fund") ArrFund fund,
                                              @Param("itemType") RulItemType itemType);
@@ -31,7 +32,7 @@ public interface LockedValueRepository extends JpaRepository<ArrLockedValue, Int
 
     /**
      * Find if given value is locked
-     * 
+     *
      * @param fund
      * @param itemType
      * @param value

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -106,6 +107,7 @@ public class StructObjValueService {
     private final SobjVrequestRepository sobjVrequestRepository;
     private final ArrangementInternalService arrangementInternalService;
     private final StaticDataService staticDataService;
+    private final DataService dataService;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -135,7 +137,8 @@ public class StructObjValueService {
             final SobjVrequestRepository sobjQueueRepository,
             final ArrangementInternalService arrangementInternalService,
             final EntityManager em,
-            final StaticDataService staticDataService) {
+            final StaticDataService staticDataService,
+            final DataService dataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -149,6 +152,7 @@ public class StructObjValueService {
         this.arrangementInternalService = arrangementInternalService;
         this.em = em;
         this.staticDataService = staticDataService;
+        this.dataService = dataService;
     }
 
     private ArrSobjVrequest addToValidateInternal(final ArrStructuredObject sobj) {
@@ -418,8 +422,7 @@ public class StructObjValueService {
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
-        List<ArrStructuredItem> structureItems = structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        List<ArrStructuredItem> structureItems = findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
 
         validateStructureItems(validationErrorDescription, structObj, structureItems);
 
@@ -1064,5 +1067,16 @@ public class StructObjValueService {
             sobjVrequestRepository.flush();
         }
         startGenerator();
+    }
+
+    public List<ArrStructuredItem> findByStructuredObjectAndDeleteChangeIsNullFetchData(ArrStructuredObject structuredObject) {
+        return dataService.findItemsWithData(() -> structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structuredObject),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrStructuredItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 }

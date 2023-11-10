@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.service.StructObjService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,9 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private StructObjService structObjService;
 
     @Test
     public void importExportTest() throws IOException {
@@ -135,7 +139,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // check structured object item count
         Integer structObjId = structObjResult.getRows().iterator().next().getId();
-        List<ArrStructuredItem> structItems = structItemRepository.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
+        List<ArrStructuredItem> structItems = structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
         Assert.assertTrue(structItems.size() == 2);
 
         // check structured object item data

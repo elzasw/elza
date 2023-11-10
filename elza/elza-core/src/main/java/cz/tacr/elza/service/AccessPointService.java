@@ -1044,7 +1044,7 @@ public class AccessPointService {
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
         // replace in APs
-        final List<ApItem> apItems = this.itemRepository.findItemByEntity(replaced);
+        final List<ApItem> apItems = this.apItemService.findItemByEntity(replaced);
         if (CollectionUtils.isNotEmpty(apItems)) {
             ObjectListIterator.forEachPage(apItems,
                                            apItemPage -> replaceInItems(apItemPage, replaced, replacement,
@@ -1053,7 +1053,7 @@ public class AccessPointService {
 
         Set<Integer> resolvedByObjectId = new HashSet<>();
         // replace in revision items
-        final List<ApRevItem> revItems = this.revItemRepository.findItemByEntity(replaced);
+        final List<ApRevItem> revItems = this.revisionItemService.findItemByEntity(replaced);
         for (ApRevItem revItem : revItems) {
             ApRevision revision = revItem.getPart().getRevision();
             // item is deleting orig item -> origItem is resolved
@@ -1358,7 +1358,7 @@ public class AccessPointService {
                               final ApPartFormVO apPartFormVO) {
         checkPermissionForEdit(state);
 
-        List<ApItem> deleteItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> deleteItems = apItemService.findValidItemsByPart(apPart);
         List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
         Map<Integer, ApItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
@@ -1984,7 +1984,7 @@ public class AccessPointService {
         ApState trgState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
 
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(srcAccessPoint);
-        List<ApItem> sourceItems = itemRepository.findValidItemsByAccessPoint(srcAccessPoint);
+        List<ApItem> sourceItems = apItemService.findValidItemsByAccessPoint(srcAccessPoint);
         List<ApPart> newParts = new ArrayList<>();
 
         // filter skipped items
@@ -2712,7 +2712,7 @@ public class AccessPointService {
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
         List<String> archiveEntityIds = new ArrayList<>();
-        List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> itemList = apItemService.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
             ArrData data = HibernateUtils.unproxy(item.getData());
@@ -2881,7 +2881,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMap = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         return updateAndValidate(accessPoint, apState, partList, itemMap, false);
@@ -3185,11 +3185,11 @@ public class AccessPointService {
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change) {
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMapFrom = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapFrom = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> partsTo = partService.findPartsByAccessPoint(targetAccessPoint);
-        Map<Integer, List<ApItem>> itemMapTo = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapTo = apItemService.findValidItemsByAccessPoint(targetAccessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení

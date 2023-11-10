@@ -479,7 +479,7 @@ public class FundLevelService {
                     .set("nodeId", node.getNodeId());
         }
 
-        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
+        for (ArrDescItem descItem : descriptionItemService.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
             descItem.setDeleteChange(deleteChange);
             descItemRepository.save(descItem);
         }
@@ -487,7 +487,7 @@ public class FundLevelService {
         daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
 
         // vyhledani node, ktere odkazuji na mazany
-        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+        List<ArrDescItem> arrDescItemList = descriptionItemService.findByUriDataNode(node);
 
         arrDescItemList = arrDescItemList.stream().map(i -> {
             entityManager.detach(i);
@@ -783,7 +783,7 @@ public class FundLevelService {
             ArrLevel firstLevel = levels.get(0);
             ArrLevel olderSibling = levelRepository.findOlderSibling(firstLevel, fundVersion.getLockChange());
             if (olderSibling != null) {
-                copyDescItems = descItemRepository
+                copyDescItems = descriptionItemService
                         .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
             }
         }

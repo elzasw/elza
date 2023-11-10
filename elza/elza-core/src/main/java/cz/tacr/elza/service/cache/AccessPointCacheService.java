@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.AccessPointItemService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -114,6 +115,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private AccessPointItemService itemService;
 
     /**
      * Maximální počet AP, které se mají dávkově zpracovávat pro
@@ -452,7 +456,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList,
     		Map<Integer, CachedPart> partMap) {
-        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoints(accessPointList);
+        List<ApItem> apItems = itemService.findValidItemsByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apItems)) {
             for (ApItem item : apItems) {
                 item = HibernateUtils.unproxy(item);

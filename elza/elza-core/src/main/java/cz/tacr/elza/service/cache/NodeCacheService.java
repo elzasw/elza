@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.DescriptionItemService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -135,6 +136,9 @@ public class NodeCacheService {
 
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
+
+    @Autowired
+    private DescriptionItemService descItemService;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
@@ -566,7 +570,7 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+        List<ArrDescItem> descItems = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {

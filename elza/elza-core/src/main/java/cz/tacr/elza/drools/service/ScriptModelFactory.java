@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.StructObjValueService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -64,6 +66,12 @@ public class ScriptModelFactory {
 	@Autowired
 	private StructuredItemRepository structItemRepos;
 
+    @Autowired
+    private DescriptionItemService descItemService;
+
+    @Autowired
+    private StructObjValueService structObjService;
+
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
 	 * popisu.
@@ -108,7 +116,9 @@ public class ScriptModelFactory {
 		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
 		        descItemFactory,
 		        nodeCacheService,
-		        structItemRepos);
+		        structItemRepos,
+                descItemService,
+                structObjService);
 		return descItemReader;
 	}
 

@@ -209,7 +209,7 @@ public class DaoSyncService {
 
             List<ArrDescItem> result = new ArrayList<>();
 
-            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            List<ArrDescItem> dbItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(level.getNode());
 
             for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
@@ -241,7 +241,7 @@ public class DaoSyncService {
                 prevScenarioItems.add(descItem);
             }
 
-            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            List<ArrDescItem> dbItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(level.getNode());
             for (ArrDescItem dbItem : dbItems) {
                 // check if item from scenario
                 if (isItemFromScenario(dbItem, prevScenarioItems)) {

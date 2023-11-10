@@ -4,9 +4,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -270,6 +277,62 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         }
 
         return result;
+    }
+
+    @Override
+    public void findAllDataByDataResults(List<DataResult> dataResults) {
+        Map<RulDataType, List<Integer>> dataIdsMap = dataResults.stream()
+                .collect(Collectors.groupingBy(DataResult::getRulDataType,
+                        Collectors.mapping(DataResult::getDataId, Collectors.toList())));
+
+
+        for (Map.Entry<RulDataType, List<Integer>> dataIdsEntry : dataIdsMap.entrySet()) {
+            Class dataClass = getDataClass(dataIdsEntry.getKey());
+
+            List<Integer> dataIds = dataIdsEntry.getValue();
+
+            entityManager.createQuery("SELECT d FROM " + dataClass.getSimpleName() + " d WHERE d.dataId in :dataIds", dataClass)
+                    .setParameter("dataIds", dataIds)
+                    .getResultList();
+        }
+    }
+
+    public Class<? extends ArrData> getDataClass(final RulDataType dataType) {
+        switch (dataType.getCode()) {
+            case "INT":
+                return ArrDataInteger.class;
+            case "STRING":
+                return ArrDataString.class;
+            case "TEXT":
+            case "FORMATTED_TEXT":
+                return ArrDataText.class;
+            case "DATE":
+                return ArrDataDate.class;
+            case "UNITDATE":
+                return ArrDataUnitdate.class;
+            case "UNITID":
+                return ArrDataUnitid.class;
+            case "COORDINATES":
+                return ArrDataCoordinates.class;
+            case "RECORD_REF":
+                return ArrDataRecordRef.class;
+            case "DECIMAL":
+                return ArrDataDecimal.class;
+            case "STRUCTURED":
+                return ArrDataStructureRef.class;
+            case "URI_REF":
+                return ArrDataUriRef.class;
+            case "BIT":
+                return ArrDataBit.class;
+            case "ENUM":
+                return ArrDataNull.class;
+            case "JSON_TABLE":
+                return ArrDataJsonTable.class;
+            case "FILE_REF":
+                return ArrDataFileRef.class;
+            default:
+                throw new org.apache.commons.lang3.NotImplementedException("Nebyl namapován datový typ");
+        }
     }
 
 

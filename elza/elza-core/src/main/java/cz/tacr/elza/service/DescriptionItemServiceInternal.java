@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.vo.DataResult;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Internal service for description items.
@@ -31,11 +33,15 @@ public class DescriptionItemServiceInternal {
 
     private final StaticDataService staticDataService;
 
+    private final DataService dataService;
+
     @Autowired
     public DescriptionItemServiceInternal(DescItemRepository descItemRepository,
-                                          StaticDataService staticDataService) {
+                                          StaticDataService staticDataService,
+                                          DataService dataService) {
         this.descItemRepository = descItemRepository;
         this.staticDataService = staticDataService;
+        this.dataService = dataService;
     }
 
     /**
@@ -54,8 +60,15 @@ public class DescriptionItemServiceInternal {
         Validate.notNull(lockChange);
         Validate.notNull(node);
         List<ArrDescItem> itemList;
-        itemList = descItemRepository.findByNodeAndChange(node, lockChange);
+        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndChange(node, lockChange),
+                this::createDataResultList);
         return itemList;
+    }
+
+    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -71,7 +84,8 @@ public class DescriptionItemServiceInternal {
     public List<ArrDescItem> getDescItems(final ArrNode node) {
         Validate.notNull(node);
         List<ArrDescItem> itemList;
-        itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
+                this::createDataResultList);
         return itemList;
     }
 

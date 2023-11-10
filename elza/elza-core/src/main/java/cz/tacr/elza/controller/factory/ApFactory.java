@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -157,6 +158,8 @@ public class ApFactory {
 
     private final RevisionItemService revisionItemService;
 
+    private final AccessPointItemService apItemService;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -176,6 +179,7 @@ public class ApFactory {
                      final ApRevItemRepository revItemRepository,
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
+                     final AccessPointItemService apItemService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -195,6 +199,7 @@ public class ApFactory {
         this.revItemRepository = revItemRepository;
         this.revIndexRepository = revIndexRepository;
         this.revisionItemService = revisionItemService;
+        this.apItemService = apItemService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -333,7 +338,7 @@ public class ApFactory {
             // prepare parts
             List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
             // prepare items
-            Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
+            Map<Integer, List<ApItem>> items = apItemService.findValidItemsByAccessPoint(ap).stream()
                     .collect(Collectors.groupingBy(i -> i.getPartId()));
 
             Map<Integer, List<ApIndex>> indices = ObjectListIterator.findIterable(parts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
@@ -934,13 +939,13 @@ public class ApFactory {
         // prepare parts
         List<ApRevPart> parts = revPartRepository.findByRevision(revision);
         // prepare items
-        Map<Integer, List<ApRevItem>> items = ObjectListIterator.findIterable(parts, revItemRepository::findByParts).stream()
+        Map<Integer, List<ApRevItem>> items = ObjectListIterator.findIterable(parts, revisionItemService::findByParts).stream()
                 .collect(Collectors.groupingBy(ApRevItem::getPartId));
 
         Map<Integer, List<ApRevIndex>> indices = ObjectListIterator.findIterable(parts, p -> revIndexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
                 .collect(Collectors.groupingBy(ApRevIndex::getPartId));
 
-        Map<Integer, List<ApItem>> apItems = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> apItems = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         vo.setRevParts(createRevVO(parts, items, indices, apItems));

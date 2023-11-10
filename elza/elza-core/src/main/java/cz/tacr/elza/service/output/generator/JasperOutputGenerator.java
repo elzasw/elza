@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import cz.tacr.elza.service.StructObjService;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang.Validate;
@@ -93,7 +94,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           EntityManager em,
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository,
-                          ExportConfig exportConfig) {
+                          ExportConfig exportConfig,
+                          StructObjService structObjService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -106,7 +108,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
-                indexRepository, daoLinkRepository, exportConfig, em);
+                indexRepository, daoLinkRepository, exportConfig, structObjService, em);
         pdfAttProvider.setOutput(outputModel);
     }
 
