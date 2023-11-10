@@ -727,7 +727,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         checkFundVersionLock(fundContext.getFundVersion());
 
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(fundContext, descItem, null);
+        itemService.checkValidTypeAndSpec(fundContext, descItem);
 
         int maxPosition = getMaxPosition(descItem, nodeItems);
 
@@ -1363,7 +1363,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result, descItem);
+        itemService.checkValidTypeAndSpec(fundContext, result);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, false, changeContext);
@@ -1462,7 +1462,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result, descItemDB);
+        itemService.checkValidTypeAndSpec(fundContext, result);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);

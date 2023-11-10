@@ -113,12 +113,12 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param arrItem hodnota atributu
+     * @param fundContext - kontext fondu
+     * @param arrItem     - hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
-                                      @NotNull final ArrItem arrItem, 
-                                      @Nullable final ArrItem sourceArrItem) {
+                                      @NotNull final ArrItem arrItem) {
 
         Integer itemTypeId = arrItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
@@ -142,9 +142,9 @@ public class ItemService {
                     throw new BusinessException("Při neexistují data specifikaci by neměla být",
                             ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
                 }
-                int count = sourceArrItem == null?
+                int count = arrItem.getItemId() == null?
                         descItemRepository.countByNodeIdAndItemTypeId(arrItem.getNodeId(), arrItem.getItemTypeId()) :
-                        descItemRepository.countByNodeIdAndItemTypeIdAndNotItemId(arrItem.getNodeId(), arrItem.getItemTypeId(), sourceArrItem.getItemId());
+                        descItemRepository.countByNodeIdAndItemTypeIdAndNotItemId(arrItem.getNodeId(), arrItem.getItemTypeId(), arrItem.getItemId());
                 if (count > 0) {
                     throw new BusinessException("V jednom ArrNode může existovat pouze jeden nedefinovaný ArrItem",
                                                 ArrangementCode.ALREADY_INDEFINABLE).level(Level.WARNING);
