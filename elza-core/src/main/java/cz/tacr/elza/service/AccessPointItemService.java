@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,6 +60,7 @@ public class AccessPointItemService {
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
     private final ItemService itemService;
+    private final DataService dataService;
 
     public static class DeletedItems {
 
@@ -120,7 +123,8 @@ public class AccessPointItemService {
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
                                   final ApBindingItemRepository bindingItemRepository,
-                                  final ItemService itemService) {
+                                  final ItemService itemService,
+                                  final DataService dataService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -129,6 +133,7 @@ public class AccessPointItemService {
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
         this.itemService = itemService;
+        this.dataService = dataService;
     }
 
     // TODO: Kandidat na vymazani
@@ -148,7 +153,7 @@ public class AccessPointItemService {
      * @return
      */
     public DeletedItems deletePartItems(ApPart part, ApChange change) {
-        List<ApItem> items = itemRepository.findValidItemsByPart(part);
+        List<ApItem> items = findValidItemsByPart(part);
         return deleteItems(items, change);
     }
 
@@ -615,22 +620,66 @@ public class AccessPointItemService {
         return position;
     }
 
+    public List<DataResult> createDataResultList(List<ApItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ApItem> findValidItemsByPart(ApPart part) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPart(part),
+                this::createDataResultList);
+    }
+
     public List<ApItem> findItemsByParts(List<ApPart> parts) {
-        return itemRepository.findValidItemsByParts(parts);
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByParts(parts),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByPartId(Integer partId) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPartId(partId),
+                this::createDataResultList);
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final RulItemType itemType, final String partTypeCode) {
-        return itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode);
+        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode),
+                this::createDataResultList);
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes,
                                   final String partTypeCode) {
-        return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes,
-                                                                                  partTypeCode);
+        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode),
+                this::createDataResultList);
     }
 
-    public List<ApItem> findItems(ApAccessPoint accessPoint) {
-        return itemRepository.findValidItemsByAccessPoint(accessPoint);
+    public List<ApItem> findValidItemsByAccessPoint(ApAccessPoint accessPoint) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoint(accessPoint),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findNewerValidItemsByAccessPoint(ApAccessPoint accessPoint, Integer changeId) {
+        return dataService.findItemsWithData(() -> itemRepository.findNewerValidItemsByAccessPoint(accessPoint, changeId),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByAccessPoints(Collection<ApAccessPoint> accessPoints) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoints(accessPoints),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByAccessPointMultiFetch(ApAccessPoint accessPoint) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPointMultiFetch(accessPoint),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findItemByEntity(ApAccessPoint replaced) {
+        return dataService.findItemsWithData(() -> itemRepository.findItemByEntity(replaced),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findUnbindedItemByBinding(ApBinding binding) {
+        return dataService.findItemsWithData(() -> itemRepository.findUnbindedItemByBinding(binding),
+                this::createDataResultList);
     }
 
     public static void normalize(ArrDataUnitdate aeDataUnitdate) {

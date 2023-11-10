@@ -677,7 +677,7 @@ public class ArrangementController {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
-        ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
+        ArrDescItem descItem = descriptionItemService.findOpenDescItem(descItemObjectId);
         if (!"JSON_TABLE".equals(descItem.getItemType().getDataType().getCode())) {
             throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemObjectId")
@@ -710,7 +710,7 @@ public class ArrangementController {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
-        ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
+        ArrOutputItem outputItem = outputService.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
             throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemObjectId")

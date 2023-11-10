@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -119,6 +120,9 @@ public class ExternalSystemService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DataService dataService;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -698,7 +702,20 @@ public class ExternalSystemService {
     }
 
     public List<ApBindingItem> getBindingItems(final ApBinding binding) {
-        return bindingItemRepository.findByBinding(binding);
+        return dataService.findItemsWithData(() -> bindingItemRepository.findByBinding(binding),
+                this::createDataResultList);
+    }
+
+    public List<ApBindingItem> findItemsForSync(final ApBinding binding, final Integer syncChangeId) {
+        return dataService.findItemsWithData(() -> bindingItemRepository.findItemsForSync(binding, syncChangeId),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ApBindingItem> itemList) {
+        return itemList.stream()
+                .filter(i -> i.getItem() != null)
+                .map(i -> new DataResult(i.getItem().getData().getDataId(), i.getItem().getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**

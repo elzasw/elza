@@ -442,7 +442,7 @@ public class ImportProcess {
                     if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
                         levelsToShift.add(0, staticLevel);
                     }
-                    // posunutí potřebných levelů (pokud se zakládá před nebo za                            
+                    // posunutí potřebných levelů (pokud se zakládá před nebo za
                     Validate.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");
                     this.levels.addAll(fundLevelService.shiftNodes(levelsToShift, change, position + 1));
 
@@ -556,7 +556,7 @@ public class ImportProcess {
         Validate.notNull(so.getStructuredObjectId());
 
         // preapare items and data
-        List<ArrStructuredItem> srcItems = structItemRepository
+        List<ArrStructuredItem> srcItems = structObjService
                 .findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceObj);
         for (ArrStructuredItem srcItem : srcItems) {
             // make data copy

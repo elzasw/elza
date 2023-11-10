@@ -58,7 +58,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
     private List<ApBindingItem> bindingItems;
 
-    private List<ApBindingItem> bindingParts;    
+    private List<ApBindingItem> bindingParts;
 
     static class BindingPartInfo {
         final ApBindingItem bindingPart;
@@ -133,9 +133,9 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
     /**
      * Prepare item changes
-     * 
+     *
      * Prerequisity: all items are read
-     * 
+     *
      * @param partList
      * @param itemMap
      * @param externalSystemTypeCode
@@ -179,7 +179,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
     /**
      * Create list of modified parts and items in these parts
-     * 
+     *
      * @param changedParts
      * @param itemMap
      * @param externalSystemTypeCode
@@ -197,7 +197,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             BindingPartInfo bi = this.bindingMap.get(partId);
             if(bi==null) {
                 logger.error("Failed to get binging info, partId: {}", partId);
-                throw new BusinessException("Failed to get binging info", 
+                throw new BusinessException("Failed to get binging info",
                                             BaseCode.DB_INTEGRITY_PROBLEM);
             }
             List<ApItem> itemList = itemMap.getOrDefault(partId, Collections.emptyList());
@@ -316,7 +316,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             BindingPartInfo bi = new BindingPartInfo(bindingPart);
             bindingMap.put(bindingPart.getPartId(), bi);
         }
-        bindingItems = bindingItemRepository.findItemsForSync(bindingState.getBinding(),
+        bindingItems = externalSystemService.findItemsForSync(bindingState.getBinding(),
                                                               bindingState.getSyncChangeId());
         for (ApBindingItem bindingItem : bindingItems) {
             ApItem item = bindingItem.getItem();
@@ -360,7 +360,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
             setPrefName(new UuidXml(prefPartUuid));
         }
-        
+
         return trgList;
     }
 }

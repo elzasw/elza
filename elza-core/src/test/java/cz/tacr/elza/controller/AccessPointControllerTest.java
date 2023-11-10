@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,10 +46,13 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     ApItemRepository itemRepository;
 
     @Autowired
-    ApStateRepository stateRepository; 
+    ApStateRepository stateRepository;
 
     @Autowired
     ApAccessPointRepository apRepository;
+
+    @Autowired
+    AccessPointItemService itemService;
 
     @Test
     public void copyAccessPointsTest() throws ApiException {
@@ -59,12 +63,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertNotNull(ap);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap);
         assertTrue(parts.size() == 3);
-        List<ApItem> items = itemRepository.findValidItemsByAccessPoint(ap);
+        List<ApItem> items = itemService.findValidItemsByAccessPoint(ap);
         assertTrue(items.size() == 8);
 
         // let's delete the last part
-        List<ApItem> itemsSkip = itemRepository.findValidItemsByPartId(parts.get(parts.size() - 1).getPartId());
-        List<Integer> skipItems = itemsSkip.stream().map(p -> p.getItemId()).collect(Collectors.toList());                
+        List<ApItem> itemsSkip = itemService.findValidItemsByPartId(parts.get(parts.size() - 1).getPartId());
+        List<Integer> skipItems = itemsSkip.stream().map(p -> p.getItemId()).collect(Collectors.toList());
 
         CopyAccessPointDetail copyAccessPointDetail = new CopyAccessPointDetail();
         copyAccessPointDetail.setScope(SCOPE_GLOBAL);
@@ -79,7 +83,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertNotNull(copyAp);
         List<ApPart> copyParts = partService.findPartsByAccessPoint(copyAp);
         assertTrue(copyParts.size() == 2); // -1
-        List<ApItem> copyItems = itemRepository.findValidItemsByAccessPoint(copyAp);
+        List<ApItem> copyItems = itemService.findValidItemsByAccessPoint(copyAp);
         assertTrue(copyItems.size() == 5); // -3
     }
 
@@ -139,7 +143,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
     }
-    
+
     @Test
     public void deleteAccessPointCopyAllTest() throws ApiException {
 

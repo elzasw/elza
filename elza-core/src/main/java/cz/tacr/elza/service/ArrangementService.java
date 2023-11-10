@@ -858,13 +858,13 @@ public class ArrangementService {
         }
 
         // Read source data
-        List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
+        List<ArrDescItem> siblingDescItems = descriptionItemService.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
         // Delete old values for these items
         // ? Can we use descriptionItemService.deleteDescriptionItemsByType
-        List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
+        List<ArrDescItem> nodeDescItems = descriptionItemService.findOpenByNodeAndTypes(level.getNode(), typeSet);
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
                 if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
@@ -883,7 +883,7 @@ public class ArrangementService {
         changeContext.flush();
 
         // Should it be taken from cache?
-        return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
+        return descriptionItemService.findOpenByNodeAndTypes(level.getNode(), typeSet);
     }
 
     /**
@@ -1870,7 +1870,7 @@ public class ArrangementService {
                                  final ArrChange change) {
         ArrNode node = getNode(nodeId);
         if (node != null) {
-            List<ArrDescItem> nodeItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+            List<ArrDescItem> nodeItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
             if (CollectionUtils.isNotEmpty(nodeItems)) {
                 for (ArrDescItem descItem : nodeItems) {
                     synchronizeNodes(descItem, nodeId, nodeVersion, change);
@@ -1895,11 +1895,11 @@ public class ArrangementService {
             if (dataUriRef.getRefTemplate() != null && dataUriRef.getArrNode() != null &&
                     dataUriRef.getRefTemplate().getItemNodeRef().getItemTypeId().equals(descItem.getItemType().getItemTypeId())) {
                 ArrNode node = getNode(nodeId);
-                Map<Integer, List<ArrDescItem>> nodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(node).stream()
+                Map<Integer, List<ArrDescItem>> nodeItemMap = descriptionItemService.findByNodeAndDeleteChangeIsNull(node).stream()
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
 
                 ArrNode sourceNode = dataUriRef.getArrNode();
-                Map<Integer, List<ArrDescItem>> sourceNodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(sourceNode).stream()
+                Map<Integer, List<ArrDescItem>> sourceNodeItemMap = descriptionItemService.findByNodeAndDeleteChangeIsNull(sourceNode).stream()
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
 
                 if (change == null) {
@@ -1965,7 +1965,7 @@ public class ArrangementService {
         ArrLevel sourceLevel = levelRepository.findByNodeAndDeleteChangeIsNull(sourceNode);
         ArrNode parentNode = sourceLevel.getNodeParent();
         if (parentNode != null) {
-            List<ArrDescItem> parentItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(parentNode, formItemType.getItemTypeId());
+            List<ArrDescItem> parentItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(parentNode, formItemType.getItemTypeId());
             if (CollectionUtils.isNotEmpty(parentItems)) {
                 return parentItems;
             } else {

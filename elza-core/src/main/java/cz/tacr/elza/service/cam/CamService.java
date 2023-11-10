@@ -455,7 +455,7 @@ public class CamService {
 
         // TODO: rework to use ap_cached_access_point
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMap = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
 
         CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
@@ -479,7 +479,7 @@ public class CamService {
         ApState state = accessPointService.getStateInternal(accessPoint);
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMap = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
 
         UpdateEntityBuilder ueb = new UpdateEntityBuilder(
@@ -811,7 +811,7 @@ public class CamService {
         if (CollectionUtils.isNotEmpty(partList)) {
             return true;
         }
-        List<ApItem> itemList = itemRepository.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
+        List<ApItem> itemList = apItemService.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(itemList)) {
             return true;
         }

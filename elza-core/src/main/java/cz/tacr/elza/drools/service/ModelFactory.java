@@ -21,6 +21,7 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.SimpleItem;
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,7 +61,7 @@ public class ModelFactory {
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
 	        DescItemFactory descItemFactory,
-	        StructuredItemRepository itemRepos)
+            StructObjValueService structObjService)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -75,7 +76,7 @@ public class ModelFactory {
 				if (data.getType() == DataType.STRUCTURED) {
                     ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
                     ArrStructuredObject structObj = structureRef.getStructuredObject();
-                    voDescItem.setStructured(createStructured(structObj, itemRepos));
+                    voDescItem.setStructured(createStructured(structObj, structObjService));
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getIntegerValue());
@@ -94,8 +95,8 @@ public class ModelFactory {
      * @param structObj
      * @return
      */
-    static public Structured createStructured(final ArrStructuredObject structObj, StructuredItemRepository itemRepos) {
-        Structured result = new Structured(structObj, itemRepos);
+    static public Structured createStructured(final ArrStructuredObject structObj, StructObjValueService structObjService) {
+        Structured result = new Structured(structObj, structObjService);
         return result;
     }
 

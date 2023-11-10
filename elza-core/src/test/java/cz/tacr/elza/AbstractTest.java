@@ -3,6 +3,7 @@ package cz.tacr.elza;
 import java.io.File;
 import java.net.URL;
 
+import cz.tacr.elza.service.DescriptionItemService;
 import jakarta.persistence.EntityManager;
 
 import org.junit.After;
@@ -61,6 +62,8 @@ public abstract class AbstractTest {
     protected HelperTestService helperTestService;
     @Autowired
     protected StartupService startupService;
+    @Autowired
+    protected DescriptionItemService descItemService;
 
     @Autowired
     protected ElzaLocale elzaLocale;

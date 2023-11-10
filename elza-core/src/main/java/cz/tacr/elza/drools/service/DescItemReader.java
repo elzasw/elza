@@ -16,6 +16,8 @@ import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
@@ -40,16 +42,24 @@ public class DescItemReader {
 
 	private final StructuredItemRepository structItemRepos;
 
+    private final DescriptionItemService descItemService;
+
+    private final StructObjValueService structObjService;
+
 	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
 						  DescItemFactory descItemFactory,
 						  NodeCacheService nodeCacheService,
-						  final StructuredItemRepository structItemRepos)
+						  final StructuredItemRepository structItemRepos,
+                          DescriptionItemService descItemService,
+                          StructObjValueService structObjService)
 	{
 		this.version = version;
 		this.descItemRepository = descItemRepository;
 		this.descItemFactory = descItemFactory;
 		this.nodeCacheService = nodeCacheService;
 		this.structItemRepos = structItemRepos;
+        this.descItemService = descItemService;
+        this.structObjService = structObjService;
 	}
 
 	/**
@@ -88,18 +98,18 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structObjService);
                 level.setDescItems(items);
             }
         } else {
             // Load from DB
-			List<ArrDescItem> descItems = descItemRepository.findByNodesAndDeleteChange(nodes, version.getLockChange());
+			List<ArrDescItem> descItems = descItemService.findByNodesAndDeleteChange(nodes, version.getLockChange());
 
             descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structObjService);
                 level.setDescItems(items);
             }
         }

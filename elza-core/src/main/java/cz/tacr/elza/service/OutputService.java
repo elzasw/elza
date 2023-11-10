@@ -938,7 +938,7 @@ public class OutputService {
         ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
+        List<ArrOutputItem> outputItems = outputServiceInternal.findOpenOutputItems(descItemObjectId);
 
         if (outputItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
@@ -1032,7 +1032,7 @@ public class OutputService {
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
+        List<ArrOutputItem> outputItems = outputServiceInternal.findOpenOutputItems(outputItem.getDescItemObjectId());
 
         if (outputItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
@@ -1503,7 +1503,7 @@ public class OutputService {
         ArrChange change = arrangementInternalService.createChange(null);
 
         if (outputItemObjectId != null) {
-            ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);
+            ArrOutputItem openOutputItem = outputServiceInternal.findOpenOutputItem(outputItemObjectId);
             if (openOutputItem == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + outputItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", outputItemObjectId);
             } else if (openOutputItem.getData() == null) {
@@ -1654,5 +1654,9 @@ public class OutputService {
         		fundVersion, output.getOutputId()));
 
 	}
+
+    public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
+        return outputServiceInternal.findOpenOutputItem(descItemObjectId);
+    }
 
 }

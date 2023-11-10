@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
+import cz.tacr.elza.service.StructObjService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -23,13 +24,12 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.StructuredItemRepository;
 
 public class UnitCounter {
 
     final UnitCounterConfig config;
 
-    final StructuredItemRepository structureItemRepository;
+    final StructObjService structObjService;
 
     WhenCondition excludeWhen;
 
@@ -55,12 +55,12 @@ public class UnitCounter {
      * Packet type mapping
      */
     Map<Integer, String> objectMapping = new HashMap<>();
-    
+
     UnitCounter(UnitCounterConfig counterCfg,
-                final StructuredItemRepository structureItemRepository,
+                final StructObjService structObjService,
                 StaticDataProvider sdp) {
         this.config = counterCfg;
-        this.structureItemRepository = structureItemRepository;
+        this.structObjService = structObjService;
         init(sdp);
     }
 
@@ -208,7 +208,7 @@ public class UnitCounter {
 
     /**
      * Count from given structured object
-     * 
+     *
      * @param itemType
      * @param Level.get
      * @return
@@ -236,7 +236,7 @@ public class UnitCounter {
 
     /**
      * Count structured object
-     * 
+     *
      * @param packetId
      * @param level
      * @param unitCountAction
@@ -253,7 +253,7 @@ public class UnitCounter {
         }
 
         // TODO: Do filtering in DB
-        List<ArrStructuredItem> structObjItems = this.structureItemRepository
+        List<ArrStructuredItem> structObjItems = this.structObjService
                 .findByStructObjIdAndDeleteChangeIsNullFetchData(packetId);
         // filter only our item types
         for (ArrStructuredItem structObjItem : structObjItems) {

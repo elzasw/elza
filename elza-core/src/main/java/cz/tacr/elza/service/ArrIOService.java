@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -113,6 +114,9 @@ public class ArrIOService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private DataService dataService;
 
     /**
      * Export dat tabulky do csv formátu, který bude zapsán do streamu.
@@ -345,9 +349,9 @@ public class ArrIOService {
 
         ArrItem item;
         if (lockChange == null) {
-            item = itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId);
+            item = findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId);
         } else {
-            item = itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange);
+            item = findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange);
         }
 
         if (item == null || item.isUndefined()) {
@@ -367,6 +371,22 @@ public class ArrIOService {
         }
 
         toKml(response, ((ArrDataCoordinates) data).getValue());
+    }
+
+    private ArrItem findByItemObjectIdAndDeleteChangeIsNullFetchData(int descItemObjectId) {
+        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    private ArrItem findByItemObjectIdAndChangeFetchData(int descItemObjectId, ArrChange lockChange) {
+        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -77,6 +78,9 @@ public class AccessPointAggregationAction extends Action {
 
     @Autowired
     private ApIndexRepository indexRepository;
+
+    @Autowired
+    private AccessPointItemService apItemService;
 
     /**
      * Vstupní atributy
@@ -161,7 +165,7 @@ public class AccessPointAggregationAction extends Action {
         }
         ApAccessPoint ap = apAccessPointRepository.findById(apId).orElseThrow(ap(apId));
         List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
-        List<ApItem> items = itemRepository.findValidItemsByAccessPointMultiFetch(ap);
+        List<ApItem> items = apItemService.findValidItemsByAccessPointMultiFetch(ap);
         ApIndex index = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, DISPLAY_NAME);
         Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(parts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getPartId(), Function.identity()));

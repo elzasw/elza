@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +93,7 @@ public class StructObjService {
     private final StaticDataService staticDataService;
     private final StructObjInternalService structObjInternalService;
     private final PartTypeRepository partTypeRepository;
+    private final DataService dataService;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -107,7 +109,8 @@ public class StructObjService {
                             final SettingsService settingsService,
                             final StaticDataService staticDataService,
                             final StructObjInternalService structObjInternalService,
-                            final PartTypeRepository partTypeRepository) {
+                            final PartTypeRepository partTypeRepository,
+                            final DataService dataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -122,6 +125,7 @@ public class StructObjService {
         this.staticDataService = staticDataService;
         this.structObjInternalService = structObjInternalService;
         this.partTypeRepository = partTypeRepository;
+        this.dataService = dataService;
     }
 
     /**
@@ -132,7 +136,7 @@ public class StructObjService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrStructuredItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureObject) {
-        return structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureObject);
+        return structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureObject);
     }
 
     /**
@@ -145,7 +149,7 @@ public class StructObjService {
         List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, ObjectListIterator.getMaxBatchSize());
         List<ArrStructuredItem> structureItems = new ArrayList<>();
         for (List<ArrStructuredObject> part : parts) {
-            structureItems.addAll(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
+            structureItems.addAll(findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
         }
         return structureItems.stream().collect(Collectors.groupingBy(ArrStructuredItem::getStructuredObject));
     }
@@ -344,7 +348,7 @@ public class StructObjService {
 
             // pokud je požadovaná pozice menší než další volná, bude potřeba posunou níž položky
             if (position < nextPosition) {
-                List<ArrStructuredItem> structureItemsToMove = structureItemRepository.findOpenItemsAfterPositionFetchData(type,
+                List<ArrStructuredItem> structureItemsToMove = findOpenItemsAfterPositionFetchData(type,
                                                              structObj, position - 1, null);
 
                 nextVersionStructureItems(1, structureItemsToMove, change, true);
@@ -457,7 +461,7 @@ public class StructObjService {
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                  final boolean createNewVersion) {
 
-        ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
+        ArrStructuredItem structureItemDB = findOpenItemFetchData(structureItem.getDescItemObjectId());
         if (structureItemDB == null) {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
@@ -540,7 +544,7 @@ public class StructObjService {
     public ArrStructuredItem deleteStructureItem(final ArrStructuredItem structureItem,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
-        ArrStructuredItem structureItemDB = structureItemRepository.findOpenItemFetchData(structureItem.getDescItemObjectId());
+        ArrStructuredItem structureItemDB = findOpenItemFetchData(structureItem.getDescItemObjectId());
         if (structureItemDB == null) {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + structureItem.getDescItemObjectId(), BaseCode.ID_NOT_EXIST).setId(structureItem.getDescItemObjectId());
         }
@@ -554,6 +558,29 @@ public class StructObjService {
         structObjService.addToValidate(structObj);
 
         return save;
+    }
+
+    public List<ArrStructuredItem> findByStructObjIdAndDeleteChangeIsNullFetchData(Integer structuredObjectId) {
+        return dataService.findItemsWithData(() -> structureItemRepository.findByStructObjIdAndDeleteChangeIsNullFetchData(structuredObjectId),
+                structObjService::createDataResultList);
+    }
+
+    private List<ArrStructuredItem> findByStructuredObjectListAndDeleteChangeIsNullFetchData(List<ArrStructuredObject> structuredObjectList) {
+        return dataService.findItemsWithData(() -> structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(structuredObjectList),
+                structObjService::createDataResultList);
+    }
+
+    private List<ArrStructuredItem> findOpenItemsAfterPositionFetchData(RulItemType itemType,
+                                                                        ArrStructuredObject structuredObject,
+                                                                        Integer position,
+                                                                        Pageable pageRequest) {
+        return dataService.findItemsWithData(() -> structureItemRepository.findOpenItemsAfterPositionFetchData(itemType, structuredObject, position, pageRequest),
+                structObjService::createDataResultList);
+    }
+
+    private ArrStructuredItem findOpenItemFetchData(Integer itemObjectId) {
+        return dataService.findItemWithData(() -> structureItemRepository.findOpenItemFetchData(itemObjectId),
+                structObjService::createDataResultList);
     }
 
     /**
@@ -670,7 +697,7 @@ public class StructObjService {
 
     /**
      * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
-     * 
+     *
      * Funkce zachovává pořadí vracených objektů.
      *
      * @param structureDataIds
@@ -1350,7 +1377,7 @@ public class StructObjService {
     public void updateStructObj(ArrChange change, ArrStructuredObject structObj, List<ArrStructuredItem> items) {
 
         // drop all old items
-        List<ArrStructuredItem> currItems = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        List<ArrStructuredItem> currItems = structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
         currItems.forEach(item -> item.setDeleteChange(change));
         structureItemRepository.saveAll(currItems);
 

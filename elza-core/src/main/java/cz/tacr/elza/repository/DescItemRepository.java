@@ -29,27 +29,27 @@ import cz.tacr.elza.domain.RulItemType;
 @Repository
 public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
 
-	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2")
     List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type);
 
-	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH di.node WHERE di.node in (?1) AND di.deleteChange IS NULL AND di.itemType = ?2 AND di.itemSpec IN (?3)")
     List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs);
 
-	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type")
     List<ArrDescItem> findOpenByFundAndType(@Param("fund") ArrFund fund,
                                             @Param("type") RulItemType type);
 
-	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.data JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
+	@Query("SELECT di FROM arr_desc_item di LEFT JOIN FETCH di.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH di.node n WHERE n.fund = :fund AND di.deleteChange IS NULL AND di.itemType = :type AND di.itemSpec IN :specs")
     List<ArrDescItem> findOpenByFundAndTypeAndSpec(@Param("fund") ArrFund fund,
                                                    @Param("type") RulItemType type,
                                                    @Param("specs") Collection<RulItemSpec> specs);
 
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data JOIN FETCH i.node n WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH i.node n WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
 
 	//TODO: Consider to remove this method
-    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
 	/*static final String FETCH_NODES_WITH_DATA = "SELECT i, d, dp, par FROM arr_desc_item i"
@@ -59,7 +59,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";*/
 
 	static final String FETCH_NODES_WITH_DATA = "SELECT i FROM arr_desc_item i"
-	        + " LEFT JOIN FETCH i.data d"
+	        + " LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType"
             + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL"
             + " ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position";
 
@@ -85,7 +85,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	 * @param descItemTypeId
 	 * @return Return description item and fetched data
 	 */
-	@Query("SELECT i FROM arr_desc_item i JOIN i.itemType t LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2")
+	@Query("SELECT i FROM arr_desc_item i JOIN FETCH i.itemType t JOIN FETCH t.dataType WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId);
 
 	/**
@@ -99,7 +99,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	 *            Change to use for fetching data. Cannot be null.
 	 * @return
 	 */
-	@Query("SELECT i FROM arr_desc_item i JOIN FETCH i.itemType t LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+	@Query("SELECT i FROM arr_desc_item i JOIN FETCH i.itemType t LEFT JOIN FETCH t.dataType WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
 	List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND t.itemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
@@ -116,7 +116,8 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	 * @return seznam atributů daného typu
 	 */
     @Query("SELECT i FROM arr_desc_item i " +
-            "LEFT JOIN FETCH i.data " +
+            "LEFT JOIN FETCH i.itemType it " +
+            "LEFT JOIN FETCH it.dataType " +
             "WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2) " +
             "ORDER BY i.position")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes);
@@ -127,10 +128,10 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return
      */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findOpenDescItems(Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId IN :descItemObjectIds")
+    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId IN :descItemObjectIds")
     List<ArrDescItem> findOpenDescItemsByIds(@Param("descItemObjectIds") Collection<Integer> descItemObjectIds);
 
     /**
@@ -139,7 +140,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param descItemObjectId identifikátor hodnoty atributu
      * @return desc item
      */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrDescItem findOpenDescItem(Integer descItemObjectId);
 
 
@@ -150,7 +151,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position > ?3")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2 AND i.position > ?3")
     List<ArrDescItem> findOpenDescItemsAfterPosition(RulItemType itemType, ArrNode node, Integer position);
 
     /**
@@ -160,7 +161,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
+	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
     List<ArrDescItem> findOpenDescItemsByItemType(RulItemType itemType, ArrNode node);
 
     /**
@@ -245,17 +246,17 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     /**
      * Dotaz vyhleda items navazane na dany uzel prostrednictvim ArrDataUriRef
-     * 
+     *
      * Vraci plne nactena data ArrDataUriRef.
-     * 
+     *
      * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
      * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
      * filtru dle node.
-     * 
+     *
      * @param node
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data=d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data=d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
     List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node);
 
     /**
@@ -265,7 +266,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node     pro kontkrétní JP
      * @return nalezené hodnoty atributů
      */
-    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.node = :node AND i.position >= :positionFrom AND i.position <= :positionTo")
+    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.node = :node AND i.position >= :positionFrom AND i.position <= :positionTo")
     List<ArrDescItem> findOpenDescItemsBetweenPositions(@Param("itemType") RulItemType itemType,
                                                         @Param("node") ArrNode node,
                                                         @Param("positionFrom") int positionFrom,

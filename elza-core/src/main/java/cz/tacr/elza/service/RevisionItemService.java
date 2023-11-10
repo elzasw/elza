@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
@@ -54,6 +56,9 @@ public class RevisionItemService {
     private ItemService itemService;
 
     @Autowired
+    private DataService dataService;
+
+    @Autowired
     private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
@@ -69,11 +74,12 @@ public class RevisionItemService {
     private EntityManager em;
 
 
-    public List<ApRevItem> findByParts(List<ApRevPart> parts) {
+    public List<ApRevItem> findByParts(Collection<ApRevPart> parts) {
         if (CollectionUtils.isEmpty(parts)) {
             return Collections.emptyList();
         }
-        return revItemRepository.findByParts(parts);
+        return dataService.findItemsWithData(() -> revItemRepository.findByParts(parts),
+                this::createDataResultList);
     }
 
     public void deleteRevisionItems(List<ApRevItem> items, ApChange change) {
@@ -229,7 +235,7 @@ public class RevisionItemService {
                            List<ApRevPart> revParts,
                            Map<Integer, ApPart> revPartMap,
                            List<ApRevItem> revItems) {
-        List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> items = accessPointItemService.findValidItemsByAccessPoint(accessPoint);
         Map<Integer, ApItem> itemObjectIdMap = items.stream()
                 .collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
 
@@ -370,8 +376,20 @@ public class RevisionItemService {
         return newItems;
     }
 
+    public List<ApRevItem> findItemByEntity(ApAccessPoint replaced) {
+        return dataService.findItemsWithData(() -> revItemRepository.findItemByEntity(replaced),
+                this::createDataResultList);
+    }
+
     public List<ApRevItem> findByPart(ApRevPart revPart) {
-        return revItemRepository.findByPart(revPart);
+        return dataService.findItemsWithData(() -> revItemRepository.findByPart(revPart),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ApRevItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     public void createDeletedItems(ApRevPart revPart, ApChange apChange, List<ApItem> apItems) {

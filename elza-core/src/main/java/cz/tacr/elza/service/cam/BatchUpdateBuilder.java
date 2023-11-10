@@ -35,21 +35,21 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
      * Map of new states for access points
      */
     protected Map<Integer, String> bingingStates = new HashMap<>();
-    
+
     protected List<Object> trgList = new ArrayList<>();
-    
+
     final private ApExternalSystem apExternalSystem;
-    
-    final private ExternalSystemService externalSystemService;
-    
+
+    final protected ExternalSystemService externalSystemService;
+
 	public Map<Integer, String> getBindingStates() {
 		return bingingStates;
-	}    
+	}
 
-    BatchUpdateBuilder(final StaticDataProvider sdp, 
-    		final ApAccessPoint accessPoint, 
-    		final GroovyService groovyService, 
-    		final AccessPointDataService apDataService, 
+    BatchUpdateBuilder(final StaticDataProvider sdp,
+    		final ApAccessPoint accessPoint,
+    		final GroovyService groovyService,
+    		final AccessPointDataService apDataService,
     		final ApScope scope,
     		final ApExternalSystem apExternalSystem,
     		final ExternalSystemService externalSystemService) {
@@ -97,7 +97,7 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     protected void setPrefName(UuidXml prefName) {
         addChange(prefName);
     }
-    
+
     protected void setRecordState(EntityRecordStateXml recordState) {
     	SetRecordStateXml srs = new SetRecordStateXml(recordState, null);
     	addChange(srs);
@@ -107,31 +107,31 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 	 * Store changes to the final batch update
 	 * @param batchUpdate
 	 */
-	public void storeChanges(BatchUpdateXml batchUpdate) {		
-        batchUpdate.getChanges().addAll(trgList);		
+	public void storeChanges(BatchUpdateXml batchUpdate) {
+        batchUpdate.getChanges().addAll(trgList);
 	}
-	
+
 	@Override
     protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
     	// read binding
     	ApAccessPoint ap = recordRef.getRecord();
     	ApBinding binding = null;
     	if(ap!=null) {
-    		// 
+    		//
     		ApBindingState bindingState = this.externalSystemService.findByAccessPointAndExternalSystem(ap, apExternalSystem);
     		if(bindingState!=null) {
-    			binding = bindingState.getBinding(); 
+    			binding = bindingState.getBinding();
     		}
-    	} else {   	
+    	} else {
     		// create record ref only for records with same binding
     		if ( recordRef.getBinding() != null) {
     			ApExternalSystem bindedExtSystem = recordRef.getBinding().getApExternalSystem();
     			if (bindedExtSystem.getExternalSystemId().equals(apExternalSystem.getExternalSystemId())) {
     				binding = recordRef.getBinding();
     			}
-    		}            
+    		}
         }
-    	
+
     	if(binding == null) {
     		return null;
     	}
@@ -141,7 +141,7 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
         entityRecordRef.setEid(new EntityIdXml(entityId));
         return entityRecordRef;
     }
-    
+
 	/**
 	 * Create entity reference
 	 * @return Return reference for UpdateEntity

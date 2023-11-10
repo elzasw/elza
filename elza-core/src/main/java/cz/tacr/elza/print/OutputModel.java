@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.StructObjService;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -201,6 +202,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ExportConfig exportConfig;
 
+    private StructObjService structObjService;
+
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -218,6 +221,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository,
                        final ExportConfig exportConfig,
+                       final StructObjService structObjService,
                        final EntityManager em) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
@@ -236,6 +240,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
         this.exportConfig = exportConfig;
+        this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
     }
 
@@ -1001,7 +1006,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
-        List<ArrStructuredItem> items = structItemRepos.findByStructObjIdAndDeleteChangeIsNullFetchData(
+        List<ArrStructuredItem> items = structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(
                 structObjId);
         List<cz.tacr.elza.print.item.Item> result = convert(items, itemConvertor);
         return result;
