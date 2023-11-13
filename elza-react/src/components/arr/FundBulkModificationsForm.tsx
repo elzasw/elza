@@ -25,6 +25,7 @@ import { AppState } from 'typings/store';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import { FormState } from 'final-form';
 import { useSelector } from 'react-redux';
+import DescItemLink from './nodeForm/DescItemLink';
 
 export enum OperationType {
     DELETE = "delete",
@@ -462,6 +463,29 @@ const FundBulkModificationsForm = ({
                                         },
                                     };
                                     return <DescItemRecordRef {...input} {...data} />
+                                }}
+                            </Field>
+                        );
+                        break;
+                    case RulDataTypeCodeEnum.URI_REF:
+                        operationInputs.push(
+                            <Field
+                                key="replaceText"
+                                name="replaceText"
+                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                            >
+                                {({ input }) => {
+                                    let data = {
+                                        ...descItemProps,
+                                        descItem: {
+                                            error: {
+                                                value: errors?.replaceText || null,
+                                            },
+                                            value: input.value.value,
+                                            description: input.value.description,
+                                        },
+                                    };
+                                    return <DescItemLink {...input} {...data} />
                                 }}
                             </Field>
                         );

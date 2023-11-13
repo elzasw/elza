@@ -681,15 +681,20 @@ class FundDataGrid extends AbstractReactComponent {
 
             // Zpracování hodnoty pro odeslání - musíme ji správně převést do testového formáltu pro odeslání na serveru
             let replaceText = data.replaceText;
+            let description = undefined;
             if (replaceText) {
                 switch (dataType.code) {
                     case 'UNITDATE':
                         if (typeof replaceText === 'object') {
-                            replaceText = replaceText.value;
+                            replaceText = data.replaceText.value;
                         }
                         break;
                     case 'RECORD_REF':
-                        replaceText = replaceText.id;
+                        replaceText = data.replaceText.id;
+                        break;
+                    case 'URI_REF':
+                        replaceText = data.replaceText.value;
+                        description = data.replaceText.description;
                         break;
                     default:
                         // standardně nic neděláme, zpracovávají se jen speciální typy
@@ -707,6 +712,7 @@ class FundDataGrid extends AbstractReactComponent {
                         data.operationType,
                         data.findText,
                         replaceText,
+                        description,
                         data.replaceSpec,
                         nodes,
                         selectionType,
