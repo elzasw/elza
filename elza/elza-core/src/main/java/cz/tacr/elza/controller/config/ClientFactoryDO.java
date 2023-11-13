@@ -222,21 +222,20 @@ public class ClientFactoryDO {
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrData data = null;
-        // Item is not undefined -> parse data
-        if (descItemVO.getUndefined() != Boolean.TRUE) {
-            data = mapper.map(descItemVO, ArrData.class);
-        }
-
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setData(data);
+
+        // Item is not undefined -> parse data
+        if (descItemVO.getUndefined() != Boolean.TRUE) {            
+            ArrData data = mapper.map(descItemVO, ArrData.class);
+            descItem.setData(data);
+
+            if (descItemVO.getDescItemSpecId() != null) {
+                RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
+                descItem.setItemSpec(descItemSpec);
+            }            
+        }        
         // Copy properties to application object
         descItemVO.fill(descItem);
-
-        if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
-            descItem.setItemSpec(descItemSpec);
-        }
 
         return descItem;
     }
@@ -799,12 +798,15 @@ public class ClientFactoryDO {
     /**
      * Převod seznamu nastavení VO na DO.
      *
-     * @param settings seznam nastavení
+     * @param settings
+     *            seznam nastavení
      * @return seznam DO
      */
     public List<UISettings> createSettingsList(final List<UISettingsVO> settings) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(settings, UISettings.class);
+        if (CollectionUtils.isEmpty(settings)) {
+            return Collections.emptyList();
+        }
+        return settings.stream().map(UISettingsVO::createEntity).collect(Collectors.toList());
     }
 
     public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {

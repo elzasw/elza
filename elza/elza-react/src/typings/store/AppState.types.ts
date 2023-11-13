@@ -2,6 +2,8 @@ import { ArrFundBaseVO } from "../../api/ArrFundBaseVO";
 import { RefTablesState } from "./RefTables.types";
 import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
+import { DetailStoreState } from "types";
+import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
 
 export interface SplitterState {
     leftWidth: number;
@@ -280,7 +282,7 @@ export interface ApExternalSystemSimpleVO {
 
 export interface App {
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
-    apValidation: unknown;
+    apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;
     arrStructure: unknown;
     extSystemDetail: unknown;

@@ -675,6 +675,18 @@
       <#case "ZP2015_ITEM_MAT">
         <#local needsCharakteristikaJP=true>
         <#break>
+      <#case "ZP2015_ITEM_MAT_TECHNIKA">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_ADJUSTACE">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_NOSIC">
+        <#local needsCharakteristikaJP=true>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_LATKA_ZAZNAMU">
+        <#local needsCharakteristikaJP=true>
+        <#break>
       <#case "ZP2015_LEGEND">
         <#local needsCharakteristikaJP=true>
         <#break>
@@ -926,6 +938,18 @@
     <#switch item.type.code>
       <#case "ZP2015_ITEM_MAT">
         <#lt>    <ead:physfacet localtype="TECHNIQUE">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_TECHNIKA">
+        <#lt>    <ead:physfacet localtype="TECHNIQUE_DETAIL">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_ADJUSTACE">
+        <#lt>    <ead:physfacet localtype="MEDIUM_ADJUSTMENT">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_NOSIC">
+        <#lt>    <ead:physfacet localtype="MEDIUM">${item.serializedValue}</ead:physfacet>
+        <#break>
+      <#case "ZP2015_ITEM_MAT_LATKA_ZAZNAMU">
+        <#lt>    <ead:physfacet localtype="MATERIAL">${item.serializedValue}</ead:physfacet>
         <#break>
       <#case "ZP2015_LEGEND">
         <#lt>    <ead:physfacet localtype="LEGEND">${item.serializedValue}</ead:physfacet>

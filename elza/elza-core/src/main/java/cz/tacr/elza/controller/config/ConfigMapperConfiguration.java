@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
-import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
 import static cz.tacr.elza.repository.ExceptionThrow.file;
 import static cz.tacr.elza.repository.ExceptionThrow.partType;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
@@ -16,11 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.domain.RulExportFilter;
-import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.service.ItemService;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +44,8 @@ import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
@@ -57,7 +53,6 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -129,17 +124,18 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParInstitutionType;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -151,7 +147,7 @@ import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.ItemService;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -523,11 +519,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulTemplate.class, RulTemplateVO.class)
                 .byDefault()
                 .field("templateId", "id")
-                .register();
-
-        mapperFactory.classMap(UISettings.class, UISettingsVO.class)
-                .byDefault()
-                .field("settingsId", "id")
                 .register();
 
         mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)

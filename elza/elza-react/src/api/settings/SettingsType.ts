@@ -1,5 +1,10 @@
 export enum SettingsType {
     /**
+     * Používá klient pro zobrazení / skrytí funkcí v hlavním menu (ribbon)
+     */
+    MENU = 'MENU',
+
+    /**
      * Používá klient pro čtení režimu fondu (read-only vs write)
      */
     FUND_READ_MODE = 'FUND_READ_MODE',

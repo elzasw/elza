@@ -1338,8 +1338,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param changeContext
      */
     public ArrDescItem updateValue(final ArrFundVersion fundVersion, final ArrDescItem descItem,
-                                   BatchChangeContext changeContext)
-    {
+                                   BatchChangeContext changeContext) {
 		// fetch item from DB
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
@@ -1639,6 +1638,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            seznam specifikací, ve kterých se má hledat hodnota
      * @param text
      *            text, který nahradí text v celém textu
+     * @param description
+     *            popis odkazu, pokud se jedná o odkaz (text)
      * @param allNodes
      *            vložit u všech JP
      * @param append
@@ -1648,7 +1649,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                     final ItemType itemType,
                                     final Collection<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
-                                    final Set<RulItemSpec> specifications, final String text,
+                                    final Set<RulItemSpec> specifications, final String text, final String description,
                                     final boolean allNodes,
                                     final boolean append) {
 
@@ -1743,7 +1744,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
             arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
 
-            ArrData data = createDataFromText(itemType.getDataType(), text);
+            ArrData data = createDataFromText(itemType.getDataType(), text, description);
 
             ArrDescItem newDescItem = new ArrDescItem();
             newDescItem.setData(data);
@@ -1763,7 +1764,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         changeContext.flush();
     }
 
-    private ArrData createDataFromText(DataType dataType, String text) {
+    private ArrData createDataFromText(DataType dataType, String text, String description) {
         switch (dataType) {
         case FORMATTED_TEXT:
         case TEXT:
@@ -1805,6 +1806,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
             ArrDataUriRef itemUriRef = new ArrDataUriRef();
             itemUriRef.setUriRefValue(text);
+            itemUriRef.setDescription(description);
             return itemUriRef;
         case DECIMAL:
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
