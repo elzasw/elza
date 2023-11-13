@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -8,12 +9,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.drools.core.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.UISettings;
@@ -28,7 +28,9 @@ import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFundIssues;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
+import cz.tacr.elza.packageimport.xml.SettingMenu;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
@@ -187,6 +189,9 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.INDEX_SEARCH,
                 SettingIndexSearch::newInstance,
                 SettingIndexSearch.class ));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.MENU,
+                SettingMenu::newInstance,
+                SettingMenu.class));
         settingsConvertors.add(new StructTypeSettingsConvertor());
 		
 		// default convertor
@@ -210,54 +215,97 @@ public class SettingsService {
     /**
      * Načte nastavení podle uživatele.
      *
-     * @param user uživatel
+     * @param userId
+     *            ID user ID, might be null
      * @return seznam nastavení
      */
-    public List<UISettings> getSettings(int userId) {
-        List<UISettings> settingsList = settingsRepository.findByUserId(userId);
-        return settingsList;
+    @Transactional
+    public List<UISettings> getSettings(Integer userId) {
+        // Read default global settings
+
+        // Read UI menu settings
+        List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
+
+        List<UISettings> userSettingsList = null;
+        if (userId != null) {
+            userSettingsList = settingsRepository.findByUserId(userId);
+        }
+
+        // TODO: rewrite using some shared function
+        if (CollectionUtils.isEmpty(menuSettingsList)) {
+            return userSettingsList;
+        }
+        if (CollectionUtils.isEmpty(userSettingsList)) {
+            return menuSettingsList;
+        }
+
+        List<UISettings> result = new ArrayList<>(menuSettingsList.size() + userSettingsList.size());
+        result.addAll(menuSettingsList);
+        result.addAll(userSettingsList);
+        return result;
     }
 
     /**
      * Nastaví parametry pro uživatele.
      *
-     * @param user         uživatel
-     * @param settingsList seznam nastavení
+     * @param user
+     *            uživatel
+     * @param settingsList
+     *            seznam nastavení
+     * @return Return new user settings.
+     * 
      */
-    public void setSettings(@NotNull final UsrUser user,
+    @Transactional
+    public List<UISettings> setSettings(@NotNull final UsrUser user,
                             @NotNull final List<UISettings> settingsList) {
+
+        List<UISettings> result = new ArrayList<>();
+
+        List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
+        Map<Integer, UISettings> globalSettingsMap = menuSettingsList.stream()
+                .collect(Collectors.toMap(UISettings::getSettingsId, Function.identity()));
+        result.addAll(menuSettingsList);
+
         List<UISettings> settingsListDB = settingsRepository.findByUser(user);
 
+        // Lookup map
         Map<Integer, UISettings> settingsMap = settingsListDB.stream()
                 .collect(Collectors.toMap(UISettings::getSettingsId, Function.identity()));
 
         List<UISettings> settingsListAdd = new ArrayList<>();
-        List<UISettings> settingsListDelete;
         List<UISettings> settingsListUpdate = new ArrayList<>();
 
         for (UISettings settings : settingsList) {
             if (settings.getSettingsId() == null) {
+                // add non DB items
                 settings.setUser(user);
                 settingsListAdd.add(settings);
             } else {
-                UISettings settingsDB = settingsMap.get(settings.getSettingsId());
+                // check if globalSettings
+                UISettings globalSetting = globalSettingsMap.get(settings.getSettingsId());
+                if (globalSetting != null) {
+                    continue;
+                }
+                UISettings settingsDB = settingsMap.remove(settings.getSettingsId());
                 if (settingsDB == null) {
                     throw new ObjectNotFoundException("Entita nastavení s id=" + settings.getSettingsId() + " neexistuje v DB", BaseCode.ID_NOT_EXIST);
                 }
-                settings.setUser(user);
-                settings.setEntityType(settingsDB.getEntityType());
-                settings.setEntityId(settingsDB.getEntityId());
-                settings.setSettingsType(settingsDB.getSettingsType());
-                settingsListUpdate.add(settings);
+                // modify DB record value
+                settingsDB.setValue(settings.getValue());
+                settingsListUpdate.add(settingsDB);
             }
         }
 
-        settingsListDelete = new ArrayList<>(settingsListUpdate);
-        settingsListDelete.removeAll(settingsListUpdate);
+        // delete remaining user items        
+        if (settingsMap.size() > 0) {
+            Collection<UISettings> settingsListDelete = settingsMap.values();
+            settingsRepository.deleteAll(settingsListDelete);
+        }
 
-        settingsRepository.deleteAll(settingsListDelete);
-        settingsRepository.saveAll(settingsListAdd);
-        settingsRepository.saveAll(settingsListUpdate);
+        result.addAll(settingsRepository.saveAll(settingsListAdd));
+        result.addAll(settingsRepository.saveAll(settingsListUpdate));
+
+        return result;
     }
 
     /**

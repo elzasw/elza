@@ -236,7 +236,8 @@ public class ArrangementService {
     @Autowired
     private DataCoordinatesRepository dataCoordinatesRepository;
 
-    public static final String UNDEFINED = "Nezjištěno";
+    //TODO: add translation or refactor
+    public static final String UNDEFINED = "výjimka";
 
     /**
      * Načtení verze na základě id.
@@ -340,8 +341,9 @@ public class ArrangementService {
                               final ParInstitution institution,
                               final Integer fundNumber,
                               final String unitdate,
-                              final String mark) {
-        ArrFund fund = createFund(name, internalCode, institution,fundNumber, unitdate, mark);
+                              final String mark,
+                              final Boolean managed) {
+        ArrFund fund = createFund(name, internalCode, institution, fundNumber, unitdate, mark, managed);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -373,7 +375,7 @@ public class ArrangementService {
         ArrFund originalFund = fundRepository.findById(fund.getFundId()).orElseThrow(fund(fund.getFundId()));
 
         // only superuser can change the four parameters if fund.managed is true
-        if (originalFund.getManaged() && !userService.hasPermission(UsrPermission.Permission.ADMIN)) {
+        if (!userService.hasPermission(UsrPermission.Permission.ADMIN) && originalFund.getManaged()) {
             if (!Objects.equals(fund.getName(), originalFund.getName())
                     || !Objects.equals(fund.getFundNumber(), originalFund.getFundNumber())
                     || !Objects.equals(fund.getMark(), originalFund.getMark())
@@ -588,7 +590,7 @@ public class ArrangementService {
         }
 
         ArrFund fund = createFund(name, ruleSet, change, uuid, internalCode,
-                                  institution, fundNumber, unitdate, mark);
+                                  institution, fundNumber, unitdate, mark, managed);
 
         if (scopes != null) {
             for (ApScope scope : scopes) {
@@ -639,7 +641,8 @@ public class ArrangementService {
                               final ParInstitution institution,
                               final Integer fundNumber,
                               final String unitdate,
-                              final String mark) {
+                              final String mark,
+                              final Boolean managed) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
@@ -648,6 +651,7 @@ public class ArrangementService {
         fund.setFundNumber(fundNumber);
         fund.setUnitdate(unitdate);
         fund.setMark(mark);
+        fund.setManaged(managed);
         return fundRepository.save(fund);
     }
 

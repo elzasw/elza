@@ -8,8 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.core.data.SearchType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -23,6 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.CreateUserVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
@@ -74,10 +81,9 @@ public class UserController {
     public UserInfoVO getUserDetail() {
         UserInfoVO userInfo = userService.getLoggedUserInfo();
         // init user settings for other than default user
-        if (userInfo.getId() != null) {
-            List<UISettings> settingsList = settingsService.getSettings(userInfo.getId());
-            List<UISettingsVO> settingsVOList = factoryVO.createSettingsList(settingsList);
-            userInfo.setSettings(settingsVOList);
+        List<UISettings> settingsList = settingsService.getSettings(userInfo.getId());
+        if (CollectionUtils.isNotEmpty(settingsList)) {
+            userInfo.setSettings(factoryVO.createSettingsList(settingsList));
         }
         return userInfo;
     }
@@ -90,18 +96,23 @@ public class UserController {
     @RequestMapping(value = "/detail/settings", method = RequestMethod.PUT)
     @Transactional
     public List<UISettingsVO> setUserSettings(@RequestBody final List<UISettingsVO> settings) {
-        List<UISettings> settingsList = factoryDO.createSettingsList(settings);
-
-        UsrUser user = userService.getLoggedUser();
-        if (user != null && settingsList.size() > 0) {
-            settingsService.setSettings(user, settingsList);
-        } else {
-            int i = 1;
-            for (UISettings uiSettings : settingsList) {
-                uiSettings.setSettingsId(i++);
-            }
+        if (CollectionUtils.isEmpty(settings)) {
+            return Collections.emptyList();
         }
 
+        List<UISettings> settingsList = factoryDO.createSettingsList(settings);
+        UsrUser user = userService.getLoggedUser();
+        if (user != null) {
+            settingsList = settingsService.setSettings(user, settingsList);
+        } else {
+            // create fake IDs for admin
+            int i = 1;
+            for (UISettings uiSettings : settingsList) {
+                if (uiSettings.getSettingsId() == null) {
+                    uiSettings.setSettingsId(i++);
+                }
+            }
+        }
         return factoryVO.createSettingsList(settingsList);
     }
 

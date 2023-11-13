@@ -1736,7 +1736,9 @@ when $activeLevel: ActiveLevel( )
         // 4.4.4 Fyzický stav jednotky popisu a technické požadavky 
         "ZP2015_UNIT_CURRENT_STATUS",
         // 4.7.1 Zpracovatel     
-        "ZP2015_ARRANGER", 
+        "ZP2015_ARRANGER",
+        // 4.7.1 Informace o zpracování
+        "ZP2015_ARRANGEMENT_INFO",
         // 4.7.2 Pravidla zpracování jednotky popisu
         "ZP2015_ARRANGE_RULES", 
         // ZP4.7.3 Datum (data) popisu 

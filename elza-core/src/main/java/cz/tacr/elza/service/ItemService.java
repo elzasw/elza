@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -111,7 +113,8 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param arrItem hodnota atributu
+     * @param fundContext - kontext fondu
+     * @param arrItem     - hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
@@ -130,43 +133,44 @@ public class ItemService {
         // check if defined specification
         Integer itemSpecId = arrItem.getItemSpecId();
 
-        // exception for element without itemSpecId
-        boolean isException = itemType.hasSpecifications()
-                && data == null
-                && itemSpecId == null
-                && descItemRepository.countByNodeIdAndItemTypeId(arrItem.getNodeId(), arrItem.getItemTypeId()) == 0;
+        RulItemSpec rulItemSpec = null;
 
-        if (itemType.hasSpecifications() && !isException) {
+        if (itemType.hasSpecifications()) {
 
-            if (itemSpecId == null) {
-                throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
-                        ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
-            }
-
-            RulItemSpec rulItemSpec = itemType.getItemSpecById(itemSpecId);
-            if (rulItemSpec == null) {
-                throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
-            }
-
-            if (data != null && !arrItem.isUndefined()) {
-                // check record_ref
-                if (itemType.getDataType().equals(DataType.RECORD_REF)) {
-                    ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
-                    checkRecordRef(fundContext, recordRef, rulItemType, rulItemSpec);
+            if (data == null && itemType.getDataType() == DataType.ENUM) {
+                if (itemSpecId != null) {
+                    throw new BusinessException("Při neexistují data specifikaci by neměla být",
+                            ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+                }
+                int count = arrItem.getItemId() == null?
+                        descItemRepository.countByNodeIdAndItemTypeId(arrItem.getNodeId(), arrItem.getItemTypeId()) :
+                        descItemRepository.countByNodeIdAndItemTypeIdAndNotItemId(arrItem.getNodeId(), arrItem.getItemTypeId(), arrItem.getItemId());
+                if (count > 0) {
+                    throw new BusinessException("V jednom ArrNode může existovat pouze jeden nedefinovaný ArrItem",
+                                                ArrangementCode.ALREADY_INDEFINABLE).level(Level.WARNING);
+                }
+            } else {
+                if (itemSpecId == null) {
+                    throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
+                            ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
+                }
+                rulItemSpec = itemType.getItemSpecById(itemSpecId);
+                if (rulItemSpec == null) {
+                    throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
                 }
             }
-
         } else {
             if (itemSpecId != null) {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
                         ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
-            } else {
-                if (data != null && !arrItem.isUndefined()) {
-                    if (itemType.getDataType().equals(DataType.RECORD_REF)) {
-                        ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
-                        checkRecordRef(fundContext, recordRef, rulItemType, null);
-                    }
-                }
+            }
+        }
+
+        if (data != null && !arrItem.isUndefined()) {
+            // check record_ref
+            if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+                ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                checkRecordRef(fundContext, recordRef, rulItemType, rulItemSpec);
             }
         }
 

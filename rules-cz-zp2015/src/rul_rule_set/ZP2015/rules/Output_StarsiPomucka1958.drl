@@ -92,6 +92,17 @@ then
     $itemType.setRepeatable(true);
 end
 
+// Povolení všech jazyků
+rule "Povolení všech jazyků (ZP2015_LANGUAGE)"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE") )
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
 //
 // Typ vystupu - jen Inventar a Katalog
 //

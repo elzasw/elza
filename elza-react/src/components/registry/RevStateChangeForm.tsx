@@ -9,13 +9,10 @@ import { AppState } from "typings/store";
 import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApproval";
 import { ApTypeVO } from 'api/ApTypeVO';
 import { RevStateChange } from 'elza-api';
-
-const stateToOption = (item: RevStateApproval) => ({
-    id: item,
-    name: RevStateApprovalCaption(item),
-});
+import { ApValidationErrorsVO } from 'api/ApValidationErrorsVO';
 
 interface Props {
+    accessPointId: number;
     versionId?: number;
     hideType?: boolean;
     onClose?: Function;
@@ -34,12 +31,29 @@ export const RevStateChangeFormFn = ({
 }: Props) => {
 
     const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
+    const { data: validationData } = useSelector((appState: AppState) => appState.app.apValidation);
+    const isValid = (!validationData?.errors || validationData.errors?.length <= 0) && (!validationData?.partErrors || validationData.partErrors?.length <= 0);
 
-    const stateOptions = [
-        RevStateApproval.ACTIVE,
-        RevStateApproval.TO_AMEND,
-        RevStateApproval.TO_APPROVE,
-    ].map(stateToOption);
+    const getStateOptions = () => {
+
+        const options = [
+            RevStateApproval.ACTIVE,
+            RevStateApproval.TO_AMEND,
+        ]
+
+        if (isValid) {
+            options.push(RevStateApproval.TO_APPROVE)
+        }
+
+        const stateToOption = (item: RevStateApproval) => ({
+            id: item,
+            name: RevStateApprovalCaption(item),
+        });
+
+        return options.map(stateToOption)
+    }
+
+    const stateOptions = getStateOptions();
 
     const validate = (values: RevStateChange) => {
         const errors: FormErrors<RevStateChange> = {};
@@ -51,6 +65,27 @@ export const RevStateChangeFormFn = ({
         return errors;
     }
 
+    const renderValidationErrors = (errors: ApValidationErrorsVO) => {
+        return <ul>
+            {errors?.errors?.map((value, index) => (
+                <li key={index}>
+                    {value}
+                </li>
+            ))}
+            {errors?.partErrors?.map((value, index) => (
+                <ul>
+                    <li key={index}>
+                        {value?.errors?.map((value, index) => (
+                            <li key={index}>
+                                {value}
+                            </li>
+                        ))}
+                    </li>
+                </ul>
+            ))}
+        </ul>
+    };
+
     return (
         <FinalForm<RevStateChange>
             initialValues={initialValues}
@@ -60,6 +95,12 @@ export const RevStateChangeFormFn = ({
             {({ submitting, handleSubmit }) => {
                 return <Form>
                     <Modal.Body>
+                        {!isValid && validationData &&
+                            <div className="ap-validation-alert">
+                                <h3>{i18n('ap.validation.errors')}</h3>
+                                {renderValidationErrors(validationData)}
+                            </div>
+                        }
                         {!hideType && (
                             <Field
                                 name={'typeId'}

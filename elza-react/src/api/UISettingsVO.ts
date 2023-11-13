@@ -1,5 +1,5 @@
 import {EntityType} from "./EntityType";
-import {SettingsType} from "./SettingsType";
+import {SettingsType} from "./settings/SettingsType";
 
 export interface UISettingsVO {
     id: number;

@@ -34,6 +34,7 @@ public class Settings {
             @XmlElement(name = "item-types", type = SettingItemTypes.class),
             @XmlElement(name = "index-search", type = SettingIndexSearch.class),
             @XmlElement(name = "dao-import-level-settings", type = SettingDaoImportLevel.class),
+            @XmlElement(name = "menu", type = SettingMenu.class),
     })
     private List<Setting> settings;
 

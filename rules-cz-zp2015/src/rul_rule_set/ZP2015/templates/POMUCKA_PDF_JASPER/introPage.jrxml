@@ -72,9 +72,10 @@
 	<parameter name="damageFormatter" class="cz.tacr.elza.print.format.Formatter">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator(", ")
+	.setItemSeparator("; ")
 	.setBlockSeparators("","; ")
-	.beginBlock().addValue("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
+	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+	.beginBlock().addValueWithSpecTitle("ZP2015_UNIT_DAMAGE_TYPE").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="unitTypeMapper" class="java.util.Map">
 		<defaultValueExpression><![CDATA[com.google.common.collect.ImmutableMap.builder()
@@ -401,7 +402,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Jazyk archiválií:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Jazyk archiválií popsaných pomůckou:"]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">

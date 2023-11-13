@@ -256,7 +256,12 @@ public class UISettings {
         /**
          * Nastavení vyhledávání v indexech.
          */
-        INDEX_SEARCH(true, null);
+        INDEX_SEARCH(true, null),
+
+        /**
+         * Nastavení pro menu
+         */
+        MENU(true, null);
 
         /**
          * If settings can be global or has to be defined on some entity.

@@ -978,7 +978,7 @@ var messages = {
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     "subNodeForm.descItemType.all": "Všechny prvky",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
-    "subNodeForm.descItemType.title.notIdentified": "Nastavení hodnoty na 'výjimka' z důvodu nezjištění, neexistence nebo neuvádění na základě výjimky z pravidel",
+    "subNodeForm.descItemType.title.undefinedValue": "Nastavení hodnoty na 'výjimka' z důvodu nezjištění, neexistence nebo neuvádění na základě výjimky z pravidel",
     "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
@@ -1198,6 +1198,7 @@ var messages = {
     "ap.detail.replacedEntity.noName": "Bez názvu",
     "ap.detail.entityMissing": "Entita neexistuje",
 
+    "ap.validation.errors": "Chyby validace",
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 

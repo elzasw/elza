@@ -2032,6 +2032,8 @@ public class ArrangementController {
      *            příznak, zda má dojít jen k přidání nových hodnot
      * @param text
      *            text, který nahradí hledaný text v celém textu
+     * @param description
+     *            popis odkazu, pokud se jedná o odkaz (text)
      * @param replaceDataBody
      *            seznam uzlů, ve kterých hledáme a seznam specifikací
      */
@@ -2042,6 +2044,7 @@ public class ArrangementController {
                                 @RequestParam(value = "newDescItemSpecId", required = false) final Integer newDescItemSpecId,
                                 @RequestParam(value = "append", required = false) final Boolean append,
                                 @RequestParam(value = "text", required = false) final String text,
+                                @RequestParam(value = "description", required = false) final String description,
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
@@ -2059,7 +2062,7 @@ public class ArrangementController {
                 new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService
-                .placeDescItemValues(fundVersion, itemType, nodesDO, newDescItemSpec, specifications, text,
+                .placeDescItemValues(fundVersion, itemType, nodesDO, newDescItemSpec, specifications, text, description,
                                      replaceDataBody.getSelectionType() == SelectionType.FUND,
                                      append != null && append);
     }
