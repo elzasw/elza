@@ -460,8 +460,11 @@ class FundDataGrid extends AbstractReactComponent {
             delete map[id];
             columnsOrder.push(id);
         });
-        columnsOrder = [...columnsOrder, ...Object.keys(map)];
-        return columnsOrder;
+
+        const columnsIdsArray = Object.keys(map);
+        columnsIdsArray.sort((a, b) => map[a].viewOrder - map[b].viewOrder);
+
+        return [...columnsOrder, ...columnsIdsArray];
     }
 
     buildColumns(fund, ruleSet, fundDataGrid, descItemTypes, rulDataTypes) {
