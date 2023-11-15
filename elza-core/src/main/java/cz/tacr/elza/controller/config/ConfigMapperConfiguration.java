@@ -11,9 +11,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +47,6 @@ import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
@@ -133,7 +130,6 @@ import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrGroup;
@@ -141,7 +137,6 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -463,29 +458,6 @@ public class ConfigMapperConfiguration {
                 .register();
 
         mapperFactory.classMap(RulOutputType.class, RulOutputTypeVO.class).byDefault().field("outputTypeId", "id").register();
-
-        mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class)
-                .byDefault()
-                .field("ruleSetId", "id")
-                .customize(new CustomMapper<RulRuleSet, RulRuleSetVO>() {
-                    @Override
-                    public void mapAtoB(final RulRuleSet rulRuleSet, final RulRuleSetVO rulRuleSetVO, final MappingContext context) {
-                        super.mapAtoB(rulRuleSet, rulRuleSetVO, context);
-                        List<SettingGridView.ItemType> itemTypes = settingsService.getGridView();
-                        if (itemTypes != null) {
-                            List<RulRuleSetVO.GridView> gridViews = new ArrayList<>(itemTypes.size());
-                            for (SettingGridView.ItemType itemType : itemTypes) {
-                                RulRuleSetVO.GridView gridView = new RulRuleSetVO.GridView();
-                                gridView.setCode(itemType.getCode());
-                                gridView.setShowDefault(itemType.getShowDefault());
-                                gridView.setWidth(itemType.getWidth());
-                                gridViews.add(gridView);
-                            }
-                            rulRuleSetVO.setGridViews(gridViews);
-                        }
-                    }
-                })
-                .register();
 
         mapperFactory.classMap(RulPolicyType.class, RulPolicyTypeVO.class).byDefault().field("policyTypeId", "id").register();
         mapperFactory.classMap(RulArrangementExtension.class, RulArrangementExtensionVO.class).byDefault().field("arrangementExtensionId", "id").register();
