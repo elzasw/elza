@@ -73,7 +73,6 @@ import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
@@ -152,7 +151,6 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -1148,16 +1146,6 @@ public class ClientFactoryVO {
             scenarioVO.setGroups(createItemGroupsNew(ruleCode, fundId, scenarioOfNewLevel.getDescItems()));
         }
         return scenarioVO;
-    }
-
-    /**
-     * Vytvořit VO pro seznam rule set.
-     *
-     * @param ruleSets seznam DO
-     * @return seznam VO
-     */
-    public List<RulRuleSetVO> createRuleSetList(final List<RulRuleSet> ruleSets) {
-        return createList(ruleSets, RulRuleSetVO.class, null);
     }
 
     /**
