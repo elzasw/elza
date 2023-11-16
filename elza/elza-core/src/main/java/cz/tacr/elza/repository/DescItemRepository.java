@@ -47,10 +47,12 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data JOIN FETCH i.node n WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
-
 	//TODO: Consider to remove this method
     @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.deleteChange IS NULL") // exclude LEFT JOIN FETCH i.data
+    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
 	/*static final String FETCH_NODES_WITH_DATA = "SELECT i, d, dp, par FROM arr_desc_item i"
 	        + " LEFT JOIN FETCH i.data d"
@@ -255,8 +257,11 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @param node
      * @return
      */
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data=d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
     List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data = d WHERE d.arrNode IN :nodes AND i.deleteChange IS NULL)")
+    List<ArrDescItem> findByUriDataNodes(@Param("nodes") final Collection<ArrNode> nodes);
 
     /**
      * Získání platných itemů mezi pozicema.
