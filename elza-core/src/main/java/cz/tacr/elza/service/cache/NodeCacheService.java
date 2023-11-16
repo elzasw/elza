@@ -256,6 +256,27 @@ public class NodeCacheService {
     }
 
     /**
+     * Získání sestavených cachovaných JP.
+     *
+     * @param nodes
+     * @return seznam JP
+     */
+    @Transactional(value = TxType.MANDATORY)
+    public Collection<RestoredNode> getRestoredNodes(final Collection<ArrNode> nodes) {
+        readLock.lock();
+        try {
+            logger.trace("getNodes(nodes: {})", nodes);
+            Collection<RestoredNode> nodesInternal = getCachedNodesInternal(nodes);
+            return nodesInternal;
+        } catch (Exception e) {
+            logger.error("Failed to read nodes: {}", nodes, e);
+            throw e;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
      * Uložení záznamů.
      *
      * @param cachedNodes
@@ -613,6 +634,30 @@ public class NodeCacheService {
 			result.put(cachedNode.getNodeId(), restoredNode);
         }
         reloadCachedNodes(result.values());
+        return result;
+    }
+
+    /**
+     * Získání sestavených cachovaných JP.
+     *
+     * @param nodeIds identifikátory JP
+     * @return seznam JP
+     */
+    private Collection<RestoredNode> getCachedNodesInternal(final Collection<ArrNode> nodes) {
+        List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIn(nodes);
+        if (cachedNodes.size() != nodes.size()) {
+            Collection<Integer> cachedNodeIds = cachedNodes.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
+            Collection<Integer> missingNodeIds = new ArrayList<>();
+            nodes.forEach(i -> {
+                if (!cachedNodeIds.contains(i.getNodeId())) {
+                    missingNodeIds.add(i.getNodeId());
+                }
+            });
+            throw new SystemException("Missing nodes data in cache").set("missingNodeIds", missingNodeIds);
+        }
+        Collection<RestoredNode> result = new ArrayList<>(cachedNodes.size());
+        cachedNodes.forEach(i -> result.add(deserialize(i)));
+        reloadCachedNodes(result);
         return result;
     }
 

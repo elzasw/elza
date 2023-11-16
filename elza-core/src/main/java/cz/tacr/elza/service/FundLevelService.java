@@ -21,12 +21,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -67,6 +70,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 public class FundLevelService {
+
+    private Logger logger = LoggerFactory.getLogger(FundLevelService.class);
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -443,6 +448,87 @@ public class FundLevelService {
     }
 
     /**
+     * Odstranění všech úrovní z rodičovské úrovně
+     * 
+     * @param fundVersion
+     * @param deleteLevel
+     *              nejvyšší úroveň, kterou odstraníme
+     * @param deleteChange
+     *              záznam o provedených změnách
+     * @param deleteLevelsWithAttachedDao
+     *              povolit nebo zakázat mazání úrovně s objektem dao
+     * @return List of modified levels
+     */
+    private List<ArrLevel> deleteLevel(final ArrFundVersion fundVersion, 
+                                             final ArrLevel deleteLevel, final ArrChange deleteChange,
+                                             boolean deleteLevelsWithAttachedDao) {
+        // check if node is part of fund
+        Validate.isTrue(deleteLevel.getNode().getFundId().equals(fundVersion.getFundId()), "Node is not part of same fund");
+        logger.debug("Starting delete of Level, levelId={}...", deleteLevel.getLevelId());
+
+        // prepare list of sublevels + deleteLevel
+        List<ArrLevel> deleteLevels = levelRepository.findLevelsByDirection(deleteLevel, fundVersion, RelatedNodeDirection.DESCENDANTS);
+        deleteLevels.add(deleteLevel);
+        logger.debug("Found {} levels to delete...", deleteLevels.size());
+
+        // prepare list of nodes
+        Collection<ArrNode> updateNodes = deleteLevels.stream().map(i -> i.getNode()).collect(Collectors.toList());
+        logger.debug("Have {} nodes to delete...", updateNodes.size());
+
+        ObjectListIterator.forEachPage(updateNodes, nodes -> {
+            // check if connected Dao(type = Level) exists
+            if (!deleteLevelsWithAttachedDao) {
+                if (daoRepository.existsDaoByNodesAndDaoTypeIsLevel(nodes)) { 
+                    throw new SystemException("Uzly, které mají být odstraněny má připojený objekt(y) dao typu LEVEL");
+                }
+                logger.debug("Checking if connected Dao(type = Level) exists...");
+            }
+
+            // delete levels
+            Collection<ArrDescItem> deleteItems = descItemRepository.findByNodesAndDeleteChangeIsNull(nodes);
+            deleteItems.forEach(i -> i.setDeleteChange(deleteChange));
+            descItemRepository.saveAll(deleteItems);
+            logger.debug("Deleted {} items of ArrDescItem...", deleteItems.size());
+
+            // delete daoLink by nodes
+            daoService.deleteDaoLinkByNodes(fundVersion, deleteChange, nodes);
+            logger.debug("Deleted daoLink by {} nodes...", nodes.size());
+
+            // vyhledani node, ktere odkazuji na mazany
+            List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNodes(nodes);
+
+            arrDescItemList = arrDescItemList.stream().map(i -> {
+                entityManager.detach(i);
+                return (ArrDescItem) HibernateUtils.unproxy(i);
+            }).collect(Collectors.toList());
+
+            for (ArrDescItem arrDescItem : arrDescItemList) {
+                // pokud se item bude mazat, není potřeba u něj předělávat UriRef
+                if (!deleteLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
+                    ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                    arrDataUriRef.setDataId(null);
+                    arrDataUriRef.setArrNode(null);
+                    arrDataUriRef.setDeletingProcess(true);
+                    arrDescItem.setData(arrDataUriRef);
+                    descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
+                }
+            }
+            logger.debug("Cleared {} ArrDeskItem with UriRef to deleted nodes...", arrDescItemList.size());
+        });
+
+        // update nodes
+        updateNodes.forEach(i -> i.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime()));
+        nodeRepository.saveAll(updateNodes);
+        logger.debug("Updated {} nodes...", updateNodes.size());
+
+        // delete levels
+        deleteLevels.forEach(i -> i.setDeleteChange(deleteChange));
+        logger.debug("Deleting {} levels...", deleteLevels.size());
+
+        return deleteLevels;
+    }
+
+    /**
      * Kaskádově smaže všechny levely od počátečního
      * 
      * @param fundVersion
@@ -457,6 +543,7 @@ public class FundLevelService {
      *            povolit nebo zakázat mazání úrovně s objektem dao
      * @return List of modified levels
      */
+    @Deprecated
     private List<ArrLevel> deleteLevelCascade(final ArrFundVersion fundVersion,
                                        final ArrLevel baselevel, final ArrChange deleteChange,
                                        final List<ArrLevel> allDeletedLevels,
@@ -484,7 +571,7 @@ public class FundLevelService {
             descItemRepository.save(descItem);
         }
 
-        daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
+        daoService.deleteDaoLinkByNodes(fundVersion, deleteChange, Collections.singletonList(node));
 
         // vyhledani node, ktere odkazuji na mazany
         List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
@@ -496,8 +583,7 @@ public class FundLevelService {
 
         for (ArrDescItem arrDescItem : arrDescItemList) {
             //pokud se item bude mazat, není potřeba u něj předělávat UriRef
-            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem
-                    .getNodeId()))) {
+            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
                 ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
                 arrDataUriRef.setDataId(null);
                 arrDataUriRef.setArrNode(null);
@@ -550,22 +636,22 @@ public class FundLevelService {
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                                    NodeTypeOperation.DELETE_NODE, null, null, null);
 
+        // drop nodeInfo for deleted levels
+        Set<Integer> nodeIdsToRevalidate = new HashSet<>();
+        nodeIdsToRevalidate.add(deleteNode.getNodeId());
+
         List<ArrLevel> updatedLevels = new ArrayList<>();
         List<ArrLevel> shiftnodes = nodesToShift(deleteLevel);
-        // Prepare list of sublevels
-        List<ArrLevel> allSubLevels = levelRepository.findLevelsByDirection(deleteLevel, version,
-                                                                            RelatedNodeDirection.DESCENDANTS);
-        updatedLevels.addAll(deleteLevelCascade(version, deleteLevel, change,
-                                                allSubLevels, deleteLevelsWithAttachedDao));
+        updatedLevels.addAll(deleteLevel(version, deleteLevel, change, deleteLevelsWithAttachedDao));
+        updatedLevels.forEach(l -> nodeIdsToRevalidate.add(l.getNodeId()));
+        logger.debug("Deleted {} levels.", updatedLevels.size());
+
         updatedLevels.addAll(shiftNodes(shiftnodes, change, deleteLevel.getPosition()));
 
         levelRepository.saveAll(updatedLevels);
         levelRepository.flush();
-
-        // drop nodeInfo for deleted levels
-        Set<Integer> nodeIdsToRevalidate = new HashSet<>();
-        nodeIdsToRevalidate.add(deleteNode.getNodeId());
-        allSubLevels.forEach(l -> nodeIdsToRevalidate.add(l.getNodeId()));
+        logger.debug("Update {} levels.", updatedLevels.size());
+        
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
@@ -582,6 +668,7 @@ public class FundLevelService {
         return levelRepository.getOne(deleteLevel.getLevelId());
     }
 
+   
     /**
      * Provede posunutí pozice uzlů. Až narazí na uzel, přes/za který mají být vloženy přesouvané uzly, přesune je a
      * pokračuje s dalšími.
@@ -1165,11 +1252,12 @@ public class FundLevelService {
 
         List<ArrLevel> updatedLevels = new ArrayList<>();
 
-        for (ArrLevel node : nodesToShiftList) {
-            ArrLevel newNode = createNewLevelVersion(node, change);
+        for (ArrLevel level : nodesToShiftList) {
+            ArrLevel newNode = createNewLevelVersion(level, change);
             newNode.setPosition(position--);
             updatedLevels.add(newNode);
         }
+        logger.debug("Shifted {} levels.", nodesToShiftList.size());
 
         return updatedLevels;
     }
