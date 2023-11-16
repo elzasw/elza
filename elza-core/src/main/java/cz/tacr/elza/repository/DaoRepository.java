@@ -41,6 +41,11 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
            + " WHERE l.nodeId = :nodeId AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
     boolean existsDaoByNodeAndDaoTypeIsLevel(@Param("nodeId") Integer nodeId);
 
+    @Query("SELECT COUNT(d) > 0 FROM arr_dao d"
+            + " JOIN arr_dao_link l ON l.daoId = d.daoId"
+            + " WHERE l.node IN :nodes AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
+    boolean existsDaoByNodesAndDaoTypeIsLevel(@Param("nodes") Collection<ArrNode> nodes);
+
     ArrDao findOneByCode(String code);
 
     @Query("SELECT d FROM arr_dao d WHERE d.daoPackage = :daoPackage")

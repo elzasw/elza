@@ -70,7 +70,7 @@ public class ArrangementWebsocketController {
     @Autowired
     private ItemTypeRepository itemTypeRepository;
     @Autowired
-    private FundLevelService moveLevelService;
+    private FundLevelService fundLevelService;
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
@@ -166,7 +166,7 @@ public class ArrangementWebsocketController {
             descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
-        List<ArrLevel> newLevels = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
+        List<ArrLevel> newLevels = fundLevelService.addNewLevel(version, staticNode, staticParentNode,
                                                          addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                                                          descItemCopyTypes, null, addLevelParam.getCount(), null);
         List<ArrNodeVO> nodes = new ArrayList<>(newLevels.size());
@@ -215,7 +215,7 @@ public class ArrangementWebsocketController {
         ArrFundVersion version = fundVersionRepository.findById(nodeParam.getVersionId())
                 .orElseThrow(version(nodeParam.getVersionId()));
 
-        ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent, false);
+        ArrLevel deleteLevel = fundLevelService.deleteLevel(version, deleteNode, deleteParent, false);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
@@ -223,7 +223,7 @@ public class ArrangementWebsocketController {
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
-        // Odeslání dat zpět
+        // odeslání dat zpět
 		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 }

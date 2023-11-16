@@ -80,7 +80,6 @@ public interface LevelRepositoryCustom {
      */
     Integer countChildsByParent(ArrNode node, @Nullable ArrChange lockChange);
 
-
     /**
      * Najde všechny uzly v daném směru prohledávání.
      *
@@ -89,8 +88,7 @@ public interface LevelRepositoryCustom {
      * @param direction směr, kterým prohledáváme strom
      * @return všechny uzly v daném směru prohledávání
      */
-    List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFundVersion version,
-                                         RelatedNodeDirection direction);
+    List<ArrLevel> findLevelsByDirection(ArrLevel level, ArrFundVersion version, RelatedNodeDirection direction);
 
     /**
      * Vyhledá potomky, které mají vyšší datum poslední změny. Specified node included.
