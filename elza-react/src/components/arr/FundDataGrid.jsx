@@ -178,9 +178,18 @@ class FundDataGrid extends AbstractReactComponent {
                 Object.keys(fundDataGrid.columnInfos).length === 0
             ) {
                 const initData = { visibleColumns: [], columnInfos: [] };
+                const initData2 = { visibleColumns: [], columnInfos: {} };
                 const ruleMap = getMapFromList(ruleSet.items);
                 const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
+                    rule.gridViews.map(({ id, width, showDefault }) => {
+                        if (showDefault) {
+                            initData2.visibleColumns.push(id);
+                        }
+                        if (width) {
+                            initData2.columnInfos[id] = { width };
+                        }
+                    })
                     const gwMap = {}; // mapa kódu item type na GridView
                     rule.gridViews.forEach(gw => {
                         gwMap[gw.code] = gw;
@@ -200,7 +209,8 @@ class FundDataGrid extends AbstractReactComponent {
                         }
                     });
                 }
-                this.props.dispatch(fundDataInitIfNeeded(versionId, initData));
+                console.log("#### init data grid", initData, initData2)
+                this.props.dispatch(fundDataInitIfNeeded(versionId, initData2));
             }
         }
     }
@@ -452,27 +462,22 @@ class FundDataGrid extends AbstractReactComponent {
         return false;
     }
 
-    getColumnsOrder(fundDataGrid, refTypesMap) {
-        // Pořadí sloupečků - musíme brát i variantu, kdy není definované nebo kdy v něm některé atributy chybí
-        var columnsOrder = [];
-        var map = { ...refTypesMap };
-        fundDataGrid.columnsOrder.forEach(id => {
-            delete map[id];
-            columnsOrder.push(id);
-        });
-
-        const columnsIdsArray = Object.keys(map);
-        columnsIdsArray.sort((a, b) => map[a].viewOrder - map[b].viewOrder);
-
-        return [...columnsOrder, ...columnsIdsArray];
+    getColumnsOrder(prevColumnsOrder = [], gridViews = []) {
+        // If prev columns order exists, use it, otherwise use default gridViews
+        if(prevColumnsOrder.length > 0){
+            return prevColumnsOrder;
+        }
+        return gridViews.map(({id}) => id.toString());
     }
 
     buildColumns(fund, ruleSet, fundDataGrid, descItemTypes, rulDataTypes) {
-        const refTypesMap = getMapFromList(descItemTypes.items);
+        const refTypesMap = descItemTypes.itemsMap;
         const dataTypesMap = getMapFromList(rulDataTypes.items);
-        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap);
+        const {gridViews} = getMapFromList(ruleSet.items)[fund.activeVersion.ruleSetId];
 
-        var cols = [];
+        const columnsOrder = this.getColumnsOrder(fundDataGrid.columnsOrder, gridViews);
+
+        let cols = [];
 
         // Sloupec s číslem JP
         const refMarkColInfo = fundDataGrid.columnInfos[COL_REFERENCE_MARK];
@@ -489,15 +494,6 @@ class FundDataGrid extends AbstractReactComponent {
             cellRenderer: this.referenceMarkCellRenderer,
         });
 
-        // Vybrané sloupce
-        const ruleMap = getMapFromList(ruleSet.items);
-        const rule = ruleMap[fund.activeVersion.ruleSetId];
-        const gwMap = {}; // mapa kódu item type na GridView
-        if (rule.gridViews) {
-            rule.gridViews.forEach(gw => {
-                gwMap[gw.code] = gw;
-            });
-        }
         columnsOrder.forEach(id => {
             const refType = refTypesMap[id];
             if (fundDataGrid.visibleColumns[id]) {
@@ -508,22 +504,22 @@ class FundDataGrid extends AbstractReactComponent {
                 if (colInfo) {
                     // je již definovaná
                     width = colInfo.width;
-                } else if (gwMap[refType.code] && gwMap[refType.code].width) {
+                } else if (gridViews[id]?.width) {
                     // můžeme použít z pravidel
-                    width = gwMap[refType.code].width;
+                    width = gridViews[id].width;
                 } else {
                     // dáme implicitní konstantu, nikde ji nemáme
                     width = COL_DEFAULT_WIDTH;
                 }
 
                 const col = {
-                    id: refType.id,
-                    refType: refType,
+                    id,
+                    refType,
                     dataType: dataTypesMap[refType.dataTypeId],
                     title: refType.shortcut,
                     desc: refType.name,
-                    width: width,
-                    dataName: refType.id,
+                    width,
+                    dataName: id,
                     headerColRenderer: this.headerColRenderer,
                     cellRenderer: this.cellRenderer,
                 };
@@ -557,32 +553,24 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleColumnSettings() {
-        const { fundDataGrid, descItemTypes, fund, ruleSet } = this.props;
+        const { fundDataGrid: {columnsOrder, visibleColumns}, descItemTypes, fund, ruleSet } = this.props;
+        const refTypesMap = descItemTypes.itemsMap;
+        const { gridViews } = getMapFromList(ruleSet.items)[fund.activeVersion.ruleSetId];
 
-        var ruleMap = getMapFromList(ruleSet.items);
-        var rule = ruleMap[fund.activeVersion.ruleSetId];
+        const selectedColumnsIds = this.getColumnsOrder(columnsOrder, gridViews);
 
-        let itemTypes = [];
-        descItemTypes.items.forEach(item => {
-            itemTypes.push(item);
+        const selectedColumns = selectedColumnsIds.map((id) => {
+            const { name, description, code} = refTypesMap[id];
+            return { id, name, desc: description, code };
         });
 
-        const refTypesMap = getMapFromList(itemTypes);
-        const columnsOrder = this.getColumnsOrder(fundDataGrid, refTypesMap);
-        const visibleColumns = fundDataGrid.visibleColumns;
-
-        const columns = columnsOrder.map(id => {
-            const refType = refTypesMap[id];
-            return {
-                id: refType.id,
-                name: refType.name,
-                desc: refType.description,
-                code: refType.code,
-            };
+        const unselectedColumns = descItemTypes.items
+        .filter(({id}) => !selectedColumns.find(({id: _id}) => _id.toString() === id.toString()))
+        .map(({ id, name, description, code}) => {
+            return { id, name, desc: description, code };
         });
 
-
-        WebApi.getItemTypeCodesByRuleSet(rule.id).then(items => {
+        WebApi.getItemTypeCodesByRuleSet(fund.activeVersion.ruleSetId).then(items => {
             // this.setState({itemTypeCodes: items});
             // const {itemTypeCodes} = items;
             this.props.dispatch(
@@ -591,7 +579,7 @@ class FundDataGrid extends AbstractReactComponent {
                     i18n('arr.fund.columnSettings.title'),
                     <DataGridColumnsSettings
                         onSubmitForm={this.handleChangeColumnsSettings}
-                        columns={columns}
+                        columns={[...selectedColumns, ...unselectedColumns]}
                         visibleColumns={visibleColumns}
                         itemTypeCodes={items}
                     />,

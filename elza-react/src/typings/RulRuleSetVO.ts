@@ -7,7 +7,12 @@ export interface GridView {
     /**
      * Kód atributu.
      */
-    code: string;
+    // code: string;
+
+    /**
+     * id atributu.
+     */
+    id: number;
 
     /**
      * Zobrazit ve výchozím zobrazení?
