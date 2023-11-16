@@ -296,17 +296,18 @@ public class DaoService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, 
-    		ArrChange deleteChange, final ArrNode node) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(Collections.singletonList(node
-                .getNodeId()));
+    public List<ArrDaoLink> deleteDaoLinkByNodes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                                 ArrChange deleteChange, final Collection<ArrNode> nodes) {
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodesAndFetchNodeAndDao(nodes);
+        Set<ArrNode> clearNodes = new HashSet<>();
         for (ArrDaoLink daoLink : daoLinks) {
             ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, deleteChange, daoLink, true);
-            if(deleteChange==null) {
+            if (deleteChange == null) {
             	deleteChange = savedDaoLink.getDeleteChange();
             }
+            clearNodes.add(daoLink.getNode());
         }
-        arrangementCacheService.clearDaoLinks(node.getNodeId());
+        arrangementCacheService.clearDaoLinks(clearNodes);
         return daoLinks;
     }
 
@@ -320,7 +321,7 @@ public class DaoService {
         }
 
         // rozpojit připojení - vytvořit změnu a nastavit na link
-        if(deleteChange==null) {
+        if (deleteChange == null) {
         	deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
         }
         daoLink.setDeleteChange(deleteChange);
