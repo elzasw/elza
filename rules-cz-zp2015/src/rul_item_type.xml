@@ -880,10 +880,11 @@
     </item-type>
 
     <!-- Rozměry -->
+    <!-- Prvek Šířka / Průměr přejmenován na PP Šířka od Elza 2.8.8, viz PP Jiné rozměry -->
     <item-type code="ZP2015_SIZE_WIDTH" data-type="DECIMAL">
-        <name>Šířka / Průměr</name>
-        <shortcut>Šířka / Průměr</shortcut>
-        <description>ZP5.2.4 Šířka / Průměr</description>
+        <name>Šířka</name>
+        <shortcut>Šířka</shortcut>
+        <description>ZP5.2.4 Šířka</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
