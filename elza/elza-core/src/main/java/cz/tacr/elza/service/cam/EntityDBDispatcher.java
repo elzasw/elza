@@ -439,7 +439,7 @@ public class EntityDBDispatcher {
             stateNew = accessPointService.copyState(state, procCtx.getApChange());
             if (deletedEntity && syncQueue) {
                 // retain deleted state
-                stateNew.setDeleteChange(stateNew.getCreateChange());
+                stateNew.setDeleteChange(state.getDeleteChange());
             }
             stateNew.setApType(apType);
             state = stateRepository.save(stateNew);
