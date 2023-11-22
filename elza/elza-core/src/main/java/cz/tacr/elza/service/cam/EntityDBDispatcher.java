@@ -432,14 +432,14 @@ public class EntityDBDispatcher {
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             //změna třídy entity
-            if(!deletedEntity) {
+            if (!deletedEntity) {
                 state.setDeleteChange(procCtx.getApChange());
                 state = stateRepository.save(state);
             }
             stateNew = accessPointService.copyState(state, procCtx.getApChange());
-            if(deletedEntity&&syncQueue) {
+            if (deletedEntity && syncQueue) {
                 // retain deleted state
-                stateNew.setDeleteChange(state.getDeleteChange());
+                stateNew.setDeleteChange(stateNew.getCreateChange());
             }
             stateNew.setApType(apType);
             state = stateRepository.save(stateNew);
