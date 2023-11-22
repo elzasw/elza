@@ -5,6 +5,8 @@ import cz.tacr.elza.drools.model.ItemSpec
 import cz.tacr.elza.drools.model.RequiredType;
 import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.item.CoordinatesItem;
+import cz.tacr.elza.drools.model.item.CoordType;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
@@ -169,4 +171,16 @@ rule "R_NAM_004 Kontrola hodnoty odlišujícího doplňku na kladné celé čís
 when $i: IntItem(value < 1, type in ("NM_SUP_DIFF"))
 then
     results.addError("Hodnota odlišujícího doplňku musí být kladné celé číslo > 0.");
+end
+
+/*
+Pravidla pro prvky popisu se souřadnicemi
+*/
+
+rule "R_BOD_003 Prvek popisu Definiční bod (souřadnice) vyjadřuje pozici entity právě jedním bodem."
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_BODY) from $ae.Parts
+     CoordinatesItem(type == "COORD_POINT", coordType != CoordType.POINT) from $part.items
+then
+    results.addError("Prvek popisu Definiční bod (souřadnice) vyjadřuje pozici entity právě jedním bodem, musí mít typ souřadnic POINT.");
 end
