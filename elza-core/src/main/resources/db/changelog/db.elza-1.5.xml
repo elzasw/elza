@@ -2435,4 +2435,18 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         </addColumn>
     </changeSet>
 
+    <changeSet id="20231122142200" author="sergey.iryupin">
+        <createTable tableName="gis_external_system">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_gis_external_system" nullable="false"/>
+            </column>
+            <column name="type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="gis_external_system"
+                                 constraintName="fk_gis_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+    </changeSet>
+
 </databaseChangeLog>
