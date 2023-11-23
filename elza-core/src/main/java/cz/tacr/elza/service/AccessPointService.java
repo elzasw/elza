@@ -1887,7 +1887,7 @@ public class AccessPointService {
      */
     public ApScope getApScope(SysExternalSystemVO extSystem) {
         if (extSystem instanceof ApExternalSystemVO) {
-            return getApScope(((ApExternalSystemVO)extSystem).getScope());
+            return getApScope(((ApExternalSystemVO)extSystem).getScopeId());
         }
         return null;
     }
