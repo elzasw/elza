@@ -1452,6 +1452,7 @@ var messages = {
     "admin.extSystem.gis-edit": "editace (FRAME_API_EDIT)",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
+
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",
     "admin.bulk.header.title.BULK": "Hromadné akce",
