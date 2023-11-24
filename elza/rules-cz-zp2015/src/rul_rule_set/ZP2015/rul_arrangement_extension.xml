@@ -14,4 +14,7 @@
   <arrangement-extension code="ZP2015_Katalogizace">
     <name>Katalogizační záznamy</name>
   </arrangement-extension>
+  <arrangement-extension code="ZP2015_DilciListy">
+    <name>Dílčí listy NAD</name>
+  </arrangement-extension>
 </arrangement-extensions>
