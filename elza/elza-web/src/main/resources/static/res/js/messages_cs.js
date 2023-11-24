@@ -1448,8 +1448,8 @@ var messages = {
     "admin.extSystem.cam": "CAM",
     "admin.extSystem.cam-uuid": "CAM - UUID",
     "admin.extSystem.cam-complete": "CAM - Kompletní",
-    "admin.extSystem.gis-view": "zobrazení (FRAME_API_VIEW)",
-    "admin.extSystem.gis-edit": "editace (FRAME_API_EDIT)",
+    "admin.extSystem.gis-view": "Zobrazení",
+    "admin.extSystem.gis-edit": "Editace",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
 
