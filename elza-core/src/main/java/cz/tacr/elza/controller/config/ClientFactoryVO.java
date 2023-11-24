@@ -65,6 +65,7 @@ import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -141,6 +142,7 @@ import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulExportFilter;
@@ -2005,6 +2007,9 @@ public class ClientFactoryVO {
         // AP external system is newly created through factory without mapper
         if (extSystem instanceof ApExternalSystem) {
             return ApExternalSystemVO.newInstance((ApExternalSystem) extSystem);
+        }
+        if (extSystem instanceof GisExternalSystem) {
+            return GisExternalSystemVO.newInstance((GisExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemVO.class);
     }
