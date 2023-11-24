@@ -12,27 +12,27 @@ import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
 import {JAVA_ATTR_CLASS, GisSystemType} from '../../constants';
 import {WebApi} from 'actions/index.jsx';
 
-const EXT_SYSTEM_CLASS = {
+export const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
 };
 
-const EXT_SYSTEM_CLASS_LABEL = {
+export const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
 };
 
-const AP_EXT_SYSTEM_LABEL = {
+export const AP_EXT_SYSTEM_LABEL = {
     [AP_EXT_SYSTEM_TYPE.CAM]: i18n('admin.extSystem.cam'),
     [AP_EXT_SYSTEM_TYPE.CAM_UUID]: i18n('admin.extSystem.cam-uuid'),
     [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: i18n('admin.extSystem.cam-complete'),
 };
 
-const GIS_SYSTEM_TYPE_LABEL = {
+export const GIS_SYSTEM_TYPE_LABEL = {
     [GisSystemType.FrameApiView]: i18n('admin.extSystem.gis-view'),
     [GisSystemType.FrameApiEdit]: i18n('admin.extSystem.gis-edit'),
 }
