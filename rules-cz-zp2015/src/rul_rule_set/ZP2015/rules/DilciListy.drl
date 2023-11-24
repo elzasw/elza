@@ -1,0 +1,26 @@
+package MZA.ItemOrder;
+
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.StructObjItem;
+
+//----------------------------------------------
+// Dílčí listy
+//----------------------------------------------
+
+rule "Dílčí listy NAD"
+no-loop
+when
+    $activeLevel : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )    
+    DescItem(type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_ROOT") from $parentDescItems
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")     
+    $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_SECTION") from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
