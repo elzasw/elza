@@ -9,19 +9,21 @@ import AbstractReactComponent from '../AbstractReactComponent';
 import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
 import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
-import {JAVA_ATTR_CLASS} from '../../constants';
+import {JAVA_ATTR_CLASS, GisSystemType} from '../../constants';
 import {WebApi} from 'actions/index.jsx';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
+    GisExternalSystem: '.GisExternalSystemVO',
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
+    [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
 };
 
 const AP_EXT_SYSTEM_LABEL = {
@@ -30,11 +32,17 @@ const AP_EXT_SYSTEM_LABEL = {
     [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: i18n('admin.extSystem.cam-complete'),
 };
 
+const GIS_SYSTEM_TYPE_LABEL = {
+    [GisSystemType.FrameApiView]: i18n('admin.extSystem.gis-view'),
+    [GisSystemType.FrameApiEdit]: i18n('admin.extSystem.gis-edit'),
+}
+
 const FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'publishOnlyApproved', 'userInfo'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
+    [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue'],
 };
 
 const REQUIRED_FIELDS = {
@@ -42,12 +50,14 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
+    [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
     static fields = [
         ...FIELDS.abstractExtSystem,
         ...FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem],
+        ...FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
     ];
@@ -75,6 +85,8 @@ class ExtSystemForm extends AbstractReactComponent {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]);
         } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
+        } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
@@ -151,6 +163,24 @@ class ExtSystemForm extends AbstractReactComponent {
                             </Field>
                         </div>
                     )}
+                    {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
+                        <div>
+                            <Field
+                                name="type"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.type')}
+                                disabled={isUpdate}
+                            >
+                                <option key={null} />
+                                {Object.values(GisSystemType).map((i, index) => (
+                                    <option key={index} value={i}>
+                                        {GIS_SYSTEM_TYPE_LABEL[i]}
+                                    </option>
+                                ))}
+                            </Field>
+                        </div>
+                    )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
                             <Field
@@ -197,8 +227,9 @@ class ExtSystemForm extends AbstractReactComponent {
                     />
                     <Field name="name" type="text" component={FormInputField} label={i18n('admin.extSystem.name')} />
                     <Field name="url" type="text" component={FormInputField} label={i18n('admin.extSystem.url')} />
-                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
-                        <>
+                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem
+                        && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
+                        && (<>
                             <Field
                                 name="username"
                                 type="text"
@@ -211,9 +242,11 @@ class ExtSystemForm extends AbstractReactComponent {
                                 component={FormInputField}
                                 label={i18n('admin.extSystem.password')}
                             />
-                        </>
-                    )}
-                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
+                        </>)}
+                    {
+                        classJ !== EXT_SYSTEM_CLASS.ApExternalSystem
+                        && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
+                        && (
                         <Field
                             name="elzaCode"
                             type="text"
@@ -221,25 +254,31 @@ class ExtSystemForm extends AbstractReactComponent {
                             label={i18n('admin.extSystem.elzaCode')}
                         />
                     )}
+                    {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem
+                        || classJ === EXT_SYSTEM_CLASS.GisExternalSystem)
+                        && (
+                            <>
+                                <Field
+                                    name="apiKeyId"
+                                    type="text"
+                                    component={FormInputField}
+                                    label={i18n('admin.extSystem.apiKeyId')}
+                                />
+                                <Field
+                                    name="apiKeyValue"
+                                    type="text"
+                                    component={FormInputField}
+                                    label={i18n('admin.extSystem.apiKeyValue')}
+                                />
+                            </>
+                        )}
                     {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
                         <>
-                    <Field
-                        name="apiKeyId"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.apiKeyId')}
-                    />
-                    <Field
-                        name="apiKeyValue"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.apiKeyValue')}
-                    />
                     <div title={i18n('admin.extSystem.userInfo.title')}>
                         <Field
-                            name="userInfo" 
-                            type="text" 
-                            component={FormInputField} 
+                            name="userInfo"
+                            type="text"
+                            component={FormInputField}
                             label={i18n('admin.extSystem.userInfo')}
                         />
                     </div>
