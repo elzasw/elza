@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.api.GisSystemType;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -21,6 +22,27 @@ public class GisExternalSystemVO extends SysExternalSystemVO {
 
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
-        return null;
+        GisExternalSystem entity = new GisExternalSystem();
+        entity.setType(type);
+        this.fillEntity(entity);
+        return entity;
+    }
+
+    /**
+     * Creates value object from AP external system.
+     */
+    public static GisExternalSystemVO newInstance(GisExternalSystem src) {
+        GisExternalSystemVO vo = new GisExternalSystemVO();
+        vo.setCode(src.getCode());
+        vo.setElzaCode(src.getElzaCode());
+        vo.setId(src.getExternalSystemId());
+        vo.setName(src.getName());
+        vo.setPassword(src.getPassword());
+        vo.setType(src.getType());
+        vo.setUrl(src.getUrl());
+        vo.setUsername(src.getUsername());
+        vo.setApiKeyId(src.getApiKeyId());
+        vo.setApiKeyValue(src.getApiKeyValue());
+        return vo;
     }
 }
