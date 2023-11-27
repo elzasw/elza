@@ -2,16 +2,15 @@ import React from 'react';
 
 import {connect} from 'react-redux';
 import {i18n, Icon, RibbonGroup, Utils} from 'components/shared';
-import {AdminExtSystemDetail, AdminExtSystemList, Ribbon} from 'components/index.jsx';
+import {AdminExtSystemDetail, AdminExtSystemList, Ribbon, ExtSystemForm} from 'components/index.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import {Shortcuts} from 'react-shortcuts';
 import {AREA_EXT_SYSTEM_DETAIL, extSystemCreate, extSystemDelete, extSystemUpdate} from 'actions/admin/extSystem.jsx';
-import {Button} from '../../components/ui';
+import {Button} from 'components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';
 import {storeFromArea} from 'shared/utils';
 import './AdminExtSystemPage.scss';
-import AbstractReactComponent from '../../components/AbstractReactComponent';
+import AbstractReactComponent from 'components/AbstractReactComponent';
 
 import {PropTypes} from 'prop-types';
 import { showConfirmDialog } from 'components/shared/dialog';
@@ -82,7 +81,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
     handleDeleteExtSystem = async () => {
         const {dispatch} = this.props;
         const response = await dispatch(showConfirmDialog(i18n('admin.extSystem.delete.confirm')))
-        response 
+        response
             && this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
 

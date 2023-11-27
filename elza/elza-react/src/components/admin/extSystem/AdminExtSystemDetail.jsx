@@ -5,7 +5,7 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {JAVA_ATTR_CLASS} from '../../constants';
+import {JAVA_ATTR_CLASS} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 import {
     EXT_SYSTEM_CLASS,

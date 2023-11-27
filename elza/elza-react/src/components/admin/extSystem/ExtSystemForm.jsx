@@ -2,14 +2,12 @@ import React from 'react';
 
 import {Field, formValueSelector, reduxForm} from 'redux-form';
 import {Form, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
+import {Button} from 'components/ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import i18n from '../i18n';
-import AbstractReactComponent from '../AbstractReactComponent';
+import {AbstractReactComponent, i18n} from 'components';
 import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
-import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
-import {JAVA_ATTR_CLASS, GisSystemType} from '../../constants';
+import {JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 
 export const EXT_SYSTEM_CLASS = {
