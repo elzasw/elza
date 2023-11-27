@@ -16,7 +16,7 @@ import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemList.scss';
 import AdminExtSystemListItem from './AdminExtSystemListItem';
-import {FOCUS_KEYS} from '../../constants';
+import {FOCUS_KEYS} from '../../../constants';
 
 class AdminExtSystemList extends AbstractReactComponent {
     state = {
