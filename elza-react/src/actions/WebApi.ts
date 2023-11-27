@@ -1874,6 +1874,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/externalSystems');
     }
 
+    getKmlExternalSystems(){
+        return AjaxUtils.ajaxGet(WebApiCls.kmlUrl + '/externalSystems');
+    }
+
     getEidTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/eidTypes');
     }
