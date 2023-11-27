@@ -5,19 +5,22 @@ import { Icon } from 'components';
 import i18n from 'components/i18n';
 import FormInput from 'components/shared/form/FormInput';
 import ReduxFormFieldErrorDecorator from 'components/shared/form/ReduxFormFieldErrorDecorator';
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { Field, useForm, useField } from 'react-final-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import { AppState } from 'typings/store';
+import { AppState, ExternalSystem } from 'typings/store';
 import ImportCoordinateModal from '../../../Detail/coordinate/ImportCoordinateModal';
 import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemCoordinatesVO } from 'api/ApItemCoordinatesVO';
 import { CommonFieldProps } from './types';
 import { wktFromTypeAndData } from 'components/Utils';
+import { MapEditor } from './coordinates/MapEditor';
+import { GisSystemType } from '../../../../../constants';
+import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -35,6 +38,33 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     const field = useField<RevisionItem<ApItemCoordinatesVO>>(`${name}`);
     const {updatedItem, item} = field.input.value;
     const prevValue = item?.value;
+
+    const refDescItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap)
+
+    const geoEditExternalSystems = useSelector((state: AppState) => {
+        return state.app.kmlExtSystemList.rows.filter((extSystem) => {
+            if (extSystem.type === GisSystemType.FrameApiEdit) {
+                return true;
+            }
+        })
+    });
+
+    useEffect(() => {
+        dispatch(kmlExtSystemListFetchIfNeeded());
+    }, [])
+
+    const getAllowedGeometryTypes = () => {
+        const _item = updatedItem || item;
+        if(!_item){return undefined;}
+
+        const allowedGeometryTypes:string[] = [];
+        const refDescItemType = refDescItemTypesMap[_item.typeId];
+        if(refDescItemType.code.toLowerCase().indexOf("point") >= 0){
+            allowedGeometryTypes.push("POINT");
+        }
+        return allowedGeometryTypes;
+    }
+
 
     return <Row>
         <Col>
@@ -93,6 +123,20 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                         })
                     }
 
+                    const handleEditInMap = async () => {
+                        if (geoEditExternalSystems.length === 1) {
+                            const value = await dispatch(editInMapEditor(props.input.value, geoEditExternalSystems[0], getAllowedGeometryTypes()))
+                            form.change(`${name}.updatedItem`, {
+                                ...updatedItem,
+                                changeType: "UPDATED",
+                                value
+                            })
+                        } else {
+                            throw Error("Missing or multiple GIS editing external systems. Has to be exactly one.")
+                        }
+
+                    }
+
                     return <RevisionFieldExample
                         label={label}
                         prevValue={prevValue}
@@ -127,6 +171,15 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                             >
                                 <Icon glyph={'fa-file'} />
                             </Button>
+                            {geoEditExternalSystems.length === 1 && <Button
+                                variant={'action' as any}
+                                className={classNames('side-container-button', 'm-1')}
+                                title={'Upravit v mape'}
+                                onClick={handleEditInMap}
+                            >
+                                <Icon glyph={'fa-map'} />
+                            </Button>
+                            }
                         </div>
                     </RevisionFieldExample>
 
@@ -136,26 +189,45 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     </Row>
 }
 
-const importCoordinateFile = ():ThunkAction<any> =>
-(dispatch) => new Promise((resolve) =>
-    dispatch(
-        modalDialogShow(
+const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeometryTypes?: string[]): ThunkAction<any> =>
+    (dispatch) => new Promise((resolve) => {
+        const handleEditorChange = (value: string) => {
+            resolve(value);
+            dispatch(modalDialogHide());
+        }
+
+        dispatch(modalDialogShow(
             this,
-            i18n('ap.coordinate.import.title'),
-            <ImportCoordinateModal
-                onSubmit={async (formData) => {
-                    try {
-                        const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
-                        console.log(fieldValue);
-                        resolve(fieldValue);
-                    } catch (error) {
-                        console.error(error)
-                    }
-                }}
-                onSubmitSuccess={(result, dispatch) => {
-                    console.log(result);
-                    dispatch(modalDialogHide())
-                }}
-                />
+            "Editor souradnic",
+            <MapEditor
+                geometry={geometry}
+                extSystem={extSystem}
+                onChange={handleEditorChange}
+                allowedGeometryTypes={allowedGeometryTypes}
+            />
         ))
-)
+    })
+
+const importCoordinateFile = (): ThunkAction<any> =>
+    (dispatch) => new Promise((resolve) =>
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.coordinate.import.title'),
+                <ImportCoordinateModal
+                    onSubmit={async (formData) => {
+                        try {
+                            const fieldValue = await WebApi.importApCoordinates(formData.file, formData.format);
+                            console.log(fieldValue);
+                            resolve(fieldValue);
+                        } catch (error) {
+                            console.error(error)
+                        }
+                    }}
+                    onSubmitSuccess={(result, dispatch) => {
+                        console.log(result);
+                        dispatch(modalDialogHide())
+                    }}
+                />
+            ))
+    )
