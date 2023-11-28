@@ -193,6 +193,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 filter: {},
+                serializedFilter: undefined,
                 fetchedFilter: false,
                 isFetchingFilter: false,
             };
@@ -251,8 +252,8 @@ export default function fundDataGrid(state = initialState, action = {}) {
             return {
                 ...state,
                 filter: action.filter,
-                serializedFilter: action.filter 
-                    && Object.keys(action.filter).length > 0 
+                serializedFilter: action.filter
+                    && Object.keys(action.filter).length > 0
                     ? serializeJson(action.filter) : undefined ,
                 fetchedFilter: false,
                 cellFocus: {row: 0, col: 0},
