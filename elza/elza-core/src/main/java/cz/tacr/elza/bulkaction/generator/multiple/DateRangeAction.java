@@ -234,7 +234,8 @@ public class DateRangeAction extends Action {
             fromStoredAsPrior = true;
         } else if (dataNormalizedFrom <= bulkTo.getNormalizedTo()) {
             // store as standard date
-            if (dateMin == null || dateMin.getNormalizedFrom() > dataNormalizedFrom) {
+            if (dateMin == null || dateMin.getNormalizedFrom() > dataNormalizedFrom 
+                    || (Objects.equals(dateMin.getNormalizedFrom(), dataNormalizedFrom) && !unitDate.getValueFromEstimated())) {
                 dateMin = unitDate;
             }
 
@@ -257,7 +258,8 @@ public class DateRangeAction extends Action {
             toStoredAsPrior = true;
         } else if (dataNormalizedTo <= bulkTo.getNormalizedTo()) {
             // standard date
-            if (dateMax == null || dateMax.getNormalizedTo() < dataNormalizedTo) {
+            if (dateMax == null || dateMax.getNormalizedTo() < dataNormalizedTo
+                    || (Objects.equals(dateMax.getNormalizedTo(), dataNormalizedTo) && !unitDate.getValueToEstimated())) {
                 dateMax = unitDate;
             }
             // from cannot be posterior
