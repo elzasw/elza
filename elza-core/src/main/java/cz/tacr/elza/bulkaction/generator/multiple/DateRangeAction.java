@@ -226,9 +226,10 @@ public class DateRangeAction extends Action {
         // check if FROM inside or outside bulk range
         boolean fromStoredAsPrior = false, toStoredAsPrior = false;
         boolean fromStoredAsPosterior = false, toStoredAsPosterior = false;
-        if (dataNormalizedFrom < bulkFrom.getNormalizedFrom()) {
+        if (dataNormalizedFrom <= bulkFrom.getNormalizedFrom()) {
             // store as prior
-            if (datePriorMin == null || datePriorMin.getNormalizedFrom() > dataNormalizedFrom) {
+            if (datePriorMin == null || datePriorMin.getNormalizedFrom() > dataNormalizedFrom
+                    || (Objects.equals(datePriorMin.getNormalizedFrom(), dataNormalizedFrom) && !unitDate.getValueFromEstimated())) {
                 datePriorMin = unitDate;
             }
             fromStoredAsPrior = true;
@@ -267,7 +268,8 @@ public class DateRangeAction extends Action {
 
         } else {
             // dates end behind bulk interval
-            if (datePosteriorMax == null || dataNormalizedTo > datePosteriorMax.getNormalizedTo()) {
+            if (datePosteriorMax == null || dataNormalizedTo > datePosteriorMax.getNormalizedTo()
+                    || (Objects.equals(datePosteriorMax.getNormalizedTo(), dataNormalizedTo) && !unitDate.getValueFromEstimated())) {
                 datePosteriorMax = unitDate;
             }
             toStoredAsPosterior = true;
