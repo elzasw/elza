@@ -74,6 +74,8 @@ public class SealUnitId extends BulkActionDFS {
     protected void init(ArrBulkActionRun bulkActionRun) {
         super.init(bulkActionRun);
 
+        this.multipleItemChangeContext = descriptionItemService.createChangeContext(this.version.getFundVersionId());
+
         // prepare item type
         ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
         Validate.notNull(itemType);
@@ -131,17 +133,12 @@ public class SealUnitId extends BulkActionDFS {
         // find as used value
         ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
         if (fixedValue == null) {
-            // delete old ArrDescItem
-            this.deleteDescItem(descItem);
-
             // create new ArrDescItem
             ArrDescItem newItem = new ArrDescItem(descItem);
             newItem.setItemId(null);
             newItem.setCreateChange(getChange());
-            newItem.setDescItemObjectId(null);
-            newItem.setDeleteChange(null);
             newItem.setReadOnly(true);
-            this.saveDescItem(newItem);
+            newItem = this.saveDescItem(newItem);
 
             // lock if not locked
             fixedValue = new ArrLockedValue();
