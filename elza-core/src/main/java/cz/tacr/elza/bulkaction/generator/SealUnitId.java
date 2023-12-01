@@ -126,16 +126,27 @@ public class SealUnitId extends BulkActionDFS {
             parentUnitId.setLastSibling(stackUnitId);
         }
 
-
         ArrFund fund = runContext.getFund();
 
         // find as used value
         ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
         if (fixedValue == null) {
+            // delete old ArrDescItem
+            this.deleteDescItem(descItem);
+
+            // create new ArrDescItem
+            ArrDescItem newItem = new ArrDescItem(descItem);
+            newItem.setItemId(null);
+            newItem.setCreateChange(getChange());
+            newItem.setDescItemObjectId(null);
+            newItem.setDeleteChange(null);
+            newItem.setReadOnly(true);
+            this.saveDescItem(newItem);
+
             // lock if not locked
             fixedValue = new ArrLockedValue();
             fixedValue.setFund(fund);
-            fixedValue.setItem(descItem);
+            fixedValue.setItem(newItem);
             fixedValue.setCreateChange(getChange());
 
             fixedValue = usedValueRepository.save(fixedValue);
