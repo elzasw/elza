@@ -93,10 +93,10 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     canDeleteRegistry = () => {
-        // We can delete item if has id and data
+        // We can delete item if has id, data and if it is not part of the external system with CAM_COMPLETE type
         const { id, data } = this.props.registryDetail;
-
-        return id && data;
+        const completeExtSystemCode = data?.bindings?.some((binding) => binding.externalSystemCode === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE)
+        return id && data && !completeExtSystemCode;
     };
 
     initData = (props = this.props) => {

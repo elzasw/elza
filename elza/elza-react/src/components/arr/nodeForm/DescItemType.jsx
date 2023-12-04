@@ -1055,6 +1055,7 @@ class DescItemType extends AbstractReactComponent {
 
         const actions = [];
 
+        const isEditable = !(locked || closed || readMode);
         const hasPermission = userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm;
         // Sestavení akcí
         if (hasPermission) {
@@ -1180,8 +1181,14 @@ class DescItemType extends AbstractReactComponent {
             );
         }
 
-        if (hasPermission && !_isValueUndefined) {
-            if (infoType.rep === 1 && !(locked || closed || readMode)) {
+        const canAddItems = !_isValueUndefined || ( !isRepeatableValueWithoutSpec && !isRepeatableEnum);
+
+        if (
+            hasPermission
+                && isEditable
+                && isRepeatable
+                && canAddItems
+        ) {
                 const {onDescItemAdd} = this.props;
                 if (this.props.rulDataType.code === 'COORDINATES') {
                     actions.push(
@@ -1244,7 +1251,6 @@ class DescItemType extends AbstractReactComponent {
                         </NoFocusButton>,
                     );
                 }
-            }
         }
 
 

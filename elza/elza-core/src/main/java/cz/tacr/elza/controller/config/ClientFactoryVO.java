@@ -65,6 +65,7 @@ import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -73,7 +74,6 @@ import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
@@ -142,6 +142,7 @@ import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulExportFilter;
@@ -152,7 +153,6 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -1151,16 +1151,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvořit VO pro seznam rule set.
-     *
-     * @param ruleSets seznam DO
-     * @return seznam VO
-     */
-    public List<RulRuleSetVO> createRuleSetList(final List<RulRuleSet> ruleSets) {
-        return createList(ruleSets, RulRuleSetVO.class, null);
-    }
-
-    /**
      * Vytvořit VO pro seznam institucí.
      *
      * @param institutions seznam DO
@@ -2017,6 +2007,9 @@ public class ClientFactoryVO {
         // AP external system is newly created through factory without mapper
         if (extSystem instanceof ApExternalSystem) {
             return ApExternalSystemVO.newInstance((ApExternalSystem) extSystem);
+        }
+        if (extSystem instanceof GisExternalSystem) {
+            return GisExternalSystemVO.newInstance((GisExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemVO.class);
     }

@@ -30,7 +30,7 @@ rule "R_IDN_009 Použití kódu ISO 3166-2"
 when
     $ae: Ap( )
     $partBody: Part(type == PartType.PT_BODY) from $ae.parts
-    Item(type == "GEO_TYPE", spec in ("GT_ADMREGION","GT_DISTRICT","GT_AUTONOMOUSPART","GT_LAND","GT_AREA","GT_REGION","GT_CANTON","GT_OKRUH","GT_COUNTY","GT_PROVINCE","GT_VOJVODSTVI","GT_DEPARTEMENT","GT_SHIRE","GT_TERRITORIALUNIT")) from $partBody.items
+    Item(type == "GEO_TYPE", spec in ("GT_ADMREGION","GT_DISTRICT","GT_AUTONOMOUSPART","GT_LAND","GT_AREA","GT_REGION","GT_CANTON","GT_OKRUH","GT_COUNTY","GT_PROVINCE","GT_VOJVODSTVI","GT_DEPARTEMENT","GT_SHIRE","GT_TERRITORIALUNIT","GT_MUNIPDISTR")) from $partBody.items
     $it: ItemType(code == "IDN_TYPE")
     $is : ItemSpec(code in ("ISO3166_PART2")) from $it.specs
 then

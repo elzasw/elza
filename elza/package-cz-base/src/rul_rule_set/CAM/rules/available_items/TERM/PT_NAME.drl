@@ -15,7 +15,7 @@ end
 
 rule "R_NAM_002.2 Použití prvků popisu pro označení"
 when $it: ItemType(code == "NM_TYPE")
-     $is : ItemSpec(code in ("NT_ACRONYM","NT_FORMER","NT_TRANSLATED","NT_SINGULAR","NT_PLURAL","NT_TAKEN","NT_INAPPROPRIATE","NT_NARROWER","NT_TERM","NT_INVERTED","NT_HOMONYMUM","NT_FOLK")) from $it.specs
+     $is : ItemSpec(code in ("NT_ACRONYM","NT_FORMER","NT_TRANSLATED","NT_SINGULAR","NT_PLURAL","NT_TAKEN","NT_INAPPROPRIATE","NT_NARROWER","NT_TERM","NT_INVERTED","NT_HOMONYMUM","NT_FOLK", "NT_OTHERRULES")) from $it.specs
 then
     $it.setPossible();
     $is.setPossible();

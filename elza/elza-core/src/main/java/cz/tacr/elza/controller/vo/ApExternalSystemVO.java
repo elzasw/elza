@@ -7,7 +7,6 @@ import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
  * VO pro externí systém.
- *
  */
 public class ApExternalSystemVO extends SysExternalSystemVO {
 
@@ -27,11 +26,21 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         this.type = type;
     }
 
+    @Deprecated
     public Integer getScope() {
         return scopeId;
     }
 
+    public Integer getScopeId() {
+        return scopeId;
+    }
+
+    @Deprecated
     public void setScope(Integer scopeId) {
+        this.scopeId = scopeId;
+    }
+
+    public void setScopeId(Integer scopeId) {
         this.scopeId = scopeId;
     }
     
@@ -73,7 +82,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setName(src.getName());
         vo.setPassword(src.getPassword());
         vo.setType(src.getType());
-        vo.setScope(src.getScopeId());
+        vo.setScopeId(src.getScopeId());
         vo.setUrl(src.getUrl());
         vo.setUsername(src.getUsername());
         vo.setApiKeyId(src.getApiKeyId());

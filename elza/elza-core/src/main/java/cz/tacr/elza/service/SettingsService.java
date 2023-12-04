@@ -329,10 +329,12 @@ public class SettingsService {
      * pořadí, které jedefinováno u atributů.
      * @return seznam kódů
      */
-    public List<SettingGridView.ItemType> getGridView() {
+    public List<SettingGridView.ItemType> getGridView(Integer ruleSetId) {
 
         // načtený globální oblíbených
-        List<UISettings> gridViews = getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(), null);
+        List<UISettings> gridViews = getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(),
+                                                       EntityType.RULE,
+                                                       ruleSetId);
 
         for (UISettings gridView : gridViews) {
             SettingGridView view = SettingGridView.newInstance(gridView);

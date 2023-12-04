@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
+import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
@@ -66,6 +67,7 @@ import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -91,6 +93,9 @@ public class ExternalSystemService {
 
     @Autowired
     private ApExternalSystemRepository apExternalSystemRepository;
+
+    @Autowired
+    private GisExternalSystemRepository gisExternalSystemRepository;
 
     @Autowired
     private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
@@ -130,13 +135,23 @@ public class ExternalSystemService {
     }
 
     /**
-     * Vyhledá všechny externí systémy.
+     * Vyhledá všechny externí systémy pro přistupové body.
      *
      * @return seznam externích systémů
      */
     @Transactional
     public List<ApExternalSystem> findAllApSystem() {
         return apExternalSystemRepository.findAll();
+    }
+
+    /**
+     * Vyhledá všechny externí systémy pro přistupové body.
+     *
+     * @return seznam externích systémů
+     */
+    @Transactional
+    public List<GisExternalSystem> findAllGisSystem() {
+        return gisExternalSystemRepository.findAll();
     }
 
     /**

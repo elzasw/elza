@@ -280,19 +280,41 @@ export interface ApExternalSystemSimpleVO {
     scope?: number | null;
 }
 
+export interface ExternalSystem {
+    "@class": string;
+    id?: number;
+    code?: string;
+    name?: string;
+    type?: string;
+    url?: string;
+    apiKeyId?: string;
+    apiKeyValue?: string;
+    username?: string;
+    password?: string;
+    elzaCode?: string;
+    publishOnlyApproved?: boolean;
+    userInfo?: unknown;
+    viewFileUrl?: string;
+    viewThumbnailUrl?: string;
+    sendNotification?: boolean;
+}
+
+type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;
+
 export interface App {
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;
     arrStructure: unknown;
     extSystemDetail: unknown;
-    extSystemList: unknown;
+    extSystemList: SimpleList<ExternalSystem>;
     issueComments: unknown;
     issueDetail: unknown;
     issueList: unknown;
     issueProtocol: unknown;
     issueProtocols: unknown;
     issueProtocolsConfig: unknown;
+    kmlExtSystemList: SimpleList<KMLExternalSystem>;
     languageList: unknown;
     mimeTypesList: unknown;
     preparedRequestList: unknown;

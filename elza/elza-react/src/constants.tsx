@@ -10,6 +10,11 @@ export enum AP_EXT_SYSTEM_TYPE {
     CAM_COMPLETE = 'CAM_COMPLETE',
 }
 
+export enum GisSystemType {
+    FrameApiView = "FRAME_API_VIEW",
+    FrameApiEdit = "FRAME_API_EDIT"
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',

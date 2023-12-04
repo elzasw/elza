@@ -40,6 +40,9 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
             " AND dl.deleteChange is null")
     List<ArrDaoLink> findByNodeIdsAndFetchDao(@Param(value = "nodeIds") Collection<Integer> nodeIds);
 
+    @Query("SELECT dl FROM arr_dao_link dl JOIN FETCH dl.node node JOIN FETCH dl.dao WHERE node in :nodes AND dl.deleteChange IS NULL")
+    List<ArrDaoLink> findByNodesAndFetchNodeAndDao(@Param(value = "nodes") Collection<ArrNode> nodes);
+
     @Modifying
     void deleteByNode(ArrNode node);
 

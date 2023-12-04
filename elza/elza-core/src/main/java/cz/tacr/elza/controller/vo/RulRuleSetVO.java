@@ -1,17 +1,25 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.RulRuleSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.util.List;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingGridView.ItemType;
 
 
 /**
  * VO pro pravidla s typy výstupů.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 public class RulRuleSetVO {
@@ -26,6 +34,17 @@ public class RulRuleSetVO {
 
     /** Kódy atributů pro zobrazení v gridu hromadných úprav */
     private List<GridView> gridViews;
+
+    public RulRuleSetVO() {
+
+    }
+
+    public RulRuleSetVO(RulRuleSet ruleSet) {
+        this.id = ruleSet.getRuleSetId();
+        this.code = ruleSet.getCode();
+        this.name = ruleSet.getName();
+        this.ruleType = ruleSet.getRuleType();
+    }
 
     public Integer getId() {
         return id;
@@ -85,9 +104,9 @@ public class RulRuleSetVO {
     public static class GridView {
 
         /**
-         * Kód atributu.
+         * ID type
          */
-        private String code;
+        private Integer id;
 
         /**
          * Zobrazit ve výchozím zobrazení?
@@ -99,12 +118,12 @@ public class RulRuleSetVO {
          */
         private Integer width;
 
-        public String getCode() {
-            return code;
+        public Integer getId() {
+            return id;
         }
 
-        public void setCode(final String code) {
-            this.code = code;
+        public void setId(Integer itemTypeId) {
+            this.id = itemTypeId;
         }
 
         public Boolean getShowDefault() {
@@ -123,5 +142,32 @@ public class RulRuleSetVO {
             this.width = width;
         }
 
+        public static GridView newInstance(ItemType gv, StaticDataProvider sdp) {
+            GridView result = new GridView();
+            cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeByCode(gv.getCode());
+            if (itemType == null) {
+                throw new BusinessException("Missing itemType", BaseCode.INVALID_STATE)
+                        .set("code", gv.getCode());
+            }
+            result.setId(itemType.getItemTypeId());
+            result.setShowDefault(gv.getShowDefault());
+            result.setWidth(gv.getWidth());
+            return result;
+        }
+
+    }
+
+    public static RulRuleSetVO newInstance(RuleSet ruleSet,
+                                           List<SettingGridView.ItemType> gridViewItemTypes,
+                                           StaticDataProvider sdp) {
+        RulRuleSetVO result = new RulRuleSetVO(ruleSet.getEntity());
+        if (CollectionUtils.isNotEmpty(gridViewItemTypes)) {
+            List<GridView> gridViews = gridViewItemTypes.stream().map(gv -> GridView.newInstance(gv, sdp))
+                    .collect(Collectors.toList());
+
+            result.setGridViews(gridViews);
+        }
+
+        return result;
     }
 }

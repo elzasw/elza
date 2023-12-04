@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -119,10 +120,10 @@ public class ArrangementCacheService {
      *
      * @param nodeId  identifikátor JP
      */
-    public void clearDaoLinks(final Integer nodeId) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        cachedNode.setDaoLinks(null);
-        nodeCacheService.saveNode(cachedNode, true);
+    public void clearDaoLinks(final Collection<ArrNode> nodes) {
+        Collection<RestoredNode> restoredNodes = nodeCacheService.getRestoredNodes(nodes);
+        restoredNodes.forEach(i -> i.setDaoLinks(null));
+        nodeCacheService.saveNodes(restoredNodes, true);
     }
 
     /**

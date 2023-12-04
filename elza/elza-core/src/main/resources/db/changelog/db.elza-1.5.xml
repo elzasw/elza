@@ -2435,4 +2435,24 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         </addColumn>
     </changeSet>
 
+    <changeSet id="20231122142200" author="sergey.iryupin">
+        <createTable tableName="gis_external_system">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_gis_external_system" nullable="false"/>
+            </column>
+            <column name="type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="gis_external_system"
+                                 constraintName="fk_gis_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+    </changeSet>
+
+    <changeSet id="20231201132000" author="sergey.iryupin">
+    	<sql dbms="postgresql">UPDATE arr_item SET read_only = true WHERE item_id IN (SELECT lv.item_id FROM arr_locked_value lv)</sql>
+        <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN
+        	(SELECT di.node_id FROM arr_desc_item di JOIN arr_locked_value lv ON lv.item_id = di.item_id)</sql>
+	</changeSet>
+
 </databaseChangeLog>
