@@ -48,7 +48,7 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
-    [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
+    [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
