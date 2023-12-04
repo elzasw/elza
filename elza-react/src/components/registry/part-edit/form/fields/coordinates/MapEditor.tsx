@@ -4,11 +4,13 @@ import { useThunkDispatch } from 'utils/hooks';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { ExternalSystem } from 'typings/store';
 import { Button } from 'components/ui';
+import { ModalDialogWrapper } from 'components/shared';
 
 export interface Props {
     geometry: string;
     extSystem: ExternalSystem;
     onChange?: (geometry: string) => void;
+    onClose?: () => void;
     allowedGeometryTypes?: string[];
 }
 
@@ -16,6 +18,7 @@ export const MapEditor = ({
     geometry,
     extSystem,
     onChange = () => console.warn("'onChange' not defined"),
+    onClose = () => console.warn("'onClose' not defined"),
     allowedGeometryTypes,
 }: Props) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -72,7 +75,7 @@ export const MapEditor = ({
     }
 
     return <>
-        <Modal.Body>
+        <ModalDialogWrapper className="dialog-lg" title="Editor souradnic" onHide={onClose}>
             <iframe
                 title="elza-map-iframe"
                 className={'border-0 float-left'}
@@ -83,7 +86,7 @@ export const MapEditor = ({
                     width: "100%",
                 }}
             />
-        </Modal.Body>
+        </ModalDialogWrapper>
         {/* <Modal.Footer> */}
         {/*     <Button type="submit" variant="outline-secondary" > */}
         {/*         Ok */}

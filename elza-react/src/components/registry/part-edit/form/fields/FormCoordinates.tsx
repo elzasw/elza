@@ -199,12 +199,16 @@ const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeo
         dispatch(modalDialogShow(
             this,
             "Editor souradnic",
-            <MapEditor
-                geometry={geometry}
-                extSystem={extSystem}
-                onChange={handleEditorChange}
-                allowedGeometryTypes={allowedGeometryTypes}
-            />
+            ({key, onClose, visible}) => {
+                return <MapEditor
+                    key={key}
+                    onClose={onClose}
+                    geometry={geometry}
+                    extSystem={extSystem}
+                    onChange={handleEditorChange}
+                    allowedGeometryTypes={allowedGeometryTypes}
+                />
+            }
         ))
     })
 
