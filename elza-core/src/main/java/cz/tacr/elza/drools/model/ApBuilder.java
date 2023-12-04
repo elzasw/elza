@@ -16,14 +16,12 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevState;
-import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -38,6 +36,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
+import cz.tacr.elza.drools.model.item.CoordinatesItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.exception.SystemException;
@@ -122,8 +121,8 @@ public class ApBuilder {
             break;
         case COORDINATES:
             ArrDataCoordinates aeDataCoordinates = (ArrDataCoordinates) data;
-            abstractItem = new Item(itemId, itemType, itemSpec, GeometryConvertor.convert(aeDataCoordinates
-                    .getValue()));
+            abstractItem = new CoordinatesItem(itemId, itemType, itemSpec,
+                    aeDataCoordinates.getValue());
             break;
         case INT:
             ArrDataInteger aeDataInteger = (ArrDataInteger) data;

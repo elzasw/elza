@@ -52,6 +52,7 @@ import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -70,6 +71,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -78,12 +80,12 @@ import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.SettingsService;
 
 
 /**
  * Kontroler pro pravidla.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 @RestController
@@ -128,9 +130,20 @@ public class RuleController {
     @Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    private SettingsService settingsService;
+
+    @Transactional
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
-        return factoryVo.createRuleSetList(ruleSetRepository.findAll());
+        final StaticDataProvider sdp = staticDataService.getData();
+        List<RuleSet> ruleSets = sdp.getRuleSets();
+
+        return ruleSets.stream().map(rs -> {
+            List<SettingGridView.ItemType> itemTypes = settingsService.getGridView(rs.getRuleSetId());
+
+            return RulRuleSetVO.newInstance(rs, itemTypes, sdp);
+        }).collect(Collectors.toList());
     }
 
     @RequestMapping(value = "/dataTypes", method = RequestMethod.GET)

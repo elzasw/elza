@@ -753,6 +753,12 @@ public class CamService {
             ApRevision revision = revisionService.findRevisionByState(state);
             boolean modifiedPartOrItem = hasModifiedPartOrItem(state, bindingState);
 
+            // Check if state was locally modified?
+            if (state.getDeleteChangeId() != null && state.getDeleteChangeId()>bindingState.getCreateChangeId()) {
+                // entity was locally deleted -> mark as not for sync
+                modifiedPartOrItem = true;
+            }
+
             // Nesynchronizovat pokud se jedná o volání z fronty A
             //    (existují lokální změny NEBO existují revize NEBO entita ve stavu NOT_SYNCED)
             // jinak synchronizovat, i když entita je neplatná 

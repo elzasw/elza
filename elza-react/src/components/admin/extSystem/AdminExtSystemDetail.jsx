@@ -5,20 +5,14 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {JAVA_ATTR_CLASS} from '../../constants';
+import {JAVA_ATTR_CLASS} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
-
-const EXT_SYSTEM_CLASS = {
-    ApExternalSystem: '.ApExternalSystemVO',
-    ArrDigitalRepository: '.ArrDigitalRepositoryVO',
-    ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
-};
-
-const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
-};
+import {
+    EXT_SYSTEM_CLASS,
+    EXT_SYSTEM_CLASS_LABEL,
+    GIS_SYSTEM_TYPE_LABEL,
+    AP_EXT_SYSTEM_LABEL
+} from './ExtSystemForm';
 
 /**
  * Komponenta detailu osoby
@@ -94,7 +88,18 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ApExternalSystem]}</span>
 
                             <h4>{i18n('admin.extSystem.type')}</h4>
-                            <span>{extSystem.type}</span>
+                            <span>{AP_EXT_SYSTEM_LABEL[extSystem.type]}</span>
+
+                            {this.scopeValue(extSystem.scope)}
+                        </div>
+                    )}
+                    {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
+                        <div>
+                            <h4>{i18n('admin.extSystem.class')}</h4>
+                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.GisExternalSystem]}</span>
+
+                            <h4>{i18n('admin.extSystem.type')}</h4>
+                            <span>{GIS_SYSTEM_TYPE_LABEL[extSystem.type]}</span>
 
                             {this.scopeValue(extSystem.scope)}
                         </div>

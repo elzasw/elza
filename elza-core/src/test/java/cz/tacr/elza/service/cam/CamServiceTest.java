@@ -129,7 +129,7 @@ public class CamServiceTest extends AbstractControllerTest {
         externalSystemVO.setApiKeyId("apikey");
         externalSystemVO.setApiKeyValue("apikeyvalue");
         externalSystemVO.setType(ApExternalSystemType.CAM);
-        externalSystemVO.setScope(scopeVo.getId());
+        externalSystemVO.setScopeId(scopeVo.getId());
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         assertNotNull(externalSystemCreatedVO.getId());
     	

@@ -5,6 +5,11 @@ import { Button } from './ui';
 import { i18n, Icon, TooltipTrigger } from 'components/shared';
 import { MAP_URL } from '../pages/map/MapPage';
 import classNames from 'classnames';
+import { useThunkDispatch } from 'utils/hooks';
+import { useSelector } from 'react-redux';
+import { AppState } from 'typings/store';
+import { GisSystemType } from '../constants';
+import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
 
 const IFRAME_SIZE = 400;
 
@@ -16,6 +21,18 @@ export const PolygonTooltip = ({
     polygon
 }: PolygonTooltipProps) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const dispatch = useThunkDispatch();
+    const geoViewExternalSystems = useSelector((state: AppState) => {
+        return state.app.kmlExtSystemList.rows.filter((extSystem: any) => {
+            if (extSystem.type === GisSystemType.FrameApiView) {
+                return true;
+            }
+        })
+    });
+
+    useEffect(() => {
+        dispatch(kmlExtSystemListFetchIfNeeded()); // TODO - request only gis ext systems
+    }, [])
 
     useEffect(() => {
         const receiveMessage = (e: MessageEvent) => {
@@ -28,6 +45,21 @@ export const PolygonTooltip = ({
                     }, "*")
                 }
             }
+            else if (e.data?.type === "MapViewInit" && geoViewExternalSystems.length === 1 && geoViewExternalSystems[0].url) {
+                console.log("#### init message received", e.data)
+                if (iframe && iframe.contentWindow) {
+                    iframe?.contentWindow?.postMessage({
+                        type: 'MapGeometry',
+                        geometry: polygon,
+                        requestId: 'test',
+                        geometryFormat: "WKT",
+                        initialRegion: polygon,
+                    }, geoViewExternalSystems[0].url)
+                }
+            }
+            else if (e.data?.type === "MapError") {
+                throw Error(e.data.message);
+            }
         }
 
         window.addEventListener("message", receiveMessage);
@@ -35,14 +67,35 @@ export const PolygonTooltip = ({
         return () => {
             window.removeEventListener("message", receiveMessage);
         }
-    },[polygon])
+    }, [polygon])
+
+    let mapViewUrl = MAP_URL + '?iframe=1'; // adresa vestavene implementace v Elza
+
+    if (geoViewExternalSystems.length === 1) {
+        const { url, apiKeyValue } = geoViewExternalSystems[0];
+        const queryStartIndex = url?.indexOf("?");
+        const baseUrl = queryStartIndex != undefined && queryStartIndex >= 0 ? url?.substring(0, queryStartIndex) : url;
+        const queryString = queryStartIndex != undefined && queryStartIndex >= 0 ? url?.substring(queryStartIndex + 1) : undefined;
+        const query = new URLSearchParams(queryString);
+
+        query.set("SOURCE_ORIGIN", window.location.origin);
+        query.set("MODE", "VIEW");
+
+        if (apiKeyValue) {
+            query.set("API_KEY", apiKeyValue);
+        }
+
+        mapViewUrl = `${baseUrl}?${query}`;
+    }
 
     return (<><strong className={'d-block py-1'}>{i18n('global.action.showInMap')}</strong>
         <iframe title="elza-map-iframe" className={'border-0 float-left'} ref={iframeRef} style={{
             height: IFRAME_SIZE,
             width: IFRAME_SIZE,
-        }} src={MAP_URL + '?iframe=1'} />
-        </>);
+        }}
+            src={mapViewUrl}
+        />
+    </>);
 }
 
 

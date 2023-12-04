@@ -7,8 +7,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -20,7 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
+import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.vo.GisExternalSystemVO;
+import cz.tacr.elza.domain.GisExternalSystem;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.ExternalSystemService;
 
 /**
  * Controller pro import a export KML souborů
@@ -31,6 +35,8 @@ import cz.tacr.elza.service.ArrIOService;
 @RestController
 public class KmlController {
 
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     @Autowired
     private ArrIOService arrIOService;
@@ -108,4 +114,10 @@ public class KmlController {
         throw new SystemException("export koordinat neni podporovan", BaseCode.SYSTEM_ERROR);
     }
 
+    @RequestMapping(value = "/api/kml/externalSystems", method = RequestMethod.GET)
+    @Transactional
+    public List<GisExternalSystemVO> findAllExternalSystems() {
+        List<GisExternalSystem> extSystems = externalSystemService.findAllGisSystem();
+        return FactoryUtils.transformList(extSystems, GisExternalSystemVO::newInstance);
+    }
 }

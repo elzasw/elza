@@ -10,8 +10,7 @@ import cz.tacr.elza.domain.SysExternalSystem;
  *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public abstract class SysExternalSystemVO
-        extends BaseCodeVo {
+public abstract class SysExternalSystemVO extends BaseCodeVo {
 
     private String url;
 
