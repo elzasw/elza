@@ -16,9 +16,9 @@ public class DEExportParams {
 
     private Integer exportFilterId;
 
-    private boolean includeAccessPoints;
+    private boolean includeAccessPoints = true;
 
-    private boolean includeUUID;
+    private boolean includeUUID = true;
 
     public Collection<Integer> getApIds() {
         return apIds;
