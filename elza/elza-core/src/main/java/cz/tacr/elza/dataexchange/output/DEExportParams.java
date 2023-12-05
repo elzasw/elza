@@ -16,6 +16,10 @@ public class DEExportParams {
 
     private Integer exportFilterId;
 
+    private boolean includeAccessPoints;
+
+    private boolean includeUUID;
+
     public Collection<Integer> getApIds() {
         return apIds;
     }
@@ -45,6 +49,22 @@ public class DEExportParams {
 
     public void setExportFilterId(Integer exportFilterId) {
         this.exportFilterId = exportFilterId;
+    }
+
+    public boolean isIncludeUUID() {
+        return includeUUID;
+    }
+
+    public void setIncludeUUID(boolean includeUUID) {
+        this.includeUUID = includeUUID;
+    }
+
+    public boolean isIncludeAccessPoints() {
+        return includeAccessPoints;
+    }
+
+    public void setIncludeAccessPoints(boolean includeAccessPoints) {
+        this.includeAccessPoints = includeAccessPoints;
     }
 
     /**
