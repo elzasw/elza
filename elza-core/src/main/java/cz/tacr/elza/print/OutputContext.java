@@ -1,6 +1,6 @@
 package cz.tacr.elza.print;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -23,7 +23,7 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
  * Class for OutputContext
- * 
+ *
  * Allow access to the services
  */
 @Component

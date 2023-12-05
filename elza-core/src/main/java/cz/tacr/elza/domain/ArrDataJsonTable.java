@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,7 +22,7 @@ public class ArrDataJsonTable extends ArrData  {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Column(nullable = false)
+    @Column(name = "data_value", nullable = false)
     private String value;
 
 	public ArrDataJsonTable() {
@@ -44,7 +44,7 @@ public class ArrDataJsonTable extends ArrData  {
 
     /**
      * Return raw Json value without any interpretation
-     * 
+     *
      * @return
      */
     @JsonIgnore

@@ -1,7 +1,7 @@
 package cz.tacr.elza.common.db;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter
 public class CharConverter implements AttributeConverter<String, String> {

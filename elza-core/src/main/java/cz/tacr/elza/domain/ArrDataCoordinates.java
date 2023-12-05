@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -24,7 +24,7 @@ import cz.tacr.elza.common.GeometryConvertor.GeometryJsonSerializer;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataCoordinates extends ArrData {
 
-    @Column(nullable = false)
+    @Column(name = "coordinates_value", nullable = false)
     @JsonDeserialize(using = GeometryJsonDeserializer.class)
     @JsonSerialize(using = GeometryJsonSerializer.class)
     private Geometry value;

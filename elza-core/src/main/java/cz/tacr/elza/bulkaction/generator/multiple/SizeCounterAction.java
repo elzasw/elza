@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.service.StructObjService;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -52,6 +53,9 @@ public class SizeCounterAction extends Action {
 
     @Autowired
     private StructuredItemRepository structureItemRepository;
+
+    @Autowired
+    private StructObjService structObjService;
 
     /**
      * Flag if exists packet without size
@@ -107,7 +111,7 @@ public class SizeCounterAction extends Action {
 
     /**
      * Mark level to be skipped
-     * 
+     *
      * @param level
      */
     public void setSkipSubtree(LevelWithItems level) {
@@ -156,7 +160,7 @@ public class SizeCounterAction extends Action {
 
     private void countStructObj(Integer packetId, LevelWithItems level) {
         // TODO: Do filtering and counting in DB
-        List<ArrStructuredItem> structObjItems = this.structureItemRepository
+        List<ArrStructuredItem> structObjItems = this.structObjService
                 .findByStructObjIdAndDeleteChangeIsNullFetchData(packetId);
         // filter only our item types
         boolean found = false;

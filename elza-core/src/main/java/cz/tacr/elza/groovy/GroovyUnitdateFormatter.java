@@ -2,8 +2,8 @@ package cz.tacr.elza.groovy;
 
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 

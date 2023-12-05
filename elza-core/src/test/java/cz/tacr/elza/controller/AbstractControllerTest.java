@@ -2,6 +2,13 @@ package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.HEAD;
+import static org.springframework.http.HttpMethod.OPTIONS;
+import static org.springframework.http.HttpMethod.PATCH;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 import java.io.File;
 import java.io.InputStream;
@@ -541,7 +548,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
+        return httpMethod(params, url, POST, HttpStatus.OK);
     }
 
     public static Response post(final Function<RequestSpecification, RequestSpecification> params, final String url, final HttpStatus status) {
@@ -549,11 +556,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
+        return httpMethod(params, url, PUT, HttpStatus.OK);
     }
 
     public static Response put(final Function<RequestSpecification, RequestSpecification> params, final String url, final HttpStatus status) {
-        return httpMethod(params, url, HttpMethod.PUT, status);
+        return httpMethod(params, url, PUT, status);
     }
 
     public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
@@ -584,29 +591,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
         requestSpecification.cookies(cookies);
 
         Response response;
-        switch (method) {
-            case GET:
+        if (GET.equals(method)) {
                 response = requestSpecification.get(url);
-                break;
-            case PUT:
+        } else if (PUT.equals(method)) {
                 response = requestSpecification.put(url);
-                break;
-            case DELETE:
+        } else if (DELETE.equals(method)) {
                 response = requestSpecification.delete(url);
-                break;
-            case HEAD:
+        } else if (HEAD.equals(method)) {
                 response = requestSpecification.head(url);
-                break;
-            case OPTIONS:
+        } else if (OPTIONS.equals(method)) {
                 response = requestSpecification.options(url);
-                break;
-            case PATCH:
+        } else if (PATCH.equals(method)) {
                 response = requestSpecification.patch(url);
-                break;
-            case POST:
+        } else if (POST.equals(method)) {
                 response = requestSpecification.post(url);
-                break;
-            default:
+        } else {
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
 
@@ -715,7 +714,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param name název AP
      * @return ap
-     * @throws ApiException 
+     * @throws ApiException
      */
     protected Fund createFund(final String name, final String internalCode) throws ApiException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
@@ -1161,7 +1160,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     	assertNotNull(itemTypeId);
     	assertNotNull(outputId);
     	assertNotNull(outputVersion);
-    	
+
         Response response = put(spec -> spec
                 .body(outputItemVO)
                 .pathParam("fundVersionId", fundVersionId)
@@ -2157,7 +2156,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
         params.put("excludeInvalid", true);
 
-        return post(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+        return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**

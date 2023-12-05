@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrFile;
@@ -16,7 +17,7 @@ public class FileRefItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.FILE_REF) {
             return null;
         }
-        ArrDataFileRef data = (ArrDataFileRef) item.getData();
+        ArrDataFileRef data = HibernateUtils.unproxy(item.getData());
         ArrFile dataFile = data.getFile();
         String name = dataFile.getName();
         File file = context.getFile(dataFile);

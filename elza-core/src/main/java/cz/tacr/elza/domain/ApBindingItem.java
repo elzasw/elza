@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity(name = "ap_binding_item")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -25,7 +25,7 @@ public class ApBindingItem implements AccessPointCacheSerializable {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer bindingId;
 
-    @Column(length = StringLength.LENGTH_50, nullable = false)
+    @Column(name = "item_value", length = StringLength.LENGTH_50, nullable = false)
     private String value;
 
     @JsonIgnore

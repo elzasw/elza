@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.vo.DataResult;
 
 public interface DataRepositoryCustom {
 
@@ -44,5 +45,7 @@ public interface DataRepositoryCustom {
     List<Integer> findUniqueSpecIdsInVersion(ArrFundVersion version,
                                              RulItemType descItemType,
                                              List<Integer> nodeIds);
+
+    void findAllDataByDataResults(List<DataResult> dataResults);
 
 }

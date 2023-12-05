@@ -7,7 +7,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataString;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemEnumVO extends ApItemVO {
 
@@ -27,6 +27,6 @@ public class ApItemEnumVO extends ApItemVO {
 
     @Override
     public boolean equalsValue(AccessPointItem apItem) {
-        return equalsBase(apItem); 
+        return equalsBase(apItem);
     }
 }

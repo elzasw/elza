@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.print.item.AbstractItem;
@@ -10,7 +11,7 @@ public class StringItemConvertor extends AbstractItemConvertor {
 
     @Override
     protected AbstractItem convert(Item item, ItemType itemType) {
-        String value = getDataValue(itemType.getDataType(), item.getData());
+        String value = getDataValue(itemType.getDataType(), HibernateUtils.unproxy(item.getData()));
 
         return value != null ? new ItemString(value) : null;
     }

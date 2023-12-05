@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.Item;
@@ -14,7 +15,7 @@ public class BitConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.BIT) {
             return null;
         }
-        ArrDataBit data = (ArrDataBit) item.getData();
+        ArrDataBit data = HibernateUtils.unproxy(item.getData());
 
         return new ItemBit(data.getValueBoolean());
     }

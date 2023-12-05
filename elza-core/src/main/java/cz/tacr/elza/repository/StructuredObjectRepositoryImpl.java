@@ -3,14 +3,14 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -107,7 +107,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
                                                               final int firstResult,
                                                               final int maxResults) {
         TypedQuery<Long> countQuery = createStructObjCountQuery(search, structuredTypeId, fundId, assignable);
-        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId, 
+        TypedQuery<ArrStructuredObject> objQuery = createStructObjSearchQuery(search, structuredTypeId,
                                                                               fundId, assignable, firstResult,
                                                                               maxResults);
         int count = countQuery.getSingleResult().intValue();
@@ -145,7 +145,7 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         }
         rqBuilder.addSqlPart(" ORDER BY so.sort_value");
 
-        
+
         rqBuilder.prepareQuery(em);
         // Add always
         rqBuilder.setParameter("nodeIds", nodeIds);

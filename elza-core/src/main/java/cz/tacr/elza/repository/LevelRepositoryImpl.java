@@ -9,16 +9,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -162,7 +162,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
         Validate.notNull(node, "JP musí být vyplněna");
-        
+
         if(lockChange==null) {
             // call recursive query for current version
             return findLevelsSubtree(node.getNodeId(), 0, 0, true);
@@ -457,8 +457,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         long count = 0;
         try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
             while (scrollableResults.next()) {
-                ArrLevel level = (ArrLevel) scrollableResults.get(0);
-                int depth = scrollableResults.getInteger(1).intValue();
+                ArrLevel level = (ArrLevel) scrollableResults.get();
+                int depth = scrollableResults.getRowNumber();
                 treeLevelConsumer.accept(level, depth);
                 count++;
             }

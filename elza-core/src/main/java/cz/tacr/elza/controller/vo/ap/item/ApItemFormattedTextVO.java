@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
@@ -9,7 +10,7 @@ import cz.tacr.elza.domain.ArrDataText;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemFormattedTextVO extends ApItemVO {
 
@@ -27,7 +28,7 @@ public class ApItemFormattedTextVO extends ApItemVO {
     }
 
     final public String getStringValue(final AccessPointItem item) {
-        ArrDataText data = (ArrDataText) item.getData();
+        ArrDataText data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getTextValue();
     }
 

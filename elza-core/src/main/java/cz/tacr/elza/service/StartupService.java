@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -34,12 +34,12 @@ import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+//import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.search.DbQueueProcessor;
+//import cz.tacr.elza.search.DbQueueProcessor; TODO hibernate search 6
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -109,7 +109,7 @@ public class StartupService implements SmartLifecycle {
 
     /**
      * Service should start automatically by default
-     * 
+     *
      * It is possible to disable autoStart, used by tests
      */
     @Value("${elza.startupService.autoStart:true}")
@@ -198,7 +198,7 @@ public class StartupService implements SmartLifecycle {
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
-        ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
+//        ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class)); TODO hibernate search 6
 
         //----- stage 2 ------
         TransactionTemplate tt = new TransactionTemplate(txManager);
@@ -285,7 +285,7 @@ public class StartupService implements SmartLifecycle {
         }
         DatabaseType.init(em);
         staticDataService.init();
-        DbQueueProcessor.startInit(applicationContext);
+//        DbQueueProcessor.startInit(applicationContext); TODO hibernate search 6
         outputServiceInternal.init();
         clearBulkActions();
         clearTempStructureData();

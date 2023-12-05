@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
@@ -20,7 +21,7 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.server.resource.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -41,7 +42,6 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.security.oauth2.OAuth2Properties.PermProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
-import liquibase.util.StringUtils;
 
 public class JwtUserDetailProvider implements AuthenticationProvider {
 

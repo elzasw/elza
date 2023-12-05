@@ -17,8 +17,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -339,8 +339,8 @@ public class ApController {
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
                     apState.getAccessPoint(),
-                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null,
-                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getValue() : null),
+                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null,
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
                 foundRecordsCount);
     }
 
@@ -377,8 +377,11 @@ public class ApController {
 
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
+        //TODO hibernate search 6
+        //QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+        //        .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
+
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
@@ -511,7 +514,7 @@ public class ApController {
 
     /**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
-     * 
+     *
      * @param accessPointId
      * @return seznam stavů
      */
@@ -837,10 +840,10 @@ public class ApController {
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
-                                                  null, from, max, sdp);
-
+//        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository //TODO hibernate search 6
+//                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
+//                                                  null, from, max, sdp);
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
         /*
         filter.setAeTypeIds(apTypes);
         return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);
@@ -905,9 +908,9 @@ public class ApController {
 
     /**
      * Úprava části přístupového bodu.
-     * 
+     *
      * V případě revize:
-     * 
+     *
      * <ul>
      * <li>1. Zalozeni noveho itemu
      * id = null
@@ -920,7 +923,7 @@ public class ApController {
      * <li>3. Vymazani itemu
      * item neprijde
      * </ul>
-     * 
+     *
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param partId        identifikátor upravované části
      * @param apPartFormVO  data pro úpravu části
@@ -1235,7 +1238,7 @@ public class ApController {
 
         ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
-        
+
         ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
 
         EntityXml entity;
@@ -1249,7 +1252,7 @@ public class ApController {
 
     /**
      * Zápis přistupového bodu do externího systému
-     * 
+     *
      * Metoda zapíš nový AP nebo aktualizuje stávající.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -1290,7 +1293,7 @@ public class ApController {
                     RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        // kontrola přístupových práv a možností synchronizace 
+        // kontrola přístupových práv a možností synchronizace
         accessPointService.hasPermissionToSynchronizeFromExternaSystem(state);
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
@@ -1425,7 +1428,7 @@ public class ApController {
      * @param itemId
      */
     @Transactional
-    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
+    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE)
     public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
         externalSystemService.deleteQueueItem(itemId);
     }

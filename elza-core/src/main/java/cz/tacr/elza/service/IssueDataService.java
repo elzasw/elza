@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -153,8 +153,8 @@ public class IssueDataService {
             configs = new HashMap<>();
 
             // load relevant settings
-            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, 
-                                                                                                        UISettings.SettingsType.FUND_ISSUES.toString(), 
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null,
+                                                                                                        UISettings.SettingsType.FUND_ISSUES.toString(),
                                                                                                         UISettings.SettingsType.FUND_ISSUES.getEntityType());
 
             uiSettingsList.forEach(uiSettings -> {

@@ -20,8 +20,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -128,7 +128,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private ApplicationContext applicationContext;    
+    private ApplicationContext applicationContext;
 
     @Autowired
     private ClientFactoryVO clientFactoryVO;
@@ -859,7 +859,7 @@ private void processEvent(AbstractEventSimple event) {
                 }
             }
 
-            TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null, 
+            TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null,
                     !treeNode.getChilds().isEmpty(),
                     treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion());
             if (subtreeRoot != null) {
@@ -908,7 +908,7 @@ private void processEvent(AbstractEventSimple event) {
 
     /**
      * Nastavení hodnot (icon, name) ve třídě TreeNodeVO.
-     * 
+     *
      * @param version
      * @param descItemCodeToValueMap
      * @param viewTitles
@@ -980,7 +980,7 @@ private void processEvent(AbstractEventSimple event) {
 
     /**
      * Aktualizace cache po smazání uzlu.
-     * 
+     *
      * @param nodeId
      * @param fundVersionId
      */
@@ -1681,7 +1681,7 @@ private void processEvent(AbstractEventSimple event) {
 
     /**
      * Context for method GetNodes
-     * 
+     *
      *
      */
     public static class GetNodesCtx {
@@ -1983,9 +1983,9 @@ private void processEvent(AbstractEventSimple event) {
 
     /**
      * Prepare data for one node
-     * 
+     *
      * @param getNodesCtx
-     * 
+     *
      * @param treeNode
      * @param arrNode
      * @param nodeValueMap
@@ -2340,7 +2340,7 @@ private void processEvent(AbstractEventSimple event) {
      * Sestaví informace o zanoření
      *
      * Pokud node neexistuje (byl vymazan), tak je ignorovan.
-     * 
+     *
      * @param fundId
      *            identifikátor archivního souboru
      * @param nodeIds

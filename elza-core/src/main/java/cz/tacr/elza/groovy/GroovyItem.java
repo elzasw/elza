@@ -6,7 +6,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class GroovyItem {
 
@@ -160,7 +160,7 @@ public class GroovyItem {
     }
 
     public Integer getApTypeId() {
-        return (accessPoint != null) ? accessPoint.getApState().getApTypeId() : null; 
+        return (accessPoint != null) ? accessPoint.getApState().getApTypeId() : null;
     }
 
     @Override

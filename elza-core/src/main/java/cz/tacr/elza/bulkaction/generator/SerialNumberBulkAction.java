@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -60,7 +61,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		super.init(bulkActionRun);
 
         this.multipleItemChangeContext = descriptionItemService.createChangeContext(this.version.getFundVersionId());
-        
+
 		// prepare item type
 		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
 		Validate.notNull(itemType);
@@ -131,7 +132,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		public void generate(ArrDescItem descItem) {
 
 			ArrDataInteger item;
-			ArrData data = descItem.getData();
+			ArrData data = HibernateUtils.unproxy(descItem.getData());
 			// vytvoření nového atributu
 			if (data == null) {
 				item = new ArrDataInteger();
@@ -211,7 +212,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		@Override
 		public void generate(ArrDescItem descItem) {
 			ArrDataString item;
-			ArrData data = descItem.getData();
+			ArrData data = HibernateUtils.unproxy(descItem.getData());
 			// vytvoření nového atributu
 			if (data == null) {
 				item = new ArrDataString();

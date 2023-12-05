@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 /**
  * Podmínka na uzly bez hodnoty daného typu.

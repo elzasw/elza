@@ -15,10 +15,11 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import cz.tacr.elza.service.DescriptionItemService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
@@ -131,6 +132,9 @@ public class NodeCacheService {
 
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
+
+    @Autowired
+    private DescriptionItemService descItemService;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
@@ -372,7 +376,7 @@ public class NodeCacheService {
             List<ArrDescItem> descItems = result.getDescItems();
             if (CollectionUtils.isNotEmpty(descItems)) {
                 for (ArrDescItem descItem : descItems) {
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
 
                     if (data instanceof ArrDataUriRef) {
                         ArrDataUriRef dataRef = (ArrDataUriRef) data;
@@ -411,7 +415,7 @@ public class NodeCacheService {
             List<ArrDescItem> descItems = result.getDescItems();
             if (CollectionUtils.isNotEmpty(descItems)) {
                 for (ArrDescItem descItem : descItems) {
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
 
                     if (data instanceof ArrDataUriRef) {
                         ArrDataUriRef dataRef = (ArrDataUriRef) data;
@@ -458,7 +462,7 @@ public class NodeCacheService {
 		List<Integer> partNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
 		int count = 0;
 		while (uncachedNodes.next()) {
-			Object obj = uncachedNodes.get(0);
+			Object obj = uncachedNodes.get();
 
 			partNodeIds.add((Integer) obj);
 			count++;
@@ -587,7 +591,7 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+        List<ArrDescItem> descItems = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
@@ -821,7 +825,7 @@ public class NodeCacheService {
             List<ArrCachedNode> records = new ArrayList<>(nodes.size());
 
             for (ArrNode node : nodes) {
-                // Node has to have valid nodeId 
+                // Node has to have valid nodeId
                 Validate.notNull(node.getNodeId());
 
                 CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());

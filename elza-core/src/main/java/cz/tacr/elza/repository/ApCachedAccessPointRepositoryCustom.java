@@ -11,24 +11,24 @@ import java.util.Set;
 
 public interface ApCachedAccessPointRepositoryCustom {
 
-    /**
-     * Search all related accesspoints
-     * 
-     * @param search
-     * @param searchFilter
-     * @param apTypeIdTree
-     * @param scopeIds
-     * @param state
-     *            might be null
-     * @param from
-     * @param count
-     * @param sdp
-     * @return
-     */
-    QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
-                                                                       SearchFilterVO searchFilter,
-                                                                       Collection<Integer> apTypeIdTree,
-                                                                       Collection<Integer> scopeIds,
-                                                                       ApState.StateApproval state, Integer from,
-                                                                       Integer count, StaticDataProvider sdp);
+//    /** TODO hibernate search 6
+//     * Search all related accesspoints
+//     *
+//     * @param search
+//     * @param searchFilter
+//     * @param apTypeIdTree
+//     * @param scopeIds
+//     * @param state
+//     *            might be null
+//     * @param from
+//     * @param count
+//     * @param sdp
+//     * @return
+//     */
+//    QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+//                                                                       SearchFilterVO searchFilter,
+//                                                                       Collection<Integer> apTypeIdTree,
+//                                                                       Collection<Integer> scopeIds,
+//                                                                       ApState.StateApproval state, Integer from,
+//                                                                       Integer count, StaticDataProvider sdp);
 }

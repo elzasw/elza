@@ -5,20 +5,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.ReadOnlyProperty;
@@ -95,12 +95,12 @@ public class ArrBulkActionRun {
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
 
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String result;
 
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String config;
 
@@ -206,7 +206,7 @@ public class ArrBulkActionRun {
 
     /**
      * Nastaví stav hromadné akce
-     * 
+     *
      * Akce je synchronizovaná z důvodu metody setInterrupted
      *
      * @param state
@@ -298,7 +298,7 @@ public class ArrBulkActionRun {
 
     /**
      * Try to interrupt bulk action
-     * 
+     *
      * @param interrupted
      * @return Return true if action was interrupted. Return false if action is
      *         not running and cannot be interrupted

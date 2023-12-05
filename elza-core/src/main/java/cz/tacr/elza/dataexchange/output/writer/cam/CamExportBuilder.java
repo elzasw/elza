@@ -8,12 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamException;
-
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.apache.commons.lang3.Validate;
 import org.w3c.dom.Document;
 
@@ -34,6 +31,9 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
+
+import jakarta.xml.bind.JAXBContext;
+import javax.xml.stream.XMLStreamException;
 
 public class CamExportBuilder implements ExportBuilder {
 

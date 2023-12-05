@@ -7,6 +7,7 @@ import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.Locale;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
@@ -24,7 +25,7 @@ public class DateItemConvertor extends AbstractItemConvertor {
         }
 
         //
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         if (data == null) {
             return null;
         }

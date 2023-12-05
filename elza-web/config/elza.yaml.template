@@ -1,8 +1,8 @@
 elza:
   data:
-      url: jdbc:postgresql://localhost/elza
-      user: app
-      pass: app
+      url: jdbc:postgresql://localhost/vyv_elza
+      user: postgres
+      pass: postgres
   map:
       layers:
         - name: GR_ZM25

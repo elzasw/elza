@@ -1,7 +1,10 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.vo.DataResult;
+import cz.tacr.elza.service.DataService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +63,9 @@ public class GenerateUnitId extends BulkAction {
     @Autowired
     LockedValueRepository usedValueRepository;
 
+    @Autowired
+    private DataService dataService;
+
 	protected final GenerateUnitIdConfig config;
 
     private SealedUnitIdTree sealedUnitIdTree;
@@ -107,7 +113,7 @@ public class GenerateUnitId extends BulkAction {
 		Validate.notNull(previousIdSpecCode);
 		descItemPreviousSpec = previousIdTypeWrapper.getItemSpecByCode(previousIdSpecCode);
 		Validate.notNull(descItemPreviousSpec);
-		
+
 		String extraLevelSpecCode = config.getExtraDelimiterAfter();
 		Validate.notNull(extraLevelSpecCode);
         extraSlashLevelSpec = levelTypeWrapper.getItemSpecByCode(extraLevelSpecCode);
@@ -118,17 +124,17 @@ public class GenerateUnitId extends BulkAction {
     private SealedUnitIdTree buildUsedIdTree() {
         ArrFund fund = getFundVersion().getFund();
 
-        List<ArrLockedValue> lockedItems = this.usedValueRepository.findByFundAndItemType(fund, descItemType);
+        List<ArrLockedValue> lockedItems = findByFundAndItemType(fund, descItemType);
 
         SealedUnitIdTree sealedTree = new SealedUnitIdTree();
         if (lockedItems != null) {
             for (ArrLockedValue uv : lockedItems) {
                 try {
                     ArrItem item = uv.getItem();
-                    ArrData data = item.getData();
+                    ArrData data = HibernateUtils.unproxy(item.getData());
                     ArrDataUnitid unitId = HibernateUtils.unproxy(data);
                     String value = unitId.getUnitId();
-                    
+
                     sealedTree.addSealedValue(value, (input) -> {
                         // validate is input is same with original object
                         ArrDescItem locked = HibernateUtils.unproxy(input);
@@ -148,6 +154,17 @@ public class GenerateUnitId extends BulkAction {
         }
 
         return sealedTree;
+    }
+
+    private List<ArrLockedValue> findByFundAndItemType(ArrFund fund, RulItemType itemType) {
+        return dataService.findItemsWithData(() -> usedValueRepository.findByFundAndItemType(fund, itemType),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrLockedValue> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getItem().getData().getDataId(), i.getItem().getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
 	@Override

@@ -15,12 +15,18 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import org.apache.commons.lang3.Validate;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+
+import cz.tacr.elza.exception.SystemException;
+
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
@@ -38,12 +44,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
-import org.apache.commons.lang3.Validate;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-
-import cz.tacr.elza.exception.SystemException;
 
 /**
  * Helper class for XML operations.
@@ -167,7 +167,6 @@ public class XmlUtils {
      * Possible precision loss (only milliseconds are converted).
      *
      * @param dateTime can be null
-     * @param dtf not-null
      * @return {@link XMLGregorianCalendar} or null when dateTime was null.
      */
     public static XMLGregorianCalendar convertDate(LocalDateTime dateTime) {

@@ -2,14 +2,14 @@ package cz.tacr.elza.common.db;
 
 import java.io.Serializable;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.search.hcore.util.impl.HibernateHelper;
+import org.hibernate.proxy.HibernateProxy;
 
 /**
  * Helper class for Hibernate.
@@ -30,7 +30,12 @@ public class HibernateUtils {
         if (object == null) {
             return null;
         }
-        return (T) HibernateHelper.unproxy(object);
+
+        if (object instanceof HibernateProxy) {
+            object = ((HibernateProxy)object).getHibernateLazyInitializer().getImplementation();
+        }
+
+        return (T) object;
     }
 
     /**
@@ -48,7 +53,10 @@ public class HibernateUtils {
         if (!Hibernate.isInitialized(object)) {
             throw new IllegalStateException("Unitialized entity, class = " + object.getClass().getName());
         }
-        return (T) HibernateHelper.unproxy(object);
+        if (object instanceof HibernateProxy) {
+            object = ((HibernateProxy)object).getHibernateLazyInitializer().getImplementation();
+        }
+        return (T) object;
     }
 
     /**
@@ -60,7 +68,7 @@ public class HibernateUtils {
 
     /**
      * Returns currently running transaction for given entity manager.
-     * 
+     *
      * @throws RuntimeException
      *             When given entity manager does not have active transaction.
      */
@@ -90,7 +98,7 @@ public class HibernateUtils {
     /**
      * Return the persistent instance with the given identifier, assuming that the
      * instance exists. This method might return a proxied instance.
-     * 
+     *
      * @param detachIfNotLoaded
      *            When true and entity is not loaded in persistent context returned
      *            reference (proxy) will be detached.

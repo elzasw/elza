@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -146,9 +146,9 @@ public class AccessPointDataService {
         return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
     }
 
-    public String convertCoordinatesToEWKT(byte[] coordinates) {
-        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
-    }
+//    public String convertCoordinatesToEWKT(byte[] coordinates) { //TODO asi nadbytečné, nikde se nevolá
+//        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
+//    }
 
     public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);

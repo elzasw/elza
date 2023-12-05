@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.csv.CSVPrinter;
@@ -114,6 +116,9 @@ public class ArrIOService {
     @Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    private DataService dataService;
+
     /**
      * Export dat tabulky do csv formátu, který bude zapsán do streamu.
      *
@@ -130,7 +135,8 @@ public class ArrIOService {
         try (OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
                 CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
 
-            ElzaTable table = ((ArrDataJsonTable) item.getData()).getValue();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            ElzaTable table = ((ArrDataJsonTable) data).getValue();
 
             for (ElzaRow elzaRow : table.getRows()) {
                 Map<String, String> values = elzaRow.getValues();
@@ -345,9 +351,9 @@ public class ArrIOService {
 
         ArrItem item;
         if (lockChange == null) {
-            item = itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId);
+            item = findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId);
         } else {
-            item = itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange);
+            item = findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange);
         }
 
         if (item == null || item.isUndefined()) {
@@ -356,7 +362,7 @@ public class ArrIOService {
                     BaseCode.DB_INTEGRITY_PROBLEM);
         }
 
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         Class<?> cls = Hibernate.getClass(data);
 
         if (!ArrDataCoordinates.class.isAssignableFrom(cls)) {
@@ -367,6 +373,22 @@ public class ArrIOService {
         }
 
         toKml(response, ((ArrDataCoordinates) data).getValue());
+    }
+
+    private ArrItem findByItemObjectIdAndDeleteChangeIsNullFetchData(int descItemObjectId) {
+        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    private ArrItem findByItemObjectIdAndChangeFetchData(int descItemObjectId, ArrChange lockChange) {
+        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {
@@ -407,7 +429,7 @@ public class ArrIOService {
 
     /**
      * Return name of export
-     * 
+     *
      * @param fund
      * @return
      */
@@ -415,7 +437,7 @@ public class ArrIOService {
         StringBuilder exportName = new StringBuilder();
         if (StringUtils.isNotBlank(fund.getInternalCode())) {
             exportName.append(fund.getInternalCode());
-        } else 
+        } else
         if (StringUtils.isNotBlank(fund.getName())) {
             exportName.append(fund.getName());
         } else {

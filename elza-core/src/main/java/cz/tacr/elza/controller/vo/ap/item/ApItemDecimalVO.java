@@ -1,12 +1,13 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDecimal;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class ApItemDecimalVO extends ApItemVO {
     }
 
     final public BigDecimal getBigDecimalValue(final AccessPointItem item) {
-        ArrDataDecimal data = (ArrDataDecimal) item.getData();
+        ArrDataDecimal data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getValue();
     }
 

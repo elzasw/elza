@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -74,9 +75,9 @@ public class ApBuilder {
 
     /**
      * Create new AccessPoint for drools
-     * 
+     *
      * Accesspoint might have all fields null.
-     * 
+     *
      * @return
      */
     public Ap build() {
@@ -95,7 +96,7 @@ public class ApBuilder {
         cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(revItem.getItemTypeId());
         RulItemSpec itemSpec = revItem.getItemSpecId() != null ? itemType.getItemSpecById(revItem.getItemSpecId())
                 : null;
-        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();  
+        int objectId = revItem.getObjectId() != null ? revItem.getObjectId() : -revItem.getItemId();
 
         return createItem(objectId, null, itemType, itemSpec, revItem.getData());
     }
@@ -175,7 +176,7 @@ public class ApBuilder {
         }
 
         Part parentPart = getParentPart(revPart);
-        Part result = new Part(revPart.getPartId(), 
+        Part result = new Part(revPart.getPartId(),
                                PartType.fromValue(sdp.getPartTypeById(revPart.getPartTypeId()).getCode()),
                                itemList, parentPart, preferred);
         this.parts.add(result);
@@ -192,8 +193,8 @@ public class ApBuilder {
         }
 
         boolean preferred = part.getPartId().equals(preferredPartId);
-        Part result = new Part(part.getPartId(), 
-                               PartType.fromValue(part.getPartTypeCode()), 
+        Part result = new Part(part.getPartId(),
+                               PartType.fromValue(part.getPartTypeCode()),
                 abstractItemList, null, preferred);
         this.parts.add(result);
         this.partIdMap.put(part.getPartId(), result);

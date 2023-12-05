@@ -12,7 +12,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -59,6 +61,7 @@ public class AccessPointItemService {
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
     private final ItemService itemService;
+    private final DataService dataService;
 
     public static class DeletedItems {
 
@@ -82,7 +85,7 @@ public class AccessPointItemService {
 
     /**
      * Record ref and its value
-     * 
+     *
      *
      */
     public static class ReferencedEntities {
@@ -93,7 +96,7 @@ public class AccessPointItemService {
 
         /**
          * External entity identifier
-         * 
+         *
          * Stored in binding
          */
         String entityIdentifier;
@@ -121,7 +124,8 @@ public class AccessPointItemService {
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
                                   final ApBindingItemRepository bindingItemRepository,
-                                  final ItemService itemService) {
+                                  final ItemService itemService,
+                                  final DataService dataService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -130,6 +134,7 @@ public class AccessPointItemService {
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
         this.itemService = itemService;
+        this.dataService = dataService;
     }
 
     // TODO: Kandidat na vymazani
@@ -149,7 +154,7 @@ public class AccessPointItemService {
      * @return
      */
     public DeletedItems deletePartItems(ApPart part, ApChange change) {
-        List<ApItem> items = itemRepository.findValidItemsByPart(part);
+        List<ApItem> items = findValidItemsByPart(part);
         return deleteItems(items, change);
     }
 
@@ -235,14 +240,14 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-    
+
             RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-    
+
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             ArrData data = updateItem.createDataEntity(em);
             ApItem newItem = item.copy();
             item.setDeleteChange(change);
-    
+
             newItem.setCreateChange(change);
             newItem.setData(data);
             if (itemType.getUseSpecification() != null && itemType.getUseSpecification()) {
@@ -271,12 +276,12 @@ public class AccessPointItemService {
                 }
                 newItem.setItemSpec(null);
             }
-    
+
             dataToSave.add(data);
-    
+
             itemsDb.add(newItem);
             existsItems.add(newItem);
-    
+
             Integer oldPosition = item.getPosition();
             Integer newPosition = updateItem.getPosition();
             Validate.notNull(newPosition);
@@ -319,7 +324,7 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-    
+
             item.setDeleteChange(change);
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             List<ApItem> itemsToShift = findItemsGE(existsItems, item.getPosition());
@@ -451,10 +456,10 @@ public class AccessPointItemService {
 
     /**
      * Nastaveni vazby ne pripojene AP z puvodniho ArrDataRecordRef
-     * 
+     *
      * Jako vedlejsi efekt funkce kontroluje existenci nastaveni vazby
      * na AP nebo na Binding na AP
-     * 
+     *
      * @param data
      * @param createItem
      * @param bindingItemList
@@ -500,7 +505,7 @@ public class AccessPointItemService {
 
     /**
      * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
-     * 
+     *
      * @param itemsMap
      *            mapa zmen
      * @param bindingItemList
@@ -626,22 +631,66 @@ public class AccessPointItemService {
         return position;
     }
 
+    public List<DataResult> createDataResultList(List<ApItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ApItem> findValidItemsByPart(ApPart part) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPart(part),
+                this::createDataResultList);
+    }
+
     public List<ApItem> findItemsByParts(List<ApPart> parts) {
-        return itemRepository.findValidItemsByParts(parts);
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByParts(parts),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByPartId(Integer partId) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPartId(partId),
+                this::createDataResultList);
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final RulItemType itemType, final String partTypeCode) {
-        return itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode);
+        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode),
+                this::createDataResultList);
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes,
                                   final String partTypeCode) {
-        return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes,
-                                                                                  partTypeCode);
+        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode),
+                this::createDataResultList);
     }
 
-    public List<ApItem> findItems(ApAccessPoint accessPoint) {
-        return itemRepository.findValidItemsByAccessPoint(accessPoint);
+    public List<ApItem> findValidItemsByAccessPoint(ApAccessPoint accessPoint) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoint(accessPoint),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findNewerValidItemsByAccessPoint(ApAccessPoint accessPoint, Integer changeId) {
+        return dataService.findItemsWithData(() -> itemRepository.findNewerValidItemsByAccessPoint(accessPoint, changeId),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByAccessPoints(Collection<ApAccessPoint> accessPoints) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoints(accessPoints),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findValidItemsByAccessPointMultiFetch(ApAccessPoint accessPoint) {
+        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPointMultiFetch(accessPoint),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findItemByEntity(ApAccessPoint replaced) {
+        return dataService.findItemsWithData(() -> itemRepository.findItemByEntity(replaced),
+                this::createDataResultList);
+    }
+
+    public List<ApItem> findUnbindedItemByBinding(ApBinding binding) {
+        return dataService.findItemsWithData(() -> itemRepository.findUnbindedItemByBinding(binding),
+                this::createDataResultList);
     }
 
     public static void normalize(ArrDataUnitdate aeDataUnitdate) {
@@ -665,7 +714,7 @@ public class AccessPointItemService {
 
     /**
      * Method will create external item and save all connected items
-     * 
+     *
      * @param part
      * @param data
      * @param itemType
@@ -694,10 +743,10 @@ public class AccessPointItemService {
 
     /**
      * Update existing item with new value
-     * 
+     *
      * Updated item is flushed to the DB. It is up to caller
      * to sync cache and revalidate AP
-     * 
+     *
      * @param change
      * @param apItem
      * @param drr

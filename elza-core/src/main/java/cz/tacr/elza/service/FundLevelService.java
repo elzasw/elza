@@ -11,11 +11,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -75,13 +75,13 @@ public class FundLevelService {
 
     @PersistenceContext
     private EntityManager entityManager;
-    
+
     @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
     private LevelRepository levelRepository;
-    
+
     @Autowired
     private ArrangementService arrangementService;
 
@@ -93,7 +93,7 @@ public class FundLevelService {
 
     @Autowired
     private RuleService ruleService;
-    
+
     @Autowired
     DaoRepository daoRepository;
 
@@ -102,13 +102,13 @@ public class FundLevelService {
 
     @Autowired
     private DescItemRepository descItemRepository;
-    
+
     @Autowired
     private IEventNotificationService eventNotificationService;
-    
+
     @Autowired
     private DescriptionItemService descriptionItemService;
-    
+
     @Autowired
     private NodeCacheService nodeCacheService;
 
@@ -320,7 +320,7 @@ public class FundLevelService {
                     null, null, null);
 
             if (transportLevels.get(0).getPosition() > staticLevel.getPosition()) {
-                updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(), 
+                updatedLevels.addAll(placeLevels(transportLevels, staticLevel.getNodeParent(),
                                                  change, targetPositon));
                 targetPositon += transportLevels.size();
                 updatedLevels.addAll(placeLevels(nodesToShiftDown, staticLevel.getNodeParent(),
@@ -530,7 +530,7 @@ public class FundLevelService {
 
     /**
      * Kaskádově smaže všechny levely od počátečního
-     * 
+     *
      * @param fundVersion
      *
      * @param baselevel
@@ -549,7 +549,7 @@ public class FundLevelService {
                                        final List<ArrLevel> allDeletedLevels,
                                        final boolean deleteLevelsWithAttachedDao) {
         List<ArrLevel> deletedLevels = new ArrayList<>();
-        
+
         List<ArrLevel> childLevels = levelRepository
                 .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode());
         for (ArrLevel childLevel : childLevels) {
@@ -566,7 +566,7 @@ public class FundLevelService {
                     .set("nodeId", node.getNodeId());
         }
 
-        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
+        for (ArrDescItem descItem : descriptionItemService.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
             descItem.setDeleteChange(deleteChange);
             descItemRepository.save(descItem);
         }
@@ -574,7 +574,7 @@ public class FundLevelService {
         daoService.deleteDaoLinkByNodes(fundVersion, deleteChange, Collections.singletonList(node));
 
         // vyhledani node, ktere odkazuji na mazany
-        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+        List<ArrDescItem> arrDescItemList = descriptionItemService.findByUriDataNode(node);
 
         arrDescItemList = arrDescItemList.stream().map(i -> {
             entityManager.detach(i);
@@ -584,7 +584,7 @@ public class FundLevelService {
         for (ArrDescItem arrDescItem : arrDescItemList) {
             //pokud se item bude mazat, není potřeba u něj předělávat UriRef
             if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
-                ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                ArrDataUriRef arrDataUriRef = new ArrDataUriRef(HibernateUtils.unproxy(arrDescItem.getData()));
                 arrDataUriRef.setDataId(null);
                 arrDataUriRef.setArrNode(null);
                 arrDataUriRef.setDeletingProcess(true);
@@ -598,7 +598,7 @@ public class FundLevelService {
         nodeRepository.save(node);
 
         baselevel.setDeleteChange(deleteChange);
-        
+
         deletedLevels.add(baselevel);
         return deletedLevels;
     }
@@ -793,7 +793,7 @@ public class FundLevelService {
      * sourozence a vloží uzel.
      *
      * Metoda pošle notifikaci o přidání uzlu.
-     * 
+     *
      * @param version
      *            verze stromu
      * @param staticNode
@@ -870,7 +870,7 @@ public class FundLevelService {
             ArrLevel firstLevel = levels.get(0);
             ArrLevel olderSibling = levelRepository.findOlderSibling(firstLevel, fundVersion.getLockChange());
             if (olderSibling != null) {
-                copyDescItems = descItemRepository
+                copyDescItems = descriptionItemService
                         .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
             }
         }
@@ -888,7 +888,7 @@ public class FundLevelService {
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         List<Integer> nodeIds = new ArrayList<>(levels.size());
         for (ArrLevel newLevel : levels) {
-            
+
             createItemsForNewLevel(fundContext, changeContext, change, newLevel, scenario, copyDescItems,
                                    desctItemProvider);
 
@@ -918,7 +918,7 @@ public class FundLevelService {
 
     /**
      * Create items for new level
-     * 
+     *
      * @param fundVersion
      * @param direction
      * @param baseLevel
@@ -990,7 +990,7 @@ public class FundLevelService {
                 items.add(descItemCreated);
             }
         }
-        
+
         if (CollectionUtils.isNotEmpty(copyDescItems)) {
             List<ArrDescItem> copiedItems = descriptionItemService
                     .copyDescItemWithDataToNode(newLevel.getNode(),
@@ -1086,7 +1086,7 @@ public class FundLevelService {
         return level;
     }
 
-	public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, 
+	public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode,
 			final int position, final ArrNode node) {
 
         ArrLevel level = createLevelObject(createChange, parentNode,
@@ -1097,7 +1097,7 @@ public class FundLevelService {
 	public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final int position,
 			final String uuid, final ArrFund fund) {
         Validate.notNull(createChange, "Change nesmí být prázdná");
-		
+
 		ArrNode node = arrangementService.createNode(fund, uuid, createChange);
 		return createLevel(createChange, parentNode, position, node);
 	}
@@ -1135,7 +1135,7 @@ public class FundLevelService {
         }
 
         List<ArrNode> nodes = createNodes(version.getFund(), change, count, uuids);
-        
+
         // create levels
         List<ArrLevel> levels = createLevels(change, parentLevel.getNode(), 1 + maxPosition, nodes);
         return levels;
@@ -1193,7 +1193,7 @@ public class FundLevelService {
 
     /**
      * Smaže uzel (uzamkne) a vytvoří jeho kopii.
-     * 
+     *
      * Předchozí verze je ihned uložena do DB. Nová verze není uložena.
      *
      * @param prevLevel
@@ -1328,12 +1328,12 @@ public class FundLevelService {
 
     /**
      * Add new level to the existing node
-     * 
+     *
      * This method can be used only if there is no other active level for the node
-     * 
+     *
      * @param fundVersion
      * @param parentLevel
-     * @param change 
+     * @param change
      * @param linkNode
      * @param descItemProvider
      * @return
@@ -1342,9 +1342,9 @@ public class FundLevelService {
 			ArrLevel parentLevel,
 			ArrChange change, ArrNode linkNode,
 			DaoDesctItemProvider descItemProvider) {
-		
+
 		// TODO: Check that no items exists for node
-		
+
         Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(parentLevel, "Rodičovká JP musí být vyplněna");
         Validate.notNull(change, "Change musí existovat");
@@ -1356,18 +1356,18 @@ public class FundLevelService {
             maxPosition = 0;
         }
 
-        ArrLevel newLevel = createLevel(change, parentLevel.getNode(), 
+        ArrLevel newLevel = createLevel(change, parentLevel.getNode(),
         		maxPosition + 1, linkNode);
 
         // create/update node cache
         nodeCacheService.syncNodes(Collections.singletonList(linkNode.getNodeId()));
-		
+
         createItemsForNewLevel(fundVersion, parentLevel, newLevel, change, null, null, descItemProvider);
 
         // send notification about new level
         eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
                                                                               parentLevel, newLevel));
-    	
+
 		return newLevel;
 	}
 }

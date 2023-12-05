@@ -14,15 +14,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamSource;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.constraints.NotNull;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -90,6 +90,8 @@ import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
+import javax.xml.transform.stream.StreamSource;
+
 /**
  * Servisní metody pro synchronizaci digitizátů.
  */
@@ -144,7 +146,7 @@ public class DaoSyncService {
 
     @Autowired
     private ArrangementService arrangementService;
-    
+
     @Autowired
     ArrangementInternalService arrangementInternalService;
 
@@ -212,7 +214,7 @@ public class DaoSyncService {
 
             List<ArrDescItem> result = new ArrayList<>();
 
-            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            List<ArrDescItem> dbItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(level.getNode());
 
             for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
@@ -244,7 +246,7 @@ public class DaoSyncService {
                 prevScenarioItems.add(descItem);
             }
 
-            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            List<ArrDescItem> dbItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(level.getNode());
             for (ArrDescItem dbItem : dbItems) {
                 // check if item from scenario
                 if (isItemFromScenario(dbItem, prevScenarioItems)) {
@@ -270,7 +272,7 @@ public class DaoSyncService {
         }
 
         private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
-            ArrData dbData = dbItem.getData();
+            ArrData dbData = HibernateUtils.unproxy(dbItem.getData());
 
             for (ArrDescItem scenarioItem : scenarioItems) {
                 if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
@@ -284,7 +286,7 @@ public class DaoSyncService {
                         // item without data might be removed
                         return true;
                     }
-                    ArrData data = scenarioItem.getData();
+                    ArrData data = HibernateUtils.unproxy(scenarioItem.getData());
                     if (data != null && data.isEqualValue(dbData)) {
                         return true;
                     }
@@ -344,7 +346,7 @@ public class DaoSyncService {
 
     /**
      * Změnit scénář
-     * 
+     *
      * @param daoId
      * @param scenario
      */
@@ -359,26 +361,26 @@ public class DaoSyncService {
                     DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
         }
         ArrDaoLink daoLink = daoLinks.get(0);
-        ArrNode node = daoLink.getNode();        
+        ArrNode node = daoLink.getNode();
         ArrFund fund = node.getFund();
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
         ArrLevel level = fundLevelService.findLevelByNode(node);
-        
+
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
-        
+
         Items items = unmarshalItemsFromAttributes(dao);
 
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         // odstraneni puvodnich zaznamu
         DaoDesctItemProvider daoDesctItemProviderOrig = createDescItemProvider(items, daoLink.getScenario());
         daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
-        
+
         DaoDesctItemProvider daoDesctItemProviderNew = createDescItemProvider(items, scenario);
         daoDesctItemProviderNew.provide(level, change, fundVersion, changeContext);
-        
+
         // store new scenario
         daoLink.setScenario(scenario);
-        
+
         changeContext.flush();
     }
 
@@ -396,8 +398,7 @@ public class DaoSyncService {
     /**
      * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
      *
-     * @param fundVersionId verze AS
-     * @param dao           DAO pro synchronizaci
+     * @param fundVersion verze AS
      * @param node          node pro synchronizaci
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -477,7 +478,7 @@ public class DaoSyncService {
 
     /**
      * Provede aktualizaci metadat.
-     * 
+     *
      * @param fundVersion
      *            open version
      *

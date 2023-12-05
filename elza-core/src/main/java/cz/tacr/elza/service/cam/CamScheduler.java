@@ -2,7 +2,7 @@ package cz.tacr.elza.service.cam;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,7 +26,7 @@ public class CamScheduler
     private static final Logger log = LoggerFactory.getLogger(CamScheduler.class);
     @Autowired
     private CamService camService;
-    
+
     @Autowired
     private SyncConfig syncConfig;
 

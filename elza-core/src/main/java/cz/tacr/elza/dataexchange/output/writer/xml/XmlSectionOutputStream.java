@@ -9,13 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.Validate;
 
@@ -52,6 +49,9 @@ import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.schema.v2.Level;
 import cz.tacr.elza.schema.v2.ObjectFactory;
 import cz.tacr.elza.schema.v2.StructuredObject;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * XML output stream for section export.

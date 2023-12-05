@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.input.parts;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -142,12 +143,14 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
             for (NameComplement nc : name.getNcs().getNc()) {
                 switch (nc.getCt()) {
                     case "INITIALS":
-                        String dataInit = ((ArrDataString) mainEntity.getData()).getStringValue();
-                        ((ArrDataString) mainEntity.getData()).setStringValue(dataInit + " " + nc.getV());
+                        ArrData arrDataInitials =  HibernateUtils.unproxy(mainEntity.getData());
+                        String dataInit = ((ArrDataString) arrDataInitials).getStringValue();
+                        ((ArrDataString) arrDataInitials).setStringValue(dataInit + " " + nc.getV());
                         break;
                     case "ROMAN_NUM":
-                        String dataRomanNum = ((ArrDataString) mainEntity.getData()).getStringValue();
-                        ((ArrDataString) mainEntity.getData()).setStringValue(dataRomanNum + " " + nc.getV());
+                        ArrData arrDataRomanNum =  HibernateUtils.unproxy(mainEntity.getData());
+                        String dataRomanNum = ((ArrDataString) arrDataRomanNum).getStringValue();
+                        ((ArrDataString) arrDataRomanNum).setStringValue(dataRomanNum + " " + nc.getV());
                         break;
                     case "GENERAL":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEN");

@@ -5,7 +5,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 import java.util.Collections;
 import java.util.List;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,14 +78,14 @@ public abstract class BulkAction {
 
     /**
      * Optional context for changing multiple items at once
-     * 
+     *
      * This can speed up processing of operation.
      */
     protected MultipleItemChangeContext multipleItemChangeContext = null;
 
     /**
      * Return or create multipleChangeContext
-     * 
+     *
      * @return
      */
     public MultipleItemChangeContext getMultipleItemChangeContext() {
@@ -126,7 +126,7 @@ public abstract class BulkAction {
 
     /**
      * Prepare exception for incorrect configuration
-     * 
+     *
      * @param message
      * @return
      */
@@ -237,7 +237,7 @@ public abstract class BulkAction {
      * @return nalezený atribut
      */
     public ArrDescItem loadSingleDescItem(final ArrNode node, RulItemType descItemType) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(
+        List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(
                                                                                                       node, descItemType
                                                                                                               .getItemTypeId());
         if (descItems.size() == 0) {

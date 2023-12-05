@@ -20,8 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -139,7 +140,7 @@ public class OutputService {
 
     @Autowired
     ArrangementInternalService arrangementInternalService;
-    
+
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
 
@@ -312,7 +313,7 @@ public class OutputService {
             } while (outputRepository.existsByName(newNameWithNum));
             newName = newNameWithNum;
         }
-        
+
         // read current templates
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(originalOutput);
         List<Integer> templateIds;
@@ -388,7 +389,7 @@ public class OutputService {
         RulOutputType type = outputTypeRepository.findById(outputTypeId)
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
-        
+
         ArrChange change = arrangementInternalService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
@@ -405,7 +406,7 @@ public class OutputService {
         // save output templates
         List<ArrOutputTemplate> outputTemplates;
 		if (CollectionUtils.isNotEmpty(templateIds)) {
-			outputTemplates = outputServiceInternal.createOutputTemplates(savedOutput, templateIds);			
+			outputTemplates = outputServiceInternal.createOutputTemplates(savedOutput, templateIds);
         } else {
         	outputTemplates = null;
         }
@@ -912,7 +913,7 @@ public class OutputService {
         }
 
         // save data
-        ArrData savedData = this.saveData(outputItem.getItemType(), outputItem.getData());
+        ArrData savedData = this.saveData(outputItem.getItemType(), HibernateUtils.unproxy(outputItem.getData()));
 
         outputItem.setCreateChange(change);
         outputItem.setData(savedData);
@@ -938,7 +939,7 @@ public class OutputService {
         ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
+        List<ArrOutputItem> outputItems = outputServiceInternal.findOpenOutputItems(descItemObjectId);
 
         if (outputItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
@@ -1032,7 +1033,7 @@ public class OutputService {
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
+        List<ArrOutputItem> outputItems = outputServiceInternal.findOpenOutputItems(outputItem.getDescItemObjectId());
 
         if (outputItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
@@ -1144,7 +1145,7 @@ public class OutputService {
             outputItemRepository.save(outputItemDB);
             outputItemRepository.flush();
 
-            ArrData newData = this.saveData(descItemNew.getItemType(), outputItem.getData());
+            ArrData newData = this.saveData(descItemNew.getItemType(), HibernateUtils.unproxy(outputItem.getData()));
 
             descItemNew.setItemId(null);
             descItemNew.setCreateChange(change);
@@ -1503,7 +1504,7 @@ public class OutputService {
         ArrChange change = arrangementInternalService.createChange(null);
 
         if (outputItemObjectId != null) {
-            ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);
+            ArrOutputItem openOutputItem = outputServiceInternal.findOpenOutputItem(outputItemObjectId);
             if (openOutputItem == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + outputItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", outputItemObjectId);
             } else if (openOutputItem.getData() == null) {
@@ -1591,7 +1592,7 @@ public class OutputService {
 
     /**
      * Send output to connected system
-     * 
+     *
      * @param output
      */
     @Transactional
@@ -1608,7 +1609,7 @@ public class OutputService {
 
     /**
      * Add template to output
-     * 
+     *
      * @param fundId
      * @param output
      * @param templateId
@@ -1617,7 +1618,7 @@ public class OutputService {
     @AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
 	public ArrOutputTemplateVO addOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
 			ArrOutput output, Integer templateId) {
-		
+
     	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
 
     	ArrOutputTemplate ot = new ArrOutputTemplate();
@@ -1646,13 +1647,17 @@ public class OutputService {
 	@AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
 	public void deleteOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
 			ArrOutput output, Integer templateId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());        
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
 
         outputTemplateRepository.deleteByOutputIdAndTemplateId(output.getOutputId(), templateId);
-        
-        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, 
+
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES,
         		fundVersion, output.getOutputId()));
-        
+
 	}
+
+    public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
+        return outputServiceInternal.findOpenOutputItem(descItemObjectId);
+    }
 
 }

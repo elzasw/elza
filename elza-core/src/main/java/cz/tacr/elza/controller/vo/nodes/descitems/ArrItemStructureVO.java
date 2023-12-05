@@ -2,8 +2,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 
 
 import java.util.Objects;
-
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.core.data.DataType;

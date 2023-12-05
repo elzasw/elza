@@ -17,9 +17,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.persistence.EntityManager;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -112,7 +112,7 @@ public class DEExportService {
                 resourcePathResolver);
         this.staticDataService = staticDataService;
         this.apItemRepository = apItemRepository;
-        this.stateRepository = stateRepository; 
+        this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
@@ -197,7 +197,7 @@ public class DEExportService {
 
     /**
      * Check global and access point(s) permission
-     * 
+     *
      * @param params
      */
     private void checkGlobalAndAccessPointPermission(DEExportParams params) {
@@ -207,7 +207,7 @@ public class DEExportService {
 
         // check global permission
         AuthorizationRequest authRequest = AuthorizationRequest
-                .hasPermission(UsrPermission.Permission.FUND_ADMIN);        
+                .hasPermission(UsrPermission.Permission.FUND_ADMIN);
         if (!authRequest.matches(userDetail)) {
             // check section parts
             // check permissions for each exported part
@@ -280,7 +280,7 @@ public class DEExportService {
 
     /**
      * Check permissions to export give FundSections
-     * 
+     *
      * @param fs
      *            fund section
      * @param userDetail
@@ -319,7 +319,7 @@ public class DEExportService {
 
     /**
      * Read config from export filter file .yaml
-     * 
+     *
      * @param expFilterDB file name
      * @return ExportFilterConfig
      */

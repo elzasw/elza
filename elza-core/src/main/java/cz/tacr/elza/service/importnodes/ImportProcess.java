@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -442,7 +443,7 @@ public class ImportProcess {
                     if (selectedDirection.equals(FundLevelService.AddLevelDirection.BEFORE)) {
                         levelsToShift.add(0, staticLevel);
                     }
-                    // posunutí potřebných levelů (pokud se zakládá před nebo za                            
+                    // posunutí potřebných levelů (pokud se zakládá před nebo za
                     Validate.notNull(targetParentNode, "Musí být vyplněn rodič uzlu");
                     this.levels.addAll(fundLevelService.shiftNodes(levelsToShift, change, position + 1));
 
@@ -556,11 +557,11 @@ public class ImportProcess {
         Validate.notNull(so.getStructuredObjectId());
 
         // preapare items and data
-        List<ArrStructuredItem> srcItems = structItemRepository
+        List<ArrStructuredItem> srcItems = structObjService
                 .findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceObj);
         for (ArrStructuredItem srcItem : srcItems) {
             // make data copy
-            ArrData srcData = srcItem.getData();
+            ArrData srcData = HibernateUtils.unproxy(srcItem.getData());
             ArrData trgData = null;
             if (srcData != null) {
                 trgData = ArrData.makeCopyWithoutId(srcData);

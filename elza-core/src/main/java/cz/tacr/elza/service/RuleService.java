@@ -21,11 +21,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ArrData;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -270,7 +272,7 @@ public class RuleService {
     private static final String GEO_TYPE = "GEO_TYPE";
 
     /**
-     * 
+     *
      * @param faLevelId
      * @param fundVersionId
      * @param asyncRequestId
@@ -378,7 +380,7 @@ public class RuleService {
         List<ArrNodeConformityMissing> confNextMissing = new ArrayList<>();
         List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
         if (conformityInfo != null) {
-            // we can skip reading errors if prev state was ok            
+            // we can skip reading errors if prev state was ok
             if (State.OK != conformityInfo.getState()) {
                 List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
                 confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
@@ -399,7 +401,7 @@ public class RuleService {
         conformityInfo.setState(validationResults.isEmpty()?
                 ArrNodeConformity.State.OK:ArrNodeConformity.State.ERR);
         conformityInfo = nodeConformityRepository.save(conformityInfo);
-        
+
         // process errors
         for (DataValidationResult validationResult : validationResults) {
             // policy type has to be set
@@ -437,7 +439,7 @@ public class RuleService {
                                                    ArrNodeConformity conformityInfo) {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
-        
+
         for (int i = 0; i < confPrevErrors.size(); i++) {
             ArrNodeConformityError error = confPrevErrors.get(i);
             // compare existing DB object
@@ -464,7 +466,7 @@ public class RuleService {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
         Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
-        
+
         for(int i=0; i<confPrevMissing.size(); i++) {
             ArrNodeConformityMissing missing = confPrevMissing.get(i);
             // compare existing DB object
@@ -477,7 +479,7 @@ public class RuleService {
             }
 
         }
-        
+
         ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
         missing.setNodeConformity(conformityInfo);
         missing.setItemType(validationResult.getType());
@@ -697,7 +699,7 @@ public class RuleService {
 
     /**
      * Provádění validaci nody, které mají odkaz na ApAccessPoint
-     * 
+     *
      * @param accessPointId
      */
     public void revalidateNodesWithApRef(final Integer accessPointId) {
@@ -721,7 +723,7 @@ public class RuleService {
         List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
         Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
                 .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
-                                               Collectors.mapping(i -> i.getNodeId(), 
+                                               Collectors.mapping(i -> i.getNodeId(),
                                                                   Collectors.toList())));
         for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
             ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
@@ -734,7 +736,7 @@ public class RuleService {
     /**
      * Smaže všechny vybrané stavy.
      *
-     * 
+     *
      * @param infos stavy ke smazání
      */
     private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
@@ -770,9 +772,9 @@ public class RuleService {
 
     /**
      * Mazání uzlů podle seznamu id.
-     * 
+     *
      * Metoda akceptuje velké množství uzlů a zajistí stránkování.
-     * 
+     *
      * @param unusedNodes
      */
     public void deleteByNodeIdIn(Collection<Integer> nodeIds) {
@@ -784,9 +786,9 @@ public class RuleService {
 
     /**
      * Mazání dle seznamu item
-     * 
+     *
      * Metoda akceptuje velké množství item a zajistí stránkování.
-     * 
+     *
      * @param unusedNodes
      */
     public void deleteConformityByItems(List<ArrItem> arrItemList) {
@@ -803,7 +805,7 @@ public class RuleService {
 
     /**
      * Mazání uzlů podle fondu.
-     * 
+     *
      * @param fund
      */
     public void deleteByNodeFund(ArrFund fund) {
@@ -1349,13 +1351,13 @@ public class RuleService {
 
         return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, ruleSet);
     }
-    
+
     /**
      * Run access point validation
-     * 
+     *
      * Method reads current AP state from DB.
      * Method is not using cache.
-     * 
+     *
      * @param accessPoint
      * @return
      */
@@ -1374,7 +1376,7 @@ public class RuleService {
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApScope scope = state.getScope();
         Integer ruleSetId = scope.getRuleSetId();
-        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId); 
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId);
 
         List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
@@ -1717,7 +1719,7 @@ public class RuleService {
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
                 String parentGeoType = findEntityGeoType(parentGeoId);
-                boolean parentExtinct = isParentExtinct(parentGeoId);                
+                boolean parentExtinct = isParentExtinct(parentGeoId);
                 if (country == null) {
                     country = findEntityCountry(parentGeoId);
                 }
@@ -1760,7 +1762,7 @@ public class RuleService {
             return null;
         }
         ApItem aeItem = items.get(0);
-        ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
+        ArrDataRecordRef recordRef = HibernateUtils.unproxy(aeItem.getData());
         return recordRef.getRecordId();
     }
 
@@ -1854,7 +1856,8 @@ public class RuleService {
                     if (CollectionUtils.isNotEmpty(idnValueItemList)) {
                         for (ApItem aeItem : idnValueItemList) {
                             if (aeItem.getPartId().equals(idnTypeItem.getPartId())) {
-                                return aeItem.getData().getFulltextValue();
+                                ArrData data = HibernateUtils.unproxy(aeItem.getData());
+                                return data.getFulltextValue();
                             }
                         }
                     }
@@ -1938,7 +1941,7 @@ public class RuleService {
     }
 
     private Index createIndex(ApIndex apIndex, Part part) {
-        return new Index(apIndex.getIndexType(), apIndex.getValue(), part);
+        return new Index(apIndex.getIndexType(), apIndex.getIndexValue(), part);
     }
 
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
@@ -1960,7 +1963,7 @@ public class RuleService {
         }
         executeDrls.add(drlType.value() + "/" + partType.value());
         executeDrls.add(drlType.value());
-        
+
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
 
         try {
@@ -2057,7 +2060,7 @@ public class RuleService {
 
     /**
      * Return export filter
-     * 
+     *
      * @param exportFilterId
      * @return
      */

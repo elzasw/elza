@@ -4,7 +4,7 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
-import liquibase.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -595,7 +595,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                         partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
                     }
 
-                    //zpracování genealogy      
+                    //zpracování genealogy
                     createApItemString(partId, ItemTypeCode.GENEALOGY, rs.getString("genealogy"));
                 }
             }
@@ -929,7 +929,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             }
         }
 
-        //zpracování to_unitdate_id        
+        //zpracování to_unitdate_id
         String noteUnitDateTo = null;
         if (toUnitdateId > 0) {
             if (toUnitdateTypeCode != null) {

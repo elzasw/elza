@@ -24,15 +24,15 @@ import cz.tacr.elza.domain.RulItemType;
 @Repository
 public interface StructuredItemRepository extends JpaRepository<ArrStructuredItem, Integer> {
 
-    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structuredObjectId = :structuredObjectId")
+    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.structuredObjectId = :structuredObjectId")
     List<ArrStructuredItem> findByStructObjIdAndDeleteChangeIsNullFetchData(
             @Param("structuredObjectId") Integer structuredObjectId);
 
-    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structuredObject = :structuredObject")
+    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.structuredObject = :structuredObject")
     List<ArrStructuredItem> findByStructuredObjectAndDeleteChangeIsNullFetchData(
             @Param("structuredObject") ArrStructuredObject structuredObject);
 
-    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structuredObject IN :structuredObjectList")
+    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.structuredObject IN :structuredObjectList")
     List<ArrStructuredItem> findByStructuredObjectListAndDeleteChangeIsNullFetchData(@Param("structuredObjectList") List<ArrStructuredObject> structuredObjectList);
 
     @Query("SELECT i FROM arr_structured_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structuredObject = :structuredObject AND i.position > :position")
@@ -41,7 +41,7 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
                                                        @Param("position") Integer position,
                                                        Pageable pageRequest);
 
-    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structuredObject = :structuredObject AND i.position > :position")
+    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structuredObject = :structuredObject AND i.position > :position")
     List<ArrStructuredItem> findOpenItemsAfterPositionFetchData(@Param("itemType") RulItemType itemType,
                                                                 @Param("structuredObject") ArrStructuredObject structuredObject,
                                                                 @Param("position") Integer position,
@@ -53,7 +53,7 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
                                                           @Param("positionFrom") Integer positionFrom,
                                                           @Param("positionTo") Integer positionTo);
 
-    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
+    @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     ArrStructuredItem findOpenItemFetchData(@Param("itemObjectId") Integer itemObjectId);
 
     @Query("SELECT i FROM arr_structured_item i WHERE i.deleteChange IS NULL AND i.itemType.itemTypeId = :itemTypeId AND i.structuredObject = :structuredObject")

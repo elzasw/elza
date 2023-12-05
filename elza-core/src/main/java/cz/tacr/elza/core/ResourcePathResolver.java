@@ -3,11 +3,9 @@ package cz.tacr.elza.core;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulOutputFilter;
+import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -126,7 +124,7 @@ public class ResourcePathResolver {
      *
      * @param template Persistent entity with initialized OutputType.
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getTemplateDir(RulTemplate template) {
         RulOutputType outputType = template.getOutputType();
         Validate.isTrue(HibernateUtils.isInitialized(outputType));
@@ -156,7 +154,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to templates directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getTemplatesDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -181,7 +179,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to drool file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolFile(RulRuleSet ruleSet) {
         Path droolsDir = getDroolsDir(ruleSet.getPackage().getPackageId(), ruleSet.getRuleSetId());
         String droolFile = ruleSet.getItemTypeComponent().getFilename();
@@ -194,7 +192,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to drool file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolFile(RulArrangementRule rule) {
         Path droolsDir = getDroolsDir(rule.getPackageId(), rule.getRuleSetId());
         String droolFile = rule.getComponent().getFilename();
@@ -207,7 +205,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to drool file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolFile(RulExtensionRule rulExtensionRule) {
         Path droolsDir = getDroolsDir(rulExtensionRule.getPackage().getPackageId(),
                 rulExtensionRule.getArrangementExtension().getRuleSet().getRuleSetId());
@@ -223,7 +221,7 @@ public class ResourcePathResolver {
      * @return Path to drool file (may not exist). Return null if component does
      *         not exists
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolFile(RulOutputType outputType) {
         RulComponent component = outputType.getComponent();
         if (component == null) {
@@ -241,7 +239,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to drool file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolsFile(RulStructureDefinition structureDefinition) {
         Path droolsDir = getDroolsDir(structureDefinition.getRulPackage().getPackageId());
         String droolFile = structureDefinition.getComponent().getFilename();
@@ -254,7 +252,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to drool file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolsFile(RulStructureExtensionDefinition structureExtensionDefinition) {
         Path droolsDir = getDroolsDir(structureExtensionDefinition.getRulPackage().getPackageId());
         String droolFile = structureExtensionDefinition.getComponent().getFilename();
@@ -294,7 +292,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to rule set drools directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolsDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -306,7 +304,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to rule set drools directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getDroolsDir(RulPackage rulPackage) {
         Path ruleSetPath = getPackageDir(rulPackage);
 
@@ -318,7 +316,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to function file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getFunctionFile(RulAction action) {
         Path functionsDir = getFunctionsDir(action.getPackageId(), action.getRuleSetId());
         String functionFile = action.getFilename();
@@ -331,7 +329,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to output filter file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getOutputFilterFile(RulOutputFilter outputFilter) {
         Path outputFiltersDir = getOutputFiltersDir(outputFilter.getPackageId(), outputFilter.getRuleSetId());
         String outputFilterFile = outputFilter.getFilename();
@@ -344,7 +342,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to export filter file (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getExportFilterFile(RulExportFilter exportFilter) {
         Path exportFiltersDir = getExportFiltersDir(exportFilter.getPackageId(), exportFilter.getRuleSetId());
         String exportFilterFile = exportFilter.getFilename();
@@ -378,7 +376,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to groovy directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getGroovyDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -390,7 +388,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to groovy directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getGroovyDir(RulPackage rulPackage) {
         Path ruleSetPath = getPackageDir(rulPackage);
 
@@ -416,7 +414,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to rule set functions directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getFunctionsDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -442,7 +440,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to rule set output filters directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getOutputFiltersDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -468,7 +466,7 @@ public class ResourcePathResolver {
     /**
      * @return Path to rule set export filters directory (may not exist).
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getExportFiltersDir(RulPackage rulPackage, RulRuleSet ruleSet) {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
@@ -491,7 +489,7 @@ public class ResourcePathResolver {
      * @param rulPackage
      * @return
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public Path getPackageDir(RulPackage rulPackage) {
         String packageDir = rulPackage.getCode();
 

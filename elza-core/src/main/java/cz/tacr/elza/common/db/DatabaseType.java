@@ -1,6 +1,6 @@
 package cz.tacr.elza.common.db;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;

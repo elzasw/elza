@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
@@ -128,7 +129,7 @@ public class DateRangeAction extends Action {
 
     /**
      * Mark level to be skipped
-     * 
+     *
      * @param level
      */
     public void setSkipSubtree(LevelWithItems level) {
@@ -167,7 +168,7 @@ public class DateRangeAction extends Action {
                 continue;
             }
 
-            ArrDataUnitdate unitDate = (ArrDataUnitdate) item.getData();
+            ArrDataUnitdate unitDate = HibernateUtils.unproxy(item.getData());
             processUnitDate(unitDate, level);
         }
     }
@@ -192,7 +193,7 @@ public class DateRangeAction extends Action {
 
         for (ArrDescItem bulkRange : bulkRanges) {
             // check range
-            ArrDataUnitdate bulkUnitDate = (ArrDataUnitdate) bulkRange.getData();
+            ArrDataUnitdate bulkUnitDate = HibernateUtils.unproxy(bulkRange.getData());
 
             if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()
             // if same value -> not estimated is more important then estimated

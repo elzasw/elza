@@ -5,11 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.stream.XMLStreamWriter;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Marshaller;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -37,6 +35,8 @@ import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.ExternalId;
 import cz.tacr.elza.schema.v2.Fragment;
 import cz.tacr.elza.schema.v2.Fragments;
+
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * XML output stream for access points export.
@@ -106,7 +106,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
 
     /**
      * Create element for one part
-     * 
+     *
      * @param part
      * @param items
      * @return

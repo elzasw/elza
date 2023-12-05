@@ -2,10 +2,10 @@ package cz.tacr.elza.web;
 
 import java.util.Locale;
 
-import javax.servlet.Filter;
-import javax.servlet.MultipartConfigElement;
 
-import org.h2.server.web.WebServlet;
+import jakarta.servlet.Filter;
+import jakarta.servlet.MultipartConfigElement;
+import org.h2.server.web.JakartaWebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +35,7 @@ import io.swagger.v3.oas.models.servers.Server;
 
 /**
  * Servlet/Web container specific configuration
- * 
+ *
  */
 @EnableAutoConfiguration
 @Configuration
@@ -64,9 +64,9 @@ public class ElzaWebApp {
 
     @Bean
     @ConditionalOnProperty(prefix = "elza.debug.h2", name = "console", havingValue = "true")
-    public ServletRegistrationBean<WebServlet> h2servletRegistration() {
+    public ServletRegistrationBean<JakartaWebServlet> h2servletRegistration() {
         logger.info("Initializing H2 Console, listening on /console (elza.debug.h2=true)");
-        ServletRegistrationBean<WebServlet> registration = new ServletRegistrationBean<>(new WebServlet());
+        ServletRegistrationBean<JakartaWebServlet> registration = new ServletRegistrationBean<>(new JakartaWebServlet());
         registration.addUrlMappings("/console/*");
         return registration;
     }
@@ -103,9 +103,9 @@ public class ElzaWebApp {
 
     /**
      * Allow to accept forwarded headers (X-Forwarded-Prefix, X-Forwarded-Host,...)
-     * 
+     *
      * This option should be used when Elza is running behind gateway
-     * 
+     *
      * @return Filter pro forwarding
      */
     @Bean

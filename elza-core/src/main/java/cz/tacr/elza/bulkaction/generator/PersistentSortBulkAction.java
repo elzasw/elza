@@ -166,9 +166,9 @@ public class PersistentSortBulkAction extends BulkAction {
     private Map<Integer, ArrDescItem> getNodeValues(List<ArrNode> nodes) {
         List<ArrDescItem> descItems;
         if (itemSpec == null) {
-            descItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
+            descItems = descriptionItemService.findOpenByNodesAndType(nodes, itemType);
         } else {
-            descItems = descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, itemType, Collections.singletonList(itemSpec));
+            descItems = descriptionItemService.findOpenByNodesAndTypeAndSpec(nodes, itemType, Collections.singletonList(itemSpec));
         }
 
         Map<Integer, ArrDescItem> nodeValues = new HashMap<>();
@@ -226,7 +226,7 @@ public class PersistentSortBulkAction extends BulkAction {
             return (o1, o2) ->
                 o1.isValue().compareTo(o2.isValue());
         case STRUCTURED:
-            return (o1, o2) -> 
+            return (o1, o2) ->
                 o1.getFulltextValue().compareTo(o2.getFulltextValue());
         default:
             throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR)

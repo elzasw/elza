@@ -23,8 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -60,7 +60,7 @@ public class IssueService {
     // --- services ---
 
     private final ArrangementService arrangementService;
-    private final AccessPointService accessPointService; 
+    private final AccessPointService accessPointService;
     private final LevelTreeCacheService levelTreeCacheService;
     private final IEventNotificationService eventNotificationService;
 
@@ -246,7 +246,7 @@ public class IssueService {
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public void deleteIssueList(@NotNull Integer issueListId) {
 
-        WfIssueList issueList = getIssueList(issueListId);        
+        WfIssueList issueList = getIssueList(issueListId);
         List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);
 
         Validate.isTrue(issues.isEmpty(), "Cannot be deleted: comments exist, issueListId=" + issueListId);
@@ -450,7 +450,7 @@ public class IssueService {
     }
 
     @AuthMethod(permission = {Permission.ADMIN,
-    		Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, 
+    		Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN,
     		Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public void exportIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, OutputStream os) throws IOException {
 
@@ -464,7 +464,7 @@ public class IssueService {
 
         Set<ApAccessPoint> accessPoints = issues.stream().map(p -> p.getUserCreate().getAccessPoint()).collect(Collectors.toSet());
 
-        Map<ApAccessPoint, String> accessPointMap = accessPoints.stream().collect(Collectors.toMap(a -> a, a -> accessPointService.findPreferredPartDisplayName(a))); 
+        Map<ApAccessPoint, String> accessPointMap = accessPoints.stream().collect(Collectors.toMap(a -> a, a -> accessPointService.findPreferredPartDisplayName(a)));
 
         DateTimeFormatter commentDateFormatter = DateTimeFormatter.ofPattern("d.M.u");
 

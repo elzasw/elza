@@ -3,7 +3,8 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.core.data.DataType;
@@ -46,7 +47,7 @@ public class ArrItemFileRefVO extends ArrItemVO {
     public Integer getValue() {
         return value;
     }
-    
+
     public void setValue(final Integer value) {
         this.value = value;
     }
@@ -82,7 +83,7 @@ public class ArrItemFileRefVO extends ArrItemVO {
     }
 
     public static ArrItemFileRefVO newInstance(ArrItem item, AttachmentService attachmentService) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         ArrFileVO fileVO = null;
         if (data != null) {
             if (!(data instanceof ArrDataFileRef)) {

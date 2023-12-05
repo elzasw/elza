@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -193,7 +193,7 @@ public class TestDataGenerator extends BulkAction {
 
 	/**
      * Copy all description items
-     * 
+     *
      * @param srcLevel
      * @param trgLevel
      * @param changeContext

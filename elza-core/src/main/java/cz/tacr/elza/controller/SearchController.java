@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -79,12 +79,12 @@ public class SearchController implements SearchApi {
 	static class ApSearchParams {
 		int firstResult = 0;
 	    int maxResults = 200;
-	    
+
         List<Integer> scopeIds;
 
 		List<Integer> apTypeIds = null;
 		private StaticDataProvider sdp;
-		
+
         SearchFilterVO searchFilterVO = new SearchFilterVO();
 
 		public ApSearchParams(final StaticDataProvider sdp) {
@@ -97,9 +97,9 @@ public class SearchController implements SearchApi {
 			if(offset!=null) {
 				if(offset<0) {
 					log.warn("Offset is out of range, received value: {}", offset);
-					return false;					
+					return false;
 				}
-				firstResult = offset;			
+				firstResult = offset;
 			}
 			Integer size = searchParams.getSize();
 			if(size!=null) {
@@ -110,16 +110,16 @@ public class SearchController implements SearchApi {
 					return false;
 				}
 			}
-			
+
 			List<AbstractFilter> filters = searchParams.getFilters();
             if (filters != null) {
                 if (!processAndFilters(filters)) {
                     return false;
                 }
 			}
-			return true;			
+			return true;
 		}
-		
+
         private boolean processAndFilters(List<AbstractFilter> filters) {
 			for(AbstractFilter filter: filters) {
 				if(filter instanceof MultimatchContainsFilter) {
@@ -127,12 +127,12 @@ public class SearchController implements SearchApi {
                     if (StringUtils.isNotBlank(searchFilterVO.getSearch())) {
 						// multiple fulltext values
 						log.warn("Multiple fulltext fields");
-						return false; 
+						return false;
 					}
                     searchFilterVO.setSearch(mcf.getValue());
 					continue;
 				}
-				
+
 				if(filter instanceof FieldValueFilter) {
 					FieldValueFilter fvf = (FieldValueFilter)filter;
 					if(FIELD_APTYPE.equals(fvf.getField())) {
@@ -146,7 +146,7 @@ public class SearchController implements SearchApi {
 					}
 					continue;
 				}
-				
+
 				if(filter instanceof LogicalFilter) {
 					LogicalFilter lf = (LogicalFilter) filter;
 					// and filters can be processed recursively
@@ -158,11 +158,11 @@ public class SearchController implements SearchApi {
 					if(LogicalFilter.OperationEnum.OR==lf.getOperation()) {
 						if(!processOrFilters(lf.getFilters())) {
 							return false;
-						}						
+						}
 					} else {
 						log.warn("Unsupported logical operation: {}", lf.getOperation());
-						return false;						
-					}					
+						return false;
+					}
 				}
 			}
 			return true;
@@ -173,11 +173,11 @@ public class SearchController implements SearchApi {
 				// unrecognized ap type
 				log.warn("Unknown aptype: {}", value);
 				return false;
-				
+
 			}
 			if(apTypeIds!=null) {
 				log.warn("AP has only one type and cannot has multiple types, unexpected value: {}", value);
-				return false;							
+				return false;
 			}
 			addApType(apType);
 			return true;
@@ -209,17 +209,17 @@ public class SearchController implements SearchApi {
 						if(!processOrFilters(lf.getFilters())) {
 							return false;
 						}
-					} else 
+					} else
 					if(LogicalFilter.OperationEnum.AND==lf.getOperation()) {
 						log.warn("Cannot user AND under OR");
 						return false;
 					} else {
 						log.warn("Unsupported logical operation: {}", lf.getOperation());
-						return false;						
-					}					
+						return false;
+					}
 
 				}
-				
+
 			}
 			return true;
 		}
@@ -248,14 +248,14 @@ public class SearchController implements SearchApi {
         public SearchFilterVO getSearchFilter() {
             return searchFilterVO;
         }
-		
+
 	};
 
 	/**
 	 * Vyhledani AP
-	 * 
+	 *
 	 * Podporovano jen fulltextove vyhledavani s moznosti limitovani tridy
-	 * 
+	 *
 	 * Moznosti vstupu jsou:
 	 * - jeden textovy filter
 	 * - jeden filter na typ
@@ -269,20 +269,20 @@ public class SearchController implements SearchApi {
 	public ResponseEntity<ResultEntityRef> searchEntity(@RequestBody SearchParams searchParams) {
 
         log.debug("Received request on: /api/v1/search-ap, query: {}", searchParams);
-		
+
 		StaticDataProvider sdp = staticDataService.createProvider();
 		final RulPartType bodyType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
 		Validate.notNull(bodyType);
 		final RulPartType nameType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_PART_TYPE);
-		
+
 		ApSearchParams apsp = new ApSearchParams(sdp);
 		if(!apsp.prepare(searchParams)) {
             log.error("Failed to prepare search parameters: {}", searchParams);
 			return ResponseEntity.badRequest().build();
 		}
-		
+
 		SearchFilterVO searchFilter = apsp.getSearchFilter();
-		
+
         QueryResults<CachedAccessPoint> searchResult = apCacheService.search(searchFilter,
 		                      apsp.getApTypeIds(),
                               apsp.getScopeIds(),
@@ -304,7 +304,7 @@ public class SearchController implements SearchApi {
             }).collect(Collectors.toList());
             rer.setItems(rList);
         }
-		
+
 		return ResponseEntity.ok(rer);
 	}
 
@@ -343,13 +343,13 @@ public class SearchController implements SearchApi {
         List<AbstractFilter> filters = searchParams.getFilters();
         String searchedText = null;
         if (filters != null && filters.size() > 0) {
-            if(filters.size() == 1) {                
-                if (filters.get(0) instanceof MultimatchContainsFilter) {                    
+            if(filters.size() == 1) {
+                if (filters.get(0) instanceof MultimatchContainsFilter) {
                     MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
                     searchedText = mcf.getValue();
                 } else {
                     log.debug("Received unexpected search request, query: {}", searchParams);
-                    return ResponseEntity.badRequest().build();                    
+                    return ResponseEntity.badRequest().build();
                 }
             } else {
                 log.debug("Received unexpected search request, query: {}", searchParams);

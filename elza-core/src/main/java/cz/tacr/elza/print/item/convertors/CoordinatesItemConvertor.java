@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.Item;
@@ -14,7 +15,7 @@ public class CoordinatesItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.COORDINATES) {
             return null;
         }
-        ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
+        ArrDataCoordinates data = HibernateUtils.unproxy(item.getData());
 
         return new ItemCoordinates(data.getValue());
     }
