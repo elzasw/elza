@@ -50,17 +50,17 @@ public class SectionContext {
     private SectionOutputStream outputStream;
 
     SectionContext(ArrFundVersion fundVersion,
-                   ExportContext context,
+                   ExportContext ctx,
                    boolean multipleSections,
                    LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
                    EntityManager em,
                    ResourcePathResolver resourceResolver) {
-        this.context = Validate.notNull(context);
-        this.staticData = context.getStaticData();
-        this.levelInfoLoader = new LevelInfoLoader(em, context.getBatchSize(), nodeCacheService);
-        this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), this.staticData);
-        this.dmsFileLoader = new DmsFileLoader(em, context.getBatchSize(), resourceResolver);
+        this.context = Validate.notNull(ctx);
+        this.staticData = ctx.getStaticData();
+        this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID());
+        this.structObjLoader = new StructObjectInfoLoader(em, ctx.getBatchSize(), this.staticData);
+        this.dmsFileLoader = new DmsFileLoader(em, ctx.getBatchSize(), resourceResolver);
         this.fundVersion = Validate.notNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
