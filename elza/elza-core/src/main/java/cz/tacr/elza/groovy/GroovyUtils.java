@@ -1,5 +1,6 @@
 package cz.tacr.elza.groovy;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
@@ -73,7 +74,7 @@ public class GroovyUtils {
         //StaticDataProvider sdp = StaticDataProvider.getInstance();
         //sdp.getItemTypeByCode(containItemType);
         //sdp.getItemSpecByCode(containItemSpec);
-        //sdp.getItemTypeByCode(itemType);  
+        //sdp.getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {
@@ -115,7 +116,7 @@ public class GroovyUtils {
         }
         return null;
     }
-    
+
     @Nullable
     public static List<GroovyItem> findAllItems(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
@@ -153,7 +154,7 @@ public class GroovyUtils {
                 for (ApItem item : part.getItems()) {
                     RulItemType rulItemType = item.getItemType();
                     if (rulItemType.getCode().equals(itemTypeCode)) {
-                        return item.getData();
+                        return HibernateUtils.unproxy(item.getData());
                     }
                 }
             }

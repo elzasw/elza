@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 
+import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class ArrangementInternalService {
 
     /**
      * Find node by UUID
-     * 
+     *
      * @param nodeUuid
      * @return
      */
@@ -148,7 +148,7 @@ public class ArrangementInternalService {
         }
         return fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
     }
-    
+
     /**
      * Načte neuzavřenou verzi AS
      *
@@ -159,12 +159,12 @@ public class ArrangementInternalService {
     	Validate.notNull(fund, "Nebyl vyplněn AS");
         return getOpenVersionByFundId(fund.getFundId());
     }
-        
+
     /**
      * Načte neuzavřenou verzi AS
      *
      * Součástí je načtení i ArrFund
-     * 
+     *
      * @param fundId
      *            id AS
      * @return Aktuální verze
@@ -183,7 +183,7 @@ public class ArrangementInternalService {
      * Try to find fund by string
      *
      * Method search fund by UUID, internalCode and fundId
-     * 
+     *
      * @param fundIdentifier
      * @return fund, throw exception if not found
      */
@@ -268,7 +268,7 @@ public class ArrangementInternalService {
 
     /**
      * Count active items linked to the file
-     * 
+     *
      * @param file
      * @return
      */

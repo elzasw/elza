@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -158,7 +158,7 @@ public class ArrangementWebsocketController {
         ArrFundVersion version = fundVersionRepository.findById(versionId).orElseThrow(version(versionId));
 
         ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
-        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? 
+        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ?
                 null : factoryDO.createNode(addLevelParam.getStaticNodeParent());
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();

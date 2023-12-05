@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.AccessPointItem;
 import org.locationtech.jts.geom.Geometry;
 import cz.tacr.elza.common.GeometryConvertor;
@@ -10,7 +11,7 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemCoordinatesVO extends ApItemVO {
 
@@ -28,7 +29,7 @@ public class ApItemCoordinatesVO extends ApItemVO {
     }
 
     final public String getCoordinatesValue(final AccessPointItem item) {
-        ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
+        ArrDataCoordinates data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : GeometryConvertor.convert(data.getValue());
     }
 

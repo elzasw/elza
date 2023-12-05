@@ -19,9 +19,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import cz.tacr.elza.service.StructObjService;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -201,6 +202,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ExportConfig exportConfig;
 
+    private StructObjService structObjService;
+
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -218,6 +221,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository,
                        final ExportConfig exportConfig,
+                       final StructObjService structObjService,
                        final EntityManager em) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
@@ -236,6 +240,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
         this.exportConfig = exportConfig;
+        this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
     }
 
@@ -510,7 +515,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /**
      * Return list of items with restriction definitions
-     * 
+     *
      * @param node
      * @return List<Integer>
      */
@@ -554,7 +559,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
             Collection<? extends ArrItem> soiItems;
             if (itemType.getDataType().equals(DataType.STRUCTURED)) {
-                ArrData data = restrictionItem.getData();
+                ArrData data = HibernateUtils.unproxy(restrictionItem.getData());
                 if (data == null) {
                     continue;
                 }
@@ -575,7 +580,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     private void processRule(NodeId nodeId, FilterRule rule,
-                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType, 
+                             Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType,
                              Collection<? extends ArrItem> restrItems,
                              ApplyFilter filter) {
 
@@ -1001,7 +1006,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
-        List<ArrStructuredItem> items = structItemRepos.findByStructObjIdAndDeleteChangeIsNullFetchData(
+        List<ArrStructuredItem> items = structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(
                 structObjId);
         List<cz.tacr.elza.print.item.Item> result = convert(items, itemConvertor);
         return result;

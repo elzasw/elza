@@ -28,12 +28,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import cz.tacr.elza.domain.bridge.IndexConfigurationReader;
+import cz.tacr.elza.service.SpringContext;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.constraints.NotNull;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.IOUtils;
@@ -340,7 +342,7 @@ public class PackageService {
      *  soubor s názvem a verzí balíčku
      */
     private static final String PACKAGE_XML = "package.xml";
-    
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -484,13 +486,15 @@ public class PackageService {
 
     @Autowired
     private ExportFilterRepository exportFilterRepository;
-        
+
     @Autowired
     private UserService userService;
 
     @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
+
+    IndexConfigurationReader configurationReader = SpringContext.getBean(IndexConfigurationReader.class);
 
     private Set<Integer> accessPoints;
 
@@ -505,7 +509,7 @@ public class PackageService {
     	// check authorization
         TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
         transactionTemplate.executeWithoutResult(ts -> {
-            AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.ADMIN);        	
+            AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.ADMIN);
         	userService.authorizeRequest(authRequest);
         });
         // stop services - outside transaction
@@ -518,7 +522,7 @@ public class PackageService {
     }
 
     public void importPackageInternal(final File file, boolean startTasks) {
-        
+
         // read package and do basic checks
         PackageContext pkgCtx = new PackageContext(resourcePathResolver);
 
@@ -735,7 +739,7 @@ public class PackageService {
 
     /**
      * Automatické načítání balíčků v adresáři /dpkg
-     * 
+     *
      * @param path
      */
     @Transactional
@@ -750,76 +754,56 @@ public class PackageService {
         Map<String, PackageInfoWrapper> latestVersionMap = packagesDb.stream().map(p -> getPackageInfo(p))
                 .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
 
-        try (Stream<Path> streamPaths = Files.list(dpkgPath)) {
 
-            // vyhledani poslednich verzi balicku
-            for (Path path : streamPaths.collect(Collectors.toList())) {
-                // check if file is package
-                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
-                    continue;
-                }
-                logger.info("Reading package info: {}", path.toString());
+        List<PackageInfoWrapper> packagesToImport = configurationReader.getPackagesToImport();
 
-                PackageInfoWrapper pkg = getPackageInfo(path);
-                if (pkg == null) {
-                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
-                    continue;
-                }
+        // vyhledani poslednich verzi balicku
+        for (PackageInfoWrapper infoWrapper : packagesToImport) {
+            latestVersionMap.put(infoWrapper.getCode(), infoWrapper);
+        }
 
-                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
-                // žádné informace o balíčku nebo nižší verzi
-                if (mapPkg == null ||
-                        mapPkg.getVersion() < pkg.getVersion() ||
-                        (testing && mapPkg.getVersion() <= pkg.getVersion())) {
-                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
-                }
+
+        // řazení balíčků podle závislostí mezi sebou
+        PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
+        latestVersionMap.values().forEach(p -> {
+            if (p.getDependencies() != null) {
+                p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
+            }
+        });
+        List<String> sortedPkg = g.topologicalSort();
+        logger.debug("Sorted packages: {}", sortedPkg);
+
+        // import balíčku
+        for (String codePkg : sortedPkg) {
+            PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
+            // Nenalezen balicek na disku pro dany typ
+            if (pkgZip == null) {
+                logger.debug("No package with code: {}", codePkg);
+                continue;
             }
 
-            // řazení balíčků podle závislostí mezi sebou
-            PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
-            latestVersionMap.values().forEach(p -> {
-                if (p.getDependencies() != null) {
-                    p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
-                }
-            });
-            List<String> sortedPkg = g.topologicalSort();
-            logger.debug("Sorted packages: {}", sortedPkg);
-
-            // import balíčku
-            for (String codePkg : sortedPkg) {
-                PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
-                // Nenalezen balicek na disku pro dany typ
-                if (pkgZip == null) {
-                    logger.debug("No package with code: {}", codePkg);
-                    continue;
-                }
-
-                Path packagePath = pkgZip.getPath();
-                // Kontrola, zda existuje soubor nebo je jiz v DB
-                if (packagePath == null) {
-                    continue;
-                }
-
-                logger.info("Reading package from file: {}", pkgZip.getPath().toString());
-
-                try {
-                    TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
-                    transactionTemplate2.executeWithoutResult(ts -> {
-                        importPackageInternal(pkgZip.getPath().toFile(), false);
-                    });
-                } catch (Exception e) {
-                    logger.error("Failed to import package file: {}", pkgZip, e);
-                }
+            Path packagePath = pkgZip.getPath();
+            // Kontrola, zda existuje soubor nebo je jiz v DB
+            if (packagePath == null) {
+                continue;
             }
-        } catch (IOException e) {
-            logger.error("Error processing a package zip file.", e);
-            throw new SystemException("Error processing a package zip file.", e);
+
+            logger.info("Reading package from file: {}", pkgZip.getPath().toString());
+
+            try {
+                TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
+                transactionTemplate2.executeWithoutResult(ts -> {
+                    importPackageInternal(pkgZip.getPath().toFile(), false);
+                });
+            } catch (Exception e) {
+                logger.error("Failed to import package file: {}", pkgZip, e);
+            }
         }
     }
 
     /**
      * Získání objektu PackageInfoWrapper ze souboru PACKAGE_XML z archivu
-     * 
+     *
      * @param path
      * @return
      * @throws IOException
@@ -2999,7 +2983,7 @@ public class PackageService {
 
     /**
      * Create package info from DB object
-     * 
+     *
      * @param rulPackage
      * @return
      */

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
@@ -48,7 +49,7 @@ public class ArrItemStringVO extends ArrItemVO {
     }
 
     public static ArrItemVO newInstance(ArrItem item) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         String value = null;
         if (data != null) {
             if (!(data instanceof ArrDataString)) {

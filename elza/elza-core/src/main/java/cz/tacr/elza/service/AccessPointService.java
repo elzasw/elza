@@ -21,12 +21,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -195,7 +195,7 @@ public class AccessPointService {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
-    
+
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 
@@ -264,10 +264,10 @@ public class AccessPointService {
 
     @Autowired
     private RuleService ruleService;
-    
+
     @Autowired
     private InstitutionRepository institutionRepository;
-    
+
     @Autowired
     private DataRepository dataRepository;
 
@@ -276,7 +276,7 @@ public class AccessPointService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
-    
+
     @Autowired
     private ApRevItemRepository revItemRepository;
 
@@ -356,7 +356,7 @@ public class AccessPointService {
 
     /**
      * Získání objektu pomocí id nebo uuid
-     * 
+     *
      * @param id řetězec znaků, id nebo uuid
      * @return ApAccessPoint
      */
@@ -376,7 +376,7 @@ public class AccessPointService {
 
     /**
      * Získání seznam objektu pomocí id nebo uuid
-     * 
+     *
      * @param ids seznam is nebo uuid
      * @return List<ApAccessPoint>
      */
@@ -435,7 +435,7 @@ public class AccessPointService {
 
         checkPermissionForEdit(apState);
 
-        ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE; 
+        ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE;
         ApChange change = apDataService.createChange(changeType);
 
         validationNotDeleted(apState);
@@ -445,7 +445,7 @@ public class AccessPointService {
         if (replacedBy != null) {
             ApState replacedByState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
             validationNotDeleted(replacedByState);
-            
+
             // check binding states
             // both APs cannot be binded to the same external system
             // in such case we have to solve deduplication in external system
@@ -504,7 +504,7 @@ public class AccessPointService {
 
     /**
      * Obnovení zneplatněné entity
-     * 
+     *
      * Entita je vždy obnovena ve stavu nová
      * 
      * @param apState
@@ -516,7 +516,7 @@ public class AccessPointService {
         // check if access point is deleted
         validationDeleted(apState);
 
-        // create new version of ApState 
+        // create new version of ApState
         ApChange change = apDataService.createChange(ApChange.Type.AP_RESTORE);
         ApState restoreState = copyState(apState, change);
         // access point is always restored as new
@@ -542,7 +542,7 @@ public class AccessPointService {
 
     /**
      * Validace možnosti sloučení podle stavu
-     * 
+     *
      * @param state stav přístupového bodu
      */
     private void validationMergePossibility(final ApState state) {
@@ -570,7 +570,7 @@ public class AccessPointService {
 
     /**
      * Mazání seznamů objektů ApAccessPoint
-     * 
+     *
      * @param apStates seznam
      */
     public void deleteAccessPoints(final List<ApState> apStates) {
@@ -623,7 +623,7 @@ public class AccessPointService {
         //
 
         accessPointCacheService.deleteCachedAccessPoint(accessPoint);
-        
+
         if (apState.getReplacedById() != null) {
             // aktualizace náhradní entity v cache
             accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
@@ -785,7 +785,7 @@ public class AccessPointService {
         }
 
         if (fund != null) {
-            // connected scopes cannot be used to search in a fund 
+            // connected scopes cannot be used to search in a fund
             Validate.isTrue(!includeConnetedScopes);
             Set<Integer> fundScopeIds = scopeRepository.findIdsByFundId(fund.getFundId());
             scopeIdsToSearch.retainAll(fundScopeIds);
@@ -972,7 +972,7 @@ public class AccessPointService {
     /**
      * Replace record replaced by record replacement in all usages in JP,
      * NodeRegisters
-     * 
+     *
      * @param replacedState
      * @param replacementState
      * @param apExternalSystem source of entity
@@ -1071,7 +1071,7 @@ public class AccessPointService {
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
         // replace in APs
-        final List<ApItem> apItems = this.itemRepository.findItemByEntity(replaced);
+        final List<ApItem> apItems = this.apItemService.findItemByEntity(replaced);
         if (CollectionUtils.isNotEmpty(apItems)) {
             ObjectListIterator.forEachPage(apItems,
                                            apItemPage -> replaceInItems(apItemPage, replaced, replacement,
@@ -1080,7 +1080,7 @@ public class AccessPointService {
 
         Set<Integer> resolvedByObjectId = new HashSet<>();
         // replace in revision items
-        final List<ApRevItem> revItems = this.revItemRepository.findItemByEntity(replaced);
+        final List<ApRevItem> revItems = this.revisionItemService.findItemByEntity(replaced);
         for (ApRevItem revItem : revItems) {
             ApRevision revision = revItem.getPart().getRevision();
             // item is deleting orig item -> origItem is resolved
@@ -1092,12 +1092,12 @@ public class AccessPointService {
                 replaceInRevision(revItem, revision, replaced, replacement);
             }
         }
-        
+
     }
 
     /**
      * Replace AP in items
-     * 
+     *
      * @param apItems List of items. Number of items has to be lower than batch size.
      * @param replaced
      * @param replacement
@@ -1185,7 +1185,7 @@ public class AccessPointService {
     }
 
     /**
-     * 
+     *
      * @param apItem
      * @param apState
      * @param replaced
@@ -1214,20 +1214,20 @@ public class AccessPointService {
 
     /**
      * Replace apItem in revision - without existing mapping
-     * 
+     *
      * @param apItem
      * @param revision
      * @param replaced
      * @param replacement
      */
     private void replaceInRevision(ApItem apItem,
-                                   ApRevision revision, 
+                                   ApRevision revision,
                                    ApAccessPoint replaced,
                                    ApAccessPoint replacement) {
         Validate.isTrue(apItem.getDeleteChange() == null);
         ArrData data = HibernateUtils.unproxy(apItem.getData());
         Validate.isTrue(data instanceof ArrDataRecordRef);
-        
+
         ApChange change = apDataService.createChange(Type.AP_REPLACE);
         // locate part
         ApRevPart revPart = revisionPartService.findByOriginalPart(apItem.getPart());
@@ -1247,11 +1247,12 @@ public class AccessPointService {
 
         // create item
         revisionItemService.createItem(change, revPart, apItem, drr);
+
     }
 
     /**
      * Replace access point in single revision item
-     * 
+     *
      * @param revItem
      * @param revision
      * @param replaced
@@ -1268,14 +1269,14 @@ public class AccessPointService {
 
         ApRevState revState = revisionService.findLastRevState(revision);
         checkPermissionForEdit(revision.getState(), revState);
-       
+
         // Mark revItem as deleted
         ArrDataRecordRef drr = new ArrDataRecordRef();
         drr.setDataType(data.getDataType());
         drr.setRecord(replacement);
 
         ApChange change = apDataService.createChange(Type.AP_REPLACE);
-        
+
         ApRevItem updatedItem = revisionItemService.updateItem(change, revItem, drr);
 
         return updatedItem;
@@ -1364,7 +1365,7 @@ public class AccessPointService {
                     dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
                 } else {
                     dataRecordRef.setBinding(refBinding);
-    
+
                     ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
                     if (bindingState != null) {
                         dataRecordRef.setRecord(bindingState.getAccessPoint());
@@ -1387,7 +1388,7 @@ public class AccessPointService {
                               final ApPartFormVO apPartFormVO) {
         checkPermissionForEdit(state);
 
-        List<ApItem> deleteItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> deleteItems = apItemService.findValidItemsByPart(apPart);
         List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
         Map<Integer, ApItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
@@ -1454,7 +1455,7 @@ public class AccessPointService {
             }
 
             /*List<ApBindingItem> newBindingItems = new ArrayList<>(bindingItemList.size());
-            
+
             for (ApBindingItem bindingItem : bindingItemList) {
                 ApBindingItem newBindingItem = new ApBindingItem();
                 newBindingItem.setBinding(bindingItem.getBinding());
@@ -1462,7 +1463,7 @@ public class AccessPointService {
                 newBindingItems.add(newBindingItem);
                 newBindingItem.setPart(newPart);
                 newBindingItem.setValue(bindingItem.getValue());
-            
+
                 bindingItem.setDeleteChange(change);
             }*/
             bindingItemRepository.saveAll(bindingItemList);
@@ -1482,7 +1483,7 @@ public class AccessPointService {
 
     /**
      * Run Groovy scripts on parts
-     * 
+     *
      * @param state
      * @param partList
      * @param itemMap
@@ -1620,7 +1621,7 @@ public class AccessPointService {
         return items;
     }
 
-    public boolean updatePartValue(final ApState state, final ApPart apPart) {        
+    public boolean updatePartValue(final ApState state, final ApPart apPart) {
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1797,7 +1798,7 @@ public class AccessPointService {
 
     /**
      * Získání id přístupových bodů podle stavu
-     * 
+     *
      * @param state
      * @return ids
      */
@@ -1848,14 +1849,14 @@ public class AccessPointService {
 
     /**
      * Získání ApScope podle kódu nebo Id
-     * 
+     *
      * @param kod kod
      * @return ApScope
      */
     public ApScope getApScope(String kod) {
         ApScope scope = scopeRepository.findByCode(kod);
         if (scope == null) {
-            // pokud lze kód převést na celé číslo 
+            // pokud lze kód převést na celé číslo
             if (kod.matches("-?\\d+")) {
                 Integer scopeId = Integer.parseInt(kod);
                 return getApScope(scopeId);
@@ -1867,7 +1868,7 @@ public class AccessPointService {
 
     /**
      * Získání ApScope podle id
-     * 
+     *
      * @param id
      * @return ApScope nebo null
      */
@@ -1880,8 +1881,8 @@ public class AccessPointService {
     }
 
     /**
-     * Získání ApScope podle External System 
-     * 
+     * Získání ApScope podle External System
+     *
      * @param extSystem
      * @return ApScope nebo null
      */
@@ -1938,7 +1939,7 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu podle accessPointId.
-     * 
+     *
      * Metoda neověřuje uživatelská oprávnění. Metodu je možné volat vně transakce.
      *
      * @param accessPointId
@@ -1956,7 +1957,7 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu podle accessPoint.
-     * 
+     *
      * Metoda neověřuje uživatelská oprávnění
      *
      * @param accessPoint
@@ -1975,7 +1976,7 @@ public class AccessPointService {
 
     /**
      * Získání seznam stavu přístupovih bodu.
-     * 
+     *
      * @param accessPoints seznam
      * @return List<ApState>
      */
@@ -2033,7 +2034,7 @@ public class AccessPointService {
 
     /**
      *  Vytvoření kopie ApAccessPoint v ApScope
-     * 
+     *
      * @param srcAccessPoint - kopírovaná entita
      * @param scope       - nová oblast (může být stejná, pokud jde o náhradu)
      * @param replace     - nahradit zkopírovanou entitu novou nebo ne
@@ -2056,7 +2057,7 @@ public class AccessPointService {
         ApState trgState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
 
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(srcAccessPoint);
-        List<ApItem> sourceItems = itemRepository.findValidItemsByAccessPoint(srcAccessPoint);
+        List<ApItem> sourceItems = apItemService.findValidItemsByAccessPoint(srcAccessPoint);
         List<ApPart> newParts = new ArrayList<>();
 
         // filter skipped items
@@ -2070,7 +2071,7 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> partIdItemsFromMap = sourceItems.stream()
                 .filter(i -> !skipItemsSet.contains(i.getItemId()))
                 .collect(Collectors.groupingBy(ApItem::getPartId));
-        
+
         // filter parts
         if (!CollectionUtils.isEmpty(skipItems)) {
             // part ids that remain after filter
@@ -2254,7 +2255,7 @@ public class AccessPointService {
         if (!Objects.equals(newComment, oldApState.getComment())) {
             update = true;
         }
-        
+
         ApType newApType;
 
         // má uživatel oprávnění změnit třídu archivní entity?
@@ -2281,7 +2282,7 @@ public class AccessPointService {
         } else {
             newApType = null;
         }
-        
+
         ApScope newApScope;
 
         // má uživatel oprávnění používat tyto stavy v této oblasti?
@@ -2303,7 +2304,7 @@ public class AccessPointService {
                     .set("oldScopeId", oldApScope.getScopeId())
                     .set("newScopeId", newApScope.getScopeId());
             }
-            
+
             if (!hasPermissionToChangeScope(oldStateApproval, oldApScope, newApScope)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu oblasti přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
@@ -2336,7 +2337,7 @@ public class AccessPointService {
             return oldApState;
         }
 
-        // pokud je entita schvalena ci ke schvaleni, musi dojit 
+        // pokud je entita schvalena ci ke schvaleni, musi dojit
         // k overeni platnosti validace
         if (newStateApproval == StateApproval.APPROVED ||
                 newStateApproval == StateApproval.TO_APPROVE) {
@@ -2370,7 +2371,7 @@ public class AccessPointService {
 
 	/**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
-     * 
+     *
      * @param apState
      * @return seznam stavů
      */
@@ -2391,8 +2392,8 @@ public class AccessPointService {
 
         Set<StateApproval> result = new HashSet<>();
 
-        // zakládání a změny nových 
-        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
+        // zakládání a změny nových
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.NEW)) {
                 result.add(StateApproval.TO_APPROVE);
@@ -2409,7 +2410,7 @@ public class AccessPointService {
         }
 
         // schvalování
-        if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
+        if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
                 || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
                 // kontrola, kdo přepnul do stavu ke schválení (nesmí být shodný uživatel)
@@ -2421,10 +2422,10 @@ public class AccessPointService {
         }
 
         // změna schválených
-        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                // specialni stav z duvodu umozneni neverzovane zmeny 
+                // specialni stav z duvodu umozneni neverzovane zmeny
                 // oblasti u schvalenych entit
                 result.add(StateApproval.APPROVED);
             }
@@ -2455,7 +2456,7 @@ public class AccessPointService {
      */
     public List<StateApproval> getNextStatesRevision(@NotNull ApState apState,
                                                      @NotNull ApRevState revState) {
-        
+
         ApScope apScope = apState.getScope();
         UserDetail user = userService.getLoggedUserDetail();
 
@@ -2563,7 +2564,7 @@ public class AccessPointService {
 
     /**
      * Má uživatel možnost kopírovat přístupový bod (archivní entitu)
-     * 
+     *
      * @param replace
      * 
      * @param oldApScope
@@ -2614,7 +2615,7 @@ public class AccessPointService {
 
     /**
      * Má uživatel možnost na změnu oblasti přístupového bodu (archivní entity)?
-     * 
+     *
      * @param stateApproval
      * @param oldApScope
      * @param newApScope
@@ -2639,10 +2640,10 @@ public class AccessPointService {
             }
         }
 
-        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                 || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
                         && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
-            // zvláštní případ pro schválené entity - lze změnit oblast 
+            // zvláštní případ pro schválené entity - lze změnit oblast
             if (stateApproval.equals(StateApproval.APPROVED)) {
                 return true;
             }
@@ -2653,7 +2654,7 @@ public class AccessPointService {
 
     /**
      * Má uživatel možnost změnit třídu archivní entValidateity?
-     * 
+     *
      * @param stateApproval
      * @return
      */
@@ -2679,7 +2680,7 @@ public class AccessPointService {
 
     /**
      * Kontrola, zda přihlášený uživatel má právo synchronizovat archivni entitu z externího systému.
-     * 
+     *
      * @param state
      */
     public void hasPermissionToSynchronizeFromExternaSystem(final ApState state) {
@@ -2688,10 +2689,10 @@ public class AccessPointService {
         // nemůže provést operaci "Aktualizace údajů z externího systému" u entit ve stavech:
         // - Nová
         // - K doplnění
-        boolean hasCreateAndChangeNewAp = 
+        boolean hasCreateAndChangeNewAp =
                 userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId());
-        boolean stateNewOrToAmend = 
+        boolean stateNewOrToAmend =
                 state.getStateApproval().equals(StateApproval.NEW)
                 || state.getStateApproval().equals(StateApproval.TO_AMEND);
         if (!hasCreateAndChangeNewAp && stateNewOrToAmend) {
@@ -2707,7 +2708,7 @@ public class AccessPointService {
         // - Příprava revize
         // - Revize k doplnění
         boolean hasEditConfirmedAp =
-                userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId());
         boolean stateApprovedOrRewNewOrRevAmend =
                 state.getStateApproval().equals(StateApproval.APPROVED);
@@ -2818,13 +2819,13 @@ public class AccessPointService {
        	partService.unsetPreferredPart(oldPrefNameId);
         accessPoint.setPreferredPart(apPart);
 
-        ApAccessPoint apAccessPoint = saveWithLock(accessPoint);        
+        ApAccessPoint apAccessPoint = saveWithLock(accessPoint);
         return apAccessPoint;
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
         List<String> archiveEntityIds = new ArrayList<>();
-        List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> itemList = apItemService.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
             ArrData data = HibernateUtils.unproxy(item.getData());
@@ -2865,7 +2866,7 @@ public class AccessPointService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ArchiveEntityResultListVO findAccessPointsForRel(Integer from, Integer max, 
+    public ArchiveEntityResultListVO findAccessPointsForRel(Integer from, Integer max,
                                                             @AuthParam(type = AuthParam.Type.SCOPE) Integer scopeId, SearchFilterVO filter) {
         searchFilterFactory.completeApTypesTreeInFilter(filter);
         Set<Integer> scopeList = new HashSet<>();
@@ -2892,7 +2893,8 @@ public class AccessPointService {
         String coordinates;
 
         if (fileType.equals(FileType.WKT)) {
-            coordinates = item.getData().getFulltextValue();
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            coordinates = data.getFulltextValue();
         } else {
             coordinates = convertCoordinates(fileType, item.getData().getDataId());
         }
@@ -2975,13 +2977,13 @@ public class AccessPointService {
 
     /**
      * Spusteni validace AP
-     * 
+     *
      * @param accessPoint - protože může mít modifikace
      * @param apState
      * @param successfulGeneration
      * @return Upraveny AP.
      *         Dochazi k zapisu aktualniho stavu validace.
-     * 
+     *
      */
     public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
         logger.debug("Validate stateId={}, accessPointId={}, scopeId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), apState.getScopeId(), accessPoint.getVersion());
@@ -3000,7 +3002,7 @@ public class AccessPointService {
     public ApAccessPoint updateAndValidate(ApAccessPoint accessPoint) {
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMap = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         return updateAndValidate(accessPoint, apState, partList, itemMap, false);        
@@ -3143,11 +3145,11 @@ public class AccessPointService {
                 .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
                 .findAny()
                 .orElse(null);
-        return index == null ? "": index.getValue();
+        return index == null ? "": index.getIndexValue();
     }
 
-    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 
-                                                       String externalSystemCode, 
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max,
+                                                       String externalSystemCode,
                                                        SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
         List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states = null;
@@ -3184,7 +3186,7 @@ public class AccessPointService {
 
         for (ExtSyncsQueueItem extSyncsQueueItem : items) {
             String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem
-                    .getAccessPointId()).getValue() : null;
+                    .getAccessPointId()).getIndexValue() : null;
             ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
             extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
         }
@@ -3233,7 +3235,7 @@ public class AccessPointService {
 
     /**
      * Get access point state by string
-     * 
+     *
      * @param accessPointId
      * @return ApState
      */
@@ -3257,9 +3259,9 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu.
-     * 
+     *
      * Metoda ověřuje uživatelská oprávnění
-     * 
+     *
      * @param accessPoint
      * @return
      */
@@ -3276,9 +3278,9 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu.
-     * 
+     *
      * Metoda ověřuje uživatelská oprávnění
-     * 
+     *
      * @param accessPointId
      * @return ApState
      */
@@ -3289,7 +3291,7 @@ public class AccessPointService {
 
     /**
      * Kontrola datové struktury.
-     * 
+     *
      * Tato metoda se volá, pokud parametr elza.ap.checkDb má hodnotu TRUE
      */
     public void checkConsistency() {
@@ -3318,18 +3320,18 @@ public class AccessPointService {
 
     /**
      * Sloučení Parts z accessPoint do targetAccessPoint
-     * 
+     *
      * @param accessPoint
      * @param targetAccessPoint
      * @param change
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change) {
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMapFrom = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapFrom = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> partsTo = partService.findPartsByAccessPoint(targetAccessPoint);
-        Map<Integer, List<ApItem>> itemMapTo = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapTo = apItemService.findValidItemsByAccessPoint(targetAccessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení
@@ -3457,7 +3459,7 @@ public class AccessPointService {
 
     /**
      * Získání seznamu objektů PartWithSubParts ze seznamu objektů ApPart
-     * 
+     *
      * @param parts
      * @return
      */
@@ -3478,7 +3480,7 @@ public class AccessPointService {
 
     /**
      * Vyhledavání úplně shodné ApPart v seznamu parts včetně prvků popisu
-     * 
+     *
      * @param part
      * @param parts
      * @param items
@@ -3495,8 +3497,8 @@ public class AccessPointService {
     }
 
     /**
-     * Vyhledavání úplně shodné části v seznamu parts včetně podřízených parts a prvků popisu 
-     * 
+     * Vyhledavání úplně shodné části v seznamu parts včetně podřízených parts a prvků popisu
+     *
      * @param partF
      * @param partsTo
      * @param itemMapFrom
@@ -3515,12 +3517,12 @@ public class AccessPointService {
 
     /**
      * Porovnání dvou seznamů ApParts
-     * 
+     *
      * @param partsF
      * @param partsT
      * @param itemMapF
      * @param itemMapT
-     * @return boolean 
+     * @return boolean
      */
     private boolean equalsParts(List<ApPart> partsF, List<ApPart> partsT, Map<Integer, List<ApItem>> itemMapF, Map<Integer, List<ApItem>> itemMapT) {
         for (ApPart pF : partsF) {
@@ -3535,11 +3537,11 @@ public class AccessPointService {
             }
         }
         return true;
-    }    
+    }
 
     /**
-     * Porovnání dvou ApPart (s ApItems) 
-     * 
+     * Porovnání dvou ApPart (s ApItems)
+     *
      * @param partOne
      * @param partTwo
      * @param itemsOne
@@ -3563,7 +3565,7 @@ public class AccessPointService {
 
     /**
      * Vytvoření kopie ApPart která patří k danému ApAccessPoint
-     * 
+     *
      * @param part zdroj ke kopírování
      * @param accessPoint
      * @param mapParent
@@ -3579,14 +3581,14 @@ public class AccessPointService {
         partTo.setParentPart(parent);
         partTo.setPartType(part.getPartType());
         partTo.setState(part.getState());
-        partTo = partRepository.save(partTo);        
+        partTo = partRepository.save(partTo);
 
         return partTo;
     }
 
     /**
      * Vytvoření kopie ApPart spolu s ApItems
-     * 
+     *
      * @param part
      * @param accessPoint
      * @param parent
@@ -3602,7 +3604,7 @@ public class AccessPointService {
 
     /**
      * Kopírování všech položek ApItem
-     * 
+     *
      * @param itemsFrom prvky původní part
      * @param partTo
      * @param change
@@ -3614,9 +3616,10 @@ public class AccessPointService {
     }
 
     private ApItem copyItem(ApItem item, ApPart partTo, ApChange change, int position) {
-        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+        ArrData oldData = HibernateUtils.unproxy(item.getData());
+        ArrData newData = ArrData.makeCopyWithoutId(oldData);
 
-        // zvláštní ošetření pro entity - kontrola deduplikace, 
+        // zvláštní ošetření pro entity - kontrola deduplikace,
         // resp. kopie platné entity
         if (newData instanceof ArrDataRecordRef) {
             ArrDataRecordRef drr = (ArrDataRecordRef) newData;
@@ -3643,13 +3646,13 @@ public class AccessPointService {
         ApIndex indexTo = new ApIndex();
         indexTo.setIndexType(index.getIndexType());
         indexTo.setPart(partTo);
-        indexTo.setValue(index.getValue());
+        indexTo.setIndexValue(index.getIndexValue());
         return indexRepository.save(indexTo);
     }
 
     /**
      * Metoda vyhledá stav přístupového bodu a vrátí ho.
-     * 
+     *
      * V případě nahrazeného přístupového bodu se vrací nahrazující.
      */
     private ApState getValidAccessPoint(Integer recordId) {
@@ -3670,7 +3673,7 @@ public class AccessPointService {
 
     /**
      * Sloučení ApItem z dva Party. Kopírují se jen položky, které nemají duplicitní hodnoty
-     * 
+     *
      * @param itemsFrom prvky původní part
      * @param toPart
      * @param change
@@ -3692,7 +3695,7 @@ public class AccessPointService {
 
     /**
      * Existuje ApItem v ApPart se stejným typem a se stejnou hodnotou?
-     * 
+     *
      * @param item
      * @param itemsTo
      * @return true pokud takový ApItem již existuje
@@ -3737,7 +3740,7 @@ public class AccessPointService {
 
     /**
      * Lock AccessPoint for write access
-     * 
+     *
      * @param accessPoint
      */
     public void lockWrite(ApAccessPoint accessPoint) {

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,7 @@ public class StructObjInternalService {
      * @return List<Integer>
      */
     public List<Integer> deleteStructObj(final List<ArrStructuredObject> structObjs, @Nullable final ArrChange changeOverride) {
-        List<ArrStructuredObject> tempStructObj = new ArrayList<>(); 
+        List<ArrStructuredObject> tempStructObj = new ArrayList<>();
         List<ArrStructuredObject> permStructObj = new ArrayList<>();
         List<String> sortValues = new ArrayList<>();
         List<Integer> deletedIds = new ArrayList<>();
@@ -137,8 +138,8 @@ public class StructObjInternalService {
                     : changeOverride;
 
             // kontrolujeme použití
-            List<Integer> userStructObjIds = new ArrayList<>(); 
-            ObjectListIterator.forEachPage(permStructObj, 
+            List<Integer> userStructObjIds = new ArrayList<>();
+            ObjectListIterator.forEachPage(permStructObj,
                                            page -> userStructObjIds.addAll(structureItemRepository.findUsedStructuredObjectIds(page)));
             if (!userStructObjIds.isEmpty()) {
                 throw new BusinessException("Existují návazné jednotky popisu, objekt(y) nelze smazat.", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
@@ -158,7 +159,7 @@ public class StructObjInternalService {
             // hledáme duplikáty
             List<ArrStructuredObject> structuredObjectsDup = new ArrayList<>();
             ObjectListIterator
-                .forEachPage(sortValues, 
+                .forEachPage(sortValues,
                              page -> structuredObjectsDup.addAll(structObjRepository.findErrorByStructureTypeAndFund(structuredType, fund, page)));
             structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
 
@@ -197,7 +198,7 @@ public class StructObjInternalService {
     }
 
     private void copyItems(final ArrStructuredObject sourceStructuredObject, final ArrStructuredObject targetStructuredObject) {
-        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceStructuredObject);
+        List<ArrStructuredItem> items = structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceStructuredObject);
         List<ArrStructuredItem> copyItems = new ArrayList<>(items.size());
         for (ArrStructuredItem item : items) {
             ArrData newData = copyData(item);
@@ -214,7 +215,7 @@ public class StructObjInternalService {
     }
 
     private ArrData copyData(final ArrStructuredItem item) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         ArrData newData = data;
         if (data != null) {
             newData = ArrData.makeCopyWithoutId(data);

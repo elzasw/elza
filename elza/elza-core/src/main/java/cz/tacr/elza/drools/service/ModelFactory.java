@@ -21,6 +21,7 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.SimpleItem;
 import org.apache.commons.collections4.CollectionUtils;
@@ -60,7 +61,7 @@ public class ModelFactory {
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
 	        DescItemFactory descItemFactory,
-	        StructuredItemRepository itemRepos)
+            StructObjValueService structObjService)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -71,11 +72,11 @@ public class ModelFactory {
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
-				ArrData data = descItem.getData();
+				ArrData data = HibernateUtils.unproxy(descItem.getData());
 				if (data.getType() == DataType.STRUCTURED) {
                     ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
                     ArrStructuredObject structObj = structureRef.getStructuredObject();
-                    voDescItem.setStructured(createStructured(structObj, itemRepos));
+                    voDescItem.setStructured(createStructured(structObj, structObjService));
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getIntegerValue());
@@ -94,8 +95,8 @@ public class ModelFactory {
      * @param structObj
      * @return
      */
-    static public Structured createStructured(final ArrStructuredObject structObj, StructuredItemRepository itemRepos) {
-        Structured result = new Structured(structObj, itemRepos);
+    static public Structured createStructured(final ArrStructuredObject structObj, StructObjValueService structObjService) {
+        Structured result = new Structured(structObj, structObjService);
         return result;
     }
 
@@ -142,7 +143,7 @@ public class ModelFactory {
         result.setSpecCode(structuredItem.getItemSpec() == null ? null : structuredItem.getItemSpec().getCode());
         result.setDataType(structuredItem.getItemType().getDataType().getCode());
         if (!structuredItem.isUndefined()) {
-            ArrData data = structuredItem.getData();
+            ArrData data = HibernateUtils.unproxy(structuredItem.getData());
             if (data.getType() == DataType.INT) {
                 ArrDataInteger integer = HibernateUtils.unproxy(data);
                 result.setInteger(integer.getIntegerValue());
@@ -159,7 +160,7 @@ public class ModelFactory {
         for (ApItem item : items) {
             RulItemType itemType = item.getItemType();
             RulItemSpec itemSpec = item.getItemSpec();
-            ArrData data = item.getData();
+            ArrData data = HibernateUtils.unproxy(item.getData());
             String value = null;
             if (data != null) {
                 if (data.getType() == DataType.ENUM) {

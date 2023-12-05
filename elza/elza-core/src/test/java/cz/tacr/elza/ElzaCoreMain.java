@@ -2,7 +2,7 @@ package cz.tacr.elza;
 
 import java.util.concurrent.Executor;
 
-import org.h2.server.web.WebServlet;
+import org.h2.server.web.JakartaWebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -91,7 +91,7 @@ public class ElzaCoreMain {
 
     @Bean
     public ServletRegistrationBean h2servletRegistration() {
-        ServletRegistrationBean registration = new ServletRegistrationBean(new WebServlet());
+        ServletRegistrationBean registration = new ServletRegistrationBean(new JakartaWebServlet());
         registration.addUrlMappings("/console/*");
         return registration;
     }

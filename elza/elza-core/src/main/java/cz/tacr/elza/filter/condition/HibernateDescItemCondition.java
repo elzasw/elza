@@ -1,7 +1,8 @@
 package cz.tacr.elza.filter.condition;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+
 
 /**
  * Podmínka přes Hibernate. Počítá s tím že se budou hledat jen uzly bez hodnot, takže se pak nekontroluje

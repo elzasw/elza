@@ -11,11 +11,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -138,7 +139,7 @@ public class RevisionService {
         CachedAccessPoint apCached = this.accessPointCacheService.findCachedAccessPoint(state.getAccessPointId());
         for (CachedPart cachedPart : apCached.getParts()) {
             for (ApItem item : cachedPart.getItems()) {
-                ArrData data = item.getData();
+                ArrData data = HibernateUtils.unproxy(item.getData());
                 if (data != null) {
                     if (data instanceof ArrDataRecordRef) {
                         ArrDataRecordRef drr = (ArrDataRecordRef) data;
@@ -240,7 +241,7 @@ public class RevisionService {
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
-        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize  
+        // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize
         // ApRevision revision = createRevision(prevRevision, change);
         // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
         //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
@@ -287,7 +288,7 @@ public class RevisionService {
 
     /**
      * Create new revision based on previous revision
-     * 
+     *
      * @param prevRevision
      * @param change
      * @return
@@ -319,10 +320,10 @@ public class RevisionService {
     
     /**
      * Create new revision part
-     * 
+     *
      * Part is not based on standard part. All items will receive new
      * objectId(s).
-     * 
+     *
      * @param state
      * @param revision
      * @param apPartFormVO
@@ -530,7 +531,7 @@ public class RevisionService {
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         List<ApRevPart> childRevParts = revisionPartService.findPartsByParentPart(apPart);
 
-        List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
 
         // pokud existují podřízené ApPart je nutné ověřit, zda nebyly odstraněny
@@ -647,7 +648,7 @@ public class RevisionService {
             apPart = partService.getPart(partId);
             revPart = revisionPartService.findByOriginalPart(apPart);
             List<ApRevItem> revItems = revPart != null ? revisionItemService.findByPart(revPart) : null;
-            List<ApItem> apItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
 
             if (!apPart.getPartType().getCode().equals(defaultPartType.getCode())) {
                 throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
@@ -738,7 +739,7 @@ public class RevisionService {
 
     /**
      * Update revPart
-     * 
+     *
      * @param apState
      * @param revision
      * @param revPart
@@ -774,7 +775,7 @@ public class RevisionService {
         Map<Integer, ApItem> apItemObjectMap;
 
         if (revPart.getOriginalPart() != null) {
-            apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
             apItemObjectMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
         } else {
             apItems = Collections.emptyList();
@@ -849,7 +850,7 @@ public class RevisionService {
                 } else {
                     // keep original item if not updated
                     if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
-                        // simply skip item 
+                        // simply skip item
                         continue;
                     }
                     // origItem exists but not revItem
@@ -893,11 +894,11 @@ public class RevisionService {
 
     /**
      * Update part revision
-     * 
+     *
      * Method will update existing revision or will create new revision.
-     * 
+     *
      * Items are mapped to original items using objectId
-     * 
+     *
      * @param apState
      * @param revision
      * @param apPart
@@ -919,7 +920,7 @@ public class RevisionService {
 
             revPart = revisionPartService.createPart(revision, change, apPart, false);
 
-            List<ApItem> apItems = itemRepository.findValidItemsByPart(revPart.getOriginalPart());
+            List<ApItem> apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
             // Map objectId -> ApItem
             Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
 
@@ -930,7 +931,7 @@ public class RevisionService {
                 Validate.isTrue(itemVO.getOrigObjectId() == null);
 
                 if (itemVO.getObjectId() == null) {
-                    // new -> add                    
+                    // new -> add
                     Validate.isTrue(itemVO.getId() == null);
 
                     createItems.add(itemVO);
@@ -1060,7 +1061,7 @@ public class RevisionService {
     }
 
     /**
-     * 
+     *
      * @param accessPoint
      * @param revParts
      * @param revItems
@@ -1198,7 +1199,7 @@ public class RevisionService {
                 newStateApproval.equals(StateApproval.APPROVED)) {
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
-                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());            
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, scope.getScopeId());
         }
         // původně nová nebo k doplnění
         if(oldStateApproval.equals(StateApproval.NEW)||oldStateApproval.equals(StateApproval.TO_AMEND)) {

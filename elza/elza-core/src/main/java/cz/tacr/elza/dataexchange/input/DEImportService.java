@@ -15,9 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
 import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
@@ -281,7 +281,7 @@ public class DEImportService {
 
     /**
      * Kontrola oprávnění uživatele podle Fund
-     * 
+     *
      * @param fundVersionId
      */
     private void checkFundPermissions(Integer fundVersionId) {
@@ -300,14 +300,14 @@ public class DEImportService {
 
     /**
      * Kontrola oprávnění uživatele podle Scope
-     * 
+     *
      * @param importScopeId
      */
     private void checkScopePermissions(int importScopeId) {
         if (userService.hasPermission(Permission.ADMIN)) {
             return;
         }
-        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
                 || userService.hasPermission(Permission.AP_SCOPE_WR, importScopeId)) {
             return;
         }

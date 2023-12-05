@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
@@ -34,7 +35,7 @@ public class ArrItemEnumVO extends ArrItemVO {
     }
 
     public static ArrItemEnumVO newInstance(ArrItem item) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             if (!(data instanceof ArrDataNull)) {
                 throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)

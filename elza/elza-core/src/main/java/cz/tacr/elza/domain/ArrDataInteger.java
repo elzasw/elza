@@ -1,8 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -19,7 +19,7 @@ public class ArrDataInteger extends ArrData {
 
     public static final String INTEGER_VALUE = "integerValue";
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "integerValue", nullable = false)
     private Integer integerValue;
 
 	public ArrDataInteger() {

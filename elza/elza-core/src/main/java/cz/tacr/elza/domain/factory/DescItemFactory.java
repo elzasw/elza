@@ -14,8 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -1041,7 +1042,7 @@ public class DescItemFactory implements InitializingBean {
      * @return uložená hodnota atributu
      */
     public ArrDescItem saveItemVersionWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
-        ArrData data = descItem.getData();
+        ArrData data = HibernateUtils.unproxy(descItem.getData());
         ArrData savedData;
 
         if (data != null) {
@@ -1080,7 +1081,7 @@ public class DescItemFactory implements InitializingBean {
                 dataNew = saveDataAsNew(descItem.getItemType(), data);
                 descItem.setData(dataNew);
             } else {
-                dataNew = descItem.getData();
+                dataNew = HibernateUtils.unproxy(descItem.getData());
             }
 
             savedData = saveData(descItem.getItemType(), dataNew);

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.hibernate.search.backend.LuceneWork;
+//import org.hibernate.search.backend.LuceneWork; TODO hibernate search 6
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,21 +67,21 @@ public class IndexWorkService {
         return indexWorkRepository.saveAll(workList);
     }
 
-    private SysIndexWork _createIndexWork(String indexName, LuceneWork luceneWork) {
-        return _createIndexWork(luceneWork.getEntityClass(), indexName, Integer.valueOf(luceneWork.getIdInString()));
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public SysIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
-        SysIndexWork work = _createIndexWork(indexName, luceneWork);
-        return indexWorkRepository.save(work);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<SysIndexWork> createIndexWork(String indexName, List<LuceneWork> luceneWorkList) {
-        List<SysIndexWork> workList = luceneWorkList.stream().map(luceneWork -> _createIndexWork(indexName, luceneWork)).collect(Collectors.toList());
-        return indexWorkRepository.saveAll(workList);
-    }
+//    private SysIndexWork _createIndexWork(String indexName, LuceneWork luceneWork) { TODO hibernate search 6
+//        return _createIndexWork(luceneWork.getEntityClass(), indexName, Integer.valueOf(luceneWork.getIdInString()));
+//    }
+//
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    public SysIndexWork createIndexWork(String indexName, LuceneWork luceneWork) {
+//        SysIndexWork work = _createIndexWork(indexName, luceneWork);
+//        return indexWorkRepository.save(work);
+//    }
+//
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    public List<SysIndexWork> createIndexWork(String indexName, List<LuceneWork> luceneWorkList) {
+//        List<SysIndexWork> workList = luceneWorkList.stream().map(luceneWork -> _createIndexWork(indexName, luceneWork)).collect(Collectors.toList());
+//        return indexWorkRepository.saveAll(workList);
+//    }
 
     public Page<SysIndexWork> findAllToIndex(Pageable pageable) {
         return indexWorkRepository.findAllToIndex(pageable);

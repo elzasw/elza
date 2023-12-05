@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,9 +58,9 @@ public class RevisionPartService {
 
     /**
      * Delete revision part
-     * 
+     *
      * Method is used to mark RevPart as non existent
-     * 
+     *
      * @param revPart
      * @param apChange
      */
@@ -72,7 +72,7 @@ public class RevisionPartService {
 
     /**
      * Create new RevPart
-     * 
+     *
      * @param revision
      * @param apChange
      * @param origPart
@@ -98,7 +98,7 @@ public class RevisionPartService {
 
     /**
      * Create RevPart based on ApPart
-     * 
+     *
      * @param revision
      * @param apChange
      * @param origPart
@@ -190,11 +190,11 @@ public class RevisionPartService {
                 index = new ApRevIndex();
                 index.setPart(part);
                 index.setIndexType(indexType);
-                index.setValue(value);
+                index.setRevValue(value);
                 revIndexRepository.save(index);
             } else {
-                if (!value.equals(index.getValue())) {
-                    index.setValue(value);
+                if (!value.equals(index.getRevValue())) {
+                    index.setRevValue(value);
                     revIndexRepository.save(index);
                 }
             }
@@ -236,9 +236,9 @@ public class RevisionPartService {
 
     /**
      * Mark part as deleted
-     * 
+     *
      * Method can be used only to RevPart based on real part
-     * 
+     *
      * @param apPart
      * @param revPart
      * @return

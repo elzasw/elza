@@ -9,10 +9,18 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.nimbusds.jose.util.JSONObjectUtils;
+import com.nimbusds.jose.util.Resource;
+import com.nimbusds.jose.util.ResourceRetriever;
+import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -29,16 +38,19 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,12 +58,8 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
-import com.nimbusds.jose.util.JSONObjectUtils;
-import com.nimbusds.jose.util.Resource;
-import com.nimbusds.jose.util.ResourceRetriever;
-
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
+//import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import cz.tacr.elza.security.oauth2.OAuth2Properties;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
@@ -59,6 +67,7 @@ import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
 import net.minidev.json.JSONObject;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Authentization configuration for API
@@ -69,10 +78,13 @@ import net.minidev.json.JSONObject;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 2)
-public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
+public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
-	
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Autowired
     private UserService userService;
 
@@ -94,10 +106,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
-    
+
     @Autowired
     private Optional<SsoHeaderProperties> optionalSsoHeaderProperties;
-    
+
     @Autowired
     private Optional<OAuth2Properties> optionalOAuth2Props;
 
@@ -111,20 +123,6 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         return sessionRegistry;
     }
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
-        builder.authenticationProvider(new PasswordAutheticationProvider(userService));
-        if (optionalSsoHeaderProperties.isPresent()) {
-        	builder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
-        }
-        if (optionalOAuth2Props.isPresent()) {
-            JwtDecoder jwtDecoder = this.getApplicationContext().getBean(JwtDecoder.class);
-            AccessPointService apService = this.getApplicationContext().getBean(AccessPointService.class);
-
-            builder.authenticationProvider(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
-                    itemTypeRepository, optionalOAuth2Props.get()));
-        }
-    }
 
     @Bean
     public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
@@ -132,11 +130,23 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     }
 
     @Bean("applicationAuthenticationManager")
-    @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
-    	return super.authenticationManagerBean();
+        List<AuthenticationProvider> ap = new ArrayList<>();
+
+        ap.add(new PasswordAutheticationProvider(userService));
+        if (optionalSsoHeaderProperties.isPresent()) {
+            ap.add(new SsoHeaderAuthenticationProvider(userService));
+        }
+        if (optionalOAuth2Props.isPresent()) {
+            JwtDecoder jwtDecoder = applicationContext.getBean(JwtDecoder.class);
+            AccessPointService apService = applicationContext.getBean(AccessPointService.class);
+
+            ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
+                    itemTypeRepository, optionalOAuth2Props.get()));
+        }
+        return new ProviderManager(ap);
     }
-    
+
     private static class RestOperationsResourceRetriever implements ResourceRetriever {
         private static final MediaType APPLICATION_JWK_SET_JSON = new MediaType("application", "json");
         private final RestOperations restOperations;
@@ -147,7 +157,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         }
 
         @Override
-        public Resource retrieveResource(URL url) throws IOException {
+        public com.nimbusds.jose.util.Resource retrieveResource(URL url) throws IOException {
             HttpHeaders headers = new HttpHeaders();
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON, APPLICATION_JWK_SET_JSON));
 
@@ -163,7 +173,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 throw new IOException(response.toString());
             }
 
-            return new Resource(response.getBody(), "UTF-8");
+            return new com.nimbusds.jose.util.Resource(response.getBody(), "UTF-8");
         }
     }
 
@@ -190,8 +200,8 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         RestOperationsResourceRetriever rorr = new RestOperationsResourceRetriever(restOperations);
         try {
             Resource tokenResource = rorr.retrieveResource(tokenKeyUrl);
-            JSONObject jsonKey = JSONObjectUtils.parse(tokenResource.getContent());
-            String key = jsonKey.getAsString("value");
+            Map<String, Object> jsonKey = JSONObjectUtils.parse(tokenResource.getContent());
+            String key = (String) jsonKey.get("value");
 
             String jwsAlgorithm = "RS256";
 
@@ -211,15 +221,15 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         }
     }
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.headers().frameOptions().sameOrigin();
-        http.authorizeRequests()
-                .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/**").authenticated();
-        http.authorizeRequests()
-                .antMatchers("/services").permitAll()
-                .antMatchers("/services/**").authenticated()
+        http.authorizeRequests().requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated();
+        http.authorizeRequests().requestMatchers(
+                        new AntPathRequestMatcher("/services")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
                 .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);
         http.csrf().disable();
 
@@ -232,36 +242,40 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 .logout().permitAll().logoutSuccessHandler(apiLogoutSuccessHandler);
         http.formLogin().successHandler(authenticationSuccessHandler);
         http.formLogin().failureHandler(authenticationFailureHandler);
-        
+
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
+        return http.build();
     }
+
+
 
     private void configureOAuth2(HttpSecurity http) throws Exception {
         if (!optionalOAuth2Props.isPresent()) {
             return;
         }
-        
+
         http
                 // enable resource server
                 .oauth2ResourceServer()
                 // enable JWT processing
                 .jwt()
-                // set own authentication manager 
-                //  - allows to set JwtUserDetailProvider as a AutheticationProvider for JWT 
-                .authenticationManager(this.authenticationManager());
+                // set own authentication manager
+                //  - allows to set JwtUserDetailProvider as a AutheticationProvider for JWT
+                .authenticationManager(authenticationManagerBean());
 
         log.info("OAuth2 auto-user mapping filter was configured");
     }
 
     private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
-		if (optionalSsoHeaderProperties.isPresent()) {
-			SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
-			filter.setAuthenticationManager(authenticationManagerBean());
-			filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-			filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-			http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
-			log.info("SSO header authentication filter was configured");
-		}
-	}
+        if (optionalSsoHeaderProperties.isPresent()) {
+            SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
+            filter.setAuthenticationManager(authenticationManagerBean());
+            filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+            http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
+            log.info("SSO header authentication filter was configured");
+        }
+    }
+
 }

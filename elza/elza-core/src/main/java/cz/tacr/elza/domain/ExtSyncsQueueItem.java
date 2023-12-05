@@ -16,6 +16,9 @@ import javax.persistence.ManyToOne;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
+import jakarta.persistence.*;
+import java.time.OffsetDateTime;
+
 @Entity(name = "ext_syncs_queue_item")
 public class ExtSyncsQueueItem {
 
@@ -103,7 +106,7 @@ public class ExtSyncsQueueItem {
     public Integer getBindingId() {
         return bindingId;
     }
-    
+
     public ApExternalSystem getExternalSystem() {
         return externalSystem;
     }

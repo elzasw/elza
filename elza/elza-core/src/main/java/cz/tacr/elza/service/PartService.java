@@ -176,9 +176,9 @@ public class PartService {
 
     /**
      * Odstraní část přímo z DB
-     * 
+     *
      * Pozor: Neodstraňuje bindings
-     * 
+     *
      * Pro vymazání partu včetně biding je nutné použít jiné metody
      *
      * @param apPart
@@ -199,7 +199,7 @@ public class PartService {
 
     /**
      * Odstraní části
-     * 
+     *
      * Odstraní jen samotné části bez prvků popisu
      *
      * @param parts
@@ -241,9 +241,9 @@ public class PartService {
 
     /**
      * Delete list of parts
-     * 
+     *
      * Function checks that parts has no items before delete
-     * 
+     *
      * @param parts
      * @param change
      */
@@ -289,7 +289,7 @@ public class PartService {
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
         ApKeyValue keyValue = apPart.getKeyValue();
         apItemService.deletePartItems(apPart, apChange);
-        
+
         // Delete bindings
         List<ApBindingItem> bindingParts = this.bindingItemRepository.findByPart(apPart);
         if (bindingParts.size() > 0) {
@@ -325,7 +325,7 @@ public class PartService {
 
     /**
      * Update part key value
-     * 
+     *
      * @param apPart
      *            should be with fetched key value
      * @param result
@@ -465,11 +465,11 @@ public class PartService {
                 apIndex = new ApIndex();
                 apIndex.setPart(apPart);
                 apIndex.setIndexType(indexType);
-                apIndex.setValue(value);
+                apIndex.setIndexValue(value);
                 indexRepository.save(apIndex);
             } else {
-                if (!value.equals(apIndex.getValue())) {
-                    apIndex.setValue(value);
+                if (!value.equals(apIndex.getIndexValue())) {
+                    apIndex.setIndexValue(value);
                     indexRepository.save(apIndex);
                 }
             }
@@ -552,7 +552,7 @@ public class PartService {
 
     /**
      * Odstranění předchozí preferované hodnoty
-     * 
+     *
      * @param oldPrefPart
      */
 	public ApPart unsetPreferredPart(Integer partId) {
@@ -565,16 +565,16 @@ public class PartService {
         	partRepository.saveAndFlush(part);
 
         	keyValueRepository.delete(keyValue);
-        	keyValueRepository.flush();    		
+        	keyValueRepository.flush();
     	}
     	return part;
 	}
 
     /**
      * Delete constraints for parts
-     * 
+     *
      * Method is used when accessPoint is marked as deleted
-     * 
+     *
      * @param accessPoint
      */
     public void deleteConstraintsForParts(ApAccessPoint accessPoint) {

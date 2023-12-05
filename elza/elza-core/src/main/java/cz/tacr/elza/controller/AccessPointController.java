@@ -3,8 +3,8 @@ package cz.tacr.elza.controller;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.validation.Valid;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class AccessPointController implements AccesspointsApi {
     AccessPointService accessPointService;
 
     @Autowired
-    StaticDataService staticDataService; 
+    StaticDataService staticDataService;
 
     @Autowired
     RevisionService revisionService;
@@ -101,7 +101,7 @@ public class AccessPointController implements AccesspointsApi {
             if (deleteAccessPointDetail.getReplacedBy() != null) {
                 replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());
             }
-            copyAll = deleteAccessPointDetail.getReplaceType() != null 
+            copyAll = deleteAccessPointDetail.getReplaceType() != null
                     && deleteAccessPointDetail.getReplaceType() == ReplaceType.COPY_ALL;
         }
         ApRevision revision = revisionService.findRevisionByState(apState);

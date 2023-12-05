@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -547,12 +547,12 @@ public class ClientFactoryDO {
         String value = conditions.iterator().next();
         if(StringUtils.isBlank(value)) {
             throw new BusinessException("Hodnota podmínky je prázdná.", BaseCode.PROPERTY_IS_INVALID)
-        		.set("property", "conditions");        	
+        		.set("property", "conditions");
         }
         return convertor.apply(value);
     }
 
-    private <T> Interval<T> getConditionValueInterval(final List<String> conditions, 
+    private <T> Interval<T> getConditionValueInterval(final List<String> conditions,
     		final Function<String, T> convertor) {
         if (CollectionUtils.isEmpty(conditions)) {
             throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
@@ -579,7 +579,7 @@ public class ClientFactoryDO {
     /**
      * Vrací hodnotu jako řetězec pro filtr.
      * Pro vyhledávání bez ohledu na velikost písmen, text musí být napsán malými písmeny.
-     * 
+     *
      * @param conditions
      * @return String
      */
@@ -590,7 +590,7 @@ public class ClientFactoryDO {
     private Double getConditionValueDouble(final List<String> conditions) {
         return getSingleValue(conditions, value -> Double.valueOf(value.replace(',', '.')));
     }
-    
+
     private static Date valueOfDate(String value) {
     	return Date.from(LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
@@ -623,11 +623,11 @@ public class ClientFactoryDO {
         String firstValue = conditions.iterator().next();
         if(StringUtils.isBlank(firstValue)) {
             throw new BusinessException("Hodnota podmínky je prázdná.", BaseCode.PROPERTY_IS_INVALID)
-        	.set("property", "conditions");        	
+        	.set("property", "conditions");
         }
         ArrDataUnitdate result = ArrDataUnitdate.valueOf(firstValue);
         switch(conditions.size()) {
-        case 1:        	
+        case 1:
         	break;
         case 2:
         	String secondValue = conditions.get(1);

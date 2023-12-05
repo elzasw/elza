@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -11,7 +12,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemAccessPointRefVO extends ApItemVO {
 
@@ -31,7 +32,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
     public ApItemAccessPointRefVO(final AccessPointItem item, final GetExternalUrl getExternalUrl) {
         super(item);
-        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        ArrDataRecordRef data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
             ApBinding binding = data.getBinding();
             if (binding != null) {
@@ -97,7 +98,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
     @Override
     public boolean equalsValue(AccessPointItem item) {
-        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        ArrDataRecordRef data = HibernateUtils.unproxy(item.getData());
         return equalsBase(item) && Objects.equals(value, data.getRecordId());
     }
 }

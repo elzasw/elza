@@ -3,7 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Prvek popisu pro přístupové body.

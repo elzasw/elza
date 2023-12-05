@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrDescItem;
@@ -14,10 +14,10 @@ import cz.tacr.elza.domain.ArrDescItem;
  */
 public class NotEmptyDescItemCondition implements LuceneDescItemCondition {
 
-    @Override
-    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-        Assert.notNull(queryBuilder);
-
-		return queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT).matching("?*").createQuery();
-    }
+//    @Override TODO hibernate search 6
+//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
+//        Assert.notNull(queryBuilder);
+//
+//		return queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT).matching("?*").createQuery();
+//    }
 }

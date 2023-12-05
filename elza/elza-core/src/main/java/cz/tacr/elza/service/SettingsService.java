@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.drools.core.util.StringUtils;
@@ -48,7 +48,7 @@ public class SettingsService {
 
     @Autowired
     private SettingsRepository settingsRepository;
-    
+
     @Autowired
     private StaticDataService staticDataService;
 
@@ -61,7 +61,7 @@ public class SettingsService {
 		 *     Return valid object if settings was successfully converted.
 		 */
 		Setting convert(UISettings uiSettings);
-		
+
 		/**
 		 * Type safe version of convert
 		 * @param settings
@@ -73,22 +73,22 @@ public class SettingsService {
 		<T extends Setting> boolean canConvertTo(String settingsType, Class<T> cls);
 
         EntityType getEntityType();
-        
+
 	}
-	
+
 	abstract class SettingConvertorBase implements SettingConvertor {
 	    final UISettings.SettingsType settingsType;
-	    
+
 	    protected SettingConvertorBase(final UISettings.SettingsType settingsType) {
 	        this.settingsType = settingsType;
-	        
+
 	    }
-	    
+
         @Override
         public EntityType getEntityType() {
             return settingsType.getEntityType();
         }
-        
+
         @Override
         public <T extends Setting> T convert(UISettings uiSettings, Class<T> cls) {
             Setting result = convert(uiSettings);
@@ -96,13 +96,13 @@ public class SettingsService {
         }
 
 	}
-	
+
 	class SettingConvertorSimple <R extends Setting>  extends SettingConvertorBase {
-	    
+
 	    final Function<UISettings, R> mappingFunction;
-	    
+
 	    final Class<R> targetClass;
-	    
+
 	    SettingConvertorSimple(UISettings.SettingsType settingType,
 	                           final Function<UISettings, R> mappingFunction,
 	                           final Class<R> targetClass) {
@@ -128,9 +128,9 @@ public class SettingsService {
             return cls.isAssignableFrom(targetClass);
         }
 	}
-	
+
 	class StructTypeSettingsConvertor extends SettingConvertorBase {
-	    
+
 	    StructTypeSettingsConvertor() {
 	        super(UISettings.SettingsType.STRUCT_TYPE_);
 	    }
@@ -140,7 +140,7 @@ public class SettingsService {
             // prepare CODE
             String code = uiSettings.getSettingsType().substring(this.settingsType.toString().length());
             if(StringUtils.isEmpty(code)) {
-                throw new SystemException("UISettings without code", BaseCode.DB_INTEGRITY_PROBLEM).set("settingsId", uiSettings.getSettingsId());                
+                throw new SystemException("UISettings without code", BaseCode.DB_INTEGRITY_PROBLEM).set("settingsId", uiSettings.getSettingsId());
             }
             return SettingStructTypeSettings.newInstance(uiSettings, code);
         }
@@ -152,32 +152,32 @@ public class SettingsService {
             }
             return cls.isAssignableFrom(SettingStructTypeSettings.class);
         }
-	
+
 	}
 
     List<SettingConvertor> settingsConvertors = new ArrayList<>();
-	
+
 	public SettingsService() {
 		// initialize setting convertors
 	    settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FUND_ISSUES,
 	            SettingFundIssues::newInstance,
 	            SettingFundIssues.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FUND_VIEW, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FUND_VIEW,
                 SettingFundViews::newInstance,
                 SettingFundViews.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.TYPE_GROUPS, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.TYPE_GROUPS,
                 SettingTypeGroups::newInstance,
                 SettingTypeGroups.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.RECORD, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.RECORD,
                 SettingRecord::newInstance,
                 SettingRecord.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.STRUCTURE_TYPES, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.STRUCTURE_TYPES,
                 SettingStructureTypes::newInstance,
                 SettingStructureTypes.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.GRID_VIEW, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.GRID_VIEW,
                 SettingGridView::newInstance,
                 SettingGridView.class ));
-        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FAVORITE_ITEM_SPECS, 
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FAVORITE_ITEM_SPECS,
                 c -> SettingFavoriteItemSpecs.newInstance(c, staticDataService),
                 SettingFavoriteItemSpecs.class ));
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.PARTS_ORDER,
@@ -193,11 +193,11 @@ public class SettingsService {
                 SettingMenu::newInstance,
                 SettingMenu.class));
         settingsConvertors.add(new StructTypeSettingsConvertor());
-		
+
 		// default convertor
 		// settingsConvertors.add(uiSettings -> SettingBase.newInstance(uiSettings));
 	}
-	
+
 	public Setting convertSetting(final UISettings uiSettings) {
 		for(SettingConvertor settingConvertor: settingsConvertors)
 		{
@@ -206,12 +206,12 @@ public class SettingsService {
 				return setting;
 			}
 		}
-		
+
 		throw new SystemException("Failed to convert UISettings", BaseCode.DB_INTEGRITY_PROBLEM)
 			.set("settings_id", uiSettings.getSettingsId())
 			.set("settings_type", uiSettings.getSettingsType());
 	}
-	
+
     /**
      * Načte nastavení podle uživatele.
      *
@@ -323,7 +323,7 @@ public class SettingsService {
     public List<UISettings> getGlobalSettings(String settingsType, EntityType entityType, Integer entityId) {
         return settingsRepository.findByUserAndSettingsTypeAndEntityTypeAndEntityId(null, settingsType, entityType, entityId);
     }
-    
+
     /**
      * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
      * pořadí, které jedefinováno u atributů.
@@ -344,8 +344,8 @@ public class SettingsService {
         }
 
         return null;
-    }    
-    
+    }
+
     /**
      * Read settings of given type
      * @param settingsType
@@ -357,7 +357,7 @@ public class SettingsService {
         // Get factory
         SettingConvertor convertor = getConvertor(settingsType, cls);
         EntityType entityType = convertor.getEntityType();
-        
+
         UISettings settings = null;
         // try to read settings for specific entity
         if(entityId!=null) {
@@ -373,7 +373,7 @@ public class SettingsService {
         }
         return null;
     }
-    
+
     /**
      * Read settings of given entity
      * @param settingsType
@@ -382,12 +382,12 @@ public class SettingsService {
      * @return
      */
     public UISettings readSettingsForEntity(String settingsType, EntityType entityType, Integer entityId) {
-        List<UISettings> settingsList = settingsRepository.findByUserAndSettingsTypeAndEntityTypeAndEntityId(null, 
-                                                                                                             settingsType, 
+        List<UISettings> settingsList = settingsRepository.findByUserAndSettingsTypeAndEntityTypeAndEntityId(null,
+                                                                                                             settingsType,
                                                                                                              entityType, entityId);
         if(settingsList.size()>0) {
             // Use first settings in case of multiple settings
-            // We have no priority for selecting later settings            
+            // We have no priority for selecting later settings
             return settingsList.get(0);
         }
         return null;

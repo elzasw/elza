@@ -4,19 +4,19 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 
 import java.util.UUID;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.annotations.Type;
@@ -56,7 +56,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
 
     /**
      * Builder for ArrStructuredObject
-     * 
+     *
      *
      */
     public static class Builder {
@@ -158,7 +158,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
     @Column(name = "fundId", updatable = false, insertable = false)
     private Integer fundId;
 
-    @Column(length = StringLength.LENGTH_1000)
+    @Column(name = "object_value", length = StringLength.LENGTH_1000)
     private String value;
 
     @Column(length = StringLength.LENGTH_1000)
@@ -175,7 +175,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
 
     @Column
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 
     @Enumerated(EnumType.STRING)

@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.service.StructObjValueService;
 
 /**
  * Objekt strukt. datového typu atributu.
@@ -15,24 +16,24 @@ import cz.tacr.elza.repository.StructuredItemRepository;
 public class Structured {
 
     private final ArrStructuredObject structObj;
-    
-    private final StructuredItemRepository itemRepos;
-    
+
+    private final StructObjValueService structObjService;
+
     private List<StructObjItem> items;
 
-    public Structured(final ArrStructuredObject structObj, final StructuredItemRepository itemRepos) {
+    public Structured(final ArrStructuredObject structObj, final StructObjValueService structObjService) {
 		this.structObj = structObj;
-		this.itemRepos = itemRepos;
+		this.structObjService = structObjService;
 	}
 
 	public String getValue() {
         return structObj.getValue();
     }
-	
+
 	public List<StructObjItem> getItems() {
 		if(items==null) {
 			// read description items (if needed) from DB
-			List<ArrStructuredItem> dbItems = itemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+			List<ArrStructuredItem> dbItems = structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
 			items = ModelFactory.createStructuredItems(dbItems);
 		}
 		return items;

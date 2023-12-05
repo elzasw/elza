@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -129,7 +130,7 @@ public class EntityDBDispatcher {
 
     /**
      * Mapping between partUuid and ApBindingItem
-     * 
+     *
      * Valid during synchronization
      */
     Map<String, ApBindingItem> bindingPartLookup;
@@ -208,10 +209,10 @@ public class EntityDBDispatcher {
 
     /**
      * Method to create entities
-     * 
+     *
      * Method should not be called from async queues.
      * Method will fail if other entity with same key value exists
-     * 
+     *
      * @param procCtx
      * @param entities
      */
@@ -241,7 +242,7 @@ public class EntityDBDispatcher {
         }
 
         // Read existing binding from DB
-        // added all uuid for looking for by uuid 
+        // added all uuid for looking for by uuid
         List<String> uuids = CamHelper.getEuids(entities);
         List<ApBinding> bindingList = bindingRepository.findByValuesAndExternalSystemType(uuids, ApExternalSystemType.CAM_UUID);
 
@@ -353,7 +354,7 @@ public class EntityDBDispatcher {
 
     /**
      * Run existing AP sync
-     * 
+     *
      * @param procCtx
      * @param state
      * @param prevBindingState
@@ -373,16 +374,16 @@ public class EntityDBDispatcher {
 
         this.procCtx = procCtx;
 
-        
+
         // Flag if entity is deleted
-        // Deleted entity has to be retained as deleted if 
+        // Deleted entity has to be retained as deleted if
         // synQueue is true.
         boolean deletedEntity = (state.getDeleteChangeId()!=null);
         ApState stateNew = null;
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApAccessPoint accessPoint = state.getAccessPoint();
-        MultipleApChangeContext mcc = new MultipleApChangeContext(); 
+        MultipleApChangeContext mcc = new MultipleApChangeContext();
 
         readBindingItems(prevBindingState.getBinding(), accessPoint);
         if (syncQueue) {
@@ -521,7 +522,7 @@ public class EntityDBDispatcher {
 
     /**
      * Restore access point which was alreay deleted
-     * 
+     *
      * @param procCtx
      * @param entity
      * @param binding
@@ -597,9 +598,9 @@ public class EntityDBDispatcher {
 
     /**
      * Create new part from XML part
-     * 
+     *
      * Part is without items
-     * 
+     *
      * @param part
      * @param parentPart
      * @param accessPoint
@@ -608,7 +609,7 @@ public class EntityDBDispatcher {
      */
     private ApBindingItem createPart(PartXml part,
                                      ApPart parentPart,
-                                     ApAccessPoint accessPoint,                              
+                                     ApAccessPoint accessPoint,
                                      ApBinding binding) {
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
@@ -623,7 +624,7 @@ public class EntityDBDispatcher {
 
     /**
      * Find parent ApPart for PartXml
-     * 
+     *
      * @param partXml
      * @param accessPoint
      * @param binding
@@ -645,9 +646,9 @@ public class EntityDBDispatcher {
 
     /**
      * Vytvoření nového ApState a ApAccessPoint
-     *  
+     *
      * @param procCtx
-     * @param entity 
+     * @param entity
      * @param binding
      * @return ApState
      */
@@ -672,15 +673,15 @@ public class EntityDBDispatcher {
         }
         StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, state, apChange, uuid);
-        ApAccessPoint accessPoint = apState.getAccessPoint();        
+        ApAccessPoint accessPoint = apState.getAccessPoint();
 
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
 
         // update records referencing newly created AP (arr_data_record_ref)
-        List<ApItem> items = itemRepository.findUnbindedItemByBinding(binding);
+        List<ApItem> items = accessPointItemService.findUnbindedItemByBinding(binding);
         Set<Integer> updatedApIds = new HashSet<Integer>(); 
         for (ApItem item : items) {
-            ArrDataRecordRef dataRef = (ArrDataRecordRef) item.getData();
+            ArrDataRecordRef dataRef = HibernateUtils.unproxy(item.getData());
             if (dataRef.getRecord() == null) {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
@@ -737,11 +738,11 @@ public class EntityDBDispatcher {
 
     /**
      * Synchronizace částí přístupového bodu z externího systému
-     * 
+     *
      * Metoda mění odkaz na aktuální podobu preferovaného označení.
      * Dochází k uložení entity, další metody by měly používat aktualizovanou
      * entitu.
-     * 
+     *
      * Nedochazi k validaci entity.
      *
      * @param procCtx
@@ -776,12 +777,12 @@ public class EntityDBDispatcher {
         log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
                   partsXml.getList().size());
 
-        List<ApItem> itemsByAp = accessPointItemService.findItems(accessPoint);
+        List<ApItem> itemsByAp = accessPointItemService.findValidItemsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
 
-        /*        
+        /*
         List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(binding);
         List<ApBindingItem> newBindingParts = new ArrayList<>();
         Map<Integer, List<ApBindingItem>> bindingItemMap = bindingItemRepository.findItemsByBinding(binding).stream()
@@ -814,7 +815,7 @@ public class EntityDBDispatcher {
 
                 ApPart parentPart = findParentPart(partXml, accessPoint, binding);
 
-                // check if exists same other part without binding                
+                // check if exists same other part without binding
                 ReceivedPart receivedPart = findSamePartWithoutBinding(partXml, parentPart, itemsMap);
 
                 // if the same part not found -> create part
@@ -844,7 +845,7 @@ public class EntityDBDispatcher {
                 }
             }
         }
-        
+
         // smazání partů dle externího systému
         // mažou se zbývající party
         deletePartsInLookup(apChange, accessPoint, syncQueue);
@@ -863,7 +864,7 @@ public class EntityDBDispatcher {
         Iterator<Map.Entry<Integer, Map<String, ApBindingItem>>> iterator = bindingItemsByPart.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Integer, Map<String, ApBindingItem>> entry = iterator.next();
-            if (entry.getValue().isEmpty()) { 
+            if (entry.getValue().isEmpty()) {
                 iterator.remove();
             }
         }
@@ -890,7 +891,7 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);        
+        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
         syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",
@@ -905,7 +906,7 @@ public class EntityDBDispatcher {
 
     /**
      * Najít odpovídající ApPart v seznamu
-     * 
+     *
      * @param partXml
      * @param parentPart
      * @param itemsMap
@@ -931,7 +932,7 @@ public class EntityDBDispatcher {
 
     /**
      * Porovnání PartXml z ApPart včetně ApItem(s)
-     * 
+     *
      * @param partXml
      * @param itemsXml
      * @param parentPart
@@ -965,7 +966,7 @@ public class EntityDBDispatcher {
 
     /**
      * Porovnání seznamu items PartXml se sezmanen ApItem
-     * 
+     *
      * @param itemsXml
      * @param items
      * @return
@@ -1012,10 +1013,10 @@ public class EntityDBDispatcher {
                     && deletedPartIds.contains(subPart.getParentPartId())
                     && !deletedPartIds.contains(subPart.getPartId())) {
                 if (syncQueue) {
-                    log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}", 
-                              accessPoint.getAccessPointId(), 
+                    log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}",
+                              accessPoint.getAccessPointId(),
                               subPart.getParentPartId());
-                    throw new BusinessException("Removed part has subordinate part(s), accessPointId: " + 
+                    throw new BusinessException("Removed part has subordinate part(s), accessPointId: " +
                               accessPoint.getAccessPointId() + ", partId: " + subPart.getParentPartId(), BaseCode.EXPORT_FAILED)
                         .set("accessPointId", accessPoint.getAccessPointId())
                         .set("partId", subPart.getParentPartId());
@@ -1050,9 +1051,9 @@ public class EntityDBDispatcher {
 
     /**
      * Update part
-     * 
+     *
      * Return list of items in part
-     * 
+     *
      * @param partXml
      * @param apPart
      * @param srcItems
@@ -1109,7 +1110,7 @@ public class EntityDBDispatcher {
         }
 
         // check last items with binding in srcItemMap
-        // if item has binding -> remove it from srcItemsMap 
+        // if item has binding -> remove it from srcItemsMap
         Map<String, ApBindingItem> bindingItemsPart = bindingItemsByPart.get(apPart.getPartId());
         if (bindingItemsPart != null) {
             for (ApBindingItem bindingItem : bindingItemsPart.values()) {
@@ -1144,7 +1145,7 @@ public class EntityDBDispatcher {
                                     final ApPart apPart, final ApChange change,
                                     final ApBinding binding,
                                     final List<ReferencedEntities> dataRefList) {
-        
+
         if (partXml.getItms() == null) {
             return Collections.emptyList();
         }
@@ -1171,7 +1172,7 @@ public class EntityDBDispatcher {
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
                               final ApBinding binding,
                               final List<ReferencedEntities> dataRefList) {
-        ReceivedItem receivedItem = createReveivedItem(createItem, dataRefList);  
+        ReceivedItem receivedItem = createReveivedItem(createItem, dataRefList);
         RulItemType itemType = receivedItem.getItemType();
         RulItemSpec itemSpec = receivedItem.getItemSpec();
         String uuid = receivedItem.getUuid();
@@ -1227,7 +1228,7 @@ public class EntityDBDispatcher {
             String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
             ReferencedEntities dataRef = new ReferencedEntities(dataRecordRef, extIdent);
             dataRefList.add(dataRef);
-            
+
             data = dataRecordRef;
         } else if (createItem instanceof ItemEnumXml) {
             ItemEnumXml itemEnum = (ItemEnumXml) createItem;
@@ -1370,9 +1371,9 @@ public class EntityDBDispatcher {
         List<ApBindingItem> bindingItems = this.externalSystemService.getBindingItems(binding);
 
         Map<Integer, ApBindingItem> partIdBindingMap = new HashMap<>();
-        bindingPartLookup = new HashMap<>();        
+        bindingPartLookup = new HashMap<>();
         bindingItemsByPart = new HashMap<>();
-        
+
         partsWithoutBinding = partService.findPartsByAccessPoint(accessPoint);
 
         for (ApBindingItem bindingItem : bindingItems) {
@@ -1390,7 +1391,7 @@ public class EntityDBDispatcher {
             }
         }
 
-        // safety check 
+        // safety check
         // binded item should belong to some part in lookup
         for (Integer partId: bindingItemsByPart.keySet()) {
             ApBindingItem parentBinding = partIdBindingMap.get(partId);
@@ -1416,8 +1417,8 @@ public class EntityDBDispatcher {
     	ItemUpdates result = new ItemUpdates();
         for (Object item : items) {
             if (item instanceof ItemBinaryXml) {
-                ItemBinaryXml itemBinary = (ItemBinaryXml) item;                
-                prepareBinaryUpdate(bindingItemLookup, itemBinary, result);                
+                ItemBinaryXml itemBinary = (ItemBinaryXml) item;
+                prepareBinaryUpdate(bindingItemLookup, itemBinary, result);
             } else if (item instanceof ItemBooleanXml) {
                 ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
                 prepareBooleanUpdate(bindingItemLookup, itemBoolean, result);
@@ -1448,7 +1449,7 @@ public class EntityDBDispatcher {
                 	result.addNewItem(itemInteger);
                 } else {
                     ApItem ii = bindingItem.getItem();
-                    ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
+                    ArrDataInteger dataInteger = HibernateUtils.unproxy(ii.getData());
                     if (!(ii.getItemType().getCode().equals(itemInteger.getT().getValue()) &&
                             compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
                             dataInteger.getIntegerValue().equals(itemInteger.getValue().getValue().intValue()))) {
@@ -1466,7 +1467,7 @@ public class EntityDBDispatcher {
                 	result.addNewItem(itemLink);
                 } else {
                     ApItem il = bindingItem.getItem();
-                    ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
+                    ArrDataUriRef dataUriRef = HibernateUtils.unproxy(il.getData());
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
@@ -1488,15 +1489,15 @@ public class EntityDBDispatcher {
                     String value;
                     switch (DataType.fromCode(is.getItemType().getDataType().getCode())) {
                     case STRING:
-                        ArrDataString dataString = (ArrDataString) is.getData();
+                        ArrDataString dataString = HibernateUtils.unproxy(is.getData());
                         value = dataString.getStringValue();
                         break;
                     case TEXT:
-                        ArrDataText dataText = (ArrDataText) is.getData();
+                        ArrDataText dataText = HibernateUtils.unproxy(is.getData());
                         value = dataText.getTextValue();
                         break;
                     case COORDINATES:
-                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                        ArrDataCoordinates dataCoordinates = HibernateUtils.unproxy(is.getData());
                         value = GeometryConvertor.convert(dataCoordinates.getValue());
                         break;
                     default:
@@ -1520,7 +1521,7 @@ public class EntityDBDispatcher {
                     result.addNewItem(itemUnitDate);
                 } else {
                     ApItem iud = bindingItem.getItem();
-                    ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
+                    ArrDataUnitdate dataUnitdate = HibernateUtils.unproxy(iud.getData());
                     if (compareUnitDate(iud, dataUnitdate, itemUnitDate)) {
                         result.addNotChanged(bindingItem);
                     } else {
@@ -1540,7 +1541,7 @@ public class EntityDBDispatcher {
         	result.addNewItem(itemBoolean);
         } else {
             ApItem ib = bindingItem.getItem();
-            ArrDataBit dataBit = (ArrDataBit) ib.getData();
+            ArrDataBit dataBit = HibernateUtils.unproxy(ib.getData());
             if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
                     compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
                     dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
@@ -1575,7 +1576,7 @@ public class EntityDBDispatcher {
         }
         return true;
     }
-    
+
     private void prepareBinaryUpdate(Map<String, ApBindingItem> bindingItemLookup, ItemBinaryXml itemBinary, ItemUpdates result) {
     	ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
         if (bindingItem == null) {
@@ -1584,7 +1585,7 @@ public class EntityDBDispatcher {
             ApItem is = bindingItem.getItem();
             boolean processed = false;
             if (matchItemType(is, itemBinary.getT(), itemBinary.getS())) {
-                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                ArrDataCoordinates dataCoordinates = HibernateUtils.unproxy(is.getData());
                 Geometry value = dataCoordinates.getValue();
                 Geometry xmlValue = GeometryConvertor.convertWkb(itemBinary.getValue().getValue());
                 // try to compare coordinates
@@ -1600,7 +1601,7 @@ public class EntityDBDispatcher {
             if (!processed) {
             	result.addChanged(bindingItem, itemBinary);
             }
-        }		
+        }
 
 	}
 
@@ -1612,7 +1613,7 @@ public class EntityDBDispatcher {
         } else {
         	// we found mapping
             ApItem ier = bindingItem.getItem();
-            ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
+            ArrDataRecordRef dataRecordRef = HibernateUtils.unproxy(ier.getData());
             EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
             String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
             // get binding for record
@@ -1634,7 +1635,7 @@ public class EntityDBDispatcher {
             } else {
             	result.addNotChanged(bindingItem);
             }
-        }		
+	}
 	}
 
 	private boolean compareUnitDate(ApItem iud, ArrDataUnitdate dataUnitdate, ItemUnitDateXml itemUnitDate) {

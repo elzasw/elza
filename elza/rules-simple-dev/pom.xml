@@ -7,6 +7,7 @@
     </parent>
     <artifactId>rules-simple</artifactId>
     <name>ELZA Simple Rules</name>
+    <packaging>pom</packaging>
 
     <dependencies>
     </dependencies>
@@ -15,14 +16,14 @@
       <plugins>
         <!-- Disable default .jar generation -->
         <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>2.3.1</version>
-          <executions>
-            <execution>
-              <id>default-jar</id>
-              <phase>none</phase>
-            </execution>
-          </executions>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+                <execution>
+                    <id>default-jar</id>
+                    <phase>none</phase>
+                </execution>
+            </executions>
         </plugin>
         <!-- Create own package -->
         <plugin>

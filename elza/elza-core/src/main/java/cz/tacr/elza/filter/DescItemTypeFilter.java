@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
 
+import jakarta.persistence.EntityManager;
 import org.apache.lucene.search.Query;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.jpa.FullTextEntityManager; TODO hibernate search 6
+//import org.hibernate.search.jpa.FullTextQuery;
+//import org.hibernate.search.query.dsl.BooleanJunction;
+//import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -75,26 +75,26 @@ public class DescItemTypeFilter {
      *
      * @return id nodů se seznamem id hodnot
      */
-    public Map<Integer, Set<Integer>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder,
-            final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
-        Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-        Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-        Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-
-        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
-    }
-
-    private Map<Integer, Set<Integer>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, final FullTextEntityManager fullTextEntityManager,
-            final QueryBuilder queryBuilder, final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
-        FilterQueries filterQueries = createFilterQuries(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId);
-
-        Map<Integer, Set<Integer>> nodeIdToDescItemIds = processLuceneQueries(fullTextEntityManager, queryBuilder,
-                fundId, filterQueries.getLuceneQueries());
-
-        Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
-
-        return joinQueriesResultsOr(nodeIdToDescItemIds, nodeIds);
-    }
+//    public Map<Integer, Set<Integer>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder, TODO hibernate search 6
+//                                                        final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
+//        Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+//        Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+//        Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+//
+//        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
+//    }
+//
+//    private Map<Integer, Set<Integer>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, final FullTextEntityManager fullTextEntityManager,
+//            final QueryBuilder queryBuilder, final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
+//        FilterQueries filterQueries = createFilterQuries(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId);
+//
+//        Map<Integer, Set<Integer>> nodeIdToDescItemIds = processLuceneQueries(fullTextEntityManager, queryBuilder,
+//                fundId, filterQueries.getLuceneQueries());
+//
+//        Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
+//
+//        return joinQueriesResultsOr(nodeIdToDescItemIds, nodeIds);
+//    }
 
     /**
      * Spojí výsledky z obou typů dotazů.
@@ -131,9 +131,6 @@ public class DescItemTypeFilter {
     /**
      * Spojí výsledky z obou typů dotazů. Vrátí jen ty výsledky které našly obě skupiny dotazů.
      *
-     * @param nodeIdToDescItemIds id nodů se seznamem id hodnot z lucene queries
-     * @param nodeIds id nodů z hibernate queries
-     * @param expressionsNodeIdToDescItemIds
      */
     private Map<Integer, Set<Integer>> joinQueriesResultsAnd(
             final Map<Integer, Set<Integer>> valuesResult,
@@ -188,10 +185,10 @@ public class DescItemTypeFilter {
      *
      * @param hibernateQueries
      */
-    private Set<Integer> processHibernateQueries(final List<javax.persistence.Query> hibernateQueries) {
+    private Set<Integer> processHibernateQueries(final List<jakarta.persistence.Query> hibernateQueries) {
         Set<Integer> nodeIds = null;
         if (!hibernateQueries.isEmpty()) {
-            for (javax.persistence.Query q : hibernateQueries){
+            for (jakarta.persistence.Query q : hibernateQueries){
                 List<Integer> resultList = q.getResultList();
 
                 if (nodeIds == null) {
@@ -204,96 +201,96 @@ public class DescItemTypeFilter {
         return nodeIds;
     }
 
-    /**
-     * Najde id nodů a k nim seznam hodnot atributů.
-     *
-     * @param fullTextEntityManager
-     * @param queryBuilder
-     * @param fundId
-     * @param luceneQueries
-     */
-    private Map<Integer, Set<Integer>> processLuceneQueries(final FullTextEntityManager fullTextEntityManager,
-            final QueryBuilder queryBuilder, final Integer fundId, final List<Query> luceneQueries) {
-        Map<Integer, Set<Integer>> nodeIdToDescItemIds = null;
-        if (!luceneQueries.isEmpty()) {
-            BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
-            booleanJunction.must(createDescItemTypeQuery(queryBuilder));
-            booleanJunction.must(createFundIdQuery(queryBuilder, fundId));
-
-            luceneQueries.forEach(q -> {
-                booleanJunction.must(q);
-            });
-
-            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_ITEM_ID).getResultList();
-
-            nodeIdToDescItemIds = new HashMap<>(rows.size());
-            for (Object row: rows) {
-                Object[] rowArray = (Object[]) row;
-                Integer nodeId = (Integer) rowArray[0];
-                Integer descItemId = (Integer) rowArray[1];
-                Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
-                descItemIds.add(descItemId);
-            }
-        }
-        return nodeIdToDescItemIds;
-    }
-
-    /**
-     * Vytvoří VO ve kterém budou rozdělené lucene a hibernate dotazy.
-     * @param sectionConditions
-     */
-    private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
-        List<Query> luceneQueries = new LinkedList<>();
-        List<javax.persistence.Query> hibernateQueries = new LinkedList<>();
-        FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
-
-        if (sortConditions(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
-            return new FilterQueries(Collections.emptyList(), Collections.emptyList());
-        }
-
-        return filterQueries;
-    }
-
-    /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
-    private boolean sortConditions(final List<DescItemCondition> descItemConditions, final QueryBuilder queryBuilder, final EntityManager entityManager,
-            final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
-            final List<javax.persistence.Query> hibernateQueries) {
-        for (DescItemCondition condition : descItemConditions) {
-            if (condition instanceof LuceneDescItemCondition) {
-                LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
-                luceneQueries.add(luceneCondition.createLuceneQuery(queryBuilder));
-            } else if (condition instanceof SelectsNothingCondition) {
-                return true;
-            } else {
-                HibernateDescItemCondition hibernateCondition = (HibernateDescItemCondition) condition;
-                hibernateQueries.add(hibernateCondition.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Vytvoří hibernate jpa query z lucene query.
-     *
-     * @param query lucene qery
-     * @param entityClass třída pro kterou je dotaz
-     *
-     * @return hibernate jpa query
-     */
-    private FullTextQuery createFullTextQuery(final FullTextEntityManager fullTextEntityManager, final Query query, final Class<?> entityClass) {
-        return fullTextEntityManager.createFullTextQuery(query, entityClass);
-    }
-
-    private Query createDescItemTypeQuery(final QueryBuilder queryBuilder) {
-        Integer descItemTypeId = descItemType.getItemTypeId();
-		return queryBuilder.range().onField(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
-                createQuery();
-    }
-
-    private Query createFundIdQuery(final QueryBuilder queryBuilder, final Integer fundId) {
-		return queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
-    }
+//    /**
+//     * Najde id nodů a k nim seznam hodnot atributů. TODO hibernate search 6
+//     *
+//     * @param fullTextEntityManager
+//     * @param queryBuilder
+//     * @param fundId
+//     * @param luceneQueries
+//     */
+//    private Map<Integer, Set<Integer>> processLuceneQueries(final FullTextEntityManager fullTextEntityManager,
+//            final QueryBuilder queryBuilder, final Integer fundId, final List<Query> luceneQueries) {
+//        Map<Integer, Set<Integer>> nodeIdToDescItemIds = null;
+//        if (!luceneQueries.isEmpty()) {
+//            BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
+//            booleanJunction.must(createDescItemTypeQuery(queryBuilder));
+//            booleanJunction.must(createFundIdQuery(queryBuilder, fundId));
+//
+//            luceneQueries.forEach(q -> {
+//                booleanJunction.must(q);
+//            });
+//
+//            List<Object> rows = createFullTextQuery(fullTextEntityManager, booleanJunction.createQuery(), ArrDescItem.class).setProjection(ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_ITEM_ID).getResultList();
+//
+//            nodeIdToDescItemIds = new HashMap<>(rows.size());
+//            for (Object row: rows) {
+//                Object[] rowArray = (Object[]) row;
+//                Integer nodeId = (Integer) rowArray[0];
+//                Integer descItemId = (Integer) rowArray[1];
+//                Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
+//                descItemIds.add(descItemId);
+//            }
+//        }
+//        return nodeIdToDescItemIds;
+//    }
+//
+//    /**
+//     * Vytvoří VO ve kterém budou rozdělené lucene a hibernate dotazy.
+//     * @param sectionConditions
+//     */
+//    private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
+//        List<Query> luceneQueries = new LinkedList<>();
+//        List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
+//        FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
+//
+//        if (sortConditions(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
+//            return new FilterQueries(Collections.emptyList(), Collections.emptyList());
+//        }
+//
+//        return filterQueries;
+//    }
+//
+//    /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
+//    private boolean sortConditions(final List<DescItemCondition> descItemConditions, final QueryBuilder queryBuilder, final EntityManager entityManager,
+//            final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
+//            final List<jakarta.persistence.Query> hibernateQueries) {
+//        for (DescItemCondition condition : descItemConditions) {
+//            if (condition instanceof LuceneDescItemCondition) {
+//                LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
+//                luceneQueries.add(luceneCondition.createLuceneQuery(queryBuilder));
+//            } else if (condition instanceof SelectsNothingCondition) {
+//                return true;
+//            } else {
+//                HibernateDescItemCondition hibernateCondition = (HibernateDescItemCondition) condition;
+//                hibernateQueries.add(hibernateCondition.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
+//            }
+//        }
+//
+//        return false;
+//    }
+//
+//    /**
+//     * Vytvoří hibernate jpa query z lucene query.
+//     *
+//     * @param query lucene qery
+//     * @param entityClass třída pro kterou je dotaz
+//     *
+//     * @return hibernate jpa query
+//     */
+//    private FullTextQuery createFullTextQuery(final FullTextEntityManager fullTextEntityManager, final Query query, final Class<?> entityClass) {
+//        return fullTextEntityManager.createFullTextQuery(query, entityClass);
+//    }
+//
+//    private Query createDescItemTypeQuery(final QueryBuilder queryBuilder) {
+//        Integer descItemTypeId = descItemType.getItemTypeId();
+//		return queryBuilder.range().onField(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).from(descItemTypeId).to(descItemTypeId).
+//                createQuery();
+//    }
+//
+//    private Query createFundIdQuery(final QueryBuilder queryBuilder, final Integer fundId) {
+//		return queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
+//    }
 
     public RulItemType getDescItemType() {
         return descItemType;

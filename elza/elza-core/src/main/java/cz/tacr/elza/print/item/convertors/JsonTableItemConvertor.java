@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.Item;
@@ -17,7 +18,7 @@ public class JsonTableItemConvertor extends AbstractItemConvertor {
         if (itemType.getDataType() != DataType.JSON_TABLE) {
             return null;
         }
-        ArrDataJsonTable data = (ArrDataJsonTable) item.getData();
+        ArrDataJsonTable data = HibernateUtils.unproxy(item.getData());
 
         return new ItemJsonTable((List<ElzaColumn>) itemType.getViewDefinition(), data.getValue());
     }

@@ -57,7 +57,7 @@ public interface NodeRepositoryCustom {
         }
     }
 
-    /**
+    /** TODO hibernate search 6
      * Najde všechny uzly v daném směru prohledávání.
      *
      * @param node      uzel, od kterého prohledáváme
@@ -111,7 +111,7 @@ public interface NodeRepositoryCustom {
      */
     Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId)
         throws InvalidQueryException;
-    
+
 
     /**
      * Najde id nodů v dané verzi odpovídající filtrům. Pokud nejsou filtry předány vrátí se id všech nodů ve verzi.

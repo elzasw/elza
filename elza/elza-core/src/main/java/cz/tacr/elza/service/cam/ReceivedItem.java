@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.base.Objects;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -20,7 +21,7 @@ public class ReceivedItem {
     private final ArrData data;
 
     private Integer itemId;
-    
+
     public ReceivedItem(RulItemType itemType, RulItemSpec itemSpec, String uuid, ArrData data) {
         this.itemType = itemType;
         this.itemSpec = itemSpec;
@@ -66,7 +67,7 @@ public class ReceivedItem {
             return false;
         }
 
-        if (!data.isEqualValue(item.getData())) {
+        if (!data.isEqualValue(HibernateUtils.unproxy(item.getData()))) {
             return false;
         }
 

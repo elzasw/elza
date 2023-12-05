@@ -3,7 +3,7 @@ package cz.tacr.elza.repository.specification.search;
 import cz.tacr.cam.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 
-import javax.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Predicate;
 
 public class DecimalComparator implements Comparator {
 

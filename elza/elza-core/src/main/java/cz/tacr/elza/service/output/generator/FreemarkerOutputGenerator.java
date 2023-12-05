@@ -8,7 +8,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.service.StructObjService;
+import jakarta.persistence.EntityManager;
 
 import org.springframework.context.ApplicationContext;
 
@@ -58,7 +59,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               EntityManager em,
                               DmsService dmsService,
                               DaoLinkRepository daoLinkRepository,
-                              ExportConfig exportConfig) {
+                              ExportConfig exportConfig,
+                              StructObjService structObjService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -71,7 +73,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, em);
+                daoLinkRepository, exportConfig, structObjService, em);
     }
 
     @Override

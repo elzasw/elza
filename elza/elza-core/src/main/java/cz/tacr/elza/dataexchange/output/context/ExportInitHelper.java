@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.context;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.repository.ApAccessPointRepository;

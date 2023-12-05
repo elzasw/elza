@@ -3,7 +3,7 @@ package cz.tacr.elza.filter;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.lucene.search.Query;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
 
 /**
  *
@@ -13,23 +13,23 @@ import org.apache.lucene.search.Query;
  */
 public class FilterQueries {
 
-    private List<Query> luceneQueries = new LinkedList<>();
-    private List<javax.persistence.Query> hibernateQueries = new LinkedList<>();
+    private List<SearchPredicate> lucenePredicates = new LinkedList<>();
+    private List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
 
     /**
-     * @param luceneQueries
+     * @param lucenePredicates
      * @param hibernateQueries
      */
-    public FilterQueries(final List<Query> luceneQueries, final List<javax.persistence.Query> hibernateQueries) {
-        this.luceneQueries = luceneQueries;
+    public FilterQueries(final List<SearchPredicate> lucenePredicates, final List<jakarta.persistence.Query> hibernateQueries) {
+        this.lucenePredicates = lucenePredicates;
         this.hibernateQueries = hibernateQueries;
     }
 
-    public List<Query> getLuceneQueries() {
-        return luceneQueries;
+    public List<SearchPredicate> getLucenePredicates() {
+        return lucenePredicates;
     }
 
-    public List<javax.persistence.Query> getHibernateQueries() {
+    public List<jakarta.persistence.Query> getHibernateQueries() {
         return hibernateQueries;
     }
 }

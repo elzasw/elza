@@ -1,16 +1,16 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Type;
 
@@ -62,13 +62,13 @@ public class ArrDao {
     @Enumerated(EnumType.STRING)
     @Column(length = 25, nullable = false)
     private DaoType daoType;
-    
+
     /**
      * XML with attribute values
      */
     @Column(nullable = false)
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String attributes;
 
     public Integer getDaoId() {

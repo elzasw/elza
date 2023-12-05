@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -101,7 +102,7 @@ public class ItemService {
         newItem.setDeleteChange(null);
         newItem.setItemId(null);
 
-        ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+        ArrData newData = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(item.getData()));
         newItem.setData(newData);
 
         em.persist(newData);
@@ -127,7 +128,7 @@ public class ItemService {
         Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
 
         // extra check for data
-        ArrData data = arrItem.getData();
+        ArrData data = HibernateUtils.unproxy(arrItem.getData());
         RulItemType rulItemType = itemType.getEntity();
 
         // check if defined specification
@@ -180,8 +181,8 @@ public class ItemService {
 
     /**
      * Kontrola délky řetězce
-     * 
-     * @param rulItemType 
+     *
+     * @param rulItemType
      * @param data
      */
     public void checkItemLengthLimit(RulItemType rulItemType, ArrData data) {
@@ -193,7 +194,7 @@ public class ItemService {
         }
     }
 
-    private void checkRecordRef(FundContext fundContext, 
+    private void checkRecordRef(FundContext fundContext,
                                 ArrDataRecordRef dataRecordRef,
                                 RulItemType rulItemType,
                                 RulItemSpec rulItemSpec) {
@@ -209,7 +210,7 @@ public class ItemService {
         }
         Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
-        // kontrola typu třídy 
+        // kontrola typu třídy
         if (!apTypeIdTree.contains(apState.getApTypeId())) {
             log.error("Class of archival entity is incorrect, dataId: {}, accessPointId: {}, rulItemType: {}, rulItemSpec: {}, apTypeId: {}",
                       dataRecordRef.getDataId(),
@@ -265,7 +266,7 @@ public class ItemService {
 
         // prohledávám pouze entity, které mají návazné data
         for (ArrItem dataItem : dataItems) {
-            ArrData data = dataItem.getData();
+            ArrData data = HibernateUtils.unproxy(dataItem.getData());
             if (data != null) {
                 if (data instanceof ArrDataStructureRef) {
                     ArrDataStructureRef structDataRef = (ArrDataStructureRef) data;

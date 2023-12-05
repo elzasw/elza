@@ -8,21 +8,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Fetch;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Fetch;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -82,7 +82,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
         CriteriaQuery<ApState> query = builder.createQuery(ApState.class);
-        //Root<ApAccessPoint> accessPointRoot = query.from(ApAccessPoint.class);        
+        //Root<ApAccessPoint> accessPointRoot = query.from(ApAccessPoint.class);
         Root<ApState> apStateRoot = query.from(ApState.class);
         Fetch<ApState, ApAccessPoint> apFetch = apStateRoot.fetch(ApState.FIELD_ACCESS_POINT, JoinType.INNER);
         Join<ApState, ApAccessPoint> apJoin = (Join<ApState, ApAccessPoint>) apFetch;
@@ -304,7 +304,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         StaticDataProvider sdp = staticDataService.getData();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("select ap.* from ap_access_point ap" + 
+        sb.append("select ap.* from ap_access_point ap" +
                 " join ap_state aps ON aps.access_point_id = ap.access_point_id" +
                 " where aps.delete_change_id is null and ap.access_point_id in (");
         sb.append("select p.access_point_id from ap_part p");

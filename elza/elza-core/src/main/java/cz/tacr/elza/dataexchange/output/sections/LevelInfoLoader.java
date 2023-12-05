@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
@@ -67,7 +67,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     }
 
     /**
-     * 
+     *
      * @param cachedNodes
      * @return Map of DAOs.
      */
@@ -77,7 +77,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
             @Override
             public void onLoadBegin() {
-                // NOP                
+                // NOP
             }
 
             @Override
@@ -87,7 +87,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
             @Override
             public void onLoadEnd() {
-                // NOP                
+                // NOP
             }
 
         };

@@ -1,8 +1,8 @@
 package cz.tacr.elza.common.db;
 
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.Metamodel;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.Metamodel;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;

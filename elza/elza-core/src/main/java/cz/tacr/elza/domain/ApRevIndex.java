@@ -3,15 +3,15 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity(name = "ap_rev_index")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -32,8 +32,8 @@ public class ApRevIndex {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String indexType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
-    private String value;
+    @Column(name = "rev_value",length = StringLength.LENGTH_4000, nullable = false)
+    private String revValue;
 
     public Integer getIndexId() {
         return indexId;
@@ -64,12 +64,12 @@ public class ApRevIndex {
         this.indexType = indexType;
     }
 
-    public String getValue() {
-        return value;
+    public String getRevValue() {
+        return revValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setRevValue(String value) {
+        this.revValue = value;
     }
 
 }

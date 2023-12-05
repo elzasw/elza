@@ -1,6 +1,6 @@
 package cz.tacr.elza.common;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,7 +14,7 @@ public abstract class FileDownload {
 
     /**
      * Add instructions to the servlet to download file as attachment
-     * 
+     *
      * @param response
      * @param filename
      */
@@ -25,7 +25,7 @@ public abstract class FileDownload {
         boolean onlyWhitespaces = true;
         for (char c : chars) {
             if (incorrectChars.indexOf(c) >= 0) {
-                // skip 
+                // skip
                 continue;
             }
             if (!Character.isWhitespace(c)) {

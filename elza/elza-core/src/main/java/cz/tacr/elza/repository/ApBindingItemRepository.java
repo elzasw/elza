@@ -22,7 +22,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding IN :bindings AND bi.deleteChange IS NULL")
     List<ApBindingItem> findByBindings(@Param("bindings") Collection<ApBinding> bindingList);
 
-    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding AND bi.deleteChange IS NULL")
+    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE bi.binding = :binding AND bi.deleteChange IS NULL")
     List<ApBindingItem> findByBinding(@Param("binding") ApBinding binding);
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.part IS NOT NULL AND bi.part = :part AND bi.deleteChange IS NULL")
@@ -43,7 +43,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
 
     /**
      * Find deleted or existing parts since last sync
-     * 
+     *
      * @param binding
      * @param syncChangeId
      * @return
@@ -52,13 +52,13 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     List<ApBindingItem> findPartsForSync(@Param("binding") ApBinding binding,
                                          @Param("syncChangeId") Integer syncChangeId);
 
-    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding AND bi.item IS NOT NULL AND (bi.deleteChange IS NULL OR bi.deleteChangeId > :syncChangeId )")
+    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE bi.binding = :binding AND bi.item IS NOT NULL AND (bi.deleteChange IS NULL OR bi.deleteChangeId > :syncChangeId )")
     List<ApBindingItem> findItemsForSync(@Param("binding") ApBinding binding,
                                          @Param("syncChangeId") Integer syncChangeId);
 
     /**
      * Zneplatni vsechny doposud platne vazby itemu a partu
-     * 
+     *
      * @param accessPoint
      * @param deleteChange
      */

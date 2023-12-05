@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -83,7 +83,7 @@ public class ArrangementFormService {
 	private final NodeCacheService nodeCache;
 
 	private final ArrangementService arrangementService;
-	
+
 	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
@@ -183,7 +183,7 @@ public class ArrangementFormService {
 
 	/**
 	 * Hromadná úprava hodnot JP.
-	 * 
+	 *
 	 * Funkce je volána z UI a respektuje read-only u prvků popisu
 	 *
 	 * @param fundVersionId  identifikátor verze AS
@@ -236,9 +236,9 @@ public class ArrangementFormService {
 
 	/**
 	 * Hromadná úprava prvků popisu
-	 * 
+	 *
 	 * Funkce je volána z UI a respektuje read-only u prvků popisu
-	 * 
+	 *
 	 * @param fundVersion
 	 * @param node
 	 * @param nodeVersion

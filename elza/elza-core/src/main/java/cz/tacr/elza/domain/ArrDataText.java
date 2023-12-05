@@ -1,9 +1,9 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.annotations.Type;
@@ -24,9 +24,9 @@ public class ArrDataText extends ArrData {
 
     public static final String TEXT_VALUE = "textValue";
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "text_value", nullable = false)
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String textValue;
 
 	public ArrDataText() {

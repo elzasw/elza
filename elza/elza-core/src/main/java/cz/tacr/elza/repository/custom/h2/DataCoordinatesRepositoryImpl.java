@@ -15,15 +15,15 @@ import cz.tacr.elza.repository.DataCoordinatesRepositoryCustom;
 @Conditional(OnH2Condition.class)
 public class DataCoordinatesRepositoryImpl implements DataCoordinatesRepositoryCustom {
 
-    @Override
-    public String convertCoordinatesToEWKT(byte[] coordinates) {
-        try {
-            Geometry geom = new WKBReader().read(coordinates);
-            return geom.toText();
-        } catch (ParseException e) {
-            throw new BusinessException("Failed to parse coordinates",
-                    e, BaseCode.INVALID_STATE);
-        }
-    }
+//    @Override //TODO asi nadbytečné, nikde se nevolá
+//    public String convertCoordinatesToEWKT(byte[] coordinates) {
+//        try {
+//            Geometry geom = new WKBReader().read(coordinates);
+//            return geom.toText();
+//        } catch (ParseException e) {
+//            throw new BusinessException("Failed to parse coordinates",
+//                    e, BaseCode.INVALID_STATE);
+//        }
+//    }
 
 }

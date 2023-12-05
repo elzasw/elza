@@ -1,14 +1,14 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -34,7 +34,7 @@ public class ApKeyValue implements AccessPointCacheSerializable {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String keyType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
+    @Column(name = "key_value", length = StringLength.LENGTH_4000, nullable = false)
     private String value;
 
     public Integer getKeyValueId() {

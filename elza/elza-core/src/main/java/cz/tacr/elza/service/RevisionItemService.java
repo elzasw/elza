@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -56,6 +58,9 @@ public class RevisionItemService {
     private ItemService itemService;
 
     @Autowired
+    private DataService dataService;
+
+    @Autowired
     private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
@@ -71,11 +76,12 @@ public class RevisionItemService {
     private EntityManager em;
 
 
-    public List<ApRevItem> findByParts(List<ApRevPart> parts) {
+    public List<ApRevItem> findByParts(Collection<ApRevPart> parts) {
         if (CollectionUtils.isEmpty(parts)) {
             return Collections.emptyList();
         }
-        return revItemRepository.findByParts(parts);
+        return dataService.findItemsWithData(() -> revItemRepository.findByParts(parts),
+                this::createDataResultList);
     }
 
     public void deleteRevisionItems(List<ApRevItem> items, ApChange change) {
@@ -89,10 +95,10 @@ public class RevisionItemService {
 
     /**
      * Create new items
-     * 
+     *
      * Items are mapped to existing one using
      * objectId and origObjectId.
-     * 
+     *
      * @param part
      * @param createItems
      * @param change
@@ -203,8 +209,9 @@ public class RevisionItemService {
             List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
 
             for (ApRevItem revItem : revItems) {
-                if (!revItem.isDeleted() && revItem.getData() != null) {
-                    ArrData newData = revItem.getData().makeCopy();
+                ArrData oldData = HibernateUtils.unproxy(revItem.getData());
+                if (!revItem.isDeleted() && oldData != null) {
+                    ArrData newData = oldData.makeCopy();
                     dataList.add(newData);
                     createdItems.add(apItemService.createItem(revPart.getOriginalPart(),
                             newData, revItem.getItemType(), revItem.getItemSpec(),
@@ -219,7 +226,7 @@ public class RevisionItemService {
 
     /**
      * Merge items to updated parts
-     * 
+     *
      * @param accessPoint
      * @param change
      * @param revParts
@@ -231,7 +238,7 @@ public class RevisionItemService {
                            List<ApRevPart> revParts,
                            Map<Integer, ApPart> revPartMap,
                            List<ApRevItem> revItems) {
-        List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> items = accessPointItemService.findValidItemsByAccessPoint(accessPoint);
         Map<Integer, ApItem> itemObjectIdMap = items.stream()
                 .collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
 
@@ -283,7 +290,8 @@ public class RevisionItemService {
                     currItem = null;
                 }
 
-                ArrData newData = revItem.getData().makeCopy();
+                ArrData oldData = HibernateUtils.unproxy(revItem.getData());
+                ArrData newData = oldData.makeCopy();
                 dataList.add(newData);
                 ApItem newItem = apItemService.createItem(targetPart,
                                                                    newData,
@@ -299,7 +307,7 @@ public class RevisionItemService {
                     Validate.notNull(currItem, "Source item not found, objectId: %s", origObjectId);
                     currItem.setDeleteChange(revItem.getCreateChange());
                     itemsList.add(currItem);
-                    
+
                     // Add to binding map
                     updatedItems.put(currItem.getItemId(), newItem);
                 }
@@ -368,8 +376,20 @@ public class RevisionItemService {
         return newItems;
     }
 
+    public List<ApRevItem> findItemByEntity(ApAccessPoint replaced) {
+        return dataService.findItemsWithData(() -> revItemRepository.findItemByEntity(replaced),
+                this::createDataResultList);
+    }
+
     public List<ApRevItem> findByPart(ApRevPart revPart) {
-        return revItemRepository.findByPart(revPart);
+        return dataService.findItemsWithData(() -> revItemRepository.findByPart(revPart),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ApRevItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     public void createDeletedItems(ApRevPart revPart, ApChange apChange, List<ApItem> apItems) {
@@ -416,7 +436,7 @@ public class RevisionItemService {
 
     /**
      * Update ApRevItem with new value
-     * 
+     *
      * @param change
      * @param revItem
      * @param data
@@ -508,17 +528,17 @@ public class RevisionItemService {
         StaticDataProvider sdp = staticDataService.getData();
         ApRevItem newItem;
         for (ApItem item : fromItems) {
-            // pokud takovÃ½ ApItem jiÅ¾ existuje - nekopÃ­rovat
+            // pokud takový ApItem již existuje - nekopírovat
             if (apItemService.isApItemInList(item, toItems)) {
                 continue;
             }
             ApItem findItem = null;
-            // pokud typ ApItem je STRING nebo TEXT - pokusÃ­me se udÄ›lat revizi
+            // pokud typ ApItem je STRING nebo TEXT - pokusíme se udìlat revizi
             ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
             if (textTypes.contains(itemType.getDataType())) {
                 findItem = apItemService.findByTypeAndSpec(item, toItems);
             }
-            // pokud ApItem jiÅ¾ mÃ¡ revizi - vytvoÅ™Ã­me novÃ½ RevApItem
+            // pokud ApItem již má revizi - vytvoøíme nový RevApItem
             if (findItem != null) {
                 if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
                     findItem = null;
@@ -527,7 +547,7 @@ public class RevisionItemService {
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
             dataList.add(newData);
             if (findItem == null) {
-                // novÃ½ RevApItem
+                // nový RevApItem
                 int objectId = apItemService.nextItemObjectId();
                 newItem = createItem(revPart, newData, // new item
                                      item.getItemType(),
@@ -538,7 +558,7 @@ public class RevisionItemService {
                                      null,
                                      false);
             } else {
-                // RevApItem na zÃ¡kladÄ› ApItem
+                // RevApItem na základì ApItem
                 newItem = createItem(revPart, newData, // new data to findItem
                                      item.getItemType(),
                                      item.getItemSpec(),

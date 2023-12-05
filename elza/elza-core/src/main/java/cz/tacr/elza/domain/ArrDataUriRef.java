@@ -1,21 +1,13 @@
 package cz.tacr.elza.domain;
 
-import java.net.URI;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import java.net.URI;
 
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -33,7 +25,7 @@ public class ArrDataUriRef extends ArrData {
     private String schema;
 
     @Basic
-    @Column(name="value", nullable = false, length = 2000)
+    @Column(name="uri_ref_value", nullable = false, length = 2000)
     private String uriRefValue;
 
     @Basic

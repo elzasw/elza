@@ -5,7 +5,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 
 /**

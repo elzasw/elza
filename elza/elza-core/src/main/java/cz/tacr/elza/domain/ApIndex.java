@@ -1,14 +1,17 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -19,7 +22,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApIndex implements AccessPointCacheSerializable {
 
-    public static final String VALUE = "value";
+    public static final String VALUE = "indexValue";
     public static final String INDEX_TYPE = "indexType";
     public static final String PART = "part";
     public static final String PART_ID = "partId";
@@ -39,8 +42,8 @@ public class ApIndex implements AccessPointCacheSerializable {
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String indexType;
 
-    @Column(length = StringLength.LENGTH_4000, nullable = false)
-    private String value;
+    @Column(name = "index_value", length = StringLength.LENGTH_4000, nullable = false)
+    private String indexValue;
 
     public Integer getIndexId() {
         return indexId;
@@ -71,11 +74,11 @@ public class ApIndex implements AccessPointCacheSerializable {
         this.indexType = indexType;
     }
 
-    public String getValue() {
-        return value;
+    public String getIndexValue() {
+        return indexValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setIndexValue(String value) {
+        this.indexValue = value;
     }
 }

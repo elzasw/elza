@@ -9,7 +9,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;

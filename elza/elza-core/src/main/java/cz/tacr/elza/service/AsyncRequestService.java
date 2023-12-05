@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -157,7 +157,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Internal method to save request to DB and prepare memory object.
-     * 
+     *
      * @param request
      */
     private void dispatchRequest(ArrAsyncRequest request) {

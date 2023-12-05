@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.transaction.Transactional;
-import javax.validation.Valid;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -112,7 +112,7 @@ public class FundController implements FundsApi {
 
     @Autowired
     private StructObjService structureService;
-    
+
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
 

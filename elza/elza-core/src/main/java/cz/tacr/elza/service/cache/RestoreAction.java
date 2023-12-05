@@ -9,7 +9,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -157,7 +158,7 @@ public class RestoreAction {
         }
 
         // Restore dataType
-        ArrData data = descItem.getData();
+        ArrData data = HibernateUtils.unproxy(descItem.getData());
         if (data != null) {
             loadDataType(data, itemType);
         }
@@ -210,7 +211,7 @@ public class RestoreAction {
                 restoreDescItem(descItem);
 
                 // restore links
-                ArrData data = descItem.getData();
+                ArrData data = HibernateUtils.unproxy(descItem.getData());
                 if (data != null) {
                     if (data instanceof ArrDataStructureRef) {
                         addDataStructRef((ArrDataStructureRef) data);

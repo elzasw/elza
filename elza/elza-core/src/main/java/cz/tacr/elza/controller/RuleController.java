@@ -16,9 +16,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
@@ -297,7 +297,7 @@ public class RuleController {
             ItemType itemType = sdp.getItemTypeByCode(code);
             typeInfos.add(new TypeInfoVO(itemType.getItemTypeId(), 1));
         }
-        defaultGroup.setItemTypes(typeInfos);        
+        defaultGroup.setItemTypes(typeInfos);
         result.add(defaultGroup);
         */
 

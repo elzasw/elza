@@ -8,8 +8,8 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -165,7 +165,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
     private void finishDaoRequest(final ArrDaoRequest arrDaoRequest) {
         requestService.setRequestState(arrDaoRequest, arrDaoRequest.getState(), ArrRequest.State.PROCESSED);
-        
+
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(arrDaoRequest.getFund());
 
         List<ArrDao> daoByDaoRequest = daoRequestDaoRepository.findDaoByDaoRequest(arrDaoRequest);

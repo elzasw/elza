@@ -1,6 +1,7 @@
 package cz.tacr.elza.core.db;
 
 import cz.tacr.elza.core.data.StaticDataTransactionInterceptor;
+import org.hibernate.cfg.AvailableSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ public class HibernateConfiguration implements HibernatePropertiesCustomizer {
 
     /**
      * Batch size
-     * 
+     *
      * Maximal number of items inside IN clause
      */
     private int batchSize = 1000;
@@ -29,11 +30,11 @@ public class HibernateConfiguration implements HibernatePropertiesCustomizer {
     @Override
     public void customize(final Map<String, Object> vendorProperties) {
         // register static data interceptor
-        vendorProperties.put(org.hibernate.cfg.AvailableSettings.INTERCEPTOR, StaticDataTransactionInterceptor.INSTANCE);
+        vendorProperties.put(AvailableSettings.INTERCEPTOR, StaticDataTransactionInterceptor.INSTANCE);
         // use enhanced (modern) generators (in JPA is default true -> safety check)
-        vendorProperties.put(org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, Boolean.TRUE);
+        //vendorProperties.put(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, Boolean.TRUE); //TODO nově nastavení chybí, default byl ale true, tudíž není nejspíše nutné
         // set custom provider for id generator strategy
-        vendorProperties.put(org.hibernate.jpa.AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER,
+        vendorProperties.put(AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER,
                 cz.tacr.elza.core.db.IdentifierGeneratorStrategyProvider.class.getName());
 
     }

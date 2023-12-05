@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
@@ -8,7 +9,7 @@ import cz.tacr.elza.domain.ArrDataBit;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemBitVO extends ApItemVO {
 
@@ -23,7 +24,7 @@ public class ApItemBitVO extends ApItemVO {
     }
 
     final public Boolean getBitValue(final AccessPointItem item) {
-        ArrDataBit data = (ArrDataBit) item.getData();
+        ArrDataBit data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.isBitValue();
     }
 

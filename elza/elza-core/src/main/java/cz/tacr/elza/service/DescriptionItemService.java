@@ -13,9 +13,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -178,6 +180,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     @Autowired
     private StructuredObjectRepository structuredObjectRepository;
 
+    @Autowired
+    private DataService dataService;
+
     private TransactionSynchronizationAdapter indexWorkNotify;
 
     @PostConstruct
@@ -321,7 +326,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsByItemType(descItemType.getEntity(), node);
+        List<ArrDescItem> descItems = findOpenDescItemsByItemType(descItemType.getEntity(), node);
 
         if (descItems.size() == 0) {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -612,13 +617,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrData data = null;
 
         if (fromDataType == toDataType) {
-            data = ArrData.makeCopyWithoutId(sourceItem.getData());
+            data = ArrData.makeCopyWithoutId(HibernateUtils.unproxy(sourceItem.getData()));
         } else {
             boolean error = false;
 
             switch (fromDataType) {
                 case DATE:
-                    ArrDataDate sourceDataDate = (ArrDataDate) sourceItem.getData();
+                    ArrDataDate sourceDataDate = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
@@ -637,7 +642,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 case INT:
                 case DECIMAL:
                 case UNITDATE:
-                    ArrData sourceData = sourceItem.getData();
+                    ArrData sourceData = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
@@ -668,7 +673,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     }
                     break;
                 case STRING:
-                    ArrDataString sourceDataString = (ArrDataString) sourceItem.getData();
+                    ArrDataString sourceDataString = HibernateUtils.unproxy(sourceItem.getData());
                     if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
@@ -699,7 +704,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * Vytvoření hodnoty atributu s daty.
      *
      * Metoda neprovádí aktualizaci cache
-     * 
+     *
      * @param descItem
      *            hodnota atributu
      * @param fundVersion
@@ -741,7 +746,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             // iff no other items exist we can skip DB fetch
             descItems = Collections.emptyList();
         } else {
-            descItems = descItemRepository.findOpenDescItemsAfterPosition(
+            descItems = findOpenDescItemsAfterPosition(
                 descItem.getItemType(),
                 descItem.getNode(),
                 descItem.getPosition() - 1);
@@ -787,7 +792,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         RulStructuredType structuredType = itemType.getEntity().getStructuredType();
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
-                ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
+                ArrDataStructureRef data = HibernateUtils.unproxy(retDescItem.getData());
                 structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
             }
         }
@@ -806,7 +811,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            Flag to recalculate position of subsequent items
      *            If all items of same type are deleted position does
      *            not have to be recalculated
-     * @param force           
+     * @param force
      * @return smazané hodnoty atributů
      */
     public List<ArrDescItem> deleteDescriptionItems(final List<ArrDescItem> descItemsToDelete,
@@ -833,7 +838,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final boolean force,
                                                     final BatchChangeContext changeContext) {
         List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
-        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
+        List<ArrDescItem> deleteDescItems = findOpenDescItemsByIds(itemObjectIds);
 
         Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
                         "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
@@ -862,7 +867,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      *
      * Interní metoda, již nekontroluje oprávnění.
-     * 
+     *
      * @param descItem
      *            hodnota atributu
      * @param version
@@ -890,7 +895,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
-            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+            List<ArrDescItem> descItems = findOpenDescItemsAfterPosition(
                     descItem.getItemType(),
                     descItem.getNode(),
                     descItem.getPosition());
@@ -1033,7 +1038,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     public ArrData copyItemData(final ArrItem itemFrom) {
-        ArrData data = itemFrom.getData();
+        ArrData data = HibernateUtils.unproxy(itemFrom.getData());
         ArrData resultData;
         boolean deepCopy = false;
         if (data instanceof ArrDataStructureRef) {
@@ -1050,7 +1055,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     private ArrData deepCopyItemData(final ArrItem itemFrom) {
-        ArrData srcData = itemFrom.getData();
+        ArrData srcData = HibernateUtils.unproxy(itemFrom.getData());
         if (srcData == null) {
             return null;
         }
@@ -1076,7 +1081,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 *         item method will return null.
 	 */
 	private ArrData withoutDeepCopyItemData(final ArrItem itemFrom) {
-		ArrData srcData = itemFrom.getData();
+		ArrData srcData = HibernateUtils.unproxy(itemFrom.getData());
 		if (srcData == null) {
 			return null;
 		}
@@ -1140,7 +1145,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             saveNode(node, change);
 
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
-                                                          descItem.getData(), descItem.getPosition(),
+                                                          HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
                                                           changeContext);
 		} else {
@@ -1193,8 +1198,92 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                            final int positionFrom,
                                                            final int positionTo) {
 
-        return descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
-                descItem.getNode(), positionFrom, positionTo);
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
+                descItem.getNode(), positionFrom, positionTo),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndType(nodes, type),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, type, specs),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenByFundAndType(ArrFund fund, RulItemType type) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndType(fund, type),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenByFundAndTypeAndSpec(ArrFund fund,
+                                                           RulItemType type,
+                                                           Collection<RulItemSpec> specs) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemTypeId),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodeAndTypes(node, descItemTypes),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenDescItems(Integer descItemObjectId) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItems(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenDescItemsByIds(Collection<Integer> descItemObjectIds) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByIds(descItemObjectIds),
+                this::createDataResultList);
+    }
+
+    public ArrDescItem findOpenDescItem(Integer descItemObjectId) {
+        return dataService.findItemWithData(() -> descItemRepository.findOpenDescItem(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenDescItemsAfterPosition(RulItemType itemType, ArrNode node, Integer position) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsAfterPosition(itemType, node, position),
+                this::createDataResultList);
+    }
+
+    private List<ArrDescItem> findOpenDescItemsByItemType(RulItemType itemType, ArrNode node) {
+        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByItemType(itemType, node),
+                this::createDataResultList);
+    }
+
+    public List<ArrDescItem> findByUriDataNode(final ArrNode node) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByUriDataNode(node),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -1319,7 +1408,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 */
     protected ArrDescItem fetchOpenItemFromDB(int descItemObjectId) {
         // fetch item from DB
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
+        List<ArrDescItem> descItems = findOpenDescItems(descItemObjectId);
         if (descItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (descItems.size() == 0) {
@@ -1351,7 +1440,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
-		ArrData data = descItem.getData();
+		ArrData data = HibernateUtils.unproxy(descItem.getData());
 		// save new data
 		data = descItemFactory.saveData(descItem.getItemType(), data);
 
@@ -1403,7 +1492,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
-		
+
 		if(!forceUpdate) {
 			// check if not read-only
 			if(descItemCurr.getReadOnly()!=null&&descItemCurr.getReadOnly()) {
@@ -1412,7 +1501,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		}
 
 		// save new data
-		ArrData dataCurr = descItem.getData();
+		ArrData dataCurr = HibernateUtils.unproxy(descItem.getData());
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
                                            descItem.getPosition(), descItem.getReadOnly(), batchChangeContext);
@@ -1452,7 +1541,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrDescItem descItemNew = prepareNewDescItem(descItemDB, dataNew, change);
 
-        // create new item based on source        
+        // create new item based on source
         descItemNew.setPosition(newPosition);
         // set data and specification
         descItemNew.setItemSpec(itemSpec);
@@ -1494,7 +1583,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         Set<ApAccessPoint> accessPoints = descItems.stream()
                 .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
-                .map(item -> ((ArrDataRecordRef) item.getData()).getRecord())
+                .map(item -> ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecord())
                 .collect(Collectors.toSet());
 
         Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
@@ -1626,7 +1715,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     /**
      * Nastavení textu hodnotám atributu.
-     * 
+     *
      * @param version
      *            verze stromu
      * @param itemType
@@ -1669,15 +1758,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             // TODO: use StaticDataProvider
             descItems = itemType.hasSpecifications()
                     ?
-                descItemRepository
-                            .findOpenByFundAndTypeAndSpec(version.getFund(), itemType.getEntity(), specifications)
-                    : descItemRepository.findOpenByFundAndType(version.getFund(), itemType.getEntity());
+                findOpenByFundAndTypeAndSpec(version.getFund(), itemType.getEntity(), specifications)
+                    : findOpenByFundAndType(version.getFund(), itemType.getEntity());
         } else {
             // TODO: use StaticDataProvider
             descItems = itemType.hasSpecifications() ?
-                    descItemRepository
-                            .findOpenByNodesAndTypeAndSpec(nodes, itemType.getEntity(), specifications)
-                    : descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
+                    findOpenByNodesAndTypeAndSpec(nodes, itemType.getEntity(), specifications)
+                    : findOpenByNodesAndType(nodes, itemType.getEntity());
         }
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
@@ -1704,7 +1791,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         //
         Set<ArrNode> ignoreNodes = new HashSet<>();
         if (!append && itemType.hasSpecifications() && nodes.size() > 0) {
-            List<ArrDescItem> remainSpecItems = descItemRepository.findOpenByNodesAndType(nodes, itemType.getEntity());
+            List<ArrDescItem> remainSpecItems = findOpenByNodesAndType(nodes, itemType.getEntity());
             ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
@@ -1857,16 +1944,16 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Integer rootNodeId = fundVersion.getRootNode().getNodeId();
             nodeIdsToAdd = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIdsToAdd.add(rootNodeId);
-            descItems = specifications.size() == 0 ? Collections.emptyList() : descItemRepository.findOpenByFundAndTypeAndSpec(fundVersion.getFund(), itemType, specifications);
-            List<ArrDescItem> ignoreDescItems = descItemRepository.findOpenByFundAndType(fundVersion.getFund(), itemType);
+            descItems = specifications.size() == 0 ? Collections.emptyList() : findOpenByFundAndTypeAndSpec(fundVersion.getFund(), itemType, specifications);
+            List<ArrDescItem> ignoreDescItems = findOpenByFundAndType(fundVersion.getFund(), itemType);
             ignoreDescItems.removeAll(descItems);
             for (ArrDescItem ignoreDescItem : ignoreDescItems) {
                 nodeIdsToAdd.remove(ignoreDescItem.getNodeId());
             }
         } else {
-            descItems = specifications.size() == 0 ? Collections.emptyList() : descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, itemType, specifications);
+            descItems = specifications.size() == 0 ? Collections.emptyList() : findOpenByNodesAndTypeAndSpec(nodes, itemType, specifications);
             nodeIdsToAdd = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toSet());
-            List<ArrDescItem> ignoreDescItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
+            List<ArrDescItem> ignoreDescItems = findOpenByNodesAndType(nodes, itemType);
             ignoreDescItems.removeAll(descItems);
             for (ArrDescItem ignoreDescItem : ignoreDescItems) {
                 nodeIdsToAdd.remove(ignoreDescItem.getNodeId());
@@ -1882,7 +1969,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
-                                                                      descItem.getData(), descItem.getPosition(),
+                                                                      HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                                       descItem.getReadOnly(),
                                                                       changeContext);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
@@ -1955,7 +2042,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         Set<ArrNode> ignoreNodes = new HashSet<>();
         if (BooleanUtils.isNotTrue(itemType.getRepeatable()) && nodes.size() > 0) {
-            List<ArrDescItem> remainItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
+            List<ArrDescItem> remainItems = findOpenByNodesAndType(nodes, itemType);
             ignoreNodes = remainItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
@@ -1988,7 +2075,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     dbNodes.remove(clientNode);
                     arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
-                    ArrData data = descItem.getData();
+                    ArrData data = HibernateUtils.unproxy(descItem.getData());
                     Validate.notNull(data, "item without data");
 
                     ArrData dataNew = ArrData.makeCopyWithoutId(data);
@@ -2071,7 +2158,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                       final String replaceString, final ArrChange change,
                                       BatchChangeContext changeContext) {
 
-        ArrData data = descItem.getData();
+        ArrData data = HibernateUtils.unproxy(descItem.getData());
 		Validate.notNull(data, "item without data");
 
 		ArrData dataNew = ArrData.makeCopyWithoutId(data);
@@ -2139,12 +2226,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         } else {
             if (allNodes) {
                 descItems = descItemType.getUseSpecification() ?
-                        descItemRepository.findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
-                        descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+                        findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                        findOpenByFundAndType(version.getFund(), descItemType);
             } else {
                 descItems = descItemType.getUseSpecification() ?
-                        descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
-                        descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+                        findOpenByNodesAndTypeAndSpec(nodes, descItemType, specifications) :
+                        findOpenByNodesAndType(nodes, descItemType);
             }
         }
 
@@ -2195,7 +2282,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                @Nullable List<ArrDescItem> descItems) {
         int maxPosition = 0;
         if (descItems == null) {
-            descItems = descItemRepository.findOpenDescItemsAfterPosition(
+            descItems = findOpenDescItemsAfterPosition(
                 descItem.getItemType(),
                 descItem.getNode(),
                 0);
@@ -2258,7 +2345,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         if (descItemObjectId != null) {
-            ArrDescItem openDescItem = descItemRepository.findOpenDescItem(descItemObjectId);
+            ArrDescItem openDescItem = findOpenDescItem(descItemObjectId);
             if (openDescItem == null) {
                 throw new ObjectNotFoundException("Nebyla nalezena hodnota atributu s OBJID=" + descItemObjectId, ArrangementCode.DATA_NOT_FOUND).set("descItemObjectId", descItemObjectId);
             } else if (openDescItem.isUndefined()) {

@@ -2,8 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import java.time.LocalDateTime;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Komentář k připomínce

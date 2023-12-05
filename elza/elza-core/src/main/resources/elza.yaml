@@ -32,7 +32,7 @@ elza:
       maxPerFund: 1
 
   # Scope obsahující entity nelze standardně smazat
-  # Povolením této volby je možné odstranit scope 
+  # Povolením této volby je možné odstranit scope
   # a navázané ApState
   scope:
     deleteWithEntities: false
@@ -91,16 +91,8 @@ spring:
               use_second_level_cache: true
               region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
 
-            search:
-                lucene_version: LUCENE_CURRENT
-                default:
-                    indexBase: ${elza.workingDir}/lucene/indexes/
-                    directory_provider: filesystem
-                    worker:
-                      backend: cz.tacr.elza.search.DbQueueProcessor
-
             # PostgreSQL
-            dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+            dialect: org.hibernate.dialect.PostgreSQLDialect
             # H2
             #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
             # MySQL

@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataDate extends ArrData {
 
-    @Column(nullable = false)
+    @Column(name = "date_value", nullable = false)
     private LocalDate value;
 
     public ArrDataDate() {

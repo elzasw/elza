@@ -1,25 +1,7 @@
 package cz.tacr.elza.service.arrangement;
 
-import static cz.tacr.elza.repository.ExceptionThrow.fund;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
@@ -81,6 +63,23 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
 /**
  * Action to delete fund history
@@ -171,7 +170,7 @@ public class DeleteFundHistoryAction {
 
     @Autowired
     ArrangementService arrangementService;
-    
+
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 
@@ -234,14 +233,14 @@ public class DeleteFundHistoryAction {
         final List<ArrItem> arrItemList = itemRepository.findHistoricalByFund(fund);
         final List<ArrData> arrDataList = new ArrayList<>();
         for (ArrItem arrItem : arrItemList) {
-            final ArrData data = arrItem.getData();
+            final ArrData data = HibernateUtils.unproxy(arrItem.getData());
             if (data != null) {
                 arrDataList.add(data);
             }
         }
         // drop ArrNodeConformityError for given items
         ruleService.deleteConformityByItems(arrItemList);
-        
+
         iterateAction(arrItemList, itemRepository::deleteAll);
         em.flush();
 

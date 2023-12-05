@@ -27,7 +27,7 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
             return null;
         }
 
-        return index.getValue();
+        return index.getIndexValue();
     }
 
 }

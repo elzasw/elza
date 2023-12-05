@@ -1,7 +1,7 @@
 package cz.tacr.elza.search;
 
-import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor;
-import org.hibernate.search.indexes.interceptor.IndexingOverride;
+//import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor; TODO hibernate search 6
+//import org.hibernate.search.indexes.interceptor.IndexingOverride;
 
 import cz.tacr.elza.domain.ArrItem;
 
@@ -11,7 +11,9 @@ import cz.tacr.elza.domain.ArrItem;
  *
  * @since 9. 2. 2016
  */
-public class DescItemIndexingInterceptor implements EntityIndexingInterceptor<ArrItem> {
+
+// TODO hibernate search 6
+/*public class DescItemIndexingInterceptor implements EntityIndexingInterceptor<ArrItem> {
 
     @Override
     public IndexingOverride onAdd(final ArrItem arrItem) {
@@ -43,3 +45,5 @@ public class DescItemIndexingInterceptor implements EntityIndexingInterceptor<Ar
         return onUpdate(arrItem);
     }
 }
+*/
+

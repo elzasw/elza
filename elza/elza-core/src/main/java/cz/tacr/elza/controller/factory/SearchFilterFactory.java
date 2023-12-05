@@ -401,7 +401,7 @@ public class SearchFilterFactory {
     private ArchiveEntityVO createArchiveEntityVO(ApState apState, ApIndex nameIndex) {
         ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
         archiveEntityVO.setId(apState.getAccessPointId());
-        archiveEntityVO.setName(nameIndex != null ? nameIndex.getValue() : null);
+        archiveEntityVO.setName(nameIndex != null ? nameIndex.getIndexValue() : null);
         archiveEntityVO.setAeTypeId(apState.getApTypeId());
         return archiveEntityVO;
     }

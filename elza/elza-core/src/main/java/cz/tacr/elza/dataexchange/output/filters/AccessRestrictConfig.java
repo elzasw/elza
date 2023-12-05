@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.filters;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 

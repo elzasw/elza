@@ -8,9 +8,9 @@ import cz.tacr.elza.domain.ApPart;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaUpdate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.criteria.Root;
 
 public class ParentPartWrapper implements RefUpdateWrapper {
 

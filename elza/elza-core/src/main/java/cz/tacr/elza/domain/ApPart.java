@@ -1,25 +1,10 @@
 package cz.tacr.elza.domain;
 
-import java.util.List;
-
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Type;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import jakarta.persistence.*;
+import java.util.List;
 
 /**
  * Part je popisem části přístupového bodu nebo jména. Part je tvořen prvky popisu. Part má svůj vnitřní stav,
@@ -51,7 +36,7 @@ public class ApPart implements AccessPointPart {
 
     @Column
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPartType.class)
@@ -102,7 +87,7 @@ public class ApPart implements AccessPointPart {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
     private List<ApItem> items;
-    
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
     private List<ApIndex> indices;
 

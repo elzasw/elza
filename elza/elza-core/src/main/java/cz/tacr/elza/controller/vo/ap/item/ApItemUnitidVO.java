@@ -2,7 +2,8 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -26,7 +27,7 @@ public class ApItemUnitidVO extends ApItemVO {
     }
 
     final public String getStringValue(final AccessPointItem item) {
-        ArrDataUnitid data = (ArrDataUnitid) item.getData();
+        ArrDataUnitid data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getUnitId();
     }
 

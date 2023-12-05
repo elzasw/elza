@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.util.Assert;
@@ -212,7 +213,7 @@ public class Validator {
 
             for (ArrDescItem descItem : descItems) {
 
-                ArrData data = descItem.getData();
+                ArrData data = HibernateUtils.unproxy(descItem.getData());
                 RulItemType itemType = descItem.getItemType();
                 Integer itemTypeId = itemType.getItemTypeId();
                 String name = itemType.getName();

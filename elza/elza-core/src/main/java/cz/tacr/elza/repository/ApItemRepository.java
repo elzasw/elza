@@ -22,39 +22,39 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT COUNT(i) FROM ApItem i WHERE i.itemType = ?1")
     long countByType(RulItemType dbItemType);
 
-    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.part = :part")
+    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.part = :part")
     List<ApItem> findValidItemsByPart(@Param("part") ApPart part);
 
-    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.part IN :parts")
+    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.part IN :parts")
     List<ApItem> findValidItemsByParts(@Param("parts") Collection<ApPart> parts);
 
-    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.part.partId = :partId")
+    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.part.partId = :partId")
     List<ApItem> findValidItemsByPartId(@Param("partId") Integer partId);
 
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
     List<ApItem> findValidItemsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint AND i.createChange.changeId > :changeId")
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint AND i.createChange.changeId > :changeId")
     List<ApItem> findNewerValidItemsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint, @Param("changeId") Integer changeId);
 
     /**
      * Return items for given AccessPoints
-     * 
+     *
      * @param accessPoints
      * @return Return collection of ApItems for given access points.
      */
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND p.accessPoint IN :accessPoints")
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint IN :accessPoints")
     List<ApItem> findValidItemsByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
-    @Query("SELECT i FROM ApItem i  JOIN FETCH i.part p LEFT JOIN FETCH i.data d JOIN FETCH i.itemType it WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
+    @Query("SELECT i FROM ApItem i  JOIN FETCH i.part p JOIN FETCH i.itemType it JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
     List<ApItem> findValidItemsByAccessPointMultiFetch(@Param("accessPoint") ApAccessPoint accessPoint);
 
-    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
+    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypeAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                     @Param("itemType") RulItemType itemType,
                                                                     @Param("partTypeCode") String partTypeCode);
 
-    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
+    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypesAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                      @Param("itemTypes") Collection<RulItemType> itemTypes,
                                                                      @Param("partTypeCode") String partTypeCode);
@@ -69,15 +69,15 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
 
     /**
      * Find usage of access point in another items
-     * 
+     *
      * Includes only valid access points (not deleted)
-     * 
+     *
      * @param replaced
      * @return
      */
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p "
             + "JOIN FETCH p.accessPoint "
-            + "JOIN FETCH i.data JOIN arr_data_record_ref d ON i.data = d "
+            + "JOIN FETCH i.itemType it JOIN FETCH it.dataType JOIN arr_data_record_ref d ON i.data = d "
             + "JOIN ap_state st ON st.accessPointId = p.accessPointId AND st.deleteChangeId IS NULL "
             + "WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ApItem> findItemByEntity(@Param("record") ApAccessPoint replaced);

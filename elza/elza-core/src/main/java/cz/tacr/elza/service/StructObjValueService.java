@@ -13,10 +13,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -88,8 +89,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class StructObjValueService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructObjValueService.class);
-    
-    public static final String GROOVY_STRUCTURE_TYPE_SETTINGS = "STRUCTURE_TYPE_SETTINGS"; 
+
+    public static final String GROOVY_STRUCTURE_TYPE_SETTINGS = "STRUCTURE_TYPE_SETTINGS";
 
     private static int QUEUE_CHECK_TIME_INTERVAL = 60000; // 60s
 
@@ -106,6 +107,7 @@ public class StructObjValueService {
     private final SobjVrequestRepository sobjVrequestRepository;
     private final ArrangementInternalService arrangementInternalService;
     private final StaticDataService staticDataService;
+    private final DataService dataService;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -135,7 +137,8 @@ public class StructObjValueService {
             final SobjVrequestRepository sobjQueueRepository,
             final ArrangementInternalService arrangementInternalService,
             final EntityManager em,
-            final StaticDataService staticDataService) {
+            final StaticDataService staticDataService,
+            final DataService dataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -149,6 +152,7 @@ public class StructObjValueService {
         this.arrangementInternalService = arrangementInternalService;
         this.em = em;
         this.staticDataService = staticDataService;
+        this.dataService = dataService;
     }
 
     private ArrSobjVrequest addToValidateInternal(final ArrStructuredObject sobj) {
@@ -316,7 +320,7 @@ public class StructObjValueService {
 
     /**
      * Běh validace. NEVOLAT NA PŘÍMO!!!
-     * 
+     *
      * @return Return true if has more data to process.
      *         Return false if there are no more data.
      */
@@ -381,13 +385,13 @@ public class StructObjValueService {
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
             return false;
         }
-        
+
         StructType structType = staticDataService.getData().getStructuredTypeById(structObj.getStructuredTypeId());
         // read settings for given fund
-        SettingsService settingsService = this.applicationContext.getBean(SettingsService.class);        
+        SettingsService settingsService = this.applicationContext.getBean(SettingsService.class);
         // Settings name
         String settingsName = UISettings.SettingsType.STRUCT_TYPE_+structType.getCode();
-        
+
         // read settings
         SettingStructTypeSettings ssts = settingsService.readSettings(settingsName, structObj.getFundId(), SettingStructTypeSettings.class);
 
@@ -398,7 +402,7 @@ public class StructObjValueService {
      * Internal method to generate value and save it.
      *
      * Method will only check if value is empty.
-     * 
+     *
      * @param structType
      *
      * @param structObj
@@ -418,8 +422,7 @@ public class StructObjValueService {
         ArrStructuredObject.State state = ArrStructuredObject.State.OK;
         ValidationErrorDescription validationErrorDescription = new ValidationErrorDescription();
 
-        List<ArrStructuredItem> structureItems = structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        List<ArrStructuredItem> structureItems = findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
 
         validateStructureItems(validationErrorDescription, structObj, structureItems);
 
@@ -531,12 +534,12 @@ public class StructObjValueService {
 
     /*
     private void setDuplicatedState(ArrStructuredObject so, boolean duplicated) {
-    
+
         // Do not check duplicates on TEMP items
         Validate.isTrue(so.getState() != State.TEMP);
-    
+
         String errorDescr = so.getErrorDescription();
-    
+
         ValidationErrorDescription ved = new ValidationErrorDescription();
         if (StringUtils.isNotBlank(errorDescr)) {
             try {
@@ -547,7 +550,7 @@ public class StructObjValueService {
             }
         }
         ved.setDuplicateValue(duplicated);
-    
+
         String value = ved.asJsonString();
         if (value != null) {
             so.setState(State.ERROR);
@@ -555,7 +558,7 @@ public class StructObjValueService {
             so.setState(State.OK);
         }
         so.setErrorDescription(value);
-    
+
         structObjRepository.save(so);
     }*/
 
@@ -612,12 +615,12 @@ public class StructObjValueService {
      *
      * @param structureData
      *            hodnota struktovaného datového typu
-     * @param ssts 
+     * @param ssts
      * @return hodnota
      */
     private Result generateValue(StructType structType,
                                  final ArrStructuredObject structureData,
-                                 final List<ArrStructuredItem> structureItems, 
+                                 final List<ArrStructuredItem> structureItems,
                                  final SettingStructTypeSettings ssts) {
 
         File groovyFile = findSerializedGroovyFile(structType, structureData.getFund());
@@ -630,7 +633,7 @@ public class StructObjValueService {
         input.put("ITEMS", structureItems);
         input.put("RESULT", result);
         input.put(GROOVY_STRUCTURE_TYPE_SETTINGS, ssts);
-        
+
         groovyScriptFile.evaluate(input);
 
         return result;
@@ -764,7 +767,7 @@ public class StructObjValueService {
 
     /**
      * Provede smazání dočasných hodnot strukt. typu.
-     * 
+     *
      * Metoda se spouští jen při inicializaci
      */
     public void removeTempStructureData() {
@@ -883,9 +886,9 @@ public class StructObjValueService {
 
         /**
          * Evaluate if structured object is duplicated
-         * 
+         *
          * Method will also plan to revalidate other structured objects
-         * 
+         *
          * @return Return if value is duplicated
          */
         public boolean evaluate() {
@@ -923,7 +926,7 @@ public class StructObjValueService {
          * Check structured objects for duplicates
          *
          * Check is based on sort values
-         * 
+         *
          * @param checkedSortValue
          *            Value to be check
          * @param oneAllowed
@@ -1051,9 +1054,9 @@ public class StructObjValueService {
 
     /**
      * Delete pending request for fund
-     * 
+     *
      * This operation will temporarily stop generator
-     * 
+     *
      * @param fundId
      */
     public void deleteFundRequests(Integer fundId) {
@@ -1064,5 +1067,16 @@ public class StructObjValueService {
             sobjVrequestRepository.flush();
         }
         startGenerator();
+    }
+
+    public List<ArrStructuredItem> findByStructuredObjectAndDeleteChangeIsNullFetchData(ArrStructuredObject structuredObject) {
+        return dataService.findItemsWithData(() -> structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structuredObject),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrStructuredItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 }

@@ -1,14 +1,14 @@
 package cz.tacr.elza.domain.listener;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManagerFactory;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PreUpdateEvent;
 import org.hibernate.event.spi.PreUpdateEventListener;
 import org.hibernate.internal.SessionFactoryImpl;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
@@ -25,14 +25,12 @@ import cz.tacr.elza.domain.AbstractVersionableEntity;
 public class VersionableEntityListener implements PreUpdateEventListener {
 
     @Autowired
-    private EntityManagerFactory entityManagerFactory;
+    private SessionFactory sessionFactory;
 
     @PostConstruct
     private void init() {
-        HibernateEntityManagerFactory hibernateEntityManagerFactory = (HibernateEntityManagerFactory) this.entityManagerFactory;
-        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateEntityManagerFactory.getSessionFactory();
-        EventListenerRegistry registry = sessionFactoryImpl.getServiceRegistry().getService(EventListenerRegistry.class);
-        registry.appendListeners(EventType.PRE_UPDATE, this);
+//        EventListenerRegistry registry = sessionFactory.getSessionFactoryOptions().getServiceRegistry().getService(EventListenerRegistry.class); //TODO hibernate search 6
+//        registry.appendListeners(EventType.PRE_UPDATE, this);
     }
 
     @Override

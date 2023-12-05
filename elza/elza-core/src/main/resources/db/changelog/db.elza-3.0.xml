@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20230315100801" author="pasek">
+        <validCheckSum>ANY</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="usr_authentication" columnName="value"/>
+        </preConditions>
+        <renameColumn tableName="usr_authentication" oldColumnName="value" newColumnName="auth_value"/>
+    </changeSet>
+    <changeSet id="20230315100802" author="pasek">
+        <renameColumn tableName="ap_rev_index" oldColumnName="value" newColumnName="rev_value"/>
+    </changeSet>
+    <changeSet id="20230315100803" author="pasek">
+        <renameColumn tableName="arr_data_integer" oldColumnName="value" newColumnName="integer_value"/>
+    </changeSet>
+    <changeSet id="20230315100804" author="pasek">
+        <renameColumn tableName="ap_index" oldColumnName="value" newColumnName="index_value"/>
+    </changeSet>
+    <changeSet id="20230315100805" author="pasek">
+        <renameColumn tableName="ap_binding" oldColumnName="value" newColumnName="binding_value"/>
+    </changeSet>
+    <changeSet id="20230315100806" author="pasek">
+        <renameColumn tableName="ap_binding_item" oldColumnName="value" newColumnName="item_value"/>
+    </changeSet>
+    <changeSet id="20230315100807" author="pasek">
+        <renameColumn tableName="ap_key_value" oldColumnName="value" newColumnName="key_value"/>
+    </changeSet>
+    <changeSet id="20230315100808" author="pasek">
+        <renameColumn tableName="arr_data_json_table" oldColumnName="value" newColumnName="data_value"/>
+    </changeSet>
+    <changeSet id="20230315100809" author="pasek">
+        <renameColumn tableName="ui_settings" oldColumnName="value" newColumnName="settings_value"/>
+    </changeSet>
+    <changeSet id="20230315100810" author="pasek">
+        <renameColumn tableName="arr_data_coordinates" oldColumnName="value" newColumnName="coordinates_value"/>
+    </changeSet>
+    <changeSet id="20230315100811" author="pasek">
+        <renameColumn tableName="arr_data_date" oldColumnName="value" newColumnName="date_value"/>
+    </changeSet>
+    <changeSet id="20230315100812" author="pasek">
+        <renameColumn tableName="arr_data_decimal" oldColumnName="value" newColumnName="decimal_value"/>
+    </changeSet>
+    <changeSet id="20230315100813" author="pasek">
+        <renameColumn tableName="arr_structured_object" oldColumnName="value" newColumnName="object_value"/>
+    </changeSet>
+
+</databaseChangeLog>

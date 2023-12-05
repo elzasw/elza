@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import org.locationtech.jts.geom.Geometry;
 

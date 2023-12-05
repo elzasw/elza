@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.12.RELEASE</version>
+        <version>3.0.2</version>
     </parent>
 
     <groupId>cz.tacr.elza</groupId>
@@ -25,13 +25,12 @@
              has to be configured separately because of JaCoCo -->
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
-        <cxf.version>3.3.7</cxf.version>
-        <hibernate.version>5.4.32.Final</hibernate.version>
-        <hibernate.search.orm.version>5.11.5.Final</hibernate.search.orm.version>
+        <cxf.version>4.0.0</cxf.version>
+        <hibernate.version>6.1.7.Final</hibernate.version>
         <hibernate.lucene.version>5.5.5</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
             byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
-        <spring.boot.version>2.3.12.RELEASE</spring.boot.version>
+        <spring.boot.version>3.0.2</spring.boot.version>
 
         <geotools.version>25.2</geotools.version>
 
@@ -65,7 +64,7 @@
             <dependency>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-ri-bom-ext</artifactId>
-                <version>${javax-jaxws.version}</version>
+                <version>4.0.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -236,20 +235,18 @@
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-orm</artifactId>
-                <version>${hibernate.search.orm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-serialization-avro</artifactId>
-                <version>${hibernate.search.orm.version}</version>
-            </dependency>
+<!--            <dependency> -->
+<!--                <groupId>org.hibernate</groupId>-->
+<!--                <artifactId>hibernate-search-orm</artifactId>-->
+<!--            </dependency>-->
+<!--            <dependency>-->
+<!--                <groupId>org.hibernate</groupId>-->
+<!--                <artifactId>hibernate-search-serialization-avro</artifactId>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-ehcache</artifactId>
-                <version>${hibernate.version}</version>
+                <version>5.4.32.Final</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -350,20 +347,31 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
-           <!--
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http-jetty</artifactId>
+                <artifactId>cxf-codegen-plugin</artifactId>
                 <version>${cxf.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-server</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>-->
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-common</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <!--
+             <dependency>
+                 <groupId>org.apache.cxf</groupId>
+                 <artifactId>cxf-rt-transports-http-jetty</artifactId>
+                 <version>${cxf.version}</version>
+                 <exclusions>
+                     <exclusion>
+                         <groupId>org.eclipse.jetty</groupId>
+                         <artifactId>jetty-server</artifactId>
+                     </exclusion>
+                 </exclusions>
+             </dependency>-->
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-aegis</artifactId>
@@ -372,12 +380,12 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-jms</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
-                <version>${cxf.version}</version>
+                <version>3.3.7</version>
             </dependency>
             <dependency>
                 <groupId>org.openapitools</groupId>
@@ -455,7 +463,7 @@
                             <arguments>"-Dinnosetup.path=${innosetup.path}" "-Dsigntool.enabled=${signtool.enabled}" "-Dsigntool.path=${signtool.path}" "-Dsigntool.params=${signtool.params}" "-Djre.path=${jre.path}" "-Dtomcat.path=${tomcat.path}"</arguments>
                         </configuration>
                     </plugin>
-                    <!-- By default no subproject is deployed If you want 
+                    <!-- By default no subproject is deployed If you want
                         to deploy some project you have to override skip to false -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

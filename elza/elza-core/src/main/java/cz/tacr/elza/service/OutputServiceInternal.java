@@ -13,9 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -116,11 +118,12 @@ public class OutputServiceInternal {
     private final RevertingChangesService revertingChangesService;
 
     private final OutputRestrictionScopeRepository outputRestrictionScopeRepository;
-    
+
     private final TemplateRepository templateRepository;
 
     private final ApStateRepository stateRepository;
     private final StructObjService structObjService;
+    private final DataService dataService;
 
     @Autowired
     @Lazy
@@ -149,7 +152,8 @@ public class OutputServiceInternal {
                                  final OutputTemplateRepository outputTemplateRepository,
                                  final TemplateRepository templateRepository,
                                  final OutputFileRepository outputFileRepository,
-                                 final DmsService dmsService) {
+                                 final DmsService dmsService,
+                                 final DataService dataService) {
         this.eventNotificationService = eventNotificationService;
         this.outputRepository = outputRepository;
         this.outputResultRepository = outputResultRepository;
@@ -171,6 +175,7 @@ public class OutputServiceInternal {
         this.templateRepository = templateRepository;
         this.outputFileRepository = outputFileRepository;
         this.dmsService = dmsService;
+        this.dataService = dataService;
     }
 
     /**
@@ -249,9 +254,35 @@ public class OutputServiceInternal {
     public List<ArrOutputItem> getOutputItems(ArrOutput output, ArrChange change) {
         Validate.notNull(output);
         if (change == null) {
-            return outputItemRepository.findByOutputAndDeleteChangeIsNull(output);
+            return findByOutputAndDeleteChangeIsNull(output);
         }
-        return outputItemRepository.findByOutputAndChange(output, change);
+        return findByOutputAndChange(output, change);
+    }
+
+    public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
+        return dataService.findItemWithData(() -> outputItemRepository.findOpenOutputItem(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findOpenOutputItems(Integer descItemObjectId) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findOpenOutputItems(descItemObjectId),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findByOutputAndChange(ArrOutput output, ArrChange change) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndChange(output, change),
+                this::createDataResultList);
+    }
+
+    public List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(ArrOutput output) {
+        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndDeleteChangeIsNull(output),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ArrOutputItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -309,7 +340,7 @@ public class OutputServiceInternal {
 
     /**
      * Add request for output generation.
-     * 
+     *
      * @param userId
      */
     @Transactional(TxType.MANDATORY)
@@ -559,7 +590,7 @@ public class OutputServiceInternal {
 
         if (CollectionUtils.isNotEmpty(outputItems)) {
             for (ArrOutputItem outputItem : outputItems) {
-                ArrData data = outputItem.getData();
+                ArrData data = HibernateUtils.unproxy(outputItem.getData());
                 if (data instanceof ArrDataRecordRef) {
                     ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
                     if (dataRecordRef.getRecord() != null) {
@@ -603,25 +634,25 @@ public class OutputServiceInternal {
      * Create output templates
      * @param outputContext
      * @param templateIds
-     * @return 
+     * @return
      */
 	public List<ArrOutputTemplate> createOutputTemplates(ArrOutput output, Collection<Integer> templateIds) {
 		List<RulTemplate> templates = templateRepository.findAllById(templateIds);
-    	
+
     	Validate.isTrue(templateIds.size()==templates.size(), "Incorrect templateId");
-    	
+
     	List<ArrOutputTemplate> outputTemplates = new ArrayList<>();
-    	
+
     	for(RulTemplate template: templates) {
 
         	ArrOutputTemplate outputTemplate = new ArrOutputTemplate();
         	outputTemplate.setOutput(output);
         	outputTemplate.setTemplate(template);
-                        
+
             outputTemplates.add(outputTemplate);
     	}
     	List<ArrOutputTemplate> saved = outputTemplateRepository.saveAll(outputTemplates);
-		
+
     	return saved;
 	}
 
@@ -636,7 +667,7 @@ public class OutputServiceInternal {
 
     /**
      * Odstraneni vysledku
-     * 
+     *
      * @param output
      */
     public void deleteOutputResults(ArrOutput output) {

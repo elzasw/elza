@@ -155,7 +155,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private BulkActionRunVO runBulkAction(final int fundVersionId, final String code) throws InterruptedException {
         BulkActionRunVO state;
 
-        get((spec) -> spec.pathParameter("versionId", fundVersionId).pathParam("code", code), BULK_ACTION_QUEUE);
+        get((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", code), BULK_ACTION_QUEUE);
 
         int counter = 6;
 

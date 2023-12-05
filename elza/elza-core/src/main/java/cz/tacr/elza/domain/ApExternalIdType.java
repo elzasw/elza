@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 

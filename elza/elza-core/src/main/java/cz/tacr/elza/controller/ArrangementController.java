@@ -20,9 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
+
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -287,7 +289,7 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementFormService formService;
-    
+
     @Autowired
     private StaticDataService staticDataService;
 
@@ -715,7 +717,7 @@ public class ArrangementController {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
-        ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
+        ArrDescItem descItem = descriptionItemService.findOpenDescItem(descItemObjectId);
         if (!"JSON_TABLE".equals(descItem.getItemType().getDataType().getCode())) {
             throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemObjectId")
@@ -748,7 +750,7 @@ public class ArrangementController {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
 
-        ArrOutputItem outputItem = outputItemRepository.findOpenOutputItem(descItemObjectId);
+        ArrOutputItem outputItem = outputService.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
             throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemObjectId")
@@ -2048,7 +2050,7 @@ public class ArrangementController {
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        
+
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeById(descItemTypeId);
 
@@ -2269,10 +2271,10 @@ public class ArrangementController {
                                          @RequestBody final OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        
+
         Set<Integer> templateIds = new HashSet<>();
         if(param.getTemplateId()!=null) {
-        	templateIds.add(param.getTemplateId()); 
+        	templateIds.add(param.getTemplateId());
         }
         if(param.getTemplateIds()!=null) {
         	templateIds.addAll(param.getTemplateIds());
@@ -2359,9 +2361,9 @@ public class ArrangementController {
                                    @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        
+
         OutputData outputData = outputService.cloneOutput(fundVersion, output);
-        
+
         return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
@@ -2417,7 +2419,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
-    public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
+    public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
     							  @PathVariable(value = "templateId") final Integer templateId) {
         ArrOutput output = outputService.getOutput(outputId);
     	return outputService.addOutputTemplate(output.getFundId(), output, templateId);
@@ -3759,7 +3761,7 @@ public class ArrangementController {
          * Template id.
          */
         private Integer templateId;
-        
+
         /**
          * List of templates
          */
@@ -3800,7 +3802,7 @@ public class ArrangementController {
         public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
         }
-        
+
         public List<Integer> getTemplateIds() {
 			return templateIds;
 		}

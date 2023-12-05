@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;

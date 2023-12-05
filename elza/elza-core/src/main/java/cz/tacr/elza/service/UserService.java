@@ -16,11 +16,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -102,7 +101,7 @@ public class UserService {
     static {
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put("bcrypt", new BCryptPasswordEncoder());
-        encoders.put("scrypt", new SCryptPasswordEncoder());
+        encoders.put("scrypt", SCryptPasswordEncoder.defaultsForSpringSecurity_v5_8());
         encoder = new DelegatingPasswordEncoder("bcrypt", encoders);
     }
 
@@ -419,7 +418,7 @@ public class UserService {
      *
      * @param nodeIds identifikátory JP
      */
-    @Transactional(TxType.MANDATORY)
+    @Transactional(Transactional.TxType.MANDATORY)
     public void deletePermissionByNodeIds(final Collection<Integer> nodeIds) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return;
@@ -671,7 +670,7 @@ public class UserService {
             result = new UsrAuthentication();
             result.setUser(user);
             result.setAuthType(UsrAuthentication.AuthType.PASSWORD);
-            result.setValue(defaultPassword);
+            result.setAuthValue(defaultPassword);
         } else {
             result = authenticationRepository.findByUserAndAuthType(user, authType);
         }
@@ -681,7 +680,7 @@ public class UserService {
     public List<UsrAuthentication> findAuthentication(String value, UsrAuthentication.AuthType authType) {
         Validate.notNull(value);
         Validate.notNull(authType);
-        return authenticationRepository.findByValueAndAuthType(value, authType);
+        return authenticationRepository.findByAuthValueAndAuthType(value, authType);
     }
 
     public List<UsrAuthentication> findAuthentications(UsrUser user) {
@@ -863,7 +862,7 @@ public class UserService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public UsrUser changeUser(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
-                              @Nullable final Integer accessPointId,  
+                              @Nullable final Integer accessPointId,
                               @NotNull @NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap) {
         Validate.notNull(valuesMap);
@@ -983,9 +982,9 @@ public class UserService {
         authentication.setUser(user);
         authentication.setAuthType(authType);
         if (authType == UsrAuthentication.AuthType.PASSWORD) {
-            authentication.setValue(encodePassword(value));
+            authentication.setAuthValue(encodePassword(value));
         } else {
-            authentication.setValue(value);
+            authentication.setAuthValue(value);
         }
     }
 
@@ -1006,7 +1005,7 @@ public class UserService {
                 throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
             }
 
-            if (!matchesPassword(oldPassword, authentication.getValue(), user.getUsername())) {
+            if (!matchesPassword(oldPassword, authentication.getAuthValue(), user.getUsername())) {
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }
@@ -1040,7 +1039,7 @@ public class UserService {
         if (authentication == null) {
             throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
         }
-        authentication.setValue(encodePassword(newPassword));
+        authentication.setAuthValue(encodePassword(newPassword));
         authenticationRepository.save(authentication);
         changeUserEvent(user);
         return user;
@@ -1249,7 +1248,7 @@ public class UserService {
 	 *            identifikátor entity, ke které se ověřuje oprávnění
 	 * @return má oprávnění?
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
@@ -1269,7 +1268,7 @@ public class UserService {
 	 *            typ oprávnění
 	 * @return má oprávnění?
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
 		UserDetail userDetail = getLoggedUserDetail();
 		if (userDetail == null) {
@@ -1388,7 +1387,7 @@ public class UserService {
 
     /**
      * Načtení objektu uživatele dle id pro vnitřní použití.
-     * 
+     *
      * @param userId
      * @return objekt nebo null
      */
@@ -1680,7 +1679,7 @@ public class UserService {
      *
      * @return množina id scope na které ma uživatel právo
      */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
     public Set<Integer> getUserScopeIds() {
         return getUserPermission()
                 .stream()
@@ -1693,7 +1692,7 @@ public class UserService {
 	/**
 	 * Authorize request or throw exception
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
 	public void authorizeRequest(AuthorizationRequest authRequest) {
 		UserDetail userDetail = getLoggedUserDetail();
         if (userDetail != null && authRequest.matches(userDetail)) {
@@ -1742,7 +1741,7 @@ public class UserService {
 	 *            Can be null
 	 * @param newFund
 	 */
-	@Transactional(value = TxType.MANDATORY)
+	@Transactional(value = Transactional.TxType.MANDATORY)
 	public void addFundAdminPermissions(Integer userId, Integer groupId, ArrFund newFund) {
 		UsrUser user = null;
 		UsrGroup group = null;
@@ -1900,9 +1899,9 @@ public class UserService {
 
     /**
      * Method to create admin detail
-     * 
+     *
      * This is temporary method and will be removed in future
-     * 
+     *
      * @return
      */
     private UserDetail createAdminUserDetail() {
@@ -1943,7 +1942,7 @@ public class UserService {
 
     /**
      * Create securoty context for admin
-     * 
+     *
      * @return
      */
     public SecurityContext createSecurityContextSystem() {

@@ -1,7 +1,7 @@
 package cz.tacr.elza.filter.condition;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.QueryBuilder;
+//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
 
 /**
  * Podmínka přes Lucene.
@@ -18,5 +18,5 @@ public interface LuceneDescItemCondition extends DescItemCondition {
      *
      * @return dotaz
      */
-    Query createLuceneQuery(QueryBuilder queryBuilder);
+//    Query createLuceneQuery(QueryBuilder queryBuilder); TODO hibernate search 6
 }

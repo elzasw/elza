@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -135,14 +136,14 @@ public class CachedNode implements NodeCacheSerializable {
 
     public void addDaoLinks(Collection<ArrDaoLink> daoLinks) {
         if (this.daoLinks == null) {
-            this.daoLinks = new ArrayList<>(daoLinks.size()); 
+            this.daoLinks = new ArrayList<>(daoLinks.size());
         }
         this.daoLinks.addAll(daoLinks);
     }
 
     /**
      * Validate node data
-     * 
+     *
      * Typically called before serialization
      */
     public void validate() {
@@ -215,7 +216,7 @@ public class CachedNode implements NodeCacheSerializable {
             Validate.notNull(descItem.getItemTypeId());
             Validate.notNull(descItem.getPosition());
 
-            ArrData data = descItem.getData();
+            ArrData data = HibernateUtils.unproxy(descItem.getData());
             if (data != null) {
                 data.validate();
             }

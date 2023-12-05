@@ -2,9 +2,9 @@ package cz.tacr.elza.domain;
 
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang.Validate;
 
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataDecimal extends ArrData {
 
-    @Column(nullable = false)
+    @Column(name = "decimal_value", nullable = false)
     private BigDecimal value;
 
 	public ArrDataDecimal() {

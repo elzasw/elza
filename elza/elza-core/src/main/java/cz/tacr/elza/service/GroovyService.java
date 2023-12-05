@@ -8,7 +8,9 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
+
+import cz.tacr.elza.common.db.HibernateUtils;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -100,7 +102,7 @@ public class GroovyService {
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
-    
+
     @Autowired
     protected AccessPointCacheService accessPointCacheService;
 
@@ -331,7 +333,7 @@ public class GroovyService {
     }
 
     public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
-        ArrData data = item.getData();
+        ArrData data = HibernateUtils.unproxy(item.getData());
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
         String itemTypeCode = itemType.getCode();
         RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
@@ -377,7 +379,7 @@ public class GroovyService {
                 if (dataTmp.getRecord() != null) {
                     intValue = dataTmp.getRecordId();
                     ApIndex index = apService.findPreferredPartIndex(intValue);
-                    value = index == null? null : index.getValue();
+                    value = index == null? null : index.getIndexValue();
                     accessPoint = accessPointCacheService.findCachedAccessPoint(intValue);
                 } else if (dataTmp.getBinding() != null) {
                     value = dataTmp.getBinding().getValue();
@@ -423,7 +425,7 @@ public class GroovyService {
             Integer recordId = null;
             for (ApItem aeItem : itemsByParts) {
                 if (aeItem.getItemTypeId().equals(itemType.getItemTypeId())) {
-                    ArrDataRecordRef data = (ArrDataRecordRef) aeItem.getData();
+                    ArrDataRecordRef data = HibernateUtils.unproxy(aeItem.getData());
                     recordId = data.getRecordId();
                     break;
                 }

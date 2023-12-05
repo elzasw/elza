@@ -13,10 +13,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public class ExternalSystemService {
 
     @Autowired
     private ApBindingRepository bindingRepository;
-    
+
     @Autowired
     private ApBindingSyncRepository bindingSyncRepository;
 
@@ -123,6 +124,9 @@ public class ExternalSystemService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DataService dataService;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -257,7 +261,7 @@ public class ExternalSystemService {
 
     /**
      * Smazání záznamu z tabulky ExtSyncsQueueItem
-     * 
+     *
      * @param extSyncItemId
      */
     public void deleteQueueItem(final Integer extSyncItemId) {
@@ -358,7 +362,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se změnil externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -368,7 +372,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se vytvořil externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -378,7 +382,7 @@ public class ExternalSystemService {
 
     /**
      * Odešle notifikaci do klienta, že se smazal externí systém.
-     * 
+     *
      * @param externalSystemId
      *            id ex. systému
      */
@@ -404,7 +408,7 @@ public class ExternalSystemService {
 
     /**
      * Create binding based on external system code
-     * 
+     *
      * @param scope
      * @param value
      * @param externalSystemCode
@@ -424,10 +428,10 @@ public class ExternalSystemService {
 
     /**
      * Create AP Binding in DB (saveAndFlush)
-     * 
+     *
      * Method will flush new binding immediately to the DB
      * to prevent duplicated bindings.
-     * 
+     *
      * @param value
      *            Binding value
      * @param apExternalSystem
@@ -454,7 +458,7 @@ public class ExternalSystemService {
 
     /**
      * Create new binding state
-     * 
+     *
      * @param binding
      * @param accessPoint
      * @param apChange
@@ -497,7 +501,7 @@ public class ExternalSystemService {
 
     /**
      * Create new binding state based on current state
-     * 
+     *
      * @param oldbindingState
      * @param apChange
      * @param state
@@ -532,11 +536,11 @@ public class ExternalSystemService {
         oldbindingState.setDeleteChange(apChange);
         bindingStateRepository.saveAndFlush(oldbindingState);
 
-        return createBindingState(oldbindingState.getBinding(), 
-                                  oldbindingState.getAccessPoint(), 
-                                  apChange, 
-                                  state, 
-                                  revisionUuid, 
+        return createBindingState(oldbindingState.getBinding(),
+                                  oldbindingState.getAccessPoint(),
+                                  apChange,
+                                  state,
+                                  revisionUuid,
                                   user,
                                   extReplacedBy == null? null : Long.valueOf(extReplacedBy),
                                   syncState,
@@ -591,15 +595,15 @@ public class ExternalSystemService {
             bindingSync.setLastTransaction(transactionUuid);
             bindingSync = bindingSyncRepository.save(bindingSync);
         }
-        return new BindingSyncInfo(bindingSync.getBindingSyncId(), 
-                                   externalSystem.getExternalSystemId(), 
-                                   bindingSync.getLastTransaction(), bindingSync.getToTransaction(), 
+        return new BindingSyncInfo(bindingSync.getBindingSyncId(),
+                                   externalSystem.getExternalSystemId(),
+                                   bindingSync.getLastTransaction(), bindingSync.getToTransaction(),
                                    bindingSync.getPage(), bindingSync.getCount());
     }
 
     /**
      * Prepare entities for synchronization
-     * 
+     *
      * @param bindingSyncId
      * @param entityRecordRevInfoXmls entity info list
      * @param lastTransaction
@@ -608,8 +612,8 @@ public class ExternalSystemService {
      * @param count
      */
     @Transactional
-    public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls, 
-                                  String lastTransaction, String toTransaction, 
+    public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls,
+                                  String lastTransaction, String toTransaction,
                                   Integer page, Integer count) {
         log.debug("Preparing APs for synchronization from external system, count: {}", entityRecordRevInfoXmls.size());
 
@@ -630,7 +634,7 @@ public class ExternalSystemService {
             EntityRecordRevInfoXml prevInfo = recordCodesMap.put(id, entityRecordRevInfoXml);
             Validate.isTrue(prevInfo == null, "Record with same key already process, %s", id);
         }
-        
+
         List<ApBinding> bindings = findBindings(keyList, externalSystem);
         final Map<String, ApBinding> bindingMap = bindings.stream().collect(Collectors.toMap(p -> p.getValue(), p -> p));
 
@@ -658,7 +662,7 @@ public class ExternalSystemService {
             if (binding == null) {
                 // prepare binding for CAM Complete
                 if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                    // we are creating all bindings at once 
+                    // we are creating all bindings at once
                     // - will be flush to the DB at the end of this method
                     binding = createApBinding(recordCode, externalSystem, false);
                 }
@@ -716,14 +720,27 @@ public class ExternalSystemService {
     }
 
     public List<ApBindingItem> getBindingItems(final ApBinding binding) {
-        return bindingItemRepository.findByBinding(binding);
+        return dataService.findItemsWithData(() -> bindingItemRepository.findByBinding(binding),
+                this::createDataResultList);
+    }
+
+    public List<ApBindingItem> findItemsForSync(final ApBinding binding, final Integer syncChangeId) {
+        return dataService.findItemsWithData(() -> bindingItemRepository.findItemsForSync(binding, syncChangeId),
+                this::createDataResultList);
+    }
+
+    public List<DataResult> createDataResultList(List<ApBindingItem> itemList) {
+        return itemList.stream()
+                .filter(i -> i.getItem() != null)
+                .map(i -> new DataResult(i.getItem().getData().getDataId(), i.getItem().getItemType().getDataType()))
+                .collect(Collectors.toList());
     }
 
     /**
      * Return active binding state
-     * 
+     *
      * Binding is also fetched.
-     * 
+     *
      * @param accessPoint
      * @param externalSystem
      * @return
@@ -746,7 +763,7 @@ public class ExternalSystemService {
 
     /**
      * Vytvoření záznamu ve frontě zpracování
-     * 
+     *
      * @param accessPoint
      * @param apExternalSystem
      * @param stateMessage
@@ -757,7 +774,7 @@ public class ExternalSystemService {
      */
     public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
                                                      final ApExternalSystem apExternalSystem,
-                                                     final ApBinding binding, 
+                                                     final ApBinding binding,
                                                      final String stateMessage,
                                                      final ExtSyncsQueueItem.ExtAsyncQueueState state,
                                                      final OffsetDateTime date,
@@ -776,7 +793,7 @@ public class ExternalSystemService {
 
      /**
       * Return list of first items to process in given states
-      * 
+      *
       * @param pageSize
       * @param states
       * @return

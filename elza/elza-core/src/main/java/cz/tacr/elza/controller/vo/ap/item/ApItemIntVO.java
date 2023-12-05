@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
@@ -8,7 +9,7 @@ import cz.tacr.elza.domain.ArrDataInteger;
 
 import java.util.Objects;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class ApItemIntVO extends ApItemVO {
 
@@ -26,7 +27,7 @@ public class ApItemIntVO extends ApItemVO {
     }
 
     final public Integer getIntegerValue(final AccessPointItem item) {
-        ArrDataInteger data = (ArrDataInteger) item.getData();
+        ArrDataInteger data = HibernateUtils.unproxy(item.getData());
         return data == null ? null : data.getIntegerValue();
     }
 

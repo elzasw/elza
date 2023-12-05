@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.StructObjService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -82,6 +83,9 @@ public class UnitCountAction extends Action {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
+    private StructObjService structObjService;
+
+    @Autowired
     private NodeRepository nodeRepository;
 
 	final UnitCountConfig config;
@@ -97,7 +101,7 @@ public class UnitCountAction extends Action {
     UnitCountAction(final UnitCountConfig config) {
 		Validate.notNull(config);
 
-		this.config = config;		
+		this.config = config;
     }
 
     @Override
@@ -139,7 +143,7 @@ public class UnitCountAction extends Action {
 
 		// initialize counters
 		for (UnitCounterConfig counterCfg : config.getAggegators()) {
-            UnitCounter uc = new UnitCounter(counterCfg, structureItemRepository, sdp);
+            UnitCounter uc = new UnitCounter(counterCfg, structObjService, sdp);
 			counters.add(uc);
 		}
     }
@@ -276,7 +280,7 @@ public class UnitCountAction extends Action {
 
 	/**
 	 * Add integer value to the result
-	 * @param level 
+	 * @param level
 	 *
 	 * @param level
 	 * @param key
@@ -286,7 +290,7 @@ public class UnitCountAction extends Action {
 		Validate.isTrue(value >= 0, "Číslo nemůže být záporné");
 
 		ItemTypeSummary item = resultMap.get(key);
-		DateRangeAction dateRangeAction; 
+		DateRangeAction dateRangeAction;
 		if (item == null) {
             item = new ItemTypeSummary();
 	        dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());

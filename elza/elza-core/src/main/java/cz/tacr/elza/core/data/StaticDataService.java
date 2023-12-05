@@ -3,10 +3,10 @@ package cz.tacr.elza.core.data;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Synchronization;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
@@ -183,8 +183,8 @@ public class StaticDataService {
     }
 
     public void reloadOnCommit() {
-        Transaction tx = getCurrentActiveTransaction();
-        reloadOnCommit(tx);
+//        Transaction tx = getCurrentActiveTransaction(); //TODO hibernate search 6
+//        reloadOnCommit(tx);
     }
 
     public void reloadOnCommit(Transaction tx) {
@@ -207,7 +207,7 @@ public class StaticDataService {
     public String getAppVersion() {
         return appVersion;
     }
-    
+
     /**
      * Called when new transaction if registered
      * @param tx

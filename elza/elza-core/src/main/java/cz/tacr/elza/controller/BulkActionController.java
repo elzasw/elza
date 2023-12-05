@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
