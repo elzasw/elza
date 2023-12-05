@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoFileInfo;
@@ -29,8 +29,8 @@ public class DaoFileBo {
 	private DaoFileInfo fileInfo;
 
 	public DaoFileBo(DaoBo dao, String identifier, boolean eagerInit) {
-		Assert.notNull(dao);
-		Assert.notNull(identifier);
+        Validate.notNull(dao);
+        Validate.notNull(identifier);
 		this.dao = dao;
 		this.identifier = identifier;
 		if (eagerInit) {

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
@@ -32,7 +32,7 @@ public class DaoPackageBo {
 	private boolean allDaoInitialized;
 
 	public DaoPackageBo(String identifier) {
-		Assert.notNull(identifier);
+        Validate.notNull(identifier);
 		this.identifier = identifier;
 		configResource = new DaoPackageConfigResource(identifier);
 	}

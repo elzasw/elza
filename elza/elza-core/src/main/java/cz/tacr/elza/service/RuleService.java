@@ -21,14 +21,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.domain.ArrData;
-import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -42,6 +34,7 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -76,6 +69,7 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -157,6 +151,11 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 
 /**
@@ -1435,7 +1434,7 @@ public class RuleService {
                     Validate.notNull(part);
                 }
 
-                Index index = new Index(revIndex.getIndexType(), revIndex.getValue(), part);
+                Index index = new Index(revIndex.getIndexType(), revIndex.getRevValue(), part);
                 List<Index> indexes = indexMap.computeIfAbsent(part.getType(), pt -> new ArrayList<>());
                 indexes.add(index);
             }

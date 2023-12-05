@@ -11,13 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.db.HibernateUtils;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -25,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -64,6 +58,11 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 @Service
 public class RevisionService {
@@ -531,7 +530,7 @@ public class RevisionService {
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
         List<ApRevPart> childRevParts = revisionPartService.findPartsByParentPart(apPart);
 
-        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
+        List<ApItem> apItems = apItemService.findValidItemsByPart(apPart);
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
 
         // pokud existují podřízené ApPart je nutné ověřit, zda nebyly odstraněny
@@ -648,7 +647,7 @@ public class RevisionService {
             apPart = partService.getPart(partId);
             revPart = revisionPartService.findByOriginalPart(apPart);
             List<ApRevItem> revItems = revPart != null ? revisionItemService.findByPart(revPart) : null;
-        List<ApItem> apItems = itemService.findValidItemsByPart(apPart);
+            List<ApItem> apItems = apItemService.findValidItemsByPart(apPart);
 
             if (!apPart.getPartType().getCode().equals(defaultPartType.getCode())) {
                 throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
@@ -775,7 +774,7 @@ public class RevisionService {
         Map<Integer, ApItem> apItemObjectMap;
 
         if (revPart.getOriginalPart() != null) {
-            apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
+            apItems = apItemService.findValidItemsByPart(revPart.getOriginalPart());
             apItemObjectMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
         } else {
             apItems = Collections.emptyList();
@@ -920,7 +919,7 @@ public class RevisionService {
 
             revPart = revisionPartService.createPart(revision, change, apPart, false);
 
-            List<ApItem> apItems = itemService.findValidItemsByPart(revPart.getOriginalPart());
+            List<ApItem> apItems = apItemService.findValidItemsByPart(revPart.getOriginalPart());
             // Map objectId -> ApItem
             Map<Integer, ApItem> apItemMap = apItems.stream().collect(Collectors.toMap(ApItem::getObjectId, i -> i));
 

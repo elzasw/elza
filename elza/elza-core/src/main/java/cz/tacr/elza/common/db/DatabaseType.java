@@ -1,15 +1,12 @@
 package cz.tacr.elza.common.db;
 
-import jakarta.persistence.EntityManager;
-
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.H2Dialect;
-import org.hibernate.dialect.SQLServer2008Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 
-import cz.tacr.elza.service.StartupService;
+import jakarta.persistence.EntityManager;
 
 /**
  * Typ Databáze. Zatím existuje pouze 1 specialita pro MSSQL.
@@ -60,7 +57,7 @@ public enum DatabaseType {
 
         Validate.notNull(dialect);
 
-        if (dialect instanceof SQLServer2008Dialect) {
+        if (dialect instanceof org.hibernate.dialect.SQLServerDialect) {
             currentDbType = DatabaseType.MSSQL;
         } else if (dialect instanceof H2Dialect) {
             currentDbType = DatabaseType.H2;

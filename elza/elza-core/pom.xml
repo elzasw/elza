@@ -164,11 +164,12 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
 		</dependency>
+		<!-- 
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-pojo-base</artifactId>
             <version>${hibernate.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
@@ -178,10 +179,16 @@
             <artifactId>javax.servlet-api</artifactId>
             <version>4.0.1</version>
         </dependency>
-<!--        <dependency>TODO pasek-->
-<!--            <groupId>org.hibernate</groupId>-->
-<!--            <artifactId>hibernate-search-orm</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+			<groupId>org.hibernate.search</groupId>
+			<artifactId>hibernate-search-mapper-orm</artifactId>
+			<version>${hibernate.search.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-backend-lucene</artifactId>
+            <version>${hibernate.search.version}</version>
+        </dependency>                
 <!--        <dependency>-->
 <!--            <groupId>org.hibernate</groupId>-->
 <!--            <artifactId>hibernate-search-serialization-avro</artifactId>-->
@@ -267,6 +274,7 @@
 		<artifactId>jgridshift-core</artifactId>
 		<version>1.3</version>
 		</dependency>
+		<!--
         <dependency>
           <groupId>org.apache.lucene</groupId>
           <artifactId>lucene-grouping</artifactId>
@@ -281,7 +289,7 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
             <version>${hibernate.lucene.version}</version>
-		</dependency>
+		</dependency>-->
 
         <dependency>
             <groupId>net.sf.jasperreports</groupId>

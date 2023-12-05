@@ -2,11 +2,7 @@ package cz.tacr.elza.filter.condition;
 
 import java.util.List;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.BooleanJunction; TODO hibernate search 6
-//import org.hibernate.search.query.dsl.QueryBuilder;
-import org.springframework.util.Assert;
-
+import org.apache.commons.lang3.Validate;
 
 /**
  * Podmínka na výběr podle hodnot které byly vybrány.
@@ -26,8 +22,8 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
      * @param values vybrané hodnoty
      */
     public SelectedValuesDescItemEnumCondition(final List<String> values, final String attributeName) {
-        Assert.notEmpty(values);
-        Assert.notNull(attributeName);
+        Validate.notEmpty(values);
+        Validate.notNull(attributeName);
 
         this.values = values;
         this.attributeName = attributeName;
