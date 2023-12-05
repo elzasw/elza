@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
@@ -36,8 +36,8 @@ public class DaoBo {
 	private boolean allFileInitialized;
 
 	public DaoBo(DaoPackageBo daoPackage, String identifier, boolean eagerInit) {
-        Assert.notNull(daoPackage);
-		Assert.notNull(identifier);
+        Validate.notNull(daoPackage);
+        Validate.notNull(identifier);
 		this.daoPackage = daoPackage;
 		this.identifier = identifier;
 		configResource = new DaoConfigResource(daoPackage.getIdentifier(), identifier);

@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo.filter;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Podmínky.
@@ -51,7 +51,7 @@ public enum Condition {
     private List<String> supportedDescItemTypes;
 
     Condition(final String... supportedTypes) {
-        Assert.notEmpty(supportedTypes);
+        Validate.notEmpty(supportedTypes);
 
         supportedDescItemTypes = Arrays.asList(supportedTypes);
     }
@@ -64,7 +64,7 @@ public enum Condition {
      * @throws IllegalStateException atribut není podporován
      */
     public void checkSupport(final String typeCode) {
-        Assert.notNull(typeCode);
+        Validate.notNull(typeCode);
 
         if (!supportedDescItemTypes.contains(typeCode)) {
             throw new IllegalStateException("Tato podmínka nepodporuje atribut typu " + typeCode);

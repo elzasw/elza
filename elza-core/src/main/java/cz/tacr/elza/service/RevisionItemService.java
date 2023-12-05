@@ -2,17 +2,13 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.repository.vo.DataResult;
-import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -21,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -42,6 +39,9 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 
 @Service
 public class RevisionItemService {
@@ -52,7 +52,7 @@ public class RevisionItemService {
     private StaticDataService staticDataService;
 
     @Autowired
-    private AccessPointItemService apItemService;
+    private AccessPointItemService accessPointItemService;
 
     @Autowired
     private ItemService itemService;
@@ -124,7 +124,7 @@ public class RevisionItemService {
 
         for (ApItemVO createItem : createItems) {
             ItemType itemType = sdp.getItemTypeById(createItem.getTypeId());
-            RulItemSpec itemSpec = apItemService.getItemSpecification(itemType, createItem);
+            RulItemSpec itemSpec = accessPointItemService.getItemSpecification(itemType, createItem);
             List<ApRevItem> existsItems = itemsByType.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
 
             Integer positionWant = createItem.getPosition();
@@ -150,7 +150,7 @@ public class RevisionItemService {
             Integer origObjectId = createItem.getOrigObjectId();
             Integer objectId = createItem.getObjectId();
             if (origObjectId == null && objectId == null) {
-                objectId = apItemService.nextItemObjectId();
+                objectId = accessPointItemService.nextItemObjectId();
             } else
             if (updateOrigItems) {
                 if (createItem.getObjectId() != null) {
@@ -213,7 +213,7 @@ public class RevisionItemService {
                 if (!revItem.isDeleted() && oldData != null) {
                     ArrData newData = oldData.makeCopy();
                     dataList.add(newData);
-                    createdItems.add(apItemService.createItem(revPart.getOriginalPart(),
+                    createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
                             newData, revItem.getItemType(), revItem.getItemSpec(),
                             revItem.getCreateChange(), revItem.getObjectId(), revItem.getPosition()));
                 }
@@ -293,7 +293,7 @@ public class RevisionItemService {
                 ArrData oldData = HibernateUtils.unproxy(revItem.getData());
                 ArrData newData = oldData.makeCopy();
                 dataList.add(newData);
-                ApItem newItem = apItemService.createItem(targetPart,
+                ApItem newItem = accessPointItemService.createItem(targetPart,
                                                                    newData,
                                                                    revItem.getItemType(),
                                                                    revItem.getItemSpec(),
@@ -324,10 +324,10 @@ public class RevisionItemService {
         dataRepository.saveAll(dataList);
         itemRepository.saveAll(itemsList);
 
-        apItemService.changeBindingItemsItems(updatedItems, bindingItemList);
+        accessPointItemService.changeBindingItemsItems(updatedItems, bindingItemList);
         bindingItemRepository.flush();
 
-        apItemService.deleteBindingItems(deletedItems, change);
+        accessPointItemService.deleteBindingItems(deletedItems, change);
         bindingItemRepository.flush();
 
     }
@@ -497,7 +497,7 @@ public class RevisionItemService {
         for (ApItem item : items) {
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
             dataList.add(newData);
-            int objectId = apItemService.nextItemObjectId();
+            int objectId = accessPointItemService.nextItemObjectId();
             ApRevItem newItem = createItem(revPart, newData,
                                            item.getItemType(),
                                            item.getItemSpec(),
@@ -528,17 +528,17 @@ public class RevisionItemService {
         StaticDataProvider sdp = staticDataService.getData();
         ApRevItem newItem;
         for (ApItem item : fromItems) {
-            // pokud takový ApItem již existuje - nekopírovat
-            if (apItemService.isApItemInList(item, toItems)) {
+            // pokud takovï¿½ ApItem jiï¿½ existuje - nekopï¿½rovat
+            if (accessPointItemService.isApItemInList(item, toItems)) {
                 continue;
             }
             ApItem findItem = null;
-            // pokud typ ApItem je STRING nebo TEXT - pokusíme se udìlat revizi
+            // pokud typ ApItem je STRING nebo TEXT - pokusï¿½me se udï¿½lat revizi
             ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
             if (textTypes.contains(itemType.getDataType())) {
-                findItem = apItemService.findByTypeAndSpec(item, toItems);
+                findItem = accessPointItemService.findByTypeAndSpec(item, toItems);
             }
-            // pokud ApItem již má revizi - vytvoøíme nový RevApItem
+            // pokud ApItem jiï¿½ mï¿½ revizi - vytvoï¿½ï¿½me novï¿½ RevApItem
             if (findItem != null) {
                 if (revItemRepository.existByPartIdAndOrigObjectId(revPart.getPartId(), findItem.getObjectId())) {
                     findItem = null;
@@ -547,8 +547,8 @@ public class RevisionItemService {
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
             dataList.add(newData);
             if (findItem == null) {
-                // nový RevApItem
-                int objectId = apItemService.nextItemObjectId();
+                // novï¿½ RevApItem
+                int objectId = accessPointItemService.nextItemObjectId();
                 newItem = createItem(revPart, newData, // new item
                                      item.getItemType(),
                                      item.getItemSpec(),
@@ -558,7 +558,7 @@ public class RevisionItemService {
                                      null,
                                      false);
             } else {
-                // RevApItem na základì ApItem
+                // RevApItem na zï¿½kladï¿½ ApItem
                 newItem = createItem(revPart, newData, // new data to findItem
                                      item.getItemType(),
                                      item.getItemSpec(),

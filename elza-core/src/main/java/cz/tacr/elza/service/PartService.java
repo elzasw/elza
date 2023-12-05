@@ -448,8 +448,8 @@ public class PartService {
 
             // Kontrola, zda došlo ke změně pref. označení u nesmazané entity - nutno přegenerovat napojené
             if (indexType.equals(DISPLAY_NAME) && state.getDeleteChange() == null) {
-                if ((wasPreferredPart && !value.equals(apIndex.getValue()))
-                        || (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))
+                if ((wasPreferredPart && !value.equals(apIndex.getIndexValue()))
+                        || (preferredPart && (apIndex == null || !value.equals(apIndex.getIndexValue())))
                         || (preferredPart && !wasPreferredPart)) {
                     //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
                     checkReferredRecords(accessPoint);

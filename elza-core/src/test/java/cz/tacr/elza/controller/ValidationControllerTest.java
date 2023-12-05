@@ -1,7 +1,8 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-import org.springframework.util.Assert;
 
 
 /**
@@ -49,7 +50,7 @@ public class ValidationControllerTest extends AbstractControllerTest {
      */
     private void valid(String[] list) {
         for (String val : list) {
-            Assert.isTrue(validateUnitDate(val).isValid());
+            assertTrue(validateUnitDate(val).isValid());
         }
     }
 
@@ -60,7 +61,7 @@ public class ValidationControllerTest extends AbstractControllerTest {
      */
     private void invalid(String[] list) {
         for (String val : list) {
-            Assert.isTrue(!validateUnitDate(val).isValid());
+            assertTrue(!validateUnitDate(val).isValid());
         }
     }
 

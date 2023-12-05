@@ -1,6 +1,6 @@
 package cz.tacr.elza.filter.condition;
 
-import org.springframework.util.Assert;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Abstraktní předek pro podmínky oproti nějaké hodnotě.
@@ -20,8 +20,8 @@ public abstract class AbstractDescItemConditionWithValue<T> implements LuceneDes
      * @param attributeName název atributu pro který je podmínka určena
      */
     public AbstractDescItemConditionWithValue(final T conditionValue, final String attributeName) {
-        Assert.notNull(conditionValue);
-        Assert.notNull(attributeName);
+        Validate.notNull(conditionValue);
+        Validate.notNull(attributeName);
 
         this.value = conditionValue;
         this.attributeName = attributeName;
