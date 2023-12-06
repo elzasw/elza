@@ -142,6 +142,10 @@ class FundPage extends AbstractReactComponent {
                 i18n('export.title.fund'),
                 <ExportForm
                     fund={true}
+                    initialValues={{
+                        includeUUID:true,
+                        includeAccessPoints: true
+                    }}
                     onSubmitForm={({exportFilterId, includeUUID, includeAccessPoints}) => {
                         return this.props.dispatch(exportFund(fundDetail.versionId, {exportFilterId, includeUUID, includeAccessPoints}));
                     }}
