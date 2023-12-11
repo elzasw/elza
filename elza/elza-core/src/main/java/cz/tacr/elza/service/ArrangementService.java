@@ -75,6 +75,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
@@ -143,6 +144,7 @@ import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.repository.vo.UsedItemTypeVO;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
@@ -2242,5 +2244,24 @@ public class ArrangementService {
             }
 
         };
+    }
+
+    /**
+     * Získání seznamu typů id a počet id každého typu
+     * 
+     * @param fundVersion
+     * @return seznam UsedItemType
+     */
+    public List<UsedItemType> findUsedItemTypes(final ArrFundVersion fundVersion) {
+        List<UsedItemTypeVO> types;
+        if (fundVersion.getLockChange() == null) {
+            types = descItemRepository.findUsedItemTypes(fundVersion.getFundId());
+        } else {
+            types = descItemRepository.findUsedItemTypes(fundVersion.getFundId(), fundVersion.getFundVersionId());
+        }
+        List<UsedItemType> result = new ArrayList<>(types.size());
+        types.forEach(i -> result.add(new UsedItemType().rulItemTypeId(i.getRulItemTypeId()).count(i.getCount().intValue())));
+        
+        return result;
     }
 }
