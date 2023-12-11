@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.vo.UsedItemTypeVO;
 
 
 /**
@@ -284,4 +285,22 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("SELECT count(i) FROM arr_desc_item i WHERE i.nodeId = :nodeId AND i.itemTypeId = :itemTypeId AND i.itemId != :itemId AND i.deleteChange IS NULL")
     int countByNodeIdAndItemTypeIdAndNotItemId(@Param("nodeId") Integer nodeId, @Param("itemTypeId") Integer itemTypeId, @Param("itemId") Integer itemId);
+
+
+    @Query("SELECT new cz.tacr.elza.repository.vo.UsedItemTypeVO(i.itemTypeId, COUNT(i.itemId)) "
+           + "FROM arr_desc_item i "
+           + "JOIN i.node n "
+           + "WHERE n.fundId = :fundId AND i.deleteChange IS NULL AND i.position = 1 "
+           + "GROUP BY i.itemTypeId")
+    List<UsedItemTypeVO> findUsedItemTypes(@Param("fundId") Integer fundId);
+
+    @Query("SELECT new cz.tacr.elza.repository.vo.UsedItemTypeVO(i.itemTypeId, COUNT(i.itemId)) "
+            + "FROM arr_desc_item i "
+            + "JOIN i.node n "
+            + "JOIN arr_fund_version fv ON fv.fundId = n.fundId "
+            + "WHERE n.fundId = :fundId AND fv.fundVersionId = :fundVersionId "
+            + "AND i.createChangeId < fv.lockChangeId "
+            + "AND (i.deleteChange IS NULL OR i.deleteChangeId > fv.lockChangeId) AND i.position = 1 "
+            + "GROUP BY i.itemTypeId")
+    List<UsedItemTypeVO> findUsedItemTypes(@Param("fundId") Integer fundId, @Param("fundVersionId") Integer fundVersionId);
 }
