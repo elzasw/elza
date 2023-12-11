@@ -75,13 +75,12 @@
 		</dependency>
 		
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-jcache</artifactId>
-			<version>${hibernate.version}</version>
 		</dependency>
 		<!-- 
         <dependency>
@@ -89,10 +88,14 @@
             <artifactId>hibernate-ehcache</artifactId>
         </dependency>-->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-spatial</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<!-- <classifier>jakarta</classifier> -->
+		</dependency>
 		<!-- Hibernate Search -->
 		<dependency>
 			<groupId>org.hibernate.search</groupId>
@@ -226,7 +229,7 @@
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
-		</dependency>		
+		</dependency>
 		<!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
