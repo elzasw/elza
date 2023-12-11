@@ -855,6 +855,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /fund/{fundId}/usedItemtypes/{fundVersionId}:
+    get:
+      tags:
+        - funds
+      operationId: Fund_usedItemTypes
+      description: Return list of item type id & count
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/FundVersionIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsedItemType'
+                x-typespec-name: UsedItemType[]
   /io/export:
     post:
       tags:
@@ -955,6 +974,13 @@ components:
       in: path
       required: true
       description: Fund ID
+      schema:
+        type: integer
+    FundVersionIdParameter:
+      name: fundVersionId
+      in: path
+      required: true
+      description: Fund ID Version
       schema:
         type: integer
     NodeIdParameter:
@@ -1284,6 +1310,17 @@ components:
         - ACTIVE
         - TO_APPROVE
         - TO_AMEND
+    UsedItemType:
+      type: object
+      properties:
+        rulItemTypeId:
+          type: integer
+        count:
+          type: integer
+      description: Fund node item type id and quantity
+      required:
+        - rulItemTypeId
+        - count
     CreateFund:
       required:
         - name
