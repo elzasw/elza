@@ -1,5 +1,6 @@
 package cz.tacr.elza.websocket;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.DelegatingWebSocketMessageBrokerConfiguration;
@@ -12,16 +13,22 @@ import org.springframework.web.socket.config.annotation.DelegatingWebSocketMessa
 @Configuration
 public class WebSocketMessageBrokerConfiguration extends DelegatingWebSocketMessageBrokerConfiguration {
 
+    public WebSocketMessageBrokerConfiguration() {
+
+    }
+
+    @Qualifier("clientInboundChannelExecutor")
     @Bean
-    @Override
-    public WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor() {
+    //@Override
+    public WebSocketThreadPoolTaskExecutor clientInboundChannelExecutorX() {
         WebSocketThreadPoolTaskExecutor wste = new WebSocketThreadPoolTaskExecutor();
         wste.setThreadNamePrefix("clientInboundChannel-");
         return wste;
     }
 
+    @Qualifier("clientOutboundChannelExecutor")
     @Bean
-    public WebSocketThreadPoolTaskExecutor clientOutboundChannelExecutor() {
+    public WebSocketThreadPoolTaskExecutor clientOutboundChannelExecutorX() {
         WebSocketThreadPoolTaskExecutor wste = new WebSocketThreadPoolTaskExecutor();
         wste.setThreadNamePrefix("clientOutboundChannel-");
         return wste;

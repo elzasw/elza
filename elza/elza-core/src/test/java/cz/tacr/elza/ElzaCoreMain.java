@@ -19,11 +19,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
-import com.google.common.eventbus.EventBus;
-
 import cz.tacr.elza.other.SimpleClientEventDispatcher;
 import cz.tacr.elza.service.ClientEventDispatcher;
-import cz.tacr.elza.service.StartupService;
 
 @Configuration
 @EntityScan(basePackageClasses = { ElzaCore.class })
@@ -45,12 +42,13 @@ public class ElzaCoreMain {
         System.setProperty("spring.liquibase.database-change-log-lock-table", "db_databasechangeloglock");
     }
 
+    /*
     @Bean
-    public EventBus eventBus() {
+    public EventBus eventBusX() {
         return new EventBus((exception, context) -> {
             logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
         });
-    }
+    }*/
 
     @Bean
     public ClientEventDispatcher clientEventDispatcher(){
