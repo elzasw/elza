@@ -2,9 +2,6 @@ package cz.tacr.elza.web;
 
 import java.util.Locale;
 
-
-import jakarta.servlet.Filter;
-import jakarta.servlet.MultipartConfigElement;
 import org.h2.server.web.JakartaWebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +26,11 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import cz.tacr.elza.ElzaCore;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.servers.Server;
+import jakarta.servlet.Filter;
+import jakarta.servlet.MultipartConfigElement;
+// import io.swagger.v3.oas.models.OpenAPI;
+// import io.swagger.v3.oas.models.info.Info;
+// import io.swagger.v3.oas.models.servers.Server;
 
 /**
  * Servlet/Web container specific configuration
@@ -137,25 +136,26 @@ public class ElzaWebApp {
         return loggingFilter;
     }
 
-    /**
-     * Bin for customizing Swagger UI
-     * 
-     * @param serverUrl
-     * @param title
-     * @param description
-     * @param appVersion
-     * @return
-     */
-    @Bean
-    public OpenAPI openAPI(@Value("${server.url:/}") String serverUrl,
-                           @Value("${api.title:OpenAPI definition}") String title,
-                           @Value("${api.description:}") String description,
-                           @Value("${api.version:1.0.0}") String appVersion) {
-        return new OpenAPI()
-                .addServersItem(new Server().url(serverUrl))
-                .info(new Info()
-                        .title(title)
-                        .description(description)
-                        .version(appVersion));
-    }
+    // TODO: sergey
+    //    /**
+    //     * Bin for customizing Swagger UI
+    //     * 
+    //     * @param serverUrl
+    //     * @param title
+    //     * @param description
+    //     * @param appVersion
+    //     * @return
+    //     */
+    //    @Bean
+    //    public OpenAPI openAPI(@Value("${server.url:/}") String serverUrl,
+    //                           @Value("${api.title:OpenAPI definition}") String title,
+    //                           @Value("${api.description:}") String description,
+    //                           @Value("${api.version:1.0.0}") String appVersion) {
+    //        return new OpenAPI()
+    //                .addServersItem(new Server().url(serverUrl))
+    //                .info(new Info()
+    //                        .title(title)
+    //                        .description(description)
+    //                        .version(appVersion));
+    //    }
 }
