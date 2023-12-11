@@ -1,7 +1,5 @@
 package cz.tacr.elza;
 
-import java.util.concurrent.Executor;
-
 import org.h2.server.web.JakartaWebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +13,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
@@ -53,16 +50,7 @@ public class ElzaCoreMain {
         return new SimpleClientEventDispatcher();
     }*/
 
-    @Bean
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(10);
-        threadPoolTaskExecutor.setMaxPoolSize(48);
-        threadPoolTaskExecutor.setQueueCapacity(512);
-        threadPoolTaskExecutor.afterPropertiesSet();
-        return threadPoolTaskExecutor;
-    }
-
+    /*
     @Bean
     public Executor conformityUpdateTaskExecutor() {
         return new Executor() {
@@ -72,7 +60,7 @@ public class ElzaCoreMain {
                 command.run();
             }
         };
-    }
+    }*/
 
     @Bean
     @ConditionalOnProperty(prefix = "elza.debug", name = "requests", havingValue = "true")
