@@ -19,9 +19,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
-import cz.tacr.elza.other.SimpleClientEventDispatcher;
-import cz.tacr.elza.service.ClientEventDispatcher;
-
 @Configuration
 @EntityScan(basePackageClasses = { ElzaCore.class })
 @ComponentScan(basePackageClasses = { ElzaCore.class })
@@ -50,10 +47,11 @@ public class ElzaCoreMain {
         });
     }*/
 
+    /*
     @Bean
     public ClientEventDispatcher clientEventDispatcher(){
         return new SimpleClientEventDispatcher();
-    }
+    }*/
 
     @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
