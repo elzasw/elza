@@ -2,13 +2,13 @@ package cz.tacr.elza.domain;
 
 import java.math.BigDecimal;
 
+import org.apache.commons.lang3.Validate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-
-import org.apache.commons.lang.Validate;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Hodnota atributu archivního popisu typu desetinného čísla.

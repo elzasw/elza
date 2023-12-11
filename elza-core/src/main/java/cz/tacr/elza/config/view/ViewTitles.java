@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.core.data.ItemType;

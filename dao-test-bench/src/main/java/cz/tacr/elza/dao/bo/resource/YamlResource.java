@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.nodes.NodeTuple;
@@ -54,7 +55,11 @@ public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 	protected abstract T createEmptyResource() throws Exception;
 
 	private static class NotNullRepresenter extends Representer {
-		@Override
+        public NotNullRepresenter() {
+            super(new DumperOptions());
+        }
+
+        @Override
 		protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue, Tag customTag) {
 			if (propertyValue == null) {
 				return null;

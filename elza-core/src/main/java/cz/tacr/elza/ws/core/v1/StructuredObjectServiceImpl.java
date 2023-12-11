@@ -30,7 +30,7 @@ import cz.tacr.elza.ws.types.v1.StructuredObject;
 import cz.tacr.elza.ws.types.v1.StructuredObjectIdentifiers;
 
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "StructuredObjectService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "StructuredObjectService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.StructuredObjectService")
 public class StructuredObjectServiceImpl implements StructuredObjectService {

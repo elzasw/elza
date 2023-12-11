@@ -6,7 +6,7 @@ import java.util.List;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 
 /**

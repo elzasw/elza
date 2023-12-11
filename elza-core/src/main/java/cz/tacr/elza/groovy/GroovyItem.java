@@ -4,8 +4,7 @@ import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 public class GroovyItem {

@@ -1,19 +1,14 @@
 package cz.tacr.elza.domain.listener;
 
-import javax.annotation.PostConstruct;
-
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PreUpdateEvent;
 import org.hibernate.event.spi.PreUpdateEventListener;
-import org.hibernate.internal.SessionFactoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.AbstractVersionableEntity;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Listener pro kontrolu entit pře uložením.

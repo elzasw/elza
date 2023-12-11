@@ -2,8 +2,8 @@ package cz.tacr.elza.dataexchange.input.aps.context;
 
 import java.util.Collection;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.drools.core.util.StringUtils;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;

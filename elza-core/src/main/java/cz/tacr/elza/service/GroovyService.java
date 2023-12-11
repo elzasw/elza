@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.validation.constraints.NotNull;

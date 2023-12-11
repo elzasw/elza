@@ -9,12 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 
-import cz.tacr.cam.schema.cam.UpdatesFromXml;
-import cz.tacr.cam.schema.cam.UpdatesXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +29,16 @@ import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.cam.schema.cam.UpdatesFromXml;
+import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.service.ExternalSystemService;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 
 @Service
 public class CamConnector {

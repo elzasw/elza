@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.springframework.context.ApplicationContext;
@@ -18,8 +17,6 @@ import org.springframework.context.ApplicationContext;
 import cz.tacr.elza.common.CloseablePathResource;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.AttPagePlaceHolder;
 import cz.tacr.elza.print.AttPageProvider;
 import cz.tacr.elza.print.File;
@@ -70,20 +67,20 @@ public class PdfAttProvider implements AttPageProvider {
         }
 
         public void init() {
-            // read number of pages
-            if (resource != null) {
-                try {
-                    java.io.File inputFile = resource.getPath().toFile();
-                    pdfDoc = PDDocument
-                            .load(inputFile,
-                                  MemoryUsageSetting.setupMixed(JasperOutputGenerator.MAX_PDF_MAIN_MEMORY_BYTES));
-                    pageCnt = pdfDoc.getNumberOfPages();
-                } catch (IOException e) {
-                    throw new SystemException("Failed to read number of PDF pages", e, BaseCode.SYSTEM_ERROR)
-                            .set("fileId", printFile.getFileId())
-                            .set("fileName", printFile.getFileName());
-                }
-            }
+            //            // read number of pages
+            //            if (resource != null) {
+            //                try {
+            //                    java.io.File inputFile = resource.getPath().toFile();
+            //                    pdfDoc = PDDocument
+            //                            .load(inputFile,
+            //                                  MemoryUsageSetting.setupMixed(JasperOutputGenerator.MAX_PDF_MAIN_MEMORY_BYTES));
+            //                    pageCnt = pdfDoc.getNumberOfPages();
+            //                } catch (IOException e) {
+            //                    throw new SystemException("Failed to read number of PDF pages", e, BaseCode.SYSTEM_ERROR)
+            //                            .set("fileId", printFile.getFileId())
+            //                            .set("fileName", printFile.getFileName());
+            //                }
+            //            }
         }
 
         @Override

@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.service.FilterTreeService;
@@ -10,7 +10,6 @@ import cz.tacr.elza.service.FilterTreeService;
 /**
  * Obsahuje id uzlu a jeho index v seznamu filtrovaných uzlů.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @see FilterTreeService#getFilteredFulltextIds(ArrFundVersion, String)
  * @since 08.04.2016
  */

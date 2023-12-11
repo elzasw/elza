@@ -1,9 +1,10 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Adaptér pro zapsání ContentDefinition List<=>Mapa.

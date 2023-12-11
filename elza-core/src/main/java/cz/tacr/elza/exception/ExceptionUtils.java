@@ -3,7 +3,7 @@ package cz.tacr.elza.exception;
 import java.util.Collection;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.cam.client.ApiException;

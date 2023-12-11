@@ -1,10 +1,16 @@
 package cz.tacr.elza.dataexchange.output.writer.cam;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
+
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.drools.core.util.StringUtils;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -20,8 +26,6 @@ import cz.tacr.cam.schema.cam.StringXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.exception.SystemException;
-
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 public class CamUtils {
 

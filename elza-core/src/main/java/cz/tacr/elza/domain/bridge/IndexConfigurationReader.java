@@ -1,5 +1,28 @@
 package cz.tacr.elza.domain.bridge;
 
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageContext;
@@ -8,30 +31,7 @@ import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
-import org.apache.commons.compress.utils.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Místo pro načtení konfigurace Lucene indexu, před vlastní inicializací indexu.

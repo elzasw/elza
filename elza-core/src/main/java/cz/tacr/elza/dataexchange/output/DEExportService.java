@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -17,25 +16,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.persistence.EntityManager;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-import com.google.common.net.HttpHeaders;
-
-import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -70,6 +62,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import jakarta.persistence.EntityManager;
 
 /**
  * Service for data-exchange export.
@@ -328,7 +321,7 @@ public class DEExportService {
         Path rulesetExportFilter = resourcePathResolver.getExportFilterFile(expFilterDB);
 
         // register type descriptors
-        Constructor yamlCtor = new Constructor();
+        Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(AccessRestrictConfig.class, "!ExportFilterConfig"));
         Yaml yamlLoader = new Yaml(yamlCtor);
 

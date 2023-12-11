@@ -1,23 +1,14 @@
 package cz.tacr.elza.service.output.generator;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
-import cz.tacr.elza.service.StructObjService;
-import jakarta.persistence.EntityManager;
-
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
@@ -26,16 +17,10 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlin
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.context.ApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.tacr.elza.config.export.ExportConfig;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.AttPagePlaceHolder;
 import cz.tacr.elza.print.OutputContext;
 import cz.tacr.elza.print.OutputModel;
@@ -50,20 +35,22 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
-import net.sf.jasperreports.engine.JREmptyDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimplePdfReportConfiguration;
+import jakarta.persistence.EntityManager;
+// import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+// import net.sf.jasperreports.engine.JREmptyDataSource;
+// import net.sf.jasperreports.engine.JRException;
+// import net.sf.jasperreports.engine.JasperCompileManager;
+// import net.sf.jasperreports.engine.JasperFillManager;
+// import net.sf.jasperreports.engine.JasperPrint;
+// import net.sf.jasperreports.engine.JasperReport;
+// import net.sf.jasperreports.engine.export.JRPdfExporter;
+// import net.sf.jasperreports.export.SimpleExporterInput;
+// import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+// import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 public class JasperOutputGenerator extends DmsOutputGenerator {
 
@@ -77,7 +64,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
     private final OutputModel outputModel;
 
-    SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
+    // SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
     private PdfAttProvider pdfAttProvider;
 
     JasperOutputGenerator(ApplicationContext applicationContext, StaticDataService staticDataService,
@@ -118,126 +105,128 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         outputModel.init(params);
 
         // Parse PDF settings
-        String outputSettings = params.getOutput().getOutputSettings();
-        if (StringUtils.isNotBlank(outputSettings)) {
-            ObjectMapper mapper = new ObjectMapper();
-            OutputSettingsVO settingsVO;
-            try {
-                settingsVO = mapper.readValue(outputSettings, OutputSettingsVO.class);
-            } catch (Exception e) {
-                throw new BusinessException("Failed to parse configuration", e, BaseCode.JSON_PARSE)
-                        .set("settings", outputSettings);
-            }
-            pdfExpConfig.setEvenPageOffsetX(settingsVO.getEvenPageOffsetX());
-            pdfExpConfig.setEvenPageOffsetY(settingsVO.getEvenPageOffsetY());
-            pdfExpConfig.setOddPageOffsetX(settingsVO.getOddPageOffsetX());
-            pdfExpConfig.setOddPageOffsetY(settingsVO.getOddPageOffsetY());
-        }
+        //        String outputSettings = params.getOutput().getOutputSettings();
+        //        if (StringUtils.isNotBlank(outputSettings)) {
+        //            ObjectMapper mapper = new ObjectMapper();
+        //            OutputSettingsVO settingsVO;
+        //            try {
+        //                settingsVO = mapper.readValue(outputSettings, OutputSettingsVO.class);
+        //            } catch (Exception e) {
+        //                throw new BusinessException("Failed to parse configuration", e, BaseCode.JSON_PARSE)
+        //                        .set("settings", outputSettings);
+        //            }
+        //            pdfExpConfig.setEvenPageOffsetX(settingsVO.getEvenPageOffsetX());
+        //            pdfExpConfig.setEvenPageOffsetY(settingsVO.getEvenPageOffsetY());
+        //            pdfExpConfig.setOddPageOffsetX(settingsVO.getOddPageOffsetX());
+        //            pdfExpConfig.setOddPageOffsetY(settingsVO.getOddPageOffsetY());
+        //        }
     }
     @Override
     protected void generate(OutputStream os) throws IOException {
         Path templateFile = params.getTemplateDir().resolve(MAIN_TEMPLATE_NAME);
-        JasperReport report = loadTemplate(templateFile);
 
         // prepare parameters
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("output", outputModel);
         parameters.put("fund", outputModel.getFund());
 
-        prepareSubreports(parameters);
+        // JasperReport report = loadTemplate(templateFile);
 
-        Path partialResult = generatePdfFile(report, parameters);
+        // prepareSubreports(parameters);
 
-        mergePDFAndAttachments(partialResult, os);
+        // Path partialResult = generatePdfFile(report, parameters);
+
+        // mergePDFAndAttachments(partialResult, os);
     }
 
     private void prepareSubreports(Map<String, Object> parameters) throws IOException {
-        try(Stream<Path> filePathStream = Files.list(params.getTemplateDir())) {
-            // Filter templates
-            filePathStream.filter(path -> {
-            String name = path.getFileName().toString();
-            return name.endsWith(TEMPLATE_EXTENSION) && !name.equals(MAIN_TEMPLATE_NAME);
-
-            }).forEach(path -> {
-                // load templates
-                String subreportName = path.getFileName().toString();
-                subreportName = subreportName.substring(0, subreportName.length() - TEMPLATE_EXTENSION.length());
-                JasperReport subreport = loadTemplate(path);
-                parameters.put(subreportName, subreport);
-        });
-        }
-
-    }
-
-    private JasperReport loadTemplate(Path templateFile) {
-        try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
-            return JasperCompileManager.compileReport(is);
-        } catch (IOException | JRException e) {
-            throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
-                    .set("template", templateFile);
-        }
-    }
-
-    private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
-
-        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
-        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
-
-        JasperPrint jasperPrint;
-        try {
-            jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
-        } catch (JRException e) {
-            throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
-        }
-
-        Path pdfFile = tempFileProvider.createTempFile();
-
-        try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
-
-            // Generate output to PDF
-            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
-
-            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));
-            exporter.setConfiguration(pdfExpConfig);
-
-            exporter.exportReport();
-
-            // JasperExportManager.exportReportToPdfStream(print, os);
-        } catch (IOException | JRException e) {
-            throw new ProcessException(params.getOutputId(), "Failed to generate PDF from Jasper document", e);
-        }
-
-        return pdfFile;
-    }
-
-    private void mergePDFAndAttachments(Path pdfFile, OutputStream os) throws IOException {
-        // check if has attachments
-        int pageCnt = this.pdfAttProvider.getTotalPageCnt();
-        if (pageCnt == 0) {
-            Files.copy(pdfFile, os);
-            return;
-        }
-        // Collection of attachments to be replaced
-        List<Attachments> attachments = new ArrayList<>(pdfAttProvider.getAttachments());
-
-        try (
-                // Load generated PDF
-                final PDDocument inDoc = PDDocument.load(pdfFile.toFile(),
-                                                         MemoryUsageSetting.setupMixed(MAX_PDF_MAIN_MEMORY_BYTES));
-                // Create new final PDF
-                final PDDocument outDoc = new PDDocument(MemoryUsageSetting.setupMixed(MAX_PDF_MAIN_MEMORY_BYTES));) {
-
-            // Merge attachments
-            mergeOutput(inDoc, outDoc, attachments);
-
-            // Copy bookmarks
-            copyBookmarks(inDoc, outDoc);
-
-            outDoc.save(os);
-        }
+        //        try(Stream<Path> filePathStream = Files.list(params.getTemplateDir())) {
+        //            // Filter templates
+        //            filePathStream.filter(path -> {
+        //            String name = path.getFileName().toString();
+        //            return name.endsWith(TEMPLATE_EXTENSION) && !name.equals(MAIN_TEMPLATE_NAME);
+        //
+        //            }).forEach(path -> {
+        //                // load templates
+        //                String subreportName = path.getFileName().toString();
+        //                subreportName = subreportName.substring(0, subreportName.length() - TEMPLATE_EXTENSION.length());
+        //                JasperReport subreport = loadTemplate(path);
+        //                parameters.put(subreportName, subreport);
+        //        });
+        //        }
 
     }
+
+    //    private JasperReport loadTemplate(Path templateFile) {
+    //                try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
+    //                    return JasperCompileManager.compileReport(is);
+    //                } catch (IOException | JRException e) {
+    //                    throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
+    //                            .set("template", templateFile);
+    //                }
+    //        return null;
+    //    }
+
+    //    private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
+    //
+    //        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
+    //        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
+    //
+    //        JasperPrint jasperPrint;
+    //        try {
+    //            jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
+    //        } catch (JRException e) {
+    //            throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
+    //        }
+    //
+    //        Path pdfFile = tempFileProvider.createTempFile();
+    //
+    //        try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
+    //
+    //            // Generate output to PDF
+    //            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
+    //
+    //            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+    //            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));
+    //            exporter.setConfiguration(pdfExpConfig);
+    //
+    //            exporter.exportReport();
+    //
+    //            // JasperExportManager.exportReportToPdfStream(print, os);
+    //        } catch (IOException | JRException e) {
+    //            throw new ProcessException(params.getOutputId(), "Failed to generate PDF from Jasper document", e);
+    //        }
+    //
+    //        return pdfFile;
+    //    }
+
+    //    private void mergePDFAndAttachments(Path pdfFile, OutputStream os) throws IOException {
+    //        // check if has attachments
+    //        int pageCnt = this.pdfAttProvider.getTotalPageCnt();
+    //        if (pageCnt == 0) {
+    //            Files.copy(pdfFile, os);
+    //            return;
+    //        }
+    //        // Collection of attachments to be replaced
+    //        List<Attachments> attachments = new ArrayList<>(pdfAttProvider.getAttachments());
+    //
+    //        try (
+    //                // Load generated PDF
+    //                final PDDocument inDoc = PDDocument.load(pdfFile.toFile(),
+    //                                                         MemoryUsageSetting.setupMixed(MAX_PDF_MAIN_MEMORY_BYTES));
+    //                // Create new final PDF
+    //                final PDDocument outDoc = new PDDocument(MemoryUsageSetting.setupMixed(MAX_PDF_MAIN_MEMORY_BYTES));) {
+    //
+    //            // Merge attachments
+    //            mergeOutput(inDoc, outDoc, attachments);
+    //
+    //            // Copy bookmarks
+    //            copyBookmarks(inDoc, outDoc);
+    //
+    //            outDoc.save(os);
+    //        }
+    //
+    //    }
 
     private void copyBookmarks(PDDocument inDoc, PDDocument outDoc) throws IOException {
         PDDocumentOutline inOutline = inDoc.getDocumentCatalog().getDocumentOutline();

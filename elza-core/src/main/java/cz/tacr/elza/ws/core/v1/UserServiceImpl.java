@@ -26,7 +26,7 @@ import cz.tacr.elza.ws.types.v1.SetUserState;
 import cz.tacr.elza.ws.types.v1.User;
 
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "UserService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "UserService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.UserService")
 public class UserServiceImpl implements UserService {

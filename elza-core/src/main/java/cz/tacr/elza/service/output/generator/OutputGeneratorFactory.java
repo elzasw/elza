@@ -1,8 +1,5 @@
 package cz.tacr.elza.service.output.generator;
 
-import cz.tacr.elza.service.StructObjService;
-import jakarta.persistence.EntityManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -22,8 +19,10 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import jakarta.persistence.EntityManager;
 
 @Service
 public class OutputGeneratorFactory {

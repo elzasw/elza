@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.domain.ApState;

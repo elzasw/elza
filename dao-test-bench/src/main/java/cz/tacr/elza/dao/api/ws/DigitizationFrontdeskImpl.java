@@ -1,7 +1,5 @@
 package cz.tacr.elza.dao.api.ws;
 
-import javax.jws.WebService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +8,7 @@ import cz.tacr.elza.dao.service.StorageDigitizationRequestService;
 import cz.tacr.elza.ws.digitization.v1.DigitizationFrontdesk;
 import cz.tacr.elza.ws.digitization.v1.DigitizationServiceException;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
+import jakarta.jws.WebService;
 
 @Service
 @WebService(name = DigitizationFrontdeskImpl.NAME,

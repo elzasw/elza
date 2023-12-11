@@ -1,8 +1,12 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.*;
 import java.util.List;
 
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * VO ExternalIdTypes.

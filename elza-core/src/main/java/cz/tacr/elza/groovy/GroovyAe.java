@@ -1,16 +1,20 @@
 package cz.tacr.elza.groovy;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.GroovyService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-
-import javax.annotation.Nullable;
-import java.util.*;
+import jakarta.annotation.Nullable;
 
 public class GroovyAe {
 

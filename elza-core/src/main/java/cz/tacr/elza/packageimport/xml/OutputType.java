@@ -1,11 +1,14 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * VO OutputType.
  *
- * @author Petr Compel <petr.compel@marbes.cz>
  * @since 17.6.2016
  */
 @XmlAccessorType(XmlAccessType.FIELD)

@@ -3,7 +3,7 @@ package cz.tacr.elza.service.eventnotification;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.util.Assert;

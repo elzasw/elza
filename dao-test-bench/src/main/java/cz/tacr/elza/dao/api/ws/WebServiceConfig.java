@@ -1,21 +1,18 @@
 package cz.tacr.elza.dao.api.ws;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.apache.cxf.transport.servlet.CXFServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 import cz.tacr.elza.dao.DCStorageConfig;
+import jakarta.annotation.PostConstruct;
 
 @Configuration
 @ImportResource({ "classpath:META-INF/cxf/cxf.xml" })

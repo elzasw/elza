@@ -1,14 +1,13 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.apache.commons.lang3.Validate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.UISettings;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 
 /**

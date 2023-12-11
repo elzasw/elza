@@ -10,40 +10,20 @@
     <name>ELZA Core</name>
 
     <properties>
-        <drools.version>7.30.0.Final</drools.version>
+        <drools.version>7.74.1.Final</drools.version>
     </properties>
 
     <dependencies>
-        <!-- Find bugs -->
-        <!--<dependency>-->
-            <!--<groupId>com.google.code.findbugs</groupId>-->
-            <!--<artifactId>jsr305</artifactId>-->
-        <!--</dependency>-->
-        <!-- END - Find bugs -->
-
-        <!-- Dependency for javax - proper JDOC generation -->
-        <dependency>
-            <groupId>javax.interceptor</groupId>
-            <artifactId>javax.interceptor-api</artifactId>
-            <version>1.2</version>
-		</dependency>
-
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <!--<version>3.5.5</version>-->
-		</dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-		</dependency>
-
         <dependency>
             <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-ws-api</artifactId>
             <version>${project.parent.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <!--<version>3.5.5</version>-->
+		</dependency>		
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -55,55 +35,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-resource-server</artifactId>
-		</dependency>
-		<!-- JWT decoding library (org.springframework.security.oauth2.jwt.NimbusJwtDecoder) -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-jose</artifactId>
-		</dependency>
-
-		<dependency>
-    		<groupId>org.springdoc</groupId>
-    		<artifactId>springdoc-openapi-ui</artifactId>
-    		<version>1.6.6</version>
-		</dependency>
-		<!--<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>-->
-		<!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.threeten</groupId>
-            <artifactId>threetenbp</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>io.gsonfire</groupId>
-            <artifactId>gson-fire</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
 		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -121,65 +52,36 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-
+		<!-- JWT decoding library (org.springframework.security.oauth2.jwt.NimbusJwtDecoder) -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-			<!--<scope>provided</scope> -->
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-avro</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>ma.glasnost.orika</groupId>
-            <artifactId>orika-core</artifactId>
-            <version>1.5.4</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
 		</dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-jcache</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
 		<!-- 
-        <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-mapper-pojo-base</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-        </dependency>
-        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+		</dependency>
+
+		<!-- Hibernate Search -->
+		<dependency>
 			<groupId>org.hibernate.search</groupId>
 			<artifactId>hibernate-search-mapper-orm</artifactId>
 			<version>${hibernate.search.version}</version>
@@ -188,52 +90,48 @@
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-backend-lucene</artifactId>
             <version>${hibernate.search.version}</version>
-        </dependency>                
-<!--        <dependency>-->
-<!--            <groupId>org.hibernate</groupId>-->
-<!--            <artifactId>hibernate-search-serialization-avro</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.hibernate</groupId>-->
-<!--            <artifactId>hibernate-entitymanager</artifactId>-->
-<!--        </dependency>-->
+        </dependency>
+        
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-spatial</artifactId>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
 		</dependency>
-
+        
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-websocket</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-messaging</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+			<!-- Drivejsi poznamka: Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
+                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->            
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-messaging</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
 		</dependency>
-
-		<!-- test -->
+		<!-- CXF -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
 		</dependency>
         <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
 		</dependency>
-
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+		</dependency>
 		<!-- Drools -->
         <dependency>
             <groupId>org.drools</groupId>
@@ -245,11 +143,59 @@
             <artifactId>drools-compiler</artifactId>
             <version>${drools.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>io.gsonfire</groupId>
+            <artifactId>gson-fire</artifactId>
+		</dependency>		
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<!--<version>6.5.1</version>-->
+		</dependency>
+		<!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
+             Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
+        <dependency>
+	        <groupId>org.glassfish.jaxb</groupId>
+        	<artifactId>txw2</artifactId>        	
+		</dependency>
+		<!-- io.swagger.annotations.* -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+		</dependency>
+		<!-- TODO: remove this dependency -->
+        <dependency>
+            <groupId>ma.glasnost.orika</groupId>
+            <artifactId>orika-core</artifactId>
+            <version>1.5.4</version>
+		</dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+		</dependency>
+		<!-- Geotools -->
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-geojson</artifactId>
@@ -267,183 +213,42 @@
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/it.geosolutions.jgridshift/jgridshift-core -->
+		</dependency>		
+		<!-- test -->
         <dependency>
-		<groupId>it.geosolutions.jgridshift</groupId>
-		<artifactId>jgridshift-core</artifactId>
-		<version>1.3</version>
-		</dependency>
-		<!--
-        <dependency>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-grouping</artifactId>
-          <version>${hibernate.lucene.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
         <dependency>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-queryparser</artifactId>
-          <version>${hibernate.lucene.version}</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
 		</dependency>
         <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-backward-codecs</artifactId>
-            <version>${hibernate.lucene.version}</version>
-		</dependency>-->
-
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports-fonts</artifactId>
-		</dependency>
-		<!-- Optional dependency for JasperReports - barcode generator -->
-        <dependency>
-            <groupId>net.sourceforge.barbecue</groupId>
-            <artifactId>barbecue</artifactId>
-            <version>1.5-beta1</version>
-		</dependency>
-		<!-- QR code support -->
-        <dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-		    <version>3.5.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.google.zxing</groupId>
-		    <artifactId>javase</artifactId>
-		    <version>3.5.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>net.sf.barcode4j</groupId>
-		    <artifactId>barcode4j</artifactId>
-		    <version>2.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>batik-svg-dom</artifactId>
-		    <version>1.16</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>batik-svggen</artifactId>
-		    <version>1.16</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>batik-bridge</artifactId>
-		    <version>1.16</version>
-		</dependency>
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-			<!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
-                 bez jejiho uvedeni se vytvari WAR bez CXF -->
-            <version>3.9</version>
-		</dependency>
-		<!-- Pridano kvuli tride ByteArrayDataSource -->
-        <dependency>
-          <groupId>javax.mail</groupId>
-          <artifactId>javax.mail-api</artifactId>
-          <version>1.6.2</version>
-		</dependency>
-		<!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
-             Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
-        <dependency>
-	        <groupId>org.glassfish.jaxb</groupId>
-        	<artifactId>txw2</artifactId>
-        	<version>2.2.11</version>
-		</dependency>
-        <dependency>
-        	<groupId>com.sun.xml.messaging.saaj</groupId>
-        	<artifactId>saaj-impl</artifactId>
-		</dependency>
-
-		<!-- SAML / Shibboleth -->
-        <dependency>
-            <groupId>org.springframework.security.extensions</groupId>
-            <artifactId>spring-security-saml2-core</artifactId>
-		</dependency>
-		<!-- END - SAML / Shibboleth -->
-
-		<!-- CXF -->
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-databinding-aegis</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-jms</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-local</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.openapitools</groupId>
-            <artifactId>jackson-databind-nullable</artifactId>
-		</dependency>
-		<dependency>
-		  <groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>3.0.0</version>
-		</dependency>
-        <dependency>
-			<groupId>com.lightcomp.ft</groupId>
-			<artifactId>file-transfer</artifactId>
-			<version>1.7</version>
-
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-backend-lucene</artifactId>
-            <version>6.1.3.Final</version>
-        </dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+		</dependency>
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.3.2</version>
-        </dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+		</dependency>
+		<!-- Find bugs -->
+		<!--<dependency>-->
+		<!--<groupId>com.google.code.findbugs</groupId>-->
+		<!--<artifactId>jsr305</artifactId>-->
+		<!--</dependency>-->
+		<!-- END - Find bugs -->
+
+		<!-- Dependency for javax - proper JDOC generation -->
     </dependencies>
 
 
@@ -498,15 +303,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-				</configuration>
 			</plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <!--<version>3.3.0</version>-->
                 <executions>
                     <execution>
                         <id>add-gen-sources</id>
@@ -518,7 +319,7 @@
                             <sources>
                                 <source>${project.build.directory}/generated-sources/jaxb</source>
                                 <source>${project.build.directory}/generated-sources/cam</source>
-								<!--<source>${project.build.directory}/generated-sources/api/rest</source>-->
+								<!-- <source>${project.build.directory}/generated-sources/api/rest</source> -->
 							</sources>
 						</configuration>
 					</execution>
@@ -537,9 +338,9 @@
 				</executions>
 			</plugin>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.14.0</version>
+                <groupId>org.jvnet.jaxb</groupId>
+                <artifactId>jaxb-maven-plugin</artifactId>
+                <version>4.0.0</version>
                 <executions>
                     <execution>
                         <id>generate-elza-schema</id>
@@ -563,9 +364,9 @@
 							</bindingIncludes>
                             <plugins>
                                 <plugin>
-                                    <groupId>org.jvnet.jaxb2_commons</groupId>
-                                    <artifactId>jaxb2-basics</artifactId>
-                                    <version>1.11.1</version>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
 								</plugin>
 							</plugins>
 						</configuration>
@@ -592,22 +393,18 @@
                             <bindingIncludes>
                                 <include>cam-2019.xjb</include>
 							</bindingIncludes>
-							<!--                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>-->
-							<!--                            <bindingIncludes>
-                                <include>elza-schema-v2-bindinds.xml</include>
-                            </bindingIncludes>-->
                             <plugins>
                                 <plugin>
-                                    <groupId>org.jvnet.jaxb2_commons</groupId>
-                                    <artifactId>jaxb2-basics</artifactId>
-                                    <version>1.11.1</version>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
 								</plugin>
 							</plugins>
 						</configuration>
 					</execution>
 				</executions>
                 <dependencies>
-                    <dependency>
+                    <!--<dependency>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-xjc</artifactId>
                         <version>2.3.2</version>
@@ -616,27 +413,28 @@
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
                         <version>2.3.2</version>
-					</dependency>
+					</dependency>-->
                     <dependency>
                         <groupId>io.swagger.core.v3</groupId>
                         <artifactId>swagger-annotations</artifactId>
-                        <version>2.0.8</version>
+                        <version>2.2.19</version>
 					</dependency>
                     <dependency>
-                        <groupId>org.jvnet.jaxb2_commons</groupId>
-                        <artifactId>jaxb2-basics</artifactId>
-                        <version>1.11.1</version>
+                        <groupId>org.jvnet.jaxb</groupId>
+                        <artifactId>jaxb-plugins</artifactId>
+                        <version>4.0.0</version>
 					</dependency>
                     <dependency>
-                        <groupId>org.jvnet.jaxb2_commons</groupId>
-                        <artifactId>jaxb2-basics-annotate</artifactId>
-                        <version>1.1.0</version>
+                        <groupId>org.jvnet.jaxb</groupId>
+                        <artifactId>jaxb-plugin-annotate</artifactId>
+                        <version>4.0.0</version>
 					</dependency>
+					<!--
                     <dependency>
                         <groupId>org.jvnet.jaxb2_commons</groupId>
                         <artifactId>jaxb2-value-constructor</artifactId>
                         <version>3.0</version>
-					</dependency>
+					</dependency>-->
 				</dependencies>
 			</plugin>
             <plugin>
@@ -660,6 +458,7 @@
                             <generateApiTests>false</generateApiTests>
 							<!--<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>-->
                             <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
 								<!--<sourceFolder>/</sourceFolder>-->
                                 <interfaceOnly>true</interfaceOnly>
 								<!--  disables default interface methods for testing  -->
@@ -680,6 +479,9 @@
                             <apiPackage>cz.tacr.cam.client.controller</apiPackage>
                             <modelPackage>cz.tacr.cam.client.controller.vo</modelPackage>
                             <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
 							<!--<configOptions>
                                 <library>resttemplate</library>
                             </configOptions>-->
@@ -698,11 +500,16 @@
                             <apiPackage>cz.tacr.elza.test.controller</apiPackage>
                             <modelPackage>cz.tacr.elza.test.controller.vo</modelPackage>
                             <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>                            
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin> <!--  TODO pasek hack - cxf-codegen-plugin momentálně neumí generovat třídy s jakarta ee9, nutno ručně přepsat importy-->
+            <!--  TODO pasek hack - cxf-codegen-plugin momentálně neumí generovat třídy s jakarta ee9, nutno ručně přepsat importy -->
+            <!--
+            <plugin> 
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
                 <version>1.4.1</version>
@@ -741,7 +548,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 

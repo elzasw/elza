@@ -1,25 +1,19 @@
 package cz.tacr.elza.service.output;
 
-import java.util.List;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.lightcomp.ft.FileTransfer;
-import com.lightcomp.ft.client.Client;
-import com.lightcomp.ft.client.ClientConfig;
+// import com.lightcomp.ft.FileTransfer;
+// import com.lightcomp.ft.client.Client;
+// import com.lightcomp.ft.client.ClientConfig;
 
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.output.ftsender.OutputUploadRequest;
-import cz.tacr.elza.service.output.ftsender.OutputUploadRequest.Status;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 @Service(value = "FtOutputSender")
 public class FtOutputSender implements OutputSender {
@@ -41,7 +35,7 @@ public class FtOutputSender implements OutputSender {
     @Autowired
     private DmsService dmsService;
 
-	private Client ftClient;
+    //	private Client ftClient;
 
     @PostConstruct
     public void initializeClient() {

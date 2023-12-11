@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.ItemType;

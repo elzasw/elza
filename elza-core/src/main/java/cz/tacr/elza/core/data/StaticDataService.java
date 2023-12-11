@@ -3,11 +3,6 @@ package cz.tacr.elza.core.data;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Synchronization;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -36,6 +31,10 @@ import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 /**
  * Service for static data
@@ -247,7 +246,7 @@ public class StaticDataService {
 					@Override
 					public void afterCompletion(int status) {
 						// set new provider if committed
-						if(status==javax.transaction.Status.STATUS_COMMITTED) {
+                    if (status == jakarta.transaction.Status.STATUS_COMMITTED) {
 							activeProvider = modifiedProvider;
 						}
 					}

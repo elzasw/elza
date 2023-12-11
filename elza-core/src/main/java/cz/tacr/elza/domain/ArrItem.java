@@ -2,6 +2,15 @@ package cz.tacr.elza.domain;
 
 import java.beans.Transient;
 
+// import
+// org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -14,15 +23,6 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 /**
  * Abstraktní prvek popisu
@@ -132,12 +132,12 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
 		this.readOnly = src.readOnly;
 	}
 
-    @GenericField
+    // @GenericField
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
-    @GenericField(indexNullAs = DELETE_CHANGE_ID_MAX)
+    // @GenericField(indexNullAs = DELETE_CHANGE_ID_MAX)
     public Integer getDeleteChangeId() {
         return deleteChangeId;
     }

@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * JP s připomínkou.

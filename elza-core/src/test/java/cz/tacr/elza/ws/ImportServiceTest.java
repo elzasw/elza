@@ -7,10 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
-
 import org.junit.Test;
 
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -25,6 +21,9 @@ import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.ws.core.v1.ImportService;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import io.restassured.RestAssured;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 
 public class ImportServiceTest extends AbstractControllerTest {
 

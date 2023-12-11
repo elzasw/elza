@@ -1,7 +1,8 @@
 package cz.tacr.elza.domain;
 
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.Validate;
 
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;

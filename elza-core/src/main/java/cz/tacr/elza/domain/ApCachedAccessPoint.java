@@ -1,19 +1,5 @@
 package cz.tacr.elza.domain;
 
-//import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
-import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory;
-import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory;
-import org.hibernate.annotations.Type;
-//import org.hibernate.search.annotations.Analyzer; TODO hibernate search 6
-//import org.hibernate.search.annotations.AnalyzerDef;
-//import org.hibernate.search.annotations.ClassBridge;
-//import org.hibernate.search.annotations.Field;
-//import org.hibernate.search.annotations.Indexed;
-//import org.hibernate.search.annotations.Store;
-//import org.hibernate.search.annotations.TokenFilterDef;
-//import org.hibernate.search.annotations.TokenizerDef;
-
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -25,8 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import org.hibernate.search.engine.backend.types.Projectable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 
 @Table
 //@Indexed TODO hibernate search 6
@@ -58,7 +42,7 @@ public class ApCachedAccessPoint {
     private ApAccessPoint accessPoint;
 
     @Column(nullable = false, updatable = false, insertable = false)
-    @GenericField(name = FIELD_ACCESSPOINT_ID, projectable = Projectable.YES)
+    //@GenericField(name = FIELD_ACCESSPOINT_ID, projectable = Projectable.YES)
     private Integer accessPointId;
 
     @Lob

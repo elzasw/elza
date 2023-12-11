@@ -1,8 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.DmsFile;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 
 /**
