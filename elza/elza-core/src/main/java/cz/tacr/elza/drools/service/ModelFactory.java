@@ -26,7 +26,7 @@ import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.SimpleItem;
 import org.apache.commons.collections4.CollectionUtils;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

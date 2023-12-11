@@ -1,6 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Item string

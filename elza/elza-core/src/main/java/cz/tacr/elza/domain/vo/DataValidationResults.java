@@ -5,14 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.DataValidationResult.ValidationResultType;
+import jakarta.annotation.Nullable;
 
 /**
  * Object for validation results

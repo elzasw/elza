@@ -9,9 +9,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -38,8 +35,6 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -56,11 +51,13 @@ import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatus;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
-
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "ImportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "ImportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.ImportService")
 public class ImportServiceImpl implements ImportService {

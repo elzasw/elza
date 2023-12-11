@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.domain.ArrData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
@@ -29,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -36,6 +33,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UISettings;
@@ -46,6 +44,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
+import jakarta.annotation.Nullable;
 
 public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccessPoint> {
 

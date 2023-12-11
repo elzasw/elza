@@ -19,18 +19,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.service.StructObjService;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -88,9 +84,13 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
@@ -739,7 +739,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return null;
         }
         // register type descriptors
-        Constructor yamlCtor = new Constructor();
+        Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(OutputFilterConfig.class, "!OutputFilterConfig"));
         Yaml yamlLoader = new Yaml(yamlCtor);
 

@@ -8,7 +8,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
 import cz.tacr.elza.domain.ParInstitution;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

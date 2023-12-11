@@ -2,14 +2,13 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.LinkedList;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Data uzlu uložené v cache.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 11.01.2016
  */
 public class TreeNode implements Comparable<TreeNode> {

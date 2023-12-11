@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,6 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.security.UserDetail;

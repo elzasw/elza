@@ -27,10 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -159,8 +157,8 @@ import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
 import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.FundsApi;
-import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.IoApi;
+import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
@@ -173,6 +171,7 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
+import jakarta.annotation.Nullable;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -2175,7 +2174,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return list scope
      */
     protected List<ApScopeVO> faScopes() {
-        return Arrays.asList(get(FA_SCOPES).getBody().as(ApScopeVO[].class));
+        return Arrays.asList(get(FA_SCOPES).body().as(ApScopeVO[].class));
     }
 
     protected Response importXmlFile(final String transformationName,

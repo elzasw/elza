@@ -1,7 +1,5 @@
 package cz.tacr.elza.dao.api.ws;
 
-import javax.jws.WebService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +9,7 @@ import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
+import jakarta.jws.WebService;
 
 @Service
 @WebService(name = DaoNotificationsImpl.NAME,

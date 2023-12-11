@@ -5,7 +5,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ChangeType;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

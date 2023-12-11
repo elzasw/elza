@@ -8,9 +8,6 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.List;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +25,12 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RequestService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 
 @Component
-@javax.jws.WebService(
+@jakarta.jws.WebService(
                       serviceName = "CoreService",
                       portName = "DaoRequestsService",
                       targetNamespace = "http://elza.tacr.cz/ws/core/v1",

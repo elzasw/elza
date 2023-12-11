@@ -12,7 +12,6 @@ import cz.tacr.elza.other.HelperTestService;
 
 
 /**
- * @author Martin Šlapa
  * @since 22.11.2016
  */
 public class PackageTest extends AbstractControllerTest {

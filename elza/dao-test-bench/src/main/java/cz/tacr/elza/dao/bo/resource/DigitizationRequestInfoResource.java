@@ -6,11 +6,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.xml.bind.JAXBElement;
-
 import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.common.XmlUtils;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
+import jakarta.xml.bind.JAXBElement;
 
 public class DigitizationRequestInfoResource extends AbstractStorageResource<DigitizationRequestInfo> {
 

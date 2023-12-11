@@ -13,10 +13,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -32,6 +30,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
+import jakarta.annotation.Nullable;
 
 public abstract class AsyncExecutor {
 

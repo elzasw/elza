@@ -1,19 +1,32 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.*;
-import org.apache.commons.lang3.StringUtils;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaBuilder.In;
-import java.util.ArrayList;
-import java.util.List;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 /**
  * Rozšířené repository pro uživatele.
@@ -56,7 +69,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Predicate usernameLikeCond = null;
 
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
-            String searchNameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            String searchNameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchNameExp != null) {
                 switch (searchTypeName) {
                     case FULLTEXT:
@@ -81,7 +94,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 		// Search
         if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
-            String searchUsernameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            String searchUsernameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchUsernameExp != null) {
                 switch (searchTypeUsername) {
                     case FULLTEXT:
@@ -219,7 +232,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Predicate usernameLikeCond = null;
 
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
-            String searchNameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            String searchNameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchNameExp != null) {
                 switch (searchTypeName) {
                     case FULLTEXT:
@@ -244,7 +257,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         // Search
         if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
-            String searchUsernameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            String searchUsernameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchUsernameExp != null) {
                 switch (searchTypeUsername) {
                     case FULLTEXT:

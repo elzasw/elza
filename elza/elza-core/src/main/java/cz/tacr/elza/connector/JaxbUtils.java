@@ -1,20 +1,23 @@
 package cz.tacr.elza.connector;
 
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.PackageCode;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+
+import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamSource;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.PackageCode;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  *

@@ -19,7 +19,7 @@ import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.Did;
 
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "DaoCoreService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "DaoCoreService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.DaoService")
 public class DaoCoreServiceImpl implements DaoService {

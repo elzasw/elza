@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import cz.tacr.elza.service.StructObjService;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

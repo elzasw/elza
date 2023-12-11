@@ -1,5 +1,12 @@
 package cz.tacr.elza.service.cam;
 
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_APPROVED;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_INVALID;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_NEW;
+import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_REPLACED;
+import static cz.tacr.elza.domain.ApState.StateApproval.APPROVED;
+import static cz.tacr.elza.domain.ApState.StateApproval.NEW;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +20,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +31,6 @@ import cz.tacr.cam.schema.cam.DeleteItemsXml;
 import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
-
-import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_APPROVED;
-import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_INVALID;
-import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_NEW;
-import static cz.tacr.cam.schema.cam.EntityRecordStateXml.ERS_REPLACED;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ItemRefXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -46,8 +48,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
-import static cz.tacr.elza.domain.ApState.StateApproval.APPROVED;
-import static cz.tacr.elza.domain.ApState.StateApproval.NEW;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;

@@ -5,13 +5,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.hibernate.ScrollableResults;
 
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
+import jakarta.annotation.Nullable;
 
 
 /**

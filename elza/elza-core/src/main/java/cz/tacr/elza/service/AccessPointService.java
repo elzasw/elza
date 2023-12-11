@@ -21,18 +21,10 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +149,12 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventApQueue;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.merge.PartWithSubParts;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Servisní třída pro registry.
@@ -3295,7 +3293,7 @@ public class AccessPointService {
      * Tato metoda se volá, pokud parametr elza.ap.checkDb má hodnotu TRUE
      */
     public void checkConsistency() {
-        Log.info("Checking APs consistency ...");
+        logger.info("Checking APs consistency ...");
         int partsWithChild = partRepository.countDeletedPartsWithUndeletedChild();
         if (partsWithChild > 0) {
             logger.error("Existují {} vymazané Parts s nevymazanými potomky", partsWithChild);

@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-
-import jakarta.transaction.Transactional;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +56,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import jakarta.transaction.Transactional;
 
 /**
  * Dms Service
@@ -401,9 +402,9 @@ public class DmsService {
         dmsFile.setFileSize((int) outputFile.length());
 
         if (dmsFile.getMimeType().toLowerCase().equals(MIME_TYPE_APPLICATION_PDF)) {
-            PDDocument reader = PDDocument.load(outputFile);
-            dmsFile.setPagesCount(reader.getNumberOfPages());
-            reader.close();
+            try (PDDocument document = Loader.loadPDF(new RandomAccessReadBufferedFile(outputFile))) {
+                dmsFile.setPagesCount(document.getNumberOfPages());
+            }
         } else {
             dmsFile.setPagesCount(null);
         }

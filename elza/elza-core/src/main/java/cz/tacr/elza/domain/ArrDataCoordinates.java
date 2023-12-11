@@ -1,19 +1,18 @@
 package cz.tacr.elza.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
+import org.locationtech.jts.geom.Geometry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.GeometryConvertor.GeometryJsonDeserializer;
 import cz.tacr.elza.common.GeometryConvertor.GeometryJsonSerializer;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 
 /**

@@ -25,7 +25,7 @@ import cz.tacr.elza.ws.types.v1.RequestRevoked;
 
 
 @Component
-@javax.jws.WebService(
+@jakarta.jws.WebService(
                       serviceName = "CoreService",
                       portName = "DaoDigitizationService",
                       targetNamespace = "http://elza.tacr.cz/ws/core/v1",

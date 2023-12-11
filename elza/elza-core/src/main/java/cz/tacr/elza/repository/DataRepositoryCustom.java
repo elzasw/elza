@@ -3,14 +3,13 @@ package cz.tacr.elza.repository;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.DataResult;
+import jakarta.annotation.Nullable;
 
 public interface DataRepositoryCustom {
 

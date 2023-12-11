@@ -2,20 +2,13 @@ package cz.tacr.elza.domain;
 
 import java.util.Date;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-
-import org.hibernate.search.engine.backend.types.Projectable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+// import org.hibernate.search.engine.backend.types.Projectable;
+// import
+// org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+// import
+// org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+// import
+// org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +18,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataRepositoryImpl;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 //import cz.tacr.elza.search.DescItemIndexingInterceptor; TODO hibernate search 6
 
 /**
@@ -107,7 +109,7 @@ public class ArrDescItem extends ArrItem {
 	}
 
     @Override
-    @GenericField(name = FIELD_NODE_ID,  projectable = Projectable.YES)
+    //@GenericField(name = FIELD_NODE_ID,  projectable = Projectable.YES)
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return nodeId;
@@ -115,7 +117,7 @@ public class ArrDescItem extends ArrItem {
 
     @JsonIgnore
     @Override
-    @GenericField(name = FIELD_FUND_ID,   projectable = Projectable.YES)
+    //@GenericField(name = FIELD_FUND_ID,   projectable = Projectable.YES)
 //    @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING) //TODO hibernate search 6
     // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
@@ -123,7 +125,7 @@ public class ArrDescItem extends ArrItem {
     }
 
 	@JsonIgnore
-	@FullTextField(name = FULLTEXT_ATT)
+    // @FullTextField(name = FULLTEXT_ATT)
     public String getFulltextValue() {
 		if (data == null) {
             return null;
@@ -136,37 +138,37 @@ public class ArrDescItem extends ArrItem {
     }
 
 	@JsonIgnore
-	@GenericField(name = INTGER_ATT, projectable = Projectable.YES)
+    // @GenericField(name = INTGER_ATT, projectable = Projectable.YES)
     public Integer getValueInt() {
         return indexData.getValueInt();
     }
 
 	@JsonIgnore
-	@GenericField(name = DECIMAL_ATT, projectable = Projectable.YES)
+    // @GenericField(name = DECIMAL_ATT, projectable = Projectable.YES)
     public Double getValueDouble() {
         return indexData.getValueDouble();
     }
 
     @JsonIgnore
-    @GenericField(name = DATE_ATT, projectable = Projectable.YES)
+    // @GenericField(name = DATE_ATT, projectable = Projectable.YES)
     public Date getValueDate() {
         return indexData.getValueDate();
     }
 
     @JsonIgnore
-    @GenericField(name = BOOLEAN_ATT, projectable = Projectable.YES)
+    // @GenericField(name = BOOLEAN_ATT, projectable = Projectable.YES)
     public Boolean isValue() {
         return indexData.isValue();
     }
 
 	@JsonIgnore
-	@GenericField(name = NORMALIZED_FROM_ATT, projectable = Projectable.YES)
+    // @GenericField(name = NORMALIZED_FROM_ATT, projectable = Projectable.YES)
     public Long getNormalizedFrom() {
         return indexData.getNormalizedFrom();
     }
 
 	@JsonIgnore
-	@GenericField(name = NORMALIZED_TO_ATT, projectable = Projectable.YES)
+    // @GenericField(name = NORMALIZED_TO_ATT, projectable = Projectable.YES)
     public Long getNormalizedTo() {
         return indexData.getNormalizedTo();
     }
@@ -177,14 +179,14 @@ public class ArrDescItem extends ArrItem {
 	 * @return
 	 */
 	@JsonIgnore
-    @GenericField(name = FIELD_DESC_ITEM_TYPE_ID)
+    // @GenericField(name = FIELD_DESC_ITEM_TYPE_ID)
 	//@FieldBridge(impl = IntegerBridge.class)
 	public Integer getDescItemTypeId() {
 		return itemTypeId;
 	}
 
 	@JsonIgnore
-	@GenericField(name = SPECIFICATION_ATT)
+    // @GenericField(name = SPECIFICATION_ATT)
 	public Integer getSpecification() {
 		return itemSpecId;
 	}

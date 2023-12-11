@@ -7,10 +7,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.drools.core.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +35,7 @@ import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.repository.SettingsRepository;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Serviska pro nastavení.

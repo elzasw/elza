@@ -13,7 +13,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;

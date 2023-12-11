@@ -2,10 +2,7 @@ package cz.tacr.elza.ws;
 
 import java.util.HashMap;
 
-import javax.annotation.Nullable;
-import javax.xml.bind.helpers.DefaultValidationEventHandler;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.slf4j.Logger;
@@ -28,6 +25,8 @@ import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
+import jakarta.annotation.Nullable;
+import jakarta.xml.bind.helpers.DefaultValidationEventHandler;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>

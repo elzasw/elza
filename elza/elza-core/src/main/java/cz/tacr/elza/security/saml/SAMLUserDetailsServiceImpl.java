@@ -16,46 +16,38 @@
 
 package cz.tacr.elza.security.saml;
 
-import cz.tacr.elza.domain.UsrAuthentication;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.saml.SAMLCredential;
-import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
+// import org.springframework.security.saml.SAMLCredential;
+// import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
-import java.util.List;
 
 @Service
-public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
+public class SAMLUserDetailsServiceImpl /*implements SAMLUserDetailsService*/
+{
 
-	private static final Logger logger = LoggerFactory.getLogger(SAMLUserDetailsServiceImpl.class);
-
-	@Autowired
-	private UserService userService;
-
-	@Transactional
-	public Object loadUserBySAML(SAMLCredential credential)
-			throws UsernameNotFoundException {
-		String userID = credential.getNameID().getValue();
-
-		List<UsrAuthentication> authentications = userService.findAuthentication(userID, UsrAuthentication.AuthType.SAML2);
-
-		if (authentications.size() == 1) {
-			UsrAuthentication authentication = authentications.get(0);
-			logger.info(userID + " is logged in");
-			return userService.createUserDetail(authentication.getUser());
-		} else {
-			if (authentications.size() > 0) {
-				throw new SystemException("Pro " + userID + " existuje více záznamů", BaseCode.INVALID_STATE);
-			}
-			throw new SystemException("Nepovolené přihlášení pro " + userID);
-		}
-	}
-
+    /*
+    private static final Logger logger = LoggerFactory.getLogger(SAMLUserDetailsServiceImpl.class);
+    
+    @Autowired
+    private UserService userService;
+    
+    @Transactional
+    public Object loadUserBySAML(SAMLCredential credential)
+    		throws UsernameNotFoundException {
+    	String userID = credential.getNameID().getValue();
+    
+    	List<UsrAuthentication> authentications = userService.findAuthentication(userID, UsrAuthentication.AuthType.SAML2);
+    
+    	if (authentications.size() == 1) {
+    		UsrAuthentication authentication = authentications.get(0);
+    		logger.info(userID + " is logged in");
+    		return userService.createUserDetail(authentication.getUser());
+    	} else {
+    		if (authentications.size() > 0) {
+    			throw new SystemException("Pro " + userID + " existuje více záznamů", BaseCode.INVALID_STATE);
+    		}
+    		throw new SystemException("Nepovolené přihlášení pro " + userID);
+    	}
+    }
+    */
 }

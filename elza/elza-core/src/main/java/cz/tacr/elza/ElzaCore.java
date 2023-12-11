@@ -3,10 +3,6 @@ package cz.tacr.elza;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import javax.annotation.PostConstruct;
-
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +25,9 @@ import com.google.common.eventbus.EventBus;
 
 import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.websocket.service.WebScoketClientEventService;
+import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 
 /**

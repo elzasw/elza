@@ -2,6 +2,18 @@ package cz.tacr.elza.domain;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+import cz.tacr.elza.service.cache.NodeCacheSerializable;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -15,20 +27,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import jakarta.validation.constraints.NotNull;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang3.Validate;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.service.cache.NodeCacheSerializable;
 
 
 /**

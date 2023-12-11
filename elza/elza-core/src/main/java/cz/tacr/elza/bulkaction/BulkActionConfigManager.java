@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -45,6 +43,8 @@ import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.repository.ActionRepository;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 /**
  * Manager konfigurace hromadných akcí.
@@ -169,7 +169,7 @@ public class BulkActionConfigManager {
      * @return
      */
     private static Yaml prepareYamlLoader() {
-        Constructor yamlCtor = new Constructor();
+        Constructor yamlCtor = new Constructor(new LoaderOptions());
 
         // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));

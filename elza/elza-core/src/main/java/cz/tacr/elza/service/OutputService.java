@@ -20,13 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.db.HibernateUtils;
-import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
-
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.drools.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
@@ -108,6 +105,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.OutputSender;
+import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 
 @Service
 public class OutputService {

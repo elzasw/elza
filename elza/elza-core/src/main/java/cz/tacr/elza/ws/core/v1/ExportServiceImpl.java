@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -65,9 +61,11 @@ import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.SearchEntity;
 import cz.tacr.elza.ws.types.v1.SearchEntityResult;
 import cz.tacr.elza.ws.types.v1.SearchEntityUpdates;
+import jakarta.activation.DataHandler;
+import jakarta.mail.util.ByteArrayDataSource;
 
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "ExportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "ExportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.ExportService")
 public class ExportServiceImpl implements ExportService {
@@ -216,7 +214,7 @@ public class ExportServiceImpl implements ExportService {
     
             taskExecutor.execute(eew);
 
-            DataSource ds = new ByteArrayDataSource(fis, "application/octet-stream");
+            ByteArrayDataSource ds = new ByteArrayDataSource(fis, "application/octet-stream");
             DataHandler dataHandler = new DataHandler(ds);
             erd.setBinData(dataHandler);
         } catch (IOException e) {

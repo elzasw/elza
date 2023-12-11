@@ -3,7 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.slf4j.Logger;

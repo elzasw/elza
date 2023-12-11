@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,7 +18,7 @@ import cz.tacr.elza.ws.types.v1.FundIdentifiers;
  *
  */
 @Component
-@javax.jws.WebService(serviceName = "CoreService", portName = "FundService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
+@jakarta.jws.WebService(serviceName = "CoreService", portName = "FundService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.FundService")
 public class FundServiceImpl implements FundService {

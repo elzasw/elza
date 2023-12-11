@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

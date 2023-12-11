@@ -2,7 +2,7 @@ package cz.tacr.elza.print.format;
 
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.print.item.Item;

@@ -2,7 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
