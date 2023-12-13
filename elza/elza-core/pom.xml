@@ -159,7 +159,11 @@
             <artifactId>drools-compiler</artifactId>
             <version>${drools.version}</version>
 		</dependency>
-
+        <!--<dependency>
+            <groupId>org.drools</groupId>
+            <artifactId>drools-mvel</artifactId>
+            <version>${drools.version}</version>
+		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -256,6 +260,10 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.xml.messaging.saaj</groupId>
+		    <artifactId>saaj-impl</artifactId>
 		</dependency>
 		<!-- Find bugs -->
 		<!--<dependency>-->

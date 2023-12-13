@@ -19,7 +19,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @Configuration
 @EntityScan(basePackageClasses = { ElzaCore.class })
 @ComponentScan(basePackageClasses = { ElzaCore.class })
-@EnableJpaRepositories(basePackageClasses = { ElzaCore.class })
+//@EnableJpaRepositories(basePackageClasses = { ElzaCore.class })
 @EnableAutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableTransactionManagement

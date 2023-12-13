@@ -9,8 +9,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name="arr_data_bit")
+@Entity(name = "arr_data_bit")
+@Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataBit extends ArrData {
 
