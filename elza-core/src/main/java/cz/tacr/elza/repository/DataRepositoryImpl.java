@@ -284,13 +284,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 .collect(Collectors.groupingBy(DataResult::getRulDataType,
                         Collectors.mapping(DataResult::getDataId, Collectors.toList())));
 
-
         for (Map.Entry<RulDataType, List<Integer>> dataIdsEntry : dataIdsMap.entrySet()) {
-            Class dataClass = getDataClass(dataIdsEntry.getKey());
+            Class<? extends ArrData> dataClass = getDataClass(dataIdsEntry.getKey());
 
             List<Integer> dataIds = dataIdsEntry.getValue();
+            String storageTable = dataIdsEntry.getKey().getStorageTable();
 
-            entityManager.createQuery("SELECT d FROM " + dataClass.getSimpleName() + " d WHERE d.dataId in :dataIds", dataClass)
+            entityManager.createQuery("SELECT d FROM " + storageTable + " d WHERE d.dataId in :dataIds", dataClass)
                     .setParameter("dataIds", dataIds)
                     .getResultList();
         }

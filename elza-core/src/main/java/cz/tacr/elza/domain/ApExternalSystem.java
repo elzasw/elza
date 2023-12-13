@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * Externí systémy pro rejstříky/osoby.
  */
 @Entity(name = "ap_external_system")
-@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class ApExternalSystem extends SysExternalSystem {
 

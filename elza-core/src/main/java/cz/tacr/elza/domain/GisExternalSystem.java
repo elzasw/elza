@@ -16,7 +16,7 @@ import jakarta.persistence.InheritanceType;
  * Externí systémy pro mapové podklady.
  */
 @Entity(name = "gis_external_system")
-@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class GisExternalSystem extends SysExternalSystem {
 

@@ -182,15 +182,15 @@ public class StaticDataService {
     }
 
     public void reloadOnCommit() {
-//        Transaction tx = getCurrentActiveTransaction(); //TODO hibernate search 6
-//        reloadOnCommit(tx);
+        //Transaction tx = getCurrentActiveTransaction(); //TODO hibernate search 6
+    	Transaction tx = HibernateUtils.getCurrentTransaction(em);
+        reloadOnCommit(tx);
     }
 
     public void reloadOnCommit(Transaction tx) {
         checkActiveTransaction(tx);
 
-        synchronized(modificationTransactions)
-        {
+        synchronized(modificationTransactions) {
         	modificationTransactions.add(tx);
         }
     }
@@ -219,13 +219,12 @@ public class StaticDataService {
         Validate.notNull(provider);
 
         threadSpecificProvider.set(provider);
-        }
+	}
 
     void beforeTransactionCommit(Transaction tx) {
         //checkActiveTransaction(tx);
 
-        synchronized(modificationTransactions)
-        {
+        synchronized(modificationTransactions) {
         	// check for modified transaction
         	if (!modificationTransactions.contains(tx)) {
         		return;
@@ -255,15 +254,7 @@ public class StaticDataService {
         	tx.markRollbackOnly();
         	throw t;
         }
-    }
-
-    private Transaction getCurrentActiveTransaction() {
-        Session session = HibernateUtils.getCurrentSession(em);
-        if (!session.isJoinedToTransaction()) {
-            throw new IllegalStateException("Current session doesn't have active transaction");
-        }
-        return session.getTransaction();
-    }
+	}
 
     /**
      * Create new provider and load all data from DB

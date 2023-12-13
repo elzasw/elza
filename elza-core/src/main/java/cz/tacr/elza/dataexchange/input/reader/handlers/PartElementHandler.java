@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.input.reader.handlers;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.AccessPointEntryProcessor;

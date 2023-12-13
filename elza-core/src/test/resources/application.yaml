@@ -1,12 +1,8 @@
 spring:
   datasource:
     url: jdbc:h2:mem:scratchdb
-#     url: jdbc:jtds:sqlserver://vyv-db/vyv_elza_test
-#     username: vyv
-#     password: vyv
-#    url: jdbc:postgresql://localhost/elza-test
-#    username: app
-#    password: app
+    username:
+    password:
 
   main:
     allow-bean-definition-overriding: true
@@ -19,24 +15,18 @@ spring:
     hibernate.ddl-auto: none
 
     properties:
-        net.sf.ehcache.configurationResourceName: /ehcache.xml
-        hibernate:
-            format_sql: true
-
-            cache:
-                use_second_level_cache: true
-                region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
-
-
-            dialect: org.hibernate.dialect.H2Dialect
-#            dialect: org.hibernate.dialect.PostgreSQLDialect
-
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        cache:
+          use_second_level_cache: true
+          region.factory_class: jcache
 
 elza:
   debug:
     h2:
-       # Enable H2 DB console on URL .../console
-       console: false
+      # Enable H2 DB console on URL .../console
+      console: false
     # Log http requets
     # requests: true
   workingDir: ./work
@@ -59,5 +49,6 @@ elza:
 logging:
   level:
     cz.tacr.elza: DEBUG
-#    Request logging
-#    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+  file: 
+    name: C:/temp/elza/logs/elza3-test.log
+    max-size: 500MB
