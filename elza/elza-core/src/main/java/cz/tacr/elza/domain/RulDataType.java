@@ -13,7 +13,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 
@@ -42,8 +41,7 @@ public class RulDataType {
     private String name;
 
     @Column(nullable = false)
-    @Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    //@Lob @Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String description;
 
     @Column(nullable = false)

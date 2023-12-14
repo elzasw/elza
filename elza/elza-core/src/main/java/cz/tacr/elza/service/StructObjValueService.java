@@ -797,7 +797,7 @@ public class StructObjValueService {
 
         // Delete remaining temp objects
         //List<ArrChange> changes = structObjRepository.findTempChange();
-        structureItemRepository.deleteByStructuredObjectStateTemp();
+        //structureItemRepository.deleteByStructuredObjectStateTemp(); // TODO hibernate search 6
         structObjRepository.deleteByStateTemp();
         // Changes cannot be easily deleted
         // We cannot be sure how many time is change used
