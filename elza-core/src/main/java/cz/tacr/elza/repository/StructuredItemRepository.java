@@ -61,7 +61,11 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
                                           @Param("structuredObject") ArrStructuredObject structuredObject);
 
     @Modifying
-    @Query("DELETE FROM arr_structured_item i WHERE i.structuredObjectId IN (SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.state = 'TEMP')")
+    // hibernate create bad sql-query based on this query, so I rewrote on the native query
+    //@Query("DELETE FROM arr_structured_item i WHERE i.structuredObjectId IN (SELECT o.structuredObjectId FROM arr_structured_object o WHERE o.state = 'TEMP')")
+    @Query(value =
+			"DELETE FROM arr_structured_item i WHERE i.structured_object_id IN (SELECT o.structured_object_id FROM arr_structured_object o WHERE o.state = 'TEMP')", 
+			nativeQuery = true)
     void deleteByStructuredObjectStateTemp();
 
     @Modifying

@@ -792,12 +792,12 @@ public class StructObjValueService {
             this.addToValidate(connTempObjs);
         }
 
-        // Drop any requests for temp objects
+        // Delete any requests for temp objects
         sobjVrequestRepository.deleteByStructuredObjectStateTemp();
 
         // Delete remaining temp objects
-        //List<ArrChange> changes = structObjRepository.findTempChange();
-        //structureItemRepository.deleteByStructuredObjectStateTemp(); // TODO hibernate search 6
+      	//List<ArrChange> changes = structObjRepository.findTempChange();
+        structureItemRepository.deleteByStructuredObjectStateTemp();
         structObjRepository.deleteByStateTemp();
         // Changes cannot be easily deleted
         // We cannot be sure how many time is change used
