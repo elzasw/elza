@@ -49,6 +49,6 @@ elza:
 logging:
   level:
     cz.tacr.elza: DEBUG
-  file: 
-    name: C:/temp/elza/logs/elza3-test.log
-    max-size: 500MB
+#  file: 
+#    name: C:/temp/elza/logs/elza3-test.log
+#    max-size: 500MB

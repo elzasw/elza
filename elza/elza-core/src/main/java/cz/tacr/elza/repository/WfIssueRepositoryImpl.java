@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
@@ -61,25 +62,28 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
     @Override
     public List<WfIssue> findOpenByFundIdAndNodeNull(@NotNull Integer fundId, @Nullable Integer userId) {
 
-        StringBuilder hql = new StringBuilder(256);
-        hql.append("select i from wf_issue i" +
-                " where i.issueList.fund.fundId = :fundId");
-        if (userId != null) {
-            hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
-        }
-        hql.append(" and i.issueState.finalState = false" +
-                " and i.issueList.open = true" +
-                " and i.node = null" +
-                " order by i.issueList.issueListId, i.number");
-
-        Query query = entityManager.createQuery(hql.toString());
-
-        query.setParameter("fundId", fundId);
-        if (userId != null) {
-            query.setParameter("userId", userId);
-        }
-
-        return query.getResultList();
+    	//TODO hibernate search 6
+    	return Collections.EMPTY_LIST;
+// org.springframework.dao.InvalidDataAccessApiUsageException: Unsupported tuple comparison combination. LHS is neither a tuple nor a tuple subquery but RHS is a tuple: org.hibernate.sql.ast.tree.predicate.ComparisonPredicate@2b8529bc
+//        StringBuilder hql = new StringBuilder(256);
+//        hql.append("select i from wf_issue i" +
+//                " where i.issueList.fundId = :fundId");
+//        if (userId != null) {
+//            hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
+//        }
+//        hql.append(" and i.issueState.finalState = false" +
+//                " and i.issueList.open = true" +
+//                " and i.node = null" +
+//                " order by i.issueList.issueListId, i.number");
+//
+//        TypedQuery<WfIssue> query = entityManager.createQuery(hql.toString(), WfIssue.class);
+//
+//        query.setParameter("fundId", fundId);
+//        if (userId != null) {
+//            query.setParameter("userId", userId);
+//        }
+//
+//        return query.getResultList();
     }
 
     @Override
