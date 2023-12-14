@@ -77,7 +77,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
-        return null;
+        return Collections.EMPTY_LIST;
     }
 
     @Override //TODO hibernate search 6
