@@ -1,12 +1,15 @@
 package cz.tacr.elza.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.common.ZipUtils;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
 import cz.tacr.elza.dataexchange.input.DEImportParams.ImportPositionParams;
 import cz.tacr.elza.dataexchange.input.DEImportService;
@@ -67,19 +71,32 @@ public class DEImportController {
             throw new UnsupportedOperationException("Import transformation not implemented");
         }
 
+        MultipartFile srcFile = xmlFile;
+
+        // unzipped if zip file
+        File unzipFile = ZipUtils.unzipFile(xmlFile);
+        if (unzipFile != null) {
+            // convert File -> MultipartFile (https://stackoverflow.com/questions/16648549/converting-file-to-multipartfile)
+            try {
+                srcFile = new MockMultipartFile("file", unzipFile.getName(), "text/plain", Files.readAllBytes(unzipFile.toPath()));
+            } catch (IOException e) {
+                throw new SystemException("Error reading from file=" + unzipFile.getAbsolutePath(), e);
+            }
+        }
+
         // prepare import parameters
         DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
         params.addImportPhaseChangeListeners(new SectionNotifications(eventNotificationService));
 
         // validate
-        try (InputStream is = xmlFile.getInputStream()) {
+        try (InputStream is = srcFile.getInputStream()) {
             importService.validateData(is);
         } catch (IOException e) {
             throw new SystemException("Failed to read import source", e);
         }
 
         // import
-        try (InputStream is = xmlFile.getInputStream()) {
+        try (InputStream is = srcFile.getInputStream()) {
             importService.importData(is, params);
         } catch (IOException e) {
             throw new SystemException("Failed to read import source", e);
