@@ -211,8 +211,8 @@ public class FundController implements FundsApi {
     @Override
     @Transactional
     public ResponseEntity<Void> importFundData(@PathVariable("id") String id,
-                                               @Valid @RequestPart(value = "importType", required = true) String importType,
-                                               @Valid @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
+                                               @RequestPart(value = "importType", required = true) String importType,
+                                               @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
