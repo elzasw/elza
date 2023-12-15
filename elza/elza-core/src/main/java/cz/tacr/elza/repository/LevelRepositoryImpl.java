@@ -456,10 +456,11 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         long count = 0;
         try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
             while (scrollableResults.next()) {
-                ArrLevel level = (ArrLevel) scrollableResults.get();
-                int depth = scrollableResults.getRowNumber();
-                treeLevelConsumer.accept(level, depth);
-                count++;
+            	Object[] obj = (Object[]) scrollableResults.get();
+        		ArrLevel level = (ArrLevel) obj[0];
+        		int depth = scrollableResults.getRowNumber();
+        		treeLevelConsumer.accept(level, depth);
+        		count++;
             }
         }
         if (!excludeRoot && count == 0) {
