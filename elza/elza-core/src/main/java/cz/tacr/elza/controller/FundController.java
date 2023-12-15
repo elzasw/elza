@@ -16,7 +16,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,16 +147,16 @@ public class FundController implements FundsApi {
         Validate.isTrue(scopes.size() == createFund.getScopes().size(),
                       "Některá oblast archivních entit nebyla nalezena");
 
-        ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
+        ArrFundVersion fundVersion = arrangementService.createFundWithScenario(
+        								createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
                                         institution, createFund.getFundNumber(),
                                         createFund.getUnitdate(), createFund.getMark(),
                                         createFund.getUuid(), null,
                                         scopes, createFund.getAdminUsers(), createFund.getAdminGroups());
 
-        UserDetail userDetail = userService.getLoggedUserDetail();
+        ArrNode rootNode = fundVersion.getRootNode();
 
-        return ResponseEntity.ok(factoryVo.createFund(newFund, userDetail));
+        return ResponseEntity.ok(factoryVo.createFund(fundVersion.getFund(), rootNode.getUuid()));
     }
 
     @Override
@@ -191,7 +190,7 @@ public class FundController implements FundsApi {
         FindFundsResult fundsResult = new FindFundsResult();
         fundsResult.setTotalCount(funds.getTotalCount());
         fundList.forEach(f -> {
-            Fund fund = factoryVo.createFund(f.getFund(), userDetail);
+            Fund fund = factoryVo.createFund(f.getFund(), "TODO: uuid");
             fundsResult.addFundsItem(fund);
         });
 

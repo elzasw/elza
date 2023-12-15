@@ -141,15 +141,11 @@ public abstract class AbstractServiceTest extends AbstractTest {
         List<RulRuleSet> rulesets = rulesetRepos.findAll();
         fi.setRulesets(rulesets);
 
-        ArrFund fund = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(),
-                                                                 fundCode,
-                                                                 firstInstitution,
-                                                                 null, null, null, null, null,
-                                                                 null, null, null);
-        Validate.notNull(fund);
-        fi.setFund(fund);
+        ArrFundVersion fundVersion = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(), fundCode, firstInstitution,
+        																	   null, null, null, null, null, null, null, null);
+        Validate.notNull(fundVersion.getFund());
+        fi.setFund(fundVersion.getFund());
 
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
         Validate.notNull(fundVersion);
         fi.setOpenVersion(fundVersion);
 

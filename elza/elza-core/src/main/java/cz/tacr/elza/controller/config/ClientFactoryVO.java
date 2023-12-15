@@ -453,8 +453,9 @@ public class ClientFactoryVO {
      * @param user    přihlášený uživatel
      * @return VO
      */
-    public Fund createFund(final ArrFund arrFund, UserDetail user) {
+    public Fund createFund(final ArrFund arrFund, String uuid) {
         Assert.notNull(arrFund, "AS musí být vyplněn");
+        Assert.notNull(uuid, "UUID musí být vyplněn");
 
         Fund fund = new Fund();
         fund.setId(arrFund.getFundId());
@@ -469,6 +470,7 @@ public class ClientFactoryVO {
         fund.setInternalCode(arrFund.getInternalCode());
         fund.setUnitdate(arrFund.getUnitdate());
         fund.setMark(arrFund.getMark());
+        fund.setUuid(uuid);
         return fund;
     }
 
