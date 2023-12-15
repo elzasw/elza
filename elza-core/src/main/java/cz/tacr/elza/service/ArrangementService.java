@@ -539,7 +539,7 @@ public class ArrangementService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     @Transactional(TxType.MANDATORY)
-    public ArrFund createFundWithScenario(final String name,
+    public ArrFundVersion createFundWithScenario(final String name,
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
                                           final ParInstitution institution,
@@ -633,7 +633,7 @@ public class ArrangementService {
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(rootLevel.getNode().getNodeId()),
                 NodeTypeOperation.CREATE_NODE, null, null, null);
 
-        return fund;
+        return version;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})

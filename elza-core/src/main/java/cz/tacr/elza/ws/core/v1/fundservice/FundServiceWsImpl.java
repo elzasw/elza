@@ -17,6 +17,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -96,7 +97,7 @@ public class FundServiceWsImpl {
         List<Integer> userIds = getUserIds(fundInfo.getAdminUsers());
         List<Integer> groupIds = getGroupIds(fundInfo.getAdminGroups());
 
-        ArrFund fund = arrangementService.createFundWithScenario(fundInfo.getFundName(),
+        ArrFundVersion version = arrangementService.createFundWithScenario(fundInfo.getFundName(),
                                                                  ruleset.getEntity(),
                                                                  fundInfo.getInternalCode(),
                                                                  institution,
@@ -105,7 +106,7 @@ public class FundServiceWsImpl {
                                                                  fundInfo.getMark(),
                                                                  uuid, Boolean.TRUE, scopes, userIds, groupIds);
         FundIdentifiers fi = new FundIdentifiers();
-        fi.setId(fund.getFundId().toString());
+        fi.setId(version.getFundId().toString());
         fi.setUuid(uuid);
 
         return fi;
