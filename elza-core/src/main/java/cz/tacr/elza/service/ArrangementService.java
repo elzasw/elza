@@ -365,11 +365,11 @@ public class ArrangementService {
      */
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrFund updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
-                              final RulRuleSet ruleSet,
-                              final List<ApScope> scopes,
-                              final List<Integer> userIds,
-                              final List<Integer> groupIds) {
+    public ArrFundVersion updateFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+			                          final RulRuleSet ruleSet,
+			                          final List<ApScope> scopes,
+			                          final List<Integer> userIds,
+			                          final List<Integer> groupIds) {
         Validate.notNull(fund, "AS musí být vyplněn");
         Validate.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -419,7 +419,7 @@ public class ArrangementService {
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, savedFund.getFundId()));
 
-        return savedFund;
+        return openVersion;
     }
 
     /**

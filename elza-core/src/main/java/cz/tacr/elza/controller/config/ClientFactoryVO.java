@@ -450,7 +450,7 @@ public class ClientFactoryVO {
      * Vytvoření ArrFund a načtení verzí.
      *
      * @param arrFund archivní soubor     *
-     * @param user    přihlášený uživatel
+     * @param uuid
      * @return VO
      */
     public Fund createFund(final ArrFund arrFund, String uuid) {
@@ -474,7 +474,7 @@ public class ClientFactoryVO {
         return fund;
     }
 
-    public FundDetail createFundDetail(final ArrFund arrFund, UserDetail user) {
+    public FundDetail createFundDetail(final ArrFund arrFund, String uuid) {
         Assert.notNull(arrFund, "AS musí být vyplněn");
 
         FundDetail fundDetail = new FundDetail();
@@ -486,6 +486,7 @@ public class ClientFactoryVO {
         fundDetail.setInternalCode(arrFund.getInternalCode());
         fundDetail.setUnitdate(arrFund.getUnitdate());
         fundDetail.setMark(arrFund.getMark());
+        fundDetail.setUuid(uuid);
         return fundDetail;
     }
 

@@ -1409,7 +1409,7 @@ components:
     FundDetail:
       required:
         - id
-        #- uuid
+        - uuid
         - name
         - institutionIdentifier
         - scopes
@@ -1420,9 +1420,9 @@ components:
           description: Identifikátor
           type: integer
           format: int32
-        #uuid:
-        #  description: UUID
-        #  type: string
+        uuid:
+          description: UUID
+          type: string
         name:
           description: Název
           type: string

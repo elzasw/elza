@@ -201,10 +201,11 @@ public class FundController implements FundsApi {
     @Override
     public ResponseEntity<FundDetail> getFund(@PathVariable("id") String id) {
         Validate.notNull(id, "Musí být zadáno id AS");
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
-        return ResponseEntity.ok(factoryVo.createFundDetail(fund,
-                                                            userDetail));
+
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(Integer.valueOf(id));
+        ArrNode rootNode = fundVersion.getRootNode(); 
+
+        return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
 
     @Override
@@ -237,9 +238,11 @@ public class FundController implements FundsApi {
         ArrFund arrFund = factoryDO.createFund(updateFund, institution, id);
         RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
         Validate.notNull(ruleSet);
-        ArrFund updatedFund = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
 
-        return ResponseEntity.ok(factoryVo.createFundDetail(updatedFund, userService.getLoggedUserDetail()));
+        ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
+        ArrNode rootNode = fundVersion.getRootNode();
+
+        return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
 
     /**
