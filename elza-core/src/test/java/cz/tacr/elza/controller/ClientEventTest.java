@@ -3,11 +3,10 @@ package cz.tacr.elza.controller;
 import java.util.Collection;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.other.SimpleClientEventDispatcher;
 import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -22,7 +21,8 @@ import cz.tacr.elza.test.controller.vo.Fund;
  */
 public class ClientEventTest extends AbstractControllerTest {
 
-    @Autowired
+    @Qualifier("testClientEventDispatcher")
+	@Autowired
     private ClientEventDispatcher clientEventDispatcher;
 
     @Test
