@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,8 +107,9 @@ public class ApBuilder {
                                     cz.tacr.elza.core.data.ItemType itemType,
                                     RulItemSpec itemSpec,
                                     ArrData data) {
-
         AbstractItem abstractItem;
+        data = (ArrData) Hibernate.unproxy(data);
+        // TODO data.createDroolsItem() vs switch
         switch (itemType.getDataType()) {
         case ENUM:
             abstractItem = new Item(itemId, itemType, itemSpec, (itemSpec != null) ? itemSpec.getCode() : null);
@@ -122,8 +124,7 @@ public class ApBuilder {
             break;
         case COORDINATES:
             ArrDataCoordinates aeDataCoordinates = (ArrDataCoordinates) data;
-            abstractItem = new CoordinatesItem(itemId, itemType, itemSpec,
-                    aeDataCoordinates.getValue());
+            abstractItem = new CoordinatesItem(itemId, itemType, itemSpec, aeDataCoordinates.getValue());
             break;
         case INT:
             ArrDataInteger aeDataInteger = (ArrDataInteger) data;
