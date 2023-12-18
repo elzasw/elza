@@ -12,6 +12,9 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -63,12 +66,7 @@ public class ArrDao {
     @Column(length = 25, nullable = false)
     private DaoType daoType;
 
-    /**
-     * XML with attribute values
-     */
-    @Column(nullable = false)
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false) // Hibernate long text field
     private String attributes;
 
     public Integer getDaoId() {

@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -94,14 +95,10 @@ public class ArrBulkActionRun {
     @OneToMany(mappedBy = "bulkActionRun", fetch = FetchType.LAZY, targetEntity = ArrBulkActionNode.class)
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
 
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
-    @Column
+    @Column(length = Length.LONG) // Hibernate long text field
     private String result;
 
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
-    @Column
+    @Column(length = Length.LONG) // Hibernate long text field
     private String config;
 
     /**

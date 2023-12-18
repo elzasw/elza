@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import jakarta.persistence.*;
@@ -34,9 +36,7 @@ public class ApPart implements AccessPointPart {
     @Column(length = StringLength.LENGTH_ENUM)
     private ApStateEnum state;
 
-    @Column
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG) // Hibernate long text field
     private String errorDescription;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPartType.class)

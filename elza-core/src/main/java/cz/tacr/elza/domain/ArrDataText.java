@@ -6,6 +6,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,9 +25,7 @@ public class ArrDataText extends ArrData {
 
     public static final String TEXT_VALUE = "textValue";
 
-    @Column(name = "text_value", nullable = false)
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false) // Hibernate long text field
     private String textValue;
 
 	public ArrDataText() {

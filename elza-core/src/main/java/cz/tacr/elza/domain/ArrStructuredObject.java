@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -173,9 +174,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
     @Column(length = StringLength.LENGTH_36, nullable = false)
     private String uuid;
 
-    @Column
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG) // Hibernate long text field
     private String errorDescription;
 
     @Enumerated(EnumType.STRING)

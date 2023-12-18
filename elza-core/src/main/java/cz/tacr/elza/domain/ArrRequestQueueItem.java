@@ -14,6 +14,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -57,9 +58,7 @@ public class ArrRequestQueueItem {
     @Column(nullable = false)
     private Boolean send;
 
-    @Column(nullable = false)
-    //@Lob
-    //@Type(org.hibernate.type.TextType) TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false)
     private String data;
 
     public Integer getRequestQueueItemId() {
