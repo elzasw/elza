@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import cz.tacr.elza.api.interfaces.ArrFundGetter;
@@ -76,9 +77,7 @@ public class WfIssue implements ArrFundGetter, IWfIssueList {
     /**
      * Text připomínky
      */
-    @Column(nullable = false)
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false)
     private String description;
 
     /**

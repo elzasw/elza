@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.Length;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -40,8 +41,7 @@ public class RulDataType {
     @Column(length = 250, nullable = false)
     private String name;
 
-    //@Column(nullable = false)
-    //@Lob @Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false)
     private String description;
 
     @Column(nullable = false)

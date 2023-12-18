@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import org.hibernate.Length;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -45,9 +47,7 @@ public class ApCachedAccessPoint {
     //@GenericField(name = FIELD_ACCESSPOINT_ID, projectable = Projectable.YES)
     private Integer accessPointId;
 
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
-    @Column
+    @Column(length = Length.LONG) // Hibernate long text field
     private String data;
 
     public Integer getCachedAccessPointId() {

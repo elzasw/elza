@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.Length;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -77,9 +78,7 @@ public class RulItemType {
     @Column(length = 50, nullable = false)
     private String shortcut;
 
-    @Column(nullable = false)
-    //@Lob
-    //@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG, nullable = false)
     private String description;
 
     @Column(nullable = false)

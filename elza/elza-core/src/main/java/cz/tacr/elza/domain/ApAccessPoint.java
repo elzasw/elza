@@ -17,6 +17,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
+import org.hibernate.Length;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -56,9 +57,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private ApStateEnum state;
 
-    @Column
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
+    @Column(length = Length.LONG) // Hibernate long text field
     private String errorDescription;
 
     @Column
