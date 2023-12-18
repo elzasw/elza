@@ -10,7 +10,7 @@
     <name>ELZA Core</name>
 
     <properties>
-        <drools.version>7.74.1.Final</drools.version> <!-- 7.74.1.Final -->
+        <drools.version>8.44.0.Final</drools.version> <!-- 7.74.1.Final, 8.44.0.Final -->
     </properties>
 
     <dependencies>
