@@ -77,7 +77,7 @@ public class WfIssue implements ArrFundGetter, IWfIssueList {
      * Text připomínky
      */
     @Column(nullable = false)
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String description;
 

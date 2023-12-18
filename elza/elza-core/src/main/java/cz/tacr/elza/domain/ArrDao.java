@@ -67,7 +67,7 @@ public class ArrDao {
      * XML with attribute values
      */
     @Column(nullable = false)
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String attributes;
 

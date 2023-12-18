@@ -94,12 +94,12 @@ public class ArrBulkActionRun {
     @OneToMany(mappedBy = "bulkActionRun", fetch = FetchType.LAZY, targetEntity = ArrBulkActionNode.class)
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
 
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String result;
 
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String config;

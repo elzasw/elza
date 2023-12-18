@@ -55,7 +55,7 @@ public class RulItemSpec {
     private String shortcut;
 
     @Column(nullable = false)
-    @Lob
+    //@Lob
     //@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String description;
 
