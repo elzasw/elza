@@ -25,7 +25,7 @@ public class ArrDataText extends ArrData {
     public static final String TEXT_VALUE = "textValue";
 
     @Column(name = "text_value", nullable = false)
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String textValue;
 

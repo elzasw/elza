@@ -58,7 +58,7 @@ public class ArrRequestQueueItem {
     private Boolean send;
 
     @Column(nullable = false)
-    @Lob
+    //@Lob
     //@Type(org.hibernate.type.TextType) TODO hibernate search 6
     private String data;
 

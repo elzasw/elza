@@ -37,7 +37,7 @@ public class ArrCachedNode {
 	@Column(insertable = false, updatable = false)
     private Integer nodeId;
 
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String data;

@@ -174,7 +174,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
     private String uuid;
 
     @Column
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String errorDescription;
 

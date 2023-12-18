@@ -45,7 +45,7 @@ public class ApCachedAccessPoint {
     //@GenericField(name = FIELD_ACCESSPOINT_ID, projectable = Projectable.YES)
     private Integer accessPointId;
 
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     @Column
     private String data;

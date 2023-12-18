@@ -40,7 +40,7 @@ public class RulDataType {
     @Column(length = 250, nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
     //@Lob @Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String description;
 

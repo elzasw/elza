@@ -41,7 +41,7 @@ public class WfComment implements IWfIssueList {
      * Text komentáře
      */
     @Column(nullable = false)
-    @Lob
+    //@Lob
     //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
     private String comment;
 
