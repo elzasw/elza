@@ -94,6 +94,8 @@ public class ApItem implements Item, AccessPointCacheSerializable, AccessPointIt
         this.position = other.position;
         this.data = other.data;
         this.dataId = other.dataId;
+        this.part = other.part;
+        this.partId = other.partId;
     }
 
     public ApItem copy() {

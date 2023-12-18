@@ -458,17 +458,20 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return partMap;
     }
 
-    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList,
-    		Map<Integer, CachedPart> partMap) {
+    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
         List<ApItem> apItems = itemService.findValidItemsByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apItems)) {
             for (ApItem item : apItems) {
-                item = HibernateUtils.unproxy(item);
-                CachedPart part = partMap.get(item.getPartId());
+            	// item might be Hibernate proxy, we have to copy object
+            	// and set all fields as unproxied objects
+            	ApItem copyItem = item.copy();
+            	copyItem.setItemId(item.getItemId());
+                CachedPart part = partMap.get(copyItem.getPartId());
                 if (part == null) {
-                    Validate.notNull(part, "Missing part, partId: %s", item.getPartId());
+                    Validate.notNull(part, "Missing part, partId: %s", copyItem.getPartId());
                 }
-                part.addItem(item);
+                copyItem.setData(HibernateUtils.unproxy(copyItem.getData()));
+                part.addItem(copyItem);
             }
         }
     }
@@ -598,7 +601,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             return cap;
         } catch (IOException e) {
             logger.error("Failed to deserialize object, data: " + data);
-            throw new SystemException("Nastal problĂ©m pĹ™i deserializaci objektu", e);
+            throw new SystemException("Při deserializaci objektu se objevil problém", e);
         }
     }
 
@@ -883,6 +886,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                             "Deleted item cannot be cached, accessPointId=%s",
                             cachedAccessPoint.getAccessPointId());
             	}
+            	Validate.notNull(item.getItemId(), "Item id can't be null");
             	if (!itemIds.add(item.getItemId())) {
                     Validate.isTrue(false,
                             "Duplicated item in cache, accessPointId=%s, itemId=%s",
