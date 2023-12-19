@@ -23,9 +23,7 @@ import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -400,9 +398,6 @@ public class ConfigMapperConfiguration {
                 .field("institutionTypeId", "id").register();
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
-
-        mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskSimpleVO.class).field("externalSystemId", "id").byDefault().register();
-        mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositorySimpleVO.class).field("externalSystemId", "id").byDefault().register();
 
         mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
         mapperFactory.classMap(RulItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
