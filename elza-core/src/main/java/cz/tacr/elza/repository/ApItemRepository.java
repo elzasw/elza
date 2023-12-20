@@ -31,7 +31,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.part.partId = :partId")
     List<ApItem> findValidItemsByPartId(@Param("partId") Integer partId);
 
-    @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
+    @Query("SELECT i FROM ApItem i JOIN FETCH i.data JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
     List<ApItem> findValidItemsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint AND i.createChange.changeId > :changeId")
