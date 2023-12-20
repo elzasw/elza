@@ -104,18 +104,16 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
-import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
-import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.RevisionItemService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedBinding;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -137,8 +135,6 @@ public class ApFactory {
 
     private final ApPartRepository partRepository;
 
-    private final ApItemRepository itemRepository;
-
     private final RuleFactory ruleFactory;
 
     private final CamConnector camConnector;
@@ -153,15 +149,13 @@ public class ApFactory {
 
     private final ApRevPartRepository revPartRepository;
 
-    private final ApRevItemRepository revItemRepository;
-
     private final ApRevIndexRepository revIndexRepository;
 
     private final RevisionItemService revisionItemService;
 
     private final AccessPointItemService apItemService;
 
-    private final AccessPointService accessPointService;
+    private final AccessPointCacheService accessPointCacheService;
 
     private final ElzaLocale elzaLocale;
 
@@ -171,7 +165,6 @@ public class ApFactory {
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
                      final ApPartRepository partRepository,
-                     final ApItemRepository itemRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
                      final RuleFactory ruleFactory,
@@ -181,18 +174,18 @@ public class ApFactory {
                      final UserRepository userRepository,
                      final ApChangeRepository changeRepository,
                      final ApRevPartRepository revPartRepository,
-                     final ApRevItemRepository revItemRepository,
+                     //final ApRevItemRepository revItemRepository,
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
-                     final AccessPointService accessPointService,
+                     //final AccessPointService accessPointService,
+                     final AccessPointCacheService accessPointCacheService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
         this.partRepository = partRepository;
-        this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
         this.ruleFactory = ruleFactory;
@@ -202,11 +195,10 @@ public class ApFactory {
         this.userRepository = userRepository;
         this.changeRepository = changeRepository;
         this.revPartRepository = revPartRepository;
-        this.revItemRepository = revItemRepository;
         this.revIndexRepository = revIndexRepository;
         this.revisionItemService = revisionItemService;
         this.apItemService = apItemService;
-        this.accessPointService = accessPointService;
+        this.accessPointCacheService = accessPointCacheService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -408,7 +400,7 @@ public class ApFactory {
         ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name, description);
 
         // prepare last change - include deleted items
-        Integer lastChangeId = apRepository.getLastChange(cachedAccessPoint.getAccessPointId());
+        Integer lastChangeId = accessPointCacheService.getLastChange(cachedAccessPoint);
         ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
         // prepare bindings
