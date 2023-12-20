@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,7 +73,6 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.search.SearchIndexSupport;
@@ -99,9 +99,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Autowired
     private ApPartRepository partRepository;
-
-    @Autowired
-    private ApItemRepository itemRepository;
 
     @Autowired
     private ApIndexRepository indexRepository;
@@ -1017,4 +1014,19 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         // moznost optimalizovat nacteni vcene zavislosti
         return cachedAccessPointRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getAccessPointId(), o -> o));
     }
+
+	public Integer getLastChange(CachedAccessPoint cachedAccessPoint) {
+		List<Integer> changeIds = new ArrayList<>();
+		for (CachedPart part : cachedAccessPoint.getParts()) {
+			changeIds.addAll(Arrays.asList(part.getCreateChangeId(), part.getDeleteChangeId()));
+			for (ApItem item : part.getItems()) {
+				changeIds.addAll(Arrays.asList(item.getCreateChangeId(), item.getDeleteChangeId()));
+			}
+		}
+		return changeIds.stream()
+				.filter(Objects::nonNull)
+				.sorted((a, b) -> b.compareTo(a))
+				.findFirst()
+				.get();
+	}
 }
