@@ -186,7 +186,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void sePreferNameRevisionTest() throws ApiException, InterruptedException {
+    public void setPreferNameRevisionTest() throws ApiException, InterruptedException {
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());

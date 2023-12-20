@@ -94,12 +94,18 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
      * @param accessPointId
      * @return
      */
-    @Query(value = "SELECT MAX(u.change_id) FROM" +
-            "(SELECT GREATEST(p.create_change_id, p.delete_change_id) AS change_id" +
-            " FROM ap_part p WHERE p.access_point_id = ?1" +
-            " UNION " +
-            " SELECT GREATEST(i.create_change_id, i.delete_change_id) AS change_id" +
-            " FROM ap_item i where i.part_id IN" +
-            "   (SELECT p.part_id FROM ap_part p WHERE p.access_point_id = ?1)) u", nativeQuery = true)
-    int getLastChange(Integer accessPointId);
+    @Query(value = "SELECT MAX(change_id) FROM (" +
+    		" SELECT p.create_change_id AS change_id FROM ap_part p" +
+    		" WHERE p.access_point_id = ?1 AND delete_change_id IS NULL" +
+    		" UNION" +
+    		" SELECT p.delete_change_id AS change_id FROM ap_part p" +
+    		" WHERE p.access_point_id = ?1 AND delete_change_id IS NOT NULL" +
+    		" UNION" +
+    		" SELECT i.create_change_id AS change_id FROM ap_item i JOIN ap_part p ON p.part_id = i.part_id" +
+    		" WHERE p.access_point_id = ?1 AND i.delete_change_id IS NULL AND p.delete_change_id IS NULL" +
+    		" UNION" +
+    		" SELECT i.delete_change_id AS change_id FROM ap_item i JOIN ap_part p ON p.part_id = i.part_id" +
+    		" WHERE p.access_point_id = ?1 AND i.delete_change_id IS NULL AND p.delete_change_id IS NOT NULL" +
+    		") src", nativeQuery = true)
+    Integer getLastChange(Integer accessPointId);
 }
