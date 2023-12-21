@@ -28,7 +28,6 @@ import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
 
 /**
  * Test exportu archivního souboru.
@@ -42,12 +41,6 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     private final static int STRUCT_OBJ_1_ITEM_2_VALUE = 5238455;
 
     private final static String POINT_WKT = "POINT (13.84883008449354 49.44732132890184)";
-
-    // final static String TRANSFORMATIONS = DE_IMPORT_CONTROLLER_URL + "/transformations";
-    // final static String SUZAP_XML = "suzap-import.xml";
-
-    @Autowired
-    private StructuredItemRepository structItemRepository;
 
     @Autowired
     DataCoordinatesRepository dataCoordinatesRepository;
@@ -87,24 +80,6 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     private void requestImport(final File importFile, final ApScopeVO scope) {
         importXmlFile(null, scope.getId(), importFile);
     }
-
-//    private File downloadExport(final ArrFundVO fund) throws IOException, FileNotFoundException {
-//        ArrFundVersionVO version = getOpenVersion(fund.getId());
-//
-//        Path path = Files.createTempFile("elza-test-export", ".xml");
-//
-//        FundSections fundParams = new FundSections();
-//        fundParams.setFundVersionId(version.getId());
-//        DEExportParamsVO params = new DEExportParamsVO();
-//        params.setFundsSections(Collections.singleton(fundParams));
-//
-//        Response response = post(spec -> spec.body(params), DE_EXPORT);
-//        try (InputStream is = response.asInputStream()) {
-//            Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
-//        }
-//
-//        return path.toFile();
-//    }
 
     private void checkData() {
         StaticDataProvider staticData = staticDataService.getData();
