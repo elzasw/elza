@@ -19,8 +19,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-@Entity
-@Table(name="arr_data_uri_ref")
+
+@Entity(name = "arr_data_uri_ref")
+@Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUriRef extends ArrData {
 

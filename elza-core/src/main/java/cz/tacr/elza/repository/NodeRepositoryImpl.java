@@ -106,9 +106,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override //TODO hibernate search 6
-    public ScrollableResults findUncachedNodes() {
-        EmptyScrollableResults result = new EmptyScrollableResults();
-        return result;
+    public ScrollableResults<Integer> findUncachedNodes() {
+        // přepsáno z NOT IN z důvodu optimalizace na LEFT JOIN
+		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
+
+		// get Hibernate session
+		Session session = entityManager.unwrap(Session.class);
+		ScrollableResults<Integer> result = session.createQuery(hql, Integer.class).setCacheMode(CacheMode.IGNORE).scroll(ScrollMode.FORWARD_ONLY);
+
+		return result;
+//      EmptyScrollableResults result = new EmptyScrollableResults();
     }
 
 //    private FullTextEntityManager fullTextEntityManager = null; TODO hibernate search 6
