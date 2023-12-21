@@ -290,6 +290,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             List<Integer> dataIds = dataIdsEntry.getValue();
             String storageTable = dataIdsEntry.getKey().getStorageTable();
 
+            // TODO resolve: UnknownEntityException: Could not resolve root entity 'arr_data_structured'
+            if (storageTable.equals("arr_data_structured")) {
+            	storageTable = "arr_data_structure_ref";
+            }
+
             entityManager.createQuery("SELECT d FROM " + storageTable + " d WHERE d.dataId in :dataIds", dataClass)
                     .setParameter("dataIds", dataIds)
                     .getResultList();

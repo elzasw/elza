@@ -456,21 +456,20 @@ public class NodeCacheService {
      * Synchronizace záznamů v databázi.
      */
     private void syncCacheInternal() {
-		ScrollableResults uncachedNodes = nodeRepository.findUncachedNodes();
+		ScrollableResults<Integer> uncachedNodes = nodeRepository.findUncachedNodes();
 
 		List<Integer> partNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
 		int count = 0;
 		while (uncachedNodes.next()) {
-			Object obj = uncachedNodes.get();
+			Integer nodeId = uncachedNodes.get();
 
-			partNodeIds.add((Integer) obj);
+			partNodeIds.add(nodeId);
 			count++;
 			if (count % SYNC_BATCH_NODE_SIZE == 0) {
 				logger.info("Sestavuji JP " + (count - SYNC_BATCH_NODE_SIZE + 1) + "-" + count);
 
 				processNewNodes(partNodeIds);
 				partNodeIds.clear();
-
 			}
 		}
 		// process remaining nodes
@@ -595,6 +594,7 @@ public class NodeCacheService {
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
             descItem = HibernateUtils.unproxy(descItem);
+            descItem.setData(HibernateUtils.unproxy(descItem.getData()));
             List<ArrDescItem> items = nodeIdItems.get(descItem.getNodeId());
             if (items == null) {
                 items = new ArrayList<>();

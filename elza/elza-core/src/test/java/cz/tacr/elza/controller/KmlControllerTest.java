@@ -47,7 +47,6 @@ public class KmlControllerTest extends AbstractControllerTest {
         }
     }
 
-    // TODO slapa: vyřešit
     @Test
     public void arrImportExportTest() {
         List<ApScopeVO> allScopes = getAllScopes();

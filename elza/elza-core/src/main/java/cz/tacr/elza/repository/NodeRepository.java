@@ -75,7 +75,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     @Query("SELECT DISTINCT de.nodeId FROM arr_desc_item de " +
             "JOIN de.data d " +
-            "JOIN ArrDataUriRef ur ON ur.dataId = d.dataId " +
+            "JOIN arr_data_uri_ref ur ON ur.dataId = d.dataId " +
             "JOIN ur.arrNode n " +
             "WHERE de.deleteChange IS NULL AND n.nodeId = :nodeId")
     Set<Integer> findLinkedNodes(@Param("nodeId") Integer nodeId);

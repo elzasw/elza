@@ -11,7 +11,6 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -140,5 +139,5 @@ public interface NodeRepositoryCustom {
 	 *
 	 * @return
 	 */
-	ScrollableResults findUncachedNodes();
+	ScrollableResults<Integer> findUncachedNodes();
 }
