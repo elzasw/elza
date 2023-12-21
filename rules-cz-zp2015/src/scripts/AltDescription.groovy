@@ -14,8 +14,6 @@ import org.apache.commons.lang3.StringUtils
 
 @Field SettingStructTypeSettings structTypeSettings = STRUCTURE_TYPE_SETTINGS;
 
-@Field int packetLeadingZeros = 8;
-
 generate()
 return;
 
