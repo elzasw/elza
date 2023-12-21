@@ -59,6 +59,7 @@ import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
@@ -436,7 +437,18 @@ public class StructObjValueService {
             sortValue = value;
         }
 
-        // run duplicate check only for nondeleted values
+        // check max length and shorten text
+        if (value != null && value.length() > StringLength.LENGTH_1000) {
+            value = value.substring(0, StringLength.LENGTH_1000);
+        }
+        if (sortValue != null && sortValue.length() > StringLength.LENGTH_1000) {
+            sortValue = sortValue.substring(0, StringLength.LENGTH_1000);
+        }
+        if (complement != null && complement.length() > StringLength.LENGTH_1000) {
+            complement = complement.substring(0, StringLength.LENGTH_1000);
+        }
+
+        // run duplicate check only for nondeleted values and non anonymous values
         if (structObj.getDeleteChangeId() == null && !structType.getStructuredType().getAnonymous()) {
             DuplicationEvaluator evaluator = new DuplicationEvaluator(oldSortValue, sortValue, structObj);
             if (evaluator.evaluate()) {
