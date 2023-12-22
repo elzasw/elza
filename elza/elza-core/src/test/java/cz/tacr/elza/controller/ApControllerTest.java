@@ -338,7 +338,7 @@ public class ApControllerTest extends AbstractControllerTest {
         for (ApPartVO part : accessPoint.getParts()) {
             if (part.getId().equals(preferredPart.getId())) {
                 // prvni part
-                assertEquals(part.getItems().size(), 1);
+                assertEquals(1, part.getItems().size());
                 ApItemVO mainItem = part.getItems().get(0);
                 ApItemStringVO stringVo = (ApItemStringVO) mainItem;
                 assertEquals(stringVo.getValue(), "TEST2");
