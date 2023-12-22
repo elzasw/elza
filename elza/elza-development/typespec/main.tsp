@@ -63,6 +63,12 @@ model FundIdParameter {
     fundId: integer;
 }
 
+model FundVersionIdParameter {
+    /** Fund ID Version*/
+    @path
+    fundVersionId: integer;
+}
+
 model NodeIdParameter {
     /** Node ID*/
     @path
@@ -138,6 +144,14 @@ model FundSections {
 	fundVersionId: integer;
 	mergeSections?: boolean = false;
 	rootNodeIds?: integer[];
+}
+
+/**
+ * Fund node item type id and quantity 
+ */
+model UsedItemType {
+	rulItemTypeId: integer;
+	count: integer;
 }
 
 /**
@@ -416,6 +430,14 @@ namespace ElzaAPI.Admin {
 @tag("funds")
 @route("/fund")
 namespace ElzaAPI.Fund {
+    /**
+     * Return list of item type id & count
+     */
+    @route("{fundId}/usedItemtypes/{fundVersionId}") 
+    op usedItemTypes(
+        ...FundIdParameter,
+		...FundVersionIdParameter): UsedItemType[];
+
     /**
      * Return list of filesystem repositories
      */

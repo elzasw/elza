@@ -142,8 +142,12 @@ class FundPage extends AbstractReactComponent {
                 i18n('export.title.fund'),
                 <ExportForm
                     fund={true}
-                    onSubmitForm={data => {
-                        return this.props.dispatch(exportFund(fundDetail.versionId, data.transformationName, data.exportFilterId));
+                    initialValues={{
+                        includeUUID:true,
+                        includeAccessPoints: true
+                    }}
+                    onSubmitForm={({exportFilterId, includeUUID, includeAccessPoints}) => {
+                        return this.props.dispatch(exportFund(fundDetail.versionId, {exportFilterId, includeUUID, includeAccessPoints}));
                     }}
                 />,
             ),

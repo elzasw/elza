@@ -89,7 +89,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[($V{prefName}.length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>70]]></printWhenExpression>
+					<printWhenExpression><![CDATA[($V{prefName}.length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>=70]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left">
 					<font pdfEncoding="Cp1250"/>
@@ -102,7 +102,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[($V{prefName}.length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>70]]></printWhenExpression>
+					<printWhenExpression><![CDATA[($V{prefName}.length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>=70]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

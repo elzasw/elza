@@ -47,13 +47,15 @@ public class AccessPointsReader implements ExportReader {
      */
     @Override
     public void read() {
-        ApOutputStream os = context.getBuilder().openAccessPointsOutputStream(context);
-        try {
-            readAccessPoints(os);
-            os.processed();
-        } finally {
-            authorizedScopeIds.clear();
-            os.close();
+        if (context.isIncludeAccessPoints()) {
+            ApOutputStream os = context.getBuilder().openAccessPointsOutputStream(context);
+            try {
+                readAccessPoints(os);
+                os.processed();
+            } finally {
+                authorizedScopeIds.clear();
+                os.close();
+            }
         }
     }
 
