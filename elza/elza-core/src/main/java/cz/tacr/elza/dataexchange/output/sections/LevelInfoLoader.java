@@ -1,7 +1,6 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +9,7 @@ import jakarta.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractBatchLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
@@ -34,12 +34,20 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     private final DaoLoader daoLoader;
 
+    private final boolean includeAccessPoints;
+
+    private final boolean includeUuid;
+
     public LevelInfoLoader(final EntityManager em,
                            final int batchSize,
-                           final NodeCacheService nodeCacheService) {
+                           final NodeCacheService nodeCacheService,
+                           final boolean includeAccessPoints,
+                           final boolean includeUuid) {
         super(batchSize);
         this.daoLoader = new DaoLoader(em, batchSize);
         this.nodeCacheService = nodeCacheService;
+        this.includeAccessPoints = includeAccessPoints;
+        this.includeUuid = includeUuid;
     }
 
     @Override
@@ -113,21 +121,24 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         return nodeIds;
     }
 
-    private static LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode,
-                                                 Map<Integer, ArrDao> daoMap) {
+    private LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode, Map<Integer, ArrDao> daoMap) {
         Validate.notNull(nodeId);
         Validate.notNull(cachedNode);
 
         LevelInfoImpl levelInfo = new LevelInfoImpl(nodeId, parentNodeId);
-        levelInfo.setNodeUuid(cachedNode.getUuid());
+        // show UUID by condition
+        if (includeUuid) {
+            levelInfo.setNodeUuid(cachedNode.getUuid());
+        }
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-            // sort items by item type and position
-            descItems.stream().sorted((item1, item2) -> compareItems(item1, item2))
-                    .forEachOrdered(levelInfo::addItem);
+            // sort items by item type and position & filter by condition
+            descItems.stream().filter(item -> isItemIncluded(item))
+                .sorted((item1, item2) -> compareItems(item1, item2))
+                .forEachOrdered(levelInfo::addItem);
         }
 
-        // Add daos
+        // add daos
         List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
         if (daoLinks != null) {
             daoLinks.forEach(daoLink -> {
@@ -147,7 +158,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
      * @param item2
      * @return
      */
-    private static int compareItems(ArrDescItem item1, ArrDescItem item2) {
+    private int compareItems(ArrDescItem item1, ArrDescItem item2) {
         RulItemType itemType1 = item1.getItemType();
         RulItemType itemType2 = item2.getItemType();
         int cmp = itemType1.getViewOrder().compareTo(itemType2.getViewOrder());
@@ -164,5 +175,15 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             }
         }
         return cmp;
+    }
+
+    private boolean isItemIncluded(ArrDescItem item) {
+        if (!includeAccessPoints) {
+            // filter out AccessPoints
+            if (item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF) {
+                return false;
+            }
+        }
+        return true;
     }
 }
