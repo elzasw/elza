@@ -47,6 +47,7 @@ import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.UpdateFund;
+import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -462,5 +463,20 @@ public class FundController implements FundsApi {
         Validate.notNull(daoLink.getNodeId());
 
         return ResponseEntity.ok(daoLink.getDaoLinkId());
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId, 
+                                                                @PathVariable("fundVersionId") Integer fundVersionId) {
+        Validate.notNull(fundId);
+        Validate.notNull(fundVersionId);
+
+        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+        Validate.isTrue(fundVersion.getFundId() == fundId, "fundId does not match fundVersionId");
+
+        List<UsedItemType> usedItemTypes = arrangementService.findUsedItemTypes(fundVersion); 
+
+        return ResponseEntity.ok(usedItemTypes);
     }
 }

@@ -14,6 +14,14 @@ public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
 
     private ApExternalSystemType type;
 
+    private ApExternalSystemSimpleVO(final ApExternalSystem src) {
+        super(src);
+        setType(src.getType());
+        if (src.getScope() != null) {
+            setScope(src.getScope().getScopeId());
+        }
+    }
+
     public Integer getScope() {
         return scope;
     }
@@ -34,14 +42,7 @@ public class ApExternalSystemSimpleVO extends SysExternalSystemSimpleVO {
      * Creates simple value object from AP external system.
      */
     public static ApExternalSystemSimpleVO newInstance(ApExternalSystem src) {
-        ApExternalSystemSimpleVO vo = new ApExternalSystemSimpleVO();
-        vo.setCode(src.getCode());
-        vo.setId(src.getExternalSystemId());
-        vo.setName(src.getName());
-        vo.setType(src.getType());
-        if (src.getScope() != null) {
-            vo.setScope(src.getScope().getScopeId());
-        }
+        ApExternalSystemSimpleVO vo = new ApExternalSystemSimpleVO(src);
         return vo;
     }
 }

@@ -513,13 +513,15 @@ class FundDataGrid extends AbstractReactComponent {
                 }
 
                 const col = {
-                    id,
+                    // id musi byt cislo (nikoliv string) kvuli editaci hodnot, resp. 
+                    // zachovani funkce subNodeForm
+                    id: refType.id,
                     refType,
                     dataType: dataTypesMap[refType.dataTypeId],
                     title: refType.shortcut,
                     desc: refType.name,
                     width,
-                    dataName: id,
+                    dataName: refType.id,
                     headerColRenderer: this.headerColRenderer,
                     cellRenderer: this.cellRenderer,
                 };

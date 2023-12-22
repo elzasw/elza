@@ -1672,6 +1672,8 @@ var messages = {
 
     "export.title.fund": "Export archivního souboru",
     "export.exportFilter": "Exportní filtr",
+    "export.includeAccessPoints": "Exportovat entity",
+    "export.includeUUID": "Exportovat UUID",
     "export.generating": "Generování exportu...",
     "export.fail": "Soubor nelze stáhnout",
     "export.success": "Soubor úspěšně vygenerován",

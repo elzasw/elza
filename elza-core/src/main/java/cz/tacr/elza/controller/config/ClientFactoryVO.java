@@ -53,6 +53,8 @@ import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -63,6 +65,7 @@ import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -127,6 +130,7 @@ import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFund;
@@ -160,8 +164,10 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
@@ -2020,8 +2026,17 @@ public class ClientFactoryVO {
         // AP external system is newly created through factory without mapper
         if (extSystem instanceof ApExternalSystem) {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
+        } else
+        if (extSystem instanceof GisExternalSystem) {
+            return GisExternalSystemSimpleVO.newInstance((GisExternalSystem) extSystem);
+        } else if (extSystem instanceof ArrDigitizationFrontdesk) {
+            return ArrDigitizationFrontdeskSimpleVO.newInstance((ArrDigitizationFrontdesk) extSystem);
+        } else if (extSystem instanceof ArrDigitalRepository) {
+            return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
+        } else {
+            throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE)
+                    .set("type", extSystem.getClass());
         }
-        return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
     }
 
     public List<RulOutputFilterVO> createOutputFilterList(final List<RulOutputFilter> outputFilters) {

@@ -27,6 +27,10 @@ public class ExportContext {
 
     private ExportFilter exportFilter;
 
+    private boolean includeAccessPoints;
+
+    private boolean includeUUID;
+
     public ExportContext(ExportBuilder builder, StaticDataProvider staticData, int batchSize) {
         this.builder = Validate.notNull(builder);
         this.staticData = Validate.notNull(staticData);
@@ -77,5 +81,21 @@ public class ExportContext {
      */
     public boolean canExportDeletedAPs() {
         return builder.canExportDeletedAPs();
+    }
+
+    public boolean isIncludeUUID() {
+        return includeUUID;
+    }
+
+    public void setIncludeUUID(boolean includeUUID) {
+        this.includeUUID = includeUUID;
+    }
+
+    public boolean isIncludeAccessPoints() {
+        return includeAccessPoints;
+    }
+
+    public void setIncludeAccessPoints(boolean includeAccessPoints) {
+        this.includeAccessPoints = includeAccessPoints;
     }
 }
