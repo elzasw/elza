@@ -80,8 +80,10 @@ public class RevisionItemService {
         if (CollectionUtils.isEmpty(parts)) {
             return Collections.emptyList();
         }
-        return dataService.findItemsWithData(() -> revItemRepository.findByParts(parts),
-                this::createDataResultList);
+    	// TODO optimalizovat čtení dat
+//        return dataService.findItemsWithData(() -> revItemRepository.findByParts(parts),
+//                this::createDataResultList);
+        return revItemRepository.findByParts(parts);
     }
 
     public void deleteRevisionItems(List<ApRevItem> items, ApChange change) {
