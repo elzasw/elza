@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.0.final using JasperReports Library version 6.20.0-2bc7ab61c56f459e8176eb05c7705e145cd400ad  -->
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="detail" pageWidth="595" pageHeight="420" orientation="Landscape" columnWidth="545" leftMargin="25" rightMargin="25" topMargin="25" bottomMargin="25" uuid="33c094a7-3c36-4bd2-b55d-a9860efff18f">
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -188,7 +188,7 @@
 			<textField evaluationTime="Page">
 				<reportElement x="0" y="0" width="543" height="40" uuid="226b2102-e11f-46c5-84b5-dad5116f0aef"/>
 				<textElement>
-					<font size="14" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="14" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[cz.tacr.elza.print.format.Helper.getFirstStringOrDefault($V{titleList}, "")]]></textFieldExpression>
 			</textField>
@@ -207,7 +207,7 @@
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="10" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="10" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getValue()]]></textFieldExpression>
 			</textField>
@@ -222,7 +222,7 @@
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="8" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" pozůstalost (fond):"]]></textFieldExpression>
 			</textField>
@@ -235,7 +235,7 @@
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 			</textField>
@@ -252,7 +252,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
 			</textField>
@@ -266,7 +266,7 @@
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{refNumber}]]></textFieldExpression>
 			</textField>
@@ -283,7 +283,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{storageId}]]></textFieldExpression>
 			</textField>
@@ -298,7 +298,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="8" isBold="false" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="8" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" ukl. j. / poř. č.:"]]></textFieldExpression>
 			</textField>
@@ -307,7 +307,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{amountFormatter}.format($F{node})]]></textFieldExpression>
 			</textField>
@@ -315,7 +315,7 @@
 				<reportElement positionType="Float" x="1" y="97" width="542" height="30" uuid="c46129d2-3263-4df0-ac87-1b6324f7c11d"/>
 				<box topPadding="3"/>
 				<textElement>
-					<font size="12" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="12" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_UNIT_DATE")]]></textFieldExpression>
 			</textField>
@@ -324,7 +324,7 @@
 					<printWhenExpression><![CDATA[$F{node}.getParent()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
+					<font fontName="DejaVu Sans" size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) )]]></textFieldExpression>
 			</textField>

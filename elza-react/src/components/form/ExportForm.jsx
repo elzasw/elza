@@ -54,21 +54,35 @@ class ExportForm extends AbstractReactComponent {
                     {isFetching ? (
                         <HorizontalLoader />
                     ) : (
-                        <Field
-                            name="exportFilterId"
-                            component={FormInputField}
-                            as="select"
-                            label={i18n('export.exportFilter')}
-                        >
-                            <option key="blankName" />
-                            {exportFilters.data && exportFilters.data.map((i, index) => {
-                                return (
-                                    <option key={index + 'name'} value={i.id}>
-                                        {i.name}
-                                    </option>
-                                );
-                            })}
-                        </Field>
+                            <>
+                                <Field
+                                    name="exportFilterId"
+                                    component={FormInputField}
+                                    as="select"
+                                    label={i18n('export.exportFilter')}
+                                >
+                                    <option key="blankName" />
+                                    {exportFilters.data && exportFilters.data.map((i, index) => {
+                                        return (
+                                            <option key={index + 'name'} value={i.id}>
+                                                {i.name}
+                                            </option>
+                                        );
+                                    })}
+                                </Field>
+                                <Field
+                                    name="includeUUID"
+                                    component={FormInputField}
+                                    type="checkbox"
+                                    label={i18n('export.includeUUID')}
+                                />
+                                <Field
+                                    name="includeAccessPoints"
+                                    component={FormInputField}
+                                    type="checkbox"
+                                    label={i18n('export.includeAccessPoints')}
+                                />
+                            </>
                     )}
                 </Modal.Body>
                 <Modal.Footer>

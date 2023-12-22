@@ -1814,13 +1814,13 @@ public class AccessPointService {
      */
     public ApAccessPoint lockAccessPoint(Integer accessPointId, Integer ctrlVersion) {
         ApAccessPoint accessPoint = em.getReference(ApAccessPoint.class, accessPointId);
-        Integer version = accessPoint.getVersion();
+        Integer dbVersion = accessPoint.getVersion();
         // pokud verze je null - kontrola se neprovádí
-        if (ctrlVersion != null && version != ctrlVersion) {
+        if (ctrlVersion != null && !ctrlVersion.equals(dbVersion)) {
             throw new BusinessException("Nesprávná verze archivní entity", RegistryCode.INVALID_ENTITY_VERSION)
             .set("accessPointId", accessPointId)
-            .set("version", version)
-            .set("control version", ctrlVersion);
+                    .set("dbVersion", dbVersion)
+                    .set("ctrlVersion", ctrlVersion);
         }
         em.lock(accessPoint, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
         return accessPoint;

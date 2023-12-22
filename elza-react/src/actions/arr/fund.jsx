@@ -144,10 +144,12 @@ export function deleteFundHistory(fundId) {
 }
 
 // Export fondu, využití metod na získání id export requestu, zjistění stavu a adresy pro stažení
-export function exportFund(fundId, transformationName, exportFilterId) {
+export function exportFund(fundId, { exportFilterId, includeUUID, includeAccessPoints }) {
     let requestData = {
         fundsSections: [{fundVersionId: fundId}],
-        exportFilterId: exportFilterId,
+        exportFilterId,
+        includeUUID,
+        includeAccessPoints,
     };
 
     // opakovane dotazovani na stav exportu, konci stazenim souboru ci hlaskou o neuspechu
