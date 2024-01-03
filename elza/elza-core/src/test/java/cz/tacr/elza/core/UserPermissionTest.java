@@ -160,7 +160,7 @@ public class UserPermissionTest extends AbstractTest {
 
     private ApAccessPoint createApAccessPoint() {
         ApAccessPoint accessPoint = new ApAccessPoint();
-        accessPoint.setAccessPointId(1);
+        //accessPoint.setAccessPointId(1); // https://github.com/spring-projects/spring-boot/issues/37126
         accessPoint.setUuid(UUID.randomUUID().toString());
         accessPoint.setState(ApStateEnum.OK);
         accessPoint.setLastUpdate(LocalDateTime.now());
