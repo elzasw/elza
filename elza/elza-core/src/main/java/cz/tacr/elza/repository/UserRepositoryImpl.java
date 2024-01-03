@@ -55,10 +55,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
             Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
-            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
+            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT_ID), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
-            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
-                    nameJoin.get(ApPart.PART_ID));
+            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID), nameJoin.get(ApPart.PART_ID));
             nameJoin.on(nameFkCond);
             Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
             indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
@@ -111,16 +110,14 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                         builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchUsernameExp));
             }
         }
-        if(nameLikeCond != null && usernameLikeCond == null) conditions.add(nameLikeCond);
-        if(nameLikeCond == null && usernameLikeCond != null) conditions.add(usernameLikeCond);
-        if(nameLikeCond != null && usernameLikeCond != null) {
+        if (nameLikeCond != null && usernameLikeCond == null) conditions.add(nameLikeCond);
+        if (nameLikeCond == null && usernameLikeCond != null) conditions.add(usernameLikeCond);
+        if (nameLikeCond != null && usernameLikeCond != null) {
             conditions.add(builder.or(nameLikeCond, usernameLikeCond));
         }
 
-
-
 		if (excludedGroupId != null) {
-			final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
+			final Subquery<Integer> subquery = query.subquery(Integer.class);
 			final Root<UsrGroupUser> groupUserSubq = subquery.from(UsrGroupUser.class);
 			subquery.select(groupUserSubq.get(UsrGroupUser.FIELD_USER_ID));
 			subquery.where(builder.equal(groupUserSubq.get(UsrGroupUser.FIELD_GROUP_ID), excludedGroupId));

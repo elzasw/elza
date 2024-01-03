@@ -34,6 +34,9 @@ public class UsrUser {
     @JoinColumn(name = "accessPointId", nullable = false)
     private ApAccessPoint accessPoint;
 
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer accessPointId;
+
     @Column(length = 250, nullable = false, unique = true)
     private String username;
 
@@ -46,6 +49,7 @@ public class UsrUser {
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_USER_ID = "userId";
     public static final String FIELD_ACCESS_POINT = "accessPoint";
+    public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_USERNAME = "username";
     public static final String FIELD_DESCRIPTION = "description";
     public static final String FIELD_ACTIVE = "active";
@@ -112,5 +116,10 @@ public class UsrUser {
 
     public void setAccessPoint(ApAccessPoint accessPoint) {
         this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
+    }
+
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 }
