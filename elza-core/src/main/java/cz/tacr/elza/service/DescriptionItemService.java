@@ -1282,6 +1282,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
         return itemList.stream()
+        		.filter(i -> i.getData() != null)
                 .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
                 .collect(Collectors.toList());
     }
