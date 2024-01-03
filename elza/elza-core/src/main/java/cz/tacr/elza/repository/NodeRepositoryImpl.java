@@ -6,8 +6,8 @@ import static java.util.stream.Collectors.toSet;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -77,7 +77,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     @Override //TODO hibernate search 6
@@ -87,22 +87,22 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId) {
-        return Collections.emptySet();
+        return new HashSet<>();
     }
 
     @Override //TODO hibernate search 6
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(String queryText, Integer fundId, Integer lockChangeId) throws InvalidQueryException {
-        return null;
+        return new HashSet<>();
     }
 
     @Override //TODO hibernate search 6
     public Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> descItemFilters) {
-        return null;
+        return new HashSet<>();
     }
 
     @Override //TODO hibernate search 6
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(List<SearchParam> searchParams, Integer fundId, Integer lockChangeId) {
-        return null;
+        return new HashSet<>();
     }
 
     @Override //TODO hibernate search 6
