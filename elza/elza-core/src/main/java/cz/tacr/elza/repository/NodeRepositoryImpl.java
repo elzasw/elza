@@ -1,8 +1,5 @@
 package cz.tacr.elza.repository;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -77,7 +74,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
-        return new ArrayList<>();
+      Validate.notNull(node, "JP musí být vyplněna");
+      Validate.notNull(version, "Verze AS musí být vyplněna");
+      Validate.notNull(direction, "Směr musí být vyplněn");
+
+      ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
+      Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
+
+      List<ArrNode> result = levels.stream().map(l -> l.getNode()).collect(Collectors.toList());
+      return result;
     }
 
     @Override //TODO hibernate search 6
