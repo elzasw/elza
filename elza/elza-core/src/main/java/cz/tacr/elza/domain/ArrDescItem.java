@@ -55,6 +55,8 @@ public class ArrDescItem extends ArrItem {
     public static final String FIELD_FUND_ID_STRING = "fundIdString";
     public static final String FIELD_NODE = "node";
     public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_CREATE_CHANGE = "createChange";
+    public static final String FIELD_DELETE_CHANGE = "deleteChange";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_DESC_ITEM_TYPE_ID = "descItemTypeId";

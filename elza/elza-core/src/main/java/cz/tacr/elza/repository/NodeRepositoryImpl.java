@@ -77,7 +77,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     @Override //TODO hibernate search 6
@@ -87,7 +87,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId) {
-        return null;
+        return Collections.emptySet();
     }
 
     @Override //TODO hibernate search 6

@@ -1033,27 +1033,20 @@ public class RevertingChangesService {
                                          @NotNull final ArrChange change) {
         // pole tabulek a sloupcu, kde je zjistovana zmena vcetne vazby na node
         String[][] tables = new String[][]{
-                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE,
-                        ArrLevel.FIELD_CREATE_CHANGE },
-                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE,
-                        ArrLevel.FIELD_DELETE_CHANGE },
-                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_CREATE_CHANGE_ID },
-                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_DELETE_CHANGE_ID },
-                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE, ArrDaoLink.FIELD_CREATE_CHANGE_ID },
-                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE,
-                        ArrDaoLink.FIELD_DELETE_CHANGE_ID },
-                { ArrDescItem.TABLE_NAME,
-                        ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_CREATE_CHANGE_ID },
-                { ArrDescItem.TABLE_NAME,
-                        ArrDescItem.FIELD_NODE,
-                        ArrDescItem.FIELD_DELETE_CHANGE_ID },
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE, ArrLevel.FIELD_CREATE_CHANGE },
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE, ArrLevel.FIELD_DELETE_CHANGE },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_CREATE_CHANGE },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_DELETE_CHANGE },
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE, ArrDaoLink.FIELD_CREATE_CHANGE },
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE, ArrDaoLink.FIELD_DELETE_CHANGE },
+                { ArrDescItem.TABLE_NAME, ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_CREATE_CHANGE },
+                { ArrDescItem.TABLE_NAME, ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_DELETE_CHANGE },
         };
 
         List<String> hqls = new ArrayList<>();
         for (String[] table : tables) {
             String nodesHql = createHQLFindChanges(table[2], table[0], createHqlSubNodeQuery(fund, node));
-            String hql = String.format("SELECT i.nodeId FROM %1$s i WHERE %2$s IN (%3$s)", table[0], table[2],
-                                       nodesHql);
+            String hql = String.format("SELECT i.nodeId FROM %1$s i WHERE %2$s IN (%3$s)", table[0], table[2], nodesHql);
             hqls.add(hql);
         }
 
