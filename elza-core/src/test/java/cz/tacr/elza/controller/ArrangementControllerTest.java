@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -33,9 +32,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -73,6 +70,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutput;
@@ -1100,8 +1098,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 0;
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
-            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
-                    typeVo);
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node, typeVo);
             index++;
         }
 
@@ -1128,19 +1125,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
 
-
         //test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
-        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemService
-                .findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
             if (descItem.getItemTypeId().equals(typeVo.getId())) {
-                ArrDataText text = HibernateUtils.unproxy(descItem.getData());
+            	ArrDataText text = HibernateUtils.unproxy(descItem.getData());
                 assertTrue(text.getTextValue().equals("nova_value"));
             }
         }
@@ -1152,8 +1147,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         body.setSelectionType(ArrangementController.SelectionType.NODES);
         deleteDescItems(fundVersion.getId(), typeVo.getId(), body);
 
-        List<ArrDescItem> nodeDescItems = descItemService
-                .findOpenByNodesAndType(nodeRepository.findAllById(nodeIds), type);
+        List<ArrDescItem> nodeDescItems = descItemService.findOpenByNodesAndType(nodeRepository.findAllById(nodeIds), type);
         assertTrue(nodeDescItems.isEmpty());
     }
 
