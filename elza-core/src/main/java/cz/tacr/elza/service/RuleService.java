@@ -616,8 +616,7 @@ public class RuleService {
 
         ArrNode rootNode = fundVersion.getRootNode();
 
-        List<ArrNode> nodes = nodeRepository
-                .findNodesByDirection(rootNode, fundVersion, RelatedNodeDirection.ALL);
+        List<ArrNode> nodes = nodeRepository.findNodesByDirection(rootNode, fundVersion, RelatedNodeDirection.ALL);
 
         nodes.add(rootNode);
         logger.info("Conformity Info All");
