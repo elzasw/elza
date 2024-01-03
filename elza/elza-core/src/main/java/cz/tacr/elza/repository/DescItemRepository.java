@@ -56,6 +56,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
 	static final String FETCH_NODES_WITH_DATA = "SELECT i FROM arr_desc_item i"
+			+ " JOIN FETCH i.data"
 	        + " LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType"
             + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL"
             + " ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position";
