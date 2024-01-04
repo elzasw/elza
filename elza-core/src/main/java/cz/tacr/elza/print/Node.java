@@ -125,7 +125,7 @@ public class Node {
     public List<Item> getItems(final Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        if (items == null || typeCodes.isEmpty()) {
+        if (CollectionUtils.isEmpty(items) || CollectionUtils.isEmpty(typeCodes)) {
             return Collections.emptyList();
         }
 
@@ -138,7 +138,7 @@ public class Node {
     public List<Item> getItems(final Collection<String> typeCodes, final Collection<String> specCodes) {
         Validate.notNull(typeCodes);
 
-        if (items == null || typeCodes.isEmpty()) {
+        if (CollectionUtils.isEmpty(items) || CollectionUtils.isEmpty(typeCodes)) {
             return Collections.emptyList();
         }
 
@@ -198,7 +198,7 @@ public class Node {
     public List<List<Item>> getItemsFromParent(final Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        if (items == null || typeCodes.isEmpty()) {
+        if (CollectionUtils.isEmpty(items) || CollectionUtils.isEmpty(typeCodes)) {
             return Collections.emptyList();
         }
 
@@ -233,7 +233,7 @@ public class Node {
         Validate.notNull(typeCode);
         Validate.notNull(specCode);
 
-        if (items == null) {
+        if (CollectionUtils.isEmpty(items)) {
             return Collections.emptyList();
         }
 
@@ -273,7 +273,7 @@ public class Node {
     public List<Item> getItemsWithout(final Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
-        if (items == null) {
+        if (CollectionUtils.isEmpty(items)) {
             return Collections.emptyList();
         }
 
@@ -285,6 +285,10 @@ public class Node {
 
     public Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
+
+        if (CollectionUtils.isEmpty(items)) {
+            return null;
+        }
 
         Item found = null;
         for (Item item : items) {
@@ -313,13 +317,15 @@ public class Node {
      * @return
      */
     public List<Record> getRecords() {
-        List<Record> allAPs = new ArrayList<>();
 
-        if (items != null) {
-            for (Item item : items) {
-                if (item instanceof ItemRecordRef) {
+        if (CollectionUtils.isEmpty(items)) {
+            return Collections.emptyList();
+        }
+
+        List<Record> allAPs = new ArrayList<>();
+        for (Item item : items) {
+            if (item instanceof ItemRecordRef) {
                     allAPs.add(item.getValue(Record.class));
-                }
             }
         }
         return allAPs;
