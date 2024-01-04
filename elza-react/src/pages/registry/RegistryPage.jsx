@@ -665,6 +665,7 @@ class RegistryPage extends AbstractReactComponent {
                     type: perms.AP_SCOPE_WR,
                     scopeId: data ? data.scopeId : null,
                 })
+                && this.canDeleteRegistry()
                 && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
             ) {
                 itemActions.push(
