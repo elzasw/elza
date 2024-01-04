@@ -93,7 +93,8 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     canDeleteRegistry = () => {
-        // We can delete item if has id, data and if it is not part of the external system with CAM_COMPLETE type
+        // We can delete item if has id, data and if it is not part of the external 
+        // system with CAM_COMPLETE type
         const {
             registryDetail: { id, data },
             extSystems,
@@ -621,61 +622,60 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
 
-            if (this.canDeleteRegistry()) {
-                if (
-                    userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                        type: perms.AP_SCOPE_WR,
-                        scopeId: data ? data.scopeId : null,
-                    })
-                ) {
-                    itemActions.push(
-                        <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
-                            <Icon glyph="fa-trash" />
-                            <div>
-                                <span className="btnText">{i18n('registry.deleteRegistry')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
+            if (
+                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                    type: perms.AP_SCOPE_WR,
+                    scopeId: data ? data.scopeId : null,
+                }) && this.canDeleteRegistry()
+            ) {
+                itemActions.push(
+                    <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
+                        <Icon glyph="fa-trash" />
+                        <div>
+                            <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
 
-                if (
-                    userDetail.hasOne(
-                        perms.AP_SCOPE_WR_ALL,
-                        {
-                            type: perms.AP_SCOPE_WR,
-                            scopeId: data ? data.scopeId : null,
-                        }
-                    ) && userDetail.hasOne(
-                        perms.FUND_RD,
-                        perms.FUND_RD_ALL,
-                    )
-                ) {
-                    itemActions.push(
-                        <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
-                            <Icon glyph="fa-search" />
-                            <div>
-                                <span className="btnText">{i18n('registry.registryUsage')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-
-                if (
-                    userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                        type: perms.AP_SCOPE_WR,
+            if (
+                userDetail.hasOne(
+                    perms.AP_SCOPE_RD_ALL,
+                    {
+                        type: perms.AP_SCOPE_RD,
                         scopeId: data ? data.scopeId : null,
-                    })
-                    && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
-                ) {
-                    itemActions.push(
-                        <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
-                            <Icon glyph="fa-ban" />
-                            <div>
-                                <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
+                    }
+                ) && userDetail.hasOne(
+                    perms.FUND_RD,
+                    perms.FUND_RD_ALL,
+                )
+            ) {
+                itemActions.push(
+                    <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+                        <Icon glyph="fa-search" />
+                        <div>
+                            <span className="btnText">{i18n('registry.registryUsage')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
+
+            if (
+                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                    type: perms.AP_SCOPE_WR,
+                    scopeId: data ? data.scopeId : null,
+                })
+                && this.canDeleteRegistry()
+                && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
+            ) {
+                itemActions.push(
+                    <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+                        <Icon glyph="fa-ban" />
+                        <div>
+                            <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                        </div>
+                    </Button>,
+                );
             }
 
             if (id && data) {
