@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -87,7 +88,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Override //TODO hibernate search 6
     public QueryResults<ArrDescItemInfo> findFundIdsByFulltext(String text, Collection<ArrFund> fundList, Integer size, Integer offset) {
-        return null;
+        return new QueryResults<>(0, Collections.emptyList());
     }
 
     @Override //TODO hibernate search 6
