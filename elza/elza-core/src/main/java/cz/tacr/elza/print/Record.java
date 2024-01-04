@@ -426,11 +426,15 @@ public class Record {
                 outputContext.getApDataService(),
                 true);
 
-        ExportContext ec = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
-        ec.addApId(this.ap.getAccessPointId());
+        ExportContext expCtx = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
+        // set flags include AP && UUID
+        expCtx.setIncludeAccessPoints(true);
+        expCtx.setIncludeUUID(true);
+
+        expCtx.addApId(this.ap.getAccessPointId());
 
         ExportInitHelper eih = outputContext.getExportInitHelper();
-        AccessPointsReader apr = new AccessPointsReader(ec, eih);
+        AccessPointsReader apr = new AccessPointsReader(expCtx, eih);
 
         apr.read();
 
