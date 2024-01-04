@@ -38,7 +38,7 @@ public interface DataDateRepository extends JpaRepository<ArrDataDate, Integer> 
      * @param locDate
      */
     @Modifying
-    @Query(nativeQuery = true, value = "insert into arr_data_date(data_id, value) values(?1, ?2)")
+    @Query(nativeQuery = true, value = "insert into arr_data_date(data_id, date_value) values(?1, ?2)")
     void insertMasterOnly(Integer dataId, LocalDate locDate);
 
 }
