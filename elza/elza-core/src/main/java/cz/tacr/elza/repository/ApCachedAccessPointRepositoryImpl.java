@@ -1,20 +1,33 @@
 package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.RamUsageEstimator;
-// import org.hibernate.search.jpa.FullTextEntityManager;
-// import org.hibernate.search.jpa.FullTextQuery;
-// import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.engine.search.query.SearchResult;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
+//import org.hibernate.search.jpa.FullTextEntityManager;
+//import org.hibernate.search.jpa.FullTextQuery;
+//import org.hibernate.search.jpa.Search;
+//import org.hibernate.search.query.dsl.BooleanJunction;
+//import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
@@ -184,33 +197,59 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     //    private Analyzer getAnalyzer() {
     //        return getFullTextEntityManager().getSearchFactory().getAnalyzer("cz");
     //    }
-    //
-    //    @Override
-    //    public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
-    //                                                                              SearchFilterVO searchFilter,
-    //                                                                              Collection<Integer> apTypeIdTree,
-    //                                                                              Collection<Integer> scopeIds,
-    //                                                                              ApState.StateApproval state,
-    //                                                                              Integer from,
-    //                                                                              Integer count,
-    //                                                                              StaticDataProvider sdp) {
-    //
-    //        QueryBuilder queryBuilder = createQueryBuilder(ApCachedAccessPoint.class);
-    //        Query query = buildQueryFromParams(queryBuilder, search, searchFilter, apTypeIdTree, scopeIds, state);
-    //        SortField[] sortFields = new SortField[2];
-    //        sortFields[0] = new SortField(null, SortField.Type.SCORE);
-    //        sortFields[1] = new SortField(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, SortField.Type.STRING);
-    //
-    //        Sort sort = new Sort(sortFields);
-    //
-    //        FullTextQuery fullTextQuery = createFullTextQuery(query, ApCachedAccessPoint.class);
-    //        fullTextQuery.setFirstResult(from);
-    //        fullTextQuery.setMaxResults(count);
-    //        fullTextQuery.setSort(sort);
-    //
-    //        // todo fetch ap_access_points
-    //        return new QueryResults<ApCachedAccessPoint>(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
-    //    }
+
+
+	@Override
+	public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+                                                                              SearchFilterVO searchFilter,
+                                                                              Collection<Integer> apTypeIdTree,
+                                                                              Collection<Integer> scopeIds,
+                                                                              ApState.StateApproval state,
+                                                                              Integer from,
+                                                                              Integer count,
+                                                                              StaticDataProvider sdp) {
+		SearchSession session = Search.session(entityManager);
+
+		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
+				.where(f -> f.bool(b -> {
+					b.must(f.matchAll());
+					if (search != null) {
+						b.must(f.wildcard().field("data").matching(search + "*"));
+					}
+				}))
+				.fetch(from, count);
+
+		Long hitCount = result.total().hitCount();
+
+		return new QueryResults<ApCachedAccessPoint>(hitCount.intValue(), result.hits());
+	}
+
+//        @Override
+//        public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+//                                                                                  SearchFilterVO searchFilter,
+//                                                                                  Collection<Integer> apTypeIdTree,
+//                                                                                  Collection<Integer> scopeIds,
+//                                                                                  ApState.StateApproval state,
+//                                                                                  Integer from,
+//                                                                                  Integer count,
+//                                                                                  StaticDataProvider sdp) {
+//    
+//            QueryBuilder queryBuilder = createQueryBuilder(ApCachedAccessPoint.class);
+//            Query query = buildQueryFromParams(queryBuilder, search, searchFilter, apTypeIdTree, scopeIds, state);
+//            SortField[] sortFields = new SortField[2];
+//            sortFields[0] = new SortField(null, SortField.Type.SCORE);
+//            sortFields[1] = new SortField(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, SortField.Type.STRING);
+//    
+//            Sort sort = new Sort(sortFields);
+//    
+//            FullTextQuery fullTextQuery = createFullTextQuery(query, ApCachedAccessPoint.class);
+//            fullTextQuery.setFirstResult(from);
+//            fullTextQuery.setMaxResults(count);
+//            fullTextQuery.setSort(sort);
+//    
+//            // todo fetch ep_access_points
+//            return new QueryResults<ApCachedAccessPoint>(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
+//        }
 
     //    private Query buildQueryFromParams(QueryBuilder queryBuilder,
     //                                       String search,

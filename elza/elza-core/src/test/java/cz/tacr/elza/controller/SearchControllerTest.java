@@ -1,7 +1,7 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +28,13 @@ public class SearchControllerTest extends AbstractControllerTest {
         ResultEntityRef result = searchApi.searchEntity(createSearchParamEmpty());
         assertNotNull(result);
 
-        //assertTrue(result.getCount() == 3); //TODO AccessPOintCacheService.search()
+        assertEquals(3, result.getCount().intValue());
 
         SearchParams sp = createSearchParamText("Firma");
         result = searchApi.searchEntity(sp);
         assertNotNull(result);
 
-        //assertTrue(result.getCount() == 2); //TODO AccessPOintCacheService.search()
+        assertEquals(2, result.getCount().intValue());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class SearchControllerTest extends AbstractControllerTest {
         ResultEntityRef result = searchApi.searchArchDesc(createSearchParamEmpty());
         assertNotNull(result);
 
-        assertTrue(result.getCount() == 0);
+        assertEquals(0, result.getCount().intValue());
 
         // TODO: Add search test with some data in DB
     }

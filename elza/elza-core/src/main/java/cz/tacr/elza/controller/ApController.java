@@ -377,11 +377,8 @@ public class ApController {
 
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
-        //TODO hibernate search 6
-        //QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-        //        .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
-
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
