@@ -38,7 +38,7 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
                 + RECURSIVE_QUERY_P6;
         String query = createQuery(DatabaseType.MSSQL, createEntity());
 
-        //assertEquals(expected, query); //TODO Elza3
+        //assertEquals(expected, query); //TODO hibernate search 6
     }
 
     @Test
