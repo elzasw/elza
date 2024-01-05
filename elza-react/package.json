@@ -9,6 +9,7 @@
     "dev-legacy": "rescripts --openssl-legacy-provider start",
     "dev": "rescripts start",
     "build": "cross-env CI=false rescripts build",
+    "build-legacy": "cross-env CI=false rescripts --openssl-legacy-provider build",
     "initialize": "npm install",
     "compile": "react-scripts build",
     "test": "rescripts test",
