@@ -29,7 +29,7 @@ public class QueryResults<T> {
 
     public static <T> QueryResults<T> emptyResult(final int recordCount) {
         final List<T> records = Collections.emptyList();
-        return new QueryResults(recordCount, records);
+        return new QueryResults<>(recordCount, records);
     }
 
 }
