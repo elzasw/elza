@@ -211,10 +211,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		SearchSession session = Search.session(entityManager);
 
 		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
-				.where(f -> f.bool(b -> {
+				.where(f -> f.bool().with(b -> {
 					b.must(f.matchAll());
 					if (search != null) {
-						b.must(f.wildcard().field("data").matching(search + "*"));
+						b.must(f.wildcard().field("data").matching("*" + search + "*"));
 					}
 				}))
 				.fetch(from, count);
