@@ -11,6 +11,8 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoImpl;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.cache.RestoredNode;
 
 public class ApplyFilter {
@@ -55,6 +57,26 @@ public class ApplyFilter {
             }
         }
         addItems.add(item);
+    }
+
+    /**
+     * Return added item
+     * 
+     * @param rulItemType.getItemTypeId()
+     * @param rulItemSpec!
+     * @return
+     */
+    public ArrItem getAddedItem(RulItemType rulItemType, RulItemSpec rulItemSpec) {
+        for (ArrItem currItem : addItems) {
+            if (Objects.equal(currItem.getItemTypeId(), rulItemType.getItemTypeId())) {
+                if (Objects.equal(currItem.getItemSpecId(),
+                                   rulItemSpec != null ? rulItemSpec.getItemSpecId() : null)) {
+                    return currItem;
+                }
+
+            }
+        }
+        return null;
     }
 
     private boolean isFilterEmpty() {
