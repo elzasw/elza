@@ -409,7 +409,7 @@ public class UnitDateConvertor {
      * @param first
      * @return LocalDateTime
      */
-    private static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean first) {
+    public static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 return LocalDateTime.parse(unitdate.getValueFrom());

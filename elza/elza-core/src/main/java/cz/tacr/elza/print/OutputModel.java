@@ -636,7 +636,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // add items
-        rule.addItems(itemsByType, filter, changed, restrItems);
+        rule.addItems(itemsByType, filter, changed, restrItems, elzaLocale.getLocale());
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
