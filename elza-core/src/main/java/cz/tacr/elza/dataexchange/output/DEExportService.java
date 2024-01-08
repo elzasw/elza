@@ -29,6 +29,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -86,6 +87,8 @@ public class DEExportService {
 
     private final RuleService ruleService;
 
+    private final ElzaLocale elzaLocale;
+
     @Autowired
     public DEExportService(EntityManager em,
             StaticDataService staticDataService,
@@ -99,7 +102,8 @@ public class DEExportService {
             ApAccessPointRepository apRepository,
             ResourcePathResolver resourcePathResolver,
             ScopeRepository scopeRepository,
-            final RuleService ruleService) {
+                           final RuleService ruleService,
+                           final ElzaLocale elzaLocale) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository,
                 resourcePathResolver);
@@ -109,6 +113,7 @@ public class DEExportService {
         this.scopeRepository = scopeRepository;
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
+        this.elzaLocale = elzaLocale;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -159,7 +164,7 @@ public class DEExportService {
             RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilterId());
             // create bean for export filter
             ExportFilterConfig efc = loadConfig(expFilterDB);
-            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData());
+            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale);
             context.setExportFilter(expFilter);
         }
 

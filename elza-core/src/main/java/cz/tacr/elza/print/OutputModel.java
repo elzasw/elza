@@ -640,13 +640,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             }
         }
 
-        // add itemsOnChange if changed
-        if (rule.getAddItemsOnChange() != null && changed) {
-            rule.getAddItemsOnChange().forEach(i -> filter.addItem(i));
-        }
-        if (rule.getAddItems() != null) {
-            rule.getAddItems().forEach(i -> filter.addItem(i));
-        }
+        // add items
+        rule.addItems(itemsByType, filter, changed, restrItems, elzaLocale.getLocale());
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {

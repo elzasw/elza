@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -31,6 +32,7 @@ public class AccessRestrictFilter implements ExportFilter {
 
     final Set<Integer> restrictedNodeIds = new HashSet<>();
     final private StaticDataProvider sdp;
+    final private ElzaLocale elzaLocale;
 
     /**
      * Map of restriction definition objects
@@ -53,11 +55,13 @@ public class AccessRestrictFilter implements ExportFilter {
 
     final private FilterRules filterRules;
 
-    public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc) {
+    public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc,
+                                final ElzaLocale elzaLocale) {
         this.sdp = sdp;
         this.efc = efc;
         this.soiLoader = new StructObjectInfoLoader(em, 1, sdp);
         this.filterRules = new FilterRules(efc, sdp);
+        this.elzaLocale = elzaLocale;
     }
 
     @Override
@@ -205,13 +209,8 @@ public class AccessRestrictFilter implements ExportFilter {
         }
 
         // add itemsOnChange if changed
-        if (rule.getAddItemsOnChange() != null && changed) {
-            rule.getAddItemsOnChange().forEach(i -> filter.addItem(i));
+        rule.addItems(itemsByType, filter, changed, restrItems, elzaLocale.getLocale());
         }
-        if (rule.getAddItems() != null) {
-            rule.getAddItems().forEach(i -> filter.addItem(i));
-        }
-    }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
         StructObjectInfo soi = structRestrDefsMap.get(structuredObjectId);
