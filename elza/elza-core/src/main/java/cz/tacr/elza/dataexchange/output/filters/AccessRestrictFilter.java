@@ -204,12 +204,7 @@ public class AccessRestrictFilter implements ExportFilter {
         }
 
         // add itemsOnChange if changed
-        if (rule.getAddItemsOnChange() != null && changed) {
-            rule.getAddItemsOnChange().forEach(i -> filter.addItem(i));
-        }
-        if (rule.getAddItems() != null) {
-            rule.getAddItems().forEach(i -> filter.addItem(i));
-        }
+        rule.addItems(itemsByType, filter, changed, restrItems);
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {

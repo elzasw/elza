@@ -154,9 +154,39 @@ public class FilterConfig {
 
     public static class AddItem {
 
+        /**
+         * Condition when item should be added.
+         */
+        private When when;
+
         private String itemType;
 
         private String itemSpec;
+
+        /**
+         * Flag to append value to existing item.
+         * Value will be appended on new line.
+         */
+        private boolean appendAsNewLine = false;
+
+        /**
+         * Value of the item.
+         * 
+         * Can be used for text and string data types.
+         */
+        private String value;
+
+        /**
+         * Optional prefix for value.
+         * 
+         * Used with valueFrom.
+         */
+        private String prefix;
+
+        /**
+         * Item type of value source item
+         */
+        private String valueFrom;
 
         public String getItemType() {
             return itemType;
@@ -172,6 +202,46 @@ public class FilterConfig {
 
         public void setItemSpec(String itemSpec) {
             this.itemSpec = itemSpec;
+        }
+
+        public When getWhen() {
+            return when;
+        }
+
+        public void setWhen(When when) {
+            this.when = when;
+        }
+
+        public boolean isAppendAsNewLine() {
+            return appendAsNewLine;
+        }
+
+        public void setAppendAsNewLine(boolean appendAsNewLine) {
+            this.appendAsNewLine = appendAsNewLine;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getValueFrom() {
+            return valueFrom;
+        }
+
+        public void setValueFrom(String valueFrom) {
+            this.valueFrom = valueFrom;
         }        
     }
 

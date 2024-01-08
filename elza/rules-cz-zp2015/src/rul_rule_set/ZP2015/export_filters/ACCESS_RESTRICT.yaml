@@ -27,6 +27,12 @@ defs:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_DAO
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Digitální archivní objekt není přístupný k nahlížení."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_DAO_INPERS_ONLY
@@ -39,6 +45,12 @@ defs:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_DAO_INPERS_ONLY
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Digitální archivní objekt je přístupný k nahlížení pouze v prostorách badatelny."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_ARCHDESC
@@ -64,6 +76,12 @@ defs:
       addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_ABSTRACT
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Obsah nezveřejněn z důvodu omezení přístupnosti."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_LIMITED
@@ -79,6 +97,12 @@ defs:
       addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_LIMITED
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_ARCHMAT
@@ -86,6 +110,12 @@ defs:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_ARCHMAT
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Originál archiválie není přístupný k nahlížení. K nahlížení je přístupná pouze kopie archiválie."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_ARCHMAT2
@@ -93,3 +123,9 @@ defs:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_ARCHMAT2
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          value: "Archiválie a její kopie v analogové podobě nejsou přístupné k nahlížení."
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true          
+          valueFrom: ZP2015_NOTE
