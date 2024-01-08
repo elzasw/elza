@@ -14,7 +14,7 @@ defs:
       itemType: ZP2015_INTERNAL_NOTE
     result:
       hiddenItems:
-        - itemType: ZP2015_INTERNAL_NOTE      
+        - itemType: ZP2015_INTERNAL_NOTE
   - when:
       itemType: ZP2015_RESTRICTED_ACCESS_TYPE
       itemSpec: ZP2015_RESTRICTION_DAO
