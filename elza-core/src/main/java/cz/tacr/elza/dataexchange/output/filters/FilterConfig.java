@@ -25,14 +25,19 @@ public class FilterConfig {
     }
 
     public static class Def {
-        private When when;
+        /**
+         * List of conditions
+         * 
+         * All have to match
+         */
+        private List<CondDef> when;
         private Result result;
 
-        public When getWhen() {
+        public List<CondDef> getWhen() {
             return when;
         }
 
-        public void setWhen(When when) {
+        public void setWhen(List<CondDef> when) {
             this.when = when;
         }
 
@@ -45,11 +50,14 @@ public class FilterConfig {
         }
     }
 
-    public static class When {
+    public static class CondDef {
 
         protected String itemType;
 
         protected String itemSpec;
+
+        protected List<CondDef> noneOf;
+        protected List<CondDef> someOf;
 
         public String getItemType() {
             return itemType;
@@ -65,6 +73,22 @@ public class FilterConfig {
 
         public void setItemSpec(String itemSpec) {
             this.itemSpec = itemSpec;
+        }
+
+        public List<CondDef> getNoneOf() {
+            return noneOf;
+        }
+
+        public void setNoneOf(List<CondDef> noneOf) {
+            this.noneOf = noneOf;
+        }
+
+        public List<CondDef> getSomeOf() {
+            return someOf;
+        }
+
+        public void setSomeOf(List<CondDef> someOf) {
+            this.someOf = someOf;
         }
     }
 
@@ -154,11 +178,6 @@ public class FilterConfig {
 
     public static class AddItem {
 
-        /**
-         * Condition when item should be added.
-         */
-        private When when;
-
         private String itemType;
 
         private String itemSpec;
@@ -184,9 +203,26 @@ public class FilterConfig {
         private String prefix;
 
         /**
-         * Item type of value source item
+         * Item type of value source item (from soi)
          */
         private String valueFrom;
+
+        /**
+         * Item type of value source item (from descr items)
+         */
+        private String valueFromItem;
+
+        /**
+         * Add number of years (default value)
+         */
+        private Integer valueAddYearDefault;
+
+        /**
+         * Add number of years (item type)
+         * 
+         * Default value is used if not defined
+         */
+        private String valueAddYearFrom;
 
         public String getItemType() {
             return itemType;
@@ -202,14 +238,6 @@ public class FilterConfig {
 
         public void setItemSpec(String itemSpec) {
             this.itemSpec = itemSpec;
-        }
-
-        public When getWhen() {
-            return when;
-        }
-
-        public void setWhen(When when) {
-            this.when = when;
         }
 
         public boolean isAppendAsNewLine() {
@@ -242,7 +270,32 @@ public class FilterConfig {
 
         public void setValueFrom(String valueFrom) {
             this.valueFrom = valueFrom;
+        }
+
+        public String getValueFromItem() {
+            return valueFromItem;
         }        
+
+        public void setValueFromItem(String valueFromItem) {
+            this.valueFromItem = valueFromItem;
+        }
+
+        public Integer getValueAddYearDefault() {
+            return valueAddYearDefault;
+        }
+
+        public void setValueAddYearDefault(Integer valueAddYear) {
+            this.valueAddYearDefault = valueAddYear;
+        }
+
+        public String getValueAddYearFrom() {
+            return valueAddYearFrom;
+        }
+
+        public void setValueAddYearFrom(String valueAddYearFrom) {
+            this.valueAddYearFrom = valueAddYearFrom;
+        }
+
     }
 
     public static class ItemTypeCode {

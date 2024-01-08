@@ -7,17 +7,17 @@ restrictions:
 
 defs:
   - when:
-      itemType: ZP2015_INVALID_RECORD
+      - itemType: ZP2015_INVALID_RECORD
     result:
       hiddenLevel: true
   - when:
-      itemType: ZP2015_INTERNAL_NOTE
+      - itemType: ZP2015_INTERNAL_NOTE
     result:
       hiddenItems:
         - itemType: ZP2015_INTERNAL_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_DAO
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_DAO
     result:
       hiddenDao: true
       hiddenItems:
@@ -34,8 +34,8 @@ defs:
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_DAO_INPERS_ONLY
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_DAO_INPERS_ONLY
     result:
       hiddenDao: true
       hiddenItems:
@@ -52,18 +52,18 @@ defs:
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_ARCHDESC
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_ARCHDESC
     result:
       hiddenLevel: true
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_ARCHDESC2
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_ARCHDESC2
     result:
       hiddenLevel: true
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_ABSTRACT
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_ABSTRACT
     result:
       hiddenItems:
         - itemType: ZP2015_TITLE
@@ -83,8 +83,8 @@ defs:
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_LIMITED
+     - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+       itemSpec: ZP2015_RESTRICTION_LIMITED
     result:
       hiddenItems:
         - itemType: ZP2015_TITLE
@@ -104,8 +104,8 @@ defs:
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_ARCHMAT
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_ARCHMAT
     result:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
@@ -117,8 +117,8 @@ defs:
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
   - when:
-      itemType: ZP2015_RESTRICTED_ACCESS_TYPE
-      itemSpec: ZP2015_RESTRICTION_ARCHMAT2
+      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
+        itemSpec: ZP2015_RESTRICTION_ARCHMAT2
     result:
       addItems:
         - itemType: ZP2015_APPLIED_RESTRICTION
@@ -129,3 +129,228 @@ defs:
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
           appendAsNewLine: true          
           valueFrom: ZP2015_NOTE
+  - when:
+      - itemType: ZP2015_RESTRICTION_ACCESS_DATE
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_RESTRICTION_ACCESS_DATE
+
+# spouštěcí událost: Datace vzniku jednotky popisu 
+# osobní a citlivé údaje
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_CREATION
+      - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+        itemSpec: ZP2015_ACCESS_PERSONAL_DATA
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFromItem: ZP2015_UNIT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 100
+# autorská práva – majetková
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_CREATION
+      - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+        itemSpec: ZP2015_ACCESS_COPYRIGHT1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFromItem: ZP2015_UNIT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 170
+# autorská práva – osobnostní
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_CREATION
+      - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+        itemSpec: ZP2015_ACCESS_COPYRIGHT2
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFromItem: ZP2015_UNIT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 100
+# jiné důvodu
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_CREATION
+      - noneOf:
+        - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+          itemSpec: ZP2015_ACCESS_PERSONAL_DATA
+        - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+          itemSpec: ZP2015_ACCESS_COPYRIGHT1
+        - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+          itemSpec: ZP2015_ACCESS_COPYRIGHT2
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFromItem: ZP2015_UNIT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 30
+# Datum narození a datum narození odhad, standardně 100
+# Zvláštní případ je Autorská práva – majetková 170
+  - when:
+      - someOf:
+        - itemType: ZP2015_PUBLISH_EVENT_TYPE
+          itemSpec: ZP2015_PUBLISH_EVENT_TYPE_BIRTH
+        - itemType: ZP2015_PUBLISH_EVENT_TYPE
+          itemSpec: ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM
+      - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+        itemSpec: ZP2015_ACCESS_COPYRIGHT1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 170
+# jindy 100
+  - when:
+      - someOf:
+        - itemType: ZP2015_PUBLISH_EVENT_TYPE
+          itemSpec: ZP2015_PUBLISH_EVENT_TYPE_BIRTH
+        - itemType: ZP2015_PUBLISH_EVENT_TYPE
+          itemSpec: ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM
+      - noneOf:
+        - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+          itemSpec: ZP2015_ACCESS_COPYRIGHT1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 100
+# umrti - standardne 0
+# u majetkovych prav 70
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_DEATH
+      - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+        itemSpec: ZP2015_ACCESS_COPYRIGHT1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 70
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_DEATH
+      - noneOf:
+        - itemType: ZP2015_RESTRICTED_ACCESS_REASON
+          itemSpec: ZP2015_ACCESS_COPYRIGHT1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 0
+# Oprávněné zveřejnění díla - 70
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_1
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 70
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_2
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_3
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_4
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_5
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_6
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_7
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 50
+  - when:
+      - itemType: ZP2015_PUBLISH_EVENT_TYPE
+        itemSpec: ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_8
+    result:
+      addItems:
+        - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
+          appendAsNewLine: true
+          prefix: "Datum konce omezení: "
+          valueFrom: ZP2015_PUBLISH_EVENT_DATE
+          valueAddYearFrom: ZP2015_PUBLISH_EVENT_PERIOD
+          valueAddYearDefault: 25
