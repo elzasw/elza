@@ -293,10 +293,7 @@
 	.addValueWithTitle("ZP2015_NOTE")
 	.addValueWithTitle("ZP2015_ARRANGER")
 	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
-    .beginBlock()
-	  .setItemSeparator(", ")
-	  .addValueWithTitle("ZP2015_APPLIED_RESTRICTION")
-	.endBlock()]]></defaultValueExpression>
+	.addValueWithOtherTitle("Omezení přístupnosti", "ZP2015_APPLIED_RESTRICTION_TEXT")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
