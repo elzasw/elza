@@ -31,7 +31,7 @@ defs:
           appendAsNewLine: true
           value: "Digitální archivní objekt není přístupný k nahlížení."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
       - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
@@ -49,7 +49,7 @@ defs:
           appendAsNewLine: true
           value: "Digitální archivní objekt je přístupný k nahlížení pouze v prostorách badatelny."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
       - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
@@ -80,7 +80,7 @@ defs:
           appendAsNewLine: true
           value: "Obsah nezveřejněn z důvodu omezení přístupnosti."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
@@ -101,7 +101,7 @@ defs:
           appendAsNewLine: true
           value: "Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
       - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
@@ -114,7 +114,7 @@ defs:
           appendAsNewLine: true
           value: "Originál archiválie není přístupný k nahlížení. K nahlížení je přístupná pouze kopie archiválie."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
       - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
@@ -127,7 +127,7 @@ defs:
           appendAsNewLine: true
           value: "Archiválie a její kopie v analogové podobě nejsou přístupné k nahlížení."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
-          appendAsNewLine: true          
+          appendAsNewLine: true
           valueFrom: ZP2015_NOTE
   - when:
       - itemType: ZP2015_RESTRICTION_ACCESS_DATE
