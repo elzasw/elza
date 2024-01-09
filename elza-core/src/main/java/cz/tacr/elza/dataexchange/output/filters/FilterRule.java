@@ -12,8 +12,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -31,7 +32,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import liquibase.util.StringUtils;
 
 public class FilterRule {
 
@@ -387,12 +387,12 @@ public class FilterRule {
     public void addItems(Map<ItemType, List<ArrItem>> itemsByType, ApplyFilter filter, boolean changed,
                          Collection<? extends ArrItem> restrItems, Locale locale) {
         // add itemsOnChange if changed
-        if (CollectionUtils.isNotEmpty(addItemsOnChange) && changed) {
+        if (!CollectionUtils.isEmpty(addItemsOnChange) && changed) {
             for (AddItem action : addItemsOnChange) {
                 addItem(action, itemsByType, filter, restrItems, locale);
             }
         }
-        if (CollectionUtils.isNotEmpty(addItems)) {
+        if (!CollectionUtils.isEmpty(addItems)) {
             for (AddItem action : addItems) {
                 addItem(action, itemsByType, filter, restrItems, locale);
             }
