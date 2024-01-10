@@ -47,5 +47,9 @@
     <changeSet id="20230315100813" author="pasek">
         <renameColumn tableName="arr_structured_object" oldColumnName="value" newColumnName="object_value"/>
     </changeSet>
+	<!-- TODO refine the algorithm for next_val
+    <changeSet id="20231219133600" author="sergey.iryupin">
+    	<sql>UPDATE db_hibernate_sequences SET next_val = next_val + 20 WHERE next_val &lt; 20</sql>
+    </changeSet>-->
 
 </databaseChangeLog>
