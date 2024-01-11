@@ -34,6 +34,7 @@ import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge;
 //import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -198,7 +199,7 @@ public class StartupService implements SmartLifecycle {
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
-//        ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class)); TODO hibernate search 6
+        ApCachedAccessPointBridge.init(applicationContext.getBean(SettingsService.class)); //TODO hibernate search 6
 
         //----- stage 2 ------
         TransactionTemplate tt = new TransactionTemplate(txManager);

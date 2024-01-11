@@ -15,7 +15,6 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
@@ -34,7 +33,7 @@ public class ResourcePathResolver {
     private static final String PACKAGES_DIR = "packages";
     private static final String GROOVY_DIR = "groovy";
     private static final String DMS_DIR = "dms";
-    private static final String DPKG_DIR = "dpkg";
+    public static final String DPKG_DIR = "dpkg";
 
     private static final String EXPORT_XML_DIR = "export-xml";
     private static final String IMPORT_XML_DIR = "import-xml";

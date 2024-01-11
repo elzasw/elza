@@ -85,19 +85,25 @@ spring:
     # Logovani SQL dotazu
     #show-sql: true
     properties:
-        net.sf.ehcache.configurationResourceName: /ehcache.xml
-        hibernate:
-            cache:
-              use_second_level_cache: true
-              region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
-
-            # PostgreSQL
-            dialect: org.hibernate.dialect.PostgreSQLDialect
-            # H2
-            #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-            # MySQL
-            #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-            # Oracle
-            #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-            # MSSQL
-            #dialect: org.hibernate.dialect.SQLServer2008Dialect
+      net.sf.ehcache.configurationResourceName: /ehcache.xml
+      hibernate:
+        search:
+          backend:
+            analysis:
+              configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer
+            directory:
+              root: ${elza.workingDir}/lucene/indexes
+            lucene_version: LATEST
+        cache:
+          use_second_level_cache: true
+          region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+          # PostgreSQL
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          # H2
+          #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+          # MySQL
+          #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+          # Oracle
+          #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+          # MSSQL
+          #dialect: org.hibernate.dialect.SQLServer2008Dialect

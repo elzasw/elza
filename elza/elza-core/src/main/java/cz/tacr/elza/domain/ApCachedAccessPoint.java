@@ -1,11 +1,14 @@
 package cz.tacr.elza.domain;
 
 import org.hibernate.Length;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
 
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,18 +19,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Table
-@Indexed //TODO hibernate search 6
-//@AnalyzerDef(name = "cz",
-//        tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
-//        filters = {
-//                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
-//                @TokenFilterDef(factory = ASCIIFoldingFilterFactory.class)
-//        })
-//@ClassBridge(name = "data",
-//        impl = ApCachedAccessPointClassBridge.class,
-//        analyzer = @Analyzer(definition = "cz"),
-//        store = Store.YES)
-//@Analyzer(definition = "cz")
+@Indexed
+@TypeBinding(binder = @TypeBinderRef(type = ApCachedAccessPointBinder.class))
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 
@@ -47,8 +40,8 @@ public class ApCachedAccessPoint {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
 
-    @FullTextField
-    @Column(length = Length.LONG) // Hibernate long text field
+    @Basic
+    @Column(length = Length.LONG) // hibernate long text field
     private String data;
 
     public Integer getCachedAccessPointId() {

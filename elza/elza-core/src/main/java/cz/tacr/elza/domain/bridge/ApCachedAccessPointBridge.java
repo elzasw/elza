@@ -20,6 +20,7 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -40,15 +41,16 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.SpringContext;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.annotation.Nullable;
 
-public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccessPoint> {
+public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint> {
 
-    private final static Logger log = LoggerFactory.getLogger(ApCachedAccessPointClassBridge.class);
+    private final static Logger log = LoggerFactory.getLogger(ApCachedAccessPointBridge.class);
 
     static private SettingsService settingsService;
 
@@ -59,6 +61,9 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
     public static final String INDEX = "index";
+
+    public static final String USERNAME = "username";
+
     public static final String TRANS = "trans";
     public static final String SORT = "sort";
 
@@ -68,7 +73,7 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
     static Properties names = null;
     private Map<String, IndexFieldReference<String>> fields;
 
-    public ApCachedAccessPointClassBridge(Map<String, IndexFieldReference<String>> fields) {
+    public ApCachedAccessPointBridge(Map<String, IndexFieldReference<String>> fields) {
         this.fields = fields;
         log.debug("Creating ApCachedAccessPointClassBridge");
     }
@@ -77,9 +82,8 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
         if (settingsService == null) {
             throw new IllegalArgumentException("settingsService is null");
         }
-        ApCachedAccessPointClassBridge.settingsService = settingsService;
+        ApCachedAccessPointBridge.settingsService = settingsService;
     }
-
 
     private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
         if (CollectionUtils.isNotEmpty(part.getItems())) {
@@ -125,7 +129,7 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
 
                 // indexování polí s více než 32766 znaky
                 if (dataType == DataType.TEXT) {
-                    document.addValue(name + SEPARATOR + itemType.getCode().toLowerCase() + ApCachedAccessPointClassBinder.NOT_ANALYZED, value);
+                    document.addValue(name + SEPARATOR + itemType.getCode().toLowerCase() + ApCachedAccessPointBinder.NOT_ANALYZED, value);
                 } else {
                     addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, name);
                 }
@@ -166,19 +170,19 @@ public class ApCachedAccessPointClassBridge implements TypeBridge<ApCachedAccess
      */
     private void addSortField(String name, String value, DocumentElement document) {
         String valueTrans = removeDiacritic(value); //TODO pasek
-        document.addValue(name + ApCachedAccessPointClassBinder.STORED_SORTABLE, valueTrans);
+        document.addValue(name + ApCachedAccessPointBinder.STORED_SORTABLE, valueTrans);
     }
 
     private void addStringField(String name, String value, DocumentElement document) {
-        document.addValue(name + ApCachedAccessPointClassBinder.NOT_ANALYZED, value); //TODO pasek
+        document.addValue(name + ApCachedAccessPointBinder.NOT_ANALYZED, value); //TODO pasek
     }
 
     private void addField(String name, String value, DocumentElement document, String prefixName) {
         // Pridani raw hodnoty fieldu (bez tranliterace - NOT_ANALYZED) //TODO pasek
-        document.addValue(name + ApCachedAccessPointClassBinder.NOT_ANALYZED, value);
+        document.addValue(name + ApCachedAccessPointBinder.NOT_ANALYZED, value);
 
         if (isFieldForTransliteration(name, prefixName)) {
-            document.addValue(name + SEPARATOR + TRANS + SEPARATOR + ApCachedAccessPointClassBinder.ANALYZED, value);
+            document.addValue(name + SEPARATOR + TRANS + ApCachedAccessPointBinder.ANALYZED, value);
         }
     }
 
