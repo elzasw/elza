@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
+import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -20,7 +22,6 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -41,7 +42,6 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.SpringContext;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -58,14 +58,14 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
 
-    public static final String PREFIX_PREF = "pref";
+    public static final String PREFIX_PREF = "_pref";
     public static final String SEPARATOR = "_";
-    public static final String INDEX = "index";
+    public static final String INDEX = "_index";
 
     public static final String USERNAME = "username";
 
-    public static final String TRANS = "trans";
-    public static final String SORT = "sort";
+    //public static final String TRANS = "trans";
+    //public static final String SORT = "sort";
 
     public static final String NM_MAIN = "nm_main";
     public static final String NM_MINOR = "nm_minor";
@@ -85,6 +85,40 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         ApCachedAccessPointBridge.settingsService = settingsService;
     }
 
+    @Override
+    public void write(DocumentElement document, ApCachedAccessPoint apCachedAccessPoint, TypeBridgeWriteContext typeBridgeWriteContext) {
+
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
+                String.class, Number.class, Boolean.class, Iterable.class,
+                LocalDate.class, LocalDateTime.class));
+        try {
+            // TODO: use cache service to deserialize
+            CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
+            // do not index APs without state or deleted APs
+            ApState apState = cachedAccessPoint.getApState();
+            if (apState == null || apState.getDeleteChangeId() != null) {
+                return;
+            }
+
+            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
+            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
+            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
+
+            if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
+                for (CachedPart part : cachedAccessPoint.getParts()) {
+                    addItemFields(DATA, part, cachedAccessPoint, document);
+                    addIndexFields(DATA, part, cachedAccessPoint, document);
+                }
+            }
+
+        } catch (IOException e) {
+            throw new SystemException("Nastal problém při deserializaci objektu", e);
+        }
+    }
+
     private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
         if (CollectionUtils.isNotEmpty(part.getItems())) {
             StaticDataProvider sdp = StaticDataProvider.getInstance();
@@ -93,6 +127,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
                 RulItemSpec itemSpec = item.getItemSpecId() != null ? sdp.getItemSpecById(item.getItemSpecId()) : null;
                 DataType dataType = DataType.fromCode(itemType.getEntity().getDataType().getCode());
+                String itemTypeCode = itemType.getCode().toLowerCase();
 
                 if (dataType == DataType.COORDINATES) {
                     continue;
@@ -118,25 +153,28 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     value = itemSpec.getCode();
                 }
 
-                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, name);
+                //if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+                if (part.getKeyValue() != null && part.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
+                    addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
 
-                    if (itemSpec != null) {
-                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(),
-                                value.toLowerCase(), document, name);
-                    }
+                    // TODO zjistit, zda je to nutné.
+//                    if (itemSpec != null) {
+//                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(),
+//                                value.toLowerCase(), document, name);
+//                    }
                 }
 
                 // indexování polí s více než 32766 znaky
                 if (dataType == DataType.TEXT) {
-                    document.addValue(name + SEPARATOR + itemType.getCode().toLowerCase() + ApCachedAccessPointBinder.NOT_ANALYZED, value);
+                    document.addValue(name + SEPARATOR + itemTypeCode + ApCachedAccessPointBinder.NOT_ANALYZED, value);
                 } else {
-                    addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, name);
+                    addField(name + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
                 }
 
-                if (itemSpec != null) {
-                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, name);
-                }
+                // TODO zjistit, zda je to nutné.
+//                if (itemSpec != null) {
+//                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, name);
+//                }
             }
         }
     }
@@ -145,17 +183,14 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         if (CollectionUtils.isNotEmpty(part.getIndices())) {
             for (ApIndex index : part.getIndices()) {
                 if (index.getIndexType().equals(DISPLAY_NAME)) {
-                    StringBuilder fieldName = new StringBuilder(part.getPartTypeCode());
-                    fieldName.append(SEPARATOR).append(INDEX);
 
                     if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                        addSortField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, index
-                                .getIndexValue().toLowerCase(), document);
+                        addField(name + PREFIX_PREF + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                        addSortField(name + PREFIX_PREF + INDEX, index.getIndexValue().toLowerCase(), document);
                     }
 
-                    addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getIndexValue().toLowerCase(), document, name);
-                    addField(name + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                    addField(name + INDEX + SEPARATOR + part.getPartTypeCode().toLowerCase(), index.getIndexValue().toLowerCase(), document, name);
+                    //addField(name + INDEX, index.getIndexValue().toLowerCase(), document, name); // TODO zjistit, zda je to nutné.
                 }
             }
         }
@@ -182,7 +217,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         document.addValue(name + ApCachedAccessPointBinder.NOT_ANALYZED, value);
 
         if (isFieldForTransliteration(name, prefixName)) {
-            document.addValue(name + SEPARATOR + TRANS + ApCachedAccessPointBinder.ANALYZED, value);
+            document.addValue(name + ApCachedAccessPointBinder.ANALYZED, value);
         }
     }
 
@@ -240,46 +275,4 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         }
         return null;
     }
-
-    @Override
-    public void write(DocumentElement document, ApCachedAccessPoint apCachedAccessPoint, TypeBridgeWriteContext typeBridgeWriteContext) {
-
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class,
-                LocalDate.class, LocalDateTime.class));
-        String name = "data";
-        try {
-            // TODO: use cache service to deserialize
-            CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            // do not index APs without state or deleted APs
-            ApState apState = cachedAccessPoint.getApState();
-            if (apState == null || apState.getDeleteChangeId() != null) {
-                return;
-            }
-
-            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
-            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
-            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
-
-            if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
-                for (CachedPart part : cachedAccessPoint.getParts()) {
-                    addItemFields(name, part, cachedAccessPoint, document);
-                    addIndexFields(name, part, cachedAccessPoint, document);
-                }
-            }
-
-        } catch (IOException e) {
-            throw new SystemException("Nastal problém při deserializaci objektu", e);
-        }
-    }
-
-    private static String getMappingFile() {
-        //hibernate.search.backend.directory.root + "AeRecordCache"
-        String dir = System.getProperty("user.dir") + "/" + ApCachedAccessPoint.class.getSimpleName() + "/mapping.txt";
-        return dir;
-    }
-
 }
