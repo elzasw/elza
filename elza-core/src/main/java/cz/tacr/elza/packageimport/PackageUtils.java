@@ -20,6 +20,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.codec.binary.Hex;
@@ -56,6 +57,21 @@ public class PackageUtils {
         } catch (NoSuchAlgorithmException | IOException e) {
             throw new SystemException("Nastal problém při zjišťování hash sha256 na souboru: " + file.getPath(), e);
         }
+    }
+
+    /**
+     * Vytviření mapy streamů souborů v zip souboru.
+     *
+     * @param file soubor zip
+     * @return mapa streamů
+     * @throws IOException 
+     * @throws ZipException 
+     */
+    public static Map<String, ByteArrayInputStream> createStreamsMap(final File file) throws ZipException, IOException {
+        ZipFile zipFile = new ZipFile(file);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+    	return createStreamsMap(zipFile, entries);
     }
 
     /**

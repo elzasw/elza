@@ -1,12 +1,14 @@
 package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+import static cz.tacr.elza.packageimport.PackageService.PART_TYPE_XML;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,21 +27,24 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.packageimport.PackageContext;
 import cz.tacr.elza.packageimport.PackageUtils;
 import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.PartType;
+import cz.tacr.elza.packageimport.xml.PartTypes;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Místo pro načtení konfigurace Lucene indexu, před vlastní inicializací indexu.
+ * Místo pro načtení konfigurace pro Lucene indexu, před vlastní inicializací indexu.
  *
  * @author <a href="mailto:jaroslav.pubal@marbes.cz">Jaroslav Půbal</a>
  */
 @Component
 public class IndexConfigurationReader {
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexConfigurationReader.class);
 
     //Toto NEFUNGUJE!! závislost na bean co je závislý na Hibernate
     //@Autowired
@@ -47,31 +52,38 @@ public class IndexConfigurationReader {
 
     //Toto je OK funguje
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     private static final String PACKAGE_XML = "package.xml";
-
-    @Autowired
-    private ResourcePathResolver resourcePathResolver;
 
     @Value("${elza.package.testing:false}")
     private Boolean testing;
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private List<PackageInfoWrapper> packagesToImport;
-
     private List<PackageInfoWrapper> allPackages;
-    private List<String> importedItemTypeCodes;
+    private List<String> partTypeCodes;
+    private List<String> itemTypeCodes;
 
-    Map<String, PackageInfoWrapper> latestVersionMap;
+    private Map<String, PackageInfoWrapper> latestVersionMap;
 
+    @Value("${elza.workingDir}")
+    private String workDir;
 
     @PostConstruct
     public void init() {
         packagesToImport = new ArrayList<>();
-        importedItemTypeCodes = new ArrayList<>();
-        Path dpkgDir = resourcePathResolver.getDpkgDir();
+        partTypeCodes = new ArrayList<>();
+        itemTypeCodes = new ArrayList<>();
+
+        // get item type codes from DB
+        List<String> itemCodes = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> rs.getString("code"));
+        itemTypeCodes.addAll(itemCodes);
+
+        // get part type codes from DB
+        List<String> partCodes = jdbcTemplate.query("SELECT * FROM rul_part_type", (rs, rowNum) -> rs.getString("code"));
+        partTypeCodes.addAll(partCodes);
+
+        Path dpkgDir = Paths.get(workDir, ResourcePathResolver.DPKG_DIR);
         if (!Files.exists(dpkgDir)) {
             return;
         }
@@ -79,11 +91,6 @@ public class IndexConfigurationReader {
         logger.info("Checking folder {} for packages...", dpkgDir);
 
         // get current packages from DB
-        /*List<RulPackage> packagesDb = getPackages(); //TODO načíst z DB
-
-        Map<String, PackageInfoWrapper> latestVersionMap = packagesDb.stream().map(p -> getPackageInfo(p))
-                .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));*/
-
         String packageSql = "SELECT * FROM rul_package";
         List<PackageInfo> packageInfoList = jdbcTemplate.query(packageSql, (rs, rowNum) -> {
 
@@ -96,9 +103,6 @@ public class IndexConfigurationReader {
 
             return packageInfo;
         });
-        String itemTypeSql = "SELECT * FROM rul_item_type";
-        List<String> codes = jdbcTemplate.query(itemTypeSql, (rs, rowNum) -> rs.getString("code"));
-        importedItemTypeCodes.addAll(codes);
 
         latestVersionMap = packageInfoList.stream()
                 .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
@@ -122,17 +126,23 @@ public class IndexConfigurationReader {
 
                 PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
                 // žádné informace o balíčku nebo nižší verzi
-                if (mapPkg == null ||
-                        mapPkg.getVersion() < pkg.getVersion() ||
-                        (testing && mapPkg.getVersion() <= pkg.getVersion())) {
+                if (mapPkg == null || mapPkg.getVersion() < pkg.getVersion() || (testing && mapPkg.getVersion() <= pkg.getVersion())) {
                     packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
                     latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
-                    PackageContext pkgCtx = new PackageContext(resourcePathResolver);
-                    pkgCtx.init(pkg.getPath().toFile());
-                    ItemTypes itemTypes = pkgCtx.convertXmlStreamToObject(ItemTypes.class, ITEM_TYPE_XML);
+
+                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
+
+                    ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
                     for (ItemType itemType : itemTypes.getItemTypes()) {
-                        if (!importedItemTypeCodes.contains(itemType.getCode())) {
-                            importedItemTypeCodes.add(itemType.getCode());
+                        if (!itemTypeCodes.contains(itemType.getCode())) {
+                            itemTypeCodes.add(itemType.getCode());
+                        }
+                    }
+
+                    PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
+                    for (PartType partType : partTypes.getPartTypes()) {
+                        if (!partTypeCodes.contains(partType.getCode())) {
+                            partTypeCodes.add(partType.getCode());
                         }
                     }
                 } else {
@@ -146,12 +156,14 @@ public class IndexConfigurationReader {
             logger.error("Error processing a package zip file.", e);
             throw new SystemException("Error processing a package zip file.", e);
         }
-
-        //jdbcTemplate.
     }
 
-    public List<String> getImportedItemTypeCodes() {
-        return importedItemTypeCodes;
+    public List<String> getPartTypeCodes() {
+        return partTypeCodes;
+    }
+
+    public List<String> getItemTypeCodes() {
+        return itemTypeCodes;
     }
 
     public List<PackageInfoWrapper> getPackagesToImport() {
@@ -177,5 +189,4 @@ public class IndexConfigurationReader {
             }
         }
     }
-
 }
