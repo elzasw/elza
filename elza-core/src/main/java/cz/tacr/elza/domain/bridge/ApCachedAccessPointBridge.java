@@ -94,9 +94,11 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
                 String.class, Number.class, Boolean.class, Iterable.class,
                 LocalDate.class, LocalDateTime.class));
+
         try {
             // TODO: use cache service to deserialize
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
+            restorePreferredPartId(cachedAccessPoint);
             // do not index APs without state or deleted APs
             ApState apState = cachedAccessPoint.getApState();
             if (apState == null || apState.getDeleteChangeId() != null) {
@@ -104,6 +106,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             }
 
             addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
+            // TODO: rework as int values
             addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
             addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
 
@@ -119,7 +122,17 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         }
     }
 
-    private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
+    private void restorePreferredPartId(CachedAccessPoint cachedAccessPoint) {
+    	if (cachedAccessPoint.getParts() != null) {
+    		for (CachedPart part : cachedAccessPoint.getParts()) {
+    			if (part.getKeyValue() != null && part.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
+    				cachedAccessPoint.setPreferredPartId(part.getPartId());
+    			}
+    		}
+    	}
+	}
+
+	private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
         if (CollectionUtils.isNotEmpty(part.getItems())) {
             StaticDataProvider sdp = StaticDataProvider.getInstance();
 
@@ -153,8 +166,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     value = itemSpec.getCode();
                 }
 
-                //if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                if (part.getKeyValue() != null && part.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
+                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
                     addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
 
                     // TODO zjistit, zda je to nutné.
@@ -189,7 +201,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                         addSortField(name + PREFIX_PREF + INDEX, index.getIndexValue().toLowerCase(), document);
                     }
 
-                    addField(name + INDEX + SEPARATOR + part.getPartTypeCode().toLowerCase(), index.getIndexValue().toLowerCase(), document, name);
+                    addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + INDEX, index.getIndexValue().toLowerCase(), document, name);
                     //addField(name + INDEX, index.getIndexValue().toLowerCase(), document, name); // TODO zjistit, zda je to nutné.
                 }
             }
