@@ -40,10 +40,16 @@ public class ApCachedAccessPointBinder implements TypeBinder {
             fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
 
+        // hlavní indexové pole
+        String name = "data_pref_index";
+        fields.put(name + STORED_SORTABLE, createSortableField(name));
+        fields.put(name + ANALYZED, createAnalyzedField(name));
+        fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
+
         // part type codes
         for (String partCode : configurationReader.getPartTypeCodes()) {
-        	for (String pref : Arrays.asList("data_", "data_index_")) {
-	            String name = pref + partCode.toLowerCase();
+        	for (String suffix : Arrays.asList("", "_index")) {
+	            name = "data_" + partCode.toLowerCase() + suffix;
 	            fields.put(name + STORED_SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
@@ -52,8 +58,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 
         // item type codes
         for (String itemCode : configurationReader.getItemTypeCodes()) {
-        	for (String pref : Arrays.asList("data_", "data_pref_")) {
-	            String name = pref + itemCode.toLowerCase();
+        	for (String pref : Arrays.asList("", "pref_")) {
+	            name = "data_" + pref + itemCode.toLowerCase();
 	            fields.put(name + STORED_SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
