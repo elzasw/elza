@@ -98,7 +98,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         try {
             // TODO: use cache service to deserialize
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            restorePreferredPartId(cachedAccessPoint);
+            if (cachedAccessPoint.getPreferredPartId() == null) {
+            	cachedAccessPoint.setPreferredPartId(findPreferredPartId(cachedAccessPoint));
+            }
             // do not index APs without state or deleted APs
             ApState apState = cachedAccessPoint.getApState();
             if (apState == null || apState.getDeleteChangeId() != null) {
@@ -122,14 +124,15 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         }
     }
 
-    private void restorePreferredPartId(CachedAccessPoint cachedAccessPoint) {
+    private Integer findPreferredPartId(CachedAccessPoint cachedAccessPoint) {
     	if (cachedAccessPoint.getParts() != null) {
     		for (CachedPart part : cachedAccessPoint.getParts()) {
     			if (part.getKeyValue() != null && part.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
-    				cachedAccessPoint.setPreferredPartId(part.getPartId());
+    				return part.getPartId();
     			}
     		}
     	}
+    	return null;
 	}
 
 	private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
@@ -217,7 +220,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
      */
     private void addSortField(String name, String value, DocumentElement document) {
         String valueTrans = removeDiacritic(value); //TODO pasek
-        document.addValue(name + ApCachedAccessPointBinder.STORED_SORTABLE, valueTrans);
+        document.addValue(name + ApCachedAccessPointBinder.SORTABLE, valueTrans);
     }
 
     private void addStringField(String name, String value, DocumentElement document) {
