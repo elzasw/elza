@@ -22,7 +22,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 
     public static final String NOT_ANALYZED = "";
     public static final String ANALYZED = "_analyzed";
-    public static final String STORED_SORTABLE = "_sortable";
+    public static final String SORTABLE = "_sortable";
 
     private IndexConfigurationReader configurationReader = SpringContext.getBean(IndexConfigurationReader.class);
     private TypeBindingContext context;
@@ -42,7 +42,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 
         // hlavní indexové pole
         String name = "data_pref_index";
-        fields.put(name + STORED_SORTABLE, createSortableField(name));
+        fields.put(name + SORTABLE, createSortableField(name));
         fields.put(name + ANALYZED, createAnalyzedField(name));
         fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
 
@@ -50,7 +50,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         for (String partCode : configurationReader.getPartTypeCodes()) {
         	for (String suffix : Arrays.asList("", "_index")) {
 	            name = "data_" + partCode.toLowerCase() + suffix;
-	            fields.put(name + STORED_SORTABLE, createSortableField(name));
+	            fields.put(name + SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         	}
@@ -60,7 +60,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         for (String itemCode : configurationReader.getItemTypeCodes()) {
         	for (String pref : Arrays.asList("", "pref_")) {
 	            name = "data_" + pref + itemCode.toLowerCase();
-	            fields.put(name + STORED_SORTABLE, createSortableField(name));
+	            fields.put(name + SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         	}
@@ -71,7 +71,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 
     private IndexFieldReference<String> createSortableField(String name) {
     	return context.indexSchemaElement()
-        		.field(name + STORED_SORTABLE, f -> f.asString().sortable(Sortable.YES).projectable(Projectable.YES))
+        		.field(name + SORTABLE, f -> f.asString().sortable(Sortable.YES).projectable(Projectable.YES))
         		.multiValued()
         		.toReference();
     }
