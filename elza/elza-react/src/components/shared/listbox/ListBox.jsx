@@ -231,14 +231,6 @@ class ListBox extends AbstractReactComponent {
         }
     };
 
-    unFocus = () => {
-        if (document.selection) {
-            document.selection.empty();
-        } else {
-            window.getSelection().removeAllRanges();
-        }
-    };
-
     dragStart = (index, e) => {
         const {items, multiselect, canSelectItem} = this.props;
 

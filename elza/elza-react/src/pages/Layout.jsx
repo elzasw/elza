@@ -5,7 +5,7 @@ import { setFocus } from 'actions/global/focus.jsx';
 import { routerNavigate } from 'actions/router.jsx';
 import Tetris from 'components/game/Tetris.jsx';
 import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSocket } from 'components/shared';
-import keymap from 'keymap.jsx';
+import keymap from 'src/keymap';
 import {
     AdminExtSystemPage,
     AdminFundPage,

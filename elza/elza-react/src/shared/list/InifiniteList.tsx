@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import {PropsWithChildren} from 'react';
 import InfiniteScroll from "react-infinite-scroll-component";
 import Loading from "../../components/shared/loading/Loading";
 
@@ -12,7 +12,7 @@ interface Props {
  * Wrapper pro nekonečný seznam.
  * @param list
  */
-const InifiniteList: FC<Props> = ({list, fetchMore, children, scrollableTarget}) => {
+const InifiniteList = ({list, fetchMore, children, scrollableTarget}: PropsWithChildren<Props>) => {
   return <InfiniteScroll
     dataLength={list.data.length}
     next={fetchMore}

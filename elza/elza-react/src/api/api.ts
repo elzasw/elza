@@ -13,8 +13,8 @@ const v1ApiPath = '/v1';
 const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
 
 export const getFullPath = (path: string) => {
-    if (path.startsWith('/')) { 
-        path = path.replace('/', ''); 
+    if (path.startsWith('/')) {
+        path = path.replace('/', '');
     }
     return `${basePath}/${path}`;
 }

@@ -1,36 +1,37 @@
 {
-    "compilerOptions": {
-        "baseUrl": "src",
-        "jsx": "react",
-        "module": "esnext",
-        "target": "es2017",
-        "moduleResolution": "node",
-        "noImplicitAny": false,
-        "noImplicitReturns": false,
-        "noImplicitThis": false,
-        "strictNullChecks": true,
-        "sourceMap": true,
-        "declaration": false,
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "esnext"
-        ],
-        "allowJs": true,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": false,
-        "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true
-    },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules",
-        "src/__tests__"
-    ]
+  "compilerOptions": {
+    "baseUrl": "src",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "allowJs": true, // default false
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": false, // TODO change to true
+    "noUnusedLocals": false, // TODO change to true
+    "noUnusedParameters": false, // TODO change to true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Old elza config */
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "declaration": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

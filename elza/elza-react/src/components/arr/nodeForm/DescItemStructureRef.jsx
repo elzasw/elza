@@ -6,7 +6,7 @@ import AddStructureDataForm from 'components/arr/structure/AddStructureDataForm'
 import {Autocomplete, i18n, Icon} from 'components/shared';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect, DispatchProp} from 'react-redux';
+import {connect} from 'react-redux';
 import {
     structureNodeFormFetchIfNeeded,
     structureNodeFormSelectId,
@@ -17,7 +17,6 @@ import {Button} from '../../ui';
 import StructureSubNodeForm from '../structure/StructureSubNodeForm';
 import {DescItemLabel} from './DescItemLabel';
 import './DescItemStructureRef.scss';
-import {IDescItemBaseProps} from './DescItemTypes';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 

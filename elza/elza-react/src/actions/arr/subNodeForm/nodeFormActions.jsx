@@ -4,7 +4,7 @@
 
 import { WebApi } from 'actions/index';
 import { findByRoutingKeyInGlobalState, getRoutingKeyType, indexById } from 'stores/app/utils';
-import NodeRequestController from 'websocketController';
+import NodeRequestController from 'src/websocketController';
 import { increaseNodeVersion } from '../node';
 import { fundNodeInfoReceive } from '../nodeInfo';
 import { fundSubNodeInfoReceive } from '../subNodeInfo';

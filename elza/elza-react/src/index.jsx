@@ -1,7 +1,6 @@
 /**
  * Vstupní soubor pro UI - inicializace a zobrazení VIEW.
  */
-import './public_entry';
 
 // Import css Bootstrapu
 import './elza-styles.scss';
@@ -90,7 +89,7 @@ if (!String.prototype.startsWith) {
 //setTimeout(fc, 1500)
 
 Moment.locale(window.navigator.language || 'cs-CZ');
-momentLocalizer();
+// momentLocalizer();
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
 
@@ -177,8 +176,8 @@ const render = () => {
 
 render();
 
-if (module.hot) {
-    module.hot.accept('./router', () => {
-        render();
-    });
-}
+// if (module.hot) {
+//     module.hot.accept('./router', () => {
+//         render();
+//     });
+// }
