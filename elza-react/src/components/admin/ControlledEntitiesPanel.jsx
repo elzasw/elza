@@ -1,13 +1,13 @@
 // --
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import AddRemoveList from '../shared/list/AddRemoveList';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import SelectItemsForm from './SelectItemsForm';
 import UserAndGroupField from './UserAndGroupField';
-import {renderGroupItem, renderUserItem, renderUserOrGroupItem} from './adminRenderUtils';
+import { renderGroupItem, renderUserItem, renderUserOrGroupItem } from './adminRenderUtils';
 import FundsPermissionPanel from './FundsPermissionPanel';
 
 /**
@@ -50,25 +50,25 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         return permissionsList;
     };
 
-    renderItem = (item, isActive, index, onCheckItem) => {
-        if (item.id === FundsPermissionPanel.ALL_ID) {
-            return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
-        } else {
-            return <div>{item.fund.name}</div>;
-        }
-    };
+    // renderItem = (item, isActive, index, onCheckItem) => {
+    //     if (item.id === FundsPermissionPanel.ALL_ID) {
+    //         return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
+    //     } else {
+    //         return <div>{item.fund.name}</div>;
+    //     }
+    // };
 
     renderItem = props => {
-        const {item, isActive} = props;
+        const { item, isActive } = props;
         if (item.permission === perms.USER_CONTROL_ENTITITY) {
-            return renderUserItem({item: item.userControl, selected: isActive});
+            return renderUserItem({ item: item.userControl, selected: isActive });
         } else if (item.permission === perms.GROUP_CONTROL_ENTITITY) {
-            return renderGroupItem({item: item.groupControl, selected: isActive});
+            return renderGroupItem({ item: item.groupControl, selected: isActive });
         }
     };
 
     handleAdd = () => {
-        const {onAddPermission} = this.props;
+        const { onAddPermission } = this.props;
 
         this.props.dispatch(
             modalDialogShow(
@@ -76,7 +76,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
                 i18n('admin.perm.advanced.control.entity.add.title'),
                 <SelectItemsForm
                     onSubmitForm={items => {
-                        const {permissions} = this.state;
+                        const { permissions } = this.state;
                         const permissionsMap = {};
                         permissions.forEach(p => {
                             if (p.permission === perms.USER_CONTROL_ENTITITY) {
@@ -108,7 +108,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
 
                         onAddPermission(permissionsToAdd).then(data => {
                             const newPermissions = [...permissions, ...data];
-                            this.setState({permissions: newPermissions});
+                            this.setState({ permissions: newPermissions });
                             this.props.dispatch(modalDialogHide());
                         });
                     }}
@@ -120,17 +120,17 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const {onDeletePermission} = this.props;
-        const {permissions} = this.state;
+        const { onDeletePermission } = this.props;
+        const { permissions } = this.state;
         const newPermissions = [...permissions.slice(0, index), ...permissions.slice(index + 1)];
         onDeletePermission(item).then(data => {
-            this.setState({permissions: newPermissions});
+            this.setState({ permissions: newPermissions });
         });
     };
 
     render() {
-        const {permissions} = this.state;
-        const {className} = this.props;
+        const { permissions } = this.state;
+        const { className } = this.props;
 
         return (
             <AddRemoveList

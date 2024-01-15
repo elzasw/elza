@@ -1,12 +1,12 @@
 import React from 'react';
-import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
-import {onReceivedNodeChange} from 'websocketController.jsx';
+import { webSocketConnect, webSocketDisconnect } from 'actions/global/webSocket.jsx';
+import { onReceivedNodeChange } from 'src/websocketController';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
-import {store} from 'stores/index.jsx';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {i18n} from 'components/shared';
-import {checkUserLogged} from 'actions/global/login.jsx';
+import { store } from 'stores/index.jsx';
+import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
+import { i18n } from 'components/shared';
+import { checkUserLogged } from 'actions/global/login.jsx';
 
 import {
     changeAccessPoint,
@@ -48,15 +48,17 @@ import {
     userChange,
 } from 'actions/global/change.jsx';
 
-import {Stomp} from 'stompjs';
+// import { Stomp } from 'stompjs';
+import { Client } from '@stomp/stompjs';
+
 import URLParse from 'url-parse';
 
-import {reloadUserDetail} from 'actions/user/userDetail';
-import {fundTreeFetch} from 'actions/arr/fundTree';
-import {fundTreeInvalidate} from 'actions/arr/fundTree';
+import { reloadUserDetail } from 'actions/user/userDetail';
+import { fundTreeFetch } from 'actions/arr/fundTree';
+import { fundTreeInvalidate } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
-import {fundNodeSubNodeFulltextSearch} from 'actions/arr/node';
-import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from './constants.tsx';
+import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
+import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
 import * as issuesActions from 'actions/arr/issues';
 
 const serverContextPath = window.serverContextPath;
@@ -80,15 +82,26 @@ export class websocket {
     }
 
     connect = (heartbeatOut = 20000, heartbeatIn = 45000) => {
-        if (Stomp) {
-            this.stompClient = Stomp.client(this.url);
-            this.stompClient.debug = null;
-            this.stompClient.heartbeat.outgoing = heartbeatOut;
-            this.stompClient.heartbeat.incoming = heartbeatIn;
-            this.stompClient.onreceipt = this.onReceipt;
-            this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
-            console.info('Websocket connecting to ' + url);
-            this.stompClient.connect({}, this.onConnect, this.onError);
+        if (Client) {
+            this.stompClient = new Client({
+                brokerURL: wsUrl,
+                onConnect: this.onConnect,
+                onUnhandledReceipt: this.onReceipt,
+                onError: this.onError,
+                heartbeatOutgoing: heartbeatOut,
+                heartbeatIncoming: heartbeatIn,
+                debug: (message) => { return; },
+            });
+            // this.stompClient.debug = null;
+            // this.stompClient.heartbeat.outgoing = heartbeatOut;
+            // this.stompClient.heartbeat.incoming = heartbeatIn;
+            // this.stompClient.onreceipt = this.onReceipt;
+            // this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
+            console.info('Websocket connecting to ' + wsUrl);
+            debugger;
+            this.stompClient.activate();
+            console.log("#### activated")
+            // this.stompClient.connect({}, this.onConnect, this.onError);
         }
     };
 
@@ -96,7 +109,7 @@ export class websocket {
         if (this.stompClient && this.stompClient.ws.readyState < 3) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log('Websocket disconnected');
-            this.stompClient.disconnect();
+            this.stompClient.deactivate();
             this.stompClient = null;
         }
         store.dispatch(webSocketDisconnect(error));
@@ -124,8 +137,14 @@ export class websocket {
             this.pendingRequests[this.nextReceiptId] = nextRequest;
             this.nextReceiptId++;
         }
+        console.log("#### websocket send", url, headers, data)
 
-        this.stompClient.send(url, headers, data);
+        // this.stompClient.publish(url, headers, data);
+        this.stompClient.publish({
+            destination: url,
+            headers,
+            body: data,
+        });
     };
 
     addListener = (listener) => {
@@ -139,13 +158,13 @@ export class websocket {
     }
 
     onConnect = frame => {
-        store.dispatch(webSocketConnect());
         console.info('Websocket connected');
+        store.dispatch(webSocketConnect());
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
     };
 
     onError = error => {
-        const {body, headers, command} = error;
+        const { body, headers, command } = error;
 
         store.dispatch(
             checkUserLogged(logged => {
@@ -190,7 +209,7 @@ export class websocket {
     };
 
     onReceipt = frame => {
-        let {body, headers} = frame;
+        let { body, headers } = frame;
         const receiptId = headers['receipt-id'];
         console.info('WEBSOCKET RECEIPT:', frame, '| Remaining requests:', this.pendingRequests);
 
@@ -265,10 +284,10 @@ let eventMap = {
     FUND_EXTENSION_CHANGE: fundExtensionChange,
     STRUCTURE_DATA_CHANGE: structureDataChange,
     ACCESS_POINT_UPDATE: accessPointUpdate,
-    ACCESS_POINT_EXPORT_NEW: () => {},
-    ACCESS_POINT_EXPORT_STARTED: () => {},
-    ACCESS_POINT_EXPORT_COMPLETED: () => {},
-    ACCESS_POINT_EXPORT_FAILED: () => {},
+    ACCESS_POINT_EXPORT_NEW: () => { },
+    ACCESS_POINT_EXPORT_STARTED: () => { },
+    ACCESS_POINT_EXPORT_COMPLETED: () => { },
+    ACCESS_POINT_EXPORT_FAILED: () => { },
     ISSUE_LIST_UPDATE: issueListUpdate,
     ISSUE_LIST_CREATE: issueListCreate,
     ISSUE_UPDATE: issueUpdate,
@@ -531,17 +550,17 @@ function accessPointUpdate(value) {
     store.dispatch(changeAccessPoint(value.ids));
 }
 
-function issueListUpdate({id}) {
+function issueListUpdate({ id }) {
     store.dispatch(issuesActions.protocol.invalidate(id));
     store.dispatch(issuesActions.protocols.invalidate());
 }
 
-function issueListCreate({id}) {
+function issueListCreate({ id }) {
     store.dispatch(issuesActions.protocol.invalidate(id));
     store.dispatch(issuesActions.protocols.invalidate());
 }
 
-function issueUpdate({issueListId, ids}) {
+function issueUpdate({ issueListId, ids }) {
     store.dispatch(issuesActions.list.invalidate(issueListId));
     store.dispatch(issuesActions.detail.invalidate(issueListId));
     ids.forEach(id => {
@@ -549,7 +568,7 @@ function issueUpdate({issueListId, ids}) {
     });
 }
 
-function issueCreate({issueListId}) {
+function issueCreate({ issueListId }) {
     store.dispatch(issuesActions.list.invalidate(issueListId));
 }
 

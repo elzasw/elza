@@ -74,7 +74,6 @@ import { WebApi } from "../../actions/WebApi";
 import { showConfirmDialog } from 'components/shared/dialog';
 import { withRouter } from "react-router";
 import { storeSave } from "../../actions/store/storeEx";
-import { fundDataGridFilterSet } from "../../actions/arr/fundDataGrid";
 
 export const serializeJson = (json) => {
     let s = JSON.stringify(json);
@@ -513,7 +512,7 @@ class FundDataGrid extends AbstractReactComponent {
                 }
 
                 const col = {
-                    // id musi byt cislo (nikoliv string) kvuli editaci hodnot, resp. 
+                    // id musi byt cislo (nikoliv string) kvuli editaci hodnot, resp.
                     // zachovani funkce subNodeForm
                     id: refType.id,
                     refType,

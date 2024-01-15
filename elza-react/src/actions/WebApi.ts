@@ -71,7 +71,7 @@ function callWS(url, data, needResponse = true) {
         } else {
             // @ts-ignore
             window.ws.send('/app' + url, JSON.stringify(data));
-            resolve();
+            resolve({});
         }
     });
 }

@@ -519,14 +519,14 @@ if (appWindow.__DEV__) {
 const initialState = {};
 export const store = (function configureStore(initialState) {
     const state = createStoreWithMiddleware(rootReducer, initialState);
-    if (module.hot) {
-        // Enable Webpack hot module replacement for reducers
-        module.hot.accept('./reducers.jsx', () => {
-            const nextRootReducer = require('./reducers.jsx').default;
-
-            state.replaceReducer(nextRootReducer);
-        });
-    }
+    // if (module.hot) {
+    //     // Enable Webpack hot module replacement for reducers
+    //     module.hot.accept('./reducers.jsx', () => {
+    //         const nextRootReducer = require('./reducers.jsx').default;
+    //
+    //         state.replaceReducer(nextRootReducer);
+    //     });
+    // }
     return state;
 })(initialState);
 

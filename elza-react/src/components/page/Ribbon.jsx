@@ -364,6 +364,7 @@ class Ribbon extends AbstractReactComponent {
         parts.forEach((part, index) => {
             partsWithSplit.push(part);
         });
+        // console.log("#### parts", parts)
         const _showUser = displayUserInfo && showUser;
 
         return (

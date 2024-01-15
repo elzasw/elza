@@ -63,6 +63,7 @@
                             <output>${project.build.directory}/elza-api</output>
                             <configOptions>
                                 <npmName>elza-api</npmName>
+                                <supportsES6>true</supportsES6>
                             </configOptions>
                             <addCompileSourceRoot>false</addCompileSourceRoot>
                         </configuration>
