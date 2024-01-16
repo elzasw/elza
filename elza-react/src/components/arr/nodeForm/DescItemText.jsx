@@ -6,7 +6,7 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import {decorateValue, inputValue} from './DescItemUtils.jsx';
 import {DescItemLabel} from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
-import TextareaAutosize from 'react-autosize-textarea';
+import TextareaAutosize from 'react-textarea-autosize';
 import './DescItemText.scss';
 import {CLS_CALCULABLE} from "../../../constants";
 

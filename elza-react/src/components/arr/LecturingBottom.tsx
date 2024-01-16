@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import TextareaAutosize from 'react-autosize-textarea';
+import TextareaAutosize from 'react-textarea-autosize';
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import * as issuesActions from '../../actions/arr/issues';
