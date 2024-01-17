@@ -3,6 +3,7 @@ package cz.tacr.elza.domain.bridge;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
+import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -107,10 +108,10 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 return;
             }
 
-            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document);
-            // TODO: rework as int values
-            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document);
-            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document);
+            addStringField(FIELD_ACCESSPOINT_ID, apState.getAccessPointId().toString(), document);
+            addStringField(STATE, apState.getStateApproval().name().toLowerCase(), document);
+            addStringField(AP_TYPE_ID, apState.getApTypeId().toString(), document);
+            addStringField(SCOPE_ID, apState.getScopeId().toString(), document);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
