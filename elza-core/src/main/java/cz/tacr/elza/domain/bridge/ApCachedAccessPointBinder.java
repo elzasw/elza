@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
+import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
@@ -35,8 +36,11 @@ public class ApCachedAccessPointBinder implements TypeBinder {
     	// při změně pole data přepočti index
         context.dependencies().use(DATA);
 
+        // číselné pole accessPointId
+        //fields.put(FIELD_ACCESSPOINT_ID, context.indexSchemaElement().field(FIELD_ACCESSPOINT_ID, f -> f.asInteger()).multiValued().toReference());
+
         // přidání dodatečných polí
-        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE)) {
+        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE, FIELD_ACCESSPOINT_ID)) {
             fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
 
