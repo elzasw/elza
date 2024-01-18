@@ -56,6 +56,8 @@ public class FilterConfig {
 
         protected String itemSpec;
 
+        protected String lower;
+
         protected List<CondDef> noneOf;
         protected List<CondDef> someOf;
 
@@ -73,6 +75,14 @@ public class FilterConfig {
 
         public void setItemSpec(String itemSpec) {
             this.itemSpec = itemSpec;
+        }
+
+        public String getLower() {
+            return lower;
+        }
+
+        public void setLower(String lower) {
+            this.lower = lower;
         }
 
         public List<CondDef> getNoneOf() {
@@ -98,6 +108,8 @@ public class FilterConfig {
 
         protected Boolean hiddenDao;
 
+        protected Boolean breakEval;
+
         protected List<ItemTypeCode> hiddenItems;
 
         protected List<ReplaceItemCode> replaceItems;
@@ -120,6 +132,14 @@ public class FilterConfig {
 
         public void setHiddenDao(Boolean hiddenDao) {
             this.hiddenDao = hiddenDao;
+        }
+
+        public Boolean getBreakEval() {
+            return breakEval;
+        }
+
+        public void setBreakEval(Boolean br) {
+            this.breakEval = br;
         }
 
         public List<ItemTypeCode> getHiddenItems() {
@@ -224,6 +244,13 @@ public class FilterConfig {
          */
         private String valueAddYearFrom;
 
+        /**
+         * Flag if item is restriction item.
+         * 
+         * Item will be stored as virtual item for this rule
+         */
+        private boolean restrictionItem = false;
+
         public String getItemType() {
             return itemType;
         }
@@ -294,6 +321,14 @@ public class FilterConfig {
 
         public void setValueAddYearFrom(String valueAddYearFrom) {
             this.valueAddYearFrom = valueAddYearFrom;
+        }
+
+        public boolean isRestrictionItem() {
+            return restrictionItem;
+        }
+
+        public void setRestrictionItem(boolean restrictionItem) {
+            this.restrictionItem = restrictionItem;
         }
 
     }
