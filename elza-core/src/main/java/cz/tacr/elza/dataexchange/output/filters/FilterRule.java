@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +20,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.CondDef;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Def;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Result;
+import cz.tacr.elza.dataexchange.output.filters.FilterRule.AddItem.AddItemType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -31,9 +31,16 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import liquibase.util.StringUtils;
 
 public class FilterRule {
+
+    @FunctionalInterface
+    public interface ValueComparator {
+        public boolean isTrue(FilterRuleContext filterRuleContext, ArrData data);
+    }
 
     public static class Cond {
         ItemType itemType;
@@ -43,6 +50,8 @@ public class FilterRule {
         List<Cond> noneOf;
         List<Cond> someOf;
 
+        ValueComparator valueComparator;
+
         public Cond(final CondDef condDef, final StaticDataProvider sdp) {
             if (condDef.getItemType() != null) {
                 itemType = sdp.getItemTypeByCode(condDef.getItemType());
@@ -51,6 +60,26 @@ public class FilterRule {
             if (condDef.getItemSpec() != null) {
                 itemSpec = sdp.getItemSpecByCode(condDef.getItemSpec());
                 Validate.notNull(itemSpec, "Item spec not found: %s", condDef.getItemSpec());
+            }
+            if (condDef.getLower() != null) {
+                if (itemType.getDataType() == DataType.DATE) {
+                    if ("now".equals(condDef.getLower())) {
+                        // compare date
+                        valueComparator = (frCtx, data) -> {
+                            if (data != null && data instanceof ArrDataDate) {
+                                ArrDataDate dd = (ArrDataDate) data;
+                                LocalDate now = LocalDate.now();
+                                return dd.getValue().isBefore(now);
+                            }
+                            return false;
+                        };
+                    } else {
+                        throw new BusinessException("Unsupported date value comparison, lower: " + condDef.getLower(),
+                                BaseCode.INVALID_STATE);
+                    }
+                } else {
+                    throw new BusinessException("Unsupported value comparison", BaseCode.INVALID_STATE);
+                }
             }
 
             if (condDef.getNoneOf() != null) {
@@ -72,33 +101,24 @@ public class FilterRule {
             return itemSpec;
         }
 
-        public boolean isTrue(Collection<? extends ArrItem> items) {
+        public boolean isTrue(FilterRuleContext filterRuleContext) {
 
             if (itemType != null) {
-                if (CollectionUtils.isEmpty(items)) {
-                    return false;
-                }
-
-                for (ArrItem soiItem : items) {
-                    if (itemType.getItemTypeId().equals(soiItem.getItemTypeId())) {
-                        if (itemSpec != null) {
-                            if (!itemSpec.getItemSpecId().equals(soiItem.getItemSpecId())) {
-                                continue;
-                            } else {
-                                return true;
-                            }
-                        } else {
-                            // item spec is null compare only by itemType
-                            return true;
-                        }
+                ArrData data = filterRuleContext.getFirstData(itemType, itemSpec);
+                if (data != null) {
+                    if (valueComparator != null) {
+                        return valueComparator.isTrue(filterRuleContext, data);
+                    } else {
+                        return true;
                     }
                 }
+                return false;
             }
 
             if (noneOf != null) {
                 //
                 for (Cond n : noneOf) {
-                    if (n.isTrue(items)) {
+                    if (n.isTrue(filterRuleContext)) {
                         return false;
                     }
                 }
@@ -108,7 +128,7 @@ public class FilterRule {
             if (someOf != null) {
                 //
                 for (Cond s : someOf) {
-                    if (s.isTrue(items)) {
+                    if (s.isTrue(filterRuleContext)) {
                         return true;
                     }
                 }
@@ -119,6 +139,17 @@ public class FilterRule {
     }
 
     public static class AddItem {
+        enum AddItemType {
+            /**
+             * Standard item. e.g. DescItem or OutputItem
+             */
+            STANDARD_ITEM,
+            /**
+             * Virtual restriction item
+             */
+            VIRTUAL_RESTR_ITEM
+        };
+
         ItemType trgItemType;
         RulItemSpec trgItemSpec;
 
@@ -134,6 +165,18 @@ public class FilterRule {
 
         private Integer valueAddYearDefault;
         private ItemType valueAddYearFrom;
+        private final AddItemType addItemType;
+
+        public AddItem(final AddItemType addItemType) {
+            this.addItemType = addItemType;
+        }
+
+        /**
+         * Return type of addition
+         */
+        public AddItemType getAddType() {
+            return addItemType;
+        }
 
         public ItemType getTrgItemType() {
             return trgItemType;
@@ -215,6 +258,8 @@ public class FilterRule {
 
     private boolean hiddenDao = false;
 
+    private boolean breakEval = false;
+
     private List<ItemType> hiddenItemTypes;
 
     private List<ReplaceItem> replaceItems;
@@ -264,12 +309,21 @@ public class FilterRule {
                     .map(i -> createAddItem(sdp, i))
                     .collect(Collectors.toList());
         }
+
+        if (result.getBreakEval() != null && result.getBreakEval().booleanValue()) {
+            breakEval = true;
+        }
     }
 
     private AddItem createAddItem(StaticDataProvider sdp,
                                   cz.tacr.elza.dataexchange.output.filters.FilterConfig.AddItem srcAddItem) {
-        AddItem result = new AddItem();
         
+        AddItemType addItemType = AddItemType.STANDARD_ITEM;
+        if (srcAddItem.isRestrictionItem()) {
+            addItemType = AddItemType.VIRTUAL_RESTR_ITEM;
+        }
+        AddItem result = new AddItem(addItemType);
+
         ItemType trgItemType = sdp.getItemTypeByCode(srcAddItem.getItemType());
         Validate.notNull(trgItemType, "Cannot find item type: %s", srcAddItem.getItemType());
         result.setTrgItemType(trgItemType);
@@ -315,6 +369,10 @@ public class FilterRule {
         return hiddenDao;
     }
 
+    public boolean isBreakEval() {
+        return breakEval;
+    }
+
     public List<ReplaceItem> getReplaceItems() {
         return replaceItems;
     }
@@ -331,22 +389,34 @@ public class FilterRule {
         Validate.isTrue(itemType.getDataType() == DataType.ENUM, "Only ENUMS are supported");
         Validate.notNull(itemSpec, "Specification cannot be empty for ENUM");
 
-        ArrData arrData = new ArrDataNull();
-        arrData.setDataType(DataType.ENUM.getEntity());
-        arrData.setDataId(-1);
+        ArrData data = new ArrDataNull();
+        data.setDataType(DataType.ENUM.getEntity());
+        data.setDataId(-1);
 
-        return createDescItem(itemType, itemSpec, arrData);
+        return createDescItem(itemType, itemSpec, data);
+    }
+
+    private ArrDescItem createDescItemDate(ItemType itemType, RulItemSpec itemSpec,
+                                           LocalDate value) {
+        Validate.isTrue(itemType.getDataType() == DataType.DATE, "Only DATEs are supported");
+
+        ArrDataDate data = new ArrDataDate();
+        data.setDataType(DataType.DATE.getEntity());
+        data.setDataId(-1);
+        data.setValue(value);
+
+        return createDescItem(itemType, itemSpec, data);
     }
 
     private ArrDescItem createDescItemText(ItemType itemType, RulItemSpec itemSpec, String value) {
         Validate.isTrue(itemType.getDataType() == DataType.TEXT, "Only TEXTs are supported");
 
-        ArrDataText dataText = new ArrDataText();
-        dataText.setDataType(DataType.TEXT.getEntity());
-        dataText.setDataId(-1);
-        dataText.setTextValue(value);
+        ArrDataText data = new ArrDataText();
+        data.setDataType(DataType.TEXT.getEntity());
+        data.setDataId(-1);
+        data.setTextValue(value);
 
-        return createDescItem(itemType, itemSpec, dataText);
+        return createDescItem(itemType, itemSpec, data);
     }
 
     private ArrDescItem createDescItem(ItemType itemType, RulItemSpec itemSpec, ArrData data) {
@@ -363,10 +433,10 @@ public class FilterRule {
         return hiddenItemTypes;
     }
 
-    public boolean canApply(Collection<? extends ArrItem> items) {
+    public boolean canApply(FilterRuleContext filterRuleContext) {
         if (when != null) {
             for (Cond cond : when) {
-                if (!cond.isTrue(items)) {
+                if (!cond.isTrue(filterRuleContext)) {
                     return false;
                 }
             }
@@ -385,34 +455,18 @@ public class FilterRule {
      * @param locale
      */
     public void addItems(Map<ItemType, List<ArrItem>> itemsByType, ApplyFilter filter, boolean changed,
-                         Collection<? extends ArrItem> restrItems, Locale locale) {
+                         FilterRuleContext filterRuleContext, Locale locale) {
         // add itemsOnChange if changed
         if (CollectionUtils.isNotEmpty(addItemsOnChange) && changed) {
             for (AddItem action : addItemsOnChange) {
-                addItem(action, itemsByType, filter, restrItems, locale);
+                addItem(action, itemsByType, filter, filterRuleContext, locale);
             }
         }
         if (CollectionUtils.isNotEmpty(addItems)) {
             for (AddItem action : addItems) {
-                addItem(action, itemsByType, filter, restrItems, locale);
+                addItem(action, itemsByType, filter, filterRuleContext, locale);
             }
         }
-    }
-
-    private ArrData getFirstData(Collection<? extends ArrItem> items, ItemType itemType) {
-        if (itemType == null || items == null) {
-            return null;
-        }
-        for (ArrItem item : items) {
-            if (item.getItemTypeId() != null) {
-                if (item.getItemTypeId().equals(itemType.getItemTypeId())) {
-                    return item.getData();
-                }
-            } else if (item.getItemType().getItemTypeId().equals(itemType.getItemTypeId())) {
-                return item.getData();
-            }
-        }
-        return null;
     }
 
     /**
@@ -426,9 +480,9 @@ public class FilterRule {
      */
     private void addItem(AddItem action, Map<ItemType, List<ArrItem>> itemsByType,
                          ApplyFilter filter,
-                         Collection<? extends ArrItem> restrItems, Locale locale) {
+                         FilterRuleContext filterRuleContext, Locale locale) {
         // get source value
-        ArrData srcValue = getFirstData(restrItems, action.getValueFrom());
+        ArrData srcValue = filterRuleContext.getFirstData(action.getValueFrom(), null);
 
         // get item value
         if(action.getValueFromItem()!=null) {
@@ -446,6 +500,24 @@ public class FilterRule {
         if (action.getTrgItemType().getDataType() == DataType.ENUM) {
             descItem = createDescItemEnum(action.getTrgItemType(), action.getTrgItemSpec());
         } else
+        if (action.getTrgItemType().getDataType() == DataType.DATE) {
+            LocalDate localDate = LocalDate.now();
+            if (srcValue != null) {
+                if (srcValue instanceof ArrDataDate) {
+                    ArrDataDate srcDataDate = (ArrDataDate) srcValue;
+                    localDate = srcDataDate.getValue();
+                } else if (srcValue instanceof ArrDataUnitdate) {
+                    ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
+                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                                                                                                 false);
+                    localDate = localDateTime.toLocalDate();
+                } else {
+                    throw new IllegalStateException("Unsupported type: " + srcValue);
+                }
+            }
+            localDate = prepareLocalDate(action, filterRuleContext, localDate);
+            descItem = createDescItemDate(action.getTrgItemType(), action.getTrgItemSpec(), localDate);
+        } else 
         if(action.getTrgItemType().getDataType() == DataType.TEXT) {
             StringBuilder sb = new StringBuilder();
             // append static value
@@ -463,25 +535,14 @@ public class FilterRule {
                     ArrDataDate srcDataDate = (ArrDataDate) srcValue;
                     LocalDate localDate = srcDataDate.getValue();
 
-                    sb.append(formatLocalDate(action, restrItems, localDate, locale));
+                    sb.append(formatLocalDate(action, filterRuleContext, localDate, locale));
                 } else if (srcValue instanceof ArrDataUnitdate) {
                     ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
-                    LocalDateTime localDate = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate, false);
-                                        
+                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                                                                                                 false);
+                    LocalDate localDate = localDateTime.toLocalDate();
+                    localDate = prepareLocalDate(action, filterRuleContext, localDate);
                     
-                    Integer addYear = null;
-                    ArrData srcAddYear = getFirstData(restrItems, action.getValueAddYearFrom());
-                    if (srcAddYear != null) {
-                        ArrDataInteger di = (ArrDataInteger) srcAddYear;
-                        addYear = srcAddYear.getValueInt();
-                    }
-                    if (addYear == null) {
-                        addYear = action.getValueAddYearDefault();
-                    }
-                    if (addYear != null) {
-                        localDate = localDate.plusYears(addYear.longValue());
-                    }
-
                     DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
                             .withLocale(locale);
                     sb.append(localDate.format(formatter));
@@ -509,20 +570,37 @@ public class FilterRule {
             } else {
                 descItem = createDescItemText(action.getTrgItemType(), action.getTrgItemSpec(), newText);
             }
+        } else {
+            throw new IllegalStateException("Unsupported type: " + action.getTrgItemType().getDataType());
         }
 
         if (descItem != null) {
-            filter.addItem(descItem);
+            switch (action.getAddType()) {
+            case STANDARD_ITEM:
+                filter.addItem(descItem);
+                break;
+            case VIRTUAL_RESTR_ITEM:
+                filterRuleContext.addRestrItem(descItem);
+                break;
+            }
         }
     }
 
-    private String formatLocalDate(AddItem action, Collection<? extends ArrItem> restrItems, 
-                                   LocalDate localDate, Locale locale) {
+    /**
+     * Prepare localdate as specified in action
+     * 
+     * @param action
+     * @param localDate
+     * @return
+     */
+    private LocalDate prepareLocalDate(AddItem action,
+                                       FilterRuleContext filterRuleContext,
+                                       LocalDate localDate) {
         Integer addYear = null;
-        ArrData srcAddYear = getFirstData(restrItems, action.getValueAddYearFrom());
+        ArrData srcAddYear = filterRuleContext.getFirstData(action.getValueAddYearFrom(), null);
         if (srcAddYear != null) {
             ArrDataInteger di = (ArrDataInteger) srcAddYear;
-            addYear = srcAddYear.getValueInt();
+            addYear = di.getIntegerValue();
         }
         if (addYear == null) {
             addYear = action.getValueAddYearDefault();
@@ -530,7 +608,13 @@ public class FilterRule {
         if (addYear != null) {
             localDate = localDate.plusYears(addYear.longValue());
         }
+        return localDate;
+    }
 
+    private String formatLocalDate(AddItem action,
+                                   FilterRuleContext filterRuleContext,
+                                   LocalDate localDate, Locale locale) {
+        localDate = prepareLocalDate(action, filterRuleContext, localDate);
         DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
                 .withLocale(locale);
         return localDate.format(formatter);
