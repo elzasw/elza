@@ -320,7 +320,7 @@ defs:
           itemSpec: ZP2015_APPLIED_RESTRICTION_LIMITED
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
           appendAsNewLine: true
-          value: "Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný."
+          value: "Uplatněno omezení přístupnosti – zobrazený archivní popis není úplný."
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
           appendAsNewLine: true
           valueFrom: ZP2015_NOTE
