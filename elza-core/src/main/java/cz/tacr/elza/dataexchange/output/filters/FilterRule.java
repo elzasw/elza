@@ -154,6 +154,7 @@ public class FilterRule {
         RulItemSpec trgItemSpec;
 
         boolean appendAsNewLine;
+        private boolean updateWithLower;
 
         String prefix;
 
@@ -200,6 +201,15 @@ public class FilterRule {
 
         public void setAppendAsNewLine(boolean appendAsNewLine) {
             this.appendAsNewLine = appendAsNewLine;
+        }
+
+        public boolean isUpdateWithLower() {
+            return updateWithLower;
+        }
+
+        public void setUpdateWithLower(final boolean updateWithLower) {
+            this.updateWithLower = updateWithLower;
+
         }
 
         public String getPrefix() {
@@ -249,7 +259,6 @@ public class FilterRule {
         public void setValueAddYearFrom(ItemType valueAddYearFrom) {
             this.valueAddYearFrom = valueAddYearFrom;
         }
-
     };
 
     List<Cond> when = new ArrayList<>();
@@ -335,6 +344,7 @@ public class FilterRule {
         }
         
         result.setAppendAsNewLine(srcAddItem.isAppendAsNewLine());
+        result.setUpdateWithLower(srcAddItem.isUpdateWithLower());
         result.setPrefix(srcAddItem.getPrefix());
         if(srcAddItem.getValue()!=null) {
             result.setValue(srcAddItem.getValue());
@@ -516,7 +526,16 @@ public class FilterRule {
                 }
             }
             localDate = prepareLocalDate(action, filterRuleContext, localDate);
-            descItem = createDescItemDate(action.getTrgItemType(), action.getTrgItemSpec(), localDate);
+
+            // check if update existing
+            if (existingItem != null && action.isUpdateWithLower()) {
+                ArrDataDate prevValue = ((ArrDataDate) existingItem.getData());
+                if (prevValue.getValue().isAfter(localDate)) {
+                    prevValue.setValue(localDate);
+                }
+            } else {
+                descItem = createDescItemDate(action.getTrgItemType(), action.getTrgItemSpec(), localDate);
+            }
         } else 
         if(action.getTrgItemType().getDataType() == DataType.TEXT) {
             StringBuilder sb = new StringBuilder();

@@ -209,6 +209,11 @@ public class FilterConfig {
         private boolean appendAsNewLine = false;
 
         /**
+         * Flag to update current value with lower value.
+         */
+        private boolean updateWithLower = false;
+
+        /**
          * Value of the item.
          * 
          * Can be used for text and string data types.
@@ -265,6 +270,14 @@ public class FilterConfig {
 
         public void setItemSpec(String itemSpec) {
             this.itemSpec = itemSpec;
+        }
+
+        public boolean isUpdateWithLower() {
+            return updateWithLower;
+        }
+
+        public void setUpdateWithLower(boolean updateWithLower) {
+            this.updateWithLower = updateWithLower;
         }
 
         public boolean isAppendAsNewLine() {

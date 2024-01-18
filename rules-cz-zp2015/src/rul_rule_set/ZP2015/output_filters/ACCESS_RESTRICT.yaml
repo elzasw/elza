@@ -358,3 +358,6 @@ defs:
           appendAsNewLine: true
           prefix: "Datum konce omezení: "
           valueFrom: ZP2015_RESTRICTION_ACCESS_DATE
+        - itemType: ZP2015_APPLIED_RESTRICTION_CHANGE
+          valueFrom: ZP2015_RESTRICTION_ACCESS_DATE
+          updateWithLower: true

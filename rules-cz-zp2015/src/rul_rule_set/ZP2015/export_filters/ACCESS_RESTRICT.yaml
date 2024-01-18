@@ -235,7 +235,6 @@ defs:
         lower: now
     result:
         breakEval: true
-
   - when:
       - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
         itemSpec: ZP2015_RESTRICTION_DAO
@@ -358,3 +357,6 @@ defs:
           appendAsNewLine: true
           prefix: "Datum konce omezení: "
           valueFrom: ZP2015_RESTRICTION_ACCESS_DATE
+        - itemType: ZP2015_APPLIED_RESTRICTION_CHANGE
+          valueFrom: ZP2015_RESTRICTION_ACCESS_DATE
+          updateWithLower: true
