@@ -206,7 +206,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     }
 
                     addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                    //addField(name + INDEX, index.getIndexValue().toLowerCase(), document, name); // TODO zjistit, zda je to nutné.
+                    addField(name + INDEX, index.getIndexValue().toLowerCase(), document, name);
                 }
             }
         }
