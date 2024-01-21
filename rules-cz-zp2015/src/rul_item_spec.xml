@@ -2387,13 +2387,13 @@
     </item-spec>
     <item-spec code="ZP2015_APPLIED_RESTRICTION_LIMITED">
         <name>použití prvků s omezením</name>
-        <description>Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný.</description>
+        <description>Uplatněno omezení přístupnosti – zobrazený archivní popis není úplný.</description>
         <shortcut>použití prvků s omezením</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
     <item-spec code="ZP2015_APPLIED_RESTRICTION_ARCHENTITY">
         <name>nepřístupné vztahy mezi jednotkou popisu a entitami</name>
-        <description>Uplatněno omezení přístupnosti - zobrazený archivní popis není úplný.</description>
+        <description>Uplatněno omezení přístupnosti – zobrazený archivní popis není úplný.</description>
         <shortcut>nepřístupné vztahy mezi JP a entitami</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>

@@ -507,6 +507,7 @@
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
   </#if>
   <#-- Elements outside did -->
+  <#local accessrestrict=[]>
   <#local relations=[]>
   <#local existingcopies=[]>
   <#list node.items as item>
@@ -536,7 +537,10 @@
       <#lt>  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
       <#break>
     <#case "ZP2015_UNIT_ACCESS">
-      <#lt>  <ead:accessrestrict><ead:p>${item.serializedValue}</ead:p></ead:accessrestrict>
+      <#local accessrestrict = [item.serializedValue] + accessrestrict >
+      <#break>      
+    <#case "ZP2015_APPLIED_RESTRICTION_TEXT">
+      <#local accessrestrict = accessrestrict + [item.serializedValue]>
       <#break>      
     <#case "ZP2015_UNIT_CURRENT_STATUS">
       <#lt>  <ead:phystech><ead:p>${item.serializedValue}</ead:p></ead:phystech>
@@ -564,6 +568,17 @@
       <#break>
     </#switch>
   </#list>
+  <#-- Omezeni pristupnosti -->
+  <#if (accessrestrict?size>0)>
+    <#local accessrestrictText="">
+    <#list accessrestrict as t>
+      <#if (accessrestrictText?length>0)><#local accessrestrictText=accessrestrictText+'\n'></#if>
+      <#local accessrestrictText=accessrestrictText+t>
+    </#list>
+    <#if (accessrestrictText?length>0)>
+      <#lt>  <ead:accessrestrict><ead:p>${accessrestrictText}</ead:p></ead:accessrestrict>
+    </#if>
+  </#if>
   <#-- Zapis kopii JP -->
   <#local existingcopiesInherited=false>
   <#if existingcopies?size==0>
