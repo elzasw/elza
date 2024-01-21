@@ -119,8 +119,13 @@ public class AccessRestrictFilter implements ExportFilter {
                     restrItems = levelInfo.getItems();
                 }
 
+                FilterRuleContext frCtx = new FilterRuleContext(restrItems);
                 for (FilterRule rule : filterRules.getFilterRules()) {
-                    processRule(rule, levelInfo, itemsByType, restrStructId, restrItems, filter);
+                    FilterRuleResultType result = processRule(rule, frCtx, levelInfo, itemsByType, restrStructId,
+                                                              filter);
+                    if (result == FilterRuleResultType.RESULT_BREAK) {
+                        break;
+                    }
                 }
             }
         }
@@ -141,15 +146,20 @@ public class AccessRestrictFilter implements ExportFilter {
      * @param soi
      * @param filter
      */
-    private void processRule(FilterRule rule, LevelInfoImpl levelInfo,
-                            Map<ItemType, List<ArrItem>> itemsByType,
+    private FilterRuleResultType processRule(FilterRule rule,
+                             FilterRuleContext filterRuleContext,
+                             LevelInfoImpl levelInfo,
+                             Map<ItemType, List<ArrItem>> itemsByType,
                              @Nullable Integer soiRestrId,
-                             Collection<ArrItem> restrItems,
-                            ApplyFilter filter) {
+                             ApplyFilter filter) {
 
-        if (!rule.canApply(restrItems)) {
+        if (!rule.canApply(filterRuleContext)) {
             // rule does not apply for this soi
-            return;
+            return FilterRuleResultType.RESULT_CONTINUE;
+        }
+
+        if (rule.isBreakEval()) {
+            return FilterRuleResultType.RESULT_BREAK;
         }
 
         // if we need to hide level
@@ -162,7 +172,8 @@ public class AccessRestrictFilter implements ExportFilter {
                 filteredSois.add(soiRestrId);
             }
             filter.hideLevel();
-            return;
+
+            return FilterRuleResultType.RESULT_BREAK;
         }
 
         boolean changed = false;
@@ -208,7 +219,9 @@ public class AccessRestrictFilter implements ExportFilter {
         }
 
         // add itemsOnChange if changed
-        rule.addItems(itemsByType, filter, changed, restrItems, elzaLocale.getLocale());
+        rule.addItems(itemsByType, filter, changed, filterRuleContext, elzaLocale.getLocale());
+
+        return FilterRuleResultType.RESULT_CONTINUE;
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
