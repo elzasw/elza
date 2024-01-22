@@ -33,8 +33,7 @@ const basicOptionMap = i => (
 /**
  * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
  */
-class LecturingTop extends React.Component {
-    props: any;
+class LecturingTop extends React.Component<any> {
 
     state: any = {
         issueListId: null,
@@ -289,7 +288,7 @@ class LecturingTop extends React.Component {
                                     {canWrite && (
                                         <div className="actions">
                                             <DropdownButton
-                                                alignRight={true}
+                                                align="end"
                                                 variant={'action' as any}
                                                 id="issue-type"
                                                 title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}
@@ -327,4 +326,4 @@ export default (connect((state: any) => {
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         userDetail: state.userDetail,
     };
-})(LecturingTop as any) as any) as React.SFC<{fund: object}>;
+})(LecturingTop));

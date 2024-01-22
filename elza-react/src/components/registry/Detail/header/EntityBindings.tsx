@@ -9,7 +9,7 @@ import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import { SyncState } from 'api/SyncState';
 import i18n from 'components/i18n';
 import { Icon, TooltipTrigger } from 'components/shared';
-import React, { FC, useCallback } from 'react';
+import { FC, useCallback } from 'react';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
@@ -21,11 +21,6 @@ import { DetailDescriptionsItemWithButton } from './DetailDescriptionsItem';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { ApPushToExt } from 'components/registry/modal/ApPushToExt';
 import { Button } from 'components/ui';
-import { useHistory } from 'react-router';
-import { Api } from 'api';
-import { goToAe } from 'actions/registry/registry';
-import { ApCopyModal } from 'components/registry/modal/ap-copy';
-import { objectById } from 'stores/app/utils';
 
 import { AP_EXT_SYSTEM_TYPE } from '../../../../constants';
 
@@ -206,7 +201,7 @@ export const EntityBindings: FC<{
                                         id={'binding-action-' + binding.id}
                                         title={<Icon glyph="fa-ellipsis-h" />}
                                         className={'binding-dropdown button'}
-                                        alignRight={true}
+                                        align={"end"}
                                     >
                                         {hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
                                             <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>

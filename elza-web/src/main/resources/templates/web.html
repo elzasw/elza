@@ -9,7 +9,7 @@
         <title>ELZA</title>
 
         <script type="text/javascript" src="" th:src="@{/res/js/messages_cs.js}"></script>
-        <link rel="stylesheet" th:if="${!isDevBuild}" href="" th:href="@{/res/css/main.css}"/>
+        <link rel="stylesheet" th:if="${!isDevBuild}" href="" th:href="@{/res/assets/index.css}"/>
         <link rel="apple-touch-icon" sizes="57x57" th:href="@{/res/favicon/apple-touch-icon-57x57.png}"/>
         <link rel="apple-touch-icon" sizes="60x60" th:href="@{/res/favicon/apple-touch-icon-60x60.png}"/>
         <link rel="apple-touch-icon" sizes="72x72" th:href="@{/res/favicon/apple-touch-icon-72x72.png}"/>
@@ -44,7 +44,7 @@
             /*]]>*/
         </script>
 
-        <script type="text/javascript" th:if="${hasIntegrationScriptUrl}" src="integrationScript.js" th:src="@{${integrationScriptUrl}}">            
+        <script type="text/javascript" th:if="${hasIntegrationScriptUrl}" src="integrationScript.js" th:src="@{${integrationScriptUrl}}">
         </script>
     </head>
 
@@ -55,9 +55,9 @@
         </section>
         <section layout:fragment="page-js" th:remove="tag">
             <!--<script th:if="${isDevBuild}" src="http://localhost:8090/webpack-dev-server.js"></script>-->
-            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/bundle.js"></script>
-            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/0.chunk.js"></script>
-            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/main.chunk.js"></script>
+            <!-- <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/bundle.js"></script> -->
+            <!-- <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/0.chunk.js"></script> -->
+            <!-- <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/main.chunk.js"></script> -->
 
             <script th:if="${!isDevBuild}" type="text/javascript" src="" th:src="@{/res/js/main.js}"></script>
         </section>

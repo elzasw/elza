@@ -17,14 +17,13 @@ type Props = {
     readOnly: boolean;
 };
 
-export class ScopeList extends AbstractReactComponent {
+export class ScopeList extends AbstractReactComponent<Props> {
     static propTypes = {
         scopes: PropTypes.array.isRequired,
         onRemove: PropTypes.func,
         onAdd: PropTypes.func,
         readOnly: PropTypes.bool,
     };
-    props: Props;
 
     handleRenderItem = props => {
         const {item} = props;

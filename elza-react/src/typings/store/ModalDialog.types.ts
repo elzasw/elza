@@ -12,7 +12,7 @@ export interface ModalRenderFunctionProps {
 export interface ModalDialog {
   title: string;
   component: unknown;
-  content: React.ReactElement | ((props: ModalRenderFunctionProps) => void);
+  content: React.ReactElement | ((props: ModalRenderFunctionProps) => React.ReactElement);
   dialogClassName: string;
   onClose: (closeType?: DialogCloseType) => void;
   key: number;

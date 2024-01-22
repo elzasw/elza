@@ -7,7 +7,7 @@ Předpokládané softwarové vybavení:
 * [Git 1.9+](https://git-scm.com/download/win)
 * [Oracla JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 * [Apache Maven 3.2.+](https://maven.apache.org/download.cgi)
-* [Node.js 5.1.0+](https://nodejs.org/)
+* [Node.js 20.11.0+](https://nodejs.org/)
 
 ### Získání zdrojových kódů
 Příkaz:

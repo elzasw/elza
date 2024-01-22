@@ -55,15 +55,6 @@ es6promise.polyfill();
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
 EventEmitter.defaultMaxListeners = 0;
 
-function xx() {
-    setTimeout(fc, 1000);
-}
-
-function fc() {
-    console.log(document.activeElement);
-    xx();
-}
-
 /** IE FIxy **/
 const IE = Utils.detectIE();
 if (IE !== false) {
@@ -85,8 +76,6 @@ if (!String.prototype.startsWith) {
         return this.lastIndexOf(str, 0) === 0;
     };
 }
-
-//setTimeout(fc, 1500)
 
 Moment.locale(window.navigator.language || 'cs-CZ');
 // momentLocalizer();
@@ -175,9 +164,3 @@ const render = () => {
 };
 
 render();
-
-// if (module.hot) {
-//     module.hot.accept('./router', () => {
-//         render();
-//     });
-// }

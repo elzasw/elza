@@ -5,7 +5,7 @@ import { ScopesField } from 'components/admin/ScopesField';
 import { FundScope, IFundFormData } from '../../types';
 import React, { memo, useEffect } from 'react';
 import { Form, Modal } from 'react-bootstrap';
-import { connect, ConnectedProps, useDispatch } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { Field, FieldArray, FormErrors, InjectedFormProps, reduxForm } from 'redux-form';
 import { renderUserOrGroupLabel } from '../admin/adminRenderUtils';
 import UserAndGroupField from '../admin/UserAndGroupField';
@@ -15,6 +15,7 @@ import TagsField from '../TagsField';
 import { Button } from '../ui';
 
 import './FundForm.scss';
+import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
 interface IFundForm extends ConnectedProps<typeof connector> {
     onClose: any
@@ -32,7 +33,7 @@ interface IFundForm extends ConnectedProps<typeof connector> {
  */
 const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((props) => {
 
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
     const {handleSubmit, onClose, create, update, approve, ruleSet, refTables, pristine, submitting} = props;
 
     const validate = (values: IFundFormData): FormErrors<IFundFormData> => {

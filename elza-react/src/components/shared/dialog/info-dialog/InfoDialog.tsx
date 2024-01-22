@@ -19,7 +19,7 @@ const InfoDialog:FC<{
     onSubmit,
 }) => {
     const handleSubmit = () => onSubmit();
-    
+
     return (
         <div className="info-dialog-container">
             <div className="info-dialog-content">
@@ -37,7 +37,7 @@ const InfoDialog:FC<{
 export const showInfoDialog: ActionCreator<
     ThunkAction<Promise<boolean>, AppState, void, Action>
 > = ({
-    message, 
+    message,
     title,
 }:{
     message: React.ReactNode;
@@ -46,14 +46,14 @@ export const showInfoDialog: ActionCreator<
     return (dispatch) => {
         return new Promise<boolean>((resolve) => {
             const handleSubmit = () => {
-                resolve();
+                resolve(true);
                 dispatch(modalDialogHide());
             }
 
             dispatch(modalDialogShow(
                 null,
                 title,
-                <InfoDialog 
+                <InfoDialog
                     onSubmit={handleSubmit}
                     message={message}
                     />

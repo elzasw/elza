@@ -18,6 +18,8 @@ class Scope extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
         value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        disabled: PropTypes.bool,
+        label: PropTypes.string,
     };
 
     static defaultProps = {

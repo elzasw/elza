@@ -19,6 +19,15 @@ export default defineConfig({
     }
   },
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: "static/res/js/[name].js",
+        assetFileNames: "static/res/assets/[name][extname]",
+        chunkFileNames: "static/res/js/[name].js"
+      }
+    }
+  },
   server: {
     port: 3000,
     hmr: {

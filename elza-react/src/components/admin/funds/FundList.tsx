@@ -1,5 +1,5 @@
-import React, {FC, useEffect} from 'react';
-import {useSelector, useDispatch} from 'react-redux';
+import {FC, useEffect} from 'react';
+import {useSelector} from 'react-redux';
 import { i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
 import {indexById} from 'stores/app/utils';
 import {fundsFetchIfNeeded, fundsFilter} from '../../../actions/admin/fund';
@@ -14,13 +14,14 @@ import './FundList.scss';
 import { useHistory } from 'react-router';
 import { urlAdminFund } from '../../../constants';
 import { ArrFundBaseVO } from 'api/ArrFundBaseVO';
+import { useThunkDispatch } from 'utils/hooks';
 
 export const FundList:FC<{
     activeFund?: AdminFund;
 }> = ({
     activeFund,
 }) => {
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
     const funds = useSelector((state: any) => storeFromArea(state, AREA_ADMIN_FUNDS))
     const fundRows = getFundRows(funds);
     const history = useHistory();

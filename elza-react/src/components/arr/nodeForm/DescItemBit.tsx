@@ -73,7 +73,7 @@ class DescItemBit extends AbstractReactComponent<Props> {
                     ref={this.focusEl as any}
                     disabled={locked || descItem.undefined}
                     value={value}
-                    placeholder={'Vyberte'}
+                    aria-placeholder={'Vyberte'}
                     onChange={this.handleChange}
                 >
                     {(descItem.value === null || !required) && <option value={''}></option>}

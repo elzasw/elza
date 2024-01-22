@@ -1,17 +1,19 @@
-import React, { FC } from 'react';
+import { PropsWithChildren } from 'react';
 import './SmallButton.scss';
 
-export const SmallButton:FC<{
+interface Props extends PropsWithChildren{
     onClick: (e: React.MouseEvent) => void;
     title?: string;
-}> = ({
+}
+
+export const SmallButton = ({
     onClick,
     title,
     children
-}) => <div 
+}: Props) => <div
     className="small-button"
     onClick={onClick}
     title={title}
 >
     {children}
-</div> 
+</div>

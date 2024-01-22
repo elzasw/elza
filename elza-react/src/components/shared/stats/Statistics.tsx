@@ -8,29 +8,39 @@ import './Statistics.scss';
 
 type LoggedUserWithCount = LoggedUser & { count: number };
 
-const getHorizontalListItems = <T extends Object>(selectedStats: (keyof T)[], data: T): HorizontalListItem<T>[] => {
-    const listItems: HorizontalListItem<T>[] = selectedStats
+const getHorizontalListItems = <T extends Object>(
+    selectedStats: (keyof T)[],
+    data: T,
+    getValue: (value: T[keyof T]) => string = (value) => {
+        if(typeof value !== "string" && typeof value !== "number"){
+            console.warn("Value is not string or number.")
+            return null;
+        }
+        return value.toString();
+ },
+): HorizontalListItem[] => {
+    const listItems = selectedStats
         .map(stat => {
-            const value = data[stat];
+            const value = getValue(data[stat]);
             if (value != undefined) {
                 return {
                     title: i18n(`stats.${stat.toString()}.title`),
                     value,
-                };
+                } as HorizontalListItem;
             }
             return null;
         })
-        .filter(item => item !== null) as HorizontalListItem<T>[];
+        .filter(item => item !== null);
     return listItems;
 };
 
 export const StatsHome = () => {
-    const [stats, setStats] = useState<HorizontalListItem<AdminInfo>[]>([]);
+    const [stats, setStats] = useState<HorizontalListItem[]>([]);
     const selectedStats: (keyof AdminInfo)[] = ['funds', 'levels', 'accessPoints'];
 
     useEffect(() => {
         Api.admin.adminInfo({ overrideErrorHandler: true }).then(({ data }) => {
-            const arrItems: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(selectedStats, data);
+            const arrItems: HorizontalListItem[] = getHorizontalListItems(selectedStats, data);
             setStats(arrItems);
         });
     }, []);
@@ -44,16 +54,16 @@ export const StatsHome = () => {
 
 export const StatsAdmin = () => {
     const [loggedUsers, setLoggedUsers] = useState<LoggedUser[]>([]);
-    const [statsGeneral, setStatsGeneral] = useState<HorizontalListItem<AdminInfo>[]>([]);
-    const [statsUsers, setStatsUsers] = useState<HorizontalListItem<AdminInfo>[]>([]);
+    const [statsGeneral, setStatsGeneral] = useState<HorizontalListItem[]>([]);
+    const [statsUsers, setStatsUsers] = useState<HorizontalListItem[]>([]);
 
     useEffect(() => {
         Api.admin.adminInfo({ overrideErrorHandler: true }).then(({ data }) => {
-            const arrItemsGeneral: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(
+            const arrItemsGeneral: HorizontalListItem[] = getHorizontalListItems(
                 ['funds', 'levels', 'accessPoints'],
                 data,
             );
-            const arrItemsUsers: HorizontalListItem<AdminInfo>[] = getHorizontalListItems(
+            const arrItemsUsers: HorizontalListItem[] = getHorizontalListItems(
                 ['users', 'loggedUsers'],
                 data,
             );
@@ -75,16 +85,17 @@ export const StatsAdmin = () => {
     );
 };
 
-interface HorizontalListItem<T extends Object> {
+interface HorizontalListItem {
     title: string;
-    value: T[keyof T];
+    value: number | string;
 }
 
-interface HorizontalListProps<T extends Object> {
-    items: HorizontalListItem<T>[];
+interface HorizontalListProps {
+    items: HorizontalListItem[];
 }
 
-export const HorizontalList = <T extends Object>({ items }: HorizontalListProps<T>) => {
+export const HorizontalList = ({ items }: HorizontalListProps) => {
+    console.log("#### stats horizontal list", items)
     if (items.length === 0) {
         return <></>;
     }
@@ -145,7 +156,7 @@ export const LoggedUsersList = ({ users }: LoggedUsersListProps) => {
 };
 
 interface HorizontalListWithUsersProps {
-    statsUsers: HorizontalListItem<AdminInfo>[];
+    statsUsers: HorizontalListItem[];
     loggedUsers: LoggedUser[];
 }
 

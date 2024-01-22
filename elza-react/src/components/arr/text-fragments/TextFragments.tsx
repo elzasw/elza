@@ -1,11 +1,12 @@
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import {Icon, NoFocusButton} from 'components/shared';
-import React, {ChangeEvent, FC, useEffect, useState} from 'react';
-import {useDispatch, useSelector} from "react-redux";
+import {ChangeEvent, FC, useEffect, useState} from 'react';
+import {useSelector} from "react-redux";
 import {i18n} from '../../../components/shared';
 import {DraggableWindow} from "./DraggableWindow";
 import "./TextFragments.scss";
+import { useThunkDispatch } from 'utils/hooks';
 
 let registeredField:any = null;
 let callback: (char: string, field: any) => void;
@@ -39,7 +40,7 @@ export const TextFragmentsWindow:FC<{
     onClose
 }) => {
     const userDetail = useSelector((state:any)=>state.userDetail);
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
     const fragmentsSettings = getOneSettings(userDetail.settings, settingCode);
     let initFragments:string[] = [];
 
@@ -57,7 +58,7 @@ export const TextFragmentsWindow:FC<{
     const [editMode, setEditMode] = useState(false);
     const [fragments, setFragments] = useState<string[]>(initFragments);
 
-    useEffect(()=>{ 
+    useEffect(()=>{
         if(registeredField){
             setDisabled(false);
         } else {
@@ -79,7 +80,7 @@ export const TextFragmentsWindow:FC<{
     const handleSaveFragmentsString = () => {
         fragmentsSettings.value = JSON.stringify({fragments});
         const settings = setSettings(userDetail.settings, fragmentsSettings.id, fragmentsSettings);
-        
+
         dispatch(userDetailsSaveSettings(settings))
     }
 
@@ -109,14 +110,14 @@ export const TextFragmentsWindow:FC<{
                 <div className="item-container" >
                     {fragments.map((item, key)=>{
                         const char = item.startsWith("U+") ? String.fromCharCode(parseInt(item.slice(2),16)) : item;
-                        return <button 
+                        return <button
                             className={editMode ? "item edit" : "item"}
                             title={char}
                             disabled={disabled && !editMode}
                             key={key}
-                            onClick={editMode ? handleRemoveFragment(item) : handleClick} 
-                            onMouseDown={(event)=>{ 
-                                event.preventDefault() 
+                            onClick={editMode ? handleRemoveFragment(item) : handleClick}
+                            onMouseDown={(event)=>{
+                                event.preventDefault()
                             }}
                         >
                             {char}
@@ -125,9 +126,9 @@ export const TextFragmentsWindow:FC<{
                     })}
                 </div>
             </div>
-            {editMode && 
+            {editMode &&
             <div className="edit-form">
-                    <textarea 
+                    <textarea
                         onChange={handleChangeFragmentsString}
                         value={fragments.join(delimiter)}
                     />

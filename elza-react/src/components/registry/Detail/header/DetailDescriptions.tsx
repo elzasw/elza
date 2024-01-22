@@ -1,13 +1,13 @@
-import React, {FC} from 'react';
+import {PropsWithChildren} from 'react';
 
 import "./DetailDescriptions.scss";
 import classNames from "classnames";
 
-interface Props {
+interface Props extends PropsWithChildren{
   className?: string;
 }
 
-const DetailDescriptions: FC<Props> = ({className, children}) => {
+const DetailDescriptions = ({className, children}: Props) => {
   const cls = classNames("detail-descriptions", className)
   return (
     <span className={cls}>

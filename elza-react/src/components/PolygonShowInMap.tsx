@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from 'react';
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from './CrossTabHelper';
 import { Button } from './ui';
 import { i18n, Icon, TooltipTrigger } from 'components/shared';
@@ -37,8 +37,8 @@ export const PolygonTooltip = ({
     useEffect(() => {
         const receiveMessage = (e: MessageEvent) => {
             const { current: iframe } = iframeRef;
-            if(e.data?.event === "elza-map-iframe-load"){
-                if(iframe && iframe.contentWindow){
+            if (e.data?.event === "elza-map-iframe-load") {
+                if (iframe && iframe.contentWindow) {
                     iframe?.contentWindow?.postMessage({
                         call: 'sendPolygon',
                         polygon: polygon,
@@ -103,7 +103,7 @@ interface ChildrenRenderProps {
     handleShowInMap: () => void;
 }
 
-interface Props extends React.ComponentPropsWithoutRef<"span">{
+interface Props extends Omit<React.ComponentPropsWithoutRef<"span">, "children"> {
     className?: string;
     polygon: string;
     children?: (props: ChildrenRenderProps) => React.ReactNode;
@@ -143,11 +143,11 @@ export const PolygonShowInMap = ({
             hideDelay={0}
         >
             {
-            children?.({handleShowInMap: () => showInMap()})
+                children?.({ handleShowInMap: () => showInMap() })
                 || <Button className={classNames(className)} onClick={() => showInMap()} variant={'action' as any}>
                     <Icon glyph={'fa-map'} />
                 </Button>
-        }
+            }
         </TooltipTrigger>
     );
 }

@@ -20,6 +20,7 @@ import { DetailActions } from '../../shared/detail';
 import PageLayout from "../shared/layout/PageLayout";
 import './EntityCreatePage.scss';
 import { ApAccessPointVO } from 'api';
+import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -31,7 +32,7 @@ enum ResponseStatus {
 }
 
 const replaceStrings = (
-    string: string, 
+    string: string,
     replaceArray: Array<[string, string]>
 ) => {
     let newString = string;
@@ -40,7 +41,7 @@ const replaceStrings = (
 }
 
 export const EntityCreatePage:FC = () => {
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
     const splitter:any = useSelector<any>((store)=>(store.splitter));
     const query = useQuery();
     const responseUrl = query.get("response");
@@ -73,7 +74,7 @@ export const EntityCreatePage:FC = () => {
     }
 
     const getResponseUrl = (
-        status: ResponseStatus, 
+        status: ResponseStatus,
         entity?: ApAccessPointVO
     ) => {
         return replaceStrings(responseUrl || location.href, [
@@ -112,9 +113,9 @@ export const EntityCreatePage:FC = () => {
     useEffect(showDialog, [dispatch])
 
     return (
-        <PageLayout 
+        <PageLayout
             splitter={splitter}
-            className='entity-create-page' 
+            className='entity-create-page'
             centerPanel={<div/>}
         />
     )
