@@ -5,6 +5,12 @@ import { createException } from 'components/ExceptionUtils.jsx';
 import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        overrideErrorHandler?: boolean;
+    }
+}
+
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -54,7 +60,16 @@ interface IError {
     status?: number;
 }
 
-function resolveException(error: AxiosError) {
+interface Error {
+    type: string,
+    code: string,
+    level: string,
+    properties: object,
+    message: string,
+    stackTrace: string,
+}
+
+function resolveException(error: AxiosError<Error>) {
     let result: IError = {
         type: 'unknown',
     };

@@ -98,5 +98,9 @@ AddNodeCross.propTypes = {
     node: PropTypes.any.isRequired,
     userDetail: PropTypes.object.isRequired,
     selectedSubNodeIndex: PropTypes.number.isRequired,
+    versionId: PropTypes.number.isRequired,
+    fundId: PropTypes.number.isRequired,
+    arrPerm: PropTypes.bool,
+    closed: PropTypes.bool,
 };
 export default connect()(AddNodeCross);

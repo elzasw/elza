@@ -2,18 +2,18 @@ import { fundSelectSubNode } from 'actions/arr/node';
 import { WebApi } from 'actions/index';
 import { createFundRoot } from 'components/arr/ArrUtils';
 import { LazyListBox } from 'components/shared';
-import React, { FC, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { FC, useRef } from 'react';
 import { Node } from 'typings/store';
 import './DiscrepanciesList.scss';
 import { DiscrepanciesListProps, DiscrepanciesResponse, DiscrepancyItem } from './types';
+import { useThunkDispatch } from 'utils/hooks';
 
 
 export const DiscrepanciesList:FC<DiscrepanciesListProps> = ({
     activeFund,
 }) => {
     const refFundErrors = useRef(null);
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
 
     let activeNode:Node | null = null;
     if (activeFund.nodes.activeIndex != null) {

@@ -1,6 +1,6 @@
 import { CheckboxGroup } from 'components/arr/nodeForm/checkbox-group';
 import { FormInputField, i18n } from 'components/shared';
-import React, { FC, useState } from 'react';
+import { useState } from 'react';
 import { Col, Form, Modal, Nav, Row } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Field, formValueSelector, InjectedFormProps, reduxForm } from 'redux-form';
@@ -21,11 +21,9 @@ export interface NodeSettingsFormFields {
 
 const FORM = 'nodeSettingsForm';
 
-const NodeSettingsForm:FC<
-    InjectedFormProps & 
-    ReturnType<typeof mapStateToProps> & 
-    OwnProps
-> = ({
+export type Props = OwnProps & ReturnType<typeof mapStateToProps> & InjectedFormProps<NodeSettingsFormFields>
+
+const NodeSettingsForm = ({
     rulesValue,
     handleSubmit,
     onClose,
@@ -34,7 +32,7 @@ const NodeSettingsForm:FC<
     visiblePolicy,
     visiblePolicyTypes,
     arrRegion,
-}) => {
+}: Props) => {
     const [activeView, setActiveView] = useState(VIEW_KEYS.RULES);
 
     if(!visiblePolicy?.otherData){
@@ -47,13 +45,13 @@ const NodeSettingsForm:FC<
 
     const {
         otherData: {
-            parentExtensions, 
+            parentExtensions,
             availableExtensions
         },
     } = visiblePolicy;
 
-    const activeFund = arrRegion.activeIndex != null ? 
-    arrRegion.funds[arrRegion.activeIndex] : 
+    const activeFund = arrRegion.activeIndex != null ?
+    arrRegion.funds[arrRegion.activeIndex] :
     null;
 
     let visiblePolicyTypeItems = visiblePolicyTypes?.items ? [...visiblePolicyTypes.items] : [];
@@ -62,7 +60,7 @@ const NodeSettingsForm:FC<
         const activeVersion:any = activeFund.activeVersion;
 
         if(activeVersion != null){
-            visiblePolicyTypeItems = visiblePolicyTypeItems.filter((item) => 
+            visiblePolicyTypeItems = visiblePolicyTypeItems.filter((item) =>
                 { return activeVersion.ruleSetId === item.ruleSetId }
             )
         }
@@ -105,7 +103,7 @@ const NodeSettingsForm:FC<
 
                                     <div className="listbox-wrapper">
                                         <div className="listbox-container">
-                                            <CheckboxGroup 
+                                            <CheckboxGroup
                                                 name="records"
                                                 items={visiblePolicyTypeItems}
                                                 disabled={rulesValue !== VIEW_POLICY_STATE.NODE}
@@ -133,7 +131,7 @@ const NodeSettingsForm:FC<
                                     <h4>{i18n('visiblePolicy.rules.node')}</h4>
                                     <div className="listbox-wrapper">
                                         <div className="listbox-container">
-                                            <CheckboxGroup 
+                                            <CheckboxGroup
                                                 name="nodeExtensions"
                                                 items={availableExtensions}
                                                 />
@@ -169,8 +167,6 @@ const mapStateToProps = (state: AppState) => {
     };
 }
 
-export const ConnectedForm = connect(mapStateToProps)(NodeSettingsForm);
-
-export const ReduxForm = reduxForm<NodeSettingsFormFields, OwnProps>({ form: FORM })(ConnectedForm);
+export const ReduxForm = connect(mapStateToProps)(reduxForm<NodeSettingsFormFields, OwnProps & ReturnType<typeof mapStateToProps>>({ form: FORM })(NodeSettingsForm));
 
 export default ReduxForm;

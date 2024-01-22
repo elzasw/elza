@@ -1,11 +1,11 @@
 import { Icon } from 'components';
-import React, { FC } from 'react';
+import { PropsWithChildren } from 'react';
 import { RevisionDisplay } from './RevisionDisplay';
 import { SmallButton } from "components/shared/button/small-button";
 import './RevisionField.scss';
 import FormInput from '../../shared/form/FormInput';
 
-export const RevisionFieldExample:FC<{
+interface Props extends PropsWithChildren {
     prevValue?: string;
     value?: string;
     isDeleted?: boolean;
@@ -15,30 +15,32 @@ export const RevisionFieldExample:FC<{
     equalSplit?: boolean;
     onRevert?: () => void;
     onDelete?: () => void;
-}> = ({
-    prevValue, 
+}
+
+export const RevisionFieldExample = ({
+    prevValue,
     value,
-    isDeleted, 
+    isDeleted,
     label,
-    children, 
+    children,
     disableRevision = true,
     alignTop,
     equalSplit,
     onRevert,
     onDelete,
-}) => {
+}: Props) => {
     const valuesEqual = value === prevValue;
     const isLongValue = prevValue && prevValue.length > 1000 || false;
 
     const renderPrevValue = () => {
         if(!isLongValue) { return prevValue }
-        return <FormInput 
+        return <FormInput
             style={{
                 resize: isDeleted ? undefined : "none",
                 height: "100%",
                 minHeight: "6em",
             }}
-            type="textarea" 
+            type="textarea"
             disabled={true}
         >
             {prevValue}
@@ -50,8 +52,8 @@ export const RevisionFieldExample:FC<{
     const renderActions = () => {
         const actions: React.ReactNode[] = [];
         if(!disableRevision && !valuesEqual && onRevert){
-            actions.push(<SmallButton 
-                onClick={onRevert} 
+            actions.push(<SmallButton
+                onClick={onRevert}
             >
                 <Icon glyph="fa-undo"/>
             </SmallButton>)
@@ -67,8 +69,8 @@ export const RevisionFieldExample:FC<{
     const renderHidableActions = () => {
         const actions: React.ReactNode[] = [];
         if(onDelete){
-            actions.push(<SmallButton 
-                onClick={onDelete} 
+            actions.push(<SmallButton
+                onClick={onDelete}
             >
                 <Icon glyph="fa-trash"/>
             </SmallButton>)
@@ -105,7 +107,7 @@ export const RevisionFieldExample:FC<{
 }
 
 // ----------
-// textarea 
+// textarea
 // ----------
 //
 // return <div>

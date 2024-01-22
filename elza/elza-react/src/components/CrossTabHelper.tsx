@@ -49,7 +49,7 @@ class CrossTabHelper {
             };
             const onInit = () => {
                 console.log('CrossTab', 'Connected as child', that.child);
-                resolve();
+                resolve({});
             };
 
             const config = {

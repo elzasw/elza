@@ -1,5 +1,4 @@
-import React from 'react';
-import {FC, useEffect, useRef} from 'react';
+import { PropsWithChildren, useEffect, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import {Modal} from 'react-bootstrap';
 import {setInputFocus} from 'components/Utils.jsx';
@@ -7,7 +6,7 @@ import {setInputFocus} from 'components/Utils.jsx';
 /**
  * Obal modálního dialogu
  */
-export interface ModalDialogWraperProps {
+export interface Props extends PropsWithChildren {
     className: string;
     title?: string;
     onHide?: () => void;
@@ -15,14 +14,14 @@ export interface ModalDialogWraperProps {
     visible?: boolean;
 }
 
-export const ModalDialogWrapper:FC<ModalDialogWraperProps> = ({
+export const ModalDialogWrapper = ({
     title,
     className,
     children,
     onHide = () => {return;},
     closeOnClickOutside = false,
     visible = true,
-}) => {
+}: Props) => {
     const modalBody = useRef<HTMLDivElement>(null);
     const hide = useRef(false);
 

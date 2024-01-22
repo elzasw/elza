@@ -57,7 +57,6 @@ type ComponentProps = {
 
 type ConnectedProps = {
     outputTypes: any;
-    focus: any;
     userDetail: any;
 };
 
@@ -131,6 +130,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
     }
 
     trySetFocus = props => {
+        // TODO - urcit zda obnovit nebo odstranit
         //let {focus} = props;
         // if (canSetFocus()) {
         //     if (isFocusFor(focus, 'fund-output', 1)) {
@@ -209,7 +209,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
 
         return (
             <FundOutputFiles
-                ref="fundOutputFiles"
                 versionId={versionId}
                 outputId={fundOutputDetail.id}
                 fundOutputFiles={fundOutputFiles}
@@ -221,7 +220,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
     render() {
         const {
             fundOutputDetail,
-            focus,
             fund,
             versionId,
             descItemTypes,
@@ -261,7 +259,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
                 descItemTypes={descItemTypes}
                 subNodeForm={fundOutputDetail.subNodeForm}
                 closed={!this.isEditable()}
-                focus={focus}
                 readMode={closed || readMode}
             />
         );
@@ -330,10 +327,9 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
 }
 
 function mapStateToProps(state) {
-    const {focus, userDetail} = state;
+    const { userDetail} = state;
     return {
         outputTypes: state.refTables.outputTypes.items,
-        focus,
         userDetail,
         scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),
     };

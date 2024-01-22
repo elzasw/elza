@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState, useRef, PropsWithChildren } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
@@ -36,6 +36,7 @@ import { SyncProgress } from 'api/ApBindingVO';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { WaitingOverlay } from 'components/shared/waiting-overlay';
+import { useThunkDispatch } from 'utils/hooks';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -150,7 +151,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const websocket = useWebsocket();
     const bindings = detail.data?.bindings || [];
-    const dispatch = useDispatch();
+    const dispatch = useThunkDispatch();
     const history = useHistory();
 
     useEffect(() => {

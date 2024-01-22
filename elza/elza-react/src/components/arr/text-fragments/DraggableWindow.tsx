@@ -1,14 +1,16 @@
-import React, {FC, useCallback, useState, useRef} from 'react';
+import {useCallback, useState, useRef, PropsWithChildren} from 'react';
 
 let _draggableWindowPosition = {x:window.innerWidth/2, y:window.innerHeight/2};
 let _draggableWindowDiff = {x:0, y:0};
 
-export const DraggableWindow:FC<{
+interface Props extends PropsWithChildren {
     className: string;
-}> = ({
-    children, 
+}
+
+export const DraggableWindow = ({
+    children,
     className
-}) => {
+}: Props) => {
     const [position, setPosition] = useState(_draggableWindowPosition);
     const [dragging, setDragging] = useState(false);
     const window = useRef<HTMLDivElement>(null);
@@ -45,7 +47,7 @@ export const DraggableWindow:FC<{
         document.addEventListener("mouseup", handleMouseUp)
     },[handleMove, handleMouseUp])
 
-    return <div 
+    return <div
         className={`draggable-window ${className}`}
         ref={window}
         style={{

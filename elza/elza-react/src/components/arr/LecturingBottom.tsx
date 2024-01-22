@@ -21,7 +21,7 @@ import './LecturingBottom.scss';
 /**
  * Spodní část lektoringu, zajištující seznam komentářů, komentování a editaci
  */
-class LecturingBottom extends React.Component {
+class LecturingBottom extends React.Component<any> {
     static propTypes = {
         fund: PropTypes.object.isRequired,
     };
@@ -32,8 +32,6 @@ class LecturingBottom extends React.Component {
         submitting: false,
         actualFundId: null,
     };
-
-    props: any;
 
     componentDidMount() {
         const {issueDetail, fund} = this.props;
@@ -213,7 +211,7 @@ class LecturingBottom extends React.Component {
                                 <div className="text-right">
                                     <DropdownButton
                                         drop={'up'}
-                                        alignRight
+                                        align="end"
                                         title={i18n('arr.issues.state.change')}
                                         variant={'action' as any}
                                         id="comment-state"
@@ -280,4 +278,4 @@ export default connect((state: any) => {
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,
     };
-})(LecturingBottom as any);
+})(LecturingBottom);

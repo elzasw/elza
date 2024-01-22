@@ -1,17 +1,17 @@
-import React, {FC} from 'react';
+import { PropsWithChildren} from 'react';
 
-interface Props {
+interface Props extends PropsWithChildren {
     label?: String;
     className?: string;
     title?: string;
 }
 
-const DetailDescriptionsItem: FC<Props> = ({
-    label, 
-    className="", 
+const DetailDescriptionsItem = ({
+    label,
+    className="",
     title,
     children
-}) => {
+}: Props) => {
     return (
         <div title={title} className={`detail-descriptions-item ${className}`}>
             <div className={`detail-descriptions-item-content`}>
@@ -22,15 +22,17 @@ const DetailDescriptionsItem: FC<Props> = ({
     );
 };
 
-export const DetailDescriptionsItemWithButton: FC<Props & {
+interface PropsWithButton extends Props {
     renderButton?: () => React.ReactNode;
-}> = ({
-    label, 
+}
+
+export const DetailDescriptionsItemWithButton = ({
+    label,
     renderButton,
-    className = "", 
+    className = "",
     children,
     title,
-}) => {
+}: PropsWithButton) => {
     return (
         <div title={title} className={`detail-descriptions-item with-button ${className}`}>
             <div className={`detail-descriptions-item-content`}>

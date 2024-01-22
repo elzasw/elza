@@ -121,6 +121,7 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
             if (!values.replaceValueId) {
                 errors.replaceValueId = i18n('global.validation.required');
             }
+            break;
         default:
             break;
     }
@@ -530,7 +531,7 @@ const FundBulkModificationsForm = ({
                 findText: "",
                 replaceText: "",
                 itemsArea: getDefaultItemsArea({ allItemsCount, checkedItemsCount }),
-                specs: { type: 'unselected' },
+                specs: { type: 'unselected', ids: [] },
             }}
             keepDirtyOnReinitialize={true}
         >

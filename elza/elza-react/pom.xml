@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>elza</artifactId>
@@ -114,6 +116,7 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>ci</argument>
+                                <argument>--legacy-peer-deps</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -142,12 +145,14 @@
                                     <executable>npm</executable>
                                     <arguments>
                                         <argument>install</argument>
+                                        <argument>--legacy-peer-deps</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>npm-run-build</id>
-                                <!-- Plugin maven-source-plugin is running phase 'generate-sources' multiple times.
+                                <!-- Plugin maven-source-plugin is running phase 'generate-sources'
+                                multiple times.
                                      To run this only one time phase 'generate-resources' is used.
                                    -->
                                 <phase>generate-resources</phase>
@@ -175,15 +180,15 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${basedir}/../elza-web/target/classes/static/res/</outputDirectory>
+                                    <outputDirectory>
+                                        ${project.basedir}/../elza-web/target/classes/static/res/</outputDirectory>
                                     <resources>
                                         <resource>
                                             <filtering>false</filtering>
-                                            <directory>${basedir}/build/static/res/</directory>
+                                            <directory>${project.basedir}/dist/static/res/</directory>
                                             <includes>
-                                                <include>css/*.*</include>
                                                 <include>js/*.*</include>
-                                                <include>media/*.*</include>
+                                                <include>assets/*.*</include>
                                             </includes>
                                         </resource>
                                     </resources>

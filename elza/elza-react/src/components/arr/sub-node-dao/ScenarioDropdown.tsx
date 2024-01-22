@@ -1,33 +1,33 @@
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { i18n } from 'components/shared';
-import React, { FC } from 'react';
+import { PropsWithChildren } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { useDispatch } from "react-redux";
 import { ArrDaoVO } from "typings/dao";
 import { Button } from '../../ui';
 import './SubNodeDao.scss';
+import { useThunkDispatch } from "utils/hooks";
 
-export interface ScenarioDropdownProps {
+export interface ScenarioDropdownProps  extends PropsWithChildren {
     dao: ArrDaoVO;
     readMode?: boolean;
     versionId: number;
     nodeId: number;
 }
 
-export const ScenarioDropdown:FC<ScenarioDropdownProps> = ({
+export const ScenarioDropdown = ({
     dao,
     readMode = false,
     versionId,
     nodeId,
     children,
-}) => {
-    const dispatch = useDispatch()
+}: ScenarioDropdownProps) => {
+    const dispatch = useThunkDispatch()
 
     return <Dropdown>
-        <Dropdown.Toggle 
-            disabled={readMode} 
+        <Dropdown.Toggle
+            disabled={readMode}
             title={i18n('subNodeDao.dao.action.changeScenario')}
-            as={Button} 
+            as={Button}
             id="scenario"
         >
             {children}
