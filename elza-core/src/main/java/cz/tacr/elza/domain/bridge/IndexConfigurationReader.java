@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+import static cz.tacr.elza.packageimport.PackageService.ITEM_SPEC_XML;
 import static cz.tacr.elza.packageimport.PackageService.PART_TYPE_XML;
 
 import java.io.ByteArrayInputStream;
@@ -10,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,7 +31,10 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageUtils;
 import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
+import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
+import cz.tacr.elza.packageimport.xml.ItemTypeAssign;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
 import cz.tacr.elza.packageimport.xml.PartType;
@@ -63,6 +68,7 @@ public class IndexConfigurationReader {
     private List<PackageInfoWrapper> allPackages;
     private List<String> partTypeCodes;
     private List<String> itemTypeCodes;
+    private Map<String, List<String>> typeSpecMap;
 
     private Map<String, PackageInfoWrapper> latestVersionMap;
 
@@ -74,10 +80,26 @@ public class IndexConfigurationReader {
         packagesToImport = new ArrayList<>();
         partTypeCodes = new ArrayList<>();
         itemTypeCodes = new ArrayList<>();
+        typeSpecMap = new HashMap<>();
 
         // get item type codes from DB
-        List<String> itemCodes = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> rs.getString("code"));
-        itemTypeCodes.addAll(itemCodes);
+        List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getString("code")));
+        Map<Integer, String> itemTypeMap = itemTypeItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
+        itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).toList());
+
+        // get item spec codes from DB
+        List<Item> itemSpecItems = jdbcTemplate.query("SELECT * FROM rul_item_spec", (rs, rowNum) -> new Item(rs.getInt("item_spec_id"), rs.getString("code")));
+        Map<Integer, String> itemSpecMap = itemSpecItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
+        List<String> itemSpecCodes = itemSpecItems.stream().map(i -> i.getCode()).toList();
+
+        // get item type spec assign
+        List<Assign> typeSpecAssign = jdbcTemplate.query("SELECT * FROM rul_item_type_spec_assign", (rs, rowNum) -> new Assign(rs.getInt("item_type_id"), rs.getInt("item_spec_id")));
+
+        // create map item type code -> item spec codes
+        for (Assign item : typeSpecAssign) {
+        	List<String> itemSpecs = typeSpecMap.computeIfAbsent(itemTypeMap.get(item.typeId), i -> new ArrayList<>());
+        	itemSpecs.add(itemSpecMap.get(item.specId));
+        }
 
         // get part type codes from DB
         List<String> partCodes = jdbcTemplate.query("SELECT * FROM rul_part_type", (rs, rowNum) -> rs.getString("code"));
@@ -139,6 +161,17 @@ public class IndexConfigurationReader {
                         }
                     }
 
+                    ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
+                    for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+                    	if (!itemSpecCodes.contains(itemSpec.getCode())) {
+                    		itemSpecCodes.add(itemSpec.getCode());
+                    		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+                    			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
+                    			listItemSpecCodes.add(itemSpec.getCode());
+                    		}
+                    	}
+                    }
+
                     PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
                     for (PartType partType : partTypes.getPartTypes()) {
                         if (!partTypeCodes.contains(partType.getCode())) {
@@ -166,7 +199,11 @@ public class IndexConfigurationReader {
         return itemTypeCodes;
     }
 
-    public List<PackageInfoWrapper> getPackagesToImport() {
+    public List<String> getItemSpecCodesByTypeCode(String itemTypeCode) {
+		return typeSpecMap.getOrDefault(itemTypeCode, new ArrayList<>());
+	}
+
+	public List<PackageInfoWrapper> getPackagesToImport() {
         return packagesToImport;
     }
 
@@ -188,5 +225,30 @@ public class IndexConfigurationReader {
                 return new PackageInfoWrapper(pkgZip, path);
             }
         }
+    }
+
+    private class Item { // for item_type & item_spec
+    	Integer itemId;
+    	String code;
+		Item(Integer itemId, String code) {
+			this.itemId = itemId;
+			this.code = code;
+		}
+		public Integer getItemId() {
+			return itemId;
+		}
+		public String getCode() {
+			return code;
+		}
+    }
+    
+    private class Assign { // for assigning typeId & specId
+    	Integer typeId;
+    	Integer specId;
+		Assign(Integer typeId, Integer specId) {
+			super();
+			this.typeId = typeId;
+			this.specId = specId;
+		}
     }
 }
