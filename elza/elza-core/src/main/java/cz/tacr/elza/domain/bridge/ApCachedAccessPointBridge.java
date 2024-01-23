@@ -145,6 +145,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 RulItemSpec itemSpec = item.getItemSpecId() != null ? sdp.getItemSpecById(item.getItemSpecId()) : null;
                 DataType dataType = DataType.fromCode(itemType.getEntity().getDataType().getCode());
                 String itemTypeCode = itemType.getCode().toLowerCase();
+                String itemSpecCode = itemSpec != null? itemSpec.getCode().toLowerCase() : null;
 
                 if (dataType == DataType.COORDINATES) {
                     continue;
@@ -167,17 +168,15 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     if (itemSpec == null) {
                         continue;
                     }
-                    value = itemSpec.getCode();
+                    value = itemSpecCode;
                 }
 
                 if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
                     addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
 
-                    // TODO zjistit, zda je to nutné.
-//                    if (itemSpec != null) {
-//                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(),
-//                                value.toLowerCase(), document, name);
-//                    }
+                    if (itemSpec != null) {
+                        addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode, value.toLowerCase(), document, name);
+                    }
                 }
 
                 // indexování polí s více než 32766 znaky
@@ -187,10 +186,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     addField(name + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
                 }
 
-                // TODO zjistit, zda je to nutné.
-//                if (itemSpec != null) {
-//                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, name);
-//                }
+                if (itemSpec != null) {
+                    addField(name + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode, value.toLowerCase(), document, name);
+                }
             }
         }
     }

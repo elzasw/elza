@@ -62,12 +62,17 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         }
 
         // item type codes
-        for (String itemCode : configurationReader.getItemTypeCodes()) {
+        for (String itemTypeCode : configurationReader.getItemTypeCodes()) {
         	for (String pref : Arrays.asList("", "pref_")) {
-	            String name = "data_" + pref + itemCode.toLowerCase();
+	            String name = "data_" + pref + itemTypeCode.toLowerCase();
 	            fields.put(name + SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
+	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+	            	String nameAddSpec = "data_" + pref + itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase();
+		            fields.put(nameAddSpec + ANALYZED, createAnalyzedField(nameAddSpec));
+		            fields.put(nameAddSpec + NOT_ANALYZED, createNotAnalyzedField(nameAddSpec));
+	            }
         	}
         }
 
