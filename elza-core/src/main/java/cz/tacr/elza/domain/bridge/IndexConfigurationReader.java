@@ -85,12 +85,12 @@ public class IndexConfigurationReader {
         // get item type codes from DB
         List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getString("code")));
         Map<Integer, String> itemTypeMap = itemTypeItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
-        itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).toList());
+        itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).collect(Collectors.toList()));
 
         // get item spec codes from DB
         List<Item> itemSpecItems = jdbcTemplate.query("SELECT * FROM rul_item_spec", (rs, rowNum) -> new Item(rs.getInt("item_spec_id"), rs.getString("code")));
         Map<Integer, String> itemSpecMap = itemSpecItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
-        List<String> itemSpecCodes = itemSpecItems.stream().map(i -> i.getCode()).toList();
+        List<String> itemSpecCodes = itemSpecItems.stream().map(i -> i.getCode()).collect(Collectors.toList());
 
         // get item type spec assign
         List<Assign> typeSpecAssign = jdbcTemplate.query("SELECT * FROM rul_item_type_spec_assign", (rs, rowNum) -> new Assign(rs.getInt("item_type_id"), rs.getInt("item_spec_id")));
@@ -173,10 +173,12 @@ public class IndexConfigurationReader {
                     }
 
                     PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
-                    for (PartType partType : partTypes.getPartTypes()) {
-                        if (!partTypeCodes.contains(partType.getCode())) {
-                            partTypeCodes.add(partType.getCode());
-                        }
+                    if (partTypes != null) {
+	                    for (PartType partType : partTypes.getPartTypes()) {
+	                        if (!partTypeCodes.contains(partType.getCode())) {
+	                            partTypeCodes.add(partType.getCode());
+	                        }
+	                    }
                     }
                 } else {
                     throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
