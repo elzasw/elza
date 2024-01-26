@@ -55,6 +55,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     static private SettingsService settingsService;
 
+    static private SettingIndexSearch settingIndexSearch;
+
     public static final String SCOPE_ID = "scope_id";
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
@@ -84,6 +86,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             throw new IllegalArgumentException("settingsService is null");
         }
         ApCachedAccessPointBridge.settingsService = settingsService;
+        ApCachedAccessPointBridge.settingIndexSearch = getElzaSearchConfig();
     }
 
     @Override
@@ -251,9 +254,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
-        if (elzaSearchConfig != null) {
-            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), name);
+        if (settingIndexSearch != null) {
+            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(settingIndexSearch.getFields(), name);
             if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
                 transliterate = fieldSearchConfig.getTransliterate();
             }
@@ -275,7 +277,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     }
 
     @Nullable
-    private SettingIndexSearch getElzaSearchConfig() {
+    private static SettingIndexSearch getElzaSearchConfig() {
         if (settingsService == null) {
             log.error("Search configuration is not set");
             throw new IllegalStateException("Not initialized");
