@@ -196,17 +196,34 @@ abstract public class CamXmlBuilder {
     /**
      * Create list of new parts
      * 
-     * @param partList
+     * @param existingParts
+     *            List of current parts
+     * @param srcPartList
      * @param itemMap
      * @param indexMap
      * @return
      */
     protected List<PartXml> createNewParts(Collection<String> existingParts,
-                                           Collection<ApPart> partList,
+                                           Collection<ApPart> srcPartList,
                                            Map<Integer, List<ApItem>> itemMap,
                                            @Nullable Map<Integer, Collection<ApIndex>> indexMap) {
-        if (CollectionUtils.isEmpty(partList)) {
+        if (CollectionUtils.isEmpty(srcPartList)) {
             return Collections.emptyList();
+        }
+
+        // Reorder parts - parent parts have to be first
+        List<ApPart> partList = new ArrayList<>(srcPartList.size());
+        // copy parts without parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() == null) {
+                partList.add(srcPart);
+            }
+        }
+        // copy parts with parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() != null) {
+                partList.add(srcPart);
+            }
         }
 
         // collection of available parts for export
