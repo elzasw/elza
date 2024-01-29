@@ -9,64 +9,6 @@ body {
     background-color: $shade-0;
 }
 
-/* Override bootstrap card styles */
-.card {
-    background-color: $shade-0;
-    border: $primary-border;
-}
-
-/* Override bootstrap dropdown styles */
-.dropdown-menu {
-    background-color: $shade-0;
-    border: $primary-border;
-
-    .dropdown-item {
-        color: $fg-color;
-
-        &:hover {
-            background-color: $shade-2;
-        }
-    }
-
-    .dropdown-divider {
-        border-top: $primary-border;
-    }
-}
-
-/* Override bootstrap form-control styles */
-.form-control {
-    height: 1.8em;
-    line-height: 1.8em;
-    padding: 0px 5px;
-    flex-shrink: 0;
-    background-color: $shade-0;
-    border-color: $border-color;
-    color: $fg-color;
-    box-shadow: none;
-
-    &:disabled {
-        background-color: $shade-1;
-    }
-
-    &:focus{
-        background-color: $shade-0;
-        color: $fg-color;
-        border-color: $accent-color;
-        box-shadow: none;
-        box-shadow: 0 0 0px 1px $accent-color;
-        position: relative;
-        z-index: 1000;
-    }
-
-    &:read-only {
-        background-color: $shade-0;
-
-        &:disabled {
-            background-color: $shade-1;
-        }
-    }
-}
-
 .table {
     color: $fg-color;
 
@@ -88,42 +30,6 @@ body {
     overflow: hidden;
 }
 
-.show > .btn-outline-secondary.dropdown-toggle {
-    border-color: $border-color;
-    background-color: $shade-2;
-    color: $fg-color;
-}
-
-a, a:hover {
-    color: $color-link;
-}
-
-.btn {
-    height: 1.8em;
-    line-height: 1.8em;
-    padding: 0 5px;
-    font-size: 1em;
-    _outline: none !important;
-    color: $fg-color;
-
-    &.btn-outline-secondary {
-        border-color: $border-color;
-        &:hover, &:active, &:not(.disabled):active, &:focus {
-            background-color: $shade-2;
-            color: $fg-color;
-        }
-    }
-
-    &:hover {
-        color: $fg-color;
-    }
-}
-
-.btn-xs {
-    height: 1.4em;
-    font-size: 1em;
-    line-height: 1.4em;
-}
 
 .btn-icon {
     border: 0;
@@ -186,11 +92,6 @@ label {
 
 .text-bold {
     font-weight: bold;
-}
-
-textarea.form-control {
-    height: 6em;
-    resize: vertical;
 }
 
 .dropDownTree {
@@ -296,11 +197,6 @@ hr {
     }
 }
 
-.modal-content {
-    background-color: $shade-0;
-    border: $primary-border;
-}
-
 .unselected-msg {
     text-align: center;
     margin-top: 50px;
@@ -314,13 +210,4 @@ hr {
 
 .dropdown button:after {
     display: none;
-}
-
-// BS4 kompatibilní styles
-.w-100 {
-    width: 100%
-}
-
-.d-none {
-    display: none !important;
 }
