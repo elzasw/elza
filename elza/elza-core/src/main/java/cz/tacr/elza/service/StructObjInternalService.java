@@ -5,9 +5,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.ObjectListIterator;
@@ -46,25 +48,26 @@ public class StructObjInternalService {
     private final StructuredObjectRepository structObjRepository;
     private final ArrangementInternalService arrangementInternalService;
     private final DataRepository dataRepository;
-    private final StructObjValueService structObjService;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
     private final PartTypeRepository partTypeRepository;
 
+    private final ApplicationContext appCtx;
+
     @Autowired
-    public StructObjInternalService(final StructuredItemRepository structureItemRepository,
+    public StructObjInternalService(final ApplicationContext appCtx,
+                                    final StructuredItemRepository structureItemRepository,
                                     final StructuredObjectRepository structureDataRepository,
                                     final ArrangementInternalService arrangementInternalService,
                                     final DataRepository dataRepository,
-                                    final StructObjValueService structureDataService,
                                     final ChangeRepository changeRepository,
                                     final EventNotificationService notificationService,
                                     final PartTypeRepository partTypeRepository) {
+        this.appCtx = appCtx;
         this.structureItemRepository = structureItemRepository;
         this.structObjRepository = structureDataRepository;
         this.arrangementInternalService = arrangementInternalService;
         this.dataRepository = dataRepository;
-        this.structObjService = structureDataService;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
         this.partTypeRepository = partTypeRepository;
@@ -160,7 +163,13 @@ public class StructObjInternalService {
             ObjectListIterator
                 .forEachPage(sortValues, 
                              page -> structuredObjectsDup.addAll(structObjRepository.findErrorByStructureTypeAndFund(structuredType, fund, page)));
-            structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+
+            if (CollectionUtils.isNotEmpty(structuredObjectsDup)) {
+                // get reference to structObjService - prevent circular dependency
+                StructObjValueService structObjService = appCtx.getBean(StructObjValueService.class);
+
+                structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+            }
 
             logger.debug("Processed {} duplicates objects", structuredObjectsDup.size());
 
