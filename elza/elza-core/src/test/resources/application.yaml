@@ -29,6 +29,12 @@ spring:
         cache:
           use_second_level_cache: true
           region.factory_class: jcache
+        search:
+          backend:
+            analysis:
+              configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer
+          automatic_indexing:
+            strategy: none
 
 elza:
   debug:
