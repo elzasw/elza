@@ -1009,7 +1009,7 @@ var messages = {
     "subNodeForm.visiblePolicy": "Způsob kontroly",
 
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
-    "subNodeForm.errorPointCoordinates": 'Chybně zadaný bod. Zadávejte ve tvaru "15.5154,49.535"',
+    "subNodeForm.errorPointCoordinates": 'Chybný formát souřadnic. Podporován je formát WKT nebo bod zadaný ve tvaru "15.5154,49.535"',
 
     "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
     "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
@@ -1277,6 +1277,8 @@ var messages = {
     "ap.coordinate.export.title": "Export souřadnic",
     "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
     "ap.coordinate.format": "Formát {0}",
+    "ap.coordinate.map-editor.title": "Editor souřadnic",
+    "ap.coordinate.edit-in-map": "Upravit v mapě",
 
     "ap.part.complements.create": "Vytvořit doplňky",
     "ap.part.complements.noChanges.title": "Existující hodnoty",

@@ -5,6 +5,7 @@ import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { ExternalSystem } from 'typings/store';
 import { Button } from 'components/ui';
 import { ModalDialogWrapper } from 'components/shared';
+import i18n from 'components/i18n';
 
 export interface Props {
     geometry: string;
@@ -75,7 +76,7 @@ export const MapEditor = ({
     }
 
     return <>
-        <ModalDialogWrapper className="dialog-lg" title="Editor souradnic" onHide={onClose}>
+        <ModalDialogWrapper className="dialog-lg" title={i18n('ap.coordinate.map-editor.title')} onHide={onClose}>
             <iframe
                 title="elza-map-iframe"
                 className={'border-0 float-left'}

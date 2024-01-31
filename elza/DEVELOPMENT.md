@@ -5,7 +5,7 @@
 Ke změnám datového schématu je využit framework Liquibase. Změnové soubory ve formátu XML jsou umístěny v core. 
 Při startu aplikačního jsou automaticky provedeny nezpracované změnové dávky. Způsob zápisu XML viz dokumentace
 http://www.liquibase.org/documentation/xml_format.html. Pokud se jedná o složitější změnu, je možné změnu realizovat 
-v Javě, propojení XML a změnové metody je ukázáno na příkladu DbChangelog_1_0.java v programátorské dokumentaci.     
+v Javě, propojení XML a změnové metody je ukázáno na příkladu DbChangelog_1_0.java v programátorské dokumentaci.
 
 
 ## Vize způsobu nasazení
