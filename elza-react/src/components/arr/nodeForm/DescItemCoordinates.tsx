@@ -5,7 +5,7 @@ import { objectFromWKT, wktFromTypeAndData } from 'components/Utils.jsx';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { connect } from "react-redux";
-import { Action, Dispatch } from "redux";
+import { Action } from "redux";
 import { modalDialogHide, modalDialogShow } from "../../../actions/global/modalDialog";
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../CrossTabHelper";
 import { PolygonShowInMap } from "../../PolygonShowInMap";
@@ -16,6 +16,11 @@ import { DescItemComponentProps } from './DescItemTypes';
 import { decorateValue } from './DescItemUtils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import DescItemLabel from './DescItemLabel';
+import { AppState, ExternalSystem } from 'typings/store';
+import { GisSystemType } from '../../../constants';
+import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
+import { ThunkDispatch } from 'redux-thunk';
+import { editInMapEditor } from 'components/registry/part-edit/form/fields/FormCoordinates';
 
 
 type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
@@ -58,8 +63,8 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         }
     };
 
-    handleChangeData = e => {
-        const val = wktFromTypeAndData(this.state.type, e.target.value);
+    handleChangeData = (e) => {
+        const val = e.target.value;
         if (val !== this.props.descItem.value) {
             this.props.onChange(val);
         }
@@ -82,6 +87,19 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
 
         if (thisLayout) {
             CrossTabHelper.sendEvent(thisLayout, {type: CrossTabEventType.SHOW_IN_MAP, data: polygon});
+        }
+    }
+
+    handleEditInMapSave = (value: string) => {
+        const { onChange } = this.props;
+        const { current } = this.focusEl;
+
+        onChange(value);
+
+        // artificial focus and blur to force save
+        if(current){
+            current.focus();
+            current.blur();
         }
     }
 
@@ -114,11 +132,9 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         return (
             <div className="desc-item-value-coordinates">
                 <div className="desc-item-value" key="cords">
-                    {!descItem.undefined && descItem.descItemObjectId && (
-                        <div className="desc-item-coordinates-action" key="download-action">
-                            <PolygonShowInMap polygon={value} />
-                        </div>
-                    )}
+                    <div className="desc-item-coordinates-action" key="download-action">
+                        <PolygonShowInMap polygon={value} showInEditor={true} onEditorSave={this.handleEditInMapSave}/>
+                    </div>
                     <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                         <input
                             {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
@@ -179,7 +195,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     }
 }
 
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action>) => ({
     showExportDialog: (
         itemId: number | undefined,
     ) =>
@@ -196,4 +212,4 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
     }
 });
 
-export default connect(null, mapDispatchToProps)(DescItemCoordinates as any);
+export default connect(undefined, mapDispatchToProps)(DescItemCoordinates as any);

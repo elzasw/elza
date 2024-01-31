@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
 import { GisSystemType } from '../constants';
 import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
+import { editInMapEditor } from 'components/registry/part-edit/form/fields/FormCoordinates';
 
 const IFRAME_SIZE = 400;
 
@@ -106,6 +107,8 @@ interface ChildrenRenderProps {
 interface Props extends React.ComponentPropsWithoutRef<"span">{
     className?: string;
     polygon: string;
+    showInEditor?: boolean;
+    onEditorSave?: (value: string) => void;
     children?: (props: ChildrenRenderProps) => React.ReactNode;
 };
 
@@ -116,27 +119,56 @@ export const PolygonShowInMap = ({
     children,
     polygon,
     className,
+    showInEditor = false,
+    onEditorSave = () => {return;},
     ...otherProps
 }: Props) => {
+    const dispatch = useThunkDispatch();
+    const geoEditExternalSystems = useSelector((state: AppState) => {
+        return state.app.kmlExtSystemList.rows.filter((extSystem: any) => {
+            if (extSystem.type === GisSystemType.FrameApiEdit) {
+                return true;
+            }
+        })
+    });
+
+    useEffect(() => {
+        dispatch(kmlExtSystemListFetchIfNeeded());
+    }, [])
+
+    const handleEditInMap = async () => {
+        if (geoEditExternalSystems.length === 1) {
+            const value = await dispatch(editInMapEditor(polygon, geoEditExternalSystems[0]));
+            if(value !== polygon){
+                onEditorSave(value);
+            }
+        } else {
+            throw Error("Missing or multiple GIS editing external systems. Has to be exactly one.")
+        }
+    }
 
     const showInMap = () => {
-        const thisLayout = getThisLayout();
+        if(showInEditor){
+            handleEditInMap();
+        } else {
+            const thisLayout = getThisLayout();
 
-        if (thisLayout) {
-            CrossTabHelper.sendEvent(
-                thisLayout,
-                {
-                    type: CrossTabEventType.SHOW_IN_MAP,
-                    data: polygon
-                }
-            );
+            if (thisLayout) {
+                CrossTabHelper.sendEvent(
+                    thisLayout,
+                    {
+                        type: CrossTabEventType.SHOW_IN_MAP,
+                        data: polygon
+                    }
+                );
+            }
         }
     }
 
     return (
         <TooltipTrigger
             {...otherProps}
-            content={<PolygonTooltip polygon={polygon} />}
+            content={polygon ? <PolygonTooltip polygon={polygon} /> : undefined}
             holdOnHover
             placement={'vertical'}
             showDelay={300}

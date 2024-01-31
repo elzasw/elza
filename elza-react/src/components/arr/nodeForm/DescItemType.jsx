@@ -10,7 +10,6 @@ import {
     Utils,
 } from '../../../components/shared';
 import {connect} from 'react-redux';
-import {objectEqualsDiff, propsEquals, valuesEquals} from '../../Utils';
 import {nodeFormActions} from '../../../actions/arr/subNodeForm';
 import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils';
 import {indexById} from '../../../stores/app/utils';
@@ -31,6 +30,8 @@ import {registerField, unregisterField} from "../text-fragments";
 import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
 import ImportCoordinateModal from "../../registry/Detail/coordinate/ImportCoordinateModal";
 import { showConfirmDialog, showInfoDialog } from 'components/shared/dialog';
+import { wktFromTypeAndData, valuesEquals, objectFromWKT } from 'components/Utils';
+import WKT from 'ol/format/WKT';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -414,6 +415,8 @@ class DescItemType extends AbstractReactComponent {
         const { descItemType } = this.state;
         const descItem = descItemType.descItems[descItemIndex];
 
+        if(!value?.value){return value;}
+
         if(rulDataType.code === 'UNITDATE'){
             try {
                 const validated = validateUnitDate(value.value);
@@ -431,6 +434,10 @@ class DescItemType extends AbstractReactComponent {
                     }
                 }
             } catch (e) { }
+        }
+        if(rulDataType.code === 'COORDINATES'){
+            const { type } = objectFromWKT(undefined); // create empty wkt object
+            value.value = wktFromTypeAndData(type, value.value);
         }
 
         return value
