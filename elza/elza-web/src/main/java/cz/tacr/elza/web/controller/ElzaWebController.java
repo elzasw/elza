@@ -92,6 +92,7 @@ public class ElzaWebController {
     @Value("${elza.security.logoutUrl:}")
     private String logoutUrl;
 
+    @Value("${elza.appName:ELZA}")
     private String appName;
 
     @ModelAttribute("appName")
