@@ -1277,6 +1277,8 @@ var messages = {
     "ap.coordinate.export.title": "Export souřadnic",
     "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
     "ap.coordinate.format": "Formát {0}",
+    "ap.coordinate.map-editor.title": "Editor souřadnic",
+    "ap.coordinate.edit-in-map": "Upravit v mapě",
 
     "ap.part.complements.create": "Vytvořit doplňky",
     "ap.part.complements.noChanges.title": "Existující hodnoty",

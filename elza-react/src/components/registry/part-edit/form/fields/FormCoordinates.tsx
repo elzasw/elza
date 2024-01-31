@@ -174,7 +174,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                             {geoEditExternalSystems.length === 1 && <Button
                                 variant={'action' as any}
                                 className={classNames('side-container-button', 'm-1')}
-                                title={'Upravit v mape'}
+                                title={i18n('ap.coordinate.edit-in-map')}
                                 onClick={handleEditInMap}
                             >
                                 <Icon glyph={'fa-map'} />
@@ -189,7 +189,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     </Row>
 }
 
-const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeometryTypes?: string[]): ThunkAction<any> =>
+export const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeometryTypes?: string[]): ThunkAction<any> =>
     (dispatch) => new Promise((resolve) => {
         const handleEditorChange = (value: string) => {
             resolve(value);
@@ -198,7 +198,7 @@ const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeo
 
         dispatch(modalDialogShow(
             this,
-            "Editor souradnic",
+            i18n('ap.coordinate.map-editor.title'),
             ({key, onClose, visible}) => {
                 return <MapEditor
                     key={key}
