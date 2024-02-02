@@ -2,10 +2,6 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import jakarta.annotation.Nullable;
@@ -105,21 +101,6 @@ public class ArrFundVersionVO {
         this.config = config;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        return Objects.equals(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
-    
     public static ArrFundVersionVO newInstance(final ArrFundVersion fundVersion) {
     	ArrFundVersionVO result = new ArrFundVersionVO();
     	result.setId(fundVersion.getFundVersionId());
