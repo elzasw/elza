@@ -2381,7 +2381,7 @@
     </item-spec>
     <item-spec code="ZP2015_APPLIED_RESTRICTION_ABSTRACT">
         <name>nepřístupný prvek obsah</name>
-        <description>Obsah nezveřejněn z důvodu omezení přístupnosti.</description>
+        <description>Obsah nezveřejněn nebo nahrazen z důvodu omezení přístupnosti.</description>
         <shortcut>nepřístupný prvek obsah</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
