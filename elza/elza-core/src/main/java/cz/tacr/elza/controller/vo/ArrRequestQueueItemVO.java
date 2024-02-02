@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
+import java.time.ZoneId;
 import java.util.Date;
+
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 
 /**
  * VO {{@link cz.tacr.elza.domain.ArrRequestQueueItem}}
@@ -78,5 +82,16 @@ public class ArrRequestQueueItemVO {
 
     public void setSend(final Boolean send) {
         this.send = send;
+    }
+
+    public static ArrRequestQueueItemVO newInstance(final ArrRequestQueueItem requestQueueItem) {
+        ArrRequestQueueItemVO requestQueueItemVO = new ArrRequestQueueItemVO();
+        ArrChange createChange = requestQueueItem.getCreateChange();
+        requestQueueItemVO.setId(requestQueueItem.getRequestQueueItemId());
+        requestQueueItemVO.setCreate(Date.from(createChange.getChangeDate().toInstant()));
+        requestQueueItemVO.setAttemptToSend(Date.from(requestQueueItem.getAttemptToSend().atZone(ZoneId.systemDefault()).toInstant()));
+        requestQueueItemVO.setError(requestQueueItem.getError());
+        requestQueueItemVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
+        return requestQueueItemVO;
     }
 }

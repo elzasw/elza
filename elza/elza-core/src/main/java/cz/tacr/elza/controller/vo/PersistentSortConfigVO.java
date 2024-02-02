@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
+
 /**
  * VO pro dodatečné nastavení funkce.
  */
@@ -60,5 +62,14 @@ public class PersistentSortConfigVO {
 
     public void setItemSpecCode(String itemSpecCode) {
         this.itemSpecCode = itemSpecCode;
+    }
+
+    public PersistentSortRunConfig createEntity() {
+    	PersistentSortRunConfig config = new PersistentSortRunConfig();
+    	config.setAsc(asc);
+    	config.setSortChildren(sortChildren);
+    	config.setItemTypeCode(itemTypeCode);
+    	config.setItemSpecCode(itemSpecCode);
+    	return config;
     }
 }

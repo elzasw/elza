@@ -174,7 +174,7 @@ public class RuleController {
     @RequestMapping(value = "/getPackages", method = RequestMethod.GET)
     public List<PackageVO> getPackages() {
         List<RulPackage> packages = packageService.getPackages();
-        List<PackageVO> packageVO = factoryVo.createSimpleEntity(packages, PackageVO.class);
+        List<PackageVO> packageVO = packages.stream().map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
         Map<Integer, PackageVO> packageVOMap = packageVO.stream().collect(Collectors.toMap(PackageVO::getPackageId, Function.identity()));
         List<RulPackageDependency> packagesDependencies = packageService.getPackagesDependencies();
         for (RulPackageDependency dependency : packagesDependencies) {
@@ -378,13 +378,13 @@ public class RuleController {
         result.setNodePolicyTypeIdsMap(nodeVisibleTypeIdsPolicy);
 
         final List<RulArrangementExtension> availableExtensions = ruleService.findArrangementExtensionsByFundVersionId(fundVersion.getFundVersionId());
-        result.setAvailableExtensions(factoryVo.createSimpleEntity(availableExtensions, RulArrangementExtensionVO.class));
+        result.setAvailableExtensions(availableExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
 
         final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion.getFundVersionId(), node.getNodeId());
-        result.setNodeExtensions(factoryVo.createSimpleEntity(nodeExtensions, RulArrangementExtensionVO.class));
+        result.setNodeExtensions(nodeExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
 
         final List<RulArrangementExtension> parentExtensions = ruleService.findAllArrangementExtensionsByNodeId(node.getNodeId());
-        result.setParentExtensions(factoryVo.createSimpleEntity(parentExtensions, RulArrangementExtensionVO.class));
+        result.setParentExtensions(parentExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
 
         return result;
     }

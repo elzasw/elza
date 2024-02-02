@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller.vo.nodes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.domain.RulItemTypeExt;
 
 
 /**
@@ -26,4 +28,26 @@ public class RulDescItemTypeExtVO extends RulDescItemTypeVO {
         this.descItemSpecs = descItemSpecs;
     }
 
+    public static RulDescItemTypeExtVO newInstance(final RulItemTypeExt itemType) {
+    	RulDescItemTypeExtVO result = new RulDescItemTypeExtVO();
+    	result.setId(itemType.getItemTypeId());
+    	result.setDataTypeId(itemType.getDataTypeId());
+    	result.setCode(itemType.getCode());
+    	result.setName(itemType.getName());
+    	result.setShortcut(itemType.getShortcut());
+    	result.setDescription(itemType.getDescription());
+    	result.setIsValueUnique(itemType.getIsValueUnique());
+    	result.setCanBeOrdered(itemType.getCanBeOrdered());
+    	result.setUseSpecification(itemType.getUseSpecification());
+    	result.setViewOrder(itemType.getViewOrder());
+    	result.setType(itemType.getType());
+    	result.setRepeatable(itemType.getRepeatable());
+    	if (itemType.getRulItemSpecList() != null) {
+    		List<RulDescItemSpecExtVO> descItemSpecs = itemType.getRulItemSpecList().stream().map(i -> RulDescItemSpecExtVO.newInstance(i)).collect(Collectors.toList());
+    		result.setDescItemSpecs(descItemSpecs);
+    	}
+    	// TODO define which fields are required
+    	return result;
+    }
+    
 }

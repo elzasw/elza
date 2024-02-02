@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+
 /**
  * Hromadné akce
  *
@@ -46,5 +48,13 @@ public class BulkActionVO {
 
     public void setFastAction(boolean fastAction) {
         this.fastAction = fastAction;
+    }
+    
+    public static BulkActionVO newInstance(final BulkActionConfig bulkAction) {
+    	BulkActionVO result = new BulkActionVO();
+    	result.setName(bulkAction.getName());
+    	result.setCode(bulkAction.getCode());
+    	result.setDescription(bulkAction.getDescription());
+    	return result;
     }
 }

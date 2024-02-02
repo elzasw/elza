@@ -4,6 +4,7 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -196,9 +196,6 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.ws.types.v1.Items;
-import jakarta.annotation.Nullable;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -206,11 +203,7 @@ import ma.glasnost.orika.MapperFactory;
 @Service
 public class ClientFactoryVO {
 
-    @Autowired
-    @Qualifier("configVOMapper")
-    private MapperFactory mapperFactory;
-
-    @Autowired
+	@Autowired
     private DaoService daoService;
 
     @Autowired
@@ -349,64 +342,7 @@ public class ClientFactoryVO {
      */
     public RulTemplateVO createTemplate(final RulTemplate template) {
         Assert.notNull(template, "Šablona musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(template, RulTemplateVO.class);
-    }
-
-    /**
-     * Vytvoří seznam VO objektů z objektů.
-     *
-     * @param items   seznam objektů
-     * @param voTypes typ cílových objektů
-     * @param factory metoda pro vytvoření VO objektu. Pokud je null, je použita výchozí tovární třída.
-     * @param <VO>    typ VO objektu
-     * @param <ITEM>  Typ objektu
-     * @return seznam VO objektů
-     */
-    private <VO, ITEM> List<VO> createList(final List<ITEM> items,
-                                           final Class<VO> voTypes,
-                                           @Nullable final Function<ITEM, VO> factory) {
-        if (CollectionUtils.isEmpty(items)) {
-            return Collections.emptyList();
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        List<VO> result = new ArrayList<>(items.size());
-        if (factory == null) {
-            for (final ITEM item : items) {
-                result.add(mapper.map(item, voTypes));
-            }
-        } else {
-            for (final ITEM item : items) {
-                result.add(factory.apply(item));
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Najde v mapě objekt podle daného id. Pokud není objekt nalezen, přes faktory jej vytvoří a vloží do mapy.
-     *
-     * @param id                id objektu
-     * @param source            zdrojový objekt
-     * @param processedItemsMap mapa vytvořených objektů
-     * @param classType         typ VO objektu
-     * @param <VO>              typ VO objektu
-     * @return nalezený nebo vytvořený VO
-     */
-    public <VO> VO getOrCreateVo(final Integer id,
-                                 final Object source,
-                                 final Map<Integer, VO> processedItemsMap,
-                                 final Class<VO> classType) {
-        VO item = processedItemsMap.get(id);
-
-
-        if (item == null) {
-            item = mapperFactory.getMapperFacade().map(source, classType);
-            processedItemsMap.put(id, item);
-        }
-        return item;
+        return RulTemplateVO.newInstance(template);
     }
 
     /**
@@ -420,8 +356,7 @@ public class ClientFactoryVO {
     public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions, UserDetail user) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
+        ArrFundVO fundVO = ArrFundVO.newInstance(fund);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
 
         StaticDataProvider staticData = staticDataService.getData();
@@ -506,13 +441,8 @@ public class ClientFactoryVO {
     public ArrFundVersionVO createFundVersion(final ArrFundVersion fundVersion, final UserDetail user) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
-        Date createDate = Date.from(
-                fundVersion.getCreateChange().getChangeDate().toInstant());
-        fundVersionVO.setCreateDate(createDate);
-        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
-                fundVersion.getFundId());
+        ArrFundVersionVO fundVersionVO = ArrFundVersionVO.newInstance(fundVersion);
+        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
         fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();
@@ -523,7 +453,6 @@ public class ClientFactoryVO {
             fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));
             fundVersionVO.setConfig(wfFactory.createConfig(fundVersion));
         }
-        fundVersionVO.setRuleSetId(fundVersion.getRuleSet().getRuleSetId());
 
         return fundVersionVO;
     }
@@ -536,7 +465,6 @@ public class ClientFactoryVO {
      */
     public List<ArrOutputVO> createOutputList(final Collection<ArrOutput> outputs) {
         Assert.notNull(outputs, "Musí být vyplněny výstupy");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrOutputVO> result = new ArrayList<>(outputs.size());
         for (ArrOutput output : outputs) {
             result.add(createOutput(output));
@@ -560,54 +488,44 @@ public class ClientFactoryVO {
     /**
      * Vytvoření specifikace hodnoty atributu.
      *
-     * @param descItemSpec specifikace hodnoty atributu
+     * @param itemSpec specifikace hodnoty atributu
      * @return VO specifikace hodnoty atributu
      */
-    public RulDescItemSpecVO createDescItemSpecVO(final RulItemSpec descItemSpec) {
-        Assert.notNull(descItemSpec, "Specifikace atributu musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RulDescItemSpecVO descItemSpecVO = mapper.map(descItemSpec, RulDescItemSpecVO.class);
-        return descItemSpecVO;
+    public RulDescItemSpecVO createDescItemSpecVO(final RulItemSpec itemSpec) {
+        Assert.notNull(itemSpec, "Specifikace atributu musí být vyplněna");
+        return RulDescItemSpecVO.newInstance(itemSpec);
     }
 
     /**
      * Vytvoření typu hodnoty atributu.
      *
-     * @param descItemType typ hodnoty atributu
+     * @param itemType typ hodnoty atributu
      * @return VO typ hodnoty atributu
      */
-    public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
-        descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        return descItemTypeVO;
+    public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType itemType) {
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+        return RulDescItemTypeDescItemsVO.newInstance(itemType);
     }
 
     /**
      * Vytvoření typu hodnoty atributu.
      *
-     * @param descItemType typ hodnoty atributu
+     * @param itemType typ hodnoty atributu
      * @return VO typ hodnoty atributu
      */
-    public ItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulItemType descItemType) {
-        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ItemTypeDescItemsLiteVO descItemTypeVO = mapper.map(descItemType, ItemTypeDescItemsLiteVO.class);
-        return descItemTypeVO;
+    public ItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulItemType itemType) {
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+        return ItemTypeDescItemsLiteVO.newInstance(itemType);
     }
 
     /**
      * Vytvoření hodnoty atributu.
-     * <p>
-     * TODO: přepsat metodu bez mapperu na klasické metody/factory
      *
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
 
         ArrItemVO itemVO = null;
         ArrData data = HibernateUtils.unproxy(item.getData());
@@ -630,10 +548,10 @@ public class ClientFactoryVO {
                 return ArrItemRecordRefVO.newInstance(item, apFactory);
         }
 
-        // TODO: refactorize following code to the solution without mappers
-        if (data != null) {
-            itemVO = mapper.map(data, ArrItemVO.class);
-        }
+//        // TODO: refactorize following code to the solution without mappers
+//        if (data != null) {
+//            itemVO = mapper.map(data, ArrItemVO.class);
+//        }
         if (itemVO == null) {
             switch (dataType) {
                 case UNITDATE:
@@ -820,7 +738,7 @@ public class ClientFactoryVO {
      * @return seznam VO datových typů
      */
     public List<RulDataTypeVO> createDataTypeList(final List<RulDataType> dataTypes) {
-        return createList(dataTypes, RulDataTypeVO.class, null);
+        return dataTypes.stream().map(i -> RulDataTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -833,7 +751,7 @@ public class ClientFactoryVO {
      */
     public List<ItemTypeLiteVO> createItemTypes(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
 
-        List<ItemTypeLiteVO> itemTypeExtList = createList(itemTypes, ItemTypeLiteVO.class, this::createItemTypeLite);
+        List<ItemTypeLiteVO> itemTypeExtList = itemTypes.stream().map(i -> ItemTypeLiteVO.newInstance(i)).collect(Collectors.toList());
 
         Map<Integer, String> codeToId = new HashMap<>();
 
@@ -917,9 +835,7 @@ public class ClientFactoryVO {
 
     private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
         Assert.notNull(itemTypeExt, "Typ hodnoty atributu musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ItemTypeLiteVO itemTypeVO = mapper.map(itemTypeExt, ItemTypeLiteVO.class);
-        return itemTypeVO;
+        return ItemTypeLiteVO.newInstance(itemTypeExt);
     }
 
     /**
@@ -930,8 +846,7 @@ public class ClientFactoryVO {
      */
     public RulDescItemTypeExtVO createDescItemTypeExt(final RulItemTypeExt descItemType) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
+        RulDescItemTypeExtVO descItemTypeVO = RulDescItemTypeExtVO.newInstance(descItemType);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
         descItemTypeVO.setItemSpecsTree(createTree(descItemType.getRulItemSpecList()));
         return descItemTypeVO;
@@ -1041,7 +956,7 @@ public class ClientFactoryVO {
      * @return VO typů hodnot
      */
     public List<RulDescItemTypeExtVO> createDescItemTypeExtList(final List<RulItemTypeExt> descItemTypes) {
-        return createList(descItemTypes, RulDescItemTypeExtVO.class, this::createDescItemTypeExt);
+        return descItemTypes.stream().map(i -> RulDescItemTypeExtVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1054,9 +969,7 @@ public class ClientFactoryVO {
         if (node == null) {
             throw new ObjectNotFoundException("Není vyplněna JP", ArrangementCode.NODE_NOT_FOUND);
         }
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrNodeVO result = mapper.map(node, ArrNodeVO.class);
-        return result;
+        return ArrNodeVO.valueOf(node);
     }
 
     /**
@@ -1081,9 +994,7 @@ public class ClientFactoryVO {
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
         Assert.notNull(nodeConformity, "Musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
-        return nodeConformityVO;
+        return NodeConformityVO.newInstance(nodeConformity);
     }
 
     /**
@@ -1093,7 +1004,7 @@ public class ClientFactoryVO {
      * @return seznam VO hromadných akcí
      */
     public List<BulkActionVO> createBulkActionList(final List<BulkActionConfig> bulkActions) {
-        return createList(bulkActions, BulkActionVO.class, this::createBulkAction);
+        return bulkActions.stream().map(i -> BulkActionVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1104,20 +1015,17 @@ public class ClientFactoryVO {
      */
     public BulkActionVO createBulkAction(final BulkActionConfig bulkAction) {
         Assert.notNull(bulkAction, "Nastavení hromadné akce musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(bulkAction, BulkActionVO.class);
+        return BulkActionVO.newInstance(bulkAction);
     }
 
     public BulkActionRunVO createBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(bulkActionRun, BulkActionRunVO.class);
+        return BulkActionRunVO.newInstance(bulkActionRun);
     }
 
     public BulkActionRunVO createBulkActionRunWithNodes(final ArrBulkActionRun bulkActionRun) {
         Assert.notNull(bulkActionRun, "Běh hromatných akcí musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
+        BulkActionRunVO bulkActionRunVO = BulkActionRunVO.newInstance(bulkActionRun);
         bulkActionRunVO.setNodes(levelTreeCacheService.getNodesByIds(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun), bulkActionRun.getFundVersionId()));
         return bulkActionRunVO;
     }
@@ -1150,8 +1058,7 @@ public class ClientFactoryVO {
                                                          final String ruleCode,
                                                          final Integer fundId) {
         Assert.notNull(scenarioOfNewLevel, "Scénáře musí být vyplněny");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ScenarioOfNewLevelVO scenarioVO = mapper.map(scenarioOfNewLevel, ScenarioOfNewLevelVO.class);
+        ScenarioOfNewLevelVO scenarioVO = ScenarioOfNewLevelVO.newInstance(scenarioOfNewLevel);
         if (BooleanUtils.isTrue(withGroups)) {
             scenarioVO.setGroups(createItemGroupsNew(ruleCode, fundId, scenarioOfNewLevel.getDescItems()));
         }
@@ -1165,7 +1072,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
-        return createList(institutions, ParInstitutionVO.class, this::createInstitution);
+        return institutions.stream().map(i -> ParInstitutionVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1176,13 +1083,10 @@ public class ClientFactoryVO {
      */
     public ParInstitutionVO createInstitution(final ParInstitution institution) {
         Assert.notNull(institution, "Instituce musí být vyplněny");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
 
-        ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
-        institutionVO.setAccessPointId(institution.getAccessPointId());
+        ParInstitutionVO institutionVO = ParInstitutionVO.newInstance(institution);
         institutionVO.setName(displayName != null ? displayName.getIndexValue() : null);
-        institutionVO.setCode(institution.getInternalCode());
 
         return institutionVO;
     }
@@ -1194,7 +1098,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulPolicyTypeVO> createPolicyTypes(final List<RulPolicyType> policyTypes) {
-        return createList(policyTypes, RulPolicyTypeVO.class, this::createPolicyType);
+        return policyTypes.stream().map(i -> RulPolicyTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1205,10 +1109,7 @@ public class ClientFactoryVO {
      */
     public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
         Assert.notNull(policyType, "Typ oprávnění musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        RulPolicyTypeVO policyTypeVO = mapper.map(policyType, RulPolicyTypeVO.class);
-        policyTypeVO.setRuleSetId(policyType.getRuleSet().getRuleSetId());
-        return policyTypeVO;
+        return RulPolicyTypeVO.newInstance(policyType);
     }
 
     /**
@@ -1218,7 +1119,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulOutputTypeVO> createOutputTypes(final List<RulOutputType> outputTypes) {
-        return createList(outputTypes, RulOutputTypeVO.class, this::createOutputType);
+        return outputTypes.stream().map(i -> RulOutputTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1229,12 +1130,11 @@ public class ClientFactoryVO {
      */
     public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
         Assert.notNull(outputType, "Typ výstupu musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(outputType, RulOutputTypeVO.class);
+        return RulOutputTypeVO.newInstance(outputType);
     }
 
-    public List<BulkActionRunVO> createBulkActionsList(final List<ArrBulkActionRun> allBulkActions) {
-        return createList(allBulkActions, BulkActionRunVO.class, this::createBulkActionRun);
+    public List<BulkActionRunVO> createBulkActionsList(final List<ArrBulkActionRun> bulkActions) {
+        return bulkActions.stream().map(i -> BulkActionRunVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1337,7 +1237,7 @@ public class ClientFactoryVO {
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
-//        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+        	//List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
             List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
 
             StaticDataProvider staticData = staticDataService.getData();
@@ -1394,26 +1294,9 @@ public class ClientFactoryVO {
         return result;
     }
 
-    public <T, R> R createSimpleEntity(final T entity, final Class<R> clazz) {
-        if (entity == null) {
-            return null;
-        }
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(entity, clazz);
-    }
-
-    public <T, R> List<R> createSimpleEntity(final Collection<T> entity, final Class<R> clazz) {
-        if (entity == null) {
-            return null;
-        }
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(entity, clazz);
-    }
-
     public List<ArrRequestVO> createRequest(String contextPath,
                                             final Collection<ArrRequest> requests, final boolean detail,
                                             final ArrFundVersion fundVersion) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrRequestVO> requestVOList = new ArrayList<>(requests.size());
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         Set<ArrDaoRequest> requestForDaos = new HashSet<>();
@@ -1464,7 +1347,7 @@ public class ClientFactoryVO {
             requestVO = createRequestVO(contextPath,
                                         countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap,
                                         codeTreeNodeClientMap, request, detail, fundVersion);
-            convertRequest(mapper, request, requestQueuedMap.get(request), requestVO);
+            convertRequest(request, requestQueuedMap.get(request), requestVO);
             requestVOList.add(requestVO);
         }
         return requestVOList;
@@ -1473,7 +1356,6 @@ public class ClientFactoryVO {
     public ArrRequestVO createRequest(String contextPath,
                                       final ArrRequest request, final boolean detail,
                                       final ArrFundVersion fundVersion) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
         Set<ArrDigitizationRequest> requestForNodes = new HashSet<>();
         Set<ArrDaoRequest> requestForDaos = new HashSet<>();
         Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
@@ -1515,7 +1397,7 @@ public class ClientFactoryVO {
         requestVO = createRequestVO(contextPath,
                                     countNodesRequestMap, nodesRequestMap, countDaosRequestMap, daosRequestMap,
                                     codeTreeNodeClientMap, request, detail, fundVersion);
-        convertRequest(mapper, request, requestQueueItem, requestVO);
+        convertRequest(request, requestQueueItem, requestVO);
 
         return requestVO;
     }
@@ -1617,8 +1499,7 @@ public class ClientFactoryVO {
         return countNodesRequestMap;
     }
 
-    private void convertRequest(final MapperFacade mapper,
-                                final ArrRequest request,
+    private void convertRequest(final ArrRequest request,
                                 final ArrRequestQueueItem requestQueueItem,
                                 final ArrRequestVO requestVO) {
         ArrChange createChange = request.getCreateChange();
@@ -1627,11 +1508,11 @@ public class ClientFactoryVO {
         requestVO.setExternalSystemCode(request.getExternalSystemCode());
         requestVO.setState(request.getState());
         requestVO.setRejectReason(request.getRejectReason());
-        requestVO.setResponseExternalSystem(mapper.map(request.getResponseExternalSystem(), Date.class));
-        requestVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
+        requestVO.setResponseExternalSystem(Date.from(request.getResponseExternalSystem().atZone(ZoneId.systemDefault()).toInstant()));
+        requestVO.setCreate(Date.from(createChange.getChangeDate().toInstant()));
         if (requestQueueItem != null) {
-            requestVO.setQueued(mapper.map(requestQueueItem.getCreateChange().getChangeDate(), Date.class));
-            requestVO.setSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
+            requestVO.setQueued(Date.from(requestQueueItem.getCreateChange().getChangeDate().toInstant()));
+            requestVO.setSend(Date.from(requestQueueItem.getAttemptToSend().atZone(ZoneId.systemDefault()).toInstant()));
         }
         requestVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
     }
@@ -1765,24 +1646,11 @@ public class ClientFactoryVO {
         }
     }
 
-    private ArrRequestQueueItemVO createRequestQueueItem(final MapperFacade mapper, final ArrRequestQueueItem requestQueueItem) {
-        ArrRequestQueueItemVO requestQueueItemVO = new ArrRequestQueueItemVO();
-        ArrChange createChange = requestQueueItem.getCreateChange();
-        requestQueueItemVO.setId(requestQueueItem.getRequestQueueItemId());
-        requestQueueItemVO.setCreate(mapper.map(createChange.getChangeDate(), Date.class));
-        requestQueueItemVO.setAttemptToSend(mapper.map(requestQueueItem.getAttemptToSend(), Date.class));
-        requestQueueItemVO.setError(requestQueueItem.getError());
-        requestQueueItemVO.setUsername(createChange.getUser() == null ? null : createChange.getUser().getUsername());
-        return requestQueueItemVO;
-    }
-
     public List<ArrRequestQueueItemVO> createRequestQueueItem(String contextPath,
                                                               final List<ArrRequestQueueItem> requestQueueItems) {
         if (requestQueueItems == null) {
             return null;
         }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
 
         List<ArrRequestQueueItemVO> result = new ArrayList<>(requestQueueItems.size());
         Map<Integer, ArrRequestVO> requestMap = new HashMap<>();
@@ -1814,7 +1682,7 @@ public class ClientFactoryVO {
         }
 
         for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
-            ArrRequestQueueItemVO requestQueueItemVO = createRequestQueueItem(mapper, requestQueueItem);
+            ArrRequestQueueItemVO requestQueueItemVO = ArrRequestQueueItemVO.newInstance(requestQueueItem);
             requestQueueItemVO.setRequest(requestMap.get(requestQueueItem.getRequest().getRequestId()));
             result.add(requestQueueItemVO);
         }
@@ -2019,31 +1887,33 @@ public class ClientFactoryVO {
         if (extSystem instanceof GisExternalSystem) {
             return GisExternalSystemVO.newInstance((GisExternalSystem) extSystem);
         }
-        return createSimpleEntity(extSystem, SysExternalSystemVO.class);
+
+        throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());
     }
 
     public SysExternalSystemSimpleVO createExtSystemSimple(SysExternalSystem extSystem) {
         // AP external system is newly created through factory without mapper
         if (extSystem instanceof ApExternalSystem) {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
-        } else
+        }
         if (extSystem instanceof GisExternalSystem) {
             return GisExternalSystemSimpleVO.newInstance((GisExternalSystem) extSystem);
-        } else if (extSystem instanceof ArrDigitizationFrontdesk) {
-            return ArrDigitizationFrontdeskSimpleVO.newInstance((ArrDigitizationFrontdesk) extSystem);
-        } else if (extSystem instanceof ArrDigitalRepository) {
-            return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
-        } else {
-            throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE)
-                    .set("type", extSystem.getClass());
         }
+        if (extSystem instanceof ArrDigitizationFrontdesk) {
+            return ArrDigitizationFrontdeskSimpleVO.newInstance((ArrDigitizationFrontdesk) extSystem);
+        }
+        if (extSystem instanceof ArrDigitalRepository) {
+            return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
+        }
+
+        throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());
     }
 
     public List<RulOutputFilterVO> createOutputFilterList(final List<RulOutputFilter> outputFilters) {
-        return createList(outputFilters, RulOutputFilterVO.class, null);
+        return outputFilters.stream().map(i -> new RulOutputFilterVO(i)).collect(Collectors.toList());
     }
 
     public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
-        return createList(exportFilters, RulExportFilterVO.class, null);
+        return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
 }

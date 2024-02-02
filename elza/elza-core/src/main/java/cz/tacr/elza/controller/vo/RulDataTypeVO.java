@@ -1,11 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.RulDataType;
+
 /**
  * VO datového typu.
  *
  */
-public class RulDataTypeVO
-        extends BaseCodeVo {
+public class RulDataTypeVO extends BaseCodeVo {
     /**
      * popis
      */
@@ -56,5 +57,17 @@ public class RulDataTypeVO
 
     public void setStorageTable(final String storageTable) {
         this.storageTable = storageTable;
+    }
+
+    public static RulDataTypeVO newInstance(final RulDataType dataType) {
+    	RulDataTypeVO result = new RulDataTypeVO();
+    	result.setId(dataType.getDataTypeId());
+    	result.setName(dataType.getName());
+    	result.setCode(dataType.getCode());
+    	result.setDescription(dataType.getDescription());
+    	result.setRegexpUse(dataType.getRegexpUse());
+    	result.setStorageTable(dataType.getStorageTable());
+    	result.setTextLengthLimitUse(dataType.getTextLengthLimitUse());
+    	return result;
     }
 }

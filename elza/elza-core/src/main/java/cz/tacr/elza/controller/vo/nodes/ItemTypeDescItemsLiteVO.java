@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo.nodes;
 import java.util.List;
 
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.RulItemType;
 
 
 /**
@@ -47,5 +48,12 @@ public class ItemTypeDescItemsLiteVO {
 
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
+    }
+
+    public static ItemTypeDescItemsLiteVO newInstance(final RulItemType itemType) {
+    	ItemTypeDescItemsLiteVO result = new ItemTypeDescItemsLiteVO();
+    	result.setId(itemType.getItemTypeId());
+    	result.setViewOrder(itemType.getViewOrder());
+    	return result;
     }
 }

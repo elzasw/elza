@@ -1,11 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-
-import jakarta.persistence.Column;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import cz.tacr.elza.domain.ArrFund;
 
 /**
  * VO pro archivní pomůcku.
@@ -16,8 +15,6 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private Date createDate;
 
-    private String internalCode;
-
     private Integer institutionId;
 
     private List<ArrFundVersionVO> versions = new LinkedList<>();
@@ -26,14 +23,14 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private List<ArrOutputVO> validNamedOutputs;
 
-    private Integer fundNumber;
-
     private String unitdate;
-
-    private String mark;
 
     public ArrFundVO() {
 
+    }
+
+    public ArrFundVO(final ArrFund fund) {
+    	super(fund);
     }
 
     public Date getCreateDate() {
@@ -60,14 +57,6 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.apScopes = apScopes;
     }
 
-    public String getInternalCode() {
-        return internalCode;
-    }
-
-    public void setInternalCode(final String internalCode) {
-        this.internalCode = internalCode;
-    }
-
     public Integer getInstitutionId() {
         return institutionId;
     }
@@ -84,14 +73,6 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.validNamedOutputs = validNamedOutputs;
     }
 
-    public Integer getFundNumber() {
-        return fundNumber;
-    }
-
-    public void setFundNumber(final Integer fundNumber) {
-        this.fundNumber = fundNumber;
-    }
-
     public String getUnitdate() {
         return unitdate;
     }
@@ -100,11 +81,7 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.unitdate = unitdate;
     }
 
-    public String getMark() {
-        return mark;
-    }
-
-    public void setMark(final String mark) {
-        this.mark = mark;
+    public static ArrFundVO newInstance(final ArrFund fund) {
+        return new ArrFundVO(fund);
     }
 }

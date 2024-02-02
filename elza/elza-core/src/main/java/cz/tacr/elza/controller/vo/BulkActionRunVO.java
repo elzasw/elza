@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 
 /**
@@ -101,5 +102,18 @@ public class BulkActionRunVO {
 
     public void setConfig(String config) {
         this.config = config;
+    }
+
+    public static BulkActionRunVO newInstance(final ArrBulkActionRun bulkActionRun) {
+    	BulkActionRunVO result = new BulkActionRunVO();
+    	result.setId(bulkActionRun.getBulkActionRunId());
+    	result.setCode(bulkActionRun.getBulkActionCode());
+    	result.setState(bulkActionRun.getState());
+    	result.setDatePlanned(bulkActionRun.getDatePlanned());
+    	result.setDateStarted(bulkActionRun.getDateStarted());
+    	result.setDateFinished(bulkActionRun.getDateFinished());
+    	result.setError(bulkActionRun.getError());
+    	result.setConfig(bulkActionRun.getConfig());
+    	return result;
     }
 }

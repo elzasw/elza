@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 
@@ -344,14 +345,14 @@ public class StructureController {
             ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
             structureTypes = structureService.findStructureTypes(fundVersion);
         }
-        return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);
+        return structureTypes.stream().map(i -> RulStructureTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
     @Transactional
     @RequestMapping(value = "/part-type", method = RequestMethod.GET)
     public List<RulPartTypeVO> findPartTypes() {
         List<RulPartType> partTypes = structureService.findPartTypes();
-        return factoryVO.createSimpleEntity(partTypes, RulPartTypeVO.class);
+        return partTypes.stream().map(i -> RulPartTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
     /**

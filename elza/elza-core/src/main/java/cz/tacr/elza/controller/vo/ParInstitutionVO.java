@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ParInstitution;
+
 /**
  * VO pro instituce.
  *
@@ -56,5 +58,13 @@ public class ParInstitutionVO {
 
     public void setAccessPointId(Integer accessPointId) {
         this.accessPointId = accessPointId;
+    }
+    
+    public static ParInstitutionVO newInstance(final ParInstitution institution) {
+    	ParInstitutionVO result = new ParInstitutionVO();
+    	result.setId(institution.getInstitutionId());
+    	result.setAccessPointId(institution.getAccessPointId());
+    	result.setCode(institution.getInternalCode());
+    	return result;
     }
 }

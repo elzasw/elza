@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo.nodes;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulItemTypeExt;
+
 
 /**
  * VO Odlehčená verze specifikace hodnoty atributu.
@@ -136,5 +138,13 @@ public class ItemTypeLiteVO {
 
     public void setFavoriteSpecIds(final List<Integer> favoriteSpecIds) {
         this.favoriteSpecIds = favoriteSpecIds;
+    }
+    
+    public static ItemTypeLiteVO newInstance(final RulItemTypeExt itemTypeExt) {
+    	ItemTypeLiteVO result = new ItemTypeLiteVO();
+    	result.setId(itemTypeExt.getItemTypeId());
+    	result.setType(itemTypeExt.getType().ordinal());
+    	// TODO define which fields are required
+    	return result;    	
     }
 }
