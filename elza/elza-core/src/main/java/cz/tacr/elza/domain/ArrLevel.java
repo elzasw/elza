@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import java.util.Objects;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -181,7 +182,7 @@ public class ArrLevel {
             return true;
         }
         ArrLevel other = (ArrLevel) obj;
-        return EqualsBuilder.reflectionEquals(levelId, other.getLevelId());
+        return Objects.equals(levelId, other.getLevelId());
     }
 
     @Override
