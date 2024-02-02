@@ -1,4 +1,4 @@
-!OutputFilterConfig
+﻿!OutputFilterConfig
 restrictions:
   - ZP2015_RESTRICTION_ACCESS_INLINE
   - ZP2015_RESTRICTION_ACCESS_SHARED
@@ -292,7 +292,7 @@ defs:
           itemSpec: ZP2015_APPLIED_RESTRICTION_ABSTRACT
         - itemType: ZP2015_APPLIED_RESTRICTION_TEXT
           appendAsNewLine: true
-          value: "Obsah nezveřejněn z důvodu omezení přístupnosti."
+          value: "Obsah nezveřejněn nebo nahrazen z důvodu omezení přístupnosti."
   - when:
      - itemType: ZP2015_RESTRICTED_ACCESS_TYPE
        itemSpec: ZP2015_RESTRICTION_LIMITED
