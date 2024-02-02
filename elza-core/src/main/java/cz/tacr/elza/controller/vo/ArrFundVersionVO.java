@@ -2,11 +2,12 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import cz.tacr.elza.domain.ArrFundVersion;
 import jakarta.annotation.Nullable;
 
 /**
@@ -106,7 +107,7 @@ public class ArrFundVersionVO {
 
     @Override
     public boolean equals(final Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj);
+        return Objects.equals(this, obj);
     }
 
     @Override
@@ -117,5 +118,13 @@ public class ArrFundVersionVO {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
+    }
+    
+    public static ArrFundVersionVO newInstance(final ArrFundVersion fundVersion) {
+    	ArrFundVersionVO result = new ArrFundVersionVO();
+    	result.setId(fundVersion.getFundVersionId());
+    	result.setCreateDate(Date.from(fundVersion.getCreateChange().getChangeDate().toInstant()));
+    	result.setRuleSetId(fundVersion.getRuleSetId());
+    	return result;
     }
 }

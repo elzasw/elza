@@ -3,8 +3,8 @@ package cz.tacr.elza.domain;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -106,7 +106,7 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
             return true;
         }
         ArrNode other = (ArrNode) obj;
-        return EqualsBuilder.reflectionEquals(nodeId, other.getNodeId());
+        return Objects.equals(nodeId, other.getNodeId());
     }
 
     @Override
