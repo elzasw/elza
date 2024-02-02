@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 
 /**
  * VO pro validace JP.
@@ -103,5 +104,15 @@ public class NodeConformityVO {
 
     public void setPolicyTypeIdsVisible(final Map<Integer, Boolean> policyTypeIdsVisible) {
         this.policyTypeIdsVisible = policyTypeIdsVisible;
+    }
+    
+    public static NodeConformityVO newInstance(final ArrNodeConformityExt nodeConformity) {
+    	NodeConformityVO result = new NodeConformityVO();
+    	result.setNodeId(nodeConformity.getNodeId());
+    	result.setState(nodeConformity.getState());
+    	result.setDescription(nodeConformity.getDescription());
+    	result.setDate(nodeConformity.getDate());
+    	// TODO added missingList, errorList
+    	return result;
     }
 }

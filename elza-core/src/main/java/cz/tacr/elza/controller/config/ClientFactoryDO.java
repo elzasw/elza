@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -91,18 +90,12 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import jakarta.persistence.EntityManager;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
 
 /**
  * Továrna na vytváření DO objektů z VO objektů.
  */
 @Service
 public class ClientFactoryDO {
-
-    @Autowired
-    @Qualifier("configVOMapper")
-    private MapperFactory mapperFactory;
 
     @Autowired
     private EntityManager em;
@@ -127,8 +120,7 @@ public class ClientFactoryDO {
      */
     public ArrNode createNode(final ArrNodeVO nodeVO) {
         Assert.notNull(nodeVO, "JP musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(nodeVO, ArrNode.class);
+        return nodeVO.createEntity();
     }
 
     /**
@@ -156,12 +148,10 @@ public class ClientFactoryDO {
      * @return
      */
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
         ArrData data = null;
 
         if (!descItemVO.isUndefined()) {
-            data = mapper.map(descItemVO, ArrData.class);
+            data = descItemVO.createDataEntity(em);
         }
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
@@ -219,13 +209,11 @@ public class ClientFactoryDO {
     }
 
     public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
         ArrDescItem descItem = new ArrDescItem();
 
         // Item is not undefined -> parse data
         if (descItemVO.getUndefined() != Boolean.TRUE) {            
-            ArrData data = mapper.map(descItemVO, ArrData.class);
+            ArrData data = descItemVO.createDataEntity(em);
             descItem.setData(data);
 
             if (descItemVO.getDescItemSpecId() != null) {
@@ -247,8 +235,7 @@ public class ClientFactoryDO {
      */
     public ArrFund createFund(final ArrFundVO fundVO) {
         Assert.notNull(fundVO, "AS musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrFund fund = mapper.map(fundVO, ArrFund.class);
+        ArrFund fund = fundVO.createEntity();
         ParInstitution institution = institutionRepository.findById(fundVO.getInstitutionId())
                 .orElseThrow(institution(fundVO.getInstitutionId()));
         fund.setInstitution(institution);
@@ -810,8 +797,7 @@ public class ClientFactoryDO {
 
     public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {
         Assert.notNull(configVO, "Nastavení musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(configVO, PersistentSortRunConfig.class);
+        return configVO.createEntity();
     }
 
     private RulItemSpec getItemSpec(final Integer itemSpecId) {

@@ -82,6 +82,14 @@ public class ArrNodeVO {
         return node;
     }
 
+    public ArrNode createEntity() {
+        ArrNode node = new ArrNode();
+        node.setNodeId(id);
+        node.setVersion(version);
+        node.setUuid(uuid);
+        return node;
+    }
+
     public static ArrNodeVO valueOf(ArrNode node) {
         return new ArrNodeVO(node);
     }

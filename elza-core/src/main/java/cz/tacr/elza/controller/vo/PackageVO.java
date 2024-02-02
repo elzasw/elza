@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulPackage;
+
 /**
  * VO pro balíček.
  *
@@ -98,5 +100,15 @@ public class PackageVO {
 
     public void setDependenciesBy(final List<PackageDependencyVO> dependenciesBy) {
         this.dependenciesBy = dependenciesBy;
+    }
+
+    public static PackageVO newInstance(RulPackage pkg) {
+    	PackageVO result = new PackageVO();
+    	result.setPackageId(pkg.getPackageId());
+    	result.setName(pkg.getName());
+    	result.setCode(pkg.getCode());
+    	result.setDescription(pkg.getDescription());
+    	result.setVersion(pkg.getVersion());
+    	return result;
     }
 }

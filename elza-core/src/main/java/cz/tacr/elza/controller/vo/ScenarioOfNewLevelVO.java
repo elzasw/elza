@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import java.util.List;
 
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 
 
 /**
@@ -31,5 +32,11 @@ public class ScenarioOfNewLevelVO {
 
     public void setGroups(final List<ItemGroupVO> groups) {
         this.groups = groups;
+    }
+
+    public static ScenarioOfNewLevelVO newInstance(final ScenarioOfNewLevel scenarioOfNewLevel) {
+    	ScenarioOfNewLevelVO result = new ScenarioOfNewLevelVO();
+    	result.setName(scenarioOfNewLevel.getName());
+    	return result;
     }
 }

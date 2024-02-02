@@ -11,8 +11,7 @@ import cz.tacr.elza.domain.RulItemSpec;
  *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-public class RulDescItemSpecVO
-        extends BaseCodeVo {
+public class RulDescItemSpecVO extends BaseCodeVo {
     /**
      * zkratka
      */
@@ -78,5 +77,18 @@ public class RulDescItemSpecVO
 
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    public static RulDescItemSpecVO newInstance(final RulItemSpec itemSpec) {
+    	RulDescItemSpecVO result = new RulDescItemSpecVO();
+    	result.setId(itemSpec.getItemSpecId());
+    	result.setName(itemSpec.getName());
+    	result.setCode(itemSpec.getCode());
+    	result.setShortcut(itemSpec.getShortcut());
+    	result.setDescription(itemSpec.getDescription());
+    	result.setViewOrder(itemSpec.getViewOrder());
+    	result.setType(itemSpec.getType());
+    	result.setRepeatable(itemSpec.getRepeatable());
+    	return result;
     }
 }

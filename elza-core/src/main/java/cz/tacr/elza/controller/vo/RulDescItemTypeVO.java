@@ -1,11 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.table.ElzaColumn;
 
 import java.util.List;
-
 
 /**
  * VO typu hodnoty atributu
@@ -221,5 +218,4 @@ public class RulDescItemTypeVO {
     public void setStructureTypeId(Integer structureTypeId) {
         this.structureTypeId = structureTypeId;
     }
-
 }
