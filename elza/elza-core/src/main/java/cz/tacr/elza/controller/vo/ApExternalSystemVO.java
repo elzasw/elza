@@ -76,17 +76,20 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
      */
     public static ApExternalSystemVO newInstance(ApExternalSystem src) {
         ApExternalSystemVO vo = new ApExternalSystemVO();
-        vo.setCode(src.getCode());
-        vo.setElzaCode(src.getElzaCode());
+        // BaseCodeVo
         vo.setId(src.getExternalSystemId());
+        vo.setCode(src.getCode());
         vo.setName(src.getName());
-        vo.setPassword(src.getPassword());
-        vo.setType(src.getType());
-        vo.setScopeId(src.getScopeId());
+        // SysExternalSystemVO
         vo.setUrl(src.getUrl());
         vo.setUsername(src.getUsername());
+        vo.setPassword(src.getPassword());
+        vo.setElzaCode(src.getElzaCode());
         vo.setApiKeyId(src.getApiKeyId());
         vo.setApiKeyValue(src.getApiKeyValue());
+        // ApExternalSystemVO
+        vo.setType(src.getType());
+        vo.setScopeId(src.getScopeId());
         vo.setPublishOnlyApproved(src.getPublishOnlyApproved());
         vo.setUserInfo(src.getUserInfo());
         return vo;

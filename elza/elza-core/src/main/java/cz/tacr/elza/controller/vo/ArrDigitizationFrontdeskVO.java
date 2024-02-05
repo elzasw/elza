@@ -18,4 +18,20 @@ public class ArrDigitizationFrontdeskVO extends SysExternalSystemVO {
         return entity;
     }
 
+	public static ArrDigitizationFrontdeskVO newInstance(ArrDigitizationFrontdesk src) {
+		ArrDigitizationFrontdeskVO vo = new ArrDigitizationFrontdeskVO();
+        // BaseCodeVo
+        vo.setId(src.getExternalSystemId());
+        vo.setCode(src.getCode());
+        vo.setName(src.getName());
+        // SysExternalSystemVO
+        vo.setUrl(src.getUrl());
+        vo.setUsername(src.getUsername());
+        vo.setPassword(src.getPassword());
+        vo.setElzaCode(src.getElzaCode());
+        vo.setApiKeyId(src.getApiKeyId());
+        vo.setApiKeyValue(src.getApiKeyValue());
+    	return vo;
+	}
+
 }

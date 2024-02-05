@@ -54,7 +54,9 @@ import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -1886,6 +1888,12 @@ public class ClientFactoryVO {
         }
         if (extSystem instanceof GisExternalSystem) {
             return GisExternalSystemVO.newInstance((GisExternalSystem) extSystem);
+        }
+        if (extSystem instanceof ArrDigitalRepository) {
+        	return ArrDigitalRepositoryVO.newInstance((ArrDigitalRepository) extSystem);
+        }
+        if (extSystem instanceof ArrDigitizationFrontdesk) {
+        	return ArrDigitizationFrontdeskVO.newInstance((ArrDigitizationFrontdesk) extSystem);
         }
 
         throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());
