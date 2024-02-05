@@ -1,7 +1,12 @@
 package cz.tacr.elza.controller.vo.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.factory.RuleFactory;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemTypeExt;
 
 
@@ -139,12 +144,27 @@ public class ItemTypeLiteVO {
     public void setFavoriteSpecIds(final List<Integer> favoriteSpecIds) {
         this.favoriteSpecIds = favoriteSpecIds;
     }
-    
-    public static ItemTypeLiteVO newInstance(final RulItemTypeExt itemTypeExt) {
-    	ItemTypeLiteVO result = new ItemTypeLiteVO();
-    	result.setId(itemTypeExt.getItemTypeId());
-    	result.setType(itemTypeExt.getType().ordinal());
-    	// TODO define which fields are required
-    	return result;    	
+
+    public static ItemTypeLiteVO newInstance(final RulItemTypeExt itemType) {
+        ItemTypeLiteVO vo = new ItemTypeLiteVO();
+        List<RulItemSpecExt> rulItemSpecs = itemType.getRulItemSpecList();
+        List<DescItemSpecLiteVO> specItems = new ArrayList<>();
+        for (RulItemSpecExt rulItemSpec : rulItemSpecs) {
+            if (rulItemSpec.getType() != RulItemSpec.Type.IMPOSSIBLE) {
+                specItems.add(DescItemSpecLiteVO.newInstance(rulItemSpec));
+            }
+        }
+
+        vo.setId(itemType.getItemTypeId());
+        vo.setType(RuleFactory.convertType(itemType.getType()));
+        vo.setRep(itemType.getRepeatable() ? 1 : 0);
+        vo.setSpecs(specItems);
+        vo.setWidth(1); // není zatím nikde definované
+        vo.setCalSt(itemType.getCalculableState() ? 1 : 0);
+        vo.setCal(itemType.getCalculable() ? 1 : 0);
+        vo.setInd(itemType.getIndefinable() ? 1 : 0);
+        vo.setFavoriteSpecIds(null); // TODO
+
+        return vo;
     }
 }
