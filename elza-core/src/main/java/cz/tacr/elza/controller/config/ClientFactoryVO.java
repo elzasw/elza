@@ -364,6 +364,7 @@ public class ClientFactoryVO {
 
         Set<ApScope> apScopes = scopeRepository.findByFund(fund);
         fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
+        fundVO.setUnitdate(fund.getUnitdate());
 
         if (includeVersions) {
 
