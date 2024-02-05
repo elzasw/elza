@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo.nodes;
 
+import cz.tacr.elza.controller.factory.RuleFactory;
+import cz.tacr.elza.domain.RulItemSpecExt;
 
 /**
  * VO
@@ -45,5 +47,13 @@ public class DescItemSpecLiteVO {
 
     public void setRep(final Integer rep) {
         this.rep = rep;
+    }
+
+    public static DescItemSpecLiteVO newInstance(final RulItemSpecExt itemSpec) {
+    	DescItemSpecLiteVO vo = new DescItemSpecLiteVO();
+        vo.setId(itemSpec.getItemSpecId());
+        vo.setType(RuleFactory.convertType(itemSpec.getType()));
+        vo.setRep(itemSpec.getRepeatable() ? 1 : 0);
+    	return vo;
     }
 }

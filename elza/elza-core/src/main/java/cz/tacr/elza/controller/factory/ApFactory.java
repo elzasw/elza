@@ -135,8 +135,6 @@ public class ApFactory {
 
     private final ApPartRepository partRepository;
 
-    private final RuleFactory ruleFactory;
-
     private final CamConnector camConnector;
 
     private final ApIndexRepository indexRepository;
@@ -167,7 +165,7 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final RuleFactory ruleFactory,
+                     //final RuleFactory ruleFactory,
                      final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
@@ -188,7 +186,6 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.ruleFactory = ruleFactory;
         this.camConnector = camConnector;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
@@ -717,7 +714,7 @@ public class ApFactory {
         List<ItemTypeLiteVO> itemTypes = new ArrayList<>();
         for (RulItemTypeExt rulItemType : rulItemTypes) {
             if (rulItemType.getType() != RulItemType.Type.IMPOSSIBLE) {
-                itemTypes.add(ruleFactory.createVO(rulItemType));
+                itemTypes.add(ItemTypeLiteVO.newInstance(rulItemType));
             }
         }
         return itemTypes;
