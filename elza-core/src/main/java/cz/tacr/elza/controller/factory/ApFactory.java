@@ -165,18 +165,15 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     //final RuleFactory ruleFactory,
                      final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
                      final ApChangeRepository changeRepository,
                      final ApRevPartRepository revPartRepository,
-                     //final ApRevItemRepository revItemRepository,
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
-                     //final AccessPointService accessPointService,
                      final AccessPointCacheService accessPointCacheService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
@@ -708,16 +705,6 @@ public class ApFactory {
         }
         fillRefEntities(items);
         return items;
-    }
-
-    private List<ItemTypeLiteVO> createItemTypesVO(final List<RulItemTypeExt> rulItemTypes) {
-        List<ItemTypeLiteVO> itemTypes = new ArrayList<>();
-        for (RulItemTypeExt rulItemType : rulItemTypes) {
-            if (rulItemType.getType() != RulItemType.Type.IMPOSSIBLE) {
-                itemTypes.add(ItemTypeLiteVO.newInstance(rulItemType));
-            }
-        }
-        return itemTypes;
     }
 
     private void fillRefEntities(final List<ApItemVO> items) {
