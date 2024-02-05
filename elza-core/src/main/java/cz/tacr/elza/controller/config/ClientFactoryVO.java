@@ -25,7 +25,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -529,7 +528,6 @@ public class ClientFactoryVO {
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
-        ArrItemVO itemVO = null;
         ArrData data = HibernateUtils.unproxy(item.getData());
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
@@ -548,57 +546,27 @@ public class ClientFactoryVO {
                 return ArrItemIntVO.newInstance(item);
             case RECORD_REF:
                 return ArrItemRecordRefVO.newInstance(item, apFactory);
+            case UNITDATE:
+            	return ArrItemUnitdateVO.newInstance(item);
+            case UNITID:
+            	return ArrItemUnitidVO.newInstance(item);
+            case COORDINATES:
+                return ArrItemCoordinatesVO.newInstance(item);
+            case DECIMAL:
+                return ArrItemDecimalVO.newInstance(item);
+            case STRUCTURED:
+            	return ArrItemStructureVO.newInstance(item);
+            case JSON_TABLE:
+            	return ArrItemJsonTableVO.newInstance(item);
+            case URI_REF:
+            	return ArrItemUriRefVO.newInstance(item);
+            case DATE:
+            	return ArrItemDateVO.newInstance(item);
+            case BIT:
+            	return ArrItemBitVO.newInstance(item);
+            default:
+                throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
         }
-
-//        // TODO: refactorize following code to the solution without mappers
-//        if (data != null) {
-//            itemVO = mapper.map(data, ArrItemVO.class);
-//        }
-        if (itemVO == null) {
-            switch (dataType) {
-                case UNITDATE:
-                    itemVO = new ArrItemUnitdateVO();
-                    break;
-                case UNITID:
-                    itemVO = new ArrItemUnitidVO();
-                    break;
-                case COORDINATES:
-                    itemVO = new ArrItemCoordinatesVO();
-                    break;
-                case DECIMAL:
-                    itemVO = new ArrItemDecimalVO();
-                    break;
-                case STRUCTURED:
-                    itemVO = new ArrItemStructureVO();
-                    break;
-                case JSON_TABLE:
-                    itemVO = new ArrItemJsonTableVO();
-                    break;
-                case URI_REF:
-                    itemVO = new ArrItemUriRefVO();
-                    break;
-                case DATE:
-                    itemVO = new ArrItemDateVO();
-                    break;
-                case BIT:
-                    itemVO = new ArrItemBitVO();
-                    break;
-                default:
-                    throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
-            }
-            itemVO.setUndefined(true);
-        }
-
-        // ignorujeme nodeId, protože přepisuje nodeId z ArrItemUriRefVO
-        BeanUtils.copyProperties(item, itemVO, "nodeId");
-        itemVO.setId(item.getItemId());
-        itemVO.setReadOnly(item.getReadOnly());
-
-        Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
-        itemVO.setDescItemSpecId(specId);
-        itemVO.setItemTypeId(item.getItemTypeId());
-
-        return itemVO;
     }
 
     /**

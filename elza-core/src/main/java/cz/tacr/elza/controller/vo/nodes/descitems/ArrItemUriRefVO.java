@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
-
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import jakarta.persistence.EntityManager;
 
 public class ArrItemUriRefVO extends ArrItemVO {
@@ -67,4 +69,21 @@ public class ArrItemUriRefVO extends ArrItemVO {
         return data;
     }
 
+    public static ArrItemUriRefVO newInstance(ArrItem item) {
+        ArrData data = HibernateUtils.unproxy(item.getData());
+        String value = null;
+        String description = null;
+        if (data != null) {
+            if (!(data instanceof ArrDataUriRef)) {
+                throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
+                        .set("dataClass", item.getClass());
+            }
+            ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
+            value = dataUriRef.getUriRefValue();
+            description = dataUriRef.getDescription();
+        }
+        ArrItemUriRefVO vo = new ArrItemUriRefVO(item, value, description);
+        return vo;
+
+    }
 }
