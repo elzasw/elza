@@ -210,12 +210,6 @@
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
 		</dependency>
-		<!-- TODO: remove this dependency -->
-        <!--<dependency>
-            <groupId>ma.glasnost.orika</groupId>
-            <artifactId>orika-core</artifactId>
-            <version>1.5.4</version>
-		</dependency>-->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
