@@ -40,8 +40,6 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -293,7 +291,7 @@ public class ImportServiceImpl implements ImportService {
                     camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), false);
                 } catch (SyncImpossibleException e) {
                     logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", syncReq.getAccessPoint().getAccessPointId(), syncReq.getBinding().getBindingId(), e.getMessage());
-                    throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage());
+                    throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage(), e);
                 }
             }
 
