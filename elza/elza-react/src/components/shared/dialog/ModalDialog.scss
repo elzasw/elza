@@ -46,6 +46,13 @@
                 > div {
                     height: 100%;
                 }
+                .modal-header {
+                    height: auto;
+                }
+                .modal-body-container {
+                    display: flex;
+                    flex-direction: column;
+                }
             }
         }
     }
