@@ -9,7 +9,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
  * Value object pro hodnotu atributu.
  * Obsahuje pouze typ atributu a typ změny.
  *
- * @author Martin Šlapa
  * @since 27.11.2015
  */
 public class DescItem {
@@ -37,6 +36,11 @@ public class DescItem {
      * Hodnota.
      */
     private Integer integerValue;
+
+    /**
+     * String value
+     */
+    private String stringValue;
 
     /**
      * Strukt. hodnota.
@@ -121,6 +125,14 @@ public class DescItem {
 
     public void setInteger(final Integer value) {
         this.integerValue = value;
+    }
+
+    public String getString() {
+        return stringValue;
+    }
+
+    public void setString(String value) {
+        stringValue = value;
     }
 
     public Structured getStructured() {
