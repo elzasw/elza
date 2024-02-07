@@ -108,89 +108,88 @@ public class IndexConfigurationReader {
         partTypeCodes.addAll(partCodes);
 
         Path dpkgDir = Paths.get(workDir, ResourcePathResolver.DPKG_DIR);
-        if (!Files.exists(dpkgDir)) {
-            return;
-        }
+        if (Files.exists(dpkgDir)) {
 
-        logger.info("Checking folder {} for packages...", dpkgDir);
-
-        // get current packages from DB
-        List<PackageInfo> packageInfoList = jdbcTemplate.query("SELECT * FROM rul_package", (rs, rowNum) -> {
-
-            PackageInfo packageInfo = new PackageInfo();
-
-            packageInfo.setCode(rs.getString("code"));
-            packageInfo.setName(rs.getString("name"));
-            packageInfo.setDescription(rs.getString("description"));
-            packageInfo.setVersion(rs.getInt("version"));
-
-            return packageInfo;
-        });
-
-        latestVersionMap = packageInfoList.stream()
-                .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
-
-        try (Stream<Path> streamPaths = Files.list(dpkgDir)) {
-
-            // vyhledani poslednich verzi balicku
-            for (Path path : streamPaths.collect(Collectors.toList())) {
-                // check if file is package
-                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
-                    continue;
-                }
-                logger.info("Reading package info: {}", path);
-
-                PackageInfoWrapper pkg = getPackageInfo(path);
-
-                if (pkg == null) {
-                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
-                    continue;
-                }
-
-                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
-                // žádné informace o balíčku nebo nižší verzi
-                if (mapPkg == null || mapPkg.getVersion() < pkg.getVersion() || (testing && mapPkg.getVersion() <= pkg.getVersion())) {
-                    packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
-                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
-
-                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
-
-                    ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
-                    for (ItemType itemType : itemTypes.getItemTypes()) {
-                        if (!itemTypeCodes.contains(itemType.getCode())) {
-                            itemTypeCodes.add(itemType.getCode());
-                        }
-                    }
-
-                    ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
-                    for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-                    	if (!itemSpecCodes.contains(itemSpec.getCode())) {
-                    		itemSpecCodes.add(itemSpec.getCode());
-                    		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-                    			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-                    			listItemSpecCodes.add(itemSpec.getCode());
-                    		}
-                    	}
-                    }
-
-                    PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
-                    if (partTypes != null) {
-	                    for (PartType partType : partTypes.getPartTypes()) {
-	                        if (!partTypeCodes.contains(partType.getCode())) {
-	                            partTypeCodes.add(partType.getCode());
+	        logger.info("Checking folder {} for packages...", dpkgDir);
+	
+	        // get current packages from DB
+	        List<PackageInfo> packageInfoList = jdbcTemplate.query("SELECT * FROM rul_package", (rs, rowNum) -> {
+	
+	            PackageInfo packageInfo = new PackageInfo();
+	
+	            packageInfo.setCode(rs.getString("code"));
+	            packageInfo.setName(rs.getString("name"));
+	            packageInfo.setDescription(rs.getString("description"));
+	            packageInfo.setVersion(rs.getInt("version"));
+	
+	            return packageInfo;
+	        });
+	
+	        latestVersionMap = packageInfoList.stream()
+	                .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
+	
+	        try (Stream<Path> streamPaths = Files.list(dpkgDir)) {
+	
+	            // vyhledani poslednich verzi balicku
+	            for (Path path : streamPaths.collect(Collectors.toList())) {
+	                // check if file is package
+	                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+	                    continue;
+	                }
+	                logger.info("Reading package info: {}", path);
+	
+	                PackageInfoWrapper pkg = getPackageInfo(path);
+	
+	                if (pkg == null) {
+	                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
+	                    continue;
+	                }
+	
+	                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
+	                // žádné informace o balíčku nebo nižší verzi
+	                if (mapPkg == null || mapPkg.getVersion() < pkg.getVersion() || (testing && mapPkg.getVersion() <= pkg.getVersion())) {
+	                    packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
+	                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+	
+	                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
+	
+	                    ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
+	                    for (ItemType itemType : itemTypes.getItemTypes()) {
+	                        if (!itemTypeCodes.contains(itemType.getCode())) {
+	                            itemTypeCodes.add(itemType.getCode());
 	                        }
 	                    }
-                    }
-                } else {
-                    throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
-                            + pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
-                }
-            }
-            allPackages = new ArrayList<>(latestVersionMap.values());
-
-        } catch (IOException e) {
-            logger.error("Error processing a package zip file.", e);
-            throw new SystemException("Error processing a package zip file.", e);
+	
+	                    ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
+	                    for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+	                    	if (!itemSpecCodes.contains(itemSpec.getCode())) {
+	                    		itemSpecCodes.add(itemSpec.getCode());
+	                    		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+	                    			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
+	                    			listItemSpecCodes.add(itemSpec.getCode());
+	                    		}
+	                    	}
+	                    }
+	
+	                    PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
+	                    if (partTypes != null) {
+		                    for (PartType partType : partTypes.getPartTypes()) {
+		                        if (!partTypeCodes.contains(partType.getCode())) {
+		                            partTypeCodes.add(partType.getCode());
+		                        }
+		                    }
+	                    }
+	                } else {
+	                    throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
+	                            + pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
+	                }
+	            }
+	            allPackages = new ArrayList<>(latestVersionMap.values());
+	
+	        } catch (IOException e) {
+	            logger.error("Error processing a package zip file.", e);
+	            throw new SystemException("Error processing a package zip file.", e);
+	        }
         }
 
         // if required lists are empty, browse folders in the test-classes directory
