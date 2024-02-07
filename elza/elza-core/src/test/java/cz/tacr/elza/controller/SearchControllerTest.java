@@ -28,13 +28,13 @@ public class SearchControllerTest extends AbstractControllerTest {
         ResultEntityRef result = searchApi.searchEntity(createSearchParamEmpty());
         assertNotNull(result);
 
-        //assertEquals(3, result.getCount().intValue()); // TODO enable hibernate search indexing in test
+        assertEquals(3, result.getCount().intValue());
 
-        //SearchParams sp = createSearchParamText("Firma");
-        //result = searchApi.searchEntity(sp);
-        //assertNotNull(result);
+        SearchParams sp = createSearchParamText("Firma");
+        result = searchApi.searchEntity(sp);
+        assertNotNull(result);
 
-        //assertEquals(2, result.getCount().intValue()); // TODO enable hibernate search indexing in test
+        //assertEquals(2, result.getCount().intValue()); // TODO keep working on the search
     }
 
     @Test
