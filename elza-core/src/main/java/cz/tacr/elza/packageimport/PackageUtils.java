@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.FileUtils;
 
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
@@ -104,7 +107,21 @@ public class PackageUtils {
     }
 
     /**
-     * Převod streamu na XML soubor.
+     * Převod souboru XML na třídu.
+     *
+     * @param classObject objekt XML
+     * @param xmlFile     xml soubor
+     * @param <T>         typ pro převod
+     */
+    public static <T> T convertXmlFileToObject(final Class<T> classObject, final Path xmlFile) throws IOException {
+    	if (Files.exists(xmlFile)) { 
+    		return convertXmlStreamToObject(classObject, new ByteArrayInputStream(FileUtils.readFileToByteArray(xmlFile.toFile())));
+    	}
+    	return null;
+    }
+
+    /**
+     * Převod streamu souboru XML na třídu.
      *
      * @param classObject objekt XML
      * @param xmlStream   xml stream
