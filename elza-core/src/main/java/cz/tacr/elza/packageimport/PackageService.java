@@ -85,7 +85,7 @@ import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
-import cz.tacr.elza.domain.bridge.IndexConfigurationReader;
+import cz.tacr.elza.domain.bridge.IndexConfigReaderImpl;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -492,7 +492,7 @@ public class PackageService {
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
 
-    IndexConfigurationReader configurationReader = SpringContext.getBean(IndexConfigurationReader.class);
+    IndexConfigReaderImpl configurationReader = SpringContext.getBean(IndexConfigReaderImpl.class);
 
     private Set<Integer> accessPoints;
 

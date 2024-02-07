@@ -6,15 +6,15 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Způsobí inicializaci beanu IndexConfigurationReader (a všech návazností) před inicializací Hibernate Search.
- * V AeRecordCacheBinder jsou potom dostupné tyto beany pomocí SpringContext.getBean()
+ * V ApCachedAccessPointBinder jsou potom dostupné tyto beany pomocí SpringContext.getBean()
  *
  * @author <a href="mailto:jaroslav.pubal@marbes.cz">Jaroslav Půbal</a>
  */
 @Configuration
-public class IndexConfigurationReaderDependOnPostProcessor extends EntityManagerFactoryDependsOnPostProcessor {
+public class IndexConfigReaderDependOnPostProcessor extends EntityManagerFactoryDependsOnPostProcessor {
 
-    public IndexConfigurationReaderDependOnPostProcessor() {
-        super(IndexConfigurationReader.class, SpringContext.class);
+    public IndexConfigReaderDependOnPostProcessor() {
+        super(IndexConfigReader.class, SpringContext.class);
     }
 
 }

@@ -47,9 +47,9 @@ import jakarta.annotation.PostConstruct;
  * @author <a href="mailto:jaroslav.pubal@marbes.cz">Jaroslav Půbal</a>
  */
 @Component
-public class IndexConfigurationReader {
+public class IndexConfigReaderImpl implements IndexConfigReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(IndexConfigurationReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(IndexConfigReaderImpl.class);
 
     //Toto NEFUNGUJE!! závislost na bean co je závislý na Hibernate
     //@Autowired
@@ -60,8 +60,6 @@ public class IndexConfigurationReader {
     private JdbcTemplate jdbcTemplate;
 
     private static final String PACKAGE_XML = "package.xml";
-
-    private static final String TARGET_TEST_CLASSES = "target/test-classes";
 
     @Value("${elza.package.testing:false}")
     private Boolean testing;
@@ -191,57 +189,19 @@ public class IndexConfigurationReader {
 	            throw new SystemException("Error processing a package zip file.", e);
 	        }
         }
-
-        // if required lists are empty, browse folders in the test-classes directory
-        if (partTypeCodes.isEmpty() && itemTypeCodes.isEmpty() && typeSpecMap.isEmpty()) {
-
-        	logger.info("Checking folder {} for packages...", Paths.get(TARGET_TEST_CLASSES));
-
-        	try (Stream<Path> streamPaths = Files.list(Paths.get(TARGET_TEST_CLASSES))) {
-
-        		for (Path path : streamPaths.collect(Collectors.toList())) {
-        			// check is directory and contains xml files of package
-        			if (Files.isDirectory(path) && Files.exists(path.resolve(PACKAGE_XML))) {
-
-        				logger.info("Reading package info: {}", path);
-
-                        PartTypes partTypes = PackageUtils.convertXmlFileToObject(PartTypes.class, path.resolve(PART_TYPE_XML));
-                        if (partTypes != null) {
-                        	partTypeCodes.addAll(partTypes.getPartTypes().stream().map(i -> i.getCode()).collect(Collectors.toList()));
-                        }
-
-                        ItemTypes itemTypes = PackageUtils.convertXmlFileToObject(ItemTypes.class, path.resolve(ITEM_TYPE_XML));
-                        if (itemTypes != null) {
-                        	itemTypeCodes.addAll(itemTypes.getItemTypes().stream().map(i -> i.getCode()).collect(Collectors.toList()));
-                        }
-
-                        ItemSpecs itemSpecs = PackageUtils.convertXmlFileToObject(ItemSpecs.class, path.resolve(ITEM_SPEC_XML));
-                        if (itemSpecs != null) {
-                        	itemSpecs.getItemSpecs().forEach(itemSpec -> {
-                        		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-                        			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-                        			listItemSpecCodes.add(itemSpec.getCode());
-                        		}
-                        	});
-                        }
-        			}
-        		}
-
-            } catch (IOException e) {
-                logger.error("Error processing package dir with xml files.", e);
-                throw new SystemException("Error processing package dir with xml files.", e);
-            }
-        }
     }
 
+    @Override
     public List<String> getPartTypeCodes() {
         return partTypeCodes;
     }
 
+    @Override
     public List<String> getItemTypeCodes() {
         return itemTypeCodes;
     }
 
+    @Override
     public List<String> getItemSpecCodesByTypeCode(String itemTypeCode) {
 		return typeSpecMap.getOrDefault(itemTypeCode, new ArrayList<>());
 	}

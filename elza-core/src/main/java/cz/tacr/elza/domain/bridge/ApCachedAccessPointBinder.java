@@ -25,7 +25,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
     public static final String ANALYZED = "_analyzed";
     public static final String SORTABLE = "_sortable";
 
-    private IndexConfigurationReader configurationReader = SpringContext.getBean(IndexConfigurationReader.class);
+    private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
     private TypeBindingContext context;
 
     @Override
