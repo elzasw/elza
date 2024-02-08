@@ -1549,7 +1549,7 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Podtypy jednotek popisu - množstevní složka"
+rule "Podtypy jednotek popisu - množstevní, logické a digitální složky"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1558,7 +1558,7 @@ when
       "ZP2015_UNIT_SUBTYPE"
      ) )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_LOGICAL", "ZP2015_FOLDER_DAO") ) from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -6309,7 +6309,7 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Doporučené prvky pro podtyp technická dokumentace - jednotlivosti a části v INV a KAT"
+rule "Doporučené prvky pro podtyp technická dokumentace - v INV a KAT"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
