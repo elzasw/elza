@@ -34,7 +34,7 @@ public class SearchControllerTest extends AbstractControllerTest {
         result = searchApi.searchEntity(sp);
         assertNotNull(result);
 
-        //assertEquals(2, result.getCount().intValue()); // TODO keep working on the search
+        assertEquals(2, result.getCount().intValue());
     }
 
     @Test
