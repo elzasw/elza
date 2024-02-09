@@ -6312,10 +6312,9 @@ end
 rule "Doporučené prvky pro podtyp technická dokumentace - v INV a KAT"
 no-loop
 salience -100
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_TD") ) from $ownItems
     // Rodic je INV nebo KAT
-    $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", 
@@ -6357,9 +6356,8 @@ end
 
 rule "RE_035_02 Doporučené role entit pro technickou dokumentaci (inventář, katalog)"
 no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
     // Rodic je INV a KAT
-    Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_TD") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
