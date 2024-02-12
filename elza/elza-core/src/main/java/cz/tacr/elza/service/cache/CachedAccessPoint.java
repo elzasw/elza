@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.RevStateApproval;
 
 public class CachedAccessPoint {
 
@@ -56,6 +57,8 @@ public class CachedAccessPoint {
     private List<CachedBinding> bindings;
 
     private List<Integer> replacedAPIds;
+
+    private RevStateApproval revState;
 
     public Integer getAccessPointId() {
         return accessPointId;
@@ -160,7 +163,15 @@ public class CachedAccessPoint {
         this.replacedAPIds = replacedAPIds;
     }
 
-    public void addReplacedId(Integer id) {
+    public RevStateApproval getRevState() {
+		return revState;
+	}
+
+	public void setRevState(RevStateApproval revState) {
+		this.revState = revState;
+	}
+
+	public void addReplacedId(Integer id) {
         if (replacedAPIds == null) {
             replacedAPIds = new ArrayList<>();
         }
