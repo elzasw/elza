@@ -313,6 +313,10 @@ public class RevisionService {
         return revStateRepository.findByState(state);
     }
 
+    public List<ApRevState> findRevStatesByStates(List<ApState> states) {
+        return revStateRepository.findByStates(states);
+    }
+
     public ApRevState findLastRevState(ApRevision revision) {
         return revStateRepository.findLastRevState(revision);
     }

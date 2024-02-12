@@ -296,7 +296,7 @@ public class ApController {
         }
 
         if (StringUtils.isNotEmpty(search) && (!accessPointService.isQueryComplex(searchFilter))) {
-            return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, scopeId, searchFilter, sdp);
+            return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, revState, scopeId, searchFilter, sdp);
         }
 
         if (searchFilter == null && revState == null) {
@@ -371,6 +371,7 @@ public class ApController {
                                                                       ArrFund fund,
                                                                       Set<Integer> apTypeIds,
                                                                       ApState.StateApproval state,
+                                                                      RevStateApproval revState,
                                                                       Integer scopeId,
                                                                       SearchFilterVO searchFilter,
                                                                       StaticDataProvider sdp) {
@@ -378,7 +379,7 @@ public class ApController {
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, from, count, sdp);
+                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {

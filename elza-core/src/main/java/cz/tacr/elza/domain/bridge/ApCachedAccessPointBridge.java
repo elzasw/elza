@@ -57,9 +57,10 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     static private SettingIndexSearch settingIndexSearch;
 
+    public static final String AP_TYPE_ID = "ap_type_id";
     public static final String SCOPE_ID = "scope_id";
     public static final String STATE = "state";
-    public static final String AP_TYPE_ID = "ap_type_id";
+    public static final String REV_STATE = "rev_state";
 
     public static final String PREFIX_PREF = "_pref";
     public static final String SEPARATOR = "_";
@@ -115,6 +116,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             addStringField(STATE, apState.getStateApproval().name().toLowerCase(), document);
             addStringField(AP_TYPE_ID, apState.getApTypeId().toString(), document);
             addStringField(SCOPE_ID, apState.getScopeId().toString(), document);
+            if (cachedAccessPoint.getRevState() != null) {
+                addStringField(REV_STATE, cachedAccessPoint.getRevState().name().toLowerCase(), document);
+            }
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {

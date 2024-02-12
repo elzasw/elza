@@ -5,6 +5,7 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RevStateApproval;
 
 import java.util.Collection;
 
@@ -28,6 +29,8 @@ public interface ApCachedAccessPointRepositoryCustom {
                                                                        SearchFilterVO searchFilter,
                                                                        Collection<Integer> apTypeIdTree,
                                                                        Collection<Integer> scopeIds,
-                                                                       ApState.StateApproval state, Integer from,
-                                                                       Integer count, StaticDataProvider sdp);
+                                                                       ApState.StateApproval state,
+                                                                       RevStateApproval revState,
+                                                                       Integer from, Integer count,
+                                                                       StaticDataProvider sdp);
 }

@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointItemService;
+import cz.tacr.elza.service.RevisionService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -58,11 +59,14 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevState;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
@@ -113,6 +117,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
+    private RevisionService revisionService;
+
+    @Autowired
     private StaticDataService staticDataService;
 
     @Autowired
@@ -139,7 +146,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
                 String.class, Number.class, Boolean.class, Iterable.class,
                 // Domain specific enums
-                SyncState.class, ApStateEnum.class,
+                SyncState.class, ApStateEnum.class, RevStateApproval.class,
                 LocalDate.class, LocalDateTime.class));
     }
 
@@ -298,12 +305,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     private List<ApCachedAccessPoint> createCachedAccessPoints(List<Integer> accessPointIds) {
         Set<Integer> requestedIds = new HashSet<>(accessPointIds);
-        if(requestedIds.size()!=accessPointIds.size()) {
+        if (requestedIds.size() != accessPointIds.size()) {
             logger.error("Some ID is multiple times in the query");
         }
 
         List<ApAccessPoint> accessPointList = accessPointRepository.findAllById(requestedIds);
-        // Prepare map
+        // prepare map
         final Map<Integer, CachedAccessPoint> apMap = accessPointList.stream()
                 .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, ap -> createCachedAccessPoint(ap)));
 
@@ -320,9 +327,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
         if (apStates.size() != accessPointIds.size()) {
         	Map<Integer, ApState> apStatesMap = new HashMap<>();
-        	for(ApState apState: apStates) {
+        	for (ApState apState : apStates) {
         		ApState otherState = apStatesMap.put(apState.getAccessPointId(), apState);
-        		if(otherState!=null) {
+        		if (otherState != null) {
         			logger.error("Multiple states for same accessPoint, accessPointId: {}, apStateIds: {}, {}",
         					apState.getAccessPointId(), otherState.getStateId(), apState.getStateId());
         			throw new SystemException("Multiple states for same accessPoint", BaseCode.DB_INTEGRITY_PROBLEM)
@@ -333,7 +340,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         	}
         	// Check that we have all states
         	Set<Integer> ids = new HashSet<>();
-        	for(ApAccessPoint ap: accessPointList) {
+        	for (ApAccessPoint ap : accessPointList) {
         		ApState apState = apStatesMap.get(ap.getAccessPointId());
         		if (apState == null) {
         			logger.error("Missing state for accesspoint, accessPointId: {}", ap.getAccessPointId());
@@ -353,6 +360,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             apState = HibernateUtils.unproxy(apState);
             CachedAccessPoint cap = apMap.get(apState.getAccessPointId());
             cap.setApState(apState);
+        }
+
+        // set rev state
+        List<ApRevState> revStates = revisionService.findRevStatesByStates(apStates); 
+        for (ApRevState revState : revStates) {
+        	revState = HibernateUtils.unproxy(revState);
+        	CachedAccessPoint cap = apMap.get(revState.getRevision().getState().getAccessPointId());
+        	cap.setRevState(revState.getStateApproval());
         }
 
         createCachedPartMap(accessPointList, apMap);
@@ -985,6 +1000,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                                   apTypeIds,
                                                   scopeIds,
                                                   state,
+                                                  null,
                                                   from, count,
                                                   sdp);
 

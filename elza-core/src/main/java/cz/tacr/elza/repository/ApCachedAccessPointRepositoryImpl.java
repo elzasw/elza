@@ -11,6 +11,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.ANALYZED; 
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
@@ -69,6 +70,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
@@ -254,13 +256,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                                                               Collection<Integer> apTypeIdTree,
                                                                               Collection<Integer> scopeIds,
                                                                               ApState.StateApproval state,
+                                                                              RevStateApproval revState,
                                                                               Integer from,
                                                                               Integer count,
                                                                               StaticDataProvider sdp) {
 
     	SearchSession session = Search.session(entityManager);
         SearchPredicateFactory factory = session.scope(ApCachedAccessPoint.class).predicate();
-        SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state);
+        SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state, revState);
         SearchScope<ApCachedAccessPoint> scope = session.scope(ApCachedAccessPoint.class);
         SortField sortField = new SortField(DATA + PREFIX_PREF + INDEX + SORTABLE, SortField.Type.STRING);
 
@@ -299,7 +302,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     											 SearchFilterVO searchFilter,
     											 Collection<Integer> apTypeIdTree,
     											 Collection<Integer> scopeIds,
-    											 ApState.StateApproval state) {
+    											 ApState.StateApproval state,
+    											 RevStateApproval revState) {
         BooleanPredicateClausesStep<?> bool = factory.bool();
         boolean empty = true;
 
@@ -348,6 +352,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         	empty = false;
 		}
 
+		if (revState != null) {
+			bool.must(factory.match().field(REV_STATE).matching(revState.name().toLowerCase()));
+			empty = false;
+		}
+		
 		if (empty) {
             return factory.matchAll().toPredicate();
         }

@@ -5,6 +5,7 @@ import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.service.SpringContext;
@@ -18,7 +19,23 @@ import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * Třída ApCachedAccessPointBinder je odpovědná za vytváření polí pro indexování.
+ * 
+ * Část názvů polí jsou jednoduše zadány jako konstanty:
+ * - AP_TYPE_ID ("ap_type_id")
+ * - SCOPE_ID ("scope_id")
+ * - STATE ("state")
+ * - FIELD_ACCESSPOINT_ID ("accessPointId")
+ * - data_index
+ * - data_pref_index
+ * 
+ * Část názvů polí získáme ze seznamu kódů PartType a ItemType:
+ * - getPartTypeCodes()
+ * - getItemTypeCodes()
+ * a také jako kombinací kódů ItemType + ItemSpec
+ * - getItemSpecCodesByTypeCode(itemTypeCode)
+ */
 public class ApCachedAccessPointBinder implements TypeBinder {
 
     public static final String NOT_ANALYZED = "";
@@ -36,11 +53,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
     	// při změně pole data přepočti index
         context.dependencies().use(DATA);
 
-        // číselné pole accessPointId
-        //fields.put(FIELD_ACCESSPOINT_ID, context.indexSchemaElement().field(FIELD_ACCESSPOINT_ID, f -> f.asInteger()).multiValued().toReference());
-
         // přidání dodatečných polí
-        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE, FIELD_ACCESSPOINT_ID)) {
+        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE, REV_STATE, FIELD_ACCESSPOINT_ID)) {
             fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
 
