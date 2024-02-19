@@ -710,7 +710,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
 
         // boost o accessPointId
-        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value); 
+        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value, false); 
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             // boost o preferované indexi a jména
@@ -726,7 +726,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         // index
         fieldName += INDEX;
         boostWildcardQuery(factory, bool, fieldName, value, true, false);
-        boostExactQuery(factory, bool, fieldName, value, DATA + SEPARATOR);
+        boostExactQuery(factory, bool, fieldName, value, true);
 
         return bool.toPredicate();
     }
@@ -743,9 +743,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     	String wildCardValue = STAR + value + STAR;
 
-    	step.should(factory.wildcard().field(addData(fieldName)).matching(wildCardValue).boost(boost).toPredicate());
+    	step.should(factory.wildcard().field(addPrefix(fieldName)).matching(wildCardValue).boost(boost).toPredicate());
     	if (trans) {
-    		step.should(factory.wildcard().field(addData(fieldName) + ANALYZED).matching(wildCardValue).boost(boost).toPredicate());
+    		step.should(factory.wildcard().field(addPrefix(fieldName) + ANALYZED).matching(wildCardValue).boost(boost).toPredicate());
     	}
     	if (exact) {
     		boostExactQuery(factory, step, fieldName, value, boostExact, boostTransExact);
@@ -754,41 +754,48 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value, Float boostExact, Float boostTransExact) {
     	if (boostExact != null) {
-    		step.should(factory.wildcard().field(addData(fieldName)).boost(boostExact).matching(value).toPredicate());
+    		step.should(factory.wildcard().field(addPrefix(fieldName)).boost(boostExact).matching(value).toPredicate());
     	}
     	if (boostTransExact != null) {
-    		step.should(factory.wildcard().field(addData(fieldName) + ANALYZED).boost(boostTransExact).matching(value).toPredicate());
+    		step.should(factory.wildcard().field(addPrefix(fieldName) + ANALYZED).boost(boostTransExact).matching(value).toPredicate());
     	}
     }
 
-    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value) {
+//    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value) {
+//    	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
+//    	if (sisField != null) { 
+//    		Float boostExact = sisField.getBoostExact();
+//    		if (boostExact != null) {
+//    			step.should(factory.match().field(fieldName).boost(boostExact).matching(value).toPredicate());
+//    		}
+//    	}
+//    }
+
+    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value, boolean prefix) {
     	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
     	if (sisField != null) { 
     		Float boostExact = sisField.getBoostExact();
     		if (boostExact != null) {
-    			step.should(factory.match().field(fieldName).boost(boostExact).matching(value).toPredicate());
-    		}
-    	}
-    }
-
-    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value, String prefix) {
-    	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
-    	if (sisField != null) { 
-    		Float boostExact = sisField.getBoostExact();
-    		if (boostExact != null) {
-    			step.should(factory.wildcard().field(prefix + fieldName).boost(boostExact).matching(value).toPredicate());
+    			step.should(factory.wildcard().field(addPrefix(fieldName, prefix)).boost(boostExact).matching(value).toPredicate());
     		}
             Float boostTransExact = sisField.getBoostTransExact();
             if (boostTransExact != null) {
-            	step.should(factory.wildcard().field(prefix + fieldName + ANALYZED).boost(boostTransExact).matching(value).toPredicate());
+            	step.should(factory.wildcard().field(addPrefix(fieldName, prefix) + ANALYZED).boost(boostTransExact).matching(value).toPredicate());
             }
     	}
     }
 
-	private static String addData(String fieldName) {
+    private static String addPrefix(String fieldName, boolean prefix) {
+    	if (prefix) {
+    		return addPrefix(fieldName);
+    	}
+    	return fieldName;
+    }
+
+	private static String addPrefix(String fieldName) {
     	return fieldName.startsWith("_")? DATA + fieldName : DATA + SEPARATOR + fieldName;
     }
-    
+
 //    private Query processIndexCondDef(QueryBuilder queryBuilder, String value, String partTypeCode,
 //                                      FulltextCondFactory fcf) {
 //        String valueLowerCase = value.toLowerCase();
@@ -954,6 +961,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         if (name.startsWith(DATA + SEPARATOR)) {
         	name = name.substring((DATA + SEPARATOR).length());
+        }
+        if (name.startsWith(SEPARATOR)) {
+        	name = name.substring(SEPARATOR.length());
         }
         for (SettingIndexSearch.Field field : sis.getFields()) {
             if (field.getName().equals(name)) {
