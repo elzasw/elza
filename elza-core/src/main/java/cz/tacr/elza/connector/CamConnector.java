@@ -13,8 +13,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 
-import cz.tacr.cam.schema.cam.UpdatesFromXml;
-import cz.tacr.cam.schema.cam.UpdatesXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
-import cz.tacr.cam.client.controller.BatchUpdatesApi;
 import cz.tacr.cam.client.controller.EntityApi;
 import cz.tacr.cam.client.controller.ExportApi;
 import cz.tacr.cam.client.controller.SearchApi;
@@ -33,6 +30,8 @@ import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.cam.schema.cam.UpdatesFromXml;
+import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -116,7 +115,7 @@ public class CamConnector {
 
     public BatchUpdateResultXml getBatchStatus(final String bid,
                                                final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApi(externalSystem).getBatchStatusWithHttpInfo(bid);
+        ApiResponse<File> fileApiResponse = get(externalSystem).getBatchUpdatesApi().getBatchStatusWithHttpInfo(bid);
         return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
     }
 
@@ -197,10 +196,6 @@ public class CamConnector {
 
     private ExportApi getExportApi(Integer apExternalSystemId) {
         return get(apExternalSystemId).getExportApi();
-    }
-
-    private BatchUpdatesApi getBatchUpdatesApi(ApExternalSystem apExternalSystem) {
-        return get(apExternalSystem).getBatchUpdatesApi();
     }
 
     private UpdatesApi getUpdatesApi(Integer apExternalSystemId) {
