@@ -884,6 +884,7 @@ public class CamService {
             throws ApiException {
         Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+        // check if sending user has some extra privileges
 
         BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem);
         return batchUpdateResult;
