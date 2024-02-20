@@ -44,6 +44,9 @@ public class CamConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
+    public static final String APIKEY_ID = "apikeyId";
+    public static final String APIKEY_VALUE = "apikeyValue";
+
     @Autowired
     private SchemaManager schemaManager;
 
@@ -88,7 +91,8 @@ public class CamConnector {
     }
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
-                                             final ApExternalSystem externalSystem) throws ApiException {
+                                             final ApExternalSystem externalSystem,
+                                             final String apikeyId, final String apikeyValue) throws ApiException {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
         
@@ -152,9 +156,18 @@ public class CamConnector {
     }
 
     public CamInstance get(ApExternalSystem apExternalSystem) {
+    	return get(apExternalSystem, null, null);
+    }
+
+    public CamInstance get(ApExternalSystem apExternalSystem, String apikeyId, String apikeyValue) {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+        	// if apikeyId & apikeyValue define - use its
+        	if (apikeyId != null && apikeyValue != null) {
+        		return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyId);
+        	}
+        	// use cache instanceMap
             CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
             if (camInstance == null) {
                 camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
