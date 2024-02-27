@@ -53,14 +53,15 @@ public class NodeIterator implements Iterator<Node>, NodeProvider {
 
     @Override
     public boolean hasNext() {
-        if (nodeIdIterator.hasNext()) {
-            return true;
-        }
         if (nodes != null) {
             if (windowIndex < nodes.size()) {
                 return true;
             }
             nodes = null; // release node references for last window
+        } else {
+            if (nodeIdIterator.hasNext()) {
+                return true;
+            }
         }
         return false;
     }
@@ -68,7 +69,7 @@ public class NodeIterator implements Iterator<Node>, NodeProvider {
     @Override
     public Node next() {
 
-        if (!hasNext()) {
+    	if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
