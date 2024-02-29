@@ -14,8 +14,6 @@ public class SearchFilterVO {
 
     private List<AeState> aeStates = null;
 
-    private String code;
-
     private String user;
 
     private String creation;
@@ -64,14 +62,6 @@ public class SearchFilterVO {
 
     public void setAeStates(List<AeState> aeStates) {
         this.aeStates = aeStates;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getUser() {
