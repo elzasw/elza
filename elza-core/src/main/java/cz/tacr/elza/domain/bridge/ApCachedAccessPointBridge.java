@@ -192,7 +192,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
                 // indexování polí s více než 32766 znaky
                 if (dataType == DataType.TEXT) {
-                    document.addValue(name + SEPARATOR + itemTypeCode + ApCachedAccessPointBinder.NOT_ANALYZED, value);
+                    document.addValue(name + SEPARATOR + itemTypeCode + ApCachedAccessPointBinder.ANALYZED, value);
                 } else {
                     addField(name + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
                 }
