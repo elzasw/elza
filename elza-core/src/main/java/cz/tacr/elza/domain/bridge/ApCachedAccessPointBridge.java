@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
@@ -118,6 +119,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             addStringField(SCOPE_ID, apState.getScopeId().toString(), document);
             if (cachedAccessPoint.getRevState() != null) {
                 addStringField(REV_STATE, cachedAccessPoint.getRevState().name().toLowerCase(), document);
+            }
+            if (cachedAccessPoint.getCreateUsername() != null) {
+            	addStringField(USERNAME, cachedAccessPoint.getCreateUsername().toLowerCase(), document);
             }
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {

@@ -265,7 +265,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         SearchPredicateFactory factory = session.scope(ApCachedAccessPoint.class).predicate();
         SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state, revState);
         SearchScope<ApCachedAccessPoint> scope = session.scope(ApCachedAccessPoint.class);
-        SortField sortField = new SortField(DATA + PREFIX_PREF + INDEX + SORTABLE, SortField.Type.STRING);
+//        SortField sortField = new SortField(DATA + PREFIX_PREF + INDEX + SORTABLE, SortField.Type.STRING);
 
 		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
                 .where(predicate)
@@ -308,13 +308,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         boolean empty = true;
 
 		if (searchFilter != null) {
-			if (StringUtils.isNotEmpty(searchFilter.getCode())) {
-				// TODO
-				//empty = false;
-			}
 			if (StringUtils.isNotEmpty(searchFilter.getUser())) {
-				// TODO
-				//empty = false;
+				bool.should(factory.wildcard().field(USERNAME).matching(STAR + searchFilter.getUser().toLowerCase() + STAR).toPredicate());
+				empty = false;
 			}
 			if (searchFilter.getArea() != Area.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);

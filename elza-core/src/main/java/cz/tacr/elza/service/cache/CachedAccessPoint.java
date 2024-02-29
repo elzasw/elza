@@ -60,6 +60,8 @@ public class CachedAccessPoint {
 
     private RevStateApproval revState;
 
+    private String createUsername;
+
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -169,6 +171,14 @@ public class CachedAccessPoint {
 
 	public void setRevState(RevStateApproval revState) {
 		this.revState = revState;
+	}
+
+	public String getCreateUsername() {
+		return createUsername;
+	}
+
+	public void setCreateUsername(String createUsername) {
+		this.createUsername = createUsername;
 	}
 
 	public void addReplacedId(Integer id) {

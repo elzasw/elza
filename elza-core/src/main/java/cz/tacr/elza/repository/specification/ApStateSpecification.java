@@ -133,17 +133,6 @@ public class ApStateSpecification implements Specification<ApState> {
                 condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
             }
 
-            // omezení dle konkrétních archivních entit
-            String code = searchFilterVO.getCode();
-            if (StringUtils.isNotEmpty(code)) {
-                try {
-                    Integer id = Integer.parseInt(code);
-                    condition = cb.and(condition, accessPointJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID).in(id));
-                } catch (NumberFormatException e) {
-
-                }
-            }
-
             condition = cb.and(condition, process(cb.conjunction(), ctx));
         }
 

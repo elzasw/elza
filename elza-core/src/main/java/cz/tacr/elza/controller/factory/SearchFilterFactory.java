@@ -71,7 +71,7 @@ public class SearchFilterFactory {
 
     private List<String> createCodeList(SearchFilterVO filter) {
         List<String> codes = null;
-        String code = filter.getArea() == Area.ENTITY_CODE ? filter.getSearch() : filter.getCode();
+        String code = filter.getArea() == Area.ENTITY_CODE ? filter.getSearch() : null;
         if (StringUtils.isNotEmpty(code)) {
             codes = Collections.singletonList(code);
         }

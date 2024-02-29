@@ -295,39 +295,35 @@ public class ApController {
             apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
         }
 
-        if (StringUtils.isNotEmpty(search) && (!accessPointService.isQueryComplex(searchFilter))) {
-            return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, revState, scopeId, searchFilter, sdp);
+        if (StringUtils.isNotEmpty(search) || searchFilter != null) {
+
+        	return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, revState, scopeId, searchFilter, sdp);
         }
 
-        if (searchFilter == null && revState == null) {
+//		if (searchFilter == null && revState == null) {        
+//        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+//        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
+//        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+//
+//        foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId,
+//                                                                                   states, searchTypeNameFinal,
+//                                                                                   searchTypeUsernameFinal);
+//        OrderBy orderBy = OrderBy.LAST_CHANGE;
+//        if (foundRecordsCount < 1000) {
+//            orderBy = OrderBy.PREF_NAME;
+//        }
+//        foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy,
+//                                                                         fund,
+//                                                                         scopeId, states, searchTypeNameFinal,
+//                                                                         searchTypeUsernameFinal);
+//        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
+//		} else {
 
-            Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
-
-            SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-            SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
-
-            foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId,
-                                                                                       states, searchTypeNameFinal,
-                                                                                       searchTypeUsernameFinal);
-
-            OrderBy orderBy = OrderBy.LAST_CHANGE;
-            if (foundRecordsCount < 1000) {
-                orderBy = OrderBy.PREF_NAME;
-            }
-            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy,
-                                                                             fund,
-                                                                             scopeId, states, searchTypeNameFinal,
-                                                                             searchTypeUsernameFinal);
-
-        } else {
-
-            Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
-
-            Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
-                                                                                    state, revState, from, count, sdp);
-            foundRecords = page.getContent();
-            foundRecordsCount = page.getTotalElements();
-        }
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
+        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
+                                                                                state, revState, from, count, sdp);
+        foundRecords = page.getContent();
+        foundRecordsCount = page.getTotalElements();
 
         final List<ApAccessPoint> accessPoints = foundRecords.stream()
                 .map(ApState::getAccessPoint)
