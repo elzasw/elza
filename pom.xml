@@ -281,7 +281,7 @@
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
-				<version>6.20.6</version>
+				<version>6.21.2</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>lucene-core</artifactId>
@@ -320,7 +320,7 @@
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-fonts</artifactId>
-				<version>6.0.0</version>
+				<version>6.21.2</version>
 			</dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
