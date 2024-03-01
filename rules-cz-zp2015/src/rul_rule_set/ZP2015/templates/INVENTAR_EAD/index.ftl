@@ -313,7 +313,7 @@
 
   <!-- Verze profilu EAD -->
   <ead:localcontrol localtype="CZ_FINDING_AID_EAD_PROFILE">
-    <ead:term identifier="CZ_EAD3_PROFILE_20230601">profil platný od června 2023</ead:term>
+    <ead:term identifier="CZ_EAD3_PROFILE_20240301">profil platný od března 2024</ead:term>
   </ead:localcontrol>
 
   <#-- 2.6. Druh archivní pomůcky, control/localcontrol -->
@@ -733,13 +733,13 @@
         <#local needsCharakteristikaJP=true>
         <#break>
       <#case "ZP2015_WEIGHT">
-        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype" otherphysdescstructuredtype="weight" coverage="whole">
         <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
         <#lt>    <ead:unittype>${item.specification.name}</ead:unittype>
         <#lt>  </ead:physdescstructured>
         <#break>
       <#case "ZP2015_AMOUNT">
-        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+        <#lt>  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype" otherphysdescstructuredtype="quantity" coverage="whole">
         <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
         <#switch item.specification.code>
           <#case "ZP2015_AMOUNT_B">
@@ -849,7 +849,7 @@
     <#-- Pocet JP -->
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNIT_COUNT_SUM") as item>
       <#lt>  <!-- Počet JP -->
-      <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
+      <#lt>  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype" otherphysdescstructuredtype="quantity" coverage="whole">
       <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
       <#lt>    <ead:unittype>desc_units</ead:unittype>
       <#lt>  </ead:physdescstructured>
