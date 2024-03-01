@@ -1,20 +1,24 @@
 package cz.tacr.elza.connector;
 
 
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.PackageCode;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamSource;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamSource;
+
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
 
 /**
  *
@@ -57,8 +61,9 @@ public abstract class JaxbUtils {
             }
             return temp;
         } catch (Exception e) {
-            log.error("Failed to write XML", e);
-            throw new SystemException("Nepodařilo se načíst objekt " + aClass.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", aClass.toString());
+            log.error("Failed to write XML, class: " + aClass.getSimpleName(), e);
+            throw new SystemException("Nepodařilo se uložit objekt " + aClass.getSimpleName() + " do souboru", e,
+                    BaseCode.EXPORT_FAILED).set("class", aClass.toString());
         }
     }
 }
