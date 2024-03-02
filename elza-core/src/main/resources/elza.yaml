@@ -109,3 +109,6 @@ spring:
             #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
             # MSSQL
             #dialect: org.hibernate.dialect.SQLServer2008Dialect
+
+# Use line breaking in JasperReports same as in AWT
+net.sf.jasperreports.export.pdf.force.linebreak.policy: true
