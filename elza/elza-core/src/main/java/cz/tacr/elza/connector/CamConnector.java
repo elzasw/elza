@@ -13,8 +13,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 
-import cz.tacr.cam.schema.cam.UpdatesFromXml;
-import cz.tacr.cam.schema.cam.UpdatesXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
-import cz.tacr.cam.client.controller.BatchUpdatesApi;
 import cz.tacr.cam.client.controller.EntityApi;
 import cz.tacr.cam.client.controller.ExportApi;
 import cz.tacr.cam.client.controller.SearchApi;
@@ -33,6 +30,8 @@ import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.cam.schema.cam.UpdatesFromXml;
+import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -44,6 +43,9 @@ import cz.tacr.elza.service.ExternalSystemService;
 public class CamConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
+
+    public static final String APIKEY_ID = "apikeyId";
+    public static final String APIKEY_VALUE = "apikeyValue";
 
     @Autowired
     private SchemaManager schemaManager;
@@ -89,7 +91,8 @@ public class CamConnector {
     }
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
-                                             final ApExternalSystem externalSystem) throws ApiException {
+                                             final ApExternalSystem externalSystem,
+                                             final String apikeyId, final String apikeyValue) throws ApiException {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
         
@@ -116,7 +119,7 @@ public class CamConnector {
 
     public BatchUpdateResultXml getBatchStatus(final String bid,
                                                final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApi(externalSystem).getBatchStatusWithHttpInfo(bid);
+        ApiResponse<File> fileApiResponse = get(externalSystem).getBatchUpdatesApi().getBatchStatusWithHttpInfo(bid);
         return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
     }
 
@@ -153,9 +156,18 @@ public class CamConnector {
     }
 
     public CamInstance get(ApExternalSystem apExternalSystem) {
+    	return get(apExternalSystem, null, null);
+    }
+
+    public CamInstance get(ApExternalSystem apExternalSystem, String apikeyId, String apikeyValue) {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+        	// if apikeyId & apikeyValue define - use its
+        	if (apikeyId != null && apikeyValue != null) {
+        		return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyId);
+        	}
+        	// use cache instanceMap
             CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
             if (camInstance == null) {
                 camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
@@ -197,10 +209,6 @@ public class CamConnector {
 
     private ExportApi getExportApi(Integer apExternalSystemId) {
         return get(apExternalSystemId).getExportApi();
-    }
-
-    private BatchUpdatesApi getBatchUpdatesApi(ApExternalSystem apExternalSystem) {
-        return get(apExternalSystem).getBatchUpdatesApi();
     }
 
     private UpdatesApi getUpdatesApi(Integer apExternalSystemId) {

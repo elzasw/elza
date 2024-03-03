@@ -1,6 +1,7 @@
 package cz.tacr.elza.print.item.convertors;
 
-import cz.tacr.elza.domain.ApAccessPoint;
+import java.util.Locale;
+
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -10,8 +11,6 @@ import cz.tacr.elza.print.Record;
 import cz.tacr.elza.print.Structured;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
-
-import java.util.Locale;
 
 public interface ItemConvertorContext {
 
