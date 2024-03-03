@@ -1,11 +1,22 @@
 package cz.tacr.elza.drools.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -23,13 +34,6 @@ import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.SimpleItem;
-import org.apache.commons.collections4.CollectionUtils;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Factory method for the base Drools model objects.
@@ -76,6 +80,12 @@ public class ModelFactory {
                     ArrDataStructureRef structureRef = HibernateUtils.unproxy(data);
                     ArrStructuredObject structObj = structureRef.getStructuredObject();
                     voDescItem.setStructured(createStructured(structObj, itemRepos));
+                } else if (data.getType() == DataType.STRING) {
+                    ArrDataString dataString = HibernateUtils.unproxy(data);
+                    voDescItem.setString(dataString.getStringValue());
+                } else if (data.getType() == DataType.TEXT) {
+                    ArrDataText dataText = HibernateUtils.unproxy(data);
+                    voDescItem.setString(dataText.getTextValue());
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getIntegerValue());

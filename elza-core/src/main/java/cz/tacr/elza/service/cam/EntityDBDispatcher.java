@@ -361,12 +361,14 @@ public class EntityDBDispatcher {
      * @param syncQueue
      *            True if called from sync queue (without UI and direct user
      *            feedback)
+     * @throws SyncImpossibleException
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
                                        @Nonnull final ApBindingState prevBindingState,
                                        EntityXml entity,
-                                       boolean syncQueue) {
+                                       boolean syncQueue)
+            throws SyncImpossibleException {
         Validate.notNull(procCtx.getApChange());
         Validate.notNull(prevBindingState);
 

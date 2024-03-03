@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -49,6 +51,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.SysExternalSystemProperty;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
@@ -68,6 +71,7 @@ import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.GisExternalSystemRepository;
+import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -102,6 +106,9 @@ public class ExternalSystemService {
 
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
+
+    @Autowired
+    private SysExternalSystemPropertyRepository sysExtSysPropertyRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -797,4 +804,44 @@ public class ExternalSystemService {
      public ArrDigitalRepository getDigitalRepository(Integer digiRepId) {
          return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
+
+	public List<ExtSystemProperty> findAllProperties(Integer extSystemId, Integer userId) {
+		// pokud userId == null, získáme hodnoty pro všechny uživatele
+		List<SysExternalSystemProperty> properties = userId == null? 
+				sysExtSysPropertyRepository.findByExternalSystemId(extSystemId)
+				: sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
+		properties.forEach(i -> {
+			ExtSystemProperty p = new ExtSystemProperty();
+			p.setId(i.getExternalSystemId());
+			p.setUserId(i.getUserId());
+			p.setName(i.getName());
+			p.setValue(i.getValue());
+			result.add(p);
+		});
+		return result;
+	}
+
+	public void addProperty(ApExternalSystem extSystem, UsrUser user, ExtSystemProperty extSystemProperty) {
+		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
+		SysExternalSystemProperty property = null;
+		for (SysExternalSystemProperty p : properties) {
+			if (p.getName().equals(extSystemProperty.getName())) {
+				property = p;
+				break;
+			}
+		}
+		if (property == null) {
+			property = new SysExternalSystemProperty();
+			property.setExternalSystem(extSystem);
+			property.setUser(user);
+			property.setName(extSystemProperty.getName());
+		}
+		property.setValue(extSystemProperty.getValue());
+		sysExtSysPropertyRepository.save(property);
+	}
+
+	public void deleteProperty(Integer extSysPropertyId) {
+		sysExtSysPropertyRepository.deleteById(extSysPropertyId);
+	}
  }

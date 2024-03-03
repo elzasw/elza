@@ -38,6 +38,7 @@ export const ApDescItem:FC<{
     partTypeId: number;
     scopeId: number;
     apTypeId: number;
+    entityName?: string;
 }> = ({
     name,
     index,
@@ -51,9 +52,10 @@ export const ApDescItem:FC<{
     apTypeId,
     prevItem,
     disableRevision,
+    entityName,
 }) => {
     const refTables = useSelector(({refTables}:AppState) => refTables);
-    return renderItem(name, index, refTables, disabled, deleteMode, onDeleteItem, itemTypeAttributeMap, partTypeId, scopeId, apTypeId, item, prevItem, disableRevision);
+    return renderItem(name, index, refTables, disabled, deleteMode, onDeleteItem, itemTypeAttributeMap, partTypeId, scopeId, apTypeId, item, prevItem, disableRevision, entityName);
 }
 
 export const renderItem = (
@@ -70,6 +72,7 @@ export const renderItem = (
     item?: ApItemVO,
     prevItem?: ApItemVO,
     disableRevision?: boolean,
+    entityName?: string,
 ) => {
     const typeId = item ? item.typeId : prevItem?.typeId as number;
     const itemType = refTables.descItemTypes.itemsMap[typeId] as RulDescItemTypeExtVO;
@@ -131,7 +134,7 @@ export const renderItem = (
             valueField = <FormNumber {...commonFieldProps} />
             break;
         case RulDataTypeCodeEnum.COORDINATES:
-            valueField = <FormCoordinates {...commonFieldProps} />
+            valueField = <FormCoordinates {...commonFieldProps} additionalTitle={entityName}/>
             break;
         case RulDataTypeCodeEnum.BIT:
             valueField = <FormCheckbox {...commonFieldProps} />;

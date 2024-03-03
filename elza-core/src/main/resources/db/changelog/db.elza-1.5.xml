@@ -2455,4 +2455,28 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
         	(SELECT di.node_id FROM arr_desc_item di JOIN arr_locked_value lv ON lv.item_id = di.item_id)</sql>
 	</changeSet>
 
+	<changeSet id="20240220152000" author="sergey.iryupin">
+		<createTable tableName="sys_external_system_property">
+            <column name="external_system_property_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_sys_external_system_property" nullable="false"/>
+            </column>
+            <column name="external_system_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int"/>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+		</createTable>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="sys_external_system_property"
+                                 constraintName="fk_sys_external_system_property_sys_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="sys_external_system_property"
+                                 constraintName="fk_sys_external_system_property_usr_user" referencedColumnNames="user_id"
+                                 referencedTableName="usr_user"/>
+	</changeSet>
+
 </databaseChangeLog>

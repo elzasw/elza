@@ -139,7 +139,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, Fund> fundIdMap = new HashMap<>();
 
+    /**
+     * Collection of nodes which cannot be published
+     */
     final Set<Integer> restrictedNodeIds = new HashSet<>();
+
+    /**
+     * Restriction items for each level
+     */
+    Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
     /**
      * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
@@ -415,8 +423,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, filter);
 
         // add all nodes
-        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+        NodeIterator nodeIterator = createFlatNodeIterator();
         while (nodeIterator.hasNext()) {
             Node node = nodeIterator.next();
             filteredAPs.addNode(node);
@@ -429,8 +436,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     public Iterator<Record> getRecords() {
-        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+        NodeIterator nodeIterator = createFlatNodeIterator();
 
         RecordIterator ri = new RecordIterator(this, nodeIterator);
         return ri;
@@ -440,6 +446,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public List<Node> loadNodes(Collection<NodeId> nodeIds) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(isInitialized());
+
+        logger.debug("Loading nodes for output(fundId={}), count: {})", this.fund.getFundId(), nodeIds.size());
 
         List<Integer> arrNodeIds = new ArrayList<>(nodeIds.size());
 
@@ -454,8 +462,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
-
-        Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
