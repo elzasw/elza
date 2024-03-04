@@ -65,7 +65,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -97,7 +96,6 @@ public class StructObjValueService {
     private final EntityManager em;
     private final StructuredItemRepository structureItemRepository;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
-    private final StructureDefinitionRepository structureDefinitionRepository;
     private final StructuredObjectRepository structObjRepository;
     private final FundVersionRepository fundVersionRepository;
     private final RuleService ruleService;
@@ -126,7 +124,6 @@ public class StructObjValueService {
     @Autowired
     public StructObjValueService(final StructuredItemRepository structureItemRepository,
             final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-            final StructureDefinitionRepository structureDefinitionRepository,
             final StructuredObjectRepository structureDataRepository,
             final FundVersionRepository fundVersionRepository,
             final RuleService ruleService,
@@ -139,7 +136,6 @@ public class StructObjValueService {
             final StaticDataService staticDataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
-        this.structureDefinitionRepository = structureDefinitionRepository;
         this.structObjRepository = structureDataRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.ruleService = ruleService;

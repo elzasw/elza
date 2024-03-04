@@ -46,6 +46,7 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.UserService.ChangedPermissionResult;
 
 /**
  * Kontroler pro uživatele.
@@ -394,10 +395,10 @@ public class UserController {
                                                    @RequestBody final List<UsrPermissionVO> permissions) {
         UsrUser user = userService.getUser(userId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
-        List<UsrPermission> result = userService.addUserPermission(user, usrPermissions, true);
+        ChangedPermissionResult result = userService.addUserPermission(user, usrPermissions, true);
 
         StaticDataProvider staticData = staticDataService.getData();
-        List<UsrPermissionVO> resultVOs = result.stream().map(
+        List<UsrPermissionVO> resultVOs = result.getNewPermissions().stream().map(
                 p -> UsrPermissionVO.newInstance(p, false, staticData))
                 .collect(Collectors.toList());
         return resultVOs;
