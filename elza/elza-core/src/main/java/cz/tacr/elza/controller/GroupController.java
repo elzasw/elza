@@ -29,6 +29,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.UserService.ChangedPermissionResult;
 
 /**
  * Kontroler pro skupiny.
@@ -167,11 +168,11 @@ public class GroupController {
                                               @RequestBody final List<UsrPermissionVO> permissions) {
         UsrGroup group = userService.getGroup(groupId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
-        List<UsrPermission> result = userService.addGroupPermission(group, usrPermissions, true);
+        ChangedPermissionResult result = userService.addGroupPermission(group, usrPermissions, true);
 
         StaticDataProvider staticData = staticDataService.getData();
-        List<UsrPermissionVO> resultVOs = result.stream().map(
-                                                              p -> UsrPermissionVO.newInstance(p, true, staticData))
+        List<UsrPermissionVO> resultVOs = result.getNewPermissions()
+                .stream().map(p -> UsrPermissionVO.newInstance(p, true, staticData))
                 .collect(Collectors.toList());
         return resultVOs;
     }
