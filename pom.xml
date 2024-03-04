@@ -459,7 +459,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
-                        <version>2.5.3</version>
+                        <version>3.0.1</version>
                         <configuration>
                             <autoVersionSubmodules>true</autoVersionSubmodules>
                             <arguments>"-Dinnosetup.path=${innosetup.path}" "-Dsigntool.enabled=${signtool.enabled}" "-Dsigntool.path=${signtool.path}" "-Dsigntool.params=${signtool.params}" "-Djre.path=${jre.path}" "-Dtomcat.path=${tomcat.path}"</arguments>
