@@ -196,7 +196,63 @@ public class UserService {
          * @return
          */
         public boolean isPermissionsChanged() {
-            return (permissionsAdd.size() > 0 || permissionsUpdate.size() > 0 || permissionsUpdate.size() > 0);
+            return (permissionsAdd.size() > 0 || permissionsUpdate.size() > 0 || permissionsDelete.size() > 0);
+        }
+
+        /**
+         * Method will check if some of new permission does not already exist or is
+         * scheduled for
+         * removal.
+         */
+        public void optimize() {
+            logger.debug("Optimizing permissions.");
+            boolean modified;
+            do {
+                modified = false;
+
+                for (UsrPermission permAdd : permissionsAdd) {
+                    // check if same exists in unchanged
+                    UsrPermission existingPerm = permissionExists(permAdd, permissionsNoChange);
+                    if (existingPerm != null) {
+                        logger.debug("Optimize permissions: Found same existing permission, type: {}, id: ",
+                                     permAdd.getPermission(), existingPerm.getPermissionId());
+                        permissionsAdd.remove(permAdd);
+                        modified = true;
+                        break;
+                    }
+                    // check if same exists in changed
+                    existingPerm = permissionExists(permAdd, permissionsUpdate);
+                    if (existingPerm != null) {
+                        logger.debug("Optimize permissions: Found same permission marked for update, type: {}, id: ",
+                                     permAdd.getPermission(), existingPerm.getPermissionId());
+                        permissionsAdd.remove(permAdd);
+                        modified = true;
+                        break;
+                    }
+                    // check if same exists in deleted
+                    UsrPermission permDelete = permissionExists(permAdd, permissionsDelete);
+                    if (permDelete != null) {
+                        logger.debug("Optimize permissions: Found same permission marked for delete, type: {}, id: ",
+                                     permAdd.getPermission(), permDelete.getPermissionId());
+                        // remove both permissions
+                        permissionsAdd.remove(permAdd);
+                        permissionsDelete.remove(permDelete);
+                        permissionsNoChange.add(permDelete);
+                        modified = true;
+                        break;
+                    }
+                }
+            } while (modified);
+
+        }
+
+        private UsrPermission permissionExists(UsrPermission perm, List<UsrPermission> list) {
+            for (UsrPermission p : list) {
+                if (p.isSamePermission(perm)) {
+                    return p;
+                }
+            }
+            return null;
         }
 
     }
@@ -369,6 +425,14 @@ public class UserService {
                                                  final boolean checkPermission) {
         Validate.isTrue(user != null ^ group != null);
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("changePermission, user: {}, group: {}, type: {}, count: {}",
+                         user != null ? user.getUserId() : null,
+                         group != null ? group.getGroupId() : null,
+                         changePermissionType,
+                         permissions.size());
+        }
+
         List<UsrPermission> permissionsDB = (user != null) ? permissionRepository.findByUserOrderByPermissionIdAsc(user)
                 : permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         Map<Integer, UsrPermission> permissionMap = permissionsDB.stream()
@@ -391,6 +455,8 @@ public class UserService {
             result.permissionsDelete.addAll(permissionMap.values());
         }
 
+        result.optimize();
+
         for (UsrPermission permission : permissions) {
             validatePermission(permission);
         }
@@ -404,6 +470,17 @@ public class UserService {
         }
         if (CollectionUtils.isNotEmpty(result.permissionsUpdate)) {
             result.permissionsUpdate = permissionRepository.saveAll(result.permissionsUpdate);
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("changePermission - results, user: {}, group: {}, type: {}, permissions: [new: {}, deleted: {}, updated: {}, unchanged: {}]",
+                         user != null ? user.getUserId() : null,
+                         group != null ? group.getGroupId() : null,
+                         changePermissionType,
+                         result.permissionsAdd.size(),
+                         result.permissionsDelete.size(),
+                         result.permissionsUpdate.size(),
+                         result.permissionsNoChange.size());
         }
         return result;
     }

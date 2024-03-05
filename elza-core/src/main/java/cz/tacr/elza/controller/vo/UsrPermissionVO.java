@@ -166,7 +166,6 @@ public class UsrPermissionVO {
             Validate.notNull(fund.getId());
 
             entity.setFundId(fund.getId());
-            // entity.setFund(fund.createEntity());
         }
         entity.setPermission(permission);
         if (scope != null) {
