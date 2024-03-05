@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.repository.HsearchOutboxEventRepository;
 import cz.tacr.elza.service.IndexWorkService;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
@@ -17,10 +18,13 @@ public class SearchControllerTest extends AbstractControllerTest {
     @Autowired
     IndexWorkService indexWorkService;
 
+    @Autowired
+    HsearchOutboxEventRepository hsearchOutboxEvent; 
+
     @Test
     public void searchEntityTest() throws ApiException, InterruptedException {
-        // wait for ending lucene indexing
-        while (indexWorkService.isActive()) {
+        // wait for ending hibernate search indexing
+        while (hsearchOutboxEvent.count() > 0) {
             Thread.sleep(100);
         }
 

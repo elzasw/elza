@@ -17,6 +17,7 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_250;
  */
 @Entity(name = "sys_index_work")
 @Table
+@Deprecated
 public class SysIndexWork {
 
     @Id

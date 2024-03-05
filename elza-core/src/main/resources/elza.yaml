@@ -88,6 +88,8 @@ spring:
       net.sf.ehcache.configurationResourceName: /ehcache.xml
       hibernate:
         search:
+          coordination:
+            strategy: outbox-polling
           backend:
             analysis:
               configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer

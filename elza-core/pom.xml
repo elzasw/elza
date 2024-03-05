@@ -107,12 +107,22 @@
 			<artifactId>hibernate-search-mapper-orm</artifactId>
 			<version>${hibernate.search.version}</version>
         </dependency>
+		<dependency>
+		   	<groupId>org.hibernate.search</groupId>
+		   	<artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
+		   	<version>${hibernate.search.version}</version>
+		</dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-backend-lucene</artifactId>
             <version>${hibernate.search.version}</version>
         </dependency>
-        
+		<dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-backward-codecs</artifactId>
+		    <version>9.10.0</version>
+		</dependency>
+
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>

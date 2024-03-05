@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.domain.SysIndexWork;
@@ -21,6 +20,7 @@ import cz.tacr.elza.repository.IndexWorkRepository;
 
 @Service
 @Transactional(readOnly = true)
+@Deprecated
 public class IndexWorkService {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexWorkService.class);
