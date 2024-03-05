@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.SysIndexWork;
 
 @Repository
+@Deprecated
 public interface IndexWorkRepository extends JpaRepository<SysIndexWork, Long> {
 
     @Query("select w from sys_index_work w where w.startTime is null")

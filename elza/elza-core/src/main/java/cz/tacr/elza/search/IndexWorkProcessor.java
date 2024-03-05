@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.*;
  * Listener nad tabulkou {@code sys_index_work} - zpracovava frontu pozadavku na preindexovani entit v Hibernate Search.
  */
 @Component
+@Deprecated
 public class IndexWorkProcessor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexWorkProcessor.class);

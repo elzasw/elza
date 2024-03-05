@@ -51,5 +51,43 @@
     <changeSet id="20231219133600" author="sergey.iryupin">
     	<sql>UPDATE db_hibernate_sequences SET next_val = next_val + 20 WHERE next_val &lt; 20</sql>
     </changeSet>-->
+    <changeSet id="20240304112900" author="sergey.iryupin">
+    	<createTable tableName="hsearch_agent">
+    		<column name="assigned_shard_index" type="int" />
+    		<column name="total_shard_count" type="int" />
+            <column name="expiration" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="varchar(255)" />
+            <column name="type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload" type="bytea" />
+    	</createTable>
+    	<createTable tableName="hsearch_outbox_event">
+    		<column name="entity_id_hash" type="int" />
+    		<column name="retries" type="int" />
+            <column name="process_after" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="varchar(256)" />
+            <column name="entity_name" type="varchar(256)" />
+            <column name="status" type="varchar(256)" />
+            <column name="tenant_id" type="varchar(255)" />
+            <column name="payload" type="bytea" />
+    	</createTable>
+    </changeSet>
 
 </databaseChangeLog>

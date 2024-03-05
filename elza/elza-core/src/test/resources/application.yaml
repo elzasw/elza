@@ -30,6 +30,8 @@ spring:
           use_second_level_cache: true
           region.factory_class: jcache
         search:
+          coordination:
+            strategy: outbox-polling
           backend:
             analysis:
               configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer
