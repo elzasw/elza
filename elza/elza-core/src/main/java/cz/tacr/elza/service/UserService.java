@@ -214,7 +214,7 @@ public class UserService {
                     // check if same exists in unchanged
                     UsrPermission existingPerm = permissionExists(permAdd, permissionsNoChange);
                     if (existingPerm != null) {
-                        logger.debug("Optimize permissions: Found same existing permission, type: {}, id: ",
+                        logger.debug("Optimize permissions: Found same existing permission, type: {}, id: {}",
                                      permAdd.getPermission(), existingPerm.getPermissionId());
                         permissionsAdd.remove(permAdd);
                         modified = true;
@@ -223,7 +223,7 @@ public class UserService {
                     // check if same exists in changed
                     existingPerm = permissionExists(permAdd, permissionsUpdate);
                     if (existingPerm != null) {
-                        logger.debug("Optimize permissions: Found same permission marked for update, type: {}, id: ",
+                        logger.debug("Optimize permissions: Found same permission marked for update, type: {}, id: {}",
                                      permAdd.getPermission(), existingPerm.getPermissionId());
                         permissionsAdd.remove(permAdd);
                         modified = true;
@@ -232,7 +232,7 @@ public class UserService {
                     // check if same exists in deleted
                     UsrPermission permDelete = permissionExists(permAdd, permissionsDelete);
                     if (permDelete != null) {
-                        logger.debug("Optimize permissions: Found same permission marked for delete, type: {}, id: ",
+                        logger.debug("Optimize permissions: Found same permission marked for delete, type: {}, id: {}",
                                      permAdd.getPermission(), permDelete.getPermissionId());
                         // remove both permissions
                         permissionsAdd.remove(permAdd);
