@@ -259,6 +259,11 @@
                 <type code="ZP2015_PACKET_NUMBER" width="1"/>
                 <type code="ZP2015_PACKET_POSTFIX" width="1"/>
                 <type code="ZP2015_PACKET_METRAGE" width="1"/>
+                <type code="ZP2015_PACKET_LOCATION" width="1"/>
+                <type code="ZP2015_PACKET_DEPOSITORY" width="1"/>
+                <type code="ZP2015_PACKET_ROW" width="1"/>
+                <type code="ZP2015_PACKET_COLUMN" width="1"/>
+                <type code="ZP2015_PACKET_SHELF" width="1"/>
             </group>
             <!-- Items from CAM pro Původce -->
             <group code="11_CAM">

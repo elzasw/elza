@@ -18,7 +18,8 @@ no-loop
 when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
-        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX", "ZP2015_PACKET_METRAGE"))
+        "ZP2015_PACKET_NUMBER", "ZP2015_PACKET_POSTFIX", "ZP2015_PACKET_METRAGE",
+        "ZP2015_PACKET_LOCATION", "ZP2015_PACKET_DEPOSITORY", "ZP2015_PACKET_ROW", "ZP2015_PACKET_COLUMN", "ZP2015_PACKET_SHELF"))
 then
   $itemType.setRepeatable(false);
 end
@@ -27,7 +28,8 @@ rule "Možné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_PREFIX", "ZP2015_PACKET_POSTFIX", 
-                                        "ZP2015_PACKET_METRAGE"))
+                                        "ZP2015_PACKET_METRAGE", 
+                                        "ZP2015_PACKET_LOCATION", "ZP2015_PACKET_DEPOSITORY", "ZP2015_PACKET_ROW", "ZP2015_PACKET_COLUMN", "ZP2015_PACKET_SHELF"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
