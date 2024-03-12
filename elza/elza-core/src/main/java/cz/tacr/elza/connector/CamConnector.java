@@ -185,6 +185,10 @@ public class CamConnector {
     }
 
     private <T> T unmarshal(final Class<T> classObject, final ApiResponse<File> apiResponse) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Unmarshalling received data ({}), statusCode: {}", classObject.getName(),
+                         apiResponse.getStatusCode());
+        }
         try (InputStream in = new FileInputStream(apiResponse.getData())) {
             JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
