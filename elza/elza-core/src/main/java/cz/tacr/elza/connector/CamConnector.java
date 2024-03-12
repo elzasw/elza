@@ -103,12 +103,13 @@ public class CamConnector {
 				encoded = Files.readAllBytes(xmlFile.toPath());
 				String data = new String(encoded, "utf-8");
                 if (apikeyId != null) {
-                    logger.debug("Sending data to {} as {}: {}", externalSystem.getName(), apikeyId, data);
+                    logger.debug("postNewBatch: Sending data to {} as {}: {}", externalSystem.getName(), apikeyId,
+                                 data);
                 } else {
-                    logger.debug("Sending data to {}: {}", externalSystem.getName(), data);
+                    logger.debug("postNewBatch: Sending data to {}: {}", externalSystem.getName(), data);
                 }
 			} catch (IOException e) {
-				logger.error("Failed to log data", e);
+                logger.error("postNewBatch: Failed to log data", e);
 			}        	
         }
         try {
