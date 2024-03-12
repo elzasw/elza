@@ -170,7 +170,7 @@ public class CamConnector {
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
         	// if apikeyId & apikeyValue define - use its
         	if (apikeyId != null && apikeyValue != null) {
-        		return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyId);
+                return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyValue);
         	}
         	// use cache instanceMap
             CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
