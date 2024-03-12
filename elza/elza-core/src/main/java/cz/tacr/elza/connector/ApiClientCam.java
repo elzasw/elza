@@ -80,7 +80,9 @@ public class ApiClientCam extends ApiClient {
                 String signature = computeHmac(apiValue, dataToHash);
                 if (log.isDebugEnabled()) {
                     log.debug("Data to hash: {}", dataToHash);
-                    log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}): {}", apiKey, signature);
+                            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
+                                      apiValue,
+                                      signature);
                 }
                 String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
                 Request newRequest = request.newBuilder()
