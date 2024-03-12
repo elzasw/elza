@@ -891,8 +891,10 @@ public class CamService {
         Integer userId = extSyncsQueueItem.getUserId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
         UsrUser user = userService.getUserInternal(userId);
-        // check if sending user has some extra privileges
 
+        // check if sending user has some extra privileges
+        log.debug("Upload to: {}(id: {}), user: {}(id: {})", externalSystem.getName(), externalSystemId,
+                  (user != null) ? user.getUsername() : null, userId);
         List<SysExternalSystemProperty> extSysProperties;
         String apikeyId = null, apikeyValue = null;
         if (user != null) {
@@ -900,9 +902,13 @@ public class CamService {
         	for (SysExternalSystemProperty property : extSysProperties) {
         		if (property.getName().equals(CamConnector.APIKEY_ID)) {
         			apikeyId = property.getValue();
+                    log.debug("Found extra APIKEY_ID (propertyId: {}): {}", property.getExternalSystemPropertyId(),
+                              apikeyId);
         		}
         		if (property.getName().equals(CamConnector.APIKEY_VALUE)) {
         			apikeyValue = property.getValue();
+                    log.debug("Found extra APIKEY_VALUE (propertyId: {}): ****",
+                              property.getExternalSystemPropertyId());
         		}
         	}
         }

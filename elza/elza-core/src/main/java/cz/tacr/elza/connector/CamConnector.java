@@ -102,13 +102,17 @@ public class CamConnector {
 			try {
 				encoded = Files.readAllBytes(xmlFile.toPath());
 				String data = new String(encoded, "utf-8");
-				logger.debug("Sending data: {}", data);
+                if (apikeyId != null) {
+                    logger.debug("Sending data to {} as {}: {}", externalSystem.getName(), apikeyId, data);
+                } else {
+                    logger.debug("Sending data to {}: {}", externalSystem.getName(), data);
+                }
 			} catch (IOException e) {
 				logger.error("Failed to log data", e);
 			}        	
         }
         try {
-            ApiResponse<File> fileApiResponse = get(externalSystem)
+            ApiResponse<File> fileApiResponse = get(externalSystem, apikeyId, apikeyValue)
                 .getBatchUpdatesApi()
                 .postNewBatchWithHttpInfo(xmlFile);
             return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
