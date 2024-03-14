@@ -8,9 +8,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
-//import org.hibernate.search.MassIndexer; TODO hibernate search 6
-//import org.hibernate.search.jpa.FullTextEntityManager;
-//import org.hibernate.search.jpa.Search;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+
+import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.hibernate.search.mapper.pojo.massindexing.MassIndexingMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,9 +21,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
-//import cz.tacr.elza.search.IndexerProgressMonitor; TODO hibernate search 6
 
 /**
  *
@@ -38,8 +40,8 @@ public class AdminService {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-//    @Autowired
-//    private IndexerProgressMonitor indexerProgressMonitor; TODO hibernate search 6
+    @Autowired
+    private MassIndexingMonitor massIndexingMonitor;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -57,18 +59,19 @@ public class AdminService {
      *
      * Volání s časovačem, ve výchozím stavu: 0 0 4 ? * SAT
      * co znamená: každou sobotu ve 04:00
+     * @throws InterruptedException 
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {
-//        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
-//
-//        if (isIndexingRunning()) {
-//            return;
-//        }
-//
-//        MassIndexer createIndexer = fullTextEntityManager.createIndexer();
-//        createIndexer.progressMonitor(indexerProgressMonitor);
-//        indexerStatus = createIndexer.start(); TODO hibernate search 6
+    	SearchSession searchSession = Search.session(entityManager);
+
+    	if (isIndexingRunning()) {
+    		return;
+    	}
+
+    	MassIndexer massIndexer = searchSession.massIndexer(ArrDescItem.class); // TODO Not only ArrDescItem.class
+    	massIndexer.monitor(massIndexingMonitor);
+    	indexerStatus = massIndexer.start().toCompletableFuture();
     }
 
     /**
