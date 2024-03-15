@@ -14,9 +14,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
@@ -807,9 +807,15 @@ public class ExternalSystemService {
 
 	public List<ExtSystemProperty> findAllProperties(Integer extSystemId, Integer userId) {
 		// pokud userId == null, získáme hodnoty pro všechny uživatele
-		List<SysExternalSystemProperty> properties = userId == null? 
+        List<SysExternalSystemProperty> properties;
+        if (extSystemId == null) {
+            properties = userId == null ? sysExtSysPropertyRepository.findAll()
+                    : sysExtSysPropertyRepository.findByUserId(userId);
+        } else {
+            properties = userId == null ?
 				sysExtSysPropertyRepository.findByExternalSystemId(extSystemId)
 				: sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+        }
 		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
 		properties.forEach(i -> {
 			ExtSystemProperty p = new ExtSystemProperty();
@@ -822,7 +828,8 @@ public class ExternalSystemService {
 		return result;
 	}
 
-	public void addProperty(ApExternalSystem extSystem, UsrUser user, ExtSystemProperty extSystemProperty) {
+    public SysExternalSystemProperty addProperty(ApExternalSystem extSystem, UsrUser user,
+                                                 ExtSystemProperty extSystemProperty) {
 		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
 		SysExternalSystemProperty property = null;
 		for (SysExternalSystemProperty p : properties) {
@@ -838,10 +845,16 @@ public class ExternalSystemService {
 			property.setName(extSystemProperty.getName());
 		}
 		property.setValue(extSystemProperty.getValue());
-		sysExtSysPropertyRepository.save(property);
+        return sysExtSysPropertyRepository.save(property);
 	}
 
 	public void deleteProperty(Integer extSysPropertyId) {
 		sysExtSysPropertyRepository.deleteById(extSysPropertyId);
 	}
+
+    public SysExternalSystemProperty getProperty(Integer extSysPropertyId) {
+        return sysExtSysPropertyRepository.findById(extSysPropertyId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "SysExternalSystemProperty not found, id: " + extSysPropertyId));
+    }
  }
