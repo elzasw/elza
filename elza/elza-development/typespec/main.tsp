@@ -447,10 +447,10 @@ namespace ElzaAPI.ExternalSystem {
     /**
      * Return list of all properties of external system
      */
-    @route("{extSystemId}/properties")
+    @route("property")
     op allProperties(
         /** external system id */
-        @path extSystemId: integer,
+        @query extSystemId?: integer,
         /** user id */
         @query userId?: integer
     ): ExtSystemProperty[];
@@ -458,10 +458,10 @@ namespace ElzaAPI.ExternalSystem {
     /**
      * Add one property of external system
      */
-    @route("{extSystemId}/property")
+    @route("property")
     @post op addProperty(
         /** external system id */
-        @path extSystemId: integer,
+        @query extSystemId: integer,
         /** request body */
         @body body: ExtSystemProperty
     ): {

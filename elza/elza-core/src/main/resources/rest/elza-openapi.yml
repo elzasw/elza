@@ -757,6 +757,62 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /extsystem/property:
+    get:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_allProperties
+      description: Return list of all properties of external system
+      parameters:
+        - name: extSystemId
+          in: query
+          required: false
+          description: external system id
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          required: false
+          description: user id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExtSystemProperty'
+    post:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_addProperty
+      description: Add one property of external system
+      parameters:
+        - name: extSystemId
+          in: query
+          required: true
+          description: external system id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: request body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtSystemProperty'
   /extsystem/property/{extSysPropertyId}:
     delete:
       tags:
@@ -779,63 +835,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /extsystem/{extSystemId}/properties:
-    get:
-      tags:
-        - externalsystems
-      operationId: ExternalSystem_allProperties
-      description: Return list of all properties of external system
-      parameters:
-        - name: extSystemId
-          in: path
-          required: true
-          description: external system id
-          schema:
-            type: integer
-        - name: userId
-          in: query
-          required: false
-          description: user id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExtSystemProperty'
-  /extsystem/{extSystemId}/property:
-    post:
-      tags:
-        - externalsystems
-      operationId: ExternalSystem_addProperty
-      description: Add one property of external system
-      parameters:
-        - name: extSystemId
-          in: path
-          required: true
-          description: external system id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      requestBody:
-        description: request body
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExtSystemProperty'
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
