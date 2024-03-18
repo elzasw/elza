@@ -36,7 +36,7 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
     @Override
 	@Transactional
-	public ResponseEntity<List<ExtSystemProperty>> externalSystemAllProperties(Integer extSystemId, @Valid Integer userId) {
+    public ResponseEntity<List<ExtSystemProperty>> externalSystemAllProperties(Integer extSystemId, Integer userId) {
 	    
 	    UserDetail loggedDetail = userService.getLoggedUserDetail();
 
