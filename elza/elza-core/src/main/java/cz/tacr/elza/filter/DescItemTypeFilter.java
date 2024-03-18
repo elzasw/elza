@@ -11,6 +11,10 @@ import java.util.Set;
 
 import jakarta.persistence.EntityManager;
 import org.apache.lucene.search.Query;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 //import org.hibernate.search.jpa.FullTextEntityManager; TODO hibernate search 6
 //import org.hibernate.search.jpa.FullTextQuery;
 //import org.hibernate.search.query.dsl.BooleanJunction;
@@ -67,43 +71,44 @@ public class DescItemTypeFilter {
     /**
      * Vyhodnotí podmínky.
      *
-     * @param fullTextEntityManager
-     * @param queryBuilder
+     * @param searchSession
      * @param fundId
      * @param entityManager
      * @param lockChangeId
      *
      * @return id nodů se seznamem id hodnot
      */
-//    public Map<Integer, Set<Integer>> resolveConditions(final FullTextEntityManager fullTextEntityManager, final QueryBuilder queryBuilder, TODO hibernate search 6
-//                                                        final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
-//        Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-//        Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-//        Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
-//
-//        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
-//    }
-//
-//    private Map<Integer, Set<Integer>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, final FullTextEntityManager fullTextEntityManager,
-//            final QueryBuilder queryBuilder, final Integer fundId, final EntityManager entityManager, final Integer lockChangeId) {
-//        FilterQueries filterQueries = createFilterQuries(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId);
-//
-//        Map<Integer, Set<Integer>> nodeIdToDescItemIds = processLuceneQueries(fullTextEntityManager, queryBuilder,
-//                fundId, filterQueries.getLuceneQueries());
-//
-//        Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
-//
-//        return joinQueriesResultsOr(nodeIdToDescItemIds, nodeIds);
-//    }
+	public Map<Integer, Set<Integer>> resolveConditions(final SearchSession searchSession, 
+														final Integer fundId, 
+														final Integer lockChangeId) {
+        Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, searchSession, fundId, lockChangeId);
+        Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, searchSession, fundId, lockChangeId);
+        Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, searchSession, fundId, lockChangeId);
 
-    /**
+        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
+    }
+
+    private Map<Integer, Set<Integer>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, 
+    															final SearchSession searchSession,
+            													final Integer fundId, 
+            													final Integer lockChangeId) {
+        FilterQueries filterQueries = createFilterQueries(searchSession, sectionConditions, fundId, lockChangeId);
+
+        Map<Integer, Set<Integer>> nodeIdToDescItemIds = processLuceneQueries(searchSession, fundId, filterQueries.getLucenePredicates());
+
+        Set<Integer> nodeIds = processHibernateQueries(filterQueries.getHibernateQueries());
+
+        return joinQueriesResultsOr(nodeIdToDescItemIds, nodeIds);
+    }
+
+	/**
      * Spojí výsledky z obou typů dotazů.
      *
      * @param nodeIdToDescItemIds id nodů se seznamem id hodnot z lucene queries
      * @param nodeIds id nodů z hibernate queries
      */
     private Map<Integer, Set<Integer>> joinQueriesResultsOr(final Map<Integer, Set<Integer>> nodeIdToDescItemIds,
-            final Set<Integer> nodeIds) {
+    														final Set<Integer> nodeIds) {
         if (nodeIdToDescItemIds == null && nodeIds == null) {
             return null;
         }
@@ -201,6 +206,39 @@ public class DescItemTypeFilter {
         return nodeIds;
     }
 
+    /**
+     * Najde id nodů a k nim seznam hodnot atributů.
+     * 
+     * @param searchSession
+     * @param fundId
+     * @param lucenePredicates
+     * @return
+     */
+    private Map<Integer, Set<Integer>> processLuceneQueries(final SearchSession session, 
+    														final Integer fundId,
+															final List<SearchPredicate> lucenePredicates) {
+    	Map<Integer, Set<Integer>> nodeIdToDescItemIds = null;
+    	if (!lucenePredicates.isEmpty()) {
+        	SearchPredicateFactory factory = session.scope(ArrDescItem.class).predicate();
+    		BooleanPredicateClausesStep<?> bool = factory.bool();
+
+    		lucenePredicates.forEach(p -> bool.should(p));
+
+    		List<ArrDescItem> descItems = session.search(ArrDescItem.class)
+    				.where(bool.toPredicate())
+    				.fetchAllHits();
+
+    		nodeIdToDescItemIds = new HashMap<>(descItems.size());
+    		for (ArrDescItem descItem : descItems) {
+              Integer nodeId = descItem.getNodeId();
+              Integer descItemId = descItem.getItemId();
+              Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
+              descItemIds.add(descItemId);
+    		}
+    	}
+		return nodeIdToDescItemIds;
+	}
+
 //    /**
 //     * Najde id nodů a k nim seznam hodnot atributů. TODO hibernate search 6
 //     *
@@ -234,42 +272,50 @@ public class DescItemTypeFilter {
 //        }
 //        return nodeIdToDescItemIds;
 //    }
-//
-//    /**
-//     * Vytvoří VO ve kterém budou rozdělené lucene a hibernate dotazy.
-//     * @param sectionConditions
-//     */
-//    private FilterQueries createFilterQuries(final List<DescItemCondition> sectionConditions, final QueryBuilder queryBuilder, final EntityManager entityManager, final Integer fundId, final Integer lockChangeId) {
-//        List<Query> luceneQueries = new LinkedList<>();
-//        List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
-//        FilterQueries filterQueries = new FilterQueries(luceneQueries, hibernateQueries);
-//
-//        if (sortConditions(sectionConditions, queryBuilder, entityManager, fundId, lockChangeId, luceneQueries, hibernateQueries)) {
-//            return new FilterQueries(Collections.emptyList(), Collections.emptyList());
-//        }
-//
-//        return filterQueries;
-//    }
-//
-//    /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
-//    private boolean sortConditions(final List<DescItemCondition> descItemConditions, final QueryBuilder queryBuilder, final EntityManager entityManager,
-//            final Integer fundId, final Integer lockChangeId, final List<Query> luceneQueries,
-//            final List<jakarta.persistence.Query> hibernateQueries) {
-//        for (DescItemCondition condition : descItemConditions) {
-//            if (condition instanceof LuceneDescItemCondition) {
-//                LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
-//                luceneQueries.add(luceneCondition.createLuceneQuery(queryBuilder));
-//            } else if (condition instanceof SelectsNothingCondition) {
-//                return true;
-//            } else {
-//                HibernateDescItemCondition hibernateCondition = (HibernateDescItemCondition) condition;
-//                hibernateQueries.add(hibernateCondition.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
-//            }
-//        }
-//
-//        return false;
-//    }
-//
+
+    /**
+     * Vytvoří VO ve kterém budou rozdělené lucene a hibernate dotazy.
+     * @param sectionConditions
+     */
+    private FilterQueries createFilterQueries(final SearchSession searchSession,
+    									     final List<DescItemCondition> sectionConditions, 
+    										 final Integer fundId, 
+    										 final Integer lockChangeId) {
+        List<SearchPredicate> searchPredicates = new LinkedList<>();
+        List<jakarta.persistence.Query> hibernateQueries = new LinkedList<>();
+        FilterQueries filterQueries = new FilterQueries(searchPredicates, hibernateQueries);
+    	SearchPredicateFactory factory = searchSession.scope(ArrDescItem.class).predicate();
+
+        if (sortConditions(sectionConditions, factory, fundId, lockChangeId, searchPredicates, hibernateQueries)) {
+            return new FilterQueries(Collections.emptyList(), Collections.emptyList());
+        }
+
+        return filterQueries;
+    }
+
+    /** @return příznak zda je v podmínkách podmínka typu SelectsNothingCondition */
+    private boolean sortConditions(final List<DescItemCondition> descItemConditions,
+    							   final SearchPredicateFactory factory,
+            					   final Integer fundId, 
+            					   final Integer lockChangeId, 
+            					   final List<SearchPredicate> searchPredicates,
+            					   final List<jakarta.persistence.Query> hibernateQueries) {
+    	for (DescItemCondition condition : descItemConditions) {
+            if (condition instanceof LuceneDescItemCondition) {
+                LuceneDescItemCondition luceneCondition = (LuceneDescItemCondition) condition;
+                searchPredicates.add(luceneCondition.createSearchPredicate(factory));
+                //luceneQueries.add(luceneCondition.createLuceneQuery(queryBuilder));
+            } else if (condition instanceof SelectsNothingCondition) {
+                return true;
+            } else {
+                HibernateDescItemCondition hibernateCondition = (HibernateDescItemCondition) condition;
+                //hibernateQueries.add(hibernateCondition.createHibernateQuery(entityManager, fundId, descItemType.getItemTypeId(), lockChangeId));
+            }
+        }
+
+        return false;
+    }
+
 //    /**
 //     * Vytvoří hibernate jpa query z lucene query.
 //     *
