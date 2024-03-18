@@ -3,6 +3,8 @@ package cz.tacr.elza.filter.condition;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Podmínka na výběr podle hodnot které byly vybrány.
@@ -28,6 +30,12 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
         this.values = values;
         this.attributeName = attributeName;
     }
+
+	@Override
+	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 //    @Override TODO hibernate search 6
 //    public Query createLuceneQuery(final QueryBuilder queryBuilder) {

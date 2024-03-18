@@ -38,6 +38,8 @@ import org.hibernate.Session;
 //import org.hibernate.search.query.dsl.BooleanJunction;
 //import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.internal.EmptyScrollableResults;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -102,11 +104,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
 
     @Override //TODO hibernate search 6
-    public Set<Integer> findNodeIdsByFilters(ArrFundVersion version, List<DescItemTypeFilter> descItemFilters) {
-        return new HashSet<>();
-    }
-
-    @Override //TODO hibernate search 6
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(List<SearchParam> searchParams, Integer fundId, Integer lockChangeId) {
         return new HashSet<>();
     }
@@ -121,10 +118,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 		ScrollableResults<Integer> result = session.createQuery(hql, Integer.class).setCacheMode(CacheMode.IGNORE).scroll(ScrollMode.FORWARD_ONLY);
 
 		return result;
-//      EmptyScrollableResults result = new EmptyScrollableResults();
     }
 
-//    private FullTextEntityManager fullTextEntityManager = null; TODO hibernate search 6
+//    private FullTextEntityManager fullTextEntityManager = null; //TODO hibernate search 6
 //
 //    private FullTextEntityManager getFullTextEntityManager() {
 //        if (fullTextEntityManager == null) {
@@ -132,7 +128,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        }
 //        return fullTextEntityManager;
 //    }
-//
+
+    private SearchSession searchSession = null; //TODO hibernate search 6
+
+    // getFullTextEntityManager() -> getSearchSession();
+    private SearchSession getSearchSession() {
+		if (searchSession == null) {
+			searchSession = Search.session(entityManager);
+    	}
+    	return searchSession;
+    }
+
 //    @Override
 //    public List<ArrNode> findNodesByDirection(final ArrNode node,
 //                                              final ArrFundVersion version,
@@ -761,31 +767,31 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 //    }
 //
-//    @Override
-//    public Set<Integer> findNodeIdsByFilters(final ArrFundVersion version, final List<DescItemTypeFilter> filters) {
-//        Assert.notNull(version, "Verze AS musí být vyplněna");
-//        Assert.notEmpty(filters, "Musí být vyplněn alespoň jeden filter");
-//
-//        Integer fundId = version.getFund().getFundId();
-//        Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
-//
-//        Map<Integer, Set<Integer>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
-//        if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
-//            return Collections.emptySet();
-//        }
-//
-//        Set<Integer> nodeIds = new HashSet<>();
-//        Set<Integer> descItemIds = new HashSet<>();
-//        nodeIdToDescItemIds.forEach((nodeId, diIds) -> {
-//            if (CollectionUtils.isEmpty(diIds)) {
-//                nodeIds.add(nodeId);
-//            } else {
-//                descItemIds.addAll(diIds);
-//            }
-//        });
-//
-//        if (!descItemIds.isEmpty()) {
-//
+    @Override
+    public Set<Integer> findNodeIdsByFilters(final ArrFundVersion version, final List<DescItemTypeFilter> filters) {
+        Assert.notNull(version, "Verze AS musí být vyplněna");
+        Assert.notEmpty(filters, "Musí být vyplněn alespoň jeden filter");
+
+        Integer fundId = version.getFund().getFundId();
+        Integer lockChangeId = version.getLockChange() == null ? null : version.getLockChange().getChangeId();
+
+        Map<Integer, Set<Integer>> nodeIdToDescItemIds = findDescItemIdsByFilters(filters, fundId, lockChangeId);
+        if (nodeIdToDescItemIds == null || nodeIdToDescItemIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<Integer> nodeIds = new HashSet<>();
+        Set<Integer> descItemIds = new HashSet<>();
+        nodeIdToDescItemIds.forEach((nodeId, diIds) -> {
+            if (CollectionUtils.isEmpty(diIds)) {
+                nodeIds.add(nodeId);
+            } else {
+                descItemIds.addAll(diIds);
+            }
+        });
+
+        if (!descItemIds.isEmpty()) {
+
 //            FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 //
 //            Query descItemIdsQuery = createDescItemIdsQuery(descItemIds, ctx.getQueryBuilder());
@@ -793,47 +799,49 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
 //
 //            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(toList()));
-//        }
-//        return nodeIds;
-//    }
-//
-//    private Map<Integer, Set<Integer>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
-//        if (CollectionUtils.isEmpty(filters)) {
-//            return null;
-//        }
-//
-//        Map<Integer, Set<Integer>> allDescItemIds = null;
-//        for (DescItemTypeFilter filter : filters) {
-//            QueryBuilder queryBuilder = createQueryBuilder(ArrDescItem.class);
-//            Map<Integer, Set<Integer>> nodeIdToDescItemIds = filter.resolveConditions(getFullTextEntityManager(), queryBuilder, fundId, entityManager, lockChangeId);
-//
-//            if (allDescItemIds == null) {
-//                allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
-//            } else {
-//                Set<Integer> existingNodes = new HashSet<>(allDescItemIds.keySet());
-//                existingNodes.retainAll(nodeIdToDescItemIds.keySet());
-//
-//                Map<Integer, Set<Integer>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
-//                for (Integer nodeId : existingNodes) {
-//                    Set<Integer> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
-//                    Set<Integer> existingDescItemIds = allDescItemIds.get(nodeId);
-//
-//                    if (existingDescItemIds == null) {
-//                        updatedAllDescItemIds.put(nodeId, rowDescItemIds);
-//                    } else if (rowDescItemIds == null) {
-//                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
-//                    } else {
-//                        existingDescItemIds.addAll(rowDescItemIds);
-//                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
-//                    }
-//                }
-//                allDescItemIds = updatedAllDescItemIds;
-//            }
-//        }
-//
-//        return allDescItemIds;
-//    }
-//
+
+        	nodeIds.addAll(nodeIdToDescItemIds.keySet());
+
+        }
+        return nodeIds;
+	}
+
+    private Map<Integer, Set<Integer>> findDescItemIdsByFilters(final List<DescItemTypeFilter> filters, final Integer fundId, final Integer lockChangeId) {
+        if (CollectionUtils.isEmpty(filters)) {
+            return null;
+        }
+
+        Map<Integer, Set<Integer>> allDescItemIds = null;
+        for (DescItemTypeFilter filter : filters) {
+            Map<Integer, Set<Integer>> nodeIdToDescItemIds = filter.resolveConditions(getSearchSession(), fundId, lockChangeId);
+
+            if (allDescItemIds == null) {
+                allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
+            } else {
+                Set<Integer> existingNodes = new HashSet<>(allDescItemIds.keySet());
+                existingNodes.retainAll(nodeIdToDescItemIds.keySet());
+
+                Map<Integer, Set<Integer>> updatedAllDescItemIds = new HashMap<>(nodeIdToDescItemIds.size());
+                for (Integer nodeId : existingNodes) {
+                    Set<Integer> rowDescItemIds = nodeIdToDescItemIds.get(nodeId);
+                    Set<Integer> existingDescItemIds = allDescItemIds.get(nodeId);
+
+                    if (existingDescItemIds == null) {
+                        updatedAllDescItemIds.put(nodeId, rowDescItemIds);
+                    } else if (rowDescItemIds == null) {
+                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
+                    } else {
+                        existingDescItemIds.addAll(rowDescItemIds);
+                        updatedAllDescItemIds.put(nodeId, existingDescItemIds);
+                    }
+                }
+                allDescItemIds = updatedAllDescItemIds;
+            }
+        }
+
+        return allDescItemIds;
+    }
+
 //    private Query createDescItemIdsQuery(Collection<Integer> descItemIds, QueryBuilder queryBuilder) {
 //        try {
 //            // itemId jakozto ID field je v indexu ulozeny stringove, ale matching() v Hibernate Search nefunguje s hodnotami typu Integer
@@ -848,7 +856,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private class FullTextQueryContext<T> {
 
         private final Class<T> entityClass;
-//        private final QueryBuilder queryBuilder; TODO hibernate search 6
+        //private final QueryBuilder queryBuilder; //TODO hibernate search 6
 
         Integer offset;
         Integer pageSize;
