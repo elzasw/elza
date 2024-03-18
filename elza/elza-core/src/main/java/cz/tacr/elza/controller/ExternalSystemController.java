@@ -4,11 +4,14 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
@@ -20,6 +23,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -60,7 +64,8 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
 	@Override
 	@Transactional
-	public ResponseEntity<Void> externalSystemAddProperty(Integer extSystemId, @Valid ExtSystemProperty extSystemProperty) {
+    public ResponseEntity<Void> externalSystemAddProperty(@NotNull @ApiParam(value = "external system id", required = true) @Valid @RequestParam(value = "extSystemId", required = true) Integer extSystemId,
+                                                          @ApiParam(value = "request body", required = true) @Valid @RequestBody ExtSystemProperty extSystemProperty) {
         UserDetail loggedDetail = userService.getLoggedUserDetail();
 
         if (loggedDetail == null) {
