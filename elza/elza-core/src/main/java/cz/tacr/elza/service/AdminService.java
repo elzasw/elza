@@ -10,7 +10,6 @@ import jakarta.persistence.PersistenceContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
-
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.hibernate.search.mapper.pojo.massindexing.MassIndexingMonitor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +40,9 @@ public class AdminService {
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
-    private MassIndexingMonitor massIndexingMonitor;
-
-    @Autowired
     private ArrangementService arrangementService;
+
+    private MassIndexingMonitor massIndexingMonitor;
 
     private Future<?> indexerStatus;
 
@@ -63,12 +61,11 @@ public class AdminService {
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {
-    	SearchSession searchSession = Search.session(entityManager);
-
     	if (isIndexingRunning()) {
     		return;
     	}
 
+    	SearchSession searchSession = Search.session(entityManager);
     	MassIndexer massIndexer = searchSession.massIndexer(ArrDescItem.class); // TODO Not only ArrDescItem.class
     	massIndexer.monitor(massIndexingMonitor);
     	indexerStatus = massIndexer.start().toCompletableFuture();
