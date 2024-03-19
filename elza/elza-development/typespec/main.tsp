@@ -409,6 +409,8 @@ model ExtSystemProperty {
     id?: integer;
     /** user id */
     userId?: integer;
+    /** external system id */
+    extSystemId: integer,
     /** name of property */
     name: string;
     /** value of property */
@@ -456,14 +458,12 @@ namespace ElzaAPI.ExternalSystem {
     ): ExtSystemProperty[];
 
     /**
-     * Add one property of external system
+     * Store one or more property of external system
      */
     @route("property")
-    @post op addProperty(
-        /** external system id */
-        @query extSystemId: integer,
+    @post op storeProperties(
         /** request body */
-        @body body: ExtSystemProperty
+        @body body: ExtSystemProperty[]
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
@@ -476,10 +476,10 @@ namespace ElzaAPI.ExternalSystem {
     /**
      * Delete one property of external system
      */
-    @route("property/{extSysPropertyId}")
-    @delete op deleteProperty(
+    @route("property")
+    @delete op deleteProperties(
         /** external system property id */
-        @path extSysPropertyId: integer
+        @body extSysPropertyId: integer[]
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;

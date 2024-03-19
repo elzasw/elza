@@ -788,15 +788,9 @@ paths:
     post:
       tags:
         - externalsystems
-      operationId: ExternalSystem_addProperty
-      description: Add one property of external system
-      parameters:
-        - name: extSystemId
-          in: query
-          required: true
-          description: external system id
-          schema:
-            type: integer
+      operationId: ExternalSystem_storeProperties
+      description: Store one or more property of external system
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -812,20 +806,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExtSystemProperty'
-  /extsystem/property/{extSysPropertyId}:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExtSystemProperty'
     delete:
       tags:
         - externalsystems
-      operationId: ExternalSystem_deleteProperty
+      operationId: ExternalSystem_deleteProperties
       description: Delete one property of external system
-      parameters:
-        - name: extSysPropertyId
-          in: path
-          required: true
-          description: external system property id
-          schema:
-            type: integer
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -835,6 +824,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: external system property id
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
@@ -1245,6 +1243,7 @@ components:
     ExtSystemProperty:
       type: object
       required:
+        - extSystemId
         - name
         - value
       properties:
@@ -1254,6 +1253,9 @@ components:
         userId:
           type: integer
           description: user id
+        extSystemId:
+          type: integer
+          description: external system id
         name:
           type: string
           description: name of property
