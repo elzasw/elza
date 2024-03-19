@@ -819,7 +819,7 @@ public class ExternalSystemService {
 		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
 		properties.forEach(i -> {
 			ExtSystemProperty p = new ExtSystemProperty();
-			p.setId(i.getExternalSystemId());
+            p.setId(i.getExternalSystemPropertyId());
 			p.setUserId(i.getUserId());
 			p.setName(i.getName());
 			p.setValue(i.getValue());
@@ -828,7 +828,15 @@ public class ExternalSystemService {
 		return result;
 	}
 
-    public SysExternalSystemProperty addProperty(ApExternalSystem extSystem, UsrUser user,
+    /**
+     * Add or update property
+     * 
+     * @param extSystem
+     * @param user
+     * @param extSystemProperty
+     * @return
+     */
+    public SysExternalSystemProperty storeProperty(ApExternalSystem extSystem, UsrUser user,
                                                  ExtSystemProperty extSystemProperty) {
 		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
 		SysExternalSystemProperty property = null;
