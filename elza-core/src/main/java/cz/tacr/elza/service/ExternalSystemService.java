@@ -821,6 +821,7 @@ public class ExternalSystemService {
 			ExtSystemProperty p = new ExtSystemProperty();
             p.setId(i.getExternalSystemPropertyId());
 			p.setUserId(i.getUserId());
+            p.setExtSystemId(i.getExternalSystemId());
 			p.setName(i.getName());
 			p.setValue(i.getValue());
 			result.add(p);
