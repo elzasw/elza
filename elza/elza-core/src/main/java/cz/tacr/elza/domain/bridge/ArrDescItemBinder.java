@@ -6,8 +6,8 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.SPECIFICATION_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
-import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
 
 import java.util.HashMap;
@@ -41,6 +41,8 @@ public class ArrDescItemBinder implements TypeBinder {
 
         fields.put(FULLTEXT_ATT, createAnalyzedField(FULLTEXT_ATT));
 
+        createIntegerField(INTGER_ATT);
+
         context.bridge(ArrDescItem.class, new ArrDescItemBridge(fields));
     }
 
@@ -54,6 +56,13 @@ public class ArrDescItemBinder implements TypeBinder {
     private IndexFieldReference<String> createNotAnalyzedField(String name) {
     	return context.indexSchemaElement()
         		.field(name, f -> f.asString())
+        		.multiValued()
+        		.toReference();
+    }
+
+    private IndexFieldReference<Integer> createIntegerField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asInteger())
         		.multiValued()
         		.toReference();
     }

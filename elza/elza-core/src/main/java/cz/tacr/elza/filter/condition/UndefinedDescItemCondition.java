@@ -1,22 +1,23 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
-import org.springframework.util.Assert;
-
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 
 /**
  * Má vyplněnu nějakou hodnotu.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class UndefinedDescItemCondition implements HibernateDescItemCondition {
 
     @Override
-    public jakarta.persistence.Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId,
-                                                        final Integer lockChangeId) {
+    public Query createHibernateQuery(final EntityManager entityManager, 
+    								  final Integer fundId, 
+    								  final Integer descItemTypeId,
+    								  final Integer lockChangeId) {
         StringBuffer sb = new StringBuffer()
                 .append("select distinct n.node_id ") // zajímají nás id nodů
                 .append("from arr_node n ")
@@ -31,7 +32,7 @@ public class UndefinedDescItemCondition implements HibernateDescItemCondition {
             sb.append("and l.create_change_id < :lockChangeId and (l.delete_change_id is null or l.delete_change_id > :lockChangeId) "); // v uzavřené verzi
         }
 
-        jakarta.persistence.Query query = entityManager.createNativeQuery(sb.toString());
+        Query query = entityManager.createNativeQuery(sb.toString());
         if (lockChangeId != null) {
             query.setParameter("lockChangeId", lockChangeId);
         }

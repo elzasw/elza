@@ -3,15 +3,13 @@ package cz.tacr.elza.filter.condition;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
-//import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
-//import org.springframework.util.Assert;
-
 /**
- * Menší nebo rovno než.
+ * Filtr pro podmínku menší nebo rovno.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class LeDescItemCondition<T> extends AbstractDescItemConditionWithValue<T> {
 
@@ -21,14 +19,8 @@ public class LeDescItemCondition<T> extends AbstractDescItemConditionWithValue<T
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
+		return factory.bool()
+				.should(factory.range().field(getAttributeName()).atMost(getValue()))
+				.toPredicate();
 	}
-
-//    @Override
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) { TODO hibernate search 6
-//        Assert.notNull(queryBuilder);
-//
-//        return queryBuilder.range().onField(getAttributeName()).below(getValue()).createQuery();
-//    }
 }

@@ -2,14 +2,16 @@ package cz.tacr.elza.filter.condition;
 
 import java.util.List;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Podmínka na výběr podle specifikací které nebyly vybrány.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 29. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class UnselectedSpecificationsDescItemEnumCondition extends SelectedSpecificationsDescItemEnumCondition {
 
@@ -23,10 +25,10 @@ public class UnselectedSpecificationsDescItemEnumCondition extends SelectedSpeci
        super(values, attributeName);
    }
 
-//   @Override  //TODO hibernate search 6
-//   public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-//       Query query = super.createLuceneQuery(queryBuilder);
-//
-//       return queryBuilder.bool().must(query).not().createQuery();
-//   }
+	@Override
+	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
+		SearchPredicate specs = super.createSearchPredicate(factory);
+
+		return factory.bool().mustNot(specs).toPredicate();
+	}
 }
