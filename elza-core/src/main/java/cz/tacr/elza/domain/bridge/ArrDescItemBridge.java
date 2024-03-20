@@ -7,6 +7,7 @@ import static cz.tacr.elza.domain.ArrDescItem.SPECIFICATION_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
 
 import java.util.Map;
 
@@ -42,6 +43,11 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     	document.addValue(FIELD_DESC_ITEM_TYPE_ID, arrDescItem.getDescItemTypeId().toString());
     	document.addValue(FIELD_CREATE_CHANGE_ID, arrDescItem.getCreateChangeId().toString());
 
-    	document.addValue(FULLTEXT_ATT, arrDescItem.getFulltextValue());
+    	if (arrDescItem.getFulltextValue() != null) {
+    		document.addValue(FULLTEXT_ATT, arrDescItem.getFulltextValue());
+    	}
+    	if (arrDescItem.getValueInt() != null) {
+    		document.addValue(INTGER_ATT, arrDescItem.getValueInt());
+    	}
     }
 }

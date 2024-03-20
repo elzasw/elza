@@ -1,25 +1,26 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Neobsahuje.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @param <T>
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
-public class NotContainDescItemCondition<T> extends ContainDescItemCondition<T>{
+public class NotContainDescItemCondition<T> extends ContainDescItemCondition<T> {
 
     public NotContainDescItemCondition(T conditionValue, String attributeName) {
         super(conditionValue, attributeName);
     }
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-//        Query query = super.createLuceneQuery(queryBuilder);
-//
-//        return queryBuilder.bool().must(query).not().createQuery();
-//    }
+	@Override
+	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
+		SearchPredicate contain = super.createSearchPredicate(factory);
+
+		return factory.bool().mustNot(contain).toPredicate();
+	}
 }

@@ -3,15 +3,13 @@ package cz.tacr.elza.filter.condition;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
-//import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
-//import org.springframework.util.Assert;
-
 /**
- *
+ * Filtr pro podmínku větší.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class GtDescItemCondition<T> extends AbstractDescItemConditionWithValue<T> {
 
@@ -21,15 +19,8 @@ public class GtDescItemCondition<T> extends AbstractDescItemConditionWithValue<T
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
+		return factory.bool()
+				.should(factory.range().field(getAttributeName()).greaterThan(getValue()))
+				.toPredicate();
 	}
-
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-//        Assert.notNull(queryBuilder);
-//
-//        return queryBuilder.range().onField(getAttributeName()).above(getValue()).excludeLimit().createQuery();
-//    }
-
 }

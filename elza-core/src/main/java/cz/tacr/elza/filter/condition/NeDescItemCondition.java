@@ -1,13 +1,15 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Není rovno.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class NeDescItemCondition<T> extends EqDescItemCondition<T> {
 
@@ -15,10 +17,10 @@ public class NeDescItemCondition<T> extends EqDescItemCondition<T> {
         super(conditionValue, attributeName);
     }
 
-//    @Override
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) { TODO hibernate search 6
-//        Query query = super.createLuceneQuery(queryBuilder);
-//
-//        return queryBuilder.bool().must(query).not().createQuery();
-//    }
+	@Override
+	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
+		SearchPredicate eq = super.createSearchPredicate(factory);
+
+		return factory.bool().mustNot(eq).toPredicate();
+	}
 }

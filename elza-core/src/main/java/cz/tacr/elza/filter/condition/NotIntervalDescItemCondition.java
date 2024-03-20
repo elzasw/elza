@@ -1,13 +1,15 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
  * Není v intervalu.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class NotIntervalDescItemCondition<T extends Interval<IV>, IV> extends IntervalDescItemCondition<T,IV> {
 
@@ -15,10 +17,10 @@ public class NotIntervalDescItemCondition<T extends Interval<IV>, IV> extends In
         super(conditionValue, attributeName);
     }
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-//        Query query = super.createLuceneQuery(queryBuilder);
-//
-//        return queryBuilder.bool().must(query).not().createQuery();
-//    }
+	@Override
+	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
+		SearchPredicate interval = super.createSearchPredicate(factory);
+
+		return factory.bool().mustNot(interval).toPredicate();
+	}
 }

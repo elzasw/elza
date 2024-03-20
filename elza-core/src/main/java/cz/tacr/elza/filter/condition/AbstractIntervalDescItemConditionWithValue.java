@@ -1,6 +1,6 @@
 package cz.tacr.elza.filter.condition;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 /**
  * Předek pro intervalé podmínky.
@@ -15,9 +15,9 @@ public abstract class AbstractIntervalDescItemConditionWithValue<T extends Inter
     private String attributeNameTo;
 
     public AbstractIntervalDescItemConditionWithValue(final T conditionValue, final String attributeNameFrom, final String attributeNameTo) {
-        Validate.notNull(conditionValue);
-        Validate.notNull(attributeNameFrom);
-        Validate.notNull(attributeNameTo);
+    	Objects.requireNonNull(conditionValue);
+    	Objects.requireNonNull(attributeNameFrom);
+    	Objects.requireNonNull(attributeNameTo);
 
         this.value = conditionValue;
         this.attributeNameFrom = attributeNameFrom;

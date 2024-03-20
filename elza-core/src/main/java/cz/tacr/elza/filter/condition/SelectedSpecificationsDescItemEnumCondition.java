@@ -13,6 +13,8 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 29. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescItemCondition {
 
@@ -43,16 +45,4 @@ public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescIt
 
 		return bool.toPredicate();
 	}
-
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-//        BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
-//
-//        values.forEach(v -> {
-//            Query query = queryBuilder.range().onField(attributeName).from(v).to(v).createQuery();
-//            booleanJunction.should(query);
-//        });
-//
-//        return booleanJunction.createQuery();
-//    }
 }

@@ -2,16 +2,15 @@ package cz.tacr.elza.filter.condition;
 
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
-
-//import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder;
-//import org.springframework.util.Assert;
+import org.hibernate.search.util.common.data.Range;
 
 /**
  * Je v intervalu včetně.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class IntervalDescItemCondition<T extends Interval<IV>, IV> extends AbstractDescItemConditionWithValue<T> {
 
@@ -21,18 +20,12 @@ public class IntervalDescItemCondition<T extends Interval<IV>, IV> extends Abstr
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		Interval<IV> interval = getValue();
+		IV from = interval.getFrom();
+		IV to = interval.getTo();
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-//        Assert.notNull(queryBuilder);
-//
-//        Interval<IV> interval = getValue();
-//        IV from = interval.getFrom();
-//        IV to = interval.getTo();
-//
-//        return queryBuilder.range().onField(getAttributeName()).from(from).to(to).createQuery();
-//    }
+		return factory.bool()
+				.should(factory.range().field(getAttributeName()).range(Range.canonical(from, to)))
+				.toPredicate();
+	}
 }

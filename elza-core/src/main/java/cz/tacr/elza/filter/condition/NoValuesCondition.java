@@ -8,12 +8,16 @@ import jakarta.persistence.Query;
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 2. 5. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class NoValuesCondition implements HibernateDescItemCondition {
 
     @Override
-    public Query createHibernateQuery(final EntityManager entityManager, final Integer fundId, final Integer descItemTypeId,
-            final Integer lockChangeId) {
+    public Query createHibernateQuery(final EntityManager entityManager, 
+    		                          final Integer fundId, 
+    		                          final Integer descItemTypeId,
+    		                          final Integer lockChangeId) {
         StringBuffer sb = new StringBuffer()
                 .append("select distinct n.node_id ") // zajímají nás id nodů
                 .append("from arr_node n ")
