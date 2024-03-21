@@ -3,16 +3,13 @@ package cz.tacr.elza.filter.condition;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
-//import org.apache.commons.lang3.Validate;
-//import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
-//import org.springframework.util.Assert;
-
 /**
  * Spadá částečně do období.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class IntersectDescItemCondition<T extends Interval<IV>, IV> extends AbstractIntervalDescItemConditionWithValue<T, IV> {
 
@@ -22,23 +19,19 @@ public class IntersectDescItemCondition<T extends Interval<IV>, IV> extends Abst
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		Interval<IV> interval = getValue();
+		IV from = interval.getFrom();
+		IV to = interval.getTo();
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-//        Validate.notNull(queryBuilder);
-//
-//        Interval<IV> interval = getValue();
-//        IV from = interval.getFrom();
-//        IV to = interval.getTo();
-//
-//        // (StartA <= EndB) and (EndA >= StartB)
-//        // see https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+      	// (StartA <= EndB) and (EndA >= StartB)
+		// see https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+		SearchPredicate sp1 = factory.bool().should(factory.range().field(getAttributeNameFrom()).atMost(to)).toPredicate();
+		SearchPredicate sp2 = factory.bool().should(factory.range().field(getAttributeNameTo()).atLeast(from)).toPredicate();
+
+		return factory.bool().must(sp1).must(sp2).toPredicate();
+	}
 //        Query fromQuery1 = queryBuilder.range().onField(getAttributeNameFrom()).below(to).createQuery();
 //        Query fromQuery2 = queryBuilder.range().onField(getAttributeNameTo()).above(from).createQuery();
 //
 //        return queryBuilder.bool().must(fromQuery1).must(fromQuery2).createQuery();
-//    }
 }
