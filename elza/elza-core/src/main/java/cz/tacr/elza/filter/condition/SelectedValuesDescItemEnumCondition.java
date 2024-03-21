@@ -1,9 +1,11 @@
 package cz.tacr.elza.filter.condition;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
@@ -11,6 +13,8 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondition {
 
@@ -25,7 +29,7 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
      */
     public SelectedValuesDescItemEnumCondition(final List<String> values, final String attributeName) {
         Validate.notEmpty(values);
-        Validate.notNull(attributeName);
+        Objects.requireNonNull(attributeName);
 
         this.values = values;
         this.attributeName = attributeName;
@@ -33,19 +37,12 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		BooleanPredicateClausesStep<?> bool = factory.bool();
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(final QueryBuilder queryBuilder) {
-//        BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
-//
-//        values.forEach(v -> {
-//            Query query = queryBuilder.keyword().wildcard().onField(attributeName).matching(v.toLowerCase()).createQuery();
-//            booleanJunction.should(query);
-//        });
-//
-//        return booleanJunction.createQuery();
-//    }
+		values.forEach(v -> {
+			bool.should(factory.wildcard().field(attributeName).matching(v.toLowerCase()).toPredicate());
+		});
+
+		return bool.toPredicate();
+	}
 }

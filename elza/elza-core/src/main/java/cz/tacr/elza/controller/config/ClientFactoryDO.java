@@ -66,7 +66,7 @@ import cz.tacr.elza.filter.condition.ContainDescItemCondition;
 import cz.tacr.elza.filter.condition.DescItemCondition;
 import cz.tacr.elza.filter.condition.EndDescItemCondition;
 import cz.tacr.elza.filter.condition.EqDescItemCondition;
-import cz.tacr.elza.filter.condition.EqIntervalDesCitemCondition;
+import cz.tacr.elza.filter.condition.EqIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.GeDescItemCondition;
 import cz.tacr.elza.filter.condition.GtDescItemCondition;
 import cz.tacr.elza.filter.condition.IntersectDescItemCondition;
@@ -335,7 +335,7 @@ public class ClientFactoryDO {
                         condition = new EqDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.UNITDATE) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
-                        condition = new EqIntervalDesCitemCondition<>(conditionValue,
+                        condition = new EqIntervalDescItemCondition<>(conditionValue,
                                 ArrDescItem.NORMALIZED_FROM_ATT,
                                 ArrDescItem.NORMALIZED_TO_ATT);
                     } else if (dataType == DataType.DATE) {

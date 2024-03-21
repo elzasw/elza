@@ -3,15 +3,13 @@ package cz.tacr.elza.filter.condition;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
-//import org.apache.lucene.search.Query;
-//import org.hibernate.search.query.dsl.QueryBuilder; TODO hibernate search 6
-//import org.springframework.util.Assert;
-
 /**
  * Spadá do celého období.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
+ * @update Sergey Iryupin
+ * @since 20. 3. 2024
  */
 public class SubsetDescItemCondition<T extends Interval<IV>, IV> extends AbstractIntervalDescItemConditionWithValue<T, IV> {
 
@@ -21,22 +19,17 @@ public class SubsetDescItemCondition<T extends Interval<IV>, IV> extends Abstrac
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+		Interval<IV> interval = getValue();
+		IV from = interval.getFrom();
+		IV to = interval.getTo();
 
-//    @Override TODO hibernate search 6
-//    public Query createLuceneQuery(QueryBuilder queryBuilder) {
-//        Assert.notNull(queryBuilder);
-//
-//        Interval<IV> interval = getValue();
-//        IV from = interval.getFrom();
-//        IV to = interval.getTo();
-//
+		SearchPredicate fp = factory.bool().should(factory.range().field(getAttributeNameFrom()).atLeast(from)).toPredicate();
+		SearchPredicate tp = factory.bool().should(factory.range().field(getAttributeNameTo()).atMost(to)).toPredicate();
+
+		return factory.bool().must(fp).must(tp).toPredicate();
+	}
 //        Query fromQuery = queryBuilder.range().onField(getAttributeNameFrom()).above(from).createQuery();
 //        Query toQuery = queryBuilder.range().onField(getAttributeNameTo()).below(to).createQuery();
 //
 //        return queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
-//    }
-
 }
