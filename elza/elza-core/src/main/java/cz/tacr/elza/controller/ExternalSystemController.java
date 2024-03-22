@@ -55,7 +55,8 @@ public class ExternalSystemController implements ExternalsystemsApi {
             }
         }
 
-        List<ExtSystemProperty> properties = extSystemService.findAllProperties(extSystemId, userId);
+        // List<ExtSystemProperty> properties = extSystemService.findAllProperties(extSystemId, userId);
+        List<ExtSystemProperty> properties = extSystemService.findUserProperties(extSystemId, userId);
 
         return ResponseEntity.ok(properties);
     }

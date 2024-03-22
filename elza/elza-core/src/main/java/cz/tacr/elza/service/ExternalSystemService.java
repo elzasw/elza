@@ -805,16 +805,34 @@ public class ExternalSystemService {
          return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
 
-	public List<ExtSystemProperty> findAllProperties(Integer extSystemId, Integer userId) {
+     public List<ExtSystemProperty> findUserProperties(Integer extSystemId, Integer userId) {
+         // pokud userId == null, získáme hodnoty pro všechny uživatele
+         List<SysExternalSystemProperty> properties;
+         if (extSystemId == null) {
+             properties = sysExtSysPropertyRepository.findByUserId(userId);
+         } else {
+             properties = sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+         }
+         List<ExtSystemProperty> result = new ArrayList<>(properties.size());
+         properties.forEach(i -> {
+             ExtSystemProperty p = new ExtSystemProperty();
+             p.setId(i.getExternalSystemPropertyId());
+             p.setUserId(i.getUserId());
+             p.setExtSystemId(i.getExternalSystemId());
+             p.setName(i.getName());
+             p.setValue(i.getValue());
+             result.add(p);
+         });
+         return result;
+     }
+
+     public List<ExtSystemProperty> findAllProperties(Integer extSystemId) {
 		// pokud userId == null, získáme hodnoty pro všechny uživatele
         List<SysExternalSystemProperty> properties;
         if (extSystemId == null) {
-            properties = userId == null ? sysExtSysPropertyRepository.findAll()
-                    : sysExtSysPropertyRepository.findByUserId(userId);
+            properties = sysExtSysPropertyRepository.findAll();
         } else {
-            properties = userId == null ?
-				sysExtSysPropertyRepository.findByExternalSystemId(extSystemId)
-				: sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+            properties = sysExtSysPropertyRepository.findByExternalSystemId(extSystemId);
         }
 		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
 		properties.forEach(i -> {
