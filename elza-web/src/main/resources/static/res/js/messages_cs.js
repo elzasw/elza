@@ -1818,5 +1818,14 @@ var messages = {
     "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
     "textFragments.title": "Speciální znaky",
 
+    "userSettings.button.title": "Nastavení",
+    "userSettings.title": "Nastavení uživatele",
+    "userSettings.category.ApiKeys": "API Klíče",
+    "userSettings.apiKeys.noItems": "Žádné uložené osobní API klíče",
+    "userSettings.apiKeys.delete.confirm.message": "Přejete si smazat nastavený API klíč pro externí systém {0}?",
+    "userSettings.apiKeys.item.id": "id",
+    "userSettings.apiKeys.item.value": "hodnota",
+    "userSettings.apiKeys.save": "Uložit",
+
     ____: "",
 };
