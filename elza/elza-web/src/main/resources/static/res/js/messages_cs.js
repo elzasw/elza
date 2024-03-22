@@ -63,6 +63,9 @@ var messages = {
     "global.action.copyToClipboard": "Zkopírovat do schránky",
     "global.action.copyToClipboard.finished": "Zkopírováno do schránky",
 
+    "global.geometry.label.objects": "Obrazce",
+    "global.geometry.label.points": "Body",
+
     "confirmDialog.default.title": "Potvrzení",
     "confirmDialog.default.message": "Přejete si pokračovat?",
 
