@@ -9,11 +9,11 @@ elza:
 
   # ISO code of locale
   locale: cs
-  
+
   export:
     mapviewer:
         url: "https://www.lightcomp.cz/extra/mapview/?wkb="
- 
+
   # Integration settings
   #  URL for integration JavaScript
   # integrationScriptUrl: /elzainteg/integ.js  
@@ -67,9 +67,11 @@ spring:
       connectionTimeout: 300000
       # Zvyseni poctu pripojeni do DB z duvodu behu paralelnich transakci pri validacich
       maximumPoolSize: 20
-
   main:
+    # Povolit předefinování beans
     allow-bean-definition-overriding: true
+    # Povolit kruhové odkazy mezi beans
+    allow-circular-references: true
   data:
     rest:
       base-uri: /rest
@@ -79,7 +81,7 @@ spring:
       serialization:
           WRITE_DATES_AS_TIMESTAMPS: false
   jpa:
-    #pametova databaze automaticky zapina hibernate.ddl-auto: create
+    # pametova databaze automaticky zapina hibernate.ddl-auto: create
     hibernate.ddl-auto: none
     generate-ddl: false
     # Logovani SQL dotazu
@@ -98,14 +100,7 @@ spring:
             lucene_version: LATEST
         cache:
           use_second_level_cache: true
-          region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+          region:
+            factory_class: jcache
           # PostgreSQL
           dialect: org.hibernate.dialect.PostgreSQLDialect
-          # H2
-          #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-          # MySQL
-          #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-          # Oracle
-          #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-          # MSSQL
-          #dialect: org.hibernate.dialect.SQLServer2008Dialect
