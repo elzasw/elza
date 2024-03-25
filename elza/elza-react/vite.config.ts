@@ -29,6 +29,7 @@ export default ({ mode }) => {
     },
     plugins: [react()],
     build: {
+      sourcemap: true,
       rollupOptions: {
         output: {
           entryFileNames: "static/res/js/[name].js",
