@@ -44,14 +44,12 @@ public class DescItemReader {
 
     private final DescriptionItemService descItemService;
 
-    private final StructObjValueService structObjService;
-
 	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
 						  DescItemFactory descItemFactory,
 						  NodeCacheService nodeCacheService,
 						  final StructuredItemRepository structItemRepos,
-                          DescriptionItemService descItemService,
-                          StructObjValueService structObjService)
+                          DescriptionItemService descItemService
+                          )
 	{
 		this.version = version;
 		this.descItemRepository = descItemRepository;
@@ -59,7 +57,6 @@ public class DescItemReader {
 		this.nodeCacheService = nodeCacheService;
 		this.structItemRepos = structItemRepos;
         this.descItemService = descItemService;
-        this.structObjService = structObjService;
 	}
 
 	/**
@@ -98,7 +95,7 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structObjService);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
                 level.setDescItems(items);
             }
         } else {
@@ -109,7 +106,7 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structObjService);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
                 level.setDescItems(items);
             }
         }

@@ -25,12 +25,13 @@ import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 
-export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
+export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO> & {additionalTitle?: string}> = ({
     name,
     label,
     disabled = false,
     disableRevision,
     onDelete = () => {console.warn("'onDelete' not defined")},
+    additionalTitle,
 }) => {
     const fieldName = `${name}.updatedItem.value`;
     const dispatch = useThunkDispatch<AppState>()
@@ -65,6 +66,14 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
         return allowedGeometryTypes;
     }
 
+    const getDescItemName = () => {
+        const _item = updatedItem || item;
+        if(!_item){return undefined;}
+
+        const refDescItemType = refDescItemTypesMap[_item.typeId];
+        return refDescItemType?.name;
+    }
+    const descItemName = getDescItemName();
 
     return <Row>
         <Col>
@@ -125,7 +134,13 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
 
                     const handleEditInMap = async () => {
                         if (geoEditExternalSystems.length === 1) {
-                            const value = await dispatch(editInMapEditor(props.input.value, geoEditExternalSystems[0], getAllowedGeometryTypes()))
+                            const value = await dispatch(editInMapEditor(
+                                props.input.value,
+                                geoEditExternalSystems[0],
+                                getAllowedGeometryTypes(),
+                                `${additionalTitle}${descItemName ? ` - ${descItemName}` : ""}`
+                            ))
+
                             form.change(`${name}.updatedItem`, {
                                 ...updatedItem,
                                 changeType: "UPDATED",
@@ -174,7 +189,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
                             {geoEditExternalSystems.length === 1 && <Button
                                 variant={'action' as any}
                                 className={classNames('side-container-button', 'm-1')}
-                                title={'Upravit v mape'}
+                                title={i18n('ap.coordinate.edit-in-map')}
                                 onClick={handleEditInMap}
                             >
                                 <Icon glyph={'fa-map'} />
@@ -189,7 +204,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO>> = ({
     </Row>
 }
 
-const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeometryTypes?: string[]): ThunkAction<any> =>
+export const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeometryTypes?: string[], additionalTitle?: string): ThunkAction<any> =>
     (dispatch) => new Promise((resolve) => {
         const handleEditorChange = (value: string) => {
             resolve(value);
@@ -198,7 +213,7 @@ const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeo
 
         dispatch(modalDialogShow(
             this,
-            "Editor souradnic",
+            undefined,
             ({key, onClose, visible}) => {
                 return <MapEditor
                     key={key}
@@ -207,6 +222,7 @@ const editInMapEditor = (geometry: string, extSystem: ExternalSystem, allowedGeo
                     extSystem={extSystem}
                     onChange={handleEditorChange}
                     allowedGeometryTypes={allowedGeometryTypes}
+                    title={`${i18n('ap.coordinate.map-editor.title')}${additionalTitle ? ` - ${additionalTitle}` : ""}`}
                 />
             }
         ))

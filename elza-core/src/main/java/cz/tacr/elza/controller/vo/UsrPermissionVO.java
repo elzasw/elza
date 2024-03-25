@@ -163,23 +163,35 @@ public class UsrPermissionVO {
 
         entity.setPermissionId(id);
         if (fund != null) {
-            entity.setFund(fund.createEntity());
+            Validate.notNull(fund.getId());
+
+            entity.setFundId(fund.getId());
         }
         entity.setPermission(permission);
         if (scope != null) {
-            entity.setScope(scope.createEntity(staticData));
+            Validate.notNull(scope.getId());
+
+            entity.setScopeId(scope.getId());
         }
         if (groupControl != null) {
-            entity.setGroupControl(groupControl.createEntity());
+            Validate.notNull(groupControl.getId());
+
+            entity.setGroupControlId(groupControl.getId());
         }
         if (userControl != null) {
-            entity.setUserControl(userControl.createEntity());
+            Validate.notNull(userControl.getId());
+
+            entity.setUserControlId(userControl.getId());
         }
         if (issueList != null) {
-            entity.setIssueList(issueList.createEntity());
+            Validate.notNull(issueList.getId());
+
+            entity.setIssueListId(issueList.getId());
         }
         if (node != null) {
-            entity.setNode(node.createEntity(entity.getFund()));
+            Validate.notNull(node.getId());
+
+            entity.setNodeId(node.getId());
         }
         return entity;
     }

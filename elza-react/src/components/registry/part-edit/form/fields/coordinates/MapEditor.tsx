@@ -5,6 +5,8 @@ import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { ExternalSystem } from 'typings/store';
 import { Button } from 'components/ui';
 import { ModalDialogWrapper } from 'components/shared';
+import i18n from 'components/i18n';
+import { MODAL_DIALOG_VARIANT } from '../../../../../../constants';
 
 export interface Props {
     geometry: string;
@@ -12,6 +14,7 @@ export interface Props {
     onChange?: (geometry: string) => void;
     onClose?: () => void;
     allowedGeometryTypes?: string[];
+    title?: string;
 }
 
 export const MapEditor = ({
@@ -20,6 +23,7 @@ export const MapEditor = ({
     onChange = () => console.warn("'onChange' not defined"),
     onClose = () => console.warn("'onClose' not defined"),
     allowedGeometryTypes,
+    title,
 }: Props) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const queryStartIndex = extSystem.url?.indexOf("?");
@@ -75,7 +79,11 @@ export const MapEditor = ({
     }
 
     return <>
-        <ModalDialogWrapper className="dialog-lg" title="Editor souradnic" onHide={onClose}>
+        <ModalDialogWrapper
+            className={MODAL_DIALOG_VARIANT.FULLSCREEN}
+            title={title || i18n('ap.coordinate.map-editor.title')}
+            onHide={onClose}
+        >
             <iframe
                 title="elza-map-iframe"
                 className={'border-0 float-left'}
@@ -84,6 +92,7 @@ export const MapEditor = ({
                 style={{
                     height: 500,
                     width: "100%",
+                    flexGrow: 1,
                 }}
             />
         </ModalDialogWrapper>

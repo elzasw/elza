@@ -120,6 +120,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         //            pdfExpConfig.setOddPageOffsetX(settingsVO.getOddPageOffsetX());
         //            pdfExpConfig.setOddPageOffsetY(settingsVO.getOddPageOffsetY());
         //        }
+        //
+        //        // switch line break algorithm - problem with missing last row
+        //        pdfExpConfig.setForceLineBreakPolicy(true);
+
     }
     @Override
     protected void generate(OutputStream os) throws IOException {

@@ -6,12 +6,15 @@ import { Col } from 'react-bootstrap';
 import { ApItemVO } from 'api/ApItemVO';
 import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
-import { objectById } from 'shared/utils';
+import { objectById, storeFromArea } from 'shared/utils';
 import { ItemType } from 'api/ApViewSettings';
 import { ApDescItem } from './renderItem'
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store'
 import { RevisionItem } from "../../revision";
+import { DetailStoreState } from 'types';
+import { ApAccessPointVO } from 'api';
+import { AREA_REGISTRY_DETAIL } from 'actions/registry/registry';
 
 interface RenderItemsProps extends FieldArrayRenderProps<RevisionItem, any> {
     disabled: boolean;
@@ -39,6 +42,10 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
     apTypeId,
     revision = false,
 }) => {
+    const detail = useSelector((appState: AppState) => {
+        const detail = storeFromArea(appState, AREA_REGISTRY_DETAIL) as DetailStoreState<ApAccessPointVO>;
+        return detail.data;
+    })
     if (!fields.value) { return <></>; }
 
     const handleDeleteItem = (index: number) => {
@@ -75,6 +82,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                         partTypeId={partTypeId}
                         scopeId={scopeId}
                         apTypeId={apTypeId}
+                        entityName={detail?.name}
                     />
                 }}
             </ApDescItemGroup>

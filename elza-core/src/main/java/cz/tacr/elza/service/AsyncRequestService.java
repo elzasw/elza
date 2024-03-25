@@ -109,9 +109,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Autowired
     private BulkActionRunRepository bulkActionRepository;
 
-    @Autowired
-    protected BulkActionHelperService bulkActionHelperService;
-
     private OutputRepository outputRepository;
 
     @Autowired
@@ -361,6 +358,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             // if action is not still terminated
             // reset it manually
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
+
+            BulkActionHelperService bulkActionHelperService = appCtx.getBean(BulkActionHelperService.class);
+
             bulkActionHelperService.updateAction(bulkActionRun);
         }
     }

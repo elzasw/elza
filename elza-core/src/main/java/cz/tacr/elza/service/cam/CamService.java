@@ -64,6 +64,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.SysExternalSystemProperty;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -82,6 +83,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -153,6 +155,9 @@ public class CamService {
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+    
+    @Autowired
+    private SysExternalSystemPropertyRepository extSysPropRepository;
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
@@ -883,9 +888,32 @@ public class CamService {
     public BatchUpdateResultXml upload(ExtSyncsQueueItem extSyncsQueueItem, BatchUpdateXml batchUpdateXml)
             throws ApiException {
         Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
+        Integer userId = extSyncsQueueItem.getUserId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+        UsrUser user = userService.getUserInternal(userId);
 
-        BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem);
+        // check if sending user has some extra privileges
+        log.debug("Upload to: {}(id: {}), user: {}(id: {})", externalSystem.getName(), externalSystemId,
+                  (user != null) ? user.getUsername() : null, userId);
+        List<SysExternalSystemProperty> extSysProperties;
+        String apikeyId = null, apikeyValue = null;
+        if (user != null) {
+        	extSysProperties = extSysPropRepository.findByExternalSystemAndUser(externalSystem, user);
+        	for (SysExternalSystemProperty property : extSysProperties) {
+        		if (property.getName().equals(CamConnector.APIKEY_ID)) {
+        			apikeyId = property.getValue();
+                    log.debug("Found extra APIKEY_ID (propertyId: {}): {}", property.getExternalSystemPropertyId(),
+                              apikeyId);
+        		}
+        		if (property.getName().equals(CamConnector.APIKEY_VALUE)) {
+        			apikeyValue = property.getValue();
+                    log.debug("Found extra APIKEY_VALUE (propertyId: {}): ****",
+                              property.getExternalSystemPropertyId());
+        		}
+        	}
+        }
+
+        BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem, apikeyId, apikeyValue);
         return batchUpdateResult;
     }
 

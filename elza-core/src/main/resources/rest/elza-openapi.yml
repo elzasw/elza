@@ -5,6 +5,8 @@ info:
 tags:
   - name: admin
     description: Administrativní funkce
+  - name: externalsystems
+    description: Externí systémy
   - name: funds
     description: Archivní soubory
   - name: accesspoints
@@ -755,6 +757,82 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /extsystem/property:
+    get:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_allProperties
+      description: Return list of all properties of external system
+      parameters:
+        - name: extSystemId
+          in: query
+          required: false
+          description: external system id
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          required: false
+          description: user id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExtSystemProperty'
+    post:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_storeProperties
+      description: Store one or more property of external system
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: request body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExtSystemProperty'
+    delete:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_deleteProperties
+      description: Delete one property of external system
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: external system property id
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
@@ -1162,6 +1240,29 @@ components:
       description: Status of export
       required:
         - state
+    ExtSystemProperty:
+      type: object
+      required:
+        - extSystemId
+        - name
+        - value
+      properties:
+        id:
+          type: integer
+          description: ext system property id
+        userId:
+          type: integer
+          description: user id
+        extSystemId:
+          type: integer
+          description: external system id
+        name:
+          type: string
+          description: name of property
+        value:
+          type: string
+          description: value of property
+      description: Pairs name-value for external system and user
     FsItem:
       type: object
       properties:

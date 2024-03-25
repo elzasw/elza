@@ -11,4 +11,7 @@
     <structure-extension code="ZP2015_PACKET_METRAGE" structure-type="ZP2015_PACKET" >
         <name>Uložení s metráží</name>
     </structure-extension>
+    <structure-extension code="ZP2015_PACKET_LOCATION" structure-type="ZP2015_PACKET" >
+        <name>Uložení s lokací</name>
+    </structure-extension>
 </structure-extensions>

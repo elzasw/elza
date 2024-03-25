@@ -145,6 +145,7 @@ import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
+import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventApQueue;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -426,10 +427,13 @@ public class AccessPointService {
     /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá,
      * že již proběhlo ověření, že je možné ho smazat (vazby atd...).
+     * 
+     * @throws SyncImpossibleException
      */
     public void deleteAccessPoint(final ApState apState,
                                   final ApAccessPoint replacedBy,
-                                  final boolean mergeAp) {
+                                  final boolean mergeAp)
+            throws SyncImpossibleException {
 
         checkPermissionForEdit(apState);
 
@@ -973,13 +977,16 @@ public class AccessPointService {
      *
      * @param replacedState
      * @param replacementState
-     * @param apExternalSystem source of entity
+     * @param apExternalSystem
+     *            source of entity
      * @param macc
+     * @throws SyncImpossibleException
      */
     public void replace(final ApState replacedState,
                         final ApState replacementState,
                         @Nullable final ApExternalSystem apExternalSystem,
-                        MultipleApChangeContext macc) {
+                        MultipleApChangeContext macc)
+            throws SyncImpossibleException {
 
         // replace in access points (items)
         replaceInAps(replacedState, replacementState, apExternalSystem, macc);
@@ -989,7 +996,9 @@ public class AccessPointService {
 
     }
 
-    private void replaceInArrItems(ApState replacedState, ApState replacementState) {
+    private void replaceInArrItems(ApState replacedState,
+                                   ApState replacementState)
+            throws SyncImpossibleException {
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
@@ -1010,7 +1019,8 @@ public class AccessPointService {
         if (!isFundAdmin) {
             fundIds.forEach(i -> {
                 if (!userService.hasPermission(UsrPermission.Permission.FUND_ARR, i)) {
-                    throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS).set("fundId", i);
+                    throw new SystemException("Uživatel nemá oprávnění na AS.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                            .set("fundId", i);
                 }
             });
         }
@@ -1027,7 +1037,7 @@ public class AccessPointService {
         final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REPLACE_REGISTER);
         for (Integer fundId : fundIds) {
             List<ArrDescItem> items = itemsByFundId.get(fundId);
-            items.forEach(i -> {
+            for (ArrDescItem i : items) {
                 final ArrDataRecordRef data = new ArrDataRecordRef();
                 data.setRecord(replacement);
                 ArrDescItem im = new ArrDescItem();
@@ -1047,16 +1057,14 @@ public class AccessPointService {
                             .set("fundId", fundId);
                 } else {
                     if (!fundScopes.contains(replacementState.getScopeId())) {
-                        throw new BusinessException(
-                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity.",
-                                BaseCode.INVALID_STATE)
-                                        .set("fundId", fundId)
-                                        .set("scopeId", replacementState.getScopeId());
+                        throw new SyncImpossibleException(
+                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity. entitaId: "
+                                        + replacedState.getAccessPointId() + ", fondId: " + fundId);
                     }
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
-            });
         }
+    }
     }
 
     private void replaceInAps(ApState replacedState,
@@ -2033,13 +2041,20 @@ public class AccessPointService {
     /**
      *  Vytvoření kopie ApAccessPoint v ApScope
      *
-     * @param srcAccessPoint - kopírovaná entita
-     * @param scope       - nová oblast (může být stejná, pokud jde o náhradu)
-     * @param replace     - nahradit zkopírovanou entitu novou nebo ne
-     * @param skipItems   - seznam ID prvků popisu, které se nemají kopírovat
+     * @param srcAccessPoint
+     *            - kopírovaná entita
+     * @param scope
+     *            - nová oblast (může být stejná, pokud jde o náhradu)
+     * @param replace
+     *            - nahradit zkopírovanou entitu novou nebo ne
+     * @param skipItems
+     *            - seznam ID prvků popisu, které se nemají kopírovat
      * @return ApAccessPoint
+     * @throws SyncImpossibleException
      */
-    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace, List<Integer> skipItems) {
+    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace,
+                                         List<Integer> skipItems)
+            throws SyncImpossibleException {
         ApState state = getStateInternal(srcAccessPoint);
 
         if (!hasPermissionToCopy(state, scope, replace)) {

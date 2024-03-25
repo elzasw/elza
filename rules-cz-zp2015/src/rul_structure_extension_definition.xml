@@ -19,6 +19,11 @@
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>103</priority>
     </structure-extension-definition>
+    <structure-extension-definition structure-type="ZP2015_PACKET" structure-extension="ZP2015_PACKET_LOCATION"
+            filename="Packet_Location.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>104</priority>
+    </structure-extension-definition>
     <structure-extension-definition structure-type="ZP2015_PACKET" structure-extension="ZP2015_PACKET_EXTTYPE"
             filename="Packet_ExtType.groovy">
         <def-type>SERIALIZED_VALUE</def-type>

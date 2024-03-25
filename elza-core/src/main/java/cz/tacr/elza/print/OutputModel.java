@@ -43,6 +43,8 @@ import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.dataexchange.output.filters.ApplyFilter;
 import cz.tacr.elza.dataexchange.output.filters.FilterRule;
+import cz.tacr.elza.dataexchange.output.filters.FilterRuleContext;
+import cz.tacr.elza.dataexchange.output.filters.FilterRuleResultType;
 import cz.tacr.elza.dataexchange.output.filters.FilterRules;
 import cz.tacr.elza.dataexchange.output.filters.ReplaceItem;
 import cz.tacr.elza.dataexchange.output.filters.SoiLoadDispatcher;
@@ -138,7 +140,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, Fund> fundIdMap = new HashMap<>();
 
+    /**
+     * Collection of nodes which cannot be published
+     */
     final Set<Integer> restrictedNodeIds = new HashSet<>();
+
+    /**
+     * Restriction items for each level
+     */
+    Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
     /**
      * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
@@ -418,8 +428,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, filter);
 
         // add all nodes
-        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+        NodeIterator nodeIterator = createFlatNodeIterator();
         while (nodeIterator.hasNext()) {
             Node node = nodeIterator.next();
             filteredAPs.addNode(node);
@@ -432,8 +441,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     public Iterator<Record> getRecords() {
-        Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
-        NodeIterator nodeIterator = new NodeIterator(this, nodeIdIterator);
+        NodeIterator nodeIterator = createFlatNodeIterator();
 
         RecordIterator ri = new RecordIterator(this, nodeIterator);
         return ri;
@@ -443,6 +451,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public List<Node> loadNodes(Collection<NodeId> nodeIds) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(isInitialized());
+
+        logger.debug("Loading nodes for output(fundId={}), count: {})", this.fund.getFundId(), nodeIds.size());
 
         List<Integer> arrNodeIds = new ArrayList<>(nodeIds.size());
 
@@ -457,8 +467,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
-
-        Map<Integer, List<ArrItem>> levelRestrMap = new HashMap<>();
 
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
@@ -571,22 +579,30 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 soiItems = node.getDescItems();
             }
 
+            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems);
             for (FilterRule rule : filterRules.getFilterRules()) {
-                processRule(nodeId, rule, itemsByType, soiItems, filter);
+                FilterRuleResultType result = processRule(nodeId, rule, filterRuleContext, itemsByType, filter);
+                if (result == FilterRuleResultType.RESULT_BREAK) {
+                    break;
             }
+        }
         }
 
         return filter.apply(node);
     }
 
-    private void processRule(NodeId nodeId, FilterRule rule,
+    private FilterRuleResultType processRule(NodeId nodeId, FilterRule rule,
+                             FilterRuleContext filterRuleContext,
                              Map<cz.tacr.elza.core.data.ItemType, List<ArrItem>> itemsByType,
-                             Collection<? extends ArrItem> restrItems,
                              ApplyFilter filter) {
 
-        if (!rule.canApply(restrItems)) {
+        if (!rule.canApply(filterRuleContext)) {
             // rule does not apply for this soi
-            return;
+            return FilterRuleResultType.RESULT_CONTINUE;
+        }
+
+        if (rule.isBreakEval()) {
+            return FilterRuleResultType.RESULT_BREAK;
         }
 
         // if we need to hide level
@@ -594,7 +610,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             restrictedNodeIds.add(nodeId.getArrNodeId());
 
             filter.hideLevel();
-            return;
+            return FilterRuleResultType.RESULT_BREAK;
         }
 
         boolean changed = false;
@@ -641,7 +657,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // add items
-        rule.addItems(itemsByType, filter, changed, restrItems, elzaLocale.getLocale());
+        rule.addItems(itemsByType, filter, changed, filterRuleContext, elzaLocale.getLocale());
+
+        return FilterRuleResultType.RESULT_CONTINUE;
     }
 
     private StructObjectInfo readSoiFromDB(Integer structuredObjectId) {
