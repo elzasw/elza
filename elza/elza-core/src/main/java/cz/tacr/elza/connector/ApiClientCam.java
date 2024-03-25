@@ -18,6 +18,8 @@ import javax.net.ssl.X509TrustManager;
 import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.cam.client.ApiClient;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
@@ -28,6 +30,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ApiClientCam extends ApiClient {
+
+    private static Logger log = LoggerFactory.getLogger(ApiClientCam.class);
 
     /**
      * HTTP hlavičky
@@ -74,6 +78,12 @@ public class ApiClientCam extends ApiClient {
                 String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
                 String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;
                 String signature = computeHmac(apiValue, dataToHash);
+                if (log.isDebugEnabled()) {
+                    log.debug("Data to hash: {}", dataToHash);
+                            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
+                                      apiValue,
+                                      signature);
+                }
                 String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
                 Request newRequest = request.newBuilder()
                         .addHeader(X_NDA_DATE, xNdaDate)

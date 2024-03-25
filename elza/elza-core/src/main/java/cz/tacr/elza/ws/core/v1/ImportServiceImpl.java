@@ -290,7 +290,7 @@ public class ImportServiceImpl implements ImportService {
                     camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), false);
                 } catch (SyncImpossibleException e) {
                     logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", syncReq.getAccessPoint().getAccessPointId(), syncReq.getBinding().getBindingId(), e.getMessage());
-                    throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage());
+                    throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage(), e);
                 }
             }
 

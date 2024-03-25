@@ -1,4 +1,4 @@
-import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi, IoApi } from 'elza-api';
+import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi, IoApi, ExternalsystemsApi } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
 import { createException } from 'components/ExceptionUtils.jsx';
@@ -180,6 +180,7 @@ export const Api: {
     daos: DaosApi;
     default: DefaultApi;
     io: IoApi;
+    externalSystems: ExternalsystemsApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
@@ -187,4 +188,5 @@ export const Api: {
     daos: new DaosApi(undefined, basePath, axios),
     default: new DefaultApi(undefined, basePath, axios),
     io: new IoApi(undefined, basePath, axios),
+    externalSystems: new ExternalsystemsApi(undefined, basePath, axios),
 };

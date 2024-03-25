@@ -145,37 +145,39 @@ abstract public class CamXmlBuilder {
         return newItems;
     }
 
-    protected PartsXml createParts(Collection<ApPart> partList,
+    protected PartsXml createParts(Collection<ApPart> srcPartList,
                                    Map<Integer, List<ApItem>> itemMap,
                                    Map<Integer, Collection<ApIndex>> indexMap) {
         // if no parts available -> return null
-        if (CollectionUtils.isEmpty(partList)) {
+        if (CollectionUtils.isEmpty(srcPartList)) {
             // schema allows empty element prts
             return null;
         }
 
-        Collection<ApPart> adjustedPartList = partList;
-        // check if prefered part is first
+        // Sort part list in following order
+        // - preferred part
+        // - parent parts
+        // - subparts
+        List<ApPart> adjustedPartList = new ArrayList<>(srcPartList.size());
         ApPart preferedPart = accessPoint.getPreferredPart();
         if (preferedPart != null) {
-            // prepare list with first pref.part
-            adjustedPartList = new ArrayList<>(partList.size());
             adjustedPartList.add(preferedPart);
+        }
 
             ArrayList<ApPart> subparts = new ArrayList<>();
-            for (ApPart part : partList) {
-                if (!part.getPartId().equals(preferedPart.getPartId())) {
+        for (ApPart part : srcPartList) {
                     // check if subpart
                     if (part.getParentPartId() != null) {
                         subparts.add(part);
                     } else {
+                // add non preferred part
+                if (preferedPart == null || !part.getPartId().equals(preferedPart.getPartId())) {
                         adjustedPartList.add(part);
                     }
                 }
             }
             // sub parts will be added at the end
             adjustedPartList.addAll(subparts);
-        }
 
         // if no parts available -> create item without parts
         List<PartXml> partxmlList = createNewParts(null, adjustedPartList, itemMap, indexMap);
@@ -195,17 +197,34 @@ abstract public class CamXmlBuilder {
     /**
      * Create list of new parts
      *
-     * @param partList
+     * @param existingParts
+     *            List of current parts
+     * @param srcPartList
      * @param itemMap
      * @param indexMap
      * @return
      */
     protected List<PartXml> createNewParts(Collection<String> existingParts,
-                                           Collection<ApPart> partList,
+                                           Collection<ApPart> srcPartList,
                                            Map<Integer, List<ApItem>> itemMap,
                                            @Nullable Map<Integer, Collection<ApIndex>> indexMap) {
-        if (CollectionUtils.isEmpty(partList)) {
+        if (CollectionUtils.isEmpty(srcPartList)) {
             return Collections.emptyList();
+        }
+
+        // Reorder parts - parent parts have to be first
+        List<ApPart> partList = new ArrayList<>(srcPartList.size());
+        // copy parts without parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() == null) {
+                partList.add(srcPart);
+            }
+        }
+        // copy parts with parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() != null) {
+                partList.add(srcPart);
+            }
         }
 
         // collection of available parts for export
@@ -296,7 +315,11 @@ abstract public class CamXmlBuilder {
                             return false;
                         }
                         // filter empty parts without subparts
-                        if (p.getItms() == null || p.getItms().getItems().size() == 0) {
+                        if (p.getItms() == null || p.getItms().getItems().size() == 0 ||
+                        // special case when PT_EVENT without data are not allowed, 
+                        // PT_EVENT might have defined type but it is not enough, such part
+                        // has to be excluded
+                                (p.getT() == PartTypeXml.PT_EVENT && p.getItms().getItems().size() == 1)) {
                             // no items, we have to check if has subpart
                             Integer cnt = subpartCounter.getOrDefault(p.getPid().getValue(), 0);
                             if (cnt == 0) {

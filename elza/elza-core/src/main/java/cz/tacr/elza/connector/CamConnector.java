@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
-import cz.tacr.cam.client.controller.BatchUpdatesApi;
 import cz.tacr.cam.client.controller.EntityApi;
 import cz.tacr.cam.client.controller.ExportApi;
 import cz.tacr.cam.client.controller.SearchApi;
@@ -44,6 +43,9 @@ import jakarta.xml.bind.Unmarshaller;
 public class CamConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
+
+    public static final String APIKEY_ID = "apikeyId";
+    public static final String APIKEY_VALUE = "apikeyValue";
 
     @Autowired
     private SchemaManager schemaManager;
@@ -89,7 +91,8 @@ public class CamConnector {
     }
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
-                                             final ApExternalSystem externalSystem) throws ApiException {
+                                             final ApExternalSystem externalSystem,
+                                             final String apikeyId, final String apikeyValue) throws ApiException {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
         
@@ -99,13 +102,18 @@ public class CamConnector {
 			try {
 				encoded = Files.readAllBytes(xmlFile.toPath());
 				String data = new String(encoded, "utf-8");
-				logger.debug("Sending data: {}", data);
+                if (apikeyId != null) {
+                    logger.debug("postNewBatch: Sending data to {} as {}: {}", externalSystem.getName(), apikeyId,
+                                 data);
+                } else {
+                    logger.debug("postNewBatch: Sending data to {}: {}", externalSystem.getName(), data);
+                }
 			} catch (IOException e) {
-				logger.error("Failed to log data", e);
+                logger.error("postNewBatch: Failed to log data", e);
 			}        	
         }
         try {
-            ApiResponse<File> fileApiResponse = get(externalSystem)
+            ApiResponse<File> fileApiResponse = get(externalSystem, apikeyId, apikeyValue)
                 .getBatchUpdatesApi()
                 .postNewBatchWithHttpInfo(xmlFile);
             return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
@@ -116,7 +124,7 @@ public class CamConnector {
 
     public BatchUpdateResultXml getBatchStatus(final String bid,
                                                final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApi(externalSystem).getBatchStatusWithHttpInfo(bid);
+        ApiResponse<File> fileApiResponse = get(externalSystem).getBatchUpdatesApi().getBatchStatusWithHttpInfo(bid);
         return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
     }
 
@@ -153,9 +161,18 @@ public class CamConnector {
     }
 
     public CamInstance get(ApExternalSystem apExternalSystem) {
+    	return get(apExternalSystem, null, null);
+    }
+
+    public CamInstance get(ApExternalSystem apExternalSystem, String apikeyId, String apikeyValue) {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+        	// if apikeyId & apikeyValue define - use its
+        	if (apikeyId != null && apikeyValue != null) {
+                return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyValue);
+        	}
+        	// use cache instanceMap
             CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
             if (camInstance == null) {
                 camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
@@ -168,6 +185,10 @@ public class CamConnector {
     }
 
     private <T> T unmarshal(final Class<T> classObject, final ApiResponse<File> apiResponse) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Unmarshalling received data ({}), statusCode: {}", classObject.getName(),
+                         apiResponse.getStatusCode());
+        }
         try (InputStream in = new FileInputStream(apiResponse.getData())) {
             JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -197,10 +218,6 @@ public class CamConnector {
 
     private ExportApi getExportApi(Integer apExternalSystemId) {
         return get(apExternalSystemId).getExportApi();
-    }
-
-    private BatchUpdatesApi getBatchUpdatesApi(ApExternalSystem apExternalSystem) {
-        return get(apExternalSystem).getBatchUpdatesApi();
     }
 
     private UpdatesApi getUpdatesApi(Integer apExternalSystemId) {

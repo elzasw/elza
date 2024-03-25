@@ -117,8 +117,7 @@ public class ScriptModelFactory {
 		        descItemFactory,
 		        nodeCacheService,
 		        structItemRepos,
-                descItemService,
-                structObjService);
+                descItemService);
 		return descItemReader;
 	}
 

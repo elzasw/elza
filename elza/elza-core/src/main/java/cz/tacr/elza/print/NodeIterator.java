@@ -10,12 +10,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 /**
  * Implementace iterátoru s cache pro načítání bloku dat.
  */
 public class NodeIterator implements Iterator<Node>, NodeProvider {
+
+    public static int DEFAULT_WINDOW_SIZE = 1000;
 
     private final NodeLoader nodeLoader;
 
@@ -48,19 +51,27 @@ public class NodeIterator implements Iterator<Node>, NodeProvider {
      * Creates node iterator with default window size of 1000.
      */
     public NodeIterator(NodeLoader nodeLoader, Iterator<NodeId> nodeIdIterator) {
-        this(nodeLoader, nodeIdIterator, 1000);
+        this(nodeLoader, nodeIdIterator, DEFAULT_WINDOW_SIZE);
     }
 
     @Override
     public boolean hasNext() {
-        if (nodeIdIterator.hasNext()) {
-            return true;
-        }
+        // check loaded nodes
         if (nodes != null) {
             if (windowIndex < nodes.size()) {
                 return true;
             }
             nodes = null; // release node references for last window
+        }
+        // try to load next window
+        while (nodeIdIterator.hasNext()) {
+            nodes = nodeLoader.loadNodes(getNextIds());
+            if (CollectionUtils.isNotEmpty(nodes)) {
+                updateActiveNodesMap();
+                windowIndex = 0;
+
+                return true;
+            }
         }
         return false;
     }
@@ -68,15 +79,12 @@ public class NodeIterator implements Iterator<Node>, NodeProvider {
     @Override
     public Node next() {
 
-        if (!hasNext()) {
+    	if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
-        if (windowIndex >= windowSize) {
-            nodes = nodeLoader.loadNodes(getNextIds());
-            updateActiveNodesMap();
-            windowIndex = 0;
-        }
+        Validate.notNull(nodes);
+        Validate.notNull(windowIndex < nodes.size());
 
         Node node = nodes.get(windowIndex);
         Validate.notNull(node);

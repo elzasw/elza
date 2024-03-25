@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -50,6 +52,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.SysExternalSystemProperty;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
@@ -69,6 +72,7 @@ import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.GisExternalSystemRepository;
+import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -103,6 +107,9 @@ public class ExternalSystemService {
 
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
+
+    @Autowired
+    private SysExternalSystemPropertyRepository sysExtSysPropertyRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -814,4 +821,84 @@ public class ExternalSystemService {
      public ArrDigitalRepository getDigitalRepository(Integer digiRepId) {
          return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
+
+     public List<ExtSystemProperty> findUserProperties(Integer extSystemId, Integer userId) {
+         // pokud userId == null, získáme hodnoty pro všechny uživatele
+         List<SysExternalSystemProperty> properties;
+         if (extSystemId == null) {
+             properties = sysExtSysPropertyRepository.findByUserId(userId);
+         } else {
+             properties = sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+ }
+         List<ExtSystemProperty> result = new ArrayList<>(properties.size());
+         properties.forEach(i -> {
+             ExtSystemProperty p = new ExtSystemProperty();
+             p.setId(i.getExternalSystemPropertyId());
+             p.setUserId(i.getUserId());
+             p.setExtSystemId(i.getExternalSystemId());
+             p.setName(i.getName());
+             p.setValue(i.getValue());
+             result.add(p);
+         });
+         return result;
+     }
+
+     public List<ExtSystemProperty> findAllProperties(Integer extSystemId) {
+		// pokud userId == null, získáme hodnoty pro všechny uživatele
+        List<SysExternalSystemProperty> properties;
+        if (extSystemId == null) {
+            properties = sysExtSysPropertyRepository.findAll();
+        } else {
+            properties = sysExtSysPropertyRepository.findByExternalSystemId(extSystemId);
+        }
+		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
+		properties.forEach(i -> {
+			ExtSystemProperty p = new ExtSystemProperty();
+            p.setId(i.getExternalSystemPropertyId());
+			p.setUserId(i.getUserId());
+            p.setExtSystemId(i.getExternalSystemId());
+			p.setName(i.getName());
+			p.setValue(i.getValue());
+			result.add(p);
+		});
+		return result;
+	}
+
+    /**
+     * Add or update property
+     * 
+     * @param extSystem
+     * @param user
+     * @param extSystemProperty
+     * @return
+     */
+    public SysExternalSystemProperty storeProperty(ApExternalSystem extSystem, UsrUser user,
+                                                 ExtSystemProperty extSystemProperty) {
+		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
+		SysExternalSystemProperty property = null;
+		for (SysExternalSystemProperty p : properties) {
+			if (p.getName().equals(extSystemProperty.getName())) {
+				property = p;
+				break;
+			}
+		}
+		if (property == null) {
+			property = new SysExternalSystemProperty();
+			property.setExternalSystem(extSystem);
+			property.setUser(user);
+			property.setName(extSystemProperty.getName());
+		}
+		property.setValue(extSystemProperty.getValue());
+        return sysExtSysPropertyRepository.save(property);
+	}
+
+	public void deleteProperty(Integer extSysPropertyId) {
+		sysExtSysPropertyRepository.deleteById(extSysPropertyId);
+	}
+
+    public SysExternalSystemProperty getProperty(Integer extSysPropertyId) {
+        return sysExtSysPropertyRepository.findById(extSysPropertyId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "SysExternalSystemProperty not found, id: " + extSysPropertyId));
+    }
  }

@@ -27,6 +27,7 @@ import {
     urlFundMovements,
     urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID
 } from "../../constants";
+import UserSettingsModal from 'components/user/UserSettingsModal';
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
@@ -124,6 +125,16 @@ class Ribbon extends AbstractReactComponent {
             body.className = body.className.replace("dark", "light");
             localStorage.setItem("theme", "light")
         }
+    }
+
+    handleUserSettings = () => {
+        const { dispatch } = this.props;
+        dispatch(modalDialogShow(
+            this,
+            i18n('userSettings.title'),
+            <UserSettingsModal />,
+            null,
+        ))
     }
 
     render() {
@@ -394,6 +405,9 @@ class Ribbon extends AbstractReactComponent {
                                     <>
                                         <Dropdown.Item eventKey="3" onClick={this.handleChangeTheme}>
                                             {this.state.theme === "dark" ? <Icon glyph="fa-check-square" /> : <Icon glyph="fa-square-o" />} {i18n("ribbon.action.darkTheme")}
+                                        </Dropdown.Item>
+                                        <Dropdown.Item eventKey="4" onClick={this.handleUserSettings}>
+                                            {i18n("userSettings.button.title")}
                                         </Dropdown.Item>
                                         <Dropdown.Divider key="divider" />
                                     </>

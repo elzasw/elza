@@ -175,6 +175,87 @@ public class UserService {
             UsrPermission.Permission.FUND_ISSUE_ADMIN,
 	};
 
+    public static class ChangedPermissionResult {
+        List<UsrPermission> permissionsAdd = new ArrayList<>();
+        List<UsrPermission> permissionsUpdate = new ArrayList<>();
+        List<UsrPermission> permissionsNoChange = new ArrayList<>();
+        List<UsrPermission> permissionsDelete = new ArrayList<>();
+
+        public void addPermission(UsrPermission permission) {
+            permissionsAdd.add(permission);
+        }
+
+        public List<UsrPermission> getNewPermissions() {
+            return permissionsAdd;
+        }
+
+        /**
+         * Return if permissions were changed and updated.
+         * 
+         * @return
+         */
+        public boolean isPermissionsChanged() {
+            return (permissionsAdd.size() > 0 || permissionsUpdate.size() > 0 || permissionsDelete.size() > 0);
+        }
+
+        /**
+         * Method will check if some of new permission does not already exist or is
+         * scheduled for
+         * removal.
+         */
+        public void optimize() {
+            logger.debug("Optimizing permissions.");
+            boolean modified;
+            do {
+                modified = false;
+
+                for (UsrPermission permAdd : permissionsAdd) {
+                    // check if same exists in unchanged
+                    UsrPermission existingPerm = permissionExists(permAdd, permissionsNoChange);
+                    if (existingPerm != null) {
+                        logger.debug("Optimize permissions: Found same existing permission, type: {}, id: {}",
+                                     permAdd.getPermission(), existingPerm.getPermissionId());
+                        permissionsAdd.remove(permAdd);
+                        modified = true;
+                        break;
+                    }
+                    // check if same exists in changed
+                    existingPerm = permissionExists(permAdd, permissionsUpdate);
+                    if (existingPerm != null) {
+                        logger.debug("Optimize permissions: Found same permission marked for update, type: {}, id: {}",
+                                     permAdd.getPermission(), existingPerm.getPermissionId());
+                        permissionsAdd.remove(permAdd);
+                        modified = true;
+                        break;
+                    }
+                    // check if same exists in deleted
+                    UsrPermission permDelete = permissionExists(permAdd, permissionsDelete);
+                    if (permDelete != null) {
+                        logger.debug("Optimize permissions: Found same permission marked for delete, type: {}, id: {}",
+                                     permAdd.getPermission(), permDelete.getPermissionId());
+                        // remove both permissions
+                        permissionsAdd.remove(permAdd);
+                        permissionsDelete.remove(permDelete);
+                        permissionsNoChange.add(permDelete);
+                        modified = true;
+                        break;
+                    }
+                }
+            } while (modified);
+
+        }
+
+        private UsrPermission permissionExists(UsrPermission perm, List<UsrPermission> list) {
+            for (UsrPermission p : list) {
+                if (p.isSamePermission(perm)) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+    }
+
     public UserService() {
         userPermissionsCache = CacheBuilder.newBuilder()
                 .maximumSize(150)
@@ -216,139 +297,263 @@ public class UserService {
         DELETE
     }
 
-    private List<UsrPermission> changePermission(final UsrUser user,
+    /**
+     * Update DB permisssion according received permissions
+     * 
+     * @param permission
+     * @param permissionDB
+     * @param result
+     */
+    private void updatePermission(UsrPermission permission, UsrPermission permissionDB,
+                                  ChangedPermissionResult result) {
+        boolean modified = false;
+        if (permissionDB.getPermission() != permission.getPermission()) {
+            permissionDB.setPermission(permission.getPermission());
+            modified = true;
+        }
+        if (setNodeRelation(permissionDB, permission.getNodeId(), permission.getFundId())) {
+            modified = true;
+        }
+        if (setFundRelation(permissionDB, permission.getFundId())) {
+            modified = true;
+        }
+        if (setScopeRelation(permissionDB, permission.getScopeId())) {
+            modified = true;
+        }
+        if (setControlUserRelation(permissionDB, permission.getUserControlId())) {
+            modified = true;
+        }
+        if (setControlGroupRelation(permissionDB, permission.getGroupControlId())) {
+            modified = true;
+        }
+        if (setIssueListRelation(permission, permission.getIssueListId())) {
+            modified = true;
+        }
+
+        if (modified) {
+            result.permissionsUpdate.add(permissionDB);
+        } else {
+            result.permissionsNoChange.add(permissionDB);
+        }
+    }
+
+    private void addPermission(UsrUser user, UsrGroup group,
+                               UsrPermission permission, ChangedPermissionResult result) {
+        permission.setUser(user);
+        permission.setGroup(group);
+        setNodeRelation(permission, permission.getNodeId(), permission.getFundId());
+        setFundRelation(permission, permission.getFundId());
+        setScopeRelation(permission, permission.getScopeId());
+        setControlUserRelation(permission, permission.getUserControlId());
+        setControlGroupRelation(permission, permission.getGroupControlId());
+        setIssueListRelation(permission, permission.getIssueListId());
+        result.addPermission(permission);
+    }
+
+    private void changePermission(ChangedPermissionResult result, UsrUser user, UsrGroup group,
+                                  @NotNull ChangePermissionType changePermissionType,
+                                  UsrPermission permission,
+                                  Map<Integer, UsrPermission> permissionMap) {
+
+        // pokud se jedná o pokus o přidělení práv superuživatele
+        if (permission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
+            if (!hasPermission(Permission.ADMIN)) {
+                throw new BusinessException("Přístup superuživatele může udělit pouze superuživatel",
+                        BaseCode.INSUFFICIENT_PERMISSIONS);
+            }
+        }
+
+        switch (changePermissionType) {
+        case ADD:
+            // pro akci add nelze předat vyplněné id
+            if (permission.getPermissionId() != null) {
+                throw new SystemException("V akci add nelze předat oprávnění s vyplněným id",
+                        UserCode.PERM_ILLEGAL_INPUT);
+            }
+            addPermission(user, group, permission, result);
+            break;
+        case DELETE:
+            if (permission.getPermissionId() == null) {
+                //pokud se jedná o akci delete, nesmí být předán záznam bez id
+                if (changePermissionType == ChangePermissionType.DELETE) {
+                    throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id",
+                            UserCode.PERM_ILLEGAL_INPUT);
+                }
+            } else {
+                UsrPermission permissionDB = permissionMap.remove(permission.getPermissionId());
+                if (permissionDB == null) {
+                    throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno",
+                            UserCode.PERM_NOT_EXIST);
+                }
+                result.permissionsDelete.add(permissionDB);
+            }
+            break;
+        case SYNCHRONIZE:
+            // jen zde přidáváme, jinak se jedná o akci delete
+            if (permission.getPermissionId() != null) {
+                UsrPermission permissionDB = permissionMap.remove(permission.getPermissionId());
+                if (permissionDB == null) {
+                    throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno",
+                            UserCode.PERM_NOT_EXIST);
+                }
+                updatePermission(permission, permissionDB, result);
+            } else {
+                // new permission can be added
+                addPermission(user, group, permission, result);
+            }
+            break;
+        default:
+            throw new IllegalStateException("Nepodporovaný typ změny oprávění: " + changePermissionType);
+        }
+    }
+
+    /**
+     * Update user permissions
+     * 
+     * @param user
+     * @param group
+     * @param permissions
+     * @param changePermissionType
+     * @param checkPermission
+     * @return Return number of modified DB permissions
+     */
+    private ChangedPermissionResult changePermission(final UsrUser user,
                                                  final UsrGroup group,
                                                  final @NotNull List<UsrPermission> permissions,
-                                                 final @NotNull List<UsrPermission> permissionsDB,
                                                  final @NotNull ChangePermissionType changePermissionType,
                                                  final boolean checkPermission) {
+        Validate.isTrue(user != null ^ group != null);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("changePermission, user: {}, group: {}, type: {}, count: {}",
+                         user != null ? user.getUserId() : null,
+                         group != null ? group.getGroupId() : null,
+                         changePermissionType,
+                         permissions.size());
+        }
+
+        List<UsrPermission> permissionsDB = (user != null) ? permissionRepository.findByUserOrderByPermissionIdAsc(user)
+                : permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         Map<Integer, UsrPermission> permissionMap = permissionsDB.stream()
                 .collect(Collectors.toMap(UsrPermission::getPermissionId, Function.identity()));
 
-        List<UsrPermission> permissionsAdd = new ArrayList<>();
-        List<UsrPermission> permissionsUpdate = new ArrayList<>();
+        ChangedPermissionResult result = new ChangedPermissionResult();
 
         if (checkPermission) {
             checkPermission(permissions);
         }
 
-        for (UsrPermission permission : permissions) {
-            if (permission.getPermissionId() == null) {
-                // pokud se jedná o pokus o přidělení práv superuživatele
-                if (changePermissionType == ChangePermissionType.ADD && permission.getPermission().equals(UsrPermission.Permission.ADMIN)) {
-                    if (!hasPermission(Permission.ADMIN)) {
-                        throw new BusinessException("Přístup superuživatele může udělit pouze superuživatel", BaseCode.INSUFFICIENT_PERMISSIONS);
-                    }
-                }
-                //pokud se jedná o akci delete, nesmí být předán záznam bez id
-                if (changePermissionType == ChangePermissionType.DELETE) {
-                    throw new SystemException("V akci delete nelze předat oprávnění s nevyplněným id", UserCode.PERM_ILLEGAL_INPUT);
-                }
-                permission.setUser(user);
-                permission.setGroup(group);
-                setNodeRelation(permission, permission.getNodeId(), permission.getFundId());
-                setFundRelation(permission, permission.getFundId());
-                setScopeRelation(permission, permission.getScopeId());
-                setControlUserRelation(permission, permission.getUserControlId());
-                setControlGroupRelation(permission, permission.getGroupControlId());
-                setIssueListRelation(permission, permission.getIssueListId());
-                permissionsAdd.add(permission);
-            } else {
-                if (changePermissionType == ChangePermissionType.ADD) { // pro akci add nelze předat vyplněné id
-                    throw new SystemException("V akci add nelze předat oprávnění s vyplněným id", UserCode.PERM_ILLEGAL_INPUT);
-                } else if (changePermissionType == ChangePermissionType.SYNCHRONIZE) {  // jen zde přidáváme, jinak se jedná o akci delete
-                    UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
-                    if (permissionDB == null) {
-                        throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
-                    }
-                    permissionDB.setPermission(permission.getPermission());
-                    setNodeRelation(permissionDB, permission.getNodeId(), permission.getFundId());
-                    setFundRelation(permissionDB, permission.getFundId());
-                    setScopeRelation(permissionDB, permission.getScopeId());
-                    setControlUserRelation(permissionDB, permission.getUserControlId());
-                    setControlGroupRelation(permissionDB, permission.getGroupControlId());
-                    setIssueListRelation(permission, permission.getIssueListId());
-                    permissionsUpdate.add(permissionDB);
-                }
-            }
-        }
-
-        List<UsrPermission> permissionsDelete;
-        if (changePermissionType == ChangePermissionType.DELETE) {  // v delete budou ty, co jsou předané
-            permissionsDelete = permissions.stream()
-                    .map(permission -> {
-                        UsrPermission permissionDB = permissionMap.get(permission.getPermissionId());
-                        if (permissionDB == null) {
-                            throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
-                        }
-                        return permissionDB;
-                    })
-                    .collect(Collectors.toList());
-        } else if (changePermissionType == ChangePermissionType.ADD) {    // v delete nebude nic
-            permissionsDelete = new ArrayList<>();
-        } else if (changePermissionType == ChangePermissionType.SYNCHRONIZE) {    // v delete budou ty, co se neaktualizovaly
-            permissionsDelete = new ArrayList<>(permissionsDB);
-            permissionsDelete.removeAll(permissionsUpdate);
-        } else {
-            throw new IllegalStateException("Nepodporovaný typ změny oprávění: " + changePermissionType);
-        }
 
         for (UsrPermission permission : permissions) {
-            switch (permission.getPermission().getType()) {
-                case ALL: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
-                        throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type", "ALL");
-                    }
-                    break;
-                }
-                case SCOPE: {
-                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
-                        throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type", "SCOPE");
-                    }
-                    break;
-                }
-                case FUND: {
-                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
-                        throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type", "FUND");
-                    }
-                    break;
-                }
-                case NODE: {
-                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() == null) {
-                        throw new SystemException("Neplatný vstup oprávnění: NODE", UserCode.PERM_ILLEGAL_INPUT).set("type", "NODE");
-                    }
-                    break;
-                }
-                case USER:
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() == null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
-                        throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type", "USER");
-                    }
-                    break;
-                case GROUP:
-                    if (/*permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {*/
-                            permission.getGroupControlId() == null) {
-                        throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type", "GROUP");
-                    }
-                    break;
-                case ISSUE_LIST: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() == null || permission.getNodeId() != null) {
-                        throw new SystemException("Neplatný vstup oprávnění: ISSUE_LIST", UserCode.PERM_ILLEGAL_INPUT).set("type", "ISSUE_LIST");
-                    }
-                    break;
-                }
-                default:
-                    throw new IllegalStateException("Nedefinovaný typ oprávnění");
-            }
+            // applied permissions will be removed from permissionMap
+            changePermission(result, user, group, changePermissionType, permission, permissionMap);
         }
 
-        permissionRepository.deleteAll(permissionsDelete);
-        permissionRepository.saveAll(permissionsAdd);
-        permissionRepository.saveAll(permissionsUpdate);
+        // Remaining permissions should be deleted in sync 
+        if (changePermissionType == ChangePermissionType.SYNCHRONIZE) {
+            result.permissionsDelete.addAll(permissionMap.values());
+        }
 
-        List<UsrPermission> result = new ArrayList<>();
-        result.addAll(permissionsAdd);
-        result.addAll(permissionsUpdate);
+        result.optimize();
+
+        for (UsrPermission permission : permissions) {
+            validatePermission(permission);
+        }
+
+        // Collect results
+        if (CollectionUtils.isNotEmpty(result.permissionsDelete)) {
+            permissionRepository.deleteAll(result.permissionsDelete);
+        }
+        if (CollectionUtils.isNotEmpty(result.permissionsAdd)) {
+            result.permissionsAdd = permissionRepository.saveAll(result.permissionsAdd);
+        }
+        if (CollectionUtils.isNotEmpty(result.permissionsUpdate)) {
+            result.permissionsUpdate = permissionRepository.saveAll(result.permissionsUpdate);
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("changePermission - results, user: {}, group: {}, type: {}, permissions: [new: {}, deleted: {}, updated: {}, unchanged: {}]",
+                         user != null ? user.getUserId() : null,
+                         group != null ? group.getGroupId() : null,
+                         changePermissionType,
+                         result.permissionsAdd.size(),
+                         result.permissionsDelete.size(),
+                         result.permissionsUpdate.size(),
+                         result.permissionsNoChange.size());
+        }
         return result;
+    }
+
+    /**
+     * Validate permission object
+     * 
+     * @param permission
+     */
+    private void validatePermission(UsrPermission permission) {
+        switch (permission.getPermission().getType()) {
+        case ALL: {
+            if (permission.getScopeId() != null || permission.getFundId() != null
+                    || permission.getUserControlId() != null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() != null || permission.getNodeId() != null) {
+                throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                            "ALL");
+            }
+            break;
+        }
+        case SCOPE: {
+            if (permission.getScopeId() == null || permission.getFundId() != null
+                    || permission.getUserControlId() != null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() != null || permission.getNodeId() != null) {
+                throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                              "SCOPE");
+            }
+            break;
+        }
+        case FUND: {
+            if (permission.getScopeId() != null || permission.getFundId() == null
+                    || permission.getUserControlId() != null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() != null || permission.getNodeId() != null) {
+                throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                             "FUND");
+            }
+            break;
+        }
+        case NODE: {
+            if (permission.getScopeId() != null || permission.getFundId() == null
+                    || permission.getUserControlId() != null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() != null || permission.getNodeId() == null) {
+                throw new SystemException("Neplatný vstup oprávnění: NODE", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                             "NODE");
+            }
+            break;
+        }
+        case USER:
+            if (permission.getScopeId() != null || permission.getFundId() != null
+                    || permission.getUserControlId() == null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() != null) {
+                throw new SystemException("Neplatný vstup oprávnění: USER", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                             "USER");
+            }
+            break;
+        case GROUP:
+            if (/*permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {*/
+            permission.getGroupControlId() == null) {
+                throw new SystemException("Neplatný vstup oprávnění: GROUP", UserCode.PERM_ILLEGAL_INPUT).set("type",
+                                                                                                              "GROUP");
+            }
+            break;
+        case ISSUE_LIST: {
+            if (permission.getScopeId() != null || permission.getFundId() != null
+                    || permission.getUserControlId() != null || permission.getGroupControlId() != null
+                    || permission.getIssueListId() == null || permission.getNodeId() != null) {
+                throw new SystemException("Neplatný vstup oprávnění: ISSUE_LIST", UserCode.PERM_ILLEGAL_INPUT)
+                        .set("type", "ISSUE_LIST");
+            }
+            break;
+        }
+        default:
+            throw new IllegalStateException("Nedefinovaný typ oprávnění");
+        }
     }
 
     /**
@@ -374,32 +579,53 @@ public class UserService {
     }
 
     /**
-     * Nastaví vazbu na soubor, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na soubor, pokud je předané id. Pokud předané není, je vazba
+     * odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param fundId     id objektu, na který má být přidána vazba
+     * @param permission
+     *            oprávnění
+     * @param fundId
+     *            id objektu, na který má být přidána vazba
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setFundRelation(final UsrPermission permission, final Integer fundId) {
+    private boolean setFundRelation(final UsrPermission permission, final Integer fundId) {
         if (fundId != null) {
+            if (permission.getFund() != null && fundId.equals(permission.getFundId())) {
+                return false;
+            }
             ArrFund fund = fundRepository.findById(fundId)
                     .orElseThrow(() -> new SystemException("Neplatný archivní soubor", ArrangementCode.FUND_NOT_FOUND).set("id", fundId));
             permission.setFund(fund);
         } else {
+            if (permission.getFund() == null) {
+                return false;
+            }
             permission.setFund(null);
         }
+        return true;
     }
 
     /**
-     * Nastaví vazbu na JP, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na JP, pokud je předané id. Pokud předané není, je vazba
+     * odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param nodeId     id objektu, na který má být přidána vazba
-     * @param fundId     id AS, který vztahuje k JP
+     * @param permission
+     *            oprávnění
+     * @param nodeId
+     *            id objektu, na který má být přidána vazba
+     * @param fundId
+     *            id AS, který vztahuje k JP
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setNodeRelation(final UsrPermission permission, final Integer nodeId, final Integer fundId) {
+    private boolean setNodeRelation(final UsrPermission permission, final Integer nodeId, final Integer fundId) {
         if (nodeId != null) {
+            if(permission.getNode()!=null&&nodeId.equals(permission.getNodeId())) {
+                return false;
+            }
             ArrNode node = nodeRepository.findById(nodeId)
                     .orElseThrow(() -> new SystemException("Neplatná JP", ArrangementCode.NODE_NOT_FOUND).set("id", nodeId));
             if (!node.getFundId().equals(fundId)) {
@@ -409,8 +635,12 @@ public class UserService {
             }
             permission.setNode(node);
         } else {
+            if (permission.getNodeId() == null) {
+                return false;
+            }
             permission.setNode(null);
         }
+        return true;
     }
 
     /**
@@ -448,126 +678,189 @@ public class UserService {
     }
 
     /**
-     * Nastaví vazbu na scope, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na scope, pokud je předané id. Pokud předané není, je vazba
+     * odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param scopeId    id objektu, na který má být přidána vazba
+     * @param permission
+     *            oprávnění
+     * @param scopeId
+     *            id objektu, na který má být přidána vazba
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setScopeRelation(final UsrPermission permission, final Integer scopeId) {
+    private boolean setScopeRelation(final UsrPermission permission, final Integer scopeId) {
         if (scopeId != null) {
+            if (permission.getScope() != null && scopeId.equals(permission.getScopeId())) {
+                return false;
+            }
             ApScope scope = scopeRepository.findById(scopeId)
                     .orElseThrow(() -> new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST));
             permission.setScope(scope);
         } else {
+            if (permission.getScope() == null) {
+                return false;
+            }
             permission.setScope(null);
         }
+
+        return true;
     }
 
     /**
-     * Nastaví vazbu na uživatele - spravovaná etita, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na uživatele - spravovaná etita, pokud je předané id. Pokud
+     * předané není, je vazba odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param userId     id objektu, na který má být přidána vazba
+     * @param permission
+     *            oprávnění
+     * @param userId
+     *            id objektu, na který má být přidána vazba
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setControlUserRelation(final UsrPermission permission, final Integer userId) {
+    private boolean setControlUserRelation(final UsrPermission permission, final Integer userId) {
         if (userId != null) {
+            if (permission.getUserControl() != null && userId.equals(permission.getUserControlId())) {
+                return false;
+            }
+
             UsrUser user = userRepository.findById(userId)
                     .orElseThrow(() -> new SystemException("Neplatný uživatel", BaseCode.ID_NOT_EXIST));
             permission.setUserControl(user);
         } else {
+            if (permission.getUserControl() == null) {
+                return false;
+            }
             permission.setUserControl(null);
         }
+        return true;
     }
 
     /**
-     * Nastaví vazbu na skupinu - spravovaná etita, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na skupinu - spravovaná etita, pokud je předané id. Pokud
+     * předané není, je vazba odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param groupId    id objektu, na který má být přidána vazba
+     * @param permission
+     *            oprávnění
+     * @param groupId
+     *            id objektu, na který má být přidána vazba
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setControlGroupRelation(final UsrPermission permission, final Integer groupId) {
+    private boolean setControlGroupRelation(final UsrPermission permission, final Integer groupId) {
+
         if (groupId != null) {
+            if (permission.getGroupControl() != null && groupId.equals(permission.getGroupControlId())) {
+                return false;
+            }
+
             UsrGroup group = groupRepository.findById(groupId)
                     .orElseThrow(() -> new SystemException("Neplatná skupina", BaseCode.ID_NOT_EXIST));
             permission.setGroupControl(group);
         } else {
+            if (permission.getGroupControl() == null) {
+                return false;
+            }
             permission.setGroupControl(null);
         }
+        return true;
     }
 
     /**
-     * Nastaví vazbu na protokol, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Nastaví vazbu na protokol, pokud je předané id. Pokud předané není, je vazba
+     * odstraněna.
      * Kontroluje existenci objektu s daným id.
      *
-     * @param permission oprávnění
-     * @param issueListId id objektu, na který má být přidána vazba
+     * @param permission
+     *            oprávnění
+     * @param issueListId
+     *            id objektu, na který má být přidána vazba
+     * @return Return true if permission object was modified.
+     *         Return false if modification was not done.
      */
-    private void setIssueListRelation(final UsrPermission permission, final Integer issueListId) {
+    private boolean setIssueListRelation(final UsrPermission permission, final Integer issueListId) {
         if (issueListId != null) {
+            if (permission.getIssueList() != null && issueListId.equals(permission.getIssueListId())) {
+                return false;
+            }
             WfIssueList issueList = issueListRepository.findById(issueListId)
                     .orElseThrow(() -> new SystemException("Neplatný protokol", BaseCode.ID_NOT_EXIST));
             permission.setIssueList(issueList);
         } else {
+            if (permission.getIssueList() == null) {
+                return false;
+            }
             permission.setIssueList(null);
         }
+        return true;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
     public void changeGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE, true);
-        changeGroupEvent(group);
+        ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.SYNCHRONIZE,
+                                                          true);
+        if (result.isPermissionsChanged()) {
+            changeGroupEvent(group);
+        }
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public void changeUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.SYNCHRONIZE, true);
-        invalidateCache(user);
-        changeUserEvent(user);
+        ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.SYNCHRONIZE,
+                                                          true);
+        if (result.isPermissionsChanged()) {
+            invalidateCache(user);
+            changeUserEvent(user);
+        }
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
-    public List<UsrPermission> addUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
+    public ChangedPermissionResult addUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                                  @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        List<UsrPermission> result = changePermission(user, null, permissions, permissionsDB, ChangePermissionType.ADD, checkPermission);
-        invalidateCache(user);
-        changeUserEvent(user);
+        ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.ADD,
+                                                      checkPermission);
+        if (result.isPermissionsChanged()) {
+            invalidateCache(user);
+            changeUserEvent(user);
+        }
+
         return result;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
-    public List<UsrPermission> addGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
+    public ChangedPermissionResult addGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                                   @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        List<UsrPermission> result = changePermission(null, group, permissions, permissionsDB, ChangePermissionType.ADD, checkPermission);
-        invalidateCache(group);
-        changeGroupEvent(group);
+        ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.ADD,
+                                                          checkPermission);
+        if (result.isPermissionsChanged()) {
+            invalidateCache(group);
+            changeGroupEvent(group);
+        }
         return result;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public void deleteUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-        changePermission(user, null, permissions, permissionsDB, ChangePermissionType.DELETE, true);
-        invalidateCache(user);
-        changeUserEvent(user);
+        ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.DELETE, true);
+        if (result.isPermissionsChanged()) {
+            invalidateCache(user);
+            changeUserEvent(user);
+        }
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
     public void deleteGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
-        List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-        changePermission(null, group, permissions, permissionsDB, ChangePermissionType.DELETE, true);
-        invalidateCache(group);
-        changeGroupEvent(group);
+        ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.DELETE, true);
+        if (result.isPermissionsChanged()) {
+            invalidateCache(group);
+            changeGroupEvent(group);
+        }
     }
 
     /**

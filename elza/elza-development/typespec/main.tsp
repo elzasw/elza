@@ -401,6 +401,22 @@ model EntityRef {
     note?: string;
 }
 
+/**
+ * Pairs name-value for external system and user
+ */
+model ExtSystemProperty {
+    /** ext system property id */
+    id?: integer;
+    /** user id */
+    userId?: integer;
+    /** external system id */
+    extSystemId: integer,
+    /** name of property */
+    name: string;
+    /** value of property */
+    value: string;
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -425,6 +441,53 @@ namespace ElzaAPI.Admin {
     /** Return list of logged users */
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;    
+}
+
+@tag("externalsystems")
+@route("/extsystem")
+namespace ElzaAPI.ExternalSystem {
+    /**
+     * Return list of all properties of external system
+     */
+    @route("property")
+    op allProperties(
+        /** external system id */
+        @query extSystemId?: integer,
+        /** user id */
+        @query userId?: integer
+    ): ExtSystemProperty[];
+
+    /**
+     * Store one or more property of external system
+     */
+    @route("property")
+    @post op storeProperties(
+        /** request body */
+        @body body: ExtSystemProperty[]
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** Id does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Delete one property of external system
+     */
+    @route("property")
+    @delete op deleteProperties(
+        /** external system property id */
+        @body extSysPropertyId: integer[]
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** Id does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
 }
 
 @tag("funds")

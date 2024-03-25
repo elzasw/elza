@@ -19,6 +19,10 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.PackageCode;
+
 /**
  *
  */
@@ -60,8 +64,9 @@ public abstract class JaxbUtils {
             }
             return temp;
         } catch (Exception e) {
-            log.error("Failed to write XML", e);
-            throw new SystemException("Nepodařilo se načíst objekt " + aClass.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", aClass.toString());
+            log.error("Failed to write XML, class: " + aClass.getSimpleName(), e);
+            throw new SystemException("Nepodařilo se uložit objekt " + aClass.getSimpleName() + " do souboru", e,
+                    BaseCode.EXPORT_FAILED).set("class", aClass.toString());
         }
     }
 }

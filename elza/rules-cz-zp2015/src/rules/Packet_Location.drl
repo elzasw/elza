@@ -1,0 +1,22 @@
+package ZP2015;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.domain.RulItemType;
+
+// Přidání lokace jako doporučené
+rule "Doporučená lokace"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_LOCATION", "ZP2015_PACKET_DEPOSITORY", "ZP2015_PACKET_ROW", "ZP2015_PACKET_COLUMN", "ZP2015_PACKET_SHELF"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end

@@ -17,13 +17,13 @@ public class Structured {
 
     private final ArrStructuredObject structObj;
 
-    private final StructObjValueService structObjService;
+    private final StructuredItemRepository itemRepos;
 
     private List<StructObjItem> items;
 
-    public Structured(final ArrStructuredObject structObj, final StructObjValueService structObjService) {
+    public Structured(final ArrStructuredObject structObj, final StructuredItemRepository itemRepos) {
 		this.structObj = structObj;
-		this.structObjService = structObjService;
+		this.itemRepos = itemRepos;
 	}
 
 	public String getValue() {
@@ -33,7 +33,7 @@ public class Structured {
 	public List<StructObjItem> getItems() {
 		if(items==null) {
 			// read description items (if needed) from DB
-			List<ArrStructuredItem> dbItems = structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+			List<ArrStructuredItem> dbItems = itemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
 			items = ModelFactory.createStructuredItems(dbItems);
 		}
 		return items;

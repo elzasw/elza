@@ -787,7 +787,13 @@ public class ApController {
 
         MultipleApChangeContext mcc = new MultipleApChangeContext();
 
-        accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+        try {
+            accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+        } catch (SyncImpossibleException e) {
+            throw new BusinessException("Failed to replace access point", e, 
+                    BaseCode.INVALID_STATE)
+                            .set("entityId", replacedState.getAccessPointId());
+        }
         for (Integer apId : mcc.getModifiedApIds()) {
             accessPointCacheService.createApCachedAccessPoint(apId);
         }
@@ -1305,7 +1311,9 @@ public class ApController {
             camService.synchronizeAccessPoint(procCtx, binding, entity, false);
         } catch (SyncImpossibleException e) {
             logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", accessPoint.getAccessPointId(), bindingState.getBindingId(), e.getMessage());
-            throw new BusinessException("Synchronizace této entity s CAM není možná. " + e.getMessage(), ExternalCode.SYNC_IMPOSSIBLE);
+            throw new BusinessException("Synchronizace této entity s CAM není možná. " + e.getMessage(),
+                    e,
+                    ExternalCode.SYNC_IMPOSSIBLE);
         }
     }
 

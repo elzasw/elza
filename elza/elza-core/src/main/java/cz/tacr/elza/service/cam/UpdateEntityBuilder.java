@@ -135,6 +135,10 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
                 updateItemsXml.getItems().add(i);
             }
         }
+        // check if item was added
+        if (updateItemsXml.getItems().size() == 0) {
+            return null;
+        }
         return updateItemsXml;
     }
 

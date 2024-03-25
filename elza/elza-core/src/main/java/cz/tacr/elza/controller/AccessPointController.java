@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.service.AccessPointService;
@@ -45,6 +46,7 @@ import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cam.SyncImpossibleException;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -82,8 +84,13 @@ public class AccessPointController implements AccesspointsApi {
     public ResponseEntity<EntityRef> copyAccessPoint(String id, @Valid CopyAccessPointDetail copyAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         ApScope scope = accessPointService.getApScope(copyAccessPointDetail.getScope());
-        ApAccessPoint copyAccessPoint = accessPointService.copyAccessPoint(accessPoint, scope, copyAccessPointDetail.getReplace(), 
-                                                                           copyAccessPointDetail.getSkipItems());
+        ApAccessPoint copyAccessPoint;
+        try {
+            copyAccessPoint = accessPointService.copyAccessPoint(accessPoint, scope, copyAccessPointDetail.getReplace(),
+                                                                 copyAccessPointDetail.getSkipItems());
+        } catch (SyncImpossibleException e) {
+            throw new BusinessException("Failed to copy exception", e, BaseCode.INVALID_STATE);
+        }
         CachedAccessPoint cachedAccessPoint = apCacheService.findCachedAccessPoint(copyAccessPoint.getAccessPointId());
         EntityRef entityRef = apCacheService.createEntityRef(cachedAccessPoint);
         return ResponseEntity.ok(entityRef);
@@ -109,7 +116,13 @@ public class AccessPointController implements AccesspointsApi {
             revisionService.deleteRevision(apState, revision);
         }
 
-        accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
+        try {
+            accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
+        } catch (SyncImpossibleException e) {
+            throw new BusinessException("Failed to replace access point", e,
+                    BaseCode.INVALID_STATE)
+                            .set("entityId", apState.getAccessPointId());
+        }
         return ResponseEntity.ok().build();
     }
 
