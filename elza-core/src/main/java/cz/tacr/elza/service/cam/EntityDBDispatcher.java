@@ -74,7 +74,6 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -303,14 +302,18 @@ public class EntityDBDispatcher {
                 // update entity if deleted
                 state = entityInfo.getState();
                 if (state.getDeleteChangeId() == null) {
-                    throw new BusinessException("Accespoint already exists", ExternalCode.ALREADY_IMPORTED);
+                    // entity exists and is valid, connect entity with current records
+                    // nop is needed
+                } else {
+                    state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
+                    accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
+                    createdEntities.add(state);
                 }
-                state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
             } else {
                 state = createAccessPoint(entity, binding, srcUuid, false);
+                accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
+                createdEntities.add(state);
             }
-            accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
-            createdEntities.add(state);
             accessPointService.setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
         }
 
