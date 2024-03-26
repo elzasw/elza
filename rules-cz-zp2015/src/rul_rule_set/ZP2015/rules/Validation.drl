@@ -217,6 +217,7 @@ when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems && $descItems: descItems)
     DescItem( type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL")) from $descItems
     $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
+    not DescItem ( undefined ) from $di
     not DescItem( string matches "^1:[1-9][0-9]*$" ) from $di
     not DescItem( string matches "^\\[1:[1-9][0-9]*\\]$" ) from $di
 then
@@ -228,6 +229,7 @@ when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems && $descItems: descItems)
     DescItem( type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY")) from $descItems
     $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
+    not DescItem ( undefined ) from $di
     not DescItem( string matches "^[1-9][0-9]*:[1-9][0-9]*$" ) from $di
     not DescItem( string matches "^\\[[1-9][0-9]*:[1-9][0-9]*\\]$" ) from $di
 then
