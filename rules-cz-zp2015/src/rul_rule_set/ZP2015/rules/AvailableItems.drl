@@ -3364,7 +3364,6 @@ rule "Možné textové měřítko pro mapy a tech. výkresy (vždy)"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
-    not DescItem(type=="ZP2015_SCALE_NUMERICAL") from $ownItems
     $itemType: RulItemTypeExt( code in ("ZP2015_SCALE") )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
@@ -3374,10 +3373,10 @@ rule "Možné strukturované měřítko pro mapy a tech. výkresy (vždy)"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
-    not DescItem(type=="ZP2015_SCALE") from $ownItems
     $itemType: RulItemTypeExt( code in ("ZP2015_SCALE_NUMERICAL") )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
 end
 
 rule "Povinnost měřítka pro mapy a tech. výkresy v inv (jednotlivost)"
