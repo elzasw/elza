@@ -211,3 +211,13 @@ when
 then
 	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
 end
+
+rule "Kontrola syntaxe měřítka"
+when
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems )
+    $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
+    not DescItem( string matches "^1:[0-9]{1,}" ) from $di
+    not DescItem( string matches "^[0-9]{1,}:1" ) from $di
+then
+	results.createError($di.getDescItemId(), "Počet měřítko musí být ve formátu 1:n nebo n:1", "ZP2015_POL_BASIC");
+end
