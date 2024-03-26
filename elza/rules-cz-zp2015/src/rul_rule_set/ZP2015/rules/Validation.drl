@@ -212,12 +212,24 @@ then
 	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
 end
 
-rule "Kontrola syntaxe měřítka"
+rule "Kontrola syntaxe měřítka - mapy"
 when
-    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems )
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems && $descItems: descItems)
+    DescItem( type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL")) from $descItems
     $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
-    not DescItem( string matches "^1:[0-9]{1,}" ) from $di
-    not DescItem( string matches "^[0-9]{1,}:1" ) from $di
+    not DescItem( string matches "^1:[1-9][0-9]*$" ) from $di
+    not DescItem( string matches "^\\[1:[1-9][0-9]*\\]$" ) from $di
 then
-	results.createError($di.getDescItemId(), "Počet měřítko musí být ve formátu 1:n nebo n:1", "ZP2015_POL_BASIC");
+	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu 1:n nebo [1:n]", "ZP2015_POL_BASIC");
+end
+
+rule "Kontrola syntaxe měřítka - tech.výkresy"
+when
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems && $descItems: descItems)
+    DescItem( type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY")) from $descItems
+    $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
+    not DescItem( string matches "^[1-9][0-9]*:[1-9][0-9]*$" ) from $di
+    not DescItem( string matches "^\\[[1-9][0-9]*:[1-9][0-9]*\\]$" ) from $di
+then
+	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu n:m nebo [n:m]", "ZP2015_POL_BASIC");
 end
