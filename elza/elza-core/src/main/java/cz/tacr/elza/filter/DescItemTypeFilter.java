@@ -215,8 +215,8 @@ public class DescItemTypeFilter {
     	if (!lucenePredicates.isEmpty()) {
         	SearchPredicateFactory factory = session.scope(ArrDescItem.class).predicate();
     		BooleanPredicateClausesStep<?> bool = factory.bool();
-    		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId().toString()).toPredicate());
-    		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId.toString()).toPredicate());
+    		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()).toPredicate());
+    		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId).toPredicate());
 
     		lucenePredicates.forEach(p -> bool.must(p));
 
