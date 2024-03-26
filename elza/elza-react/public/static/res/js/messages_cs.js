@@ -63,6 +63,9 @@ var messages = {
     "global.action.copyToClipboard": "Zkopírovat do schránky",
     "global.action.copyToClipboard.finished": "Zkopírováno do schránky",
 
+    "global.geometry.label.objects": "Obrazce",
+    "global.geometry.label.points": "Body",
+
     "confirmDialog.default.title": "Potvrzení",
     "confirmDialog.default.message": "Přejete si pokračovat?",
 
@@ -1009,7 +1012,7 @@ var messages = {
     "subNodeForm.visiblePolicy": "Způsob kontroly",
 
     "subNodeForm.countOfCoordinates": "Počet bodů: {0}",
-    "subNodeForm.errorPointCoordinates": 'Chybně zadaný bod. Zadávejte ve tvaru "15.5154,49.535"',
+    "subNodeForm.errorPointCoordinates": 'Chybný formát souřadnic. Podporován je formát WKT nebo bod zadaný ve tvaru "15.5154,49.535"',
 
     "subNodeForm.calculate-user": "Pole je vyplňováno uživatelsky, přepnout na automatické",
     "subNodeForm.calculate-auto": "Pole je vyplňováno automaticky, přepnout na uživatelské",
@@ -1209,14 +1212,14 @@ var messages = {
     "ap.push-to-ext": "Zápis entity do externího systému",
     "ap.push-to-ext.multipleSyncs.message": "Nahrání do externího systému není možné pro entity, které mají napojen více než jeden externí systém.",
     "ap.push-to-ext.readOnly.message": "Externí systém napojený k vybrané entitě je určen pouze pro čtení.",
-    "ap.push-to-ext.unsyncedEntities.title": "Odesílaný záznam odkazuje na jiné entity, které nejsou zapsány v cílovém externím systému. ",
+    "ap.push-to-ext.unsyncedEntities.title": "Odesílaný záznam odkazuje na jiné entity, které nejsou zapsány v cílovém systému. ",
     "ap.push-to-ext.unsyncedEntities.message": "Po potvrzení akce nedojde k odeslání všech vztahů. Záznam zůstane ve stavu Lokální změna nebo může dojít k celkové chybě odeslání.\nPro dosažení aktivní synchronizace je nutné odeslání všech souvisejících entit. Po jejich odeslání je třeba opětovně zapsat tuto entitu do externího systému.",
     "ap.push-to-ext.unsyncedEntities.listTitle": "Dotčené části záznamu entity:",
     "ap.push-to-ext.selectedExtSystem.message": "Přejete si zapsat entitu <b>{0}</b> do systému <b>{1}</b>?",
-    "ap.push-to-ext.pending.message": "Čekání na odeslání entity do externího systému...",
-    "ap.push-to-ext.started.message": "Odesílání entity do externího systému...",
+    "ap.push-to-ext.pending.message": "Čekání na odeslání entity ...",
+    "ap.push-to-ext.started.message": "Odesílání entity ...",
     "ap.push-to-ext.failed.title": "Chyba při odesílání entity",
-    "ap.push-to-ext.failed.message": "Nepodařilo se nahrát entitu do externího systému. Podrobnosti naleznete v okně Fronta synchronizace (Synchronizace s externími systémy)",
+    "ap.push-to-ext.failed.message": "Nepodařilo se entitu uložit do návazného systému. Podrobnosti naleznete v okně Fronta synchronizace (Synchronizace s externími systémy)",
 
     "ap.ext-syncs.title": "Synchronizace s externími systémy",
     "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",
@@ -1277,6 +1280,8 @@ var messages = {
     "ap.coordinate.export.title": "Export souřadnic",
     "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
     "ap.coordinate.format": "Formát {0}",
+    "ap.coordinate.map-editor.title": "Editor souřadnic",
+    "ap.coordinate.edit-in-map": "Upravit v mapě",
 
     "ap.part.complements.create": "Vytvořit doplňky",
     "ap.part.complements.noChanges.title": "Existující hodnoty",
@@ -1812,6 +1817,15 @@ var messages = {
     "accesspoint.scope.relatedScopes": "Návazné oblasti",
     "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
     "textFragments.title": "Speciální znaky",
+
+    "userSettings.button.title": "Nastavení",
+    "userSettings.title": "Nastavení uživatele",
+    "userSettings.category.ApiKeys": "API Klíče",
+    "userSettings.apiKeys.noItems": "Žádné uložené osobní API klíče",
+    "userSettings.apiKeys.delete.confirm.message": "Přejete si smazat nastavený API klíč pro externí systém {0}?",
+    "userSettings.apiKeys.item.id": "id",
+    "userSettings.apiKeys.item.value": "hodnota",
+    "userSettings.apiKeys.save": "Uložit",
 
     ____: "",
 };
