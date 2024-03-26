@@ -109,11 +109,11 @@ end
 // uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku a složku manipulačního seznamu
 rule "Počet archiválií musí být větší nebo roven 2"
 when
-	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items	
-	not DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $items
-	not DescItem(type=="ZP2015_EXTRA_UNITS" ) from $items
-    $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
+	$activeLevel: ActiveLevel( $items: descItems && $ownItems: ownDescItems )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	not DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $ownItems
+	not DescItem(type=="ZP2015_EXTRA_UNITS" ) from $ownItems
+    $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $ownItems
 then
 	results.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 2", "ZP2015_POL_BASIC");
 end
@@ -210,4 +210,14 @@ when
 		  from $items )
 then
 	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
+end
+
+rule "Kontrola syntaxe měřítka"
+when
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems )
+    $di: DescItem( type=="ZP2015_SCALE_NUMERICAL" ) from $ownDescItems
+    not DescItem( string matches "^1:[0-9]{1,}" ) from $di
+    not DescItem( string matches "^[0-9]{1,}:1" ) from $di
+then
+	results.createError($di.getDescItemId(), "Počet měřítko musí být ve formátu 1:n nebo n:1", "ZP2015_POL_BASIC");
 end

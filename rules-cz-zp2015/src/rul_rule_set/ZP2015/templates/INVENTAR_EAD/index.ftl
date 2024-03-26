@@ -662,6 +662,9 @@
       <#case "ZP2015_SCALE">
         <#lt>  <ead:materialspec localtype="SCALE">${item.serializedValue}</ead:materialspec>
         <#break>
+      <#case "ZP2015_SCALE_NUMERICAL">
+        <#lt>  <ead:materialspec localtype="SCALE">${item.serializedValue}</ead:materialspec>
+        <#break>
       <#case "ZP2015_ORIENTATION">
         <#lt>  <ead:materialspec localtype="ORIENTATION">${item.serializedValue}</ead:materialspec>
         <#break>

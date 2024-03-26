@@ -12,5 +12,7 @@ public interface SysExternalSystemPropertyRepository extends ElzaJpaRepository<S
 
 	List<SysExternalSystemProperty> findByExternalSystemIdAndUserId(Integer externalSystemId, Integer userId);
 
+    List<SysExternalSystemProperty> findByUserId(Integer userId);
+
 	List<SysExternalSystemProperty> findByExternalSystemId(Integer externalSystemId);
 }
