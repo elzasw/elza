@@ -243,6 +243,10 @@ public class UsrPermission {
         this.nodeId = node == null ? null : node.getNodeId();
     }
 
+    public void setNodeId(Integer id) {
+        this.nodeId = id;
+    }
+
     /**
      * @return protokol, ke kterému se oprávnění vztahuje
      */
@@ -262,6 +266,10 @@ public class UsrPermission {
         return issueListId;
     }
 
+    public void setIssueListId(Integer id) {
+        this.issueListId = id;
+    }
+
     public UsrUser getUserControl() {
         return userControl;
     }
@@ -269,6 +277,14 @@ public class UsrPermission {
     public void setUserControl(UsrUser userControl) {
         this.userControl = userControl;
         this.userControlId = userControl == null ? null : userControl.getUserId();
+    }
+
+    public Integer getUserControlId() {
+        return userControlId;
+    }
+
+    public void setUserControlId(Integer id) {
+        this.userControlId = id;
     }
 
     public UsrGroup getGroupControl() {
@@ -280,12 +296,12 @@ public class UsrPermission {
         this.groupControlId = groupControl == null ? null : groupControl.getGroupId();
     }
 
-    public Integer getUserControlId() {
-        return userControlId;
-    }
-
     public Integer getGroupControlId() {
         return groupControlId;
+    }
+
+    public void setGroupControlId(Integer id) {
+        this.groupControlId = id;
     }
 
     /**

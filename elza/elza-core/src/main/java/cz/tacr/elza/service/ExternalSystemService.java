@@ -14,9 +14,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
@@ -805,16 +805,41 @@ public class ExternalSystemService {
          return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
 
-	public List<ExtSystemProperty> findAllProperties(Integer extSystemId, Integer userId) {
+     public List<ExtSystemProperty> findUserProperties(Integer extSystemId, Integer userId) {
+         // pokud userId == null, získáme hodnoty pro všechny uživatele
+         List<SysExternalSystemProperty> properties;
+         if (extSystemId == null) {
+             properties = sysExtSysPropertyRepository.findByUserId(userId);
+         } else {
+             properties = sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+         }
+         List<ExtSystemProperty> result = new ArrayList<>(properties.size());
+         properties.forEach(i -> {
+             ExtSystemProperty p = new ExtSystemProperty();
+             p.setId(i.getExternalSystemPropertyId());
+             p.setUserId(i.getUserId());
+             p.setExtSystemId(i.getExternalSystemId());
+             p.setName(i.getName());
+             p.setValue(i.getValue());
+             result.add(p);
+         });
+         return result;
+     }
+
+     public List<ExtSystemProperty> findAllProperties(Integer extSystemId) {
 		// pokud userId == null, získáme hodnoty pro všechny uživatele
-		List<SysExternalSystemProperty> properties = userId == null? 
-				sysExtSysPropertyRepository.findByExternalSystemId(extSystemId)
-				: sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
+        List<SysExternalSystemProperty> properties;
+        if (extSystemId == null) {
+            properties = sysExtSysPropertyRepository.findAll();
+        } else {
+            properties = sysExtSysPropertyRepository.findByExternalSystemId(extSystemId);
+        }
 		List<ExtSystemProperty> result = new ArrayList<>(properties.size());
 		properties.forEach(i -> {
 			ExtSystemProperty p = new ExtSystemProperty();
-			p.setId(i.getExternalSystemId());
+            p.setId(i.getExternalSystemPropertyId());
 			p.setUserId(i.getUserId());
+            p.setExtSystemId(i.getExternalSystemId());
 			p.setName(i.getName());
 			p.setValue(i.getValue());
 			result.add(p);
@@ -822,7 +847,16 @@ public class ExternalSystemService {
 		return result;
 	}
 
-	public void addProperty(ApExternalSystem extSystem, UsrUser user, ExtSystemProperty extSystemProperty) {
+    /**
+     * Add or update property
+     * 
+     * @param extSystem
+     * @param user
+     * @param extSystemProperty
+     * @return
+     */
+    public SysExternalSystemProperty storeProperty(ApExternalSystem extSystem, UsrUser user,
+                                                 ExtSystemProperty extSystemProperty) {
 		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
 		SysExternalSystemProperty property = null;
 		for (SysExternalSystemProperty p : properties) {
@@ -838,10 +872,16 @@ public class ExternalSystemService {
 			property.setName(extSystemProperty.getName());
 		}
 		property.setValue(extSystemProperty.getValue());
-		sysExtSysPropertyRepository.save(property);
+        return sysExtSysPropertyRepository.save(property);
 	}
 
 	public void deleteProperty(Integer extSysPropertyId) {
 		sysExtSysPropertyRepository.deleteById(extSysPropertyId);
 	}
+
+    public SysExternalSystemProperty getProperty(Integer extSysPropertyId) {
+        return sysExtSysPropertyRepository.findById(extSysPropertyId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "SysExternalSystemProperty not found, id: " + extSysPropertyId));
+    }
  }

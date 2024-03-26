@@ -757,29 +757,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-  /extsystem/property/{extSysPropertyId}:
-    delete:
-      tags:
-        - externalsystems
-      operationId: ExternalSystem_deleteProperty
-      description: Delete one property of external system
-      parameters:
-        - name: extSysPropertyId
-          in: path
-          required: true
-          description: external system property id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-  /extsystem/{extSystemId}/properties:
+  /extsystem/property:
     get:
       tags:
         - externalsystems
@@ -787,8 +765,8 @@ paths:
       description: Return list of all properties of external system
       parameters:
         - name: extSystemId
-          in: path
-          required: true
+          in: query
+          required: false
           description: external system id
           schema:
             type: integer
@@ -807,19 +785,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ExtSystemProperty'
-  /extsystem/{extSystemId}/property:
     post:
       tags:
         - externalsystems
-      operationId: ExternalSystem_addProperty
-      description: Add one property of external system
-      parameters:
-        - name: extSystemId
-          in: path
-          required: true
-          description: external system id
-          schema:
-            type: integer
+      operationId: ExternalSystem_storeProperties
+      description: Store one or more property of external system
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -835,7 +806,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExtSystemProperty'
+              type: array
+              items:
+                $ref: '#/components/schemas/ExtSystemProperty'
+    delete:
+      tags:
+        - externalsystems
+      operationId: ExternalSystem_deleteProperties
+      description: Delete one property of external system
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: external system property id
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
@@ -1246,6 +1243,7 @@ components:
     ExtSystemProperty:
       type: object
       required:
+        - extSystemId
         - name
         - value
       properties:
@@ -1255,6 +1253,9 @@ components:
         userId:
           type: integer
           description: user id
+        extSystemId:
+          type: integer
+          description: external system id
         name:
           type: string
           description: name of property

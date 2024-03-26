@@ -63,6 +63,9 @@ var messages = {
     "global.action.copyToClipboard": "Zkopírovat do schránky",
     "global.action.copyToClipboard.finished": "Zkopírováno do schránky",
 
+    "global.geometry.label.objects": "Obrazce",
+    "global.geometry.label.points": "Body",
+
     "confirmDialog.default.title": "Potvrzení",
     "confirmDialog.default.message": "Přejete si pokračovat?",
 
@@ -1814,6 +1817,15 @@ var messages = {
     "accesspoint.scope.relatedScopes": "Návazné oblasti",
     "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
     "textFragments.title": "Speciální znaky",
+
+    "userSettings.button.title": "Nastavení",
+    "userSettings.title": "Nastavení uživatele",
+    "userSettings.category.ApiKeys": "API Klíče",
+    "userSettings.apiKeys.noItems": "Žádné uložené osobní API klíče",
+    "userSettings.apiKeys.delete.confirm.message": "Přejete si smazat nastavený API klíč pro externí systém {0}?",
+    "userSettings.apiKeys.item.id": "id",
+    "userSettings.apiKeys.item.value": "hodnota",
+    "userSettings.apiKeys.save": "Uložit",
 
     ____: "",
 };

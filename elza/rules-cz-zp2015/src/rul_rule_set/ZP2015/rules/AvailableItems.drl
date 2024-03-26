@@ -45,6 +45,7 @@ when
         "ZP2015_SIZE_DEPTH",
         // ZP5.2.5 Měřítko
         "ZP2015_SCALE",
+		"ZP2015_SCALE_NUMERICAL",
         // ZP5.2.6 Souřadnice - tvar a souřadnice
         "ZP2015_POSITION",
         // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
@@ -116,7 +117,7 @@ when
         "ZP2015_INTERNAL_NOTE", "ZP2015_NOTE",
         "ZP2015_ARRANGE_RULES", "ZP2015_STORAGE_COND", "ZP2015_SIZE",
         "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH", "ZP2015_SIZE_UNITS", 
-        "ZP2015_SCALE",
+        "ZP2015_SCALE","ZP2015_SCALE_NUMERICAL",
         "ZP2015_ORIENTATION", "ZP2015_ITEM_MAT", "ZP2015_PART", "ZP2015_EDITION",
         "ZP2015_EXERQUE", "ZP2015_PAINTING_CHAR", "ZP2015_CORROBORATION", "ZP2015_IMPRINT_COUNT",
         "ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
@@ -3300,10 +3301,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in (
         // ZP5.2.2 Název autorského díla
         "ZP2015_ITEM_TITLE_REF",    
-        "ZP2015_SCALE", "ZP2015_POSITION",
+        "ZP2015_POSITION",
         "ZP2015_ORIENTATION") )
 then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro mapy"
@@ -3313,12 +3314,11 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
     $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_MAP_UPDATE")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "Povinnost prvku pro mapy v inv (jednotlivost)"
 no-loop
-salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
@@ -3326,15 +3326,13 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
     // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        "ZP2015_SCALE", "ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
 
 rule "Doporučené prvky pro mapy v inv (část jednotlivosti)"
 no-loop
-salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
@@ -3342,15 +3340,13 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
     // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        "ZP2015_SCALE", "ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Povinnost prvku pro mapy v kat"
 no-loop
-salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
@@ -3358,11 +3354,78 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        "ZP2015_SCALE", "ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
+    $itemType: RulItemTypeExt( code in ( "ZP2015_POSITION", "ZP2015_ENTITY_ROLE" ) )
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
 end
+
+// Měřítko
+rule "Možné textové měřítko pro mapy a tech. výkresy (vždy)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
+    not DescItem(type=="ZP2015_SCALE_NUMERICAL") from $ownItems
+    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE") )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Možné strukturované měřítko pro mapy a tech. výkresy (vždy)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
+    not DescItem(type=="ZP2015_SCALE") from $ownItems
+    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE_NUMERICAL") )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Povinnost měřítka pro mapy a tech. výkresy v inv (jednotlivost)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
+    not DescItem(type=="ZP2015_SCALE") from $ownItems
+    // Rodic je INV nebo KAT
+    $level: Level( $items: descItems )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku
+    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE_NUMERICAL" ) )
+then
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
+end
+
+rule "Doporučené měřítko pro mapy a tech. výkr. v inv (část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    not DescItem(type=="ZP2015_SCALE") from $ownItems
+    // Rodic je INV nebo KAT
+    $level: Level( $items: descItems )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku
+    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE_NUMERICAL" ) )
+then
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Povinnost měřítka pro mapy a tech. výkresy v kat"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL", "ZP2015_UNIT_TYPE_TVY") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
+    not DescItem(type=="ZP2015_SCALE") from $ownItems
+    // Rodic je INV nebo KAT
+    $level: Level( $items: descItems )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
+    // nastaveni prvku
+    $itemType: RulItemTypeExt( code in ( "ZP2015_SCALE_NUMERICAL" ) )
+then
+    $itemType.setMinType(RulItemType.Type.REQUIRED);
+end
+
+
 
 // RE_016 Mapy, mapová díla, atlasy
 rule "RE_016_01 Možné role entit pro mapy (vždy)"
@@ -3516,7 +3579,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemType: RulItemTypeExt( code in (
       // ZP5.2.2 Název autorského díla
       "ZP2015_ITEM_TITLE_REF",
-      "ZP2015_SCALE", "ZP2015_POSITION", 
+      "ZP2015_POSITION", 
       "ZP2015_ORIENTATION") )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -3532,7 +3595,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
     // nastaveni prvku  
-    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE"    ) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
@@ -3547,7 +3610,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
     // nastaveni prvku  
-    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE"    ) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE" ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
@@ -3562,7 +3625,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku  
-    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE", "ZP2015_ENTITY_ROLE"    ) )
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
@@ -6319,13 +6382,11 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Doporučené prvky pro podtyp technická dokumentace - v INV a KAT"
+rule "Doporučené prvky pro podtyp technická dokumentace (vždy)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_TD") ) from $ownItems
-    // Rodic je INV nebo KAT
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", 
     									"ZP2015_PART") )
@@ -6443,8 +6504,8 @@ salience -300
 when  $activeLevel: ActiveLevel( )
     $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.5 Měřítko
-    DescItem(type=="ZP2015_SCALE" ) from $ownItems
-    $itemType: RulItemTypeExt( code=="ZP2015_SCALE" )
+    DescItem(type in ("ZP2015_SCALE", "ZP2015_SCALE_NUMERICAL") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ("ZP2015_SCALE", "ZP2015_SCALE_NUMERICAL") )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
 end

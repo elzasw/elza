@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -26,6 +27,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -38,6 +43,7 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrPermission.PermissionType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.oauth2.OAuth2Properties.PermProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
@@ -58,6 +64,23 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
 
     private final OAuth2Properties oAuth2Properties;
 
+    /**
+     * Cache pro podrobnosti uživatele.
+     */
+    private final LoadingCache<String, UserDetail> userDetailCache;
+
+    private final int USER_DETAIL_CACHE_LIFETIME = 5; // TimeUnit.MINUTES
+
+    private final String CLAIM_SUB = "sub";
+    private final String CLAIM_NAME = "name";
+    private final String CLAIM_AUTHORITIES = "authorities";
+
+    private final String JWT_USERS = "JWT_USERS";
+    private final String PERSON_INDIVIDUAL = "PERSON_INDIVIDUAL";
+
+    private final String NM_MAIN = "NM_MAIN";
+    private final String NM_SUP_PRIV = "NM_SUP_PRIV";
+    
     public JwtUserDetailProvider(final JwtDecoder jwtDecoder,
                                  final PlatformTransactionManager txManager,
                                  final UserService userService,
@@ -70,6 +93,14 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         this.apService = apService;
         this.itemTypeRepository = itemTypeRepository;
         this.oAuth2Properties = oAuth2Properties;
+        this.userDetailCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(USER_DETAIL_CACHE_LIFETIME, TimeUnit.MINUTES)
+                .build(new CacheLoader<String, UserDetail>() {
+                    @Override
+                    public UserDetail load(final String name) {
+                        return null;
+                    }
+                });
     }
 
     @Override
@@ -90,7 +121,6 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         Object details = prepareDetails(jwt);
         token.setDetails(details);
 
-
         // Object details = bearer.getDetails();
         // token.setDetails(bearer.getDetails());
 
@@ -98,35 +128,36 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     }
 
     synchronized private Object prepareDetails(Jwt jwt) {
-        // read user and credentials from token
-        final String sub = jwt.getClaimAsString("sub");
-        final String name = jwt.getClaimAsString("name");
-        final List<String> authorities = jwt.getClaimAsStringList("authorities");
+    	String sub = jwt.getClaimAsString(CLAIM_SUB);
+    	UserDetail result = userDetailCache.getIfPresent(sub);
+    	if (result == null) {
+    		result = createUserDetail(jwt);
+    		userDetailCache.put(sub, result);
+    	}
+    	return result;
+    }
+
+    private UserDetail createUserDetail(Jwt jwt) {
+        final String sub = jwt.getClaimAsString(CLAIM_SUB);
+        final String name = jwt.getClaimAsString(CLAIM_NAME);
+        final List<String> authorities = jwt.getClaimAsStringList(CLAIM_AUTHORITIES);
 
         log.debug("Preparing details fot JWT, headers: {}, claims: {}, sub: {}, name: {}, authorities: {}",
-                  jwt.getHeaders(), jwt.getClaims(),
-                  sub, name, authorities);
+                jwt.getHeaders(), jwt.getClaims(),
+                sub, name, authorities);
 
-        Object result = new TransactionTemplate(txManager).execute(r -> {
-            UsrUser user = this.userService.findByUsername(sub);
-            // Prepare temporary credentials
+        return new TransactionTemplate(txManager).execute(r -> {
+        	UsrUser user = userService.findByUsername(sub);
+            // prepare temporary credentials
             SecurityContext prevSecCtx = SecurityContextHolder.getContext();
             SecurityContext secCtx = userService.createSecurityContextSystem();
             SecurityContextHolder.setContext(secCtx);
 
             if (user == null) {
-                ApScope userScope = apService.getApScope("JWT_USERS");
-                ApType type = apService.getType("PERSON_INDIVIDUAL");
-
-                ApPartFormVO pf = createPrefName(name, sub);
-                // create person
-                ApState ap = apService.createAccessPoint(userScope, type, pf);
-                user = userService.createUser(sub, null, ap.getAccessPointId());
-
-                log.debug("Created new user from JWT: {}", sub);
+                user = createJWTUser(sub, name);
             }
 
-            // Prepare permissions and synchronize permissions
+            // prepare permissions and synchronize permissions
             updatePermissions(authorities, user);
 
             log.debug("Permissions for user '{}' are synchronized.", sub);
@@ -134,16 +165,27 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
             // return back previous context
             SecurityContextHolder.setContext(prevSecCtx);
 
-            return this.userService.createUserDetail(user);
+            return userService.createUserDetail(user);
         });
+    }
 
-        return result;
+    private UsrUser createJWTUser(String sub, String name) {
+        ApScope userScope = apService.getApScope(JWT_USERS);
+        ApType type = apService.getType(PERSON_INDIVIDUAL);
+
+        ApPartFormVO pf = createPrefName(name, sub);
+        // create person
+        ApState ap = apService.createAccessPoint(userScope, type, pf);
+        UsrUser user = userService.createUser(sub, null, ap.getAccessPointId());
+
+        log.debug("Created new user from JWT: {}", sub);
+        return user;
     }
 
     private ApPartFormVO createPrefName(String name, String sub) {
 
-        RulItemType itemTypeNmMain = itemTypeRepository.findOneByCode("NM_MAIN");
-        RulItemType itemTypeNmInternal = itemTypeRepository.findOneByCode("NM_SUP_PRIV");
+        RulItemType itemTypeNmMain = itemTypeRepository.findOneByCode(NM_MAIN);
+        RulItemType itemTypeNmInternal = itemTypeRepository.findOneByCode(NM_SUP_PRIV);
 
         ApPartFormVO pf = new ApPartFormVO();
         pf.setPartTypeCode(StaticDataProvider.DEFAULT_PART_TYPE);
