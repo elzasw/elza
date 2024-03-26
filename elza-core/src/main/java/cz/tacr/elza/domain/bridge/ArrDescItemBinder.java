@@ -6,14 +6,12 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.SPECIFICATION_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
+import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
@@ -28,26 +26,26 @@ public class ArrDescItemBinder implements TypeBinder {
     @Override
     public void bind(TypeBindingContext context) {
     	this.context = context;
-        Map<String, IndexFieldReference<String>> fields = new HashMap<>();
 
     	// při změně pole data přepočti index
         context.dependencies().use(FIELD_DATA);
 
-        fields.put(FIELD_ITEM_ID, createNotAnalyzedField(FIELD_ITEM_ID));
-        fields.put(FIELD_NODE_ID, createNotAnalyzedField(FIELD_NODE_ID));
-        fields.put(FIELD_FUND_ID, createNotAnalyzedField(FIELD_FUND_ID));
+        createIntegerField(FIELD_ITEM_ID);
+        createIntegerField(FIELD_NODE_ID);
+        createIntegerField(FIELD_FUND_ID);
 
-        fields.put(SPECIFICATION_ATT, createNotAnalyzedField(SPECIFICATION_ATT));
-        fields.put(FIELD_DESC_ITEM_TYPE_ID, createNotAnalyzedField(FIELD_DESC_ITEM_TYPE_ID));
-        fields.put(FIELD_CREATE_CHANGE_ID, createNotAnalyzedField(FIELD_CREATE_CHANGE_ID));
+        createNotAnalyzedField(SPECIFICATION_ATT);
+        createIntegerField(FIELD_DESC_ITEM_TYPE_ID);
+        createIntegerField(FIELD_CREATE_CHANGE_ID);
+        createIntegerField(FIELD_DELETE_CHANGE_ID);
 
-        fields.put(FULLTEXT_ATT, createAnalyzedField(FULLTEXT_ATT));
+        createAnalyzedField(FULLTEXT_ATT);
 
         createIntegerField(INTGER_ATT);
         createLongField(NORMALIZED_FROM_ATT);
         createLongField(NORMALIZED_TO_ATT);
 
-        context.bridge(ArrDescItem.class, new ArrDescItemBridge(fields));
+        context.bridge(ArrDescItem.class, new ArrDescItemBridge());
     }
 
     private IndexFieldReference<String> createAnalyzedField(String name) {

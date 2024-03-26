@@ -24,20 +24,17 @@ import org.apache.commons.lang3.Validate;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
-//import org.apache.lucene.queryparser.flexible.standard.config.NumericConfig; TODO hibernate search 6
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-//import org.hibernate.search.engine.ProjectionConstants; TODO hibernate search 6
-//import org.hibernate.search.jpa.FullTextEntityManager;
-//import org.hibernate.search.jpa.FullTextQuery;
-//import org.hibernate.search.jpa.Search;
-//import org.hibernate.search.query.dsl.BooleanJunction;
-//import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.internal.EmptyScrollableResults;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +72,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
-    @Override //TODO hibernate search 6
+    @Override
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
       Validate.notNull(node, "JP musí být vyplněna");
       Validate.notNull(version, "Verze AS musí být vyplněna");
@@ -93,9 +90,22 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return new QueryResults<>(0, Collections.emptyList());
     }
 
-    @Override //TODO hibernate search 6
+	/**
+  	 * Vrátí id nodů které mají danou hodnotu v dané verzi.
+  	 *
+  	 * @param text The query text.
+  	 */
+    @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId) {
-        return new HashSet<>();
+    	Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+
+    	FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+
+    	SearchPredicate descItemIdsPredicate = createDescItemIdsByDataQuery(text, fundId, ctx.getFactory());
+
+    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, ctx);
+
+    	return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
 
     @Override //TODO hibernate search 6
@@ -139,23 +149,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     	return searchSession;
     }
 
-//    @Override
-//    public List<ArrNode> findNodesByDirection(final ArrNode node,
-//                                              final ArrFundVersion version,
-//                                              final RelatedNodeDirection direction) {
-//        Validate.notNull(node, "JP musí být vyplněna");
-//        Validate.notNull(version, "Verze AS musí být vyplněna");
-//        Validate.notNull(direction, "Směr musí být vyplněn");
-//
-//
-//        ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
-//        Collection<ArrLevel> levels = levelRepository.findLevelsByDirection(level, version, direction);
-//
-//        List<ArrNode> result = levels.stream().map(l -> l.getNode()).collect(Collectors.toList());
-//        return result;
-//    }
-//
-//    /*
 //    @Override
 //    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
 //
@@ -492,26 +485,25 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        return queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
 //    }
 //
-//    /**
-//     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
-//     *
-//     * @param text hodnota podle které se hledá
-//     * @param fundId id fondu
-//     *
-//     * @return id atributů které mají danou hodnotu
-//     */
-//    private Query createDescItemIdsByDataQuery(final String text, final Integer fundId, QueryBuilder queryBuilder) {
-//
-//        if (StringUtils.isBlank(text)) {
-//            return null;
-//        }
-//
-//        Query textQuery = createTextQuery(text, queryBuilder);
-//        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
-//        Query query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
-//
-//        return query;
-//    }
+	/**
+     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
+     *
+     * @param text hodnota podle které se hledá
+     * @param fundId id fondu
+     *
+     * @return id atributů které mají danou hodnotu
+     */
+	private SearchPredicate createDescItemIdsByDataQuery(final String text, final Integer fundId, SearchPredicateFactory factory) {
+
+        if (StringUtils.isBlank(text)) {
+            return null;
+        }
+
+        SearchPredicate textQuery = createTextQuery(text, factory);
+        SearchPredicate fundIdQuery = factory.bool().should(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId)).toPredicate();
+
+        return factory.bool().must(textQuery).must(fundIdQuery).toPredicate();
+    }
 //
 //    private Query createFundIdsQuery(Collection<Integer> fundIds, QueryBuilder queryBuilder) {
 //        // fundId je kodovany jako numeric, nelze pouzit matching()
@@ -581,34 +573,33 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //            throw new InvalidQueryException(e);
 //        }
 //    }
-//
-//    /**
-//     * Vytvoří lucene dotaz na hledání arr_data podle hodnoty.
-//     *
-//     * @param text hodnota
-//     * @param queryBuilder query builder
-//     *
-//     * @return dotaz
-//     */
-//    private Query createTextQuery(final String text, final QueryBuilder queryBuilder) {
-//        if (text == null) {
-//            return null;
-//        }
-//        /* rozdělení zadaného výrazu podle mezer */
-//        String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
-//
-//        /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
-//        BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
-//        for (String token : tokens) {
-//            String searchValue = "*" + token + "*";
-//			Query createQuery = queryBuilder.keyword().wildcard().onField(ArrDescItem.FULLTEXT_ATT)
-//			        .matching(searchValue).createQuery();
-//            textConditions.must(createQuery);
-//        }
-//
-//        return textConditions.createQuery();
-//    }
-//
+
+	/**
+     * Vytvoří lucene dotaz na hledání arr_data podle hodnoty.
+     *
+     * @param text hodnota
+     * @param queryBuilder query builder
+     *
+     * @return dotaz
+     */
+	private SearchPredicate createTextQuery(final String text, final SearchPredicateFactory factory) {
+        if (text == null) {
+            return null;
+        }
+        /* rozdělení zadaného výrazu podle mezer */
+        String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
+
+        /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
+        BooleanPredicateClausesStep<?> bool = factory.bool();
+        for (String token : tokens) {
+            String searchValue = "*" + token + "*";
+            SearchPredicate predicate = factory.bool().should(factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue)).toPredicate();
+            bool.must(predicate);
+        }
+
+        return bool.toPredicate();
+	}
+
 //    /**
 //     * Vytvoří hibernate jpa query z lucene query.
 //     *
@@ -631,58 +622,60 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //    private QueryBuilder createQueryBuilder(final Class<?> entityClass) {
 //        return getFullTextEntityManager().getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
 //    }
-//
-//    /**
-//     * Vyhledá id nodů podle platných atributů. Hledá napříč archivními pomůckami.
-//     *
-//     * @param lockChangeId id změny uzavření verze archivní pomůcky, může být null
-//     * @param descItemIdsQuery id atributů pro které se mají hledat nody
-//     *
-//     * @return id nodů které mají před danou změnou nějaký atribut
-//     */
-//    private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId,
-//                                                              final Query descItemIdsQuery,
-//                                                              FullTextQueryContext<ArrDescItem> ctx) {
-//
-//        if (descItemIdsQuery == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        QueryBuilder queryBuilder = ctx.getQueryBuilder();
-//
-//        Query changeQuery = createChangeQuery(queryBuilder, lockChangeId);
-//        // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
-//
-//        Query query = queryBuilder.bool()
-//                .must(changeQuery)
-//                .must(descItemIdsQuery)
-//                // .must(validDescItemInVersionQuery)
-//                .createQuery();
-//
-//        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(
-//                                                                                   ArrDescItem.FIELD_ITEM_ID,
+
+    /**
+     * Vyhledá id nodů podle platných atributů. Hledá napříč archivními pomůckami.
+     *
+     * @param lockChangeId id změny uzavření verze archivní pomůcky, může být null
+     * @param descItemIdsQuery id atributů pro které se mají hledat nody
+     *
+     * @return id nodů které mají před danou změnou nějaký atribut
+     */
+    private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId,
+                                                              final SearchPredicate descItemIdsPredicate,
+                                                              FullTextQueryContext<ArrDescItem> ctx) {
+
+        if (descItemIdsPredicate == null) {
+            return Collections.emptyList();
+        }
+
+        SearchPredicateFactory queryBuilder = ctx.getFactory();
+
+        SearchPredicate changeQuery = createChangeQuery(queryBuilder, lockChangeId);
+        // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
+
+        SearchPredicate query = queryBuilder.bool()
+                				.must(changeQuery)
+                				.must(descItemIdsPredicate)
+                				// .must(validDescItemInVersionQuery)
+                				.toPredicate();
+
+//        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID,
 //                                                                                   ArrDescItem.FIELD_NODE_ID,
 //                                                                                   ArrDescItem.FIELD_FUND_ID,
 //                                                                                   ProjectionConstants.SCORE);
-//        if (ctx.getOffset() != null) {
+        if (ctx.getOffset() != null) {
 //            fullTextQuery.setFirstResult(ctx.getOffset());
-//        }
-//        if (ctx.getPageSize() != null) {
+        }
+        if (ctx.getPageSize() != null) {
 //            fullTextQuery.setMaxResults(ctx.getPageSize());
-//        }
-//
+        }
+
 //        int totalResultSize = fullTextQuery.getResultSize();
 //        ctx.setResultSize(totalResultSize);
-//
+
 //        @SuppressWarnings("unchecked")
 //        List<Object[]> resultList = fullTextQuery.getResultList();
-//
-//        return resultList.stream()
-//                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2],
-//                        (Float) row[3]))
-//                .collect(toList());
-//    }
-//
+
+        SearchResult<ArrDescItem> resultList = getSearchSession().search(ArrDescItem.class)
+												.where(descItemIdsPredicate)
+												.fetchAll();
+
+        return resultList.hits().stream()
+                .map(row -> new ArrDescItemInfo(row.getItemId(), row.getNodeId(), row.getFundId(), 0f))
+                .collect(Collectors.toList());
+	}
+
 //    /**
 //     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
 //     *
@@ -737,31 +730,31 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //        return queryBuilder.all().createQuery();
 //    }
 //    */
-//
-//    /**
-//     * Vytvoří query pro hledání podle aktuální nebo uzavžené verze.
-//     *
-//     * @param lockChangeId id verze, může být null
-//     *
-//     * @return query
-//     */
-//    private Query createChangeQuery(final QueryBuilder queryBuilder, final Integer lockChangeId) {
-//
-//        Query nullDeleteChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_DELETE_CHANGE_ID).from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
-//
-//        if (lockChangeId == null) {
-//            // deleteChange is null
-//            return nullDeleteChangeQuery;
-//        }
-//
-//        Query createChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_CREATE_CHANGE_ID).below(lockChangeId).excludeLimit().createQuery();
-//        Query deleteChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_DELETE_CHANGE_ID).above(lockChangeId).excludeLimit().createQuery();
-//
-//        // createChangeId < lockChangeId and (deleteChange is null or deleteChange > lockChangeId)
-//        Query deleteQuery = queryBuilder.bool().should(nullDeleteChangeQuery).should(deleteChangeQuery).createQuery();
-//        return queryBuilder.bool().must(createChangeQuery).must(deleteQuery).createQuery();
-//    }
-//
+
+    /**
+     * Vytvoří query pro hledání podle aktuální nebo uzavžené verze.
+     *
+     * @param lockChangeId id verze, může být null
+     *
+     * @return query
+     */
+    private SearchPredicate createChangeQuery(final SearchPredicateFactory queryBuilder, final Integer lockChangeId) {
+
+    	SearchPredicate nullDeleteChangeQuery = queryBuilder.range().field(ArrDescItem.FIELD_DELETE_CHANGE_ID).between(Integer.MAX_VALUE, Integer.MAX_VALUE).toPredicate();
+
+        if (lockChangeId == null) {
+            // deleteChange is null
+            return nullDeleteChangeQuery;
+        }
+
+        SearchPredicate createChangeQuery = queryBuilder.range().field(ArrDescItem.FIELD_CREATE_CHANGE_ID).lessThan(lockChangeId).toPredicate();
+        SearchPredicate deleteChangeQuery = queryBuilder.range().field(ArrDescItem.FIELD_DELETE_CHANGE_ID).greaterThan(lockChangeId).toPredicate();
+
+        // createChangeId < lockChangeId and (deleteChange is null or deleteChange > lockChangeId)
+        SearchPredicate deleteQuery = queryBuilder.bool().should(nullDeleteChangeQuery).should(deleteChangeQuery).toPredicate();
+        return queryBuilder.bool().must(createChangeQuery).must(deleteQuery).toPredicate();
+    }
+
 //    @PostConstruct
 //    private void buildFullTextEntityManager() {
 //        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
@@ -856,6 +849,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     private class FullTextQueryContext<T> {
 
         private final Class<T> entityClass;
+        private final SearchPredicateFactory factory;
         //private final QueryBuilder queryBuilder; //TODO hibernate search 6
 
         Integer offset;
@@ -893,11 +887,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
          */
         public FullTextQueryContext(Class<T> entityClass) {
             this.entityClass = entityClass;
+            this.factory = getSearchSession().scope(entityClass).predicate();
 //            this.queryBuilder = createQueryBuilder(entityClass); TODO hibernate search 6
         }
 
         public Class<T> getEntityClass() {
             return entityClass;
+        }
+
+        public SearchPredicateFactory getFactory() {
+        	return factory;
         }
 
 //        public QueryBuilder getQueryBuilder() { TODO hibernate search 6
