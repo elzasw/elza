@@ -92,6 +92,7 @@ function resolveException(status, statusText, data) {
             stackTrace: data.stackTrace,
             status: status,
             statusText: statusText,
+            data: data,
         };
     } else {
         // other unknown errors

@@ -1,5 +1,5 @@
 import React from 'react';
-import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
+import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 import LongText from './LongText';
 import i18n from './i18n';
 import Exception from './shared/exception/Exception';
@@ -111,7 +111,7 @@ function resolveRegistry(data) {
         default:
             break;
     }
-} 
+}
 
 /**
  * Vytvoření netypické vyjímky pro ArrangementCode.
@@ -119,9 +119,10 @@ function resolveRegistry(data) {
  * @param data data výjimky
  */
 function resolveArrangement(data) {
+    console.error("Arrangement error", data);
+    /*
     switch (
         data.code
-        /*
        Legacy code - jen pro ukázku jak to udělat
         case 'X_DELETE_ERROR': {
             return createToaster(i18n('exception.arr.X_DELETE_ERROR'), data, (p) => {
@@ -130,9 +131,9 @@ function resolveArrangement(data) {
                 }
             });
         }
-        */
     ) {
     }
+    */
 }
 
 /**
@@ -147,7 +148,19 @@ function existsI18n(key) {
 
 function resolveDefault(data) {
     if (TYPE2GROUP[data.type] === undefined) {
-        return null;
+        if (data.data?.detail) {
+            return createToaster(data.data.detail, {
+                message: data.data.detail,
+                stackTrace: JSON.stringify(data.data),
+                status: data.status,
+                statusText: data.statusText,
+            });
+        }
+
+        return createToaster("Unknown error", {
+            message: "Unknown error",
+            stackTrace: JSON.stringify(data),
+        });
     }
 
     const key = 'exception.' + TYPE2GROUP[data.type] + '.' + data.code;

@@ -1,22 +1,37 @@
-import React from 'react';
-import {Modal} from 'react-bootstrap';
-import {Button} from '../../ui';
-import AbstractReactComponent from '../../AbstractReactComponent';
+import { Modal } from 'react-bootstrap';
+import { Button } from '../../ui';
 import FormInput from 'components/shared/form/FormInput';
 import i18n from '../../i18n';
+import { ModalDialogWrapper } from 'components/shared';
+import { ExceptionData } from './Exception';
 
-class ExceptionDetail extends AbstractReactComponent {
-    render() {
-        const {data} = this.props;
+interface Props {
+    data: ExceptionData;
+    onClose: () => void;
+    title?: string;
+}
+
+export default function ExceptionDetail({
+    data,
+    onClose,
+    title
+}:Props){
         return (
+        <ModalDialogWrapper
+            className={'dialog-lg top max-height'}
+            title={title}
+            onHide={onClose}
+        >
             <div>
                 <Modal.Body>
-                    <FormInput type="text" label={i18n('global.exception.detail.code')} readOnly value={data.code} />
+                    {data.code &&
+                        <FormInput type="text" label={i18n('global.exception.detail.code')} readOnly value={data.code} />
+                    }
                     {data.message && (
                         <FormInput
                             label={i18n('global.exception.detail.message')}
                             as="textarea"
-                            style={{height: '5em'}}
+                            style={{ height: '5em' }}
                             readOnly
                             value={data.message}
                         />
@@ -25,7 +40,7 @@ class ExceptionDetail extends AbstractReactComponent {
                         <FormInput
                             label={i18n('global.exception.detail.stack')}
                             as="textarea"
-                            style={{height: '25em'}}
+                            style={{ height: '25em' }}
                             readOnly
                             value={data.stackTrace}
                         />
@@ -34,20 +49,18 @@ class ExceptionDetail extends AbstractReactComponent {
                         <FormInput
                             label={i18n('global.exception.detail.properties')}
                             as="textarea"
-                            style={{height: '10em'}}
+                            style={{ height: '10em' }}
                             readOnly
                             value={JSON.stringify(data.properties, null, '  ')}
                         />
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={this.props.onClose}>
+                    <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>
                 </Modal.Footer>
             </div>
+            </ModalDialogWrapper>
         );
-    }
 }
-
-export default ExceptionDetail;
