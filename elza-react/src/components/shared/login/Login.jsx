@@ -31,19 +31,11 @@ class Login extends AbstractReactComponent {
     defaultState = {
         ...getDefaultLogin(),
         error: null,
-        sso: [],
     };
 
     UNSAFE_componentWillMount() {
         this.props.dispatch(checkUserLogged());
-        this.fetch();
     }
-
-    fetch = () => {
-        WebApi.getSsoEntities().then(data => {
-            this.setState({sso: data});
-        });
-    };
 
     state = {
         ...this.defaultState,
@@ -64,12 +56,12 @@ class Login extends AbstractReactComponent {
 
     handleLogin = e => {
         e.preventDefault();
-        const {username, password, sso} = this.state;
+        const {username, password} = this.state;
 
         this.props
             .dispatch(login(username, password))
             .then(data => {
-                this.setState({...this.defaultState, sso});
+                this.setState({...this.defaultState});
             })
             .catch(err => {
                 this.handleLoginError(err);
@@ -78,7 +70,7 @@ class Login extends AbstractReactComponent {
 
     render() {
         const {login, submitting, userDetail} = this.props;
-        const {error, username, password, sso} = this.state;
+        const {error, username, password} = this.state;
 
         // Login dialog is shown only when user is not logged in and data about user have been fetched
         // to prevent flicker on page reload
@@ -87,7 +79,7 @@ class Login extends AbstractReactComponent {
         return (
             <div className="login-container">
                 {displayLoginDialog && (
-                    <ModalDialogWrapper className="login" ref="wrapper" title={i18n('login.form.title')}>
+                    <ModalDialogWrapper className="login" title={i18n('login.form.title')}>
                         <Form onSubmit={this.handleLogin}>
                             <Modal.Body>
                                 {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
@@ -117,20 +109,6 @@ class Login extends AbstractReactComponent {
                                     </Button>
                                 </div>
                             </Modal.Body>
-                            {sso && sso.length > 0 && (
-                                <Modal.Footer>
-                                    <div className="or-message">{i18n('login.or-message')}</div>
-                                    <div>
-                                        {sso.map((l, i) => {
-                                            return (
-                                                <a key={i} href={l.url} className="btn btn-default" role="button">
-                                                    {l.name}
-                                                </a>
-                                            );
-                                        })}
-                                    </div>
-                                </Modal.Footer>
-                            )}
                         </Form>
                     </ModalDialogWrapper>
                 )}
