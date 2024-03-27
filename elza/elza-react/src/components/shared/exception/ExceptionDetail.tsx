@@ -5,18 +5,18 @@ import i18n from '../../i18n';
 import { ModalDialogWrapper } from 'components/shared';
 import { ExceptionData } from './Exception';
 
-interface Props {
-    data: ExceptionData;
+interface Props<T> {
+    data: ExceptionData<T>;
     onClose: () => void;
     title?: string;
 }
 
-export default function ExceptionDetail({
+export default function ExceptionDetail<T>({
     data,
     onClose,
     title
-}:Props){
-        return (
+}: Props<T>) {
+    return (
         <ModalDialogWrapper
             className={'dialog-lg top max-height'}
             title={title}
@@ -61,6 +61,6 @@ export default function ExceptionDetail({
                     </Button>
                 </Modal.Footer>
             </div>
-            </ModalDialogWrapper>
-        );
+        </ModalDialogWrapper>
+    );
 }
