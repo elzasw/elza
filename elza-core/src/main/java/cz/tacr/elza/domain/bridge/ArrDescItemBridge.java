@@ -39,9 +39,7 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     	}
     	document.addValue(FIELD_DESC_ITEM_TYPE_ID, arrDescItem.getDescItemTypeId());
     	document.addValue(FIELD_CREATE_CHANGE_ID, arrDescItem.getCreateChangeId());
-    	if (arrDescItem.getDeleteChangeId() != null) {
-    		document.addValue(FIELD_DELETE_CHANGE_ID, arrDescItem.getDeleteChangeId());
-    	}
+    	document.addValue(FIELD_DELETE_CHANGE_ID, arrDescItem.getDeleteChangeId());
 
     	if (arrDescItem.getFulltextValue() != null) {
     		document.addValue(FULLTEXT_ATT, arrDescItem.getFulltextValue());
