@@ -1,9 +1,7 @@
 package cz.tacr.elza.repository;
 
-import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,23 +12,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
 import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.internal.EmptyScrollableResults;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -157,11 +148,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     	Set<Integer> textNodeIds = null;
     	if (!textParams.isEmpty()) {
-    		//textNodeIds = findByTextSearchParamsAndVersionLockChangeId(textParams, fundId, lockChangeId);
+    		textNodeIds = findByTextSearchParamsAndVersionLockChangeId(textParams, fundId, lockChangeId);
     	}
     	Set<Integer> dateNodeIds = null;
     	if (!dateParams.isEmpty()) {
-    		//dateNodeIds = findByDateSearchParamsAndVersionLockChangeId(dateParams, fundId, lockChangeId);
+    		dateNodeIds = findByDateSearchParamsAndVersionLockChangeId(dateParams, fundId, lockChangeId);
     	}
 
     	Set<Integer> result;
@@ -175,6 +166,48 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     	}
 
     	return result;
+    }
+
+	/**
+  	 * Najde id nodů vyhovující předaným parametrům.
+	 *
+  	 * @param searchParams podmínky
+  	 * @param fundId id archivního souboru
+  	 * @param lockChangeId id změny, může být null
+  	 *
+  	 * @return id nodů
+  	 */
+    private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
+         															  final Integer lockChangeId) {
+    	Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+    	Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
+
+    	SearchPredicate descItemIdsPredicate = createDescItemIdsByTextSearchParamsDataQuery(searchParams, fundId);
+
+    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate);
+
+    	return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Najde id nodů vyhovující předaným parametrům.
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     * @param lockChangeId id změny, může být null
+     *
+     * @return id nodů
+     */
+    private Set<Integer> findByDateSearchParamsAndVersionLockChangeId(final List<UnitdateSearchParam> searchParams, final Integer fundId,
+                                                                      final Integer lockChangeId) {
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
+
+        SearchPredicate descItemIdsPredicate = createDescItemIdsByDateSearchParamsDataQuery(searchParams, fundId);
+
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate);
+
+        return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
 
     @Override
@@ -383,115 +416,107 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //
 //        return result.stream().map(i -> i.getNodeId()).collect(toSet());
 //    }
-//
-//    /**
-//     * Najde id atributů vyhovující předaným parametrům.
-//     *
-//     * @param searchParams podmínky
-//     * @param fundId id archivního souboru
-//     *
-//     * @return id nodů
-//     */
-//    @SuppressWarnings("unchecked")
-//    private Query createDescItemIdsByDateSearchParamsDataQuery(final List<UnitdateSearchParam> searchParams,
-//                                                                      final Integer fundId) {
-//        Class<ArrDescItem> entityClass = ArrDescItem.class;
-//        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
-//
-//        BooleanJunction<BooleanJunction> dateBool = queryBuilder.bool();
-//
-//        for (UnitdateSearchParam searchParam : searchParams) {
-//            String value = searchParam.getValue();
-//            if (StringUtils.isNotBlank(value)) {
-//                Query dateQuery = createDateQuery(value, searchParam.getCondition(), queryBuilder);
-//                dateBool.must(dateQuery);
-//            }
-//        }
-//
-//        if (dateBool.isEmpty()) {
-//            return null;
-//        }
-//
-//        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
-//        return queryBuilder.bool().must(dateBool.createQuery()).must(fundIdQuery).createQuery();
-//        return null;
-//    }
-//
-//    /**
-//     * Vytvoří lucene dotaz na hledání arr_data podle datace.
-//     *
-//     * @param value datace
-//     * @param condition typ podmínky
-//     * @param queryBuilder query builder
-//     *
-//     * @return dotaz
-//     */
-//    private Query createDateQuery(final String value, final UnitdateCondition condition, final QueryBuilder queryBuilder) {
-//        Assert.notNull(value, "Hodnota musí být vyplněna");
-//        Assert.notNull(condition, "Podmínka musí být vyplněna");
-//
-//        IUnitdate unitdate = new ArrDataUnitdate();
-//        UnitDateConvertor.convertToUnitDate(value, unitdate);
-//
-//        LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-//        long secondsFrom = CalendarConverter.toSeconds(fromDate);
-//
-//        LocalDateTime toDate = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-//        long secondsTo = CalendarConverter.toSeconds(toDate);
-//
-//        Query query;
-//        switch (condition) {
-//            case CONTAINS:
-//			Query fromQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom)
-//			        .createQuery();
-//			Query toQuery = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
-//                query = queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
-//                break;
-//            case GE:
-//			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_FROM_ATT).above(secondsFrom).createQuery();
-//                break;
-//            case LE:
-//			query = queryBuilder.range().onField(ArrDescItem.NORMALIZED_TO_ATT).below(secondsTo).createQuery();
-//                break;
-//            default:
-//                throw new IllegalStateException("Neznámý typ podmínky " + condition);
-//        }
-//
-//        return query;
-//    }
-//
-//    /**
-//     * Najde id atributů vyhovující předaným parametrům.
-//     *
-//     * @param searchParams podmínky
-//     * @param fundId id archivního souboru
-//     *
-//     * @return id nodů
-//     */
-//    @SuppressWarnings("unchecked")
-//    private Query createDescItemIdsByTextSearchParamsDataQuery(final List<TextSearchParam> searchParams,
-//                                                               final Integer fundId) {
-//        Class<ArrDescItem> entityClass = ArrDescItem.class;
-//        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
-//
-//        BooleanJunction<BooleanJunction> textBool = queryBuilder.bool();
-//
-//        for (TextSearchParam searchParam : searchParams) {
-//            String value = searchParam.getValue();
-//            if (StringUtils.isNotBlank(value)) {
-//                Query textQuery = createTextQuery(value, queryBuilder);
-//                textBool.must(textQuery);
-//            }
-//        }
-//
-//        if (textBool.isEmpty()) {
-//            return null;
-//        }
-//
-//        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
-//        return queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
-//    }
-//
+
+    /**
+     * Najde predikát vyhovující předaným parametrům (UnitdateSearchParam, fundId).
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     *
+     * @return id nodů
+     */
+    private SearchPredicate createDescItemIdsByDateSearchParamsDataQuery(final List<UnitdateSearchParam> searchParams,
+                                                                      	 final Integer fundId) {
+    	SearchPredicateFactory factory = getSearchPredicateFactory();
+        BooleanPredicateClausesStep<?> bool = factory.bool();
+
+        for (UnitdateSearchParam searchParam : searchParams) {
+            String value = searchParam.getValue();
+            if (StringUtils.isNotBlank(value)) {
+            	SearchPredicate datePredicate = createDateQuery(value, searchParam.getCondition(), factory);
+                bool.must(datePredicate);
+            }
+        }
+
+        if (!bool.hasClause()) {
+            return null;
+        }
+
+        SearchPredicate fundIdPredicate = factory.bool().should(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId)).toPredicate();
+        return factory.bool().must(bool.toPredicate()).must(fundIdPredicate).toPredicate();
+	}
+
+    /**
+     * Vytvoří lucene predikát na hledání arr_data podle datace.
+     *
+     * @param value datace
+     * @param condition typ podmínky
+     * @param factory search predicate factory
+     *
+     * @return predikát
+     */
+    private SearchPredicate createDateQuery(final String value, final UnitdateCondition condition, final SearchPredicateFactory factory) {
+        Assert.notNull(value, "Hodnota musí být vyplněna");
+        Assert.notNull(condition, "Podmínka musí být vyplněna");
+
+        IUnitdate unitdate = new ArrDataUnitdate();
+        UnitDateConvertor.convertToUnitDate(value, unitdate);
+
+        LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long secondsFrom = CalendarConverter.toSeconds(fromDate);
+
+        LocalDateTime toDate = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long secondsTo = CalendarConverter.toSeconds(toDate);
+
+        BooleanPredicateClausesStep<?> bool;
+        switch (condition) {
+            case CONTAINS:
+            	SearchPredicate fromPredicate = factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate();
+            	SearchPredicate toPredicate = factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate();
+            	bool = factory.bool().must(fromPredicate).must(toPredicate);
+                break;
+            case GE:
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate());
+                break;
+            case LE:
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate());
+                break;
+            default:
+                throw new IllegalStateException("Neznámý typ podmínky " + condition);
+        }
+
+        return bool.toPredicate();
+    }
+
+	/**
+     * Najde predikát vyhovující předaným parametrům (TextSearchParam, fundId).
+     *
+     * @param searchParams podmínky
+     * @param fundId id archivního souboru
+     *
+     * @return predikát
+     */
+    private SearchPredicate createDescItemIdsByTextSearchParamsDataQuery(final List<TextSearchParam> searchParams,
+                                                               			 final Integer fundId) {
+    	SearchPredicateFactory factory = getSearchPredicateFactory();
+        BooleanPredicateClausesStep<?> bool = factory.bool();
+
+        for (TextSearchParam searchParam : searchParams) {
+            String value = searchParam.getValue();
+            if (StringUtils.isNotBlank(value)) {
+                SearchPredicate textPredicate = createTextQuery(value, factory);
+                bool.must(textPredicate);
+            }
+        }
+
+        if (!bool.hasClause()) {
+            return null;
+        }
+
+        SearchPredicate fundIdPredicate = factory.bool().should(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId)).toPredicate();
+        return factory.bool().must(bool.toPredicate()).must(fundIdPredicate).toPredicate();
+    }
+
 	/**
      * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
      *
@@ -832,73 +857,4 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 //            throw new InvalidQueryException(e);
 //        }
 //    }
-
-    private class FullTextQueryContext<T> {
-
-        private final Class<T> entityClass;
-        private final SearchPredicateFactory factory;
-        //private final QueryBuilder queryBuilder; //TODO hibernate search 6
-
-        Integer offset;
-        Integer pageSize;
-        Integer resultSize;
-
-        public Integer getOffset() {
-            return offset;
-        }
-
-        public void setOffset(Integer offset) {
-            this.offset = offset;
-        }
-
-        public Integer getPageSize() {
-            return pageSize;
-        }
-
-        public void setPageSize(Integer pageSize) {
-            this.pageSize = pageSize;
-        }
-
-        public Integer getResultSize() {
-            return resultSize;
-        }
-
-        public void setResultSize(Integer resultSize) {
-            this.resultSize = resultSize;
-        }
-
-        /**
-         * Vytvoří query builder pro danou třídu.
-         *
-         * @param entityClass třída
-         */
-        public FullTextQueryContext(Class<T> entityClass) {
-            this.entityClass = entityClass;
-            this.factory = getSearchSession().scope(entityClass).predicate();
-//            this.queryBuilder = createQueryBuilder(entityClass); TODO hibernate search 6
-        }
-
-        public Class<T> getEntityClass() {
-            return entityClass;
-        }
-
-        public SearchPredicateFactory getFactory() {
-        	return factory;
-        }
-
-//        public QueryBuilder getQueryBuilder() { TODO hibernate search 6
-//            return queryBuilder;
-//        }
-
-        /**
-         * Vytvoří hibernate jpa query z lucene query.
-         *
-         * @param query lucene qery
-         * @return hibernate jpa query
-         */
-//        public FullTextQuery createFullTextQuery(Query query) { TODO hibernate search 6
-//            return getFullTextEntityManager().createFullTextQuery(query, entityClass);
-//        }
-    }
-
 }

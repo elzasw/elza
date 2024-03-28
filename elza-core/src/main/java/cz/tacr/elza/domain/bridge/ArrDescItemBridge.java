@@ -44,14 +44,8 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     	if (arrDescItem.getFulltextValue() != null) {
     		document.addValue(FULLTEXT_ATT, arrDescItem.getFulltextValue());
     	}
-    	if (arrDescItem.getValueInt() != null) {
-    		document.addValue(INTGER_ATT, arrDescItem.getValueInt());
-    	}
-    	if (arrDescItem.getNormalizedFrom() != null) {
-    		document.addValue(NORMALIZED_FROM_ATT, arrDescItem.getNormalizedFrom());
-    	}
-    	if (arrDescItem.getNormalizedTo() != null) {
-    		document.addValue(NORMALIZED_TO_ATT, arrDescItem.getNormalizedTo());
-    	}
+		document.addValue(INTGER_ATT, arrDescItem.getValueInt());
+		document.addValue(NORMALIZED_FROM_ATT, arrDescItem.getNormalizedFrom());
+		document.addValue(NORMALIZED_TO_ATT, arrDescItem.getNormalizedTo());
     }
 }
