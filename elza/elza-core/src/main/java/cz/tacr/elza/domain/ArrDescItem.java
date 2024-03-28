@@ -34,7 +34,7 @@ import jakarta.persistence.Transient;
  *
  */
 @Table
-@Indexed(routingBinder = @RoutingBinderRef(type = ArrDescItemRoutingBinder.class))
+@Indexed//(routingBinder = @RoutingBinderRef(type = ArrDescItemRoutingBinder.class))
 @TypeBinding(binder = @TypeBinderRef(type = ArrDescItemBinder.class))
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
