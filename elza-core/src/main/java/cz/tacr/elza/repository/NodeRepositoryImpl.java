@@ -95,9 +95,33 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
       return result;
     }
 
-    @Override //TODO hibernate search 6
-    public QueryResults<ArrDescItemInfo> findFundIdsByFulltext(String text, Collection<ArrFund> fundList, Integer size, Integer offset) {
-        return new QueryResults<>(0, Collections.emptyList());
+    @Override
+    public QueryResults<ArrDescItemInfo> findFundIdsByFulltext(final String text,
+                                                               final Collection<ArrFund> fundList,
+                                                               final Integer size, final Integer offset) {
+        SearchPredicateFactory factory = getSearchPredicateFactory();
+
+        SearchPredicate textPredicate = null;
+        if (text != null) {
+            textPredicate = createTextQuery(text, factory);
+        }
+
+        SearchPredicate fundIdsPredicate = null;
+        if (fundList != null) {
+            fundIdsPredicate = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(Collectors.toList()), factory);
+        }
+
+        SearchPredicate searchPredicate;
+        if (textPredicate == null && fundIdsPredicate == null) {
+            searchPredicate = factory.matchAll().toPredicate();
+        } else {
+            searchPredicate = factory.bool().must(textPredicate).must(fundIdsPredicate).toPredicate();
+        }
+
+        List<ArrDescItemInfo> itemList = findNodeIdsByValidDescItems(null, searchPredicate, size, offset);
+
+        QueryResults<ArrDescItemInfo> result = new QueryResults<>(itemList.size(), itemList);
+        return result;
     }
 
 	/**
@@ -114,7 +138,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     	SearchPredicate descItemIdsPredicate = createDescItemIdsByDataQuery(text, fundId);
 
-    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate);
+    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
     	return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
@@ -184,7 +208,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     	SearchPredicate descItemIdsPredicate = createDescItemIdsByTextSearchParamsDataQuery(searchParams, fundId);
 
-    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate);
+    	List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
     	return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
@@ -205,7 +229,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         SearchPredicate descItemIdsPredicate = createDescItemIdsByDateSearchParamsDataQuery(searchParams, fundId);
 
-        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate);
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
         return result.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
@@ -537,17 +561,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         return factory.bool().must(textPredicate).must(fundIdPredicate).toPredicate();
     }
-//
-//    private Query createFundIdsQuery(Collection<Integer> fundIds, QueryBuilder queryBuilder) {
-//        // fundId je kodovany jako numeric, nelze pouzit matching()
-//        // return queryBuilder.keyword().onField("fundId").matching("(" + StringUtils.join(fundIds, " ") + ")").createQuery();
-//        BooleanJunction<BooleanJunction> result = queryBuilder.bool();
-//        for (Integer fundId : new HashSet<>(fundIds)) {
-//            result.should(queryBuilder.range().onField(ArrDescItem.FIELD_FUND_ID).from(fundId).to(fundId).createQuery());
-//        }
-//        return result.createQuery();
-//    }
-//
+
+    private SearchPredicate createFundIdsQuery(final Collection<Integer> fundIds, final SearchPredicateFactory factory) {
+    	BooleanPredicateClausesStep<?> bool = factory.bool();
+        for (Integer fundId : new HashSet<>(fundIds)) {
+            bool.should(factory.range().field(ArrDescItem.FIELD_FUND_ID).between(fundId, fundId));
+        }
+        return bool.toPredicate();
+    }
+
 //    /**
 //     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
 //     * Vyhledávání probíhá podle lucene dotazu.
@@ -665,7 +687,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů které mají před danou změnou nějaký atribut
      */
     private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId,
-                                                              final SearchPredicate descItemIdsPredicate) {
+                                                              final SearchPredicate descItemIdsPredicate,
+                                                              final Integer size, final Integer offset) {
 
         if (descItemIdsPredicate == null) {
             return Collections.emptyList();
@@ -678,9 +701,12 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         									.must(descItemIdsPredicate)
         									.toPredicate();
 
-        SearchResult<ArrDescItem> resultList = getSearchSession().search(ArrDescItem.class)
-												.where(finalPredicate)
-												.fetchAll();
+        SearchResult<ArrDescItem> resultList;
+        if (size == null || offset == null) {
+        	resultList = getSearchSession().search(ArrDescItem.class).where(finalPredicate).fetchAll();
+        } else {
+        	resultList = getSearchSession().search(ArrDescItem.class).where(finalPredicate).fetch(offset, size);
+        }
 
         return resultList.hits().stream()
                 .map(row -> new ArrDescItemInfo(row.getItemId(), row.getNodeId(), row.getFundId(), 0f))
