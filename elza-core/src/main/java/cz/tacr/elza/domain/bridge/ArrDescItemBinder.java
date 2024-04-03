@@ -34,7 +34,7 @@ public class ArrDescItemBinder implements TypeBinder {
         createIntegerField(FIELD_NODE_ID);
         createIntegerField(FIELD_FUND_ID);
 
-        createNotAnalyzedField(SPECIFICATION_ATT);
+        createIntegerField(SPECIFICATION_ATT);
         createIntegerField(FIELD_DESC_ITEM_TYPE_ID);
         createIntegerField(FIELD_CREATE_CHANGE_ID);
         createIntegerField(FIELD_DELETE_CHANGE_ID);
