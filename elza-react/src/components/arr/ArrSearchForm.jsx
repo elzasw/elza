@@ -32,7 +32,7 @@ class ArrSearchForm extends AbstractReactComponent {
         const errors = {};
 
         errors.condition = [];
-        values.condition.forEach((item, index) => {
+        values.condition?.forEach((item, index) => {
             if (item.type === TYPE_UNITDATE) {
                 errors.condition.push(DatationField.reduxValidate(item)); // FIXME ?: Removing Party
             } else {
