@@ -14,7 +14,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 29. 4. 2016
  * @update Sergey Iryupin
- * @since 20. 3. 2024
+ * @since 03. 4. 2024
  */
 public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescItemCondition {
 
@@ -40,7 +40,7 @@ public class SelectedSpecificationsDescItemEnumCondition implements LuceneDescIt
 		BooleanPredicateClausesStep<?> bool = factory.bool();
 
 		values.forEach(v -> {
-			bool.should(factory.match().field(attributeName).matching(v.toString()).toPredicate());
+			bool.should(factory.match().field(attributeName).matching(v).toPredicate());
 		});
 
 		return bool.toPredicate();
