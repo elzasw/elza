@@ -434,20 +434,27 @@ public class EntityDBDispatcher {
 
 
         // check s AP class/subclass was cha
-        ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
+        ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
-            //změna třídy entity
-            if (!deletedEntity) {
-                state.setDeleteChange(procCtx.getApChange());
-                state = stateRepository.save(state);
-            }
-            stateNew = accessPointService.copyState(state, procCtx.getApChange());
-            if (deletedEntity && syncQueue) {
-                // retain deleted state
-                stateNew.setDeleteChange(state.getDeleteChange());
-            }
-            stateNew.setApType(apType);
-            state = stateRepository.save(stateNew);
+            log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
+        	if (entity.getEns() != EntityRecordStateXml.ERS_REPLACED && entity.getEns() != EntityRecordStateXml.ERS_INVALID) {
+                // změna třídy (typu) entity
+                if (!deletedEntity) {
+                    state.setDeleteChange(procCtx.getApChange());
+                    state = stateRepository.save(state);
+                }
+                stateNew = accessPointService.copyState(state, procCtx.getApChange());
+                if (deletedEntity && syncQueue) {
+                    // retain deleted state
+                    stateNew.setDeleteChange(procCtx.getApChange());
+                }
+                stateNew.setApType(apType);
+                state = stateRepository.save(stateNew);
+        	} else {
+        		// if entity will be deleted and class is changed
+        		// -> create unversioned change of class
+        		state.setApType(apType);
+        	}
         }
 
         String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;
