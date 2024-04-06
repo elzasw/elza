@@ -530,6 +530,13 @@
     <#case "ZP2015_UNIT_CONTENT">
       <#lt>  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
       <#break>
+    <#case "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE">
+      <#-- Alternativni popis -->
+      <#assign altStruct = item.getValue() >
+      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && altStruct.hasItem("ZP2015_UNIT_CONTENT") >
+        <#lt>  <ead:scopecontent lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}"><ead:p>${altStruct.getSingleItem("ZP2015_UNIT_CONTENT").serializedValue}</ead:p></ead:scopecontent>
+      </#if>
+      <#break>      
     <#case "ZP2015_UNIT_SOURCE">
       <#lt>  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
       <#break>
@@ -608,6 +615,7 @@
   <#local majorLanguages=[]>
   <#local originators=[]>
   <#local containers=[]>
+  <#local altDescr=[]>
 <ead:did>
   <#if node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_ROOT">
     <#-- Počet evidenčních jednotek -->
@@ -683,6 +691,10 @@
       <#case "ZP2015_STORAGE_ID">
         <#-- Ukladaci jednotka -->
         <#local containers=containers+[item]>
+        <#break>
+      <#case "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE">
+        <#-- Alternativni popis -->
+        <#local altDescr=altDescr+[item]>
         <#break>
       <#-- Prvky popisu pro charakteristiku JP -->
       <#case "ZP2015_UNIT_TYPE">
@@ -761,14 +773,14 @@
         <#lt>  </ead:physdescstructured>
         <#break>
       <#case "ZP2015_MOVIE_LENGTH">
-        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
-        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype" otherphysdescstructuredtype="duration" coverage="whole">
+        <#lt>    <ead:quantity>${item.integerValue?c}</ead:quantity>
         <#lt>    <ead:unittype>s</ead:unittype>
         <#lt>  </ead:physdescstructured>
         <#break>
       <#case "ZP2015_RECORD_LENGTH">
-        <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
-        <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+        <#lt>  <ead:physdescstructured physdescstructuredtype="otherphysdescstructuredtype" otherphysdescstructuredtype="duration" coverage="whole">
+        <#lt>    <ead:quantity>${item.integerValue?c}</ead:quantity>
         <#lt>    <ead:unittype>s</ead:unittype>
         <#lt>  </ead:physdescstructured>
         <#break>
@@ -788,6 +800,15 @@
     <#--  Jen samotny obsah -->
     <#list unitTitles as unitTitle>
       <#lt>  <ead:unittitle>${unitTitle.serializedValue}</ead:unittitle>
+    </#list>    
+  </#if>
+  <#--  Alternativni obsah -->
+  <#if (altDescr?size>0)>
+    <#list altDescr as singleAltDescr>
+      <#assign altStruct = singleAltDescr.getValue() >
+      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && altStruct.hasItem("ZP2015_TITLE") >
+        <#lt>  <ead:unittitle lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}">${altStruct.getSingleItem("ZP2015_TITLE").serializedValue}</ead:unittitle>
+      </#if>
     </#list>
   </#if>
   <#-- Zapis zdedene datace -->
