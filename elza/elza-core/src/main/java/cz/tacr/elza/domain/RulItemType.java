@@ -520,6 +520,9 @@ public class RulItemType {
     }
 
     public void setViewDefinition(final Object viewDefinition) {
+        if (viewDefinition == null) {
+            return;
+        }
         try {
             this.viewDefinition = objectMapper.writeValueAsString(viewDefinition);
         } catch (JsonProcessingException e) {
