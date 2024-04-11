@@ -46,8 +46,10 @@ public class RulDescItemTypeExtVO extends RulDescItemTypeVO {
     		List<RulDescItemSpecExtVO> descItemSpecs = itemType.getRulItemSpecList().stream().map(i -> RulDescItemSpecExtVO.newInstance(i)).collect(Collectors.toList());
     		result.setDescItemSpecs(descItemSpecs);
     	}
-    	// TODO define which fields are required
+    	if (itemType.getViewDefinition() != null) {
+    		result.setViewDefinition(itemType.getViewDefinition());
+    	}
+    	// TODO set fields if required
     	return result;
     }
-    
 }
