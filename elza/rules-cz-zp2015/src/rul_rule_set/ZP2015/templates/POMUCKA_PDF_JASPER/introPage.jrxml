@@ -12,7 +12,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<import value="org.apache.commons.lang.StringUtils"/>
+	<import value="org.apache.commons.lang3.StringUtils"/>
 	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
 	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16" isBold="true"/>
 	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
