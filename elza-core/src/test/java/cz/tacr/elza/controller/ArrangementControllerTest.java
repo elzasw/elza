@@ -1354,14 +1354,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(descItemCreated.getPosition());
         assertNotNull(descItemCreated.getDescItemObjectId());
 
-//        // pokus o opakované přidání by měl způsobit chybu
-//        node.setVersion(descItemResult.getParent().getVersion());
-//        try {
-//            descItemResult = createDescItem(descItem, fundVersion, node, type);
-//        } catch (BusinessException e) {
-//            descItemResult = null;
-//            assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
-//        }
-//        assertNull(descItemResult);
+        // pokus o opakované přidání by měl způsobit chybu
+        node.setVersion(descItemResult.getParent().getVersion());
+        try {
+            descItemResult = createDescItem(descItem, fundVersion, node, type);
+        } catch (BusinessException e) {
+            descItemResult = null;
+            assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
+        }
+        assertNull(descItemResult);
     }
 }
