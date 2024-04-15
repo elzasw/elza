@@ -31,14 +31,12 @@ public class SearchControllerTest extends AbstractControllerTest {
         // filter is null
         ResultEntityRef result = searchApi.searchEntity(createSearchParamEmpty());
         assertNotNull(result);
+        assertEquals(3, result.getCount().intValue());
 
-        //assertEquals(3, result.getCount().intValue());
-
-        SearchParams sp = createSearchParamText("Firma");
-        result = searchApi.searchEntity(sp);
+        // filter with search text 
+        result = searchApi.searchEntity(createSearchParamText("Firma"));
         assertNotNull(result);
-
-        //assertEquals(2, result.getCount().intValue());
+        assertEquals(2, result.getCount().intValue());
     }
 
     @Test
