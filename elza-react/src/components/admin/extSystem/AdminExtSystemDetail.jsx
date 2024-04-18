@@ -11,7 +11,8 @@ import {
     EXT_SYSTEM_CLASS,
     EXT_SYSTEM_CLASS_LABEL,
     GIS_SYSTEM_TYPE_LABEL,
-    AP_EXT_SYSTEM_LABEL
+    AP_EXT_SYSTEM_LABEL,
+    STORAGE_SYSTEM_TYPE_LABEL
 } from './ExtSystemForm';
 
 /**
@@ -100,6 +101,17 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
                             <h4>{i18n('admin.extSystem.type')}</h4>
                             <span>{GIS_SYSTEM_TYPE_LABEL[extSystem.type]}</span>
+
+                            {this.scopeValue(extSystem.scope)}
+                        </div>
+                    )}
+                    {classJ === EXT_SYSTEM_CLASS.StorageExternalSystem && (
+                        <div>
+                            <h4>{i18n('admin.extSystem.class')}</h4>
+                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.StorageExternalSystem]}</span>
+
+                            <h4>{i18n('admin.extSystem.type')}</h4>
+                            <span>{STORAGE_SYSTEM_TYPE_LABEL[extSystem.type]}</span>
 
                             {this.scopeValue(extSystem.scope)}
                         </div>

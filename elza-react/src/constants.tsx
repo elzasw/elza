@@ -15,6 +15,10 @@ export enum GisSystemType {
     FrameApiEdit = "FRAME_API_EDIT"
 }
 
+export enum StorageSystemType {
+    Fedora = "FEDORA",
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',
