@@ -1444,6 +1444,7 @@ var messages = {
     "admin.extSystem.class.ArrDigitizationFrontdeskVO": "Digitalizační linka",
     "admin.extSystem.class.GisExternalSystemVO": "Systém GIS (mapové podklady)",
     "admin.extSystem.class.StorageExternalSystemVO": "Externí úložiště",
+    "admin.extSystem.class.DigitalArchiveExternalSystemVO": "Digitální archiv",
     "admin.extSystem.noSelection.title": "Není vybrán externí systém",
     "admin.extSystem.noSelection.message": "Prosím vyberte externí systém ze seznamu nebo vytvořte nový",
     "admin.extSystem.submit.add": "Přidat",

@@ -116,6 +116,14 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             {this.scopeValue(extSystem.scope)}
                         </div>
                     )}
+                    {classJ === EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem && (
+                        <div>
+                            <h4>{i18n('admin.extSystem.class')}</h4>
+                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]}</span>
+
+                            {this.scopeValue(extSystem.scope)}
+                        </div>
+                    )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
                             <h4>{i18n('admin.extSystem.class')}</h4>
