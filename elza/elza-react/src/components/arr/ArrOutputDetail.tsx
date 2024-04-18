@@ -277,14 +277,9 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             >
                 <div className="output-definition-commons">
                     <OutputInlineForm
-                        // @ts-ignore
                         disabled={readonly}
                         initialValues={fundOutputDetail}
                         onSave={this.handleSaveOutput}
-                        // pridan outputDetail navic k initialValues, protoze
-                        // zmena initialValues nezpusobi render kvuli redux-form
-                        outputDetail={fundOutputDetail}
-                        outputFilters={outputFilters}
                     />
                     {fundOutputDetail.error && (
                         <div>
