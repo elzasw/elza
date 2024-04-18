@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.StorageExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.StorageExternalSystemVO;
+import cz.tacr.elza.domain.StorageExternalSystem;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1720,7 +1723,7 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření vo z DO
-     * 
+     *
      * @param contextPath
      *
      * @param dao
@@ -1864,6 +1867,9 @@ public class ClientFactoryVO {
         if (extSystem instanceof ArrDigitizationFrontdesk) {
         	return ArrDigitizationFrontdeskVO.newInstance((ArrDigitizationFrontdesk) extSystem);
         }
+        if (extSystem instanceof StorageExternalSystem) {
+            return StorageExternalSystemVO.newInstance((StorageExternalSystem) extSystem);
+        }
 
         throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());
     }
@@ -1881,6 +1887,9 @@ public class ClientFactoryVO {
         }
         if (extSystem instanceof ArrDigitalRepository) {
             return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
+        }
+        if (extSystem instanceof StorageExternalSystem) {
+            return StorageExternalSystemSimpleVO.newInstance((StorageExternalSystem) extSystem);
         }
 
         throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());

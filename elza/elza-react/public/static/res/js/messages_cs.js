@@ -1443,6 +1443,7 @@ var messages = {
     "admin.extSystem.class.ArrDigitalRepositoryVO": "Uložiště digitalizátů",
     "admin.extSystem.class.ArrDigitizationFrontdeskVO": "Digitalizační linka",
     "admin.extSystem.class.GisExternalSystemVO": "Systém GIS (mapové podklady)",
+    "admin.extSystem.class.StorageExternalSystemVO": "Externí úložiště",
     "admin.extSystem.noSelection.title": "Není vybrán externí systém",
     "admin.extSystem.noSelection.message": "Prosím vyberte externí systém ze seznamu nebo vytvořte nový",
     "admin.extSystem.submit.add": "Přidat",
@@ -1455,6 +1456,7 @@ var messages = {
     "admin.extSystem.cam-complete": "CAM - Kompletní",
     "admin.extSystem.gis-view": "Zobrazení",
     "admin.extSystem.gis-edit": "Editace",
+    "admin.extSystem.fedora": "Fedora",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
 
