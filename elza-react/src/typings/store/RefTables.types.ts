@@ -61,6 +61,43 @@ export interface DescItemTypeRef extends RulDescItemTypeExtVO {
     dataType: RulDataTypeVO;
 }
 
+export interface OutputType {
+    code?: string;
+    id?: number;
+    name?: string;
+}
+
+export interface Template {
+    id?: number;
+    code?: string;
+    directory?: string;
+    engine?: string;
+    name?: string;
+}
+
+interface Templates {
+    items?: Record<string, BaseRefTableStore<Template>>;
+}
+
+interface OutputFilterData {
+    id?: number;
+    name?: string;
+    filename?: string;
+    code?: string;
+    packageId?: number;
+    ruleSetId?: number;
+}
+
+interface OutputFilters {
+    data: OutputFilterData[];
+    currentDataKey?: boolean;
+    id?: boolean;
+    fetched?: boolean;
+    isFetching?: boolean;
+    getDataKey?: () => unknown;
+    reducer?: () => unknown;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
@@ -70,13 +107,14 @@ export interface RefTablesState {
     institutions: unknown;
     issueStates: unknown;
     issueTypes: unknown;
-    outputTypes: unknown;
+    outputTypes: BaseRefTableStore<OutputType>;
+    outputFilters: OutputFilters;
     partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: BaseRefTableStore<unknown>;
     rulDataTypes: BaseRefTableStore<RulDataTypeVO>;
     ruleSet: unknown;
     scopesData: ScopesData;
     structureTypes: StructureTypes;
-    templates: unknown;
+    templates: Templates;
     visiblePolicyTypes: BaseRefTableStore<VisiblePolicyRefItem>;
 }
