@@ -16,6 +16,7 @@ export const EXT_SYSTEM_CLASS = {
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
     StorageExternalSystem: '.StorageExternalSystemVO',
+    DigitalArchiveExternalSystem: '.DigitalArchiveExternalSystemVO',
 };
 
 export const EXT_SYSTEM_CLASS_LABEL = {
@@ -24,6 +25,7 @@ export const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
     [EXT_SYSTEM_CLASS.StorageExternalSystem]: i18n('admin.extSystem.class.StorageExternalSystemVO'),
+    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: i18n('admin.extSystem.class.DigitalArchiveExternalSystemVO'),
 };
 
 export const AP_EXT_SYSTEM_LABEL = {
@@ -48,6 +50,7 @@ const FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue'],
     [EXT_SYSTEM_CLASS.StorageExternalSystem]: ['type'],
+    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: [],
 };
 
 const REQUIRED_FIELDS = {
@@ -57,6 +60,7 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
     [EXT_SYSTEM_CLASS.StorageExternalSystem]: ['type', 'url'],
+    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: ['url'],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
@@ -67,6 +71,7 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
         ...FIELDS[EXT_SYSTEM_CLASS.StorageExternalSystem],
+        ...FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem],
     ];
 
     static state = {
@@ -96,6 +101,8 @@ class ExtSystemForm extends AbstractReactComponent {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
         } else if (classJ === EXT_SYSTEM_CLASS.StorageExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.StorageExternalSystem]);
+        } else if (classJ === EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
@@ -274,6 +281,7 @@ class ExtSystemForm extends AbstractReactComponent {
                         classJ !== EXT_SYSTEM_CLASS.ApExternalSystem
                         && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
                         && classJ !== EXT_SYSTEM_CLASS.StorageExternalSystem
+                        && classJ !== EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem
                         && (
                         <Field
                             name="elzaCode"

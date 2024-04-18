@@ -104,4 +104,16 @@
                                  referencedTableName="sys_external_system"/>
     </changeSet>
 
+    <changeSet id="20240415164800" author="fantis">
+        <createTable tableName="digital_archive_external_system">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_digital_archive_external_system" nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="digital_archive_external_system"
+                                 constraintName="fk_digital_archive_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+    </changeSet>
+
+
 </databaseChangeLog>
