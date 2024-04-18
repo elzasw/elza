@@ -507,7 +507,7 @@ public class NodeCacheService {
             Integer nodeId = node.getNodeId();
 
 			// serialize node data
-            CachedNode cn = new CachedNode(nodeId, node.getUuid());
+            CachedNode cn = new CachedNode(nodeId, node.getUuid(), node.getFundId());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
             cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
@@ -543,7 +543,7 @@ public class NodeCacheService {
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
 
-            CachedNode cn = new CachedNode(nodeId, node.getUuid());
+            CachedNode cn = new CachedNode(nodeId, node.getUuid(), node.getFundId());
             cn.setDescItems(nodeIdItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
             cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
@@ -827,7 +827,7 @@ public class NodeCacheService {
                 // Node has to have valid nodeId
                 Validate.notNull(node.getNodeId());
 
-                CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid());
+                CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid(), node.getFundId());
                 String data = serialize(cachedNode, false);
 
                 ArrCachedNode record = new ArrCachedNode();

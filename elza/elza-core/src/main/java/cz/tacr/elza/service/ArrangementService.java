@@ -1037,11 +1037,12 @@ public class ArrangementService {
         Validate.notNull(version, "Verze AS musí být vyplněna");
         Validate.notNull(depth, "Hloubka musí být vyplněna");
 
-        ArrChange lockChange = version.getLockChange();
-        Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
         Integer fundId = version.getFund().getFundId();
+        Integer lockChangeId = version.getLockChangeId();
 
-        Set<Integer> nodeIds = nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId);
+        Set<Integer> nodeIds = lockChangeId != null? 
+        		nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId) :
+        		nodeRepository.findByFulltext(searchValue, fundId);
 
         Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
         versionNodeIds.retainAll(nodeIds);

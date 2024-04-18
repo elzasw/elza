@@ -45,6 +45,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParamType;
 import cz.tacr.elza.controller.vo.filter.TextSearchParam;
 import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
 import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -128,6 +129,28 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         QueryResults<ArrDescItemInfo> result = new QueryResults<>(itemList.size(), itemList);
         return result;
+    }
+
+	/**
+  	 * Vyhledávání id uzlu podle textu ve stromu fondu.
+  	 *
+  	 * @param text   search text
+  	 * @param fundId id fondu
+  	 * @return seznam id
+  	 */
+    @Override
+    public Set<Integer> findByFulltext(String text, Integer fundId) {
+    	Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+
+    	SearchPredicateFactory factory = getSearchSession().scope(ArrCachedNode.class).predicate();
+
+    	SearchPredicate textPredicate = createTextQuery(text, factory);
+        SearchPredicate fundIdPredicate = factory.bool().should(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId)).toPredicate();
+        SearchPredicate finalPredicate = factory.bool().must(textPredicate).must(fundIdPredicate).toPredicate();
+
+        SearchResult<ArrCachedNode> resultList = getSearchSession().search(ArrCachedNode.class).where(finalPredicate).fetchAll();
+
+    	return resultList.hits().stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
     }
 
 	/**
@@ -562,8 +585,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
             nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));
-
-        	//nodeIds.addAll(nodeIdToDescItemIds.keySet());
 
         }
         return nodeIds;
