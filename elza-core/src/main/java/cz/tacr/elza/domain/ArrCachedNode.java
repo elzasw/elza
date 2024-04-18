@@ -2,28 +2,36 @@ package cz.tacr.elza.domain;
 
 import java.util.Objects;
 
+import org.hibernate.Length;
+import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
+
+import cz.tacr.elza.domain.bridge.ArrCachedNodeBinder;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import org.hibernate.annotations.Type;
-
 
 /**
  * Data jednotky popisu serializované pro rychlejší sestavení.
  *
  */
 @Table
+@Indexed
+@TypeBinding(binder = @TypeBinderRef(type = ArrCachedNodeBinder.class))
 @Entity(name = "arr_cached_node")
 public class ArrCachedNode {
+
+    // Constants for fulltext indexing
+    public static final String DATA = "data";
 
     @Id
     @GeneratedValue
@@ -37,9 +45,8 @@ public class ArrCachedNode {
 	@Column(insertable = false, updatable = false)
     private Integer nodeId;
 
-    //@Lob
-    //@Type(type = "org.hibernate.type.TextType") TODO hibernate search 6
-    @Column
+    @Basic
+    @Column(length = Length.LONG) // hibernate long text field
     private String data;
 
     public Integer getCachedNodeId() {

@@ -87,7 +87,7 @@ public interface NodeRepositoryCustom {
                                                   Integer size,
                                                   Integer offset);
     /**
-     * Najde uzly s danou hodnotou.
+     * Najde uzly s danou hodnotou s přihlédnutím k hodnotě lockChangeId.
      *
      * @param text hledaná hodnota
      * @param fundId id fondu do kterého uzly patří
@@ -97,6 +97,15 @@ public interface NodeRepositoryCustom {
      */
     Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId);
 
+    /**
+     * Najde uzly s danou hodnotou.
+     * 
+     * @param text hledaná hodnota
+     * @param fundId id fondu do kterého uzly patří
+     *
+     * @return množina id uzlů odopovídající hledané hodnotě
+     */
+    Set<Integer> findByFulltext(String text, Integer fundId);
 
     /**
      * Najde uzly s danou hodnotou podle lucene dotazu.
