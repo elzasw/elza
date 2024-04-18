@@ -93,6 +93,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
                         <Form.Control
+                            className="form-select"
                             ref={ref}
                             as="select"
                             value={value}
