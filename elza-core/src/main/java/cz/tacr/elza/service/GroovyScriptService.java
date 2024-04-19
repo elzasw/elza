@@ -51,8 +51,6 @@ public class GroovyScriptService {
 
     private final NodeCacheService nodeCacheService;
 
-    private final AccessPointCacheService accessPointCacheService;
-    
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
@@ -74,11 +72,9 @@ public class GroovyScriptService {
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                NodeCacheService nodeCacheService,
                                StaticDataService staticDataService,
-                               AccessPointCacheService accessPointCacheService,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
-        this.accessPointCacheService = accessPointCacheService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
@@ -136,12 +132,13 @@ public class GroovyScriptService {
 
     /**
      * Spuštění groovy skriptu pro zpracování dat v AccessPoint
-     * 
+     *
      * @param groovyAe
      * @param groovyFilePath
+     * @param accessPointCacheService
      * @return
      */
-    public List<GroovyItem> process(GroovyAe groovyAe, String groovyFilePath) {
+    public List<GroovyItem> process(GroovyAe groovyAe, String groovyFilePath, final AccessPointCacheService accessPointCacheService) {
         if (groovyFilePath == null) {
             return Collections.emptyList();
         }
