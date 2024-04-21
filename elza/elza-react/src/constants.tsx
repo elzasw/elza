@@ -181,6 +181,8 @@ export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 
+export const URL_AIP = '/aip';
+
 export const getFundVersion = (fund: Fund) => {
     if(!fund?.activeVersion){
         // console.error("No active version on fund", fund);
@@ -268,4 +270,8 @@ export const urlEntity = (entityId?: number | string) => {
 
 export const urlEntityRevision = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}/revision`
+}
+
+export const urlAip = (aipId: number) => {
+    return `${URL_AIP}/${aipId}`;
 }

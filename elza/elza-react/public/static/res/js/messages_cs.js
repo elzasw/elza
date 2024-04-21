@@ -329,6 +329,7 @@ var messages = {
     "ribbon.action.arr.fund.settings.refTemplate": "Správa šablon synchronizace JP",
     "ribbon.action.registry": "Archivní entity",
     "ribbon.action.registry.scope.manage": "Správa oblastí entit",
+    "ribbon.action.aip": "AIP",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",

@@ -13,6 +13,8 @@ const initialState = {
     preparedRequestList: SimpleListReducer(), // seznam neodeslaných požadavků - sdíleno pro celou aplikaci
     requestInQueueList: SimpleListReducer(), // seznam požadavků ve frontě
     apExtSystemList: SimpleListReducer(), // seznam externích systémů
+    aip: DetailReducer(),
+    aipList: SimpleListReducer(),
     kmlExtSystemList: SimpleListReducer(), // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(), // seznam externích systémů

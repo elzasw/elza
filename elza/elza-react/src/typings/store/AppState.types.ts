@@ -4,6 +4,7 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
+import {ArrAipVO} from "../../api/ArrAipVO.ts";
 
 export interface SplitterState {
     leftWidth: number;
@@ -92,6 +93,32 @@ export interface AdminFunds {
 export interface AdminFund {
     currentDataKey?: number | string;
     data?: FundData | null;
+    getDataKey?: () => number | string;
+    id?: number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    name?: string;
+}
+export interface AipsFilter extends SimpleListFilter { }
+
+export interface Aips {
+    count?: number;
+    currentDataKey?: string | number;
+    filter?: AipsFilter;
+    filterRows?: unknown;
+    getDataKey?: () => number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    filteredRows?: ArrAipVO[];
+    rows?: ArrAipVO[];
+    sourceRows?: ArrAipVO[];
+}
+
+export interface Aip {
+    currentDataKey?: number | string;
+    data?: ArrAipVO | null;
     getDataKey?: () => number | string;
     id?: number | string;
     fetched?: boolean;
@@ -302,6 +329,8 @@ export interface ExternalSystem {
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;
 
 export interface App {
+    aip: Aip;
+    aipList: SimpleList<ArrAipVO>;
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;

@@ -20,6 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ArrAipVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.domain.ArrAip;
+import cz.tacr.elza.service.AipService;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -295,6 +300,9 @@ public class ArrangementController {
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
+    private AipService aipService;
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -2871,6 +2879,25 @@ public class ArrangementController {
         headers.add("Content-type",  contentType + "; charset=utf-8");
         headers.add("Content-disposition", "attachment; filename=file." + extension);
         return new ResponseEntity<>(arrangementService.exportCoordinates(fileType, itemId), headers, HttpStatus.OK);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/aip/find/all",
+            method = RequestMethod.GET)
+    public FilteredResultVO<ArrAipVO> findAips(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                               @RequestParam("from") final Integer from,
+                                               @RequestParam("count") final Integer count) {
+        List<ArrAip> aips = aipService.findAips();
+        return new FilteredResultVO<>(factoryVo.createArrAips(aips), aips.size());
+
+    }
+
+    @Transactional
+    @RequestMapping(value = "/aip/{aipId}",
+            method = RequestMethod.GET)
+    public ArrAipVO getAip(@PathVariable("aipId") Integer aipId) {
+        ArrAip aip = aipService.getAip(aipId);
+        return factoryVo.createArrAip(aip);
     }
 
     /**

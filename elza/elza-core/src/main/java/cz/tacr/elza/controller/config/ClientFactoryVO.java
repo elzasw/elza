@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.config;
 
+import static cz.tacr.elza.exception.codes.ArrangementCode.FUND_NOT_FOUND;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 import java.time.LocalDateTime;
@@ -20,12 +21,16 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ArrAipVO;
 import cz.tacr.elza.controller.vo.DigitalArchiveExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.DigitalArchiveExternalSystemVO;
 import cz.tacr.elza.controller.vo.StorageExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.StorageExternalSystemVO;
+import cz.tacr.elza.domain.ArrAip;
 import cz.tacr.elza.domain.DigitalArchiveExternalSystem;
 import cz.tacr.elza.domain.StorageExternalSystem;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -293,6 +298,12 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApIndexRepository indexRepository;
+
+    @Autowired
+    private FundRepository fundRepository;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
 
     /**
@@ -1910,5 +1921,25 @@ public class ClientFactoryVO {
 
     public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
+    }
+
+    public List<ArrAipVO> createArrAips(List<ArrAip> aips) {
+        List<ArrAipVO> aipVOList = new ArrayList<>();
+        for (ArrAip aip : aips) {
+            aipVOList.add(createArrAip(aip));
+        }
+        return aipVOList;
+    }
+
+    public ArrAipVO createArrAip(ArrAip aip) {
+        ArrFund fund = fundRepository.findById(aip.getFundId())
+                .orElseThrow(() -> new ObjectNotFoundException("Nenalezen fund s ID " + aip.getFundId(), FUND_NOT_FOUND));
+        ParInstitution institution = institutionRepository.findByInternalCode(aip.getInstitutionId().toString());
+        ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+
+        ArrAipVO aipVO =  ArrAipVO.newInstance(aip);
+        aipVO.setFundName(fund.getName());
+        aipVO.setInstitutionName(displayName != null ? displayName.getIndexValue() : null);
+        return aipVO;
     }
 }
