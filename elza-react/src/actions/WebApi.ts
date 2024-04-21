@@ -1735,6 +1735,14 @@ export class WebApiCls {
         });
     }
 
+    getAip(aipId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/' + aipId);
+    }
+
+    findAips(fulltext: string, max: number = DEFAULT_LIST_SIZE, from: number = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/find/all', { search: fulltext, from, count: max });
+    }
+
     getValidationItems(fundVersionId, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/validation/' + fundVersionId + '/' + fromIndex + '/' + toIndex,

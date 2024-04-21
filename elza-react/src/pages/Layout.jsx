@@ -15,6 +15,7 @@ import {
     AdminPage,
     AdminRequestsQueuePage,
     AdminUserPage,
+    AipPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
@@ -50,7 +51,8 @@ import {
     URL_ENTITY,
     URL_ENTITY_CREATE,
     URL_FUND,
-    URL_NODE
+    URL_NODE,
+    URL_AIP
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import AppRouter from './AppRouter';
@@ -239,6 +241,9 @@ class Layout extends AbstractReactComponent {
                                 <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
                                 <Route path={URL_ENTITY} component={RegistryPage} />
                                 <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
+
+                                <Route path={URL_AIP + "/:id"} component={AipPage} />
+                                <Route path={URL_AIP} component={AipPage} />
 
                                 <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                                 <Route path="/admin">

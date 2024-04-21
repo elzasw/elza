@@ -197,4 +197,9 @@ public enum ArrangementCode implements ErrorCode {
      * Nelze smazat přílohu, protože existují navázané entity.
      */
     ATTACHMENT_DELETE_ERROR,
+
+    /**
+     * AIP neexistuje
+     */
+    AIP_NOT_FOUND
 }

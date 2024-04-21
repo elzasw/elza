@@ -1,0 +1,39 @@
+@import "../../variables.scss";
+
+.detail-container {
+    margin: 1em;
+
+    .detail-header {
+        width: auto;
+    }
+
+    .ext-id {
+        margin: 0.5em;
+        background-color: var(--shade-2);
+        border-radius: 5px;
+        padding: 4px 8px;
+        align-items: center;
+    }
+
+    .state {
+        margin: 0.5em;
+        background-color: var(--color-blue);
+        border-radius: 5px;
+        color: var(--fg-shade-4);
+        padding: 4px 8px;
+        align-items: center;
+    }
+
+    .detail-body {
+        .text {
+            font-size: 20px;
+            float: left;
+            margin: 0.5em;
+        }
+
+        .button-download {
+            float: left;
+            margin: 0.5em;
+        }
+    }
+}

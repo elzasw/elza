@@ -115,5 +115,42 @@
                                  referencedTableName="sys_external_system"/>
     </changeSet>
 
+    <changeSet id="20240416105600" author="fantis">
+        <createTable tableName="arr_aip">
+            <column name="aip_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_aip" nullable="false"/>
+            </column>
+            <column name="ext_aip_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_version" type="int"/>
+            <column name="aip_size" type="int"/>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="institution_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dip_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="process_state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sync_date" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20240418105600" author="fantis">
+        <addColumn tableName="arr_aip">
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 
 </databaseChangeLog>

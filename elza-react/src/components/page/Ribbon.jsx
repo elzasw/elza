@@ -25,7 +25,7 @@ import {
     urlFundActions, urlFundDaos,
     urlFundGrid,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP
 } from "../../constants";
 import UserSettingsModal from 'components/user/UserSettingsModal';
 
@@ -347,6 +347,12 @@ class Ribbon extends AbstractReactComponent {
                         <Button variant={'default'}>
                             <Icon glyph="fa-th-list" />
                             <span className="btnText">{i18n('ribbon.action.registry')}</span>
+                        </Button>
+                    </LinkContainer>
+                    <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-th-list" />
+                            <span className="btnText">{i18n('ribbon.action.aip')}</span>
                         </Button>
                     </LinkContainer>
                     {userDetail.hasOne(
