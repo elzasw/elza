@@ -158,8 +158,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         SearchPredicate fundIdsPredicate = null;
         if (fundList != null) {
             fundIdsPredicate = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(Collectors.toList()), factory);
-        } else {
-        	fundIdsPredicate = factory.matchAll().toPredicate();
         }
 
         SearchPredicate searchPredicate;
