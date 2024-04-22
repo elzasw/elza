@@ -595,6 +595,21 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     /**
      * Deserializace entity
      *
+     * @param data
+     * @return
+     */
+    public CachedAccessPoint deserialize(String data) {
+        try {
+            return mapper.readValue(data, CachedAccessPoint.class);
+        } catch (IOException e) {
+            logger.error("Failed to deserialize object, data: " + data);
+            throw new SystemException("Při deserializaci objektu se objevil problém", e);
+        }
+    }
+
+    /**
+     * Deserializace entity a obnovení odkazu
+     *
      * Must be called inside transaction
      *
      * @param data
@@ -602,22 +617,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
      */
     @Transactional(value = TxType.MANDATORY)
     public CachedAccessPoint deserialize(String data, ApAccessPoint accessPoint) {
-        try {
-            CachedAccessPoint cap = mapper.readValue(data, CachedAccessPoint.class);
-            cap.setAccessPointId(accessPoint.getAccessPointId());
-            cap.setAccessPointVersion(accessPoint.getVersion());
-            cap.setUuid(accessPoint.getUuid());
-            cap.setState(accessPoint.getState());
-            cap.setErrorDescription(accessPoint.getErrorDescription());
-            cap.setLastUpdate(accessPoint.getLastUpdate());
-            cap.setPreferredPartId(accessPoint.getPreferredPartId());
+        CachedAccessPoint cap = deserialize(data);
+        cap.setAccessPointId(accessPoint.getAccessPointId());
+        cap.setAccessPointVersion(accessPoint.getVersion());
+        cap.setUuid(accessPoint.getUuid());
+        cap.setState(accessPoint.getState());
+        cap.setErrorDescription(accessPoint.getErrorDescription());
+        cap.setLastUpdate(accessPoint.getLastUpdate());
+        cap.setPreferredPartId(accessPoint.getPreferredPartId());
 
-            restoreLinks(cap);
-            return cap;
-        } catch (IOException e) {
-            logger.error("Failed to deserialize object, data: " + data);
-            throw new SystemException("Při deserializaci objektu se objevil problém", e);
-        }
+        restoreLinks(cap);
+        return cap;
     }
 
     private void restoreLinks(CachedAccessPoint cap) {

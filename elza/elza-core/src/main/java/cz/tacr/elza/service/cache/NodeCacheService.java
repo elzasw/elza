@@ -54,7 +54,6 @@ import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -98,13 +97,6 @@ public class NodeCacheService {
     @Autowired
     private StructuredObjectRepository structureDataRepository;
 
-    /*
-    @Autowired
-    private PartyNameComplementRepository partyNameComplementRepository;
-
-    @Autowired
-    private PartyNameRepository partyNameRepository;*/
-
     @Autowired
     private ApAccessPointRepository accessPointRepository;
 
@@ -122,9 +114,6 @@ public class NodeCacheService {
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
 	private StaticDataService staticDataService;
@@ -269,13 +258,28 @@ public class NodeCacheService {
         readLock.lock();
         try {
             logger.trace("getNodes(nodes: {})", nodes);
-            Collection<RestoredNode> nodesInternal = getCachedNodesInternal(nodes);
+            Collection<RestoredNode> nodesInternal = getRestoredNodesInternal(nodes);
             return nodesInternal;
         } catch (Exception e) {
             logger.error("Failed to read nodes: {}", nodes, e);
             throw e;
         } finally {
             readLock.unlock();
+        }
+    }
+
+    /**
+     * Deserializace CachedNode.
+     *
+     * @param data
+     * @return CachedNode
+     */
+    public CachedNode deserialize(final String data) {
+        try {
+        	return mapper.readValue(data, CachedNode.class);
+        } catch (IOException e) {
+            logger.error("Failed to deserialize object, data: " + data);
+            throw new SystemException("Při deserializaci objektu se objevil problém", e);
         }
     }
 
@@ -646,7 +650,7 @@ public class NodeCacheService {
      * @param nodeIds identifikátory JP
      * @return seznam JP
      */
-    private Collection<RestoredNode> getCachedNodesInternal(final Collection<ArrNode> nodes) {
+    private Collection<RestoredNode> getRestoredNodesInternal(final Collection<ArrNode> nodes) {
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIn(nodes);
         if (cachedNodes.size() != nodes.size()) {
             Collection<Integer> cachedNodeIds = cachedNodes.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
