@@ -24,8 +24,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 
-import jakarta.transaction.Transactional;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -1790,25 +1788,25 @@ public class ArrangementController {
         UserDetail userDetail = userService.getLoggedUserDetail();
 
         // získání seznamu všech dostupných ArrFund pro vyhledávání
-        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : userDetail.getId());
+        List<ArrFund> fundList = 
+        		userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : fundRepository.findFromUsrPermissionByUserId(userDetail.getId());
 
-        List<ArrFundToNodeList> additionalFundToNodeList = null;
+        ArrFundToNodeList arrFundToNodeList = null;
         if (UuidUtils.isUUID(input.getSearchValue())) {
             ArrNode node = arrangementService.findNodeByUUID(input.getSearchValue());
             if (node != null) {
                 // kontrola přístupových práv pro Fund
                 if (fundList.contains(node.getFund())) {
-                    ArrFundToNodeList arrFundToNodeList = new ArrFundToNodeList(node.getFundId(), Collections.singletonList(node.getNodeId()));
-                    additionalFundToNodeList = Collections.singletonList(arrFundToNodeList);
+                    arrFundToNodeList = new ArrFundToNodeList(node.getFundId(), Collections.singletonList(node.getNodeId()));
                 }
             }
         }
 
-        if (CollectionUtils.isEmpty(fundList) && CollectionUtils.isEmpty(additionalFundToNodeList)) {
+        if (fundList != null && fundList.isEmpty() && arrFundToNodeList == null) {
             return Collections.emptyList();
         }
 
-        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList, additionalFundToNodeList);
+        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList, arrFundToNodeList);
     }
 
     /**

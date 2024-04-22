@@ -269,13 +269,27 @@ public class NodeCacheService {
         readLock.lock();
         try {
             logger.trace("getNodes(nodes: {})", nodes);
-            Collection<RestoredNode> nodesInternal = getCachedNodesInternal(nodes);
+            Collection<RestoredNode> nodesInternal = getRestoredNodesInternal(nodes);
             return nodesInternal;
         } catch (Exception e) {
             logger.error("Failed to read nodes: {}", nodes, e);
             throw e;
         } finally {
             readLock.unlock();
+        }
+    }
+
+    /**
+     * Získání sestavených cachovaných JP.
+     *
+     * @param arrCachedNode
+     * @return CachedNode
+     */
+    public CachedNode getCachedNode(final ArrCachedNode arrCachedNode) {
+        try {
+        	return mapper.readValue(arrCachedNode.getData(), CachedNode.class);
+        } catch (IOException e) {
+            throw new SystemException("Nastal problém při deserializaci objektu", e);
         }
     }
 
@@ -646,7 +660,7 @@ public class NodeCacheService {
      * @param nodeIds identifikátory JP
      * @return seznam JP
      */
-    private Collection<RestoredNode> getCachedNodesInternal(final Collection<ArrNode> nodes) {
+    private Collection<RestoredNode> getRestoredNodesInternal(final Collection<ArrNode> nodes) {
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIn(nodes);
         if (cachedNodes.size() != nodes.size()) {
             Collection<Integer> cachedNodeIds = cachedNodes.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
