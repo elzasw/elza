@@ -132,7 +132,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
 
         resultList.hits().forEach(arrCachedNode -> {
-        	CachedNode cachedNode = nodeCacheService.getCachedNode(arrCachedNode);
+        	CachedNode cachedNode = nodeCacheService.deserialize(arrCachedNode.getData());
         	ArrFundToNodeList fundToNodeList = fundToNodeListMap.get(cachedNode.getFundId());
         	if (fundToNodeList == null) {
         		fundToNodeList = new ArrFundToNodeList(cachedNode.getFundId(), new ArrayList<>());

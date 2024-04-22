@@ -54,7 +54,6 @@ import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -98,13 +97,6 @@ public class NodeCacheService {
     @Autowired
     private StructuredObjectRepository structureDataRepository;
 
-    /*
-    @Autowired
-    private PartyNameComplementRepository partyNameComplementRepository;
-
-    @Autowired
-    private PartyNameRepository partyNameRepository;*/
-
     @Autowired
     private ApAccessPointRepository accessPointRepository;
 
@@ -122,9 +114,6 @@ public class NodeCacheService {
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
 	private StaticDataService staticDataService;
@@ -280,16 +269,17 @@ public class NodeCacheService {
     }
 
     /**
-     * Získání sestavených cachovaných JP.
+     * Deserializace CachedNode.
      *
-     * @param arrCachedNode
+     * @param data
      * @return CachedNode
      */
-    public CachedNode getCachedNode(final ArrCachedNode arrCachedNode) {
+    public CachedNode deserialize(final String data) {
         try {
-        	return mapper.readValue(arrCachedNode.getData(), CachedNode.class);
+        	return mapper.readValue(data, CachedNode.class);
         } catch (IOException e) {
-            throw new SystemException("Nastal problém při deserializaci objektu", e);
+            logger.error("Failed to deserialize object, data: " + data);
+            throw new SystemException("Při deserializaci objektu se objevil problém", e);
         }
     }
 

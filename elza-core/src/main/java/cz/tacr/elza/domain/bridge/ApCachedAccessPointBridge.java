@@ -45,6 +45,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -54,9 +55,11 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     private final static Logger log = LoggerFactory.getLogger(ApCachedAccessPointBridge.class);
 
-    static private SettingsService settingsService;
+    private static SettingsService settingsService;
 
-    static private SettingIndexSearch settingIndexSearch;
+    private static SettingIndexSearch settingIndexSearch;
+    
+    private static AccessPointCacheService accessPointCacheService;
 
     public static final String AP_TYPE_ID = "ap_type_id";
     public static final String SCOPE_ID = "scope_id";
@@ -83,56 +86,44 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         log.debug("Creating ApCachedAccessPointClassBridge");
     }
 
-    static public void init(SettingsService settingsService) throws BeansException {
+    public static void init(SettingsService settingsService, AccessPointCacheService accessPointCacheService) throws BeansException {
         if (settingsService == null) {
             throw new IllegalArgumentException("settingsService is null");
         }
         ApCachedAccessPointBridge.settingsService = settingsService;
         ApCachedAccessPointBridge.settingIndexSearch = getElzaSearchConfig();
+        ApCachedAccessPointBridge.accessPointCacheService = accessPointCacheService;
     }
 
     @Override
     public void write(DocumentElement document, ApCachedAccessPoint apCachedAccessPoint, TypeBridgeWriteContext typeBridgeWriteContext) {
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class,
-                LocalDate.class, LocalDateTime.class));
+    	CachedAccessPoint cachedAccessPoint = accessPointCacheService.deserialize(apCachedAccessPoint.getData()); 
+        if (cachedAccessPoint.getPreferredPartId() == null) {
+        	cachedAccessPoint.setPreferredPartId(findPreferredPartId(cachedAccessPoint));
+        }
+        // do not index APs without state or deleted APs
+        ApState apState = cachedAccessPoint.getApState();
+        if (apState == null || apState.getDeleteChangeId() != null) {
+            return;
+        }
 
-        try {
-            // TODO: use cache service to deserialize
-            CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            if (cachedAccessPoint.getPreferredPartId() == null) {
-            	cachedAccessPoint.setPreferredPartId(findPreferredPartId(cachedAccessPoint));
-            }
-            // do not index APs without state or deleted APs
-            ApState apState = cachedAccessPoint.getApState();
-            if (apState == null || apState.getDeleteChangeId() != null) {
-                return;
-            }
+        addStringField(FIELD_ACCESSPOINT_ID, apState.getAccessPointId().toString(), document);
+        addStringField(STATE, apState.getStateApproval().name().toLowerCase(), document);
+        addStringField(AP_TYPE_ID, apState.getApTypeId().toString(), document);
+        addStringField(SCOPE_ID, apState.getScopeId().toString(), document);
+        if (cachedAccessPoint.getRevState() != null) {
+            addStringField(REV_STATE, cachedAccessPoint.getRevState().name().toLowerCase(), document);
+        }
+        if (cachedAccessPoint.getCreateUsername() != null) {
+        	addStringField(USERNAME, cachedAccessPoint.getCreateUsername().toLowerCase(), document);
+        }
 
-            addStringField(FIELD_ACCESSPOINT_ID, apState.getAccessPointId().toString(), document);
-            addStringField(STATE, apState.getStateApproval().name().toLowerCase(), document);
-            addStringField(AP_TYPE_ID, apState.getApTypeId().toString(), document);
-            addStringField(SCOPE_ID, apState.getScopeId().toString(), document);
-            if (cachedAccessPoint.getRevState() != null) {
-                addStringField(REV_STATE, cachedAccessPoint.getRevState().name().toLowerCase(), document);
+        if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
+            for (CachedPart part : cachedAccessPoint.getParts()) {
+                addItemFields(DATA, part, cachedAccessPoint, document);
+                addIndexFields(DATA, part, cachedAccessPoint, document);
             }
-            if (cachedAccessPoint.getCreateUsername() != null) {
-            	addStringField(USERNAME, cachedAccessPoint.getCreateUsername().toLowerCase(), document);
-            }
-
-            if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
-                for (CachedPart part : cachedAccessPoint.getParts()) {
-                    addItemFields(DATA, part, cachedAccessPoint, document);
-                    addIndexFields(DATA, part, cachedAccessPoint, document);
-                }
-            }
-
-        } catch (IOException e) {
-            throw new SystemException("Nastal problém při deserializaci objektu", e);
         }
     }
 
