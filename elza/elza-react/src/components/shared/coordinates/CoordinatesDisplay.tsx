@@ -18,6 +18,7 @@ interface Props {
     value: string;
     id?: number;
     arrangement?: boolean;
+    isUndefined?: boolean;
 }
 
 const getFormatData = (geometry: Geometry) => {
@@ -79,6 +80,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
     value,
     id,
     arrangement = false,
+    isUndefined = false,
 }) => {
     const dispatch = useThunkDispatch();
 
@@ -117,6 +119,14 @@ export const CoordinatesDisplay: React.FC<Props> = ({
             return `${geometryType} ( ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
         }
         return `${geometryType} ( ${i18n("global.geometry.label.objects")}: ${objectCount} ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+    }
+
+    if (value == undefined) {
+        return <></>
+    }
+
+    if (isUndefined) {
+        return <span>{i18n("subNodeForm.descItemType.undefinedValue")}</span>
     }
 
     return (
