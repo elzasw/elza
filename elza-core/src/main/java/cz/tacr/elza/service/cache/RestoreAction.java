@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -111,7 +112,7 @@ public class RestoreAction {
      */
     private void restoreDescItem(ArrDescItem descItem) {
         // restore createChange
-        Validate.notNull(descItem.getCreateChangeId());
+        Objects.requireNonNull(descItem.getCreateChangeId());
         ArrChange createChange = em.getReference(ArrChange.class, descItem.getCreateChangeId());
         descItem.setCreateChange(createChange, descItem.getCreateChangeId());
 
@@ -122,9 +123,9 @@ public class RestoreAction {
         }
 
         // restore item type
-        Validate.notNull(descItem.getItemTypeId());
+        Objects.requireNonNull(descItem.getItemTypeId());
         ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
-        Validate.notNull(itemType);
+        Objects.requireNonNull(itemType);
 
         descItem.setItemType(itemType.getEntity());
 
@@ -238,7 +239,7 @@ public class RestoreAction {
     }
 
     private void addDataStructRef(ArrDataStructureRef data) {
-        Validate.notNull(data.getStructuredObjectId());
+    	Objects.requireNonNull(data.getStructuredObjectId());
 
         if (restoreStructData == null) {
             restoreStructData = new HashMap<>();
@@ -249,7 +250,7 @@ public class RestoreAction {
     }
 
     private void addDataAPRef(ArrDataRecordRef data) {
-        Validate.notNull(data.getRecordId());
+    	Objects.requireNonNull(data.getRecordId());
 
         if (restoreAPRef == null) {
             restoreAPRef = new HashMap<>();
@@ -259,7 +260,7 @@ public class RestoreAction {
     }
 
     private void addDataFileRef(ArrDataFileRef data) {
-        Validate.notNull(data.getFileId());
+    	Objects.requireNonNull(data.getFileId());
 
         if (restoreFileRef == null) {
             restoreFileRef = new HashMap<>();
@@ -290,11 +291,11 @@ public class RestoreAction {
     }
 
     private void restoreDaoLink(ArrDaoLink daoLink) {
-        Validate.notNull(daoLink.getCreateChangeId());
+    	Objects.requireNonNull(daoLink.getCreateChangeId());
         ArrChange createChange = em.getReference(ArrChange.class, daoLink.getCreateChangeId());
         daoLink.setCreateChange(createChange, daoLink.getCreateChangeId());
 
-        Validate.notNull(daoLink.getDaoId());
+        Objects.requireNonNull(daoLink.getDaoId());
 
         if (restoreDaoLinks == null) {
             restoreDaoLinks = new HashMap<>();
@@ -304,8 +305,8 @@ public class RestoreAction {
     }
 
     private void restoreNodeExt(ArrNodeExtension nodeExt) {
-        Validate.notNull(nodeExt.getArrangementExtensionId());
-        Validate.notNull(nodeExt.getCreateChangeId());
+    	Objects.requireNonNull(nodeExt.getArrangementExtensionId());
+    	Objects.requireNonNull(nodeExt.getCreateChangeId());
 
         RulArrangementExtension arExt = em.getReference(RulArrangementExtension.class, nodeExt
                 .getArrangementExtensionId());

@@ -673,7 +673,7 @@ public class NodeCacheService {
      *
      * @param cachedNodes seznam JP, kterým se doplňují návazné entity
      */
-	private void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
+	public void reloadCachedNodes(final Collection<RestoredNode> cachedNodes) {
 
 		StaticDataProvider sdp = staticDataService.getData();
         RestoreAction ra = new RestoreAction(sdp, entityManager, structureDataRepository,
@@ -747,11 +747,14 @@ public class NodeCacheService {
 
     /**
 	 * Deserializace objektu.
+	 * 
+	 * Metoda vrací přímo deserializovaný objekt bez obnovených propojení na související 
+	 * objekty.
 	 *
 	 * @param cachedNode serializovaný objekt
 	 * @return sestavený objekt
 	 */
-	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
+	public RestoredNode deserialize(final ArrCachedNode cachedNode) {
         try {
 			RestoredNode restoredNode = mapper.readValue(cachedNode.getData(), RestoredNode.class);
 
