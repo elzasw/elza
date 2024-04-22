@@ -481,7 +481,7 @@
                         <version>2.5.3</version>
                         <configuration>
                             <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <arguments>"-Dinnosetup.path=${innosetup.path}" "-Dsigntool.enabled=${signtool.enabled}" "-Dsigntool.path=${signtool.path}" "-Dsigntool.params=${signtool.params}" "-Djre.path=${jre.path}" "-Dtomcat.path=${tomcat.path}"</arguments>
+                            <!-- <arguments>"-Dinnosetup.path=${innosetup.path}" "-Dsigntool.enabled=${signtool.enabled}" "-Dsigntool.path=${signtool.path}" "-Dsigntool.params=${signtool.params}" "-Djre.path=${jre.path}" "-Dtomcat.path=${tomcat.path}"</arguments> -->
                         </configuration>
                     </plugin>
                     <!-- By default no subproject is deployed If you want
