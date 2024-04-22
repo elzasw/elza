@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,9 +55,12 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.service.cache.CachedNode;
+import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
  * Custom node repository implementation
@@ -70,6 +74,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
+    @Autowired
+    private NodeCacheService nodeCacheService;
+    
     private SearchSession searchSession = null;
 
     private SearchPredicateFactory searchPredicateFactory = null;
@@ -88,7 +95,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     	}
     	return searchPredicateFactory;
     }
-
+    
     @Override
     public List<ArrNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
     	Validate.notNull(node, "JP musí být vyplněna");
@@ -100,6 +107,41 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     	List<ArrNode> result = levels.stream().map(l -> l.getNode()).collect(Collectors.toList());
       return result;
+    }
+
+
+    @Override
+    public Collection<ArrFundToNodeList> findFundToNodeListByFulltext(final String text, final Collection<ArrFund> fundList) {
+    	SearchPredicateFactory factory = getSearchSession().scope(ArrCachedNode.class).predicate();
+
+        SearchPredicate textPredicate = null;
+        if (text != null) {
+            textPredicate = createTextQuery(text, factory);
+        }
+
+        SearchPredicate fundIdsPredicate = null;
+        if (fundList != null) {
+            fundIdsPredicate = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(Collectors.toList()), factory);
+        } else {
+        	fundIdsPredicate = factory.matchAll().toPredicate();
+        }
+
+        SearchPredicate finalPredicate = factory.bool().must(textPredicate).must(fundIdsPredicate).toPredicate();
+
+        SearchResult<ArrCachedNode> resultList = getSearchSession().search(ArrCachedNode.class).where(finalPredicate).fetchAll();
+        Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
+
+        resultList.hits().forEach(arrCachedNode -> {
+        	CachedNode cachedNode = nodeCacheService.deserialize(arrCachedNode.getData());
+        	ArrFundToNodeList fundToNodeList = fundToNodeListMap.get(cachedNode.getFundId());
+        	if (fundToNodeList == null) {
+        		fundToNodeList = new ArrFundToNodeList(cachedNode.getFundId(), new ArrayList<>());
+        		fundToNodeListMap.put(cachedNode.getFundId(), fundToNodeList);
+        	}
+        	fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
+        });
+
+        return fundToNodeListMap.values();
     }
 
     @Override
