@@ -949,40 +949,29 @@ public class ArrangementService {
      */
     public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue,
                                                            final Collection<ArrFund> fundList,
-                                                           final List<ArrFundToNodeList> additionalFundToNodeList) {
-
-        // TODO: find all nodes in Lucene - has to be grouped by folder
-        QueryResults<ArrDescItemInfo> foundItems = nodeRepository.findFundIdsByFulltext(searchValue, fundList,
-                                                                                        null, null);
-
+                                                           final ArrFundToNodeList arrFundToNodeList) {
         List<ArrFundToNodeList> fundToNodeList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(additionalFundToNodeList)) {
-            fundToNodeList.addAll(additionalFundToNodeList);
-        }
-        Map<Integer, ArrFundToNodeList> mapFund = new HashMap<>();
-        Set<Integer> processedNodes = new HashSet<>();
-        for (ArrDescItemInfo r : foundItems.getRecords()) {
-            if (processedNodes.contains(r.getNodeId())) {
-                continue;
-            }
-            ArrFundToNodeList nl = mapFund.computeIfAbsent(r.getFundId(), id -> {
-                ArrFundToNodeList nnl = new ArrFundToNodeList(id, new ArrayList<>());
-                fundToNodeList.add(nnl);
-                return nnl;
-            });
-            nl.getNodeIdList().add(r.getNodeId());
-            processedNodes.add(r.getNodeId());
+
+        // If the variable `arrFundToNodeList` has a value 
+        if (arrFundToNodeList != null) {
+            fundToNodeList.add(arrFundToNodeList);
+        } else {
+
+            // find nodes by Hibernate Search and group by fund
+            Collection<ArrFundToNodeList> findResult = nodeRepository.findFundToNodeListByFulltext(searchValue, fundList);
+            fundToNodeList.addAll(findResult);
         }
 
+        // uložit do session uživatele
         fundFulltextSession().set(fundToNodeList);
 
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
-            List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
-            Map<Integer, ArrFundVersion> fundIdVersionsMap = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
-                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
-            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
+            List<Integer> fundIds = fundToNodeList.stream().map(i -> i.getFundId()).collect(Collectors.toList());
+            List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds);
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            Map<Integer, ArrFund> fundMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, fv -> fv.getFund()));
 
             for (ArrFundToNodeList fundCount : fundToNodeList) {
                 ArrFundFulltextResult result = new ArrFundFulltextResult();
