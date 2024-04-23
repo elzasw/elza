@@ -13,6 +13,8 @@ export default ({ mode }) => {
   const endpoint = process.env.ENDPOINT || defaultEndpoint;
 
   return defineConfig({
+    // Make paths relative
+    base: "./",
     resolve: {
       alias: {
         "src": path.resolve(__dirname, "./src/"),
