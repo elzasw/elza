@@ -12,11 +12,11 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
+    // TODO převést na použití Bean
 	private static NodeCacheService nodeCacheService;
 
 	public static void init(NodeCacheService nodeCacheService) {
@@ -28,7 +28,7 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
     	var cachedNode = nodeCacheService.deserialize(arrCachedNode);
     	nodeCacheService.reloadCachedNodes(Collections.singletonList(cachedNode));
-    	
+
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
     	if (cachedNode.getDescItems() != null) {
             for (ArrDescItem item : cachedNode.getDescItems()) {
