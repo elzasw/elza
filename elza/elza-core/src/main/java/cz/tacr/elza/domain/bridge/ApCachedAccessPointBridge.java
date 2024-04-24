@@ -5,9 +5,6 @@ import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,10 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -40,13 +33,9 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.annotation.Nullable;
@@ -59,6 +48,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     private static SettingIndexSearch settingIndexSearch;
     
+    // TODO převést na použití Bean
     private static AccessPointCacheService accessPointCacheService;
 
     public static final String AP_TYPE_ID = "ap_type_id";
