@@ -21,6 +21,9 @@ import java.time.LocalDateTime;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
 public class ArrAip {
 
+    public static final String FIELD_EXT_AIP_ID = "extAipId";
+    public static final String FIELD_NAME = "name";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

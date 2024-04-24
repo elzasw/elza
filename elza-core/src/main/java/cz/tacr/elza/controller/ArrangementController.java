@@ -2887,8 +2887,8 @@ public class ArrangementController {
     public FilteredResultVO<ArrAipVO> findAips(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                @RequestParam("from") final Integer from,
                                                @RequestParam("count") final Integer count) {
-        List<ArrAip> aips = aipService.findAips();
-        return new FilteredResultVO<>(factoryVo.createArrAips(aips), aips.size());
+        FilteredResult<ArrAip> aips = aipService.findAips(search, from, count);
+        return new FilteredResultVO<>(factoryVo.createArrAips(aips.getList()), aips.getTotalCount());
 
     }
 

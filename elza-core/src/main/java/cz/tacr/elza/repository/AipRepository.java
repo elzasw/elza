@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface AipRepository extends ElzaJpaRepository<ArrAip, Integer> {
+public interface AipRepository extends ElzaJpaRepository<ArrAip, Integer>, AipRepositoryCustom {
 }
