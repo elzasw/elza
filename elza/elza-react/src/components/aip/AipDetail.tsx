@@ -34,7 +34,9 @@ export function AipDetail() {
             <span className="detail-header">
                 <span className="ext-id">id: {aip.data.extAipId}</span>
                 <span className="state">{aip.data.processState}</span>
-                <span className="text">Poslední synchronizace: {dateToDateTimeString(new Date(aip.data.syncDate))}</span>
+                <span className="state">{aip.data.dipType}</span>
+                <span className="date">Vytvořeno: {dateToDateTimeString(new Date(aip.data.createDate))}</span>
+                <span className="date">Poslední synchronizace: {dateToDateTimeString(new Date(aip.data.syncDate))}</span>
             </span>
             <div className="detail-body">
                 <tr>
@@ -42,6 +44,12 @@ export function AipDetail() {
                 </tr>
                 <tr>
                     <span className="text">Instituce: {aip.data.institutionName}</span>
+                </tr>
+                <tr>
+                    <span className="text">Verze: {aip.data.aipVersion}</span>
+                </tr>
+                <tr>
+                    <span className="text">Velikost: {aip.data.aipSize}</span>
                 </tr>
                 <tr>
                     <button className="button-download">Stáhnout soubory</button>

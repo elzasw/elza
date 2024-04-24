@@ -1926,7 +1926,7 @@ public class ClientFactoryVO {
     public List<ArrAipVO> createArrAips(List<ArrAip> aips) {
         List<ArrAipVO> aipVOList = new ArrayList<>();
         for (ArrAip aip : aips) {
-            aipVOList.add(createArrAip(aip));
+            aipVOList.add(ArrAipVO.newInstance(aip));
         }
         return aipVOList;
     }
@@ -1937,7 +1937,7 @@ public class ClientFactoryVO {
         ParInstitution institution = institutionRepository.findByInternalCode(aip.getInstitutionId().toString());
         ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
 
-        ArrAipVO aipVO =  ArrAipVO.newInstance(aip);
+        ArrAipVO aipVO = ArrAipVO.newInstance(aip);
         aipVO.setFundName(fund.getName());
         aipVO.setInstitutionName(displayName != null ? displayName.getIndexValue() : null);
         return aipVO;
