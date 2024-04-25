@@ -153,7 +153,6 @@
     </changeSet>
 
     <changeSet id="20240425135500" author="fantis">
-        <validCheckSum>any</validCheckSum>
         <dropAllForeignKeyConstraints baseTableName="storage_external_system"/>
         <dropTable tableName="storage_external_system"/>
 
@@ -175,7 +174,9 @@
             <column name="external_system_id" type="int">
                 <constraints primaryKey="true" primaryKeyName="pk_da_remote_repository" nullable="false"/>
             </column>
-            <column name="digital_repository_id" type="int"/>
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="da_remote_repository"
                                  constraintName="fk_da_remote_repository" referencedColumnNames="external_system_id"
@@ -183,6 +184,75 @@
         <addForeignKeyConstraint baseColumnNames="digital_repository_id" baseTableName="da_remote_repository"
                                  constraintName="fk_da_remote_repository_digital_repository" referencedColumnNames="external_system_id"
                                  referencedTableName="arr_digital_repository"/>
+    </changeSet>
+
+    <changeSet id="20240425173100" author="fantis">
+        <createTable tableName="da_remote_repository_sync">
+            <column name="remote_repository_sync_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_remote_repository_sync" nullable="false"/>
+            </column>
+            <column name="remote_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_update" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="remote_repository_id" baseTableName="da_remote_repository_sync"
+                                 constraintName="fk_da_remote_repository_sync_da_remote_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="da_remote_repository"/>
+    </changeSet>
+
+    <changeSet id="20240425174700" author="fantis">
+        <createTable tableName="da_remote_aip">
+            <column name="remote_aip_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_remote_aip" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_version" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fund_code" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="institution_code" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remote_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="remote_repository_id" baseTableName="da_remote_aip"
+                                 constraintName="fk_da_remote_aip_da_remote_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="da_remote_repository"/>
+
+        <createTable tableName="da_sync_queue_item">
+            <column name="sync_queue_item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_sync_queue_item" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_version" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remote_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remote_aip_id" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="remote_repository_id" baseTableName="da_sync_queue_item"
+                                 constraintName="fk_da_sync_queue_item_da_remote_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="da_remote_repository"/>
+        <addForeignKeyConstraint baseColumnNames="remote_aip_id" baseTableName="da_sync_queue_item"
+                                 constraintName="fk_da_sync_queue_item_da_remote_aip" referencedColumnNames="remote_aip_id"
+                                 referencedTableName="da_remote_aip"/>
     </changeSet>
 
 
