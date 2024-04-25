@@ -2,8 +2,8 @@ package cz.tacr.elza.service.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
@@ -33,6 +33,11 @@ public class CachedNode implements NodeCacheSerializable {
     protected String uuid;
 
     /**
+     * Identifikátor AS
+     */
+    protected Integer fundId;
+
+    /**
      * Seznam hodnot atributů.
      */
     protected List<ArrDescItem> descItems;
@@ -50,9 +55,10 @@ public class CachedNode implements NodeCacheSerializable {
     public CachedNode() {
     }
 
-    public CachedNode(final Integer nodeId, final String uuid) {
+    public CachedNode(final Integer nodeId, final String uuid, final Integer fundId) {
         this.nodeId = nodeId;
         this.uuid = uuid;
+        this.fundId = fundId;
     }
 
     public Integer getNodeId() {
@@ -71,7 +77,15 @@ public class CachedNode implements NodeCacheSerializable {
         this.uuid = uuid;
     }
 
-    public List<ArrDescItem> getDescItems() {
+    public Integer getFundId() {
+		return fundId;
+	}
+
+	public void setFundId(Integer fundId) {
+		this.fundId = fundId;
+	}
+
+	public List<ArrDescItem> getDescItems() {
         return descItems;
     }
 
@@ -160,14 +174,14 @@ public class CachedNode implements NodeCacheSerializable {
             return;
         }
         for (ArrDaoLink daoLink : daoLinks) {
-            Validate.notNull(daoLink.getCreateChange());
-            Validate.notNull(daoLink.getCreateChangeId());
+        	Objects.requireNonNull(daoLink.getCreateChange());
+        	Objects.requireNonNull(daoLink.getCreateChangeId());
             // Deleted items should not be stored
             Validate.isTrue(daoLink.getDeleteChangeId() == null);
-            Validate.notNull(daoLink.getDao());
-            Validate.notNull(daoLink.getDaoLinkId());
-            Validate.notNull(daoLink.getNode());
-            Validate.notNull(daoLink.getNodeId());
+            Objects.requireNonNull(daoLink.getDao());
+            Objects.requireNonNull(daoLink.getDaoLinkId());
+            Objects.requireNonNull(daoLink.getNode());
+            Objects.requireNonNull(daoLink.getNodeId());
         }
     }
 
@@ -211,10 +225,10 @@ public class CachedNode implements NodeCacheSerializable {
                         BaseCode.DB_INTEGRITY_PROBLEM)
                                 .set("itemId", descItem.getItemId());
             }
-            Validate.notNull(descItem.getDescItemObjectId());
-            Validate.notNull(descItem.getItemType());
-            Validate.notNull(descItem.getItemTypeId());
-            Validate.notNull(descItem.getPosition());
+            Objects.requireNonNull(descItem.getDescItemObjectId());
+            Objects.requireNonNull(descItem.getItemType());
+            Objects.requireNonNull(descItem.getItemTypeId());
+            Objects.requireNonNull(descItem.getPosition());
 
             ArrData data = HibernateUtils.unproxy(descItem.getData());
             if (data != null) {

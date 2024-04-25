@@ -737,7 +737,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		boostExact = sisField.getBoostExact();
     		boostTransExact = sisField.getBoostTransExact();
     	}
-    	String wildCardValue = STAR + value + STAR;
+    	String wildCardValue = STAR + value.toLowerCase() + STAR;
 
     	step.should(factory.wildcard().field(addPrefix(fieldName)).matching(wildCardValue).boost(boost).toPredicate());
     	if (trans) {

@@ -41,6 +41,9 @@ public class UsrPermissionView {
     @JoinColumn(name = "userId")
     private UsrUser user;
 
+    @Column(name = "userId", nullable = false, updatable = false, insertable = false)
+    private Integer userId;
+
     /**
      * Archivní soubor.
      */
@@ -81,6 +84,11 @@ public class UsrPermissionView {
 
     public void setUser(final UsrUser user) {
         this.user = user;
+        this.userId = user != null ? user.getUserId() : null;
+    }
+
+    public Integer getUserId() {
+    	return userId;
     }
 
     public ArrFund getFund() {

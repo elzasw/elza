@@ -11,6 +11,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
@@ -70,24 +71,24 @@ public interface NodeRepositoryCustom {
     /**
      * Najde uzly s danou hodnotou.
      *
-     * @param fundId id fondů, do kterých uzly patří
      * @param text hledaná hodnota
+     * @param fundId id fondů, do kterých uzly patří
      * @return množina id uzlů odopovídající hledané hodnotě
      */
-    //List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
+    Collection<ArrFundToNodeList> findFundToNodeListByFulltext(String text, Collection<ArrFund> fundList);
 
     /**
      * Najde uzly s danou hodnotou.
      *
-     * @param fundId id fondů, do kterých uzly patří
      * @param text hledaná hodnota
+     * @param fundId id fondů, do kterých uzly patří
      * @return množina id uzlů odopovídající hledané hodnotě
      */
     QueryResults<ArrDescItemInfo> findFundIdsByFulltext(String text, Collection<ArrFund> fundList,
                                                   Integer size,
                                                   Integer offset);
     /**
-     * Najde uzly s danou hodnotou.
+     * Najde uzly s danou hodnotou s přihlédnutím k hodnotě lockChangeId.
      *
      * @param text hledaná hodnota
      * @param fundId id fondu do kterého uzly patří
@@ -97,6 +98,15 @@ public interface NodeRepositoryCustom {
      */
     Set<Integer> findByFulltextAndVersionLockChangeId(String text, Integer fundId, Integer lockChangeId);
 
+    /**
+     * Najde uzly s danou hodnotou.
+     * 
+     * @param text hledaná hodnota
+     * @param fundId id fondu do kterého uzly patří
+     *
+     * @return množina id uzlů odopovídající hledané hodnotě
+     */
+    Set<Integer> findByFulltext(String text, Integer fundId);
 
     /**
      * Najde uzly s danou hodnotou podle lucene dotazu.
