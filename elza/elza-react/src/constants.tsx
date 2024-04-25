@@ -15,8 +15,10 @@ export enum GisSystemType {
     FrameApiEdit = "FRAME_API_EDIT"
 }
 
-export enum StorageSystemType {
+export enum DigitalRepositoryType {
     Fedora = "FEDORA",
+    Wsdl = "WSDL",
+    Filesystem = "FILESYSTEM"
 }
 
 export enum MODAL_DIALOG_VARIANT {

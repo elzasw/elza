@@ -7,7 +7,7 @@ import {submitForm} from 'components/form/FormUtils.jsx';
 import {AbstractReactComponent, i18n} from 'components';
 import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
-import {JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE, StorageSystemType} from '../../../constants';
+import {JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE, DigitalRepositoryType} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 
 export const EXT_SYSTEM_CLASS = {
@@ -15,7 +15,6 @@ export const EXT_SYSTEM_CLASS = {
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
-    StorageExternalSystem: '.StorageExternalSystemVO',
     DigitalArchiveExternalSystem: '.DigitalArchiveExternalSystemVO',
 };
 
@@ -24,7 +23,6 @@ export const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.StorageExternalSystem]: i18n('admin.extSystem.class.StorageExternalSystemVO'),
     [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: i18n('admin.extSystem.class.DigitalArchiveExternalSystemVO'),
 };
 
@@ -39,8 +37,10 @@ export const GIS_SYSTEM_TYPE_LABEL = {
     [GisSystemType.FrameApiEdit]: i18n('admin.extSystem.gis-edit'),
 }
 
-export const STORAGE_SYSTEM_TYPE_LABEL = {
-    [StorageSystemType.Fedora]: i18n('admin.extSystem.fedora'),
+export const DIGITAL_REPOSITORY_TYPE_LABEL = {
+    [DigitalRepositoryType.Fedora]: i18n('admin.extSystem.fedora'),
+    [DigitalRepositoryType.Wsdl]: i18n('admin.extSystem.wsdl'),
+    [DigitalRepositoryType.Filesystem]: i18n('admin.extSystem.filesystem'),
 }
 
 const FIELDS = {
@@ -49,7 +49,6 @@ const FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue'],
-    [EXT_SYSTEM_CLASS.StorageExternalSystem]: ['type'],
     [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: [],
 };
 
@@ -59,7 +58,6 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
-    [EXT_SYSTEM_CLASS.StorageExternalSystem]: ['type', 'url'],
     [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: ['url'],
 };
 
@@ -70,7 +68,6 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
-        ...FIELDS[EXT_SYSTEM_CLASS.StorageExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem],
     ];
 
@@ -99,8 +96,6 @@ class ExtSystemForm extends AbstractReactComponent {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
         } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
-        } else if (classJ === EXT_SYSTEM_CLASS.StorageExternalSystem) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.StorageExternalSystem]);
         } else if (classJ === EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]);
         }
@@ -197,26 +192,22 @@ class ExtSystemForm extends AbstractReactComponent {
                             </Field>
                         </div>
                     )}
-                    {classJ === EXT_SYSTEM_CLASS.StorageExternalSystem && (
+                    {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
                             <Field
-                                name="type"
+                                name="digitalRepositoryType"
                                 type="select"
                                 component={FormInputField}
                                 label={i18n('admin.extSystem.type')}
                                 disabled={isUpdate}
                             >
                                 <option key={null} />
-                                {Object.values(StorageSystemType).map((i, index) => (
+                                {Object.values(DigitalRepositoryType).map((i, index) => (
                                     <option key={index} value={i}>
-                                        {STORAGE_SYSTEM_TYPE_LABEL[i]}
+                                        {DIGITAL_REPOSITORY_TYPE_LABEL[i]}
                                     </option>
                                 ))}
                             </Field>
-                        </div>
-                    )}
-                    {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
-                        <div>
                             <Field
                                 name="viewDaoUrl"
                                 type="text"
@@ -280,7 +271,6 @@ class ExtSystemForm extends AbstractReactComponent {
                     {
                         classJ !== EXT_SYSTEM_CLASS.ApExternalSystem
                         && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
-                        && classJ !== EXT_SYSTEM_CLASS.StorageExternalSystem
                         && classJ !== EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem
                         && (
                         <Field

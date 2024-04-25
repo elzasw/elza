@@ -24,11 +24,8 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.controller.vo.ArrAipVO;
 import cz.tacr.elza.controller.vo.DigitalArchiveExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.DigitalArchiveExternalSystemVO;
-import cz.tacr.elza.controller.vo.StorageExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.StorageExternalSystemVO;
 import cz.tacr.elza.domain.ArrAip;
 import cz.tacr.elza.domain.DigitalArchiveExternalSystem;
-import cz.tacr.elza.domain.StorageExternalSystem;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import org.apache.commons.collections4.CollectionUtils;
@@ -1881,9 +1878,6 @@ public class ClientFactoryVO {
         if (extSystem instanceof ArrDigitizationFrontdesk) {
         	return ArrDigitizationFrontdeskVO.newInstance((ArrDigitizationFrontdesk) extSystem);
         }
-        if (extSystem instanceof StorageExternalSystem) {
-            return StorageExternalSystemVO.newInstance((StorageExternalSystem) extSystem);
-        }
         if (extSystem instanceof DigitalArchiveExternalSystem) {
             return DigitalArchiveExternalSystemVO.newInstance((DigitalArchiveExternalSystem) extSystem);
         }
@@ -1904,9 +1898,6 @@ public class ClientFactoryVO {
         }
         if (extSystem instanceof ArrDigitalRepository) {
             return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
-        }
-        if (extSystem instanceof StorageExternalSystem) {
-            return StorageExternalSystemSimpleVO.newInstance((StorageExternalSystem) extSystem);
         }
         if (extSystem instanceof DigitalArchiveExternalSystem) {
             return DigitalArchiveExternalSystemSimpleVO.newInstance((DigitalArchiveExternalSystem) extSystem);
