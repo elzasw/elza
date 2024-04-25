@@ -152,5 +152,20 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20240425135500" author="fantis">
+        <validCheckSum>any</validCheckSum>
+        <dropAllForeignKeyConstraints baseTableName="storage_external_system"/>
+        <dropTable tableName="storage_external_system"/>
+
+        <addColumn tableName="arr_digital_repository">
+            <column name="digital_repository_type" type="nvarchar(50)"/>
+        </addColumn>
+
+        <sql>UPDATE arr_digital_repository adr SET digital_repository_type = 'WSDL' WHERE adr.view_dao_url is not null</sql>
+        <sql>UPDATE arr_digital_repository adr SET digital_repository_type = 'FILESYSTEM' WHERE adr.view_file_url is not null</sql>
+
+        <addNotNullConstraint tableName="arr_digital_repository" columnName="digital_repository_type"/>
+    </changeSet>
+
 
 </databaseChangeLog>
