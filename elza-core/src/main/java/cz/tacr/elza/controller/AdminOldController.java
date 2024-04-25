@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import jakarta.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
@@ -113,7 +114,8 @@ public class AdminOldController {
     @Transactional
     public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
-        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
+        ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(externalSystemVO);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope, digitalRepository);
         // TODO: zvážit vytvoření specializovaných  metod pro konkrétní typy external system
         externalSystem = externalSystemService.create(externalSystem);
         return factoryVo.createExtSystem(externalSystem);
@@ -142,7 +144,8 @@ public class AdminOldController {
     @Transactional
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
-        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
+        ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(externalSystemVO);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope, digitalRepository);
         externalSystem = externalSystemService.update(externalSystem);
         if (externalSystem instanceof ApExternalSystem) {
             camConnector.invalidate((ApExternalSystem) externalSystem);

@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.api.GisSystemType;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
 
@@ -21,7 +22,7 @@ public class GisExternalSystemVO extends SysExternalSystemVO {
     }
 
     @Override
-    public SysExternalSystem createEntity(ApScope scope) {
+    public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository) {
         GisExternalSystem entity = new GisExternalSystem();
         entity.setType(type);
         this.fillEntity(entity);

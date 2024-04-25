@@ -20,8 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.vo.ArrAipVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
 import cz.tacr.elza.domain.ArrAip;
 import cz.tacr.elza.service.AipService;
 import jakarta.annotation.Nullable;
@@ -1796,7 +1799,7 @@ public class ArrangementController {
         UserDetail userDetail = userService.getLoggedUserDetail();
 
         // získání seznamu všech dostupných ArrFund pro vyhledávání
-        List<ArrFund> fundList = 
+        List<ArrFund> fundList =
         		userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : fundRepository.findFromUsrPermissionByUserId(userDetail.getId());
 
         ArrFundToNodeList arrFundToNodeList = null;
@@ -2896,6 +2899,13 @@ public class ArrangementController {
     public ArrAipVO getAip(@PathVariable("aipId") Integer aipId) {
         ArrAip aip = aipService.getAip(aipId);
         return factoryVo.createArrAip(aip);
+    }
+
+    @RequestMapping(value = "/digitalRepositories", method = RequestMethod.GET)
+    @Transactional
+    public List<SysExternalSystemSimpleVO> findAllDigitalRepositories() {
+        List<ArrDigitalRepository> extSystems = externalSystemService.findDigitalRepository();
+        return FactoryUtils.transformList(extSystems, ArrDigitalRepositorySimpleVO::newInstance);
     }
 
     /**

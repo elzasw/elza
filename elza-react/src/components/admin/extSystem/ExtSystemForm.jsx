@@ -15,7 +15,7 @@ export const EXT_SYSTEM_CLASS = {
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
-    DigitalArchiveExternalSystem: '.DigitalArchiveExternalSystemVO',
+    DaRemoteRepository: '.DaRemoteRepositoryVO',
 };
 
 export const EXT_SYSTEM_CLASS_LABEL = {
@@ -23,7 +23,7 @@ export const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: i18n('admin.extSystem.class.DigitalArchiveExternalSystemVO'),
+    [EXT_SYSTEM_CLASS.DaRemoteRepository]: i18n('admin.extSystem.class.DaRemoteRepositoryVO'),
 };
 
 export const AP_EXT_SYSTEM_LABEL = {
@@ -49,16 +49,16 @@ const FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue'],
-    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: [],
+    [EXT_SYSTEM_CLASS.DaRemoteRepository]: ['apiKeyId', 'apiKeyValue'],
 };
 
 const REQUIRED_FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
+    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
-    [EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]: ['url'],
+    [EXT_SYSTEM_CLASS.DaRemoteRepository]: ['url', 'apiKeyId', 'apiKeyValue'],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
@@ -68,11 +68,12 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
-        ...FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem],
+        ...FIELDS[EXT_SYSTEM_CLASS.DaRemoteRepository],
     ];
 
     static state = {
         defaultScopes: [],
+        defaultDigitalRepository: [],
     };
 
     static requireFields = (...names) => data =>
@@ -96,16 +97,19 @@ class ExtSystemForm extends AbstractReactComponent {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
         } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
-        } else if (classJ === EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem]);
+        } else if (classJ === EXT_SYSTEM_CLASS.DaRemoteRepository) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.DaRemoteRepository]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
 
     componentDidMount() {
-        WebApi.getAllScopes().then(json => {
-            this.setState({
-                defaultScopes: json,
+        WebApi.getAllScopes().then(scopes => {
+            WebApi.getAllDigitalRepositorySystem().then(digitalRepositories => {
+                this.setState({
+                    defaultDigitalRepository: digitalRepositories,
+                    defaultScopes: scopes,
+                });
             });
         });
     }
@@ -115,6 +119,19 @@ class ExtSystemForm extends AbstractReactComponent {
             return <>
                 <option key={null} />
                 {Object.values(this.state.defaultScopes).map((i, index) => (
+                    <option key={index} value={i.id}>
+                        {i.name}
+                    </option>
+                ))}
+            </>
+        }
+    }
+
+    optionDigitalRepositories() {
+        if (this.state != null) {
+            return <>
+                <option key={null} />
+                {Object.values(this.state.defaultDigitalRepository).map((i, index) => (
                     <option key={index} value={i.id}>
                         {i.name}
                     </option>
@@ -243,6 +260,18 @@ class ExtSystemForm extends AbstractReactComponent {
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div />}
+                    {classJ === EXT_SYSTEM_CLASS.DaRemoteRepository && (
+                        <div>
+                            <Field
+                                name="digitalRepositoryId"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.sysDigitalRepository')}
+                            >
+                                {this.optionDigitalRepositories()}
+                            </Field>
+                        </div>
+                    )}
                     <Field
                         name="code"
                         type="text"
@@ -271,7 +300,6 @@ class ExtSystemForm extends AbstractReactComponent {
                     {
                         classJ !== EXT_SYSTEM_CLASS.ApExternalSystem
                         && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
-                        && classJ !== EXT_SYSTEM_CLASS.DigitalArchiveExternalSystem
                         && (
                         <Field
                             name="elzaCode"
@@ -281,7 +309,8 @@ class ExtSystemForm extends AbstractReactComponent {
                         />
                     )}
                     {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem
-                        || classJ === EXT_SYSTEM_CLASS.GisExternalSystem)
+                        || classJ === EXT_SYSTEM_CLASS.GisExternalSystem
+                        || classJ === EXT_SYSTEM_CLASS.DaRemoteRepository)
                         && (
                             <>
                                 <Field
