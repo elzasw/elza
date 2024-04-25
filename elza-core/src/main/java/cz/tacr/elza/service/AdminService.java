@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
@@ -66,7 +67,7 @@ public class AdminService {
     	}
 
     	SearchSession searchSession = Search.session(entityManager);
-    	MassIndexer massIndexer = searchSession.massIndexer(ArrDescItem.class); // TODO Not only ArrDescItem.class
+    	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class); // TODO add ArrDescItem.class
     	//massIndexer.monitor(massIndexingMonitor);
     	indexerStatus = massIndexer.start().toCompletableFuture();
     }

@@ -75,7 +75,6 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -304,14 +303,18 @@ public class EntityDBDispatcher {
                 // update entity if deleted
                 state = entityInfo.getState();
                 if (state.getDeleteChangeId() == null) {
-                    throw new BusinessException("Accespoint already exists", ExternalCode.ALREADY_IMPORTED);
+                    // entity exists and is valid, connect entity with current records
+                    // nop is needed
+                } else {
+                    state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
+                    accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
+                    createdEntities.add(state);
                 }
-                state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
             } else {
                 state = createAccessPoint(entity, binding, srcUuid, false);
+                accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
+                createdEntities.add(state);
             }
-            accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
-            createdEntities.add(state);
             accessPointService.setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
         }
 
@@ -432,20 +435,27 @@ public class EntityDBDispatcher {
 
 
         // check s AP class/subclass was cha
-        ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());
+        ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
-            //změna třídy entity
-            if (!deletedEntity) {
-                state.setDeleteChange(procCtx.getApChange());
-                state = stateRepository.save(state);
-            }
-            stateNew = accessPointService.copyState(state, procCtx.getApChange());
-            if (deletedEntity && syncQueue) {
-                // retain deleted state
-                stateNew.setDeleteChange(state.getDeleteChange());
-            }
-            stateNew.setApType(apType);
-            state = stateRepository.save(stateNew);
+            log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
+        	if (entity.getEns() != EntityRecordStateXml.ERS_REPLACED && entity.getEns() != EntityRecordStateXml.ERS_INVALID) {
+                // změna třídy (typu) entity
+                if (!deletedEntity) {
+                    state.setDeleteChange(procCtx.getApChange());
+                    state = stateRepository.save(state);
+                }
+                stateNew = accessPointService.copyState(state, procCtx.getApChange());
+                if (deletedEntity && syncQueue) {
+                    // retain deleted state
+                    stateNew.setDeleteChange(procCtx.getApChange());
+                }
+                stateNew.setApType(apType);
+                state = stateRepository.save(stateNew);
+        	} else {
+        		// if entity will be deleted and class is changed
+        		// -> create unversioned change of class
+        		state.setApType(apType);
+        	}
         }
 
         String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;

@@ -11,31 +11,53 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonInclude(Include.NON_NULL)
 public class ExceptionResponse {
 
-    private final String type;
+    private String type;
 
-    private final String code;
+    private String code;
 
-    private final String message;
+    private String message;
 
-    private final String level;
+    private String level;
 
-    private final Map<String, Object> properties;
+    private Map<String, Object> properties;
 
-    private final String stackTrace;
+    private String stackTrace;
 
-    public ExceptionResponse(String type,
-                             String code,
-                             String message,
-                             String level,
-                             Map<String, Object> properties,
-                             String stackTrace) {
-        this.type = type;
-        this.code = code;
-        this.message = message;
-        this.level = level;
-        this.properties = properties;
-        this.stackTrace = stackTrace;
+    public ExceptionResponse() {
     }
+
+	public ExceptionResponse(String type, String code, String message, String level, Map<String, Object> properties, String stackTrace) {
+		this.type = type;
+		this.code = code;
+		this.message = message;
+		this.level = level;
+		this.properties = properties;
+		this.stackTrace = stackTrace;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
+	}
+
+	public void setStackTrace(String stackTrace) {
+		this.stackTrace = stackTrace;
+	}
 
     public String getType() {
         return type;
