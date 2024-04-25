@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -74,10 +75,10 @@ public abstract class SysExternalSystemVO extends BaseCodeVo {
 
     /**
      * Convert VO object to the domain object
-     * 
+     *
      * @return
      */
-    abstract public SysExternalSystem createEntity(ApScope scope);
+    abstract public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository);
 
     protected void fillEntity(SysExternalSystem entity) {
         entity.setCode(getCode());

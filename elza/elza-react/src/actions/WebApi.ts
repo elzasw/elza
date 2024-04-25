@@ -1885,6 +1885,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems', null);
     }
 
+    getAllDigitalRepositorySystem() {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/digitalRepositories', null);
+    }
+
     getExtSystem(id) {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/' + id, null);
     }

@@ -1,30 +1,29 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.api.GisSystemType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.GisExternalSystem;
+import cz.tacr.elza.domain.DaRemoteRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
- * VO pro externí Gis systém.
+ * VO pro externí digitální archiv.
  */
-public class GisExternalSystemVO extends SysExternalSystemVO {
+public class DaRemoteRepositoryVO extends SysExternalSystemVO {
 
-    private GisSystemType type;
+    private Integer digitalRepositoryId;
 
-    public GisSystemType getType() {
-        return type;
+    public Integer getDigitalRepositoryId() {
+        return digitalRepositoryId;
     }
 
-    public void setType(GisSystemType type) {
-        this.type = type;
+    public void setDigitalRepositoryId(Integer digitalRepositoryId) {
+        this.digitalRepositoryId = digitalRepositoryId;
     }
 
     @Override
     public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository) {
-        GisExternalSystem entity = new GisExternalSystem();
-        entity.setType(type);
+        DaRemoteRepository entity = new DaRemoteRepository();
+        entity.setDigitalRepository(digitalRepository);
         this.fillEntity(entity);
         return entity;
     }
@@ -32,18 +31,18 @@ public class GisExternalSystemVO extends SysExternalSystemVO {
     /**
      * Creates value object from AP external system.
      */
-    public static GisExternalSystemVO newInstance(GisExternalSystem src) {
-        GisExternalSystemVO vo = new GisExternalSystemVO();
+    public static DaRemoteRepositoryVO newInstance(DaRemoteRepository src) {
+        DaRemoteRepositoryVO vo = new DaRemoteRepositoryVO();
         vo.setCode(src.getCode());
         vo.setElzaCode(src.getElzaCode());
         vo.setId(src.getExternalSystemId());
         vo.setName(src.getName());
         vo.setPassword(src.getPassword());
-        vo.setType(src.getType());
         vo.setUrl(src.getUrl());
         vo.setUsername(src.getUsername());
         vo.setApiKeyId(src.getApiKeyId());
         vo.setApiKeyValue(src.getApiKeyValue());
+        vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
         return vo;
     }
 }

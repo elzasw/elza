@@ -167,5 +167,23 @@
         <addNotNullConstraint tableName="arr_digital_repository" columnName="digital_repository_type"/>
     </changeSet>
 
+    <changeSet id="20240425150400" author="fantis">
+        <dropAllForeignKeyConstraints baseTableName="digital_archive_external_system"/>
+        <dropTable tableName="digital_archive_external_system"/>
+
+        <createTable tableName="da_remote_repository">
+            <column name="external_system_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_remote_repository" nullable="false"/>
+            </column>
+            <column name="digital_repository_id" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="da_remote_repository"
+                                 constraintName="fk_da_remote_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+        <addForeignKeyConstraint baseColumnNames="digital_repository_id" baseTableName="da_remote_repository"
+                                 constraintName="fk_da_remote_repository_digital_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="arr_digital_repository"/>
+    </changeSet>
+
 
 </databaseChangeLog>
