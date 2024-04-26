@@ -339,13 +339,15 @@ public class CamService {
      * @param itemUuidMap
      * @param partUuidMap
      * @param stateMap
+     * @param batchInfoXml 
      */
     @Transactional
     public void updateBinding(ExtSyncsQueueItem extSyncsQueueItem,
                               BatchUpdateSavedXml batchUpdateSaved, 
                               Map<Integer, String> itemUuidMap,
                               Map<Integer, String> partUuidMap, 
-                              Map<Integer, String> stateMap) {
+                              Map<Integer, String> stateMap, 
+                              BatchInfoXml batchInfoXml) {
         ApState state = accessPointService.getStateInternal(extSyncsQueueItem.getAccessPointId());
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem.getExternalSystemId());
@@ -353,7 +355,7 @@ public class CamService {
         BatchEntityRecordRevXml batchEntityRecordRev = batchUpdateSaved.getRevisions().get(0);
 
         String camApState = stateMap.get(extSyncsQueueItem.getAccessPointId());
-        if(camApState==null) {
+        if (camApState == null) {
         	camApState = EntityRecordStateXml.ERS_NEW.toString();	
         }
 
@@ -361,24 +363,23 @@ public class CamService {
         ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint,
                                                                                                 apExternalSystem);
         ApBinding binding;
-        if(bindingState!=null) {
+        LongStringXml userName = (LongStringXml) batchInfoXml.getBatchUserInfo();
+
+        if (bindingState != null) {
             binding = bindingState.getBinding();
             bindingState = externalSystemService.createBindingState(bindingState, change, camApState,
                                                                     batchEntityRecordRev.getRev().getValue(),
-                                                                    bindingState.getExtUser(),
+                                                                    userName.getValue(),
                                                                     bindingState.getExtReplacedBy(),
                                                                     SyncState.SYNC_OK,
                                                                     accessPoint.getPreferredPart(),
                                                                     state.getApType());
         } else {
-            UsrUser user = userService.getUserInternal(extSyncsQueueItem.getUserId());
-            String userName = user == null ? "admin" : user.getUsername();
-
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()),
                                                             apExternalSystem, true);
             bindingState = externalSystemService.createBindingState(binding, accessPoint, change, camApState,
                                                                     batchEntityRecordRev.getRev().getValue(),
-                                                                    userName, null, SyncState.SYNC_OK,
+                                                                    userName.getValue(), null, SyncState.SYNC_OK,
                                                                     accessPoint.getPreferredPart(),
                                                                     state.getApType());
         }
@@ -854,7 +855,7 @@ public class CamService {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
         UsrUser user = userService.getUserInternal(extSyncsQueueItem.getUserId());
-        BatchUpdateXml batchUpdate = new BatchUpdateXml();
+        BatchUpdateXml batchUpdate = new BatchUpdateXml();    	
         batchUpdate.setInf(createBatchInfo(externalSystem, user));
         BatchUpdateBuilder xmlBuilder;
         if (bindingState == null) {
