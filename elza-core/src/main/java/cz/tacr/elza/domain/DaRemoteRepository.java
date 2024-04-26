@@ -15,7 +15,7 @@ import jakarta.persistence.ManyToOne;
 public class DaRemoteRepository extends SysExternalSystem {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
-    @JoinColumn(name = "digitalRepositoryId", nullable = false)
+    @JoinColumn(name = "digital_repository_id", nullable = false)
     private ArrDigitalRepository digitalRepository;
 
 

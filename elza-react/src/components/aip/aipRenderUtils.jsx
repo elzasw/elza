@@ -51,13 +51,13 @@ export function EntityItem({ item, getName, onClick, onMouseEnter }) {
 
     if (getName) {
         name = getName(item);
-    } else if (item && item.name) {
-        name = item.name;
+    } else if (item && item.code) {
+        name = item.code;
     }
 
     var fields = [];
-    if (item.extAipId) {
-        fields.push(item.extAipId);
+    if (item.id) {
+        fields.push(item.id);
     }
     if (item.fundNumber) {
         fields.push(item.fundNumber);

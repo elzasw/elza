@@ -21,13 +21,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.ArrAipVO;
+import cz.tacr.elza.controller.vo.DaAipVO;
 import cz.tacr.elza.controller.vo.DaRemoteRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.DaRemoteRepositoryVO;
-import cz.tacr.elza.domain.ArrAip;
+import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaRemoteRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -295,12 +293,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApIndexRepository indexRepository;
-
-    @Autowired
-    private FundRepository fundRepository;
-
-    @Autowired
-    private InstitutionRepository institutionRepository;
 
 
     /**
@@ -1914,23 +1906,11 @@ public class ClientFactoryVO {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
 
-    public List<ArrAipVO> createArrAips(List<ArrAip> aips) {
-        List<ArrAipVO> aipVOList = new ArrayList<>();
-        for (ArrAip aip : aips) {
-            aipVOList.add(ArrAipVO.newInstance(aip));
+    public List<DaAipVO> createAips(List<DaAip> aips) {
+        List<DaAipVO> aipVOList = new ArrayList<>();
+        for (DaAip aip : aips) {
+            aipVOList.add(DaAipVO.newInstance(aip));
         }
         return aipVOList;
-    }
-
-    public ArrAipVO createArrAip(ArrAip aip) {
-        ArrFund fund = fundRepository.findById(aip.getFundId())
-                .orElseThrow(() -> new ObjectNotFoundException("Nenalezen fund s ID " + aip.getFundId(), FUND_NOT_FOUND));
-        ParInstitution institution = institutionRepository.findByInternalCode(aip.getInstitutionId().toString());
-        ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-
-        ArrAipVO aipVO = ArrAipVO.newInstance(aip);
-        aipVO.setFundName(fund.getName());
-        aipVO.setInstitutionName(displayName != null ? displayName.getIndexValue() : null);
-        return aipVO;
     }
 }

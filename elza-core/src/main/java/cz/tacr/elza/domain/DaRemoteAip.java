@@ -32,7 +32,7 @@ public class DaRemoteAip {
     private String institutionCode;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remoteRepositoryId", nullable = false)
+    @JoinColumn(name = "remote_repository_id", nullable = false)
     private DaRemoteRepository remoteRepository;
 
     public Integer getRemoteAipId() {

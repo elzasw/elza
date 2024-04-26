@@ -21,11 +21,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.ArrAipVO;
+import cz.tacr.elza.controller.vo.DaAipVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.domain.ArrAip;
+import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.service.AipService;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
@@ -2885,20 +2885,20 @@ public class ArrangementController {
     @Transactional
     @RequestMapping(value = "/aip/find/all",
             method = RequestMethod.GET)
-    public FilteredResultVO<ArrAipVO> findAips(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                               @RequestParam("from") final Integer from,
-                                               @RequestParam("count") final Integer count) {
-        FilteredResult<ArrAip> aips = aipService.findAips(search, from, count);
-        return new FilteredResultVO<>(factoryVo.createArrAips(aips.getList()), aips.getTotalCount());
+    public FilteredResultVO<DaAipVO> findAips(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                              @RequestParam("from") final Integer from,
+                                              @RequestParam("count") final Integer count) {
+        FilteredResult<DaAip> aips = aipService.findAips(search, from, count);
+        return new FilteredResultVO<>(factoryVo.createAips(aips.getList()), aips.getTotalCount());
 
     }
 
     @Transactional
     @RequestMapping(value = "/aip/{aipId}",
             method = RequestMethod.GET)
-    public ArrAipVO getAip(@PathVariable("aipId") Integer aipId) {
-        ArrAip aip = aipService.getAip(aipId);
-        return factoryVo.createArrAip(aip);
+    public DaAipVO getAip(@PathVariable("aipId") Integer aipId) {
+        DaAip aip = aipService.getAip(aipId);
+        return DaAipVO.newInstance(aip);
     }
 
     @RequestMapping(value = "/digitalRepositories", method = RequestMethod.GET)

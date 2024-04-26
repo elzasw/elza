@@ -4,7 +4,7 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
-import {ArrAipVO} from "../../api/ArrAipVO.ts";
+import {DaAipVO} from "../../api/DaAipVO.ts";
 
 export interface SplitterState {
     leftWidth: number;
@@ -111,14 +111,14 @@ export interface Aips {
     fetched?: boolean;
     isFetching?: boolean;
     reducer?: unknown;
-    filteredRows?: ArrAipVO[];
-    rows?: ArrAipVO[];
-    sourceRows?: ArrAipVO[];
+    filteredRows?: DaAipVO[];
+    rows?: DaAipVO[];
+    sourceRows?: DaAipVO[];
 }
 
 export interface Aip {
     currentDataKey?: number | string;
-    data?: ArrAipVO | null;
+    data?: DaAipVO | null;
     getDataKey?: () => number | string;
     id?: number | string;
     fetched?: boolean;
@@ -330,7 +330,7 @@ type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCod
 
 export interface App {
     aip: Aip;
-    aipList: SimpleList<ArrAipVO>;
+    aipList: SimpleList<DaAipVO>;
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;

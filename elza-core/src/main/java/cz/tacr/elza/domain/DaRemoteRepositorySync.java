@@ -21,7 +21,7 @@ public class DaRemoteRepositorySync {
     private Integer remoteRepositorySyncId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remoteRepositoryId", nullable = false)
+    @JoinColumn(name = "remote_repository_id", nullable = false)
     private DaRemoteRepository remoteRepository;
 
     @Column(name = "last_update", nullable = false)
