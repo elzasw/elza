@@ -29,22 +29,15 @@ export function AipDetail() {
     return (
         <div className="detail-container">
             <h1>
-                <span className="text">{aip.data.name}</span>
+                <span className="text">{aip.data.code}</span>
             </h1>
             <span className="detail-header">
-                <span className="ext-id">id: {aip.data.extAipId}</span>
-                <span className="state">{aip.data.processState}</span>
-                <span className="state">{aip.data.dipType}</span>
+                <span className="ext-id">id: {aip.data.aipId}</span>
+                <span className="state">{aip.data.aipType}</span>
                 <span className="date">Vytvořeno: {dateToDateTimeString(new Date(aip.data.createDate))}</span>
-                <span className="date">Poslední synchronizace: {dateToDateTimeString(new Date(aip.data.syncDate))}</span>
+                <span className="date">Poslední změna: {dateToDateTimeString(new Date(aip.data.lastChange))}</span>
             </span>
             <div className="detail-body">
-                <tr>
-                    <span className="text">Archivní soubor: {aip.data.fundName}</span>
-                </tr>
-                <tr>
-                    <span className="text">Instituce: {aip.data.institutionName}</span>
-                </tr>
                 <tr>
                     <span className="text">Verze: {aip.data.aipVersion}</span>
                 </tr>

@@ -1,7 +1,7 @@
 package cz.tacr.elza.api;
 
 
-public enum DipType {
+public enum AipType {
 
     PACKAGE_INFO,
 

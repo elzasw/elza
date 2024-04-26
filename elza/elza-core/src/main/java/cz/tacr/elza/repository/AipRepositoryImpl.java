@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrAip;
+import cz.tacr.elza.domain.DaAip;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -22,36 +22,29 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
 
     private <T> Predicate prepareFindAipByTextCount(final String search,
                                                     final CriteriaBuilder builder,
-                                                    final Root<ArrAip> aipRoot) {
+                                                    final Root<DaAip> aipRoot) {
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
-            Integer extId = null;
-            try {
-                extId = Integer.parseInt(search);
-            } catch (Exception e) {
-
-            }
-            conditions.add(builder.or(
-                    builder.equal(aipRoot.get(ArrAip.FIELD_EXT_AIP_ID), extId),
-                    builder.like(builder.lower(aipRoot.get(ArrAip.FIELD_NAME)), searchValue)
-            ));
+            conditions.add(
+                    builder.like(builder.lower(aipRoot.get(DaAip.FIELD_CODE)), searchValue)
+            );
         }
 
         return builder.and(conditions.toArray(new Predicate[conditions.size()]));
     }
 
     @Override
-    public FilteredResult<ArrAip> findAips(final String search, final Integer firstResult, final Integer maxResults) {
+    public FilteredResult<DaAip> findAips(final String search, final Integer firstResult, final Integer maxResults) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
-        CriteriaQuery<ArrAip> query = builder.createQuery(ArrAip.class);
+        CriteriaQuery<DaAip> query = builder.createQuery(DaAip.class);
         CriteriaQuery<Long> queryCount = builder.createQuery(Long.class);
 
-        Root<ArrAip> aipRoot = query.from(ArrAip.class);
-        Root<ArrAip> aipRootCount = queryCount.from(ArrAip.class);
+        Root<DaAip> aipRoot = query.from(DaAip.class);
+        Root<DaAip> aipRootCount = queryCount.from(DaAip.class);
 
         Predicate condition = prepareFindAipByTextCount(search, builder, aipRoot);
         Predicate conditionCount = prepareFindAipByTextCount(search, builder, aipRootCount);
@@ -60,18 +53,18 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         queryCount.select(builder.countDistinct(aipRootCount));
 
         if (condition != null) {
-            Order order = builder.asc(aipRoot.get(ArrAip.FIELD_NAME));
+            Order order = builder.asc(aipRoot.get(DaAip.FIELD_CODE));
             query.where(condition).orderBy(order);
 
             queryCount.where(conditionCount);
         }
 
-        TypedQuery<ArrAip> tq = entityManager.createQuery(query)
+        TypedQuery<DaAip> tq = entityManager.createQuery(query)
                 .setFirstResult(firstResult);
         if (maxResults > 0) {
             tq.setMaxResults(maxResults);
         }
-        List<ArrAip> list = tq.getResultList();
+        List<DaAip> list = tq.getResultList();
 		int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);

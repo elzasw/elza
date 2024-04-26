@@ -32,11 +32,11 @@ public class DaSyncQueueItem {
     private QueueItemState state;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remoteRepositoryId", nullable = false)
+    @JoinColumn(name = "remote_repository_id", nullable = false)
     private DaRemoteRepository remoteRepository;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteAip.class)
-    @JoinColumn(name = "remoteAipId")
+    @JoinColumn(name = "remote_aip_id")
     private DaRemoteAip remoteAip;
 
 

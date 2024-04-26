@@ -1,8 +1,8 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrAip;
+import cz.tacr.elza.domain.DaAip;
 
 public interface AipRepositoryCustom {
 
-    FilteredResult<ArrAip> findAips(String search, Integer firstResult, Integer maxResults);
+    FilteredResult<DaAip> findAips(String search, Integer firstResult, Integer maxResults);
 }

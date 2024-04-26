@@ -235,9 +235,7 @@
             <column name="code" type="nvarchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="aip_version" type="nvarchar(250)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="aip_version" type="nvarchar(250)"/>
             <column name="state" type="nvarchar(50)">
                 <constraints nullable="false"/>
             </column>
@@ -253,6 +251,60 @@
         <addForeignKeyConstraint baseColumnNames="remote_aip_id" baseTableName="da_sync_queue_item"
                                  constraintName="fk_da_sync_queue_item_da_remote_aip" referencedColumnNames="remote_aip_id"
                                  referencedTableName="da_remote_aip"/>
+    </changeSet>
+
+    <changeSet id="20240425180200" author="fantis">
+        <dropAllForeignKeyConstraints baseTableName="arr_aip"/>
+        <dropTable tableName="arr_aip"/>
+
+        <createTable tableName="da_aip">
+            <column name="aip_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_aip" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_version" type="nvarchar(250)"/>
+            <column name="aip_size" type="bigint"/>
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remote_aip_id" type="int"/>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_change" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unitdate_from" type="timestamp"/>
+            <column name="unitdate_to" type="timestamp"/>
+            <column name="originator_code" type="nvarchar(250)"/>
+            <column name="originator_id" type="int"/>
+            <column name="ingestion_code" type="nvarchar(250)"/>
+            <column name="ref_no" type="nvarchar(250)"/>
+            <column name="change_code" type="nvarchar(250)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseColumnNames="digital_repository_id" baseTableName="da_aip"
+                                 constraintName="fk_da_aip_arr_digital_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="arr_digital_repository"/>
+        <addForeignKeyConstraint baseColumnNames="remote_aip_id" baseTableName="da_aip"
+                                 constraintName="fk_da_aip_da_remote_aip" referencedColumnNames="remote_aip_id"
+                                 referencedTableName="da_remote_aip"/>
+        <addForeignKeyConstraint baseColumnNames="fund_id" baseTableName="da_aip"
+                                 constraintName="fk_da_aip_arr_fund" referencedColumnNames="fund_id"
+                                 referencedTableName="arr_fund"/>
+        <addForeignKeyConstraint baseColumnNames="originator_id" baseTableName="da_aip"
+                                 constraintName="fk_da_aip_ap_access_point" referencedColumnNames="access_point_id"
+                                 referencedTableName="ap_access_point"/>
+        <addUniqueConstraint columnNames="code, digital_repository_id" tableName="da_aip"
+                             constraintName="UNIQ_da_aip"/>
     </changeSet>
 
 

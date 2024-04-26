@@ -12,7 +12,7 @@ import { useHistory } from 'react-router';
 import {urlAip} from '../../constants';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS} from "../../actions/aip/aip";
-import {ArrAipVO} from "../../api/ArrAipVO.ts";
+import {DaAipVO} from "../../api/DaAipVO.ts";
 import {renderAipItem} from "./aipRenderUtils";
 
 export const AipList:FC<{
@@ -41,7 +41,7 @@ export const AipList:FC<{
 
     const activeIndex = activeAip && activeAip.id !== null ? indexById(aipRows, activeAip.id) : undefined;
 
-    const handleSelect = (item: ArrAipVO) => history.push(urlAip(item.id));
+    const handleSelect = (item: DaAipVO) => history.push(urlAip(item.id));
     const handleSearch = (filterText: string) => dispatch(aipsFilter(filterText, from));
     const handleSearchClear = () => dispatch(aipsFilter('', from));
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(text, nextFrom))

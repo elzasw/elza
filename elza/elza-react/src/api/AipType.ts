@@ -1,4 +1,4 @@
-export enum DipType {
+export enum AipType {
     PACKAGE_INFO = 'PACKAGE_INFO',
     ARCHDESC = 'ARCHDESC',
     METADATA_BASE = 'METADATA_BASE',
