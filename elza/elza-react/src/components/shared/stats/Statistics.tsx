@@ -12,12 +12,12 @@ const getHorizontalListItems = <T extends Object>(
     selectedStats: (keyof T)[],
     data: T,
     getValue: (value: T[keyof T]) => string = (value) => {
-        if(typeof value !== "string" && typeof value !== "number"){
+        if (typeof value !== "string" && typeof value !== "number") {
             console.warn("Value is not string or number.")
             return null;
         }
         return value.toString();
- },
+    },
 ): HorizontalListItem[] => {
     const listItems = selectedStats
         .map(stat => {
@@ -95,7 +95,6 @@ interface HorizontalListProps {
 }
 
 export const HorizontalList = ({ items }: HorizontalListProps) => {
-    console.log("#### stats horizontal list", items)
     if (items.length === 0) {
         return <></>;
     }

@@ -24,7 +24,7 @@ class RequestInlineForm extends React.Component<Props> {
                 <form>
                     <Field
                         name="description"
-                        as="textarea"
+                        type="textarea"
                         component={FormInputField}
                         label={i18n('arr.request.title.description')}
                         disabled={disabled}

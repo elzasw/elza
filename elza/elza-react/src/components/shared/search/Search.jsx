@@ -150,7 +150,7 @@ class Search extends React.Component {
                     {textAreaInput ? (
                         <FormInput
                             disabled={disabled}
-                            as="textarea"
+                            type="textarea"
                             tabIndex={tabIndex}
                             value={this.state.filterText}
                             ref="input"

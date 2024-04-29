@@ -89,7 +89,7 @@ class AddOutputForm extends AbstractReactComponent {
                         {create && (
                             <Field
                                 component={FormInputField}
-                                as="select"
+                                type="select"
                                 label={i18n('arr.output.outputType')}
                                 name={'outputTypeId'}
                                 disabled={submitting}
@@ -104,7 +104,7 @@ class AddOutputForm extends AbstractReactComponent {
                         )}
                         <Field
                             component={FormInputField}
-                            as="select"
+                            type="select"
                             label={i18n('arr.output.template')}
                             name={'templateId'}
                             disabled={!outputTypeId || !templates || submitting}
@@ -119,7 +119,7 @@ class AddOutputForm extends AbstractReactComponent {
                         </Field>
                         <Field
                             component={FormInputField}
-                            as="select"
+                            type="select"
                             label={i18n('arr.output.outputFilter')}
                             name={'outputFilterId'}
                             disabled={submitting}

@@ -275,7 +275,7 @@ class AdminUserPage extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={user.filterText}
                 />
-                <FormControl as="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
+                <FormControl className="form-select" as="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
                     <option value="all">{i18n('admin.user.filter.all')}</option>
                     <option value="onlyActive">{i18n('admin.user.filter.onlyActive')}</option>
                 </FormControl>

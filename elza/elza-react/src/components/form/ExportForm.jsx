@@ -58,7 +58,7 @@ class ExportForm extends AbstractReactComponent {
                                 <Field
                                     name="exportFilterId"
                                     component={FormInputField}
-                                    as="select"
+                                    type="select"
                                     label={i18n('export.exportFilter')}
                                 >
                                     <option key="blankName" />

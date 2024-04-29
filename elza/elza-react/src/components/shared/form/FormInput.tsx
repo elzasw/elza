@@ -43,6 +43,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
             submitFailed,
             dispatch,
             initial,
+            className,
             ...otherProps
         } = props;
 
@@ -54,7 +55,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                 return (
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
-                        <div ref={ref} {...otherProps} {...inlineProps}>
+                        <div ref={ref} className={className} {...otherProps} {...inlineProps}>
                             {children}
                         </div>
                     </Form.Group>
@@ -63,6 +64,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                 return (
                     <Form.Group>
                         <Form.Check
+                            className={className}
                             ref={ref}
                             type="radio"
                             label={label}
@@ -78,6 +80,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                 return (
                     <Form.Group>
                         <Form.Check
+                            className={className}
                             ref={ref}
                             label={label}
                             value={value}
@@ -93,7 +96,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
                         <Form.Control
-                            className="form-select"
+                            className={`${className} form-select`}
                             ref={ref}
                             as="select"
                             value={value}
@@ -111,6 +114,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
                         <Form.Control
+                            className={className}
                             ref={ref}
                             as="textarea"
                             value={value}
@@ -128,6 +132,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
                         <Autocomplete
+                            className={className}
                             ref={ref}
                             value={value}
                             error={hasError && error}
@@ -144,6 +149,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                     <Form.Group>
                         {label && <Form.Label>{label}</Form.Label>}
                         <AsyncAutocomplete
+                            className={className}
                             ref={ref}
                             value={value}
                             error={hasError && error}
@@ -158,6 +164,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
             case 'simple':
                 return (
                     <Form.Group
+                        className={className}
                         ref={ref}
                         label={label}
                         value={value}
@@ -173,6 +180,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                         {label && <Form.Label>{label}</Form.Label>}
                         <Form.Control
                             ref={ref}
+                            className={className}
                             value={value}
                             children={children}
                             type={type}

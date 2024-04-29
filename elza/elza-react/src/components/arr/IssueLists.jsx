@@ -86,7 +86,7 @@ class IssueLists extends AbstractReactComponent {
                 <ModalBody>
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
-                            <FormInput as="select" name="state" onChange={this.filter}>
+                            <FormInput type="select" name="state" onChange={this.filter}>
                                 <option value={'true'}>{i18n('issueList.open.true')}</option>
                                 <option value={'false'}>{i18n('issueList.open.false')}</option>
                             </FormInput>
