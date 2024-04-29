@@ -458,11 +458,10 @@ class FundActionPage extends ArrParentPage {
                             <h2>{i18n('arr.fundAction.form.newAction')}</h2>
                             <div>
                                 <FormInput
-                                    as="select"
+                                    type="select"
                                     label={i18n('arr.fundAction.form.type')}
                                     key="code-action"
                                     ref="code-action"
-                                    className="form-control"
                                     value={form.code}
                                     onChange={e => {
                                         this.props.dispatch(fundActionFormChange(versionId, {code: e.target.value}));
