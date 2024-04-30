@@ -6378,19 +6378,19 @@ when $activeLevel: ActiveLevel( $items: descItems )
     	"ZP2015_POSITION"
        ) )
 then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 rule "Doporučené prvky pro podtyp technická dokumentace (vždy)"
 no-loop
-salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_TD") ) from $ownItems
-    // nastaveni prvku  
+    // nastaveni prvku
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", 
+//    									"ZP2015_DOCUMENTATION_TYPE",
     									"ZP2015_PART") )
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 
