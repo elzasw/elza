@@ -3147,18 +3147,18 @@ public class AccessPointService {
 
     public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
-        if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
-            return "";
+        if (cachedAccessPoint != null && cachedAccessPoint.getParts() != null) {
+        	for (CachedPart part : cachedAccessPoint.getParts()) {
+        		if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+        			for (ApIndex index : part.getIndices()) {
+        				if (index.getIndexType().equals(DISPLAY_NAME)) {
+        					return index.getValue();
+        				}
+        			}
+        		}
+        	}
         }
-        CachedPart preferredPart = cachedAccessPoint.getParts().stream()
-                .filter(p -> p.getPartId().equals(cachedAccessPoint.getPreferredPartId()))
-                .findAny()
-                .orElse(null);
-        ApIndex index = preferredPart.getIndices().stream()
-                .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
-                .findAny()
-                .orElse(null);
-        return index == null ? "": index.getValue();
+        throw new ObjectNotFoundException("Neexistuje preferred name", BaseCode.PROPERTY_NOT_EXIST).set("accessPoinId", accessPoint.getAccessPointId());
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 
