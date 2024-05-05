@@ -226,7 +226,7 @@
 	"APPROVER": "schvalovatel technického výkresu",
 	"BUILDER": "stavitel",
 	"DIRECTOR": "režisér",
-	"SCRIPTWRITER": "scénárista",
+	"SCRIPTWRITER": "scenárista",
 	"CAMERAMAN": "kameraman",
 	"MUSIC_INTERPRETER": "interpret hudby",
 	"PHOTOGRAPHER": "fotograf",
