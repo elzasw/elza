@@ -25,12 +25,13 @@ import {
     fundActionFormSubmit,
 } from 'actions/arr/fundAction';
 import * as perms from 'actions/user/Permission';
-import {ActionState, PERSISTENT_SORT_CODE, urlFundActions, getFundVersion} from '../../constants.tsx';
+import {ActionState, PERSISTENT_SORT_CODE, urlFundActions, getFundVersion, NEW} from '../../constants.tsx';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap';
 import PersistentSortForm from '../../components/arr/PersistentSortForm';
 import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
+import { WebApi } from 'actions/WebApi.ts';
 
 class FundActionPage extends ArrParentPage {
     refForm = null;
@@ -67,27 +68,40 @@ class FundActionPage extends ArrParentPage {
 
     async componentDidMount() {
         super.componentDidMount()
-        const {dispatch, match, history} = this.props;
+        const { dispatch, match, history, location } = this.props;
 
         await this.resolveUrls();
         dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props);
-        const matchId = match.params.actionId;
-        const urlActionId = matchId ? parseInt(matchId) : null;
+        if(!fund){throw "No active fund";}
 
-        if (fund) {
-            dispatch(fundActionFetchListIfNeeded(fund.versionId));
-            dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
-            dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
-            const actionDetail = fund.fundAction.detail.data;
-            const actionId = actionDetail?.id;
-            if (urlActionId == null && actionId != null) {
-                history.replace(urlFundActions(fund.id, getFundVersion(fund), actionId));
-            } else if (urlActionId !== actionId) {
-                dispatch(fundActionActionSelect(fund.versionId, urlActionId));
-                history.replace(urlFundActions(fund.id, getFundVersion(fund), urlActionId));
-            }
+        dispatch(fundActionFetchListIfNeeded(fund.versionId));
+        dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+        dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+
+        const matchId = match.params.actionId;
+        const nodeIds = new URLSearchParams(location.search).get("nodeIds");
+
+        // create new action, when action match param contains NEW
+        if (matchId === NEW) {
+            WebApi.getNodes(fund.versionId, nodeIds.split(",")).then((nodes) => {
+                dispatch(fundActionFormChange(fund.versionId, { nodes }));
+                dispatch(fundActionFormShow(fund.versionId));
+            })
+            return;
+        }
+
+        const urlActionId = matchId ? parseInt(matchId) : null;
+        const actionDetail = fund.fundAction.detail.data;
+        const actionId = actionDetail?.id;
+
+        if (urlActionId == null && actionId != null) {
+            history.replace(urlFundActions(fund.id, getFundVersion(fund), actionId));
+        }
+        else if (urlActionId !== actionId) {
+            dispatch(fundActionActionSelect(fund.versionId, urlActionId));
+            history.replace(urlFundActions(fund.id, getFundVersion(fund), urlActionId));
         }
     }
 
