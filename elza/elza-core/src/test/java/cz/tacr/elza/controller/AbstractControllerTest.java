@@ -12,6 +12,7 @@ import static org.springframework.http.HttpMethod.PUT;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
@@ -24,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,12 +37,27 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandler;
+import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
+import cz.tacr.elza.controller.ArrangementWebsocketControllerTest.ReceiptStatus;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -149,7 +167,7 @@ import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionResponse;
-import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
@@ -162,6 +180,7 @@ import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.websocket.WebSocketStompClientElza;
 import io.restassured.RestAssured;
 import io.restassured.config.EncoderConfig;
 import io.restassured.config.RestAssuredConfig;
@@ -444,6 +463,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/map-type/{mapTypeId}";
     protected static final String DELETE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/map-type/{mapTypeId}";
 
+    // ArrangementWebsocketControllerTest     
+    protected static final String INHIBIT_DESC_ITEM = "/app/arrangement/descItems/inhibit";
+    protected static final String ALLOW_DESC_ITEM = "/app/arrangement/descItems/allow";
+    
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     public static final String SCOPE_GLOBAL = "GLOBAL";
@@ -1144,7 +1167,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         if (response.getStatusCode() == 500) {
             ExceptionResponse exResponse = response.getBody().as(ExceptionResponse.class);
-            throw new BusinessException(exResponse.getMessage(), ArrangementCode.valueOf(exResponse.getCode()));
+            throw new BusinessException(exResponse.getMessage(), ExceptionUtils.getErrorCodeEnum(exResponse.getType(), exResponse.getCode()));
         }
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -1699,7 +1722,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         return null;
     }
-
 
     /**
      * Převod TreeNodeClient na ArrNodeVO.
@@ -3713,5 +3735,112 @@ public abstract class AbstractControllerTest extends AbstractTest {
         delete(spec -> spec.
                 pathParam("templateId", templateId).
                 pathParam("mapTypeId", mapTypeId), DELETE_NODE_TEMPLATE_MAP_TYPE);
+    }    
+    
+    /**
+     * Připojení Websocket
+     * 
+     * @param sessionHandler
+     * @param recepiptStore
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+	protected StompSession connectWebSocketStompClient(StompSessionHandler sessionHandler,
+			final Map<String, Message<byte[]>> recepiptStore) throws InterruptedException, ExecutionException {
+		WebSocketClient client = new StandardWebSocketClient();
+		WebSocketStompClientElza stompClient = new WebSocketStompClientElza(client, (rcpId, msg) -> {
+			recepiptStore.put(rcpId, msg);
+		});
+
+		ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
+		taskScheduler.initialize();
+		stompClient.setTaskScheduler(taskScheduler);
+
+		stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+
+		// Dostáváme údaje k autorizaci
+		WebSocketHttpHeaders handshakeHeaders = new WebSocketHttpHeaders();
+		StringBuilder cookie = new StringBuilder();
+		cookies.forEach((name, value) -> {
+			if (cookie.length() > 0) {
+				cookie.append(';');
+			}
+			cookie.append(String.format("%s=%s", name, value));
+		});
+		if (cookie.length() > 0) {
+			handshakeHeaders.set(HttpHeaders.COOKIE, cookie.toString());
+		}
+
+		return stompClient
+				.connect("ws://localhost:" + port + "/stomp", handshakeHeaders, sessionHandler)
+				.get();
+	}
+    
+    /**
+     * Čekáme na odpověď WebSocket StompClient
+     * 
+     * @param receipt
+     * @param sessionHandler
+     * @return
+     * @throws InterruptedException
+     */
+    protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
+        AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
+        receipt.addReceiptTask(() -> {
+            logger.debug("Receipt received");
+            receiptStatus.set(ReceiptStatus.RCP_RECEIVED);
+        });
+        receipt.addReceiptLostTask(() -> {
+            logger.debug("Receipt lost");
+            receiptStatus.set(ReceiptStatus.RCP_LOST);
+        });
+        while (receiptStatus.get() == null && !sessionHandler.hasError()) {
+            logger.info("Waiting on receipt...");
+            Thread.sleep(100);
+        }
+        if (sessionHandler.hasError()) {
+            logger.debug("Receipt error over WebSocket");            
+            receiptStatus.set(ReceiptStatus.RCP_ERROR);
+        }
+        return receiptStatus.get();
+    }
+
+    protected class MyStompSessionHandler implements StompSessionHandler {
+
+        private Logger logger = LoggerFactory.getLogger(this.getClass());
+        
+        int errorCount = 0;
+
+        @Override
+        public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+            logger.info("New session established : " + session.getSessionId());
+        }
+
+        @Override
+        public Type getPayloadType(StompHeaders headers) {
+            return String.class;
+        }
+
+        @Override
+        public void handleFrame(StompHeaders headers, Object payload) {
+            logger.info("Received: {}", payload);
+        }
+
+        @Override
+        public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+            logger.error("Got an exception: ", exception);
+            errorCount++;
+        }
+
+        @Override
+        public void handleTransportError(StompSession session, Throwable exception) {
+            logger.error("Got an transport error: ", exception);
+            errorCount++;
+        }
+
+        public boolean hasError() {
+            return errorCount > 0;
+        }
     }
 }

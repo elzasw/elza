@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.junit.Assert;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
@@ -67,6 +65,7 @@ import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
@@ -89,7 +88,6 @@ import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.service.AsyncRequestService;
-
 
 /**
  * Helper test service
@@ -120,6 +118,8 @@ public class HelperTestService {
     @Autowired
     protected DataTypeRepository dataTypeRepository;
     @Autowired
+    protected InhibitedItemRepository inhibitedItemRepository;
+    @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
     protected FundRepository fundRepository;
@@ -130,9 +130,7 @@ public class HelperTestService {
     @Autowired
     protected ItemRepository itemRepository;
     @Autowired
-    protected ItemSpecRepository itemSpecRepository;
-    @Autowired
-    private ItemAptypeRepository itemAptypeRepository;
+    protected ItemAptypeRepository itemAptypeRepository;
     @Autowired
     protected ItemTypeRepository itemTypeRepository;
     @Autowired
@@ -315,6 +313,7 @@ public class HelperTestService {
         nodeConformityErrorsRepository.deleteAll();
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
+        inhibitedItemRepository.deleteAll();
         descItemRepository.deleteAll();
         itemRepository.deleteAll();
         dataRepository.deleteAll();
@@ -334,7 +333,6 @@ public class HelperTestService {
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
-        itemAptypeRepository.deleteAll();
         nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();

@@ -15,6 +15,9 @@ public class RulItemTypeExt extends RulItemType {
 
     private List<RulItemSpecExt> rulItemSpecList = new LinkedList<>();
 
+    // příznak dědičnosti
+    private boolean inheritance = false;
+
 	public RulItemTypeExt(RulItemType src, List<RulItemSpec> specs) {
 		super(src);
 
@@ -61,7 +64,15 @@ public class RulItemTypeExt extends RulItemType {
         this.rulItemSpecList = rulDescItemSpecList;
     }
 
-    /**
+    public boolean isInheritance() {
+		return inheritance;
+	}
+
+	public void setInheritance(boolean inheritance) {
+		this.inheritance = inheritance;
+	}
+
+	/**
      * Set maximum type according specifications
      */
     public void setTypeMaxFromSpecs() {

@@ -3,9 +3,11 @@ package cz.tacr.elza.service;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
@@ -34,15 +36,16 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -68,7 +71,7 @@ public class ArrangementFormService {
 
 	private final RuleService ruleService;
 
-	private final FundVersionRepository fundVersionRepository;
+	private final LevelRepository levelRepository;
 
 	private final LevelTreeCacheService levelTreeCache;
 
@@ -80,7 +83,7 @@ public class ArrangementFormService {
 
 	private final WebScoketStompService wsStompService;
 
-	private final NodeCacheService nodeCache;
+	private final NodeCacheService nodeCacheService;
 
 	private final ArrangementService arrangementService;
 
@@ -91,6 +94,7 @@ public class ArrangementFormService {
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
+								  LevelRepository levelRepository,
 								  LevelTreeCacheService levelTreeCache,
 								  UserService userService,
 								  RuleService ruleService,
@@ -106,11 +110,11 @@ public class ArrangementFormService {
 		this.descriptionItemService = descriptionItemService;
 		this.levelTreeCache = levelTreeCache;
 		this.ruleService = ruleService;
-		this.fundVersionRepository = fundVersionRepository;
+		this.levelRepository = levelRepository;
 		this.nodeRepository = nodeRepository;
 		this.factoryDo = factoryDo;
 		this.factoryVo = factoryVo;
-		this.nodeCache = nodeCache;
+		this.nodeCacheService = nodeCache;
 		this.wsStompService = wsStompService;
 		this.arrangementService = arrangementService;
 		this.arrangementInternalService = arrangementInternalService;
@@ -127,40 +131,71 @@ public class ArrangementFormService {
 
 	@Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
-	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version,
-	        Integer nodeId) {
+	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
+
+		// získat seznam rodičovských nodů
+		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(nodeId, null, true);
+		List<Integer> parentNodeIds = levels.stream().map(i -> i.getNodeId()).toList();
 
 		ArrChange lockChange = version.getLockChange();
 		ArrNode node;
 		List<ArrDescItem> descItems;
+		Set<Integer> inhibitedDescItemIds;
+		List<ArrDescItem> parentsDescItems;
+		RestoredNode restoredNode = null;
+		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
 		if (lockChange == null) {
 			// read node from cache
-			RestoredNode restoredNode = nodeCache.getNode(nodeId);
-			if (restoredNode == null) {
-				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
-				        .set("id", nodeId);
-			}
+			restoredNode = nodeCacheService.getNode(nodeId);
 			node = restoredNode.getNode();
-			descItems = restoredNode.getDescItems();
+			parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
 		} else {
-			// check if node exists
+			// read node from db
 			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
-			descItems = arrangementInternal.getDescItems(lockChange, node);
 		}
 
 		List<RulItemTypeExt> itemTypes;
+		List<Integer> itemTypeIdsWithInheritance;
 		try {
 			itemTypes = ruleService.getDescriptionItemTypes(version, node);
+			itemTypeIdsWithInheritance = itemTypes.stream()
+					.filter(i -> i.isInheritance())
+					.map(i -> i.getItemTypeId())
+					.collect(Collectors.toList());
 		} catch (Exception e) {
 			logger.error("Chyba v pravidlech", e);
 			throw new BusinessException("Chyba v pravidlech", e, BaseCode.SYSTEM_ERROR);
+		}
+
+		if (lockChange == null) {
+			descItems = restoredNode.getDescItems();
+			inhibitedDescItemIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet());
+			parentRestoredNodes.forEach(n ->
+				inhibitedDescItemIds.addAll(n.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet())));
+			parentsDescItems = parentRestoredNodes.stream()
+					.flatMap(i -> i.getDescItems().stream())
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
+					.toList();
+		} else {
+			descItems = arrangementInternal.getDescItems(lockChange, node);
+			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, CollectionUtils.union(List.of(nodeId), parentNodeIds));
+			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
+		}
+
+		// získat seznam descItems, které lze zdědit
+		for (ArrDescItem descItem : parentsDescItems) {
+			// pokud typ prvku umožňuje dědění (již filtrováno) & dědičnost tohoto prvku není potlačena
+			if (!inhibitedDescItemIds.contains(descItem.getItemId())) {
+				// přidat tento prvek do seznamu
+				descItems.add(descItem);
+			}
 		}
 
 		Integer fundId = version.getFund().getFundId();
 		String ruleCode = version.getRuleSet().getCode();
 
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
-		List<ArrItemVO> descItemsVOs = factoryVo.createItems(descItems);
+		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedDescItemIds);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
 
         boolean arrPerm = userService.hasFullArrPerm(version.getFundId());

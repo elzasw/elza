@@ -24,6 +24,9 @@ public class RestoredNode extends CachedNode {
 	    if (source.getDescItems() != null) {
 	        addDescItems(source.getDescItems());
 	    }
+	    if (source.getInhibitedItems() != null) {
+	    	addInhibitedItems(source.getInhibitedItems());
+	    }
 	    if (source.getNodeExtensions() != null) {
 	        addNodeExtensions(source.getNodeExtensions());
 	    }

@@ -3,45 +3,31 @@ package cz.tacr.elza.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.task.TaskSchedulerBuilder;
-import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
-import org.springframework.messaging.simp.stomp.StompSessionHandler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -49,16 +35,15 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrInhibitedItem;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
-import cz.tacr.elza.websocket.WebSocketStompClientElza;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
-
-    static private Logger logger = LoggerFactory.getLogger(ArrangementWebsocketControllerTest.class);
 
     private final String UPDATE_DESK_ITEMS_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
 
@@ -67,11 +52,9 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     enum ReceiptStatus {
         RCP_WAITING,
         RCP_RECEIVED,
-        RCP_LOST
+        RCP_LOST,
+        RCP_ERROR
     };
-
-    @Autowired
-    ItemRepository itemRepository;
 
     private ArrFundVersionVO fundVersion;
 
@@ -82,6 +65,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         Message<byte[]> recepipt;
+        ReceiptStatus status;
 
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
@@ -110,7 +94,9 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptCreate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
-        waitingForReceipt(receiptCreate, sessionHandler);
+        status = waitingForReceipt(receiptCreate, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
         recepipt = receiptStore.get(receiptCreate.getReceiptId());
         assertNotNull(recepipt);
 
@@ -126,8 +112,11 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptUpdate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
-        waitingForReceipt(receiptUpdate, sessionHandler);
+        status = waitingForReceipt(receiptUpdate, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
         recepipt = receiptStore.get(receiptUpdate.getReceiptId());
+        assertNotNull(recepipt);
 
         List<UpdateItemResult> updResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
         assertTrue(updResults.size() == 1);
@@ -140,8 +129,11 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         Receiptable receiptDelete = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
-        waitingForReceipt(receiptDelete, sessionHandler);
+        status = waitingForReceipt(receiptDelete, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
         recepipt = receiptStore.get(receiptDelete.getReceiptId());
+        assertNotNull(recepipt);
 
         List<UpdateItemResult> delResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
         assertTrue(delResults.size() == 1);
@@ -153,10 +145,10 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
     @Test
     public void addLevelTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException {
-        final Map<String, Message<byte[]>> recepiptStore = new HashMap<>();
+        final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         
-        StompSession session = connectWebSocketStompClient(sessionHandler, recepiptStore);
+        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
         session.setAutoReceipt(true);
 
         FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
@@ -183,13 +175,121 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         addLevelParam.setCount(2); // přidat více než 1 úroveň
 
         Receiptable receipt = session.send(ADD_LEVEL_MSG_MAPPING, addLevelParam);
-        waitingForReceipt(receipt, sessionHandler);
+        ReceiptStatus status = waitingForReceipt(receipt, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
         // Monitorování výsledků dotazu
         List<ArrNode> nodes = nodeRepository.findAll();
         assertTrue(nodes.size() == 3);
 
         session.disconnect();
+    }
+
+    @Test
+    public void inhibitedItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException, StreamReadException, DatabindException, IOException {
+    	final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
+        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
+        ObjectMapper mapper = new ObjectMapper();
+        Message<byte[]> recepipt;
+        ReceiptStatus status;
+
+        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
+        session.setAutoReceipt(true);
+
+        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+
+        initFundVersionAndTreeData();
+
+        // Musí existovat root node
+        assertNotNull(treeData.getNodes());
+
+        // Musí existovat pouze root node
+        assertTrue(treeData.getNodes().size() == 1);
+
+        // Musí existovat pouze jeden descItem
+        List<ArrDescItem> descItems = descItemRepository.findAll();
+        assertTrue(descItems.size() == 1);
+
+        List<ArrLevel> levels = levelRepository.findAll();
+
+        // Přidání nové úrovně
+        TreeNodeVO treeNodeVO = treeData.getNodes().iterator().next();
+        ArrNodeVO rootNode = convertTreeNode(treeNodeVO);
+
+        // Přidání JP na úroveň
+        ArrItemIntVO itemInt = new ArrItemIntVO();
+        itemInt.setItemTypeId(findItemTypeId("SRD_NAD"));
+        itemInt.setValue(12);
+
+        AddLevelParam addLevelParam = new AddLevelParam();
+        addLevelParam.setVersionId(fundVersion.getId());
+        addLevelParam.setStaticNode(rootNode);
+        addLevelParam.setStaticNodeParent(rootNode);
+        addLevelParam.setDirection(FundLevelService.AddLevelDirection.CHILD);
+        addLevelParam.setCreateItems(List.of(itemInt));
+        addLevelParam.setCount(1); // přidat jen 1 úroveň
+
+        Receiptable receiptable = session.send(ADD_LEVEL_MSG_MAPPING, addLevelParam);
+        status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        recepipt = receiptStore.get(receiptable.getReceiptId());
+        assertNotNull(recepipt);
+
+        ArrangementController.NodesWithParent nodesWithParent = mapper.readValue(recepipt.getPayload(), ArrangementController.NodesWithParent.class);
+        assertNotNull(nodesWithParent);
+
+        descItems = descItemRepository.findAll();
+        assertTrue(descItems.size() == 2);
+        levels = levelRepository.findAll();
+        assertNotNull(levels);
+        assertTrue(levels.size() == 2);
+
+        // Přidání jednoho záznamu ArrInhibitedItem:
+        //   node1 -> descItem1
+        //   node2 -> descItem2
+        // arrInhibitedItem <- node2,descItem1
+        ArrInhibitedItemVO arrInhibitedItem = new ArrInhibitedItemVO(); 
+        arrInhibitedItem.setNodeId(levels.get(levels.size() - 1).getNodeId());
+        arrInhibitedItem.setItemId(descItems.iterator().next().getItemId());
+
+        receiptable = session.send(INHIBIT_DESC_ITEM, arrInhibitedItem);
+        status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        recepipt = receiptStore.get(receiptable.getReceiptId());
+        assertNotNull(recepipt);
+
+        Integer inhibitItemId = mapper.readValue(recepipt.getPayload(), Integer.class);
+        assertNotNull(inhibitItemId);
+
+        // Označení přidané položky jako smazané
+        receiptable = session.send(ALLOW_DESC_ITEM, inhibitItemId);
+        status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        recepipt = receiptStore.get(receiptable.getReceiptId());
+        assertNotNull(recepipt);
+
+        Integer deleteInhibitItemId = mapper.readValue(recepipt.getPayload(), Integer.class);
+        assertNotNull(deleteInhibitItemId);
+        assertEquals(inhibitItemId, deleteInhibitItemId);
+
+        // Kontrola, zda je záznam označen jako smazaný
+        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findById(inhibitItemId).orElseThrow();
+        assertNotNull(inhibitedItem);
+        assertNotNull(inhibitedItem.getDeleteChange());
+
+        // Přidání jednoho záznamu ArrInhibitedItem s chybou
+        // arrInhibitedItem <- node1,descItem1
+        arrInhibitedItem.setNodeId(levels.iterator().next().getNodeId());
+        arrInhibitedItem.setItemId(descItems.iterator().next().getItemId());
+        receiptable = session.send(INHIBIT_DESC_ITEM, arrInhibitedItem);
+        status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_ERROR, status);
+
+        // if the operation is completed with an error, the session is closed
+        //session.disconnect();
     }
 
     private Integer findItemTypeId(String code) {
@@ -209,27 +309,6 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .replace("{nodeVersion}", nodeVersion.toString());
     }
 
-    private void waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
-        AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
-        receipt.addReceiptTask(() -> {
-            logger.debug("Receipt received");
-            receiptStatus.set(ReceiptStatus.RCP_RECEIVED);
-        });
-        receipt.addReceiptLostTask(() -> {
-            logger.debug("Receipt lost");
-            receiptStatus.set(ReceiptStatus.RCP_LOST);
-        });
-        while (receiptStatus.get() == null && !sessionHandler.hasError()) {
-            logger.info("Waiting on receipt...");
-            Thread.sleep(100);
-        }
-        if (sessionHandler.hasError()) {
-            logger.debug("Receipt error ove WebSocket");            
-            fail("Receipt error over WebSocket");
-        }
-        assertEquals(ReceiptStatus.RCP_RECEIVED, receiptStatus.get());
-    }
-
     private void initFundVersionAndTreeData() throws ApiException {
         Fund fund = createFund("Jmeno", "kod");
         helperTestService.waitForWorkers();
@@ -239,74 +318,4 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         input.setVersionId(fundVersion.getId());
         treeData = getFundTree(input);
     }
-
-    private StompSession connectWebSocketStompClient(StompSessionHandler sessionHandler, 
-                                                     final Map<String, Message<byte[]> > recepiptStore) throws InterruptedException, ExecutionException {
-        WebSocketClient client = new StandardWebSocketClient();
-        WebSocketStompClientElza stompClient = new WebSocketStompClientElza(client, (rcpId, msg) -> {
-            recepiptStore.put(rcpId, msg);
-        });
-
-        ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
-        taskScheduler.initialize();
-        stompClient.setTaskScheduler(taskScheduler);
-
-        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-
-        // Dostáváme údaje k autorizaci
-        WebSocketHttpHeaders handshakeHeaders = new WebSocketHttpHeaders();
-        StringBuilder cookie = new StringBuilder();
-        cookies.forEach((name, value) -> {
-            if (cookie.length() > 0) {
-                cookie.append(';');
-            }
-            cookie.append(String.format("%s=%s", name, value));
-        });
-        if (cookie.length() > 0) {
-            handshakeHeaders.set(HttpHeaders.COOKIE, cookie.toString());
-        }
-
-        ListenableFuture<StompSession> futureSession = stompClient.connect("ws://localhost:" + port + "/stomp", 
-                                                                           handshakeHeaders, sessionHandler);
-        return futureSession.get();
-    }
-
-    class MyStompSessionHandler implements StompSessionHandler {
-
-        private Logger logger = LoggerFactory.getLogger(this.getClass());
-        
-        int errorCount = 0;
-
-        @Override
-        public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-            logger.info("New session established : " + session.getSessionId());
-        }
-
-        @Override
-        public Type getPayloadType(StompHeaders headers) {
-            return String.class;
-        }
-
-        @Override
-        public void handleFrame(StompHeaders headers, Object payload) {
-            logger.info("Received: {}", payload);
-        }
-
-        @Override
-        public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
-            logger.error("Got an exception: ", exception);
-            errorCount++;
-        }
-
-        @Override
-        public void handleTransportError(StompSession session, Throwable exception) {
-            logger.error("Got an transport error: ", exception);
-            errorCount++;
-        }
-
-        public boolean hasError() {
-            return errorCount > 0;
-        }
-    }
-
 }
