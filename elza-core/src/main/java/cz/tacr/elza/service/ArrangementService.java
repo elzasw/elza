@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.repository.ExceptionThrow.fund;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.inhibitedItem;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
@@ -24,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -62,7 +64,6 @@ import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.UuidUtils;
-import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -97,6 +98,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundRegisterScope;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -138,10 +140,10 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
@@ -239,6 +241,9 @@ public class ArrangementService {
     @Autowired
     private DataCoordinatesRepository dataCoordinatesRepository;
 
+    @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -277,13 +282,22 @@ public class ArrangementService {
     }
 
     /**
+     * Načtení záznamy o potlačení dědictví na zaklade id.
+     * 
+     * @param inhibitedItemId
+     * @return záznam o potlačení dědictví
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrInhibitedItem getInhibitedItem(@NotNull Integer inhibitedItemId) {
+    	return inhibitedItemRepository.findById(inhibitedItemId).orElseThrow(inhibitedItem(inhibitedItemId));
+    }
+
+    /**
      * Načtení uzlu na základě id.
      *
-     * @param nodeId
-     *            id souboru
+     * @param nodeId id izla
      * @return konkrétní uzel
-     * @throws ObjectNotFoundException
-     *             objekt nenalezen
+     * @throws ObjectNotFoundException objekt nenalezen
      */
     public ArrNode getNode(@NotNull Integer nodeId) {
         return nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
@@ -711,8 +725,8 @@ public class ArrangementService {
     public ArrNode createNodeObject(final ArrFund fund,
                                     @Nullable final String uuid,
                                     final ArrChange createChange) {
-        Validate.notNull(fund);
-        Validate.notNull(createChange);
+    	Objects.requireNonNull(fund);
+    	Objects.requireNonNull(createChange);
 
         ArrNode node = new ArrNode();
         node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
@@ -2256,4 +2270,58 @@ public class ArrangementService {
         
         return result;
     }
+
+    /**
+     * Potlačení dědictví item.
+     * 
+     * @param node
+     * @param itemId
+     * @return inhibitedItemId
+     */
+    @Transactional(TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemId) {
+		ArrDescItem descItem = descItemRepository.findById(descItemId).orElseThrow();
+
+		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
+		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
+		if (!nodeIds.contains(descItem.getNodeId())) {
+            throw new SystemException("Element JP nebyl nalezen na nadřazených úrovních", BaseCode.INVALID_STATE)
+                    .set("nodeId", node.getNodeId())
+                    .set("descItemId", descItemId);
+		}
+
+		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);		 
+
+		ArrInhibitedItem inhibitedItem = new ArrInhibitedItem();
+		inhibitedItem.setNode(node);
+		inhibitedItem.setDescItem(descItem);
+		inhibitedItem.setCreateChange(createChange);
+
+		inhibitedItemRepository.save(inhibitedItem);
+		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+
+		return inhibitedItem.getInhibitedItemId();
+	}
+
+    /**
+     * Povolení dědictví item.
+     * 
+     * @param node
+     * @param inhibitItem
+     * @return inhibitedItemId
+     */
+    @Transactional(TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+		       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	public Integer allowItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, ArrInhibitedItem inhibitedItem) {
+		ArrChange deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_INHIBITED_ITEM);
+		inhibitedItem.setDeleteChange(deleteChange);
+
+		inhibitedItemRepository.save(inhibitedItem);
+		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+
+		return inhibitedItem.getInhibitedItemId();
+	}
 }

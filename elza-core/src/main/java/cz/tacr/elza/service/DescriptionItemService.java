@@ -1235,6 +1235,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 this::createDataResultList);
     }
 
+    public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds) {
+        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(nodeIds, itemTypeIds),
+                this::createDataResultList);
+    }
+
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds) {
         return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds),
                 this::createDataResultList);

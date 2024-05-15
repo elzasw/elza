@@ -4,15 +4,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -90,7 +89,7 @@ public class ItemService {
     @Transactional(TxType.MANDATORY)
     public ArrOutputItem moveItem(ArrOutputItem item, ArrChange change, int position) {
         Validate.isTrue(em.contains(item));
-        Validate.notNull(change);
+        Objects.requireNonNull(change);
 
         item.setDeleteChange(change); // save by commit
 
