@@ -114,6 +114,8 @@ public class DeleteFundAction {
     @Autowired
     private LockedValueRepository lockedValueRepository;
     @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
+    @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
     private LevelRepository levelRepository;
@@ -332,8 +334,11 @@ public class DeleteFundAction {
 
         // TODO: drop arr_data and all subtypes
 
+        // drop inhibited items
+        inhibitedItemRepository.deleteByNodeFund(fund);
+
         // drop items
-        this.descItemRepository.deleteByNodeFund(fund);
+        descItemRepository.deleteByNodeFund(fund);
 
         // drop links from data structured_ref
         dataStructureRefRepository.deleteByStructuredObjectFund(fund);

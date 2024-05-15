@@ -130,6 +130,7 @@ import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -568,6 +569,49 @@ public class ClientFactoryVO {
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
         }
+    }
+
+    /**
+     * Vytvoří seznam atributů z seznamu ArrDescItem.
+     *
+     * @param nodeId
+     * @param items seznam DO atributů
+     * @param inhibitedDescItemIds
+     * @return seznam VO atributů
+     */
+    public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemIds) {
+        if (items == null) {
+            return null;
+        }
+        List<ArrItemVO> result = new ArrayList<>(items.size());
+        List<ApAccessPoint> apList = new ArrayList<>();
+        for (ArrDescItem item : items) {
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            if (data instanceof ArrDataRecordRef) {
+                ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
+                apList.add(ap);
+            }
+        }
+
+        List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
+        Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
+
+        for (ArrDescItem item : items) {
+            ArrItemVO itemVO = createItem(item);
+            if (item.getNodeId() != nodeId) {
+            	itemVO.setFromNodeId(item.getNodeId());
+            }
+            if (inhibitedDescItemIds.contains(item.getItemId())) {
+            	itemVO.setInhibited(true);
+            }
+            ArrData data = HibernateUtils.unproxy(item.getData());
+            if (data instanceof ArrDataRecordRef) {
+                ApAccessPointVO apVo = apVoIt.next();
+                ((ArrItemRecordRefVO) itemVO).setRecord(apVo);
+            }
+            result.add(itemVO);
+        }
+        return result;
     }
 
     /**

@@ -41,6 +41,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -55,6 +56,7 @@ import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -114,6 +116,9 @@ public class NodeCacheService {
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
+    
+    @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
 
     @Autowired
 	private StaticDataService staticDataService;
@@ -504,6 +509,7 @@ public class NodeCacheService {
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
+        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
         Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
 
@@ -513,6 +519,7 @@ public class NodeCacheService {
 			// serialize node data
             CachedNode cn = new CachedNode(nodeId, node.getUuid(), node.getFundId());
             cn.setDescItems(nodeIdItems.get(nodeId));
+            cn.setInhibitedItems(nodeIdInhibitedItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
             cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
 			String nodeData = serialize(cn);
@@ -541,6 +548,7 @@ public class NodeCacheService {
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
+        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
         Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
 
@@ -549,6 +557,7 @@ public class NodeCacheService {
 
             CachedNode cn = new CachedNode(nodeId, node.getUuid(), node.getFundId());
             cn.setDescItems(nodeIdItems.get(nodeId));
+            cn.setInhibitedItems(nodeIdInhibitedItems.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
             cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
 
@@ -607,6 +616,22 @@ public class NodeCacheService {
             items.add(descItem);
         }
         return nodeIdItems;
+    }
+
+    private Map<Integer, List<ArrInhibitedItem>> createNodeInhibitedItemMap(final Collection<Integer> nodeIds) {
+    	List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+    	
+    	Map<Integer, List<ArrInhibitedItem>> nodeIdItems = new HashMap<>();
+    	for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+    		inhibitedItem = HibernateUtils.unproxy(inhibitedItem);
+            List<ArrInhibitedItem> items = nodeIdItems.get(inhibitedItem.getNodeId());
+            if (items == null) {
+                items = new ArrayList<>();
+                nodeIdItems.put(inhibitedItem.getNodeId(), items);
+            }
+            items.add(inhibitedItem);
+    	}
+    	return nodeIdItems;
     }
 
     /**
