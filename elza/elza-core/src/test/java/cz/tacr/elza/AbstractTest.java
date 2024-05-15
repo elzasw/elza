@@ -20,12 +20,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
+import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
 
@@ -51,6 +54,10 @@ public abstract class AbstractTest {
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
+    protected CachedNodeRepository cachedNodeRepository;
+    @Autowired
+    protected InhibitedItemRepository inhibitedItemRepository;
+    @Autowired
     protected ItemTypeRepository itemTypeRepository;
     @Autowired
     protected ItemSpecRepository itemSpecRepository;
@@ -64,6 +71,8 @@ public abstract class AbstractTest {
     protected StartupService startupService;
     @Autowired
     protected DescriptionItemService descItemService;
+    @Autowired
+    protected LevelRepository levelRepository;
 
     @Autowired
     protected ElzaLocale elzaLocale;

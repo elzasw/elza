@@ -51,6 +51,10 @@ public class ExceptionThrow {
         return () -> new ObjectNotFoundException("Nebyl nalezen výstup: " + outputId, BaseCode.ID_NOT_EXIST).setId(outputId);
     }
 
+    public static Supplier<ObjectNotFoundException> inhibitedItem(final Integer inhibitedItemId) {
+        return () -> new ObjectNotFoundException("Nebyl nalezen inhibited item: " + inhibitedItemId, BaseCode.ID_NOT_EXIST).setId(inhibitedItemId);
+    }
+
     public static Supplier<ObjectNotFoundException> node(final Integer nodeId) {
         return () -> new ObjectNotFoundException("Nebyla nalezena JP: " + nodeId, BaseCode.ID_NOT_EXIST).setId(nodeId);
     }

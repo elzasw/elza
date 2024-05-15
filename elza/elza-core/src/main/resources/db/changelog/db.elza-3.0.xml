@@ -47,10 +47,12 @@
     <changeSet id="20230315100813" author="pasek">
         <renameColumn tableName="arr_structured_object" oldColumnName="value" newColumnName="object_value"/>
     </changeSet>
+
 	<!-- TODO refine the algorithm for next_val
     <changeSet id="20231219133600" author="sergey.iryupin">
     	<sql>UPDATE db_hibernate_sequences SET next_val = next_val + 20 WHERE next_val &lt; 20</sql>
     </changeSet>-->
+
     <changeSet id="20240304112900" author="sergey.iryupin">
     	<createTable tableName="hsearch_agent">
     		<column name="assigned_shard_index" type="int" />
@@ -88,6 +90,37 @@
             <column name="tenant_id" type="varchar(255)" />
             <column name="payload" type="bytea" />
     	</createTable>
+    </changeSet>
+
+    <changeSet id="20240424101900" author="sergey.iryupin">
+    	<createTable tableName="arr_inhibited_item">
+    		<column name="inhibited_item_id" type="int">
+    			<constraints primaryKey="true" primaryKeyName="pk_arr_inhibited_item" nullable="false"/>
+    		</column>
+    		<column name="node_id" type="int">
+    			<constraints nullable="false" foreignKeyName="fk_inhibited_item_node" 
+    						 referencedTableName="arr_node" referencedColumnNames="node_id"/>
+			</column>
+    		<column name="desc_item_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_inhibited_desc_item_desc_item"
+                             referencedTableName="arr_desc_item"
+                             referencedColumnNames="item_id"/>
+			</column>
+    		<column name="create_change_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_inhibited_item_create_change"
+                             referencedTableName="arr_change" referencedColumnNames="change_id"/>
+    		</column>
+    		<column name="delete_change_id" type="int">
+                <constraints nullable="true" foreignKeyName="fk_inhibited_item_delete_change"
+                             referencedTableName="arr_change" referencedColumnNames="change_id"/>
+    		</column>
+		</createTable>    
+        <createIndex indexName="arr_inhibited_item_node_id_idx" tableName="arr_inhibited_item" unique="false">
+            <column name="node_id" type="int"/>
+        </createIndex>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_inhibited_item_desc_item_pidx
+                               ON arr_inhibited_item(desc_item_id)
+                               WHERE delete_change_id IS NULL</sql>
     </changeSet>
 
 </databaseChangeLog>

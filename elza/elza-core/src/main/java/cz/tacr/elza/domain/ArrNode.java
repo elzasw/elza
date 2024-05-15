@@ -9,6 +9,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.ArrFundGetter;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 import jakarta.persistence.Access;
@@ -31,7 +32,7 @@ import jakarta.persistence.OneToMany;
  */
 @Entity(name = "arr_node")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrNode extends AbstractVersionableEntity implements Versionable, Serializable, Comparable<ArrNode> {
+public class ArrNode extends AbstractVersionableEntity implements Versionable, Serializable, Comparable<ArrNode>, ArrFundGetter {
 
     public static final String FIELD_FUND = "fund";
     public static final String FIELD_NODE_ID = "nodeId";
