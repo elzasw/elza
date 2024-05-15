@@ -7,7 +7,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -116,7 +115,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -137,7 +135,6 @@ import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
-
 
 /**
  * REST kontroler pro registry.
@@ -840,10 +837,9 @@ public class ApController {
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
-//        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository //TODO hibernate search 6
-//                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
-//                                                  null, from, max, sdp);
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds, null, null, from, max, sdp);
+        //QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
         /*
         filter.setAeTypeIds(apTypes);
         return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);
