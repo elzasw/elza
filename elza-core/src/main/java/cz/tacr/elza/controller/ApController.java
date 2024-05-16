@@ -839,13 +839,9 @@ public class ApController {
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
                 .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds, null, null, from, max, sdp);
-        //QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
-        /*
-        filter.setAeTypeIds(apTypes);
-        return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);
-        */
-        ArchiveEntityResultListVO ret = new ArchiveEntityResultListVO();
-        ret.setTotal(cachedAccessPointResult.getRecordCount());
+
+        ArchiveEntityResultListVO resultList = new ArchiveEntityResultListVO();
+        resultList.setTotal(cachedAccessPointResult.getRecordCount());
         List<ArchiveEntityVO> data;
         List<ApCachedAccessPoint> records = cachedAccessPointResult.getRecords();
         if (CollectionUtils.isEmpty(records)) {
@@ -864,8 +860,8 @@ public class ApController {
                 data.add(ae);
             }
         }
-        ret.setData(data);
-        return ret;
+        resultList.setData(data);
+        return resultList;
     }
 
     /**
