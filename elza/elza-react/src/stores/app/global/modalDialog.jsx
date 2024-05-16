@@ -28,10 +28,10 @@ export default function modalDialog(state = initialState, action) {
             const items = [...state.items];
             items.splice(hideIndex, 1);
             // const items = state.items.length > 1 ? [...state.items.slice(0, hideIndex)] : [];
+            const lastKey = items.length === 0 ? undefined : items[items.length - 1].key;
 
             return {
-                ...state,
-                lastKey: items.length === 0 ? undefined : state.lastKey,
+                lastKey,
                 items
             }
         default:
