@@ -42,6 +42,7 @@ public class RulDescItemTypeExtVO extends RulDescItemTypeVO {
     	result.setViewOrder(itemType.getViewOrder());
     	result.setType(itemType.getType());
     	result.setRepeatable(itemType.getRepeatable());
+    	result.setStructureTypeId(itemType.getStructuredTypeId());
     	if (itemType.getRulItemSpecList() != null) {
     		List<RulDescItemSpecExtVO> descItemSpecs = itemType.getRulItemSpecList().stream().map(i -> RulDescItemSpecExtVO.newInstance(i)).collect(Collectors.toList());
     		result.setDescItemSpecs(descItemSpecs);
