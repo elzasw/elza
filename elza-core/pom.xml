@@ -333,12 +333,12 @@
                 <includes />
 			</testResource>
             <testResource>
-                <directory>${project.basedir}/../package-cz-base/src</directory>
-                <targetPath>${project.basedir}/target/test-classes/package-cz-base</targetPath>
+                <directory>${basedir}/../package-cz-base/src</directory>
+                <targetPath>${basedir}/target/test-classes/package-cz-base</targetPath>
 			</testResource>
             <testResource>
-                <directory>${project.basedir}/../rules-simple-dev/src</directory>
-                <targetPath>${project.basedir}/target/test-classes/rules-simple-dev</targetPath>
+                <directory>${basedir}/../rules-simple-dev/src</directory>
+                <targetPath>${basedir}/target/test-classes/rules-simple-dev</targetPath>
 			</testResource>
 		</testResources>
         <plugins>
@@ -361,6 +361,8 @@
                             <sources>
                                 <source>${project.build.directory}/generated-sources/jaxb</source>
                                 <source>${project.build.directory}/generated-sources/cam</source>
+                                <source>${project.build.directory}/generated-sources/mets</source>
+                                <source>${project.build.directory}/generated-sources/premis3</source>
 								<!-- <source>${project.build.directory}/generated-sources/api/rest</source> -->
 							</sources>
 						</configuration>
