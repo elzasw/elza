@@ -1,11 +1,12 @@
 import React from 'react';
 
-import {connect} from 'react-redux';
-import {AdminPackagesList, AdminPackagesUpload, Ribbon} from 'components';
-import {UrlFactory} from 'actions/index.jsx';
+import { connect } from 'react-redux';
+import { AdminPackagesList, AdminPackagesUpload, Ribbon } from 'components';
+import { UrlFactory } from 'actions/index.jsx';
 
 import './AdminPackagesPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
+import { AdminPackagesListFn } from 'components/admin/AdminPackagesList';
 
 /**
  * Stránka pro správu importovaných balíčků
@@ -19,11 +20,12 @@ class AdminPackagesPage extends React.Component {
     };
 
     render() {
-        const {splitter} = this.props;
+        const { splitter } = this.props;
 
         const centerPanel = (
             <div>
-                <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
+                {/* <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} /> */}
+                <AdminPackagesListFn getExportUrl={UrlFactory.exportPackage} />
                 <AdminPackagesUpload />
             </div>
         );
@@ -48,7 +50,7 @@ class AdminPackagesPage extends React.Component {
 function mapStateToProps(state) {
     const {
         splitter,
-        adminRegion: {packages},
+        adminRegion: { packages },
     } = state;
     return {
         splitter,
