@@ -23,7 +23,7 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <!--<version>3.5.5</version>-->
-		</dependency>		
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -87,7 +87,7 @@
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-jcache</artifactId>
 		</dependency>
-		<!-- 
+		<!--
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
@@ -136,7 +136,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
 		</dependency>
-        
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
@@ -145,7 +145,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
 			<!-- Drivejsi poznamka: Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
-                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->            
+                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -200,7 +200,7 @@
         <dependency>
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
@@ -210,7 +210,7 @@
              Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
         <dependency>
 	        <groupId>org.glassfish.jaxb</groupId>
-        	<artifactId>txw2</artifactId>        	
+        	<artifactId>txw2</artifactId>
 		</dependency>
 		<!-- io.swagger.annotations.* -->
         <dependency>
@@ -530,6 +530,24 @@
 						</configuration>
 					</execution>
                     <execution>
+                        <id>openapi-da-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/rest/da-openapi.yaml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/da/rest-client</output>
+                            <apiPackage>cz.tacr.da.controller</apiPackage>
+                            <modelPackage>cz.tacr.da.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>openapi-test-client</id>
                         <phase>generate-test-sources</phase>
                         <goals>
@@ -544,14 +562,14 @@
                             <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
-                            </configOptions>                            
+                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
             <!--  TODO pasek hack - cxf-codegen-plugin momentálně neumí generovat třídy s jakarta ee9, nutno ručně přepsat importy -->
             <!--
-            <plugin> 
+            <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
                 <version>1.4.1</version>

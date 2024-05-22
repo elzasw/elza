@@ -1,0 +1,606 @@
+openapi: 3.0.0
+info:
+  title: Služby DA
+  description: 'Služby umožňující zjistit dostupné balíčky v digitálním archivu a jejich změny. '
+  version: 2024-05-02
+tags: []
+paths:
+  /download/aips:
+    post:
+      operationId: download_downloadAips
+      description: |-
+        Stažení balíčků v poslendí verzi.
+
+        Metoda umožňuje zahájení stahování jednoho nebo více balíčků
+        v požadované podobě. Stahování balíčků je asynchronní a nejprve
+        je nutné vložit tento požadavek na stažení.
+
+        Příprava dat pro stažení může trvat delší dobu a stav přípravy dat
+        je možné zjistit pomocí metody batchStatus. Připravenou dávku
+        lze následně stáhnout a to buď pomocí přímého volání nebo obzvlášť
+        v případě většího objemu dat pomocí FileTransfer.
+
+        Výsledkem volání je identifikátor dávky, která bude na serveru
+        připravena.
+      parameters: []
+      responses:
+        '200':
+          description: |-
+            Vrací identifikátor dávky ke stažení. Výslednou
+            dávku je možné přenést službou FileTransfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchId'
+        '403':
+          description: |-
+            Chyba stažení balíčku způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné hodnoty parametru, obvykle chybným
+            uvedením identifikátoru balíčku nebo požadovaným typem balíčku.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+      requestBody:
+        description: |-
+          Seznam požadovaných balíčků a jejich požadovaná
+          podoba pro stažení.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/download.DownloadAips'
+  /download/files:
+    post:
+      operationId: download_downloadFiles
+      description: |-
+        Stažení jednoho nebo více souborů z balíčku.
+
+        Metoda připraví dávkové stažení jednoho nebo více souborů
+        z jednoho AIPu. Stahování souborů je asynchronní a nejprve
+        je nutné vložit tento požadavek na jejich stažení.
+
+        Příprava dat pro stažení může trvat delší dobu a stav přípravy dat
+        je možné zjistit pomocí metody batchStatus. Připravenou dávku
+        lze následně stáhnout a to buď pomocí přímého volání nebo obzvlášť
+        v případě většího objemu dat pomocí FileTransfer.
+
+        Výsledkem volání je identifikátor dávky, která bude na serveru
+        připravena.
+      parameters: []
+      responses:
+        '200':
+          description: |-
+            Vrací identifikátor dávky ke stažení. Výslednou
+            dávku je možné přenést službou FileTransfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchId'
+        '403':
+          description: |-
+            Chyba stažení balíčku způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné hodnoty parametru, obvykle chybným
+            uvedením identifikátoru balíčku nebo požadovaným typem balíčku.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+      requestBody:
+        description: Seznam požadovaných souborů
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/download.DownloadFiles'
+  /download/result/{batchId}:
+    get:
+      operationId: download_download
+      description: |-
+        Stažení připravené dávky.
+
+        Metoda slouží pro stažení připravené dávky. Dávku je možné stahovat až když
+        metoda getStaus vrátí, že je dávka dokončena (stav FINISHED).
+
+        V případě velkého objemu dat nebo i z jiných implementačních důvodů
+        může být nutné výsledek stáhnout pomocí služby FileTransfer
+        a nikoliv pomocí této metody. Tento stav je signalizován návratovým kódem 413.
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: Identifikátor dávky, která bude stažena
+          schema:
+            $ref: '#/components/schemas/BatchId'
+      responses:
+        '200':
+          description: |-
+            Dojde k zahájení stahování výsledku. Ten je předán ve formě ZIP souboru
+            v němž jsou uloženy jednotlivé soubory výsledku.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: byte
+        '403':
+          description: |-
+            Chyba stažení balíčku způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné hodnoty parametru, obvykle chybným
+            uvedením identifikátoru balíčku nebo požadovaným typem balíčku.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '413':
+          description: |-
+            Chyba způsobená příliš velkým datovým objemem odpovědi.
+
+            K chybě může dojít při požadavku na přímé stažení balíčku nebo souboru.
+            Pro získání požadovaných dat musí být v takovém případu využito dávkové API,
+            které umožňuje přenos větších objemů dat a navazování přeušeného
+            stahování.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+  /download/status/{batchId}:
+    get:
+      operationId: download_geStatus
+      description: |-
+        Zjištění stavu zpracování dávky.
+
+        Metoda umožňuje po vložení požadavku, který vrací BatchId, zjistit
+        stav zpracování dávky. Dle stavu lze následně provést stažení výsledku.
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: Identifikátor dávky jejíž stav je zjišťován
+          schema:
+            $ref: '#/components/schemas/BatchId'
+      responses:
+        '200':
+          description: |-
+            Vrací informaci o stavu zpracování dávky. Připravený výsledek
+            je možné stáhnout pomocí služby FileTransfer. V případě vrácení
+            chybových stavů 403 a 404 se jedná o trvalé selhání požadavku
+            a jeho příprava je již přerušena.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/download.DownloadStatus'
+        '403':
+          description: |-
+            Chyba stažení balíčku způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné hodnoty parametru, obvykle chybným
+            uvedením identifikátoru balíčku nebo požadovaným typem balíčku.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+  /ingest/result/{batchId}:
+    get:
+      operationId: ingest_getResult
+      description: |-
+        Převzetí výsledku zpracování dávky
+
+        Metoda slouží pro převzetí výsledku zpracování dávky balíčků. Výsledek je možné
+        převzít až když metoda getStaus vrátí, že je dávka dokončena (stav FINISHED).
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: Identifikátor dávky pro převzetí výsledku
+          schema:
+            $ref: '#/components/schemas/BatchId'
+      responses:
+        '200':
+          description: Výsledek zpracování jednotlivých předaných balíčků.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ingest.IngestResult'
+        '403':
+          description: |-
+            Chyba vložení způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+
+            V případě této chyby nedošlo ke zpracování žádné části z vkládané
+            dávky.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné podoby vstupní dávky.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+
+            V případě této chyby nedošlo ke zpracování žádné části z vkládané
+            dávky.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '503':
+          description: |-
+            Výsledek zpracování dávky není dostupný.
+
+            K chybě může dojít v případě předčasného volání metody
+            getResult. Metoda by měla být volána až po dokončení
+            zpracování vstupní dávky indikovaném pomocí metody getStatus.
+  /ingest/status/{batchId}:
+    get:
+      operationId: ingest_geStatus
+      description: |-
+        Zjištění stavu zpracování požadavku na aktualizaci balíčků.
+
+        Metoda umožňuje po vložení změnových balíčků zjistit
+        stav jejich zpracování. Podle zjištěného stavu lze následně
+        provést stažení výsledku.
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          description: Identifikátor dávky jejíž stav je zjišťován.
+          schema:
+            $ref: '#/components/schemas/BatchId'
+      responses:
+        '200':
+          description: |-
+            Vrací informaci o stavu zpracování dávky. Připravený výsledek
+            je možné stáhnout pomocí metody getResult. V případě vrácení
+            chybových stavů 403 a 404 se jedná o trvalé selhání požadavku
+            a jeho další zpracování je přerušeno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ingest.IngestStatus'
+        '403':
+          description: |-
+            Chyba vložení způsobená nedostatečným oprávněním.
+            Případné upřesnění chybějícího oprávnění je uvedeno chybovém objektu.
+
+            V případě této chyby nedošlo ke zpracování žádné části z vkládané
+            dávky.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné podoby vstupní dávky.
+            V detailním popisu chyby jsou uvedeny další podrobnosti.
+
+            V případě této chyby nedošlo ke zpracování žádné části z vkládané
+            dávky.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+  /updates:
+    get:
+      operationId: updates
+      description: |-
+        Zjištění seznamu dostupných balíčků a jejich změn v digitálním archivu.
+
+        Metoda umožňuje získat úplný seznam balíčků v digitálním archivu
+        dostupných pro uživatele a sledovat změny v těchto balíčcích.
+
+        Povinným parametrem je maximální počet záznamů vrácených v odpovědi.
+        Volitelným parametrem je identifikátor pro zjištění dalších balíčků a jejich změn.
+      parameters:
+        - name: nextQuery
+          in: query
+          required: false
+          description: |-
+            Volitelný identifikátor dalšího dotazu. Jeho hodnota je vrácena
+            jako výsledek předcházejícícho dotazu. Při prvním dotazu se parametr neuvádí.
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          required: true
+          description: Maximální počet vrácených záznamů.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: |-
+            Vrací seznam dostupných balíčků. Počet vrácených balíčků je nanejvýš počet
+            uvedený v parametru pageSize. Server může vrátit nižší počet,
+            než-li je hodnota pageSize.
+            Pokud nejsou žádné balíčky a jejich změny dostupné, je vrácen prázdný seznam.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatedAips'
+        '404':
+          description: |-
+            Chyba způsobená uvedením neplatné hodnoty
+            parametru je signalizována návratovým kódem 404 a chybovým objektem s detailním
+            popisem.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+components:
+  schemas:
+    AipId:
+      type: string
+      description: Identifikátor AIP.
+    AipVersion:
+      type: string
+      description: |-
+        Identifikátor verze AIP
+        - je povinný z důvodu kontroly archivního popisu při zaslání
+    BatchId:
+      type: string
+      description: |-
+        Identifikátor dávky.
+
+        Pomocí tohoto identifikátoru je možné zjistit
+        stav dávky, provést její stažení, resp. stažení
+        jejího výsledku.
+    ErrorInfo:
+      type: object
+      required:
+        - errorTitle
+      properties:
+        errorTitle:
+          type: string
+          description: |-
+            Hlavní popis chyby.
+
+            Tento popis je obvykle prvotně zobrazen uživateli.
+        errorCode:
+          type: string
+          description: |-
+            Kód blíže určující danou chybu.
+
+            Kódy a jejich význam mohou být upřesněny v rámci implementace daného DA.
+        errorDetail:
+          type: string
+          description: |-
+            Doplňující popis chyby.
+
+            Obvykle se uvádí technický popis, výjimka k níž došlo apod.
+      description: Popis chyby
+    FileId:
+      type: string
+      description: |-
+        Identifikátor souboru.
+
+        Používá se při požadavku na stažení vybraných souborů
+        z balíčku.
+    RequestState:
+      type: string
+      enum:
+        - PENDING
+        - PREPARING
+        - FINISHED
+      description: |-
+        Stav přípravy odpovědi.
+
+        - PENDING - Požadavek čeká na zahájení přípravy.
+        - PREPARING - Probíhá příprava odpovědi, tj. vlastní zpracování.
+        - FINISHED - Zpracování požadavku je dokončeno, je možné požádat o výsledek.
+
+        Dle stavu požadavku je možné volat další návazné metody.
+    UpdatedAips:
+      type: object
+      required:
+        - aipIds
+        - nextQuery
+      properties:
+        aipIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatedInfo'
+          description: |-
+            Pole změněných AIPů, předává se ID AIPu a identifikace
+            poslední verze.
+
+            Může být prázdné pokud nedošlo ke změnám
+        nextQuery:
+          type: string
+          description: Identifikátor dalšího dotazu
+      description: Seznam změn v DA
+    UpdatedInfo:
+      type: object
+      required:
+        - aipId
+        - aipVersion
+      properties:
+        aipId:
+          allOf:
+            - $ref: '#/components/schemas/AipId'
+          description: AIP ID
+        aipVersion:
+          allOf:
+            - $ref: '#/components/schemas/AipVersion'
+          description: Poslední verze AIPu
+        invalidated:
+          type: boolean
+          description: |-
+            Volitelný příznak zneplatněného balíčku.
+
+            Pokud není příznak uveden, je balíček platný.
+            Příznak se musí uvést jen pro zneplatněné balíčky.
+      description: Informace o změně AIPu včetně jeho verze a stavu
+    download.DownloadAips:
+      type: object
+      required:
+        - aipIds
+        - dipType
+      properties:
+        aipIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AipId'
+          description: Pole identifikátorů AIPů ke stažení.
+        dipType:
+          type: string
+          description: |-
+            Požadovaná podoba balíčku, přípustné hodnoty jsou:
+
+            - package_info - vrací jen PACKAGE-INFO.xml
+            - archdesc - vrací PACKAGE-INFO.xml, inherentní archivní popis (EAD-INHERENT.xml) a kontextuální archivní popis (EAD-CONTEXT.xml)
+            - metadata_base - vrací metadatový DIP obsahující: METS.xml, PACKAGE-INFO.xml, EAD (inherentní, kontextuální), PREMIS (uchování)
+            - aip_base - vrací úplný DIP obsahující metadata_base a navíc binární data komponent
+            - aip_raw - nativní podoba balíčku, podoba je dána implementací digitálního archivu
+
+            Digitální archiv vždy musí podpororovat typy package_info, metadata_base a aip_base.
+      description: |-
+        Požadavek stažení jednoho nebo více AIPů pomocí dávkového API.
+
+        V požadavku se uvede seznam AIPů a jejich požadovaná podoba.
+    download.DownloadFiles:
+      type: object
+      required:
+        - aipId
+        - fileIds
+      properties:
+        aipId:
+          allOf:
+            - $ref: '#/components/schemas/AipId'
+          description: Identifikátor balíčku jehož soubory jsou požadovány.
+        fileIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileId'
+          description: Pole identifikátorů požadovaných souborů pro stažení.
+      description: |-
+        Požadavek na stažení vybraných souborů z jednoho balíčku.
+
+        Povinně se uvede identifikátor balíčku jehož soubory jsou požadovány
+        a pole identifikátorů těchto souborů. Identifikátory souborů jsou
+        uvedeny v příslušném METS.xml v daném balíčku.
+    download.DownloadStatus:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          allOf:
+            - $ref: '#/components/schemas/RequestState'
+          description: Stav zpracování požadavku
+        progress:
+          type: integer
+          description: |-
+            Volitelná informace o průběhu
+            zpracování požadavku.
+
+            Jedná se o procentuální míru zpracování
+            požadavku, hodnota musí být v intervalu <0, 100>.
+      description: Stav přípravy dávky ke stažení.
+    ingest.IngestResult:
+      type: object
+      required:
+        - accepted
+        - packageIngestError
+      properties:
+        accepted:
+          type: array
+          items:
+            $ref: '#/components/schemas/ingest.PackageIngestSuccess'
+          description: Seznam přijatých balíčků bez chyb
+        packageIngestError:
+          type: array
+          items:
+            $ref: '#/components/schemas/ingest.PackageIngestError'
+          description: |-
+            Seznam balíčků, které se nepodařilo vložit.
+
+            Každý balíček, který se nepodařilo vložit je rozšířen
+            o příslušnou chybovou informaci.
+      description: Výsledek zpracování vstupní dávky balíčků.
+    ingest.IngestStatus:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          allOf:
+            - $ref: '#/components/schemas/RequestState'
+          description: Stav zpracování požadavku
+        progress:
+          type: integer
+          description: |-
+            Volitelná informace o průběhu
+            zpracování dávky.
+
+            Jedná se o procentuální míru zpracování
+            požadavku, hodnota musí být v intervalu <0, 100>.
+      description: Stav zpracování vkládané dávky.
+    ingest.PackageIngestError:
+      type: object
+      required:
+        - sipId
+        - errorInfo
+      properties:
+        sipId:
+          allOf:
+            - $ref: '#/components/schemas/AipId'
+          description: Identifikátor chybného balíčku.
+        errorInfo:
+          allOf:
+            - $ref: '#/components/schemas/ErrorInfo'
+          description: Popis chyby a důvodů odmítnutí balíčku.
+      description: Popis chybných balíčků, které nebylo možné zpracovat.
+    ingest.PackageIngestSuccess:
+      type: object
+      required:
+        - sipId
+        - aipId
+        - aipVersion
+      properties:
+        sipId:
+          allOf:
+            - $ref: '#/components/schemas/AipId'
+          description: Identifikátor předaného balíčku.
+        aipId:
+          allOf:
+            - $ref: '#/components/schemas/AipId'
+          description: |-
+            Identifikátor balíčku do něhož byla změna
+            zapsána.
+        aipVersion:
+          allOf:
+            - $ref: '#/components/schemas/AipVersion'
+          description: |-
+            Identifikátor nové verze balíčku, která vznikla
+            v důsledku přijetí balíčku.
+      description: Informace o úspěšném přijetí balíčku
