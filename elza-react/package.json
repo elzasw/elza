@@ -13,6 +13,7 @@
     "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.51.1",
     "@stomp/stompjs": "^7.0.0",
     "@types/redux-form": "^8.3.10",
     "across-tabs": "^1.4.0",
