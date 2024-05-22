@@ -123,7 +123,6 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -275,9 +274,6 @@ public class AccessPointService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
-
-    @Autowired
-    private ApRevItemRepository revItemRepository;
 
     @Autowired
     private ApRevisionRepository revisionRepository;
@@ -1435,6 +1431,11 @@ public class AccessPointService {
 
         generateSync(state, apPart);
 
+        // pokud změníme preferovanou část, musíme reindexovat
+        if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
+	        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+        }
+
         return true;
     }
 
@@ -1693,8 +1694,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApState changeApType(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId,
                                 final Integer apTypeId) {
-        Validate.notNull(accessPointId);
-        Validate.notNull(apTypeId);
+    	Objects.requireNonNull(accessPointId);
+    	Objects.requireNonNull(apTypeId);
 
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
@@ -2833,6 +2834,8 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         ApAccessPoint apAccessPoint = saveWithLock(accessPoint);
+        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+
         return apAccessPoint;
     }
 
