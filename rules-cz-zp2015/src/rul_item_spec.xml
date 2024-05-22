@@ -389,6 +389,12 @@
         <shortcut>td</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_KOR">
+        <name>korespondence</name>
+        <description>korespondence</description>
+        <shortcut>kor</shortcut>
+        <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
+    </item-spec>
     <!-- Nepoužívat, zastaralá specifikace -->
     <item-spec code="ZP2015_UNIT_SUBTYPE_LST">
         <name>list</name>
@@ -1090,9 +1096,9 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_28">
-        <name>scénárista</name>
+        <name>scenárista</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
-        <shortcut>scénárista</shortcut>
+        <shortcut>scenárista</shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>

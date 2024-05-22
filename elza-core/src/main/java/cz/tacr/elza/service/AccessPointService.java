@@ -123,7 +123,6 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -275,9 +274,6 @@ public class AccessPointService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
-
-    @Autowired
-    private ApRevItemRepository revItemRepository;
 
     @Autowired
     private ApRevisionRepository revisionRepository;
@@ -1435,6 +1431,11 @@ public class AccessPointService {
 
         generateSync(state, apPart);
 
+        // pokud změníme preferovanou část, musíme reindexovat
+        if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
+	        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+        }
+
         return true;
     }
 
@@ -1693,8 +1694,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApState changeApType(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId,
                                 final Integer apTypeId) {
-        Validate.notNull(accessPointId);
-        Validate.notNull(apTypeId);
+    	Objects.requireNonNull(accessPointId);
+    	Objects.requireNonNull(apTypeId);
 
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
@@ -2833,6 +2834,8 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         ApAccessPoint apAccessPoint = saveWithLock(accessPoint);
+        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+
         return apAccessPoint;
     }
 
@@ -3147,18 +3150,18 @@ public class AccessPointService {
 
     public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
-        if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
-            return "";
+        if (cachedAccessPoint != null && cachedAccessPoint.getParts() != null) {
+        	for (CachedPart part : cachedAccessPoint.getParts()) {
+        		if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+        			for (ApIndex index : part.getIndices()) {
+        				if (index.getIndexType().equals(DISPLAY_NAME)) {
+        					return index.getIndexValue();
+        				}
+        			}
+        		}
+        	}
         }
-        CachedPart preferredPart = cachedAccessPoint.getParts().stream()
-                .filter(p -> p.getPartId().equals(cachedAccessPoint.getPreferredPartId()))
-                .findAny()
-                .orElse(null);
-        ApIndex index = preferredPart.getIndices().stream()
-                .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
-                .findAny()
-                .orElse(null);
-        return index == null ? "": index.getIndexValue();
+        throw new ObjectNotFoundException("Neexistuje preferred name", BaseCode.PROPERTY_NOT_EXIST).set("accessPoinId", accessPoint.getAccessPointId());
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max,
