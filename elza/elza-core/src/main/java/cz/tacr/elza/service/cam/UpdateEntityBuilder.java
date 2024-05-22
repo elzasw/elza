@@ -279,13 +279,22 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
      */
     private void createDeletePartList() {
         List<ApBindingItem> deletedParts = new ArrayList<>();
+        // append deleted parts with parents
         for (ApBindingItem bindingPart : bindingParts) {
             ApPart part = bindingPart.getPart();
-            if (part.getDeleteChangeId() != null) {
+            if (part.getDeleteChangeId() != null && part.getParentPartId() != null) {
+                deletedParts.add(bindingPart);
+            }
+        }
+        // append deleted parts without parents
+        for (ApBindingItem bindingPart : bindingParts) {
+            ApPart part = bindingPart.getPart();
+            if (part.getDeleteChangeId() != null && part.getParentPartId() == null) {
                 deletedParts.add(bindingPart);
             }
         }
 
+        // append changes
         for (ApBindingItem deletedPart : deletedParts) {
             DeletePartXml dpx = new DeletePartXml(new UuidXml(deletedPart.getValue()),
                     // TODO: improve with sdp

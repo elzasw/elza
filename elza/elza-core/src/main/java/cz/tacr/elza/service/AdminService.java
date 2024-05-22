@@ -67,7 +67,7 @@ public class AdminService {
     	}
 
     	SearchSession searchSession = Search.session(entityManager);
-    	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class); // TODO add ArrDescItem.class
+    	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class, ArrDescItem.class); // TODO add ArrDescItem.class
     	//massIndexer.monitor(massIndexingMonitor);
     	indexerStatus = massIndexer.start().toCompletableFuture();
     }

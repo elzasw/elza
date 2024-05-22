@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings 
+    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:namespace="http://jaxb2-commons.dev.java.net/basic/namespace-prefix"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
+		http://jaxb2-commons.dev.java.net/basic/namespace-prefix 
+		https://raw.githubusercontent.com/Siggen/jaxb2-namespace-prefix/master/src/main/resources/prefix-namespace-schema.xsd"
+    version="3.0">
+	
+    <jaxb:bindings schemaLocation="premis-v3-0.xsd">
+        <jaxb:bindings>
+            <namespace:prefix name="premis" />
+        </jaxb:bindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
