@@ -444,6 +444,74 @@
 							</plugins>
 						</configuration>
 					</execution>
+                    <execution>
+                        <id>generate-mets-schema</id>
+                        <goals>
+                            <goal>generate</goal>
+			</goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xannotate</arg>
+                                <arg>-Xinheritance</arg>
+                                <arg>-Xvalue-constructor</arg>
+                                <arg>-Xnamespace-prefix</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/mets</generateDirectory>
+                            <generatePackage>gov.loc.mets.v1_11.schema</generatePackage>
+                            <schemaDirectory>${project.basedir}/src/main/resources/xsd/mets</schemaDirectory>
+                            <schemaIncludes>
+                                <include>mets.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/xsd/mets</bindingDirectory>
+                            <bindingIncludes>
+                                <include>binding.xjb</include>
+                            </bindingIncludes>
+                            <catalog>src/main/resources/xsd/mets/catalog.cat</catalog>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
+				</plugin>
+                            </plugins>
+			</configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-premis3-schema</id>
+                        <goals>
+                            <goal>generate</goal>
+			</goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xannotate</arg>
+                                <arg>-Xinheritance</arg>
+                                <arg>-Xvalue-constructor</arg>
+                                <arg>-Xnamespace-prefix</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/premis3</generateDirectory>
+                            <generatePackage>gov.loc.premis.v3</generatePackage>
+                            <schemaDirectory>${project.basedir}/src/main/resources/xsd/premis</schemaDirectory>
+                            <schemaIncludes>
+                                <include>premis-v3-0.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/xsd/premis</bindingDirectory>
+                            <bindingIncludes>
+                                <include>binding.xjb</include>
+                            </bindingIncludes>
+                            <catalog>src/main/resources/xsd/premis/catalog.cat</catalog>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
+				</plugin>
+                            </plugins>
+			</configuration>
+                    </execution>
 				</executions>
                 <dependencies>
                     <!--<dependency>
