@@ -31,13 +31,13 @@ public class DaSyncQueueItem {
     @Column(name = "state", length = StringLength.LENGTH_ENUM, nullable = false)
     private QueueItemState state;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remote_repository_id", nullable = false)
-    private DaRemoteRepository remoteRepository;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
+    @JoinColumn(name = "digital_repository_id", nullable = false)
+    private ArrDigitalRepository digitalRepository;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteAip.class)
-    @JoinColumn(name = "remote_aip_id")
-    private DaRemoteAip remoteAip;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAip.class)
+    @JoinColumn(name = "aip_id")
+    private DaAip aip;
 
 
     public Integer getSyncQueueItemId() {
@@ -72,20 +72,20 @@ public class DaSyncQueueItem {
         this.state = state;
     }
 
-    public DaRemoteRepository getRemoteRepository() {
-        return remoteRepository;
+    public ArrDigitalRepository getDigitalRepository() {
+        return digitalRepository;
     }
 
-    public void setRemoteRepository(DaRemoteRepository remoteRepository) {
-        this.remoteRepository = remoteRepository;
+    public void setDigitalRepository(ArrDigitalRepository digitalRepository) {
+        this.digitalRepository = digitalRepository;
     }
 
-    public DaRemoteAip getRemoteAip() {
-        return remoteAip;
+    public DaAip getAip() {
+        return aip;
     }
 
-    public void setRemoteAip(DaRemoteAip remoteAip) {
-        this.remoteAip = remoteAip;
+    public void setAip(DaAip aip) {
+        this.aip = aip;
     }
 
     public enum QueueItemState {
@@ -95,12 +95,6 @@ public class DaSyncQueueItem {
         IMPORT_NEW("Ke stažení"),
 
         IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK
-
-        EXPORT_NEW("K odeslání"),
-
-        EXPORT_START("Odesílání"),
-
-        EXPORT_OK("Odesláno"),
 
         ERROR("Chyba");
 

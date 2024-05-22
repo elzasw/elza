@@ -307,5 +307,39 @@
                              constraintName="UNIQ_da_aip"/>
     </changeSet>
 
+    <changeSet id="20240522123700" author="fantis">
+        <dropForeignKeyConstraint baseTableName="da_remote_repository_sync" constraintName="fk_da_remote_repository_sync_da_remote_repository"/>
+        <dropColumn tableName="da_remote_repository_sync" columnName="remote_repository_id"/>
+        <dropColumn tableName="da_remote_repository_sync" columnName="last_update"/>
+        <addColumn tableName="da_remote_repository_sync">
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_query" type="VARCHAR(250)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseColumnNames="digital_repository_id" baseTableName="da_remote_repository_sync"
+                                 constraintName="fk_da_remote_repository_sync_arr_digital_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="arr_digital_repository"/>
+    </changeSet>
+
+    <changeSet id="20240522130600" author="fantis">
+        <dropForeignKeyConstraint baseTableName="da_sync_queue_item" constraintName="fk_da_sync_queue_item_da_remote_repository"/>
+        <dropForeignKeyConstraint baseTableName="da_sync_queue_item" constraintName="fk_da_sync_queue_item_da_remote_aip"/>
+        <dropColumn tableName="da_sync_queue_item" columnName="remote_repository_id"/>
+        <dropColumn tableName="da_sync_queue_item" columnName="remote_aip_id"/>
+        <addColumn tableName="da_sync_queue_item">
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_id" type="int"/>
+        </addColumn>
+        <addForeignKeyConstraint baseColumnNames="digital_repository_id" baseTableName="da_sync_queue_item"
+                                 constraintName="fk_da_sync_queue_item_arr_digital_repository" referencedColumnNames="external_system_id"
+                                 referencedTableName="arr_digital_repository"/>
+        <addForeignKeyConstraint baseColumnNames="aip_id" baseTableName="da_sync_queue_item"
+                                 constraintName="fk_da_sync_queue_item_da_aip" referencedColumnNames="aip_id"
+                                 referencedTableName="da_aip"/>
+    </changeSet>
+
 
 </databaseChangeLog>

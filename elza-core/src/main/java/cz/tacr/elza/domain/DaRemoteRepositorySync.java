@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -10,8 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-import java.time.LocalDateTime;
-
 @Entity(name = "da_remote_repository_sync")
 public class DaRemoteRepositorySync {
 
@@ -20,12 +19,12 @@ public class DaRemoteRepositorySync {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer remoteRepositorySyncId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remote_repository_id", nullable = false)
-    private DaRemoteRepository remoteRepository;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
+    @JoinColumn(name = "digital_repository_id", nullable = false)
+    private ArrDigitalRepository digitalRepository;
 
-    @Column(name = "last_update", nullable = false)
-    private LocalDateTime lastUpdate;
+    @Column(name = "next_query",  length = StringLength.LENGTH_250)
+    private String nextQuery;
 
     public Integer getRemoteRepositorySyncId() {
         return remoteRepositorySyncId;
@@ -35,19 +34,19 @@ public class DaRemoteRepositorySync {
         this.remoteRepositorySyncId = remoteRepositorySyncId;
     }
 
-    public DaRemoteRepository getRemoteRepository() {
-        return remoteRepository;
+    public ArrDigitalRepository getDigitalRepository() {
+        return digitalRepository;
     }
 
-    public void setRemoteRepository(DaRemoteRepository remoteRepository) {
-        this.remoteRepository = remoteRepository;
+    public void setDigitalRepository(ArrDigitalRepository digitalRepository) {
+        this.digitalRepository = digitalRepository;
     }
 
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
+    public String getNextQuery() {
+        return nextQuery;
     }
 
-    public void setLastUpdate(LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setNextQuery(String nextQuery) {
+        this.nextQuery = nextQuery;
     }
 }

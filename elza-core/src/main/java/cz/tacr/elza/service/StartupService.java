@@ -91,6 +91,8 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
+    private final DaExtSyncsProcessor daExtSyncsProcessor;
+
     private final HibernateConfiguration hibernateConfiguration;
 
     private final AccessPointCacheService accessPointCacheService;
@@ -144,6 +146,7 @@ public class StartupService implements SmartLifecycle {
                           final RuleService ruleService,
                           final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
+                          final DaExtSyncsProcessor daExtSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
                           final UserService userService) {
@@ -166,6 +169,7 @@ public class StartupService implements SmartLifecycle {
         this.ruleService = ruleService;
         this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
+        this.daExtSyncsProcessor = daExtSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
         this.userService = userService;
@@ -307,6 +311,7 @@ public class StartupService implements SmartLifecycle {
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
+        daExtSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();
     }
