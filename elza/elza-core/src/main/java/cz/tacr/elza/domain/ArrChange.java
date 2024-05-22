@@ -330,5 +330,15 @@ public class ArrChange {
          * Smazání záznamu ArrFile.
          */
         DELETE_ATTACHMENT,
+
+        /**
+         * Přidání potlačení dědičnosti.
+         */
+        ADD_INHIBITED_ITEM,
+
+        /**
+         * Povolení dědictví.
+         */
+        DELETE_INHIBITED_ITEM,
     }
 }

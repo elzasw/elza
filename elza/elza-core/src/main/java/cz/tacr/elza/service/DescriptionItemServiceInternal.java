@@ -1,11 +1,14 @@
 package cz.tacr.elza.service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,8 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -40,6 +45,7 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.vo.DataResult;
 
 /**
@@ -52,15 +58,19 @@ public class DescriptionItemServiceInternal {
 
     private final DescItemRepository descItemRepository;
 
+    private final InhibitedItemRepository inhibitedItemRepository;
+
     private final StaticDataService staticDataService;
 
     private final DataService dataService;
 
     @Autowired
     public DescriptionItemServiceInternal(DescItemRepository descItemRepository,
+    									  InhibitedItemRepository inhibitedItemRepository,
                                           StaticDataService staticDataService,
                                           DataService dataService) {
         this.descItemRepository = descItemRepository;
+        this.inhibitedItemRepository = inhibitedItemRepository;
         this.staticDataService = staticDataService;
         this.dataService = dataService;
     }
@@ -78,18 +88,12 @@ public class DescriptionItemServiceInternal {
      * @return
      */
     public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
-        Validate.notNull(lockChange);
-        Validate.notNull(node);
+    	Objects.requireNonNull(lockChange);
+    	Objects.requireNonNull(node);
         List<ArrDescItem> itemList;
         itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndChange(node, lockChange),
                 this::createDataResultList);
         return itemList;
-    }
-
-    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -103,14 +107,35 @@ public class DescriptionItemServiceInternal {
      * @return
      */
     public List<ArrDescItem> getDescItems(final ArrNode node) {
-        Validate.notNull(node);
+    	Objects.requireNonNull(node);
         List<ArrDescItem> itemList;
         itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
                 this::createDataResultList);
         return itemList;
     }
 
-    public TitleValue createTitleValue(ArrDescItem descItem, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {
+    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
+        return itemList.stream()
+                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Return list of inhibited descItem Ids by lockChange and fund
+     *
+     * @param lockChange
+     * @param nodeIds
+     * @return
+     */
+	public Set<Integer> getInhibitedDescItemIds(ArrChange lockChange, Collection<Integer> nodeIds) {
+    	Objects.requireNonNull(lockChange);
+    	Objects.requireNonNull(nodeIds);
+    	return inhibitedItemRepository.findByNodeIdsAndLockChange(nodeIds, lockChange).stream()
+    			.map(i -> i.getDescItemId())
+    			.collect(Collectors.toSet());
+	}
+
+	public TitleValue createTitleValue(ArrDescItem descItem, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {
         // prepare item specification if present
         RulItemSpec itemSpec = null;
         if (descItem.getItemSpecId() != null) {

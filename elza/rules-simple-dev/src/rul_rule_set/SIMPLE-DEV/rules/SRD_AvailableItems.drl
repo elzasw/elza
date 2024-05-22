@@ -402,7 +402,7 @@ when
     $descItem : DescItem(type=="SRD_UNIT_TYPE" && specCode=="SRD_UNIT_TYPE_LIO" ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code=="SRD_UNIT_DATE_TEXT")
 then
-       $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
 rule "Možné atributy pro testování"
@@ -411,4 +411,12 @@ when
     $itemType : RulItemTypeExt(code in ("SRD_SIMPLE_DATE", "SRD_MOVIE_LENGTH", "SRD_ACCESS_RESTRICTION_ID"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Dedicnost pro testování"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("SRD_ENTITY_ROLE"))
+then
+    $itemType.setInheritance(true);
 end

@@ -198,6 +198,8 @@ html, body {
 #content {
     height:500px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .root-container {

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.exception.SystemException;
@@ -41,6 +42,11 @@ public class CachedNode implements NodeCacheSerializable {
      * Seznam hodnot atributů.
      */
     protected List<ArrDescItem> descItems;
+
+    /**
+     * Seznam atributů s potlačenou dědičností
+     */
+    protected List<ArrInhibitedItem> inhibitedItems;
 
     /**
      * Seznam návazných entity z definic řídících pravidel.
@@ -93,7 +99,15 @@ public class CachedNode implements NodeCacheSerializable {
         this.descItems = descItems;
     }
 
-    public List<ArrNodeExtension> getNodeExtensions() {
+    public List<ArrInhibitedItem> getInhibitedItems() {
+		return inhibitedItems;
+	}
+
+	public void setInhibitedItems(List<ArrInhibitedItem> inhibitedItems) {
+		this.inhibitedItems = inhibitedItems;
+	}
+
+	public List<ArrNodeExtension> getNodeExtensions() {
         return nodeExtensions;
     }
 
@@ -141,7 +155,14 @@ public class CachedNode implements NodeCacheSerializable {
         }
 	}
 
-	public void addNodeExtensions(Collection<ArrNodeExtension> nodeExtensions) {
+    public void addInhibitedItems(Collection<ArrInhibitedItem> inhibitedItems) {
+        if (this.inhibitedItems == null) {
+            this.inhibitedItems = new ArrayList<>(inhibitedItems.size());
+        }
+        this.inhibitedItems.addAll(inhibitedItems);
+    }
+
+    public void addNodeExtensions(Collection<ArrNodeExtension> nodeExtensions) {
         if (this.nodeExtensions == null) {
             this.nodeExtensions = new ArrayList<>(nodeExtensions.size());
         }
@@ -197,10 +218,10 @@ public class CachedNode implements NodeCacheSerializable {
             if (nodeExtension.getCreateChangeId() == null) {
                 throw new NullPointerException("Missing createChangeId");
             }
-            if(nodeExtension.getArrangementExtension()==null) {
+            if(nodeExtension.getArrangementExtension() == null) {
                 throw new NullPointerException("Missing arrangement extension");
             }
-            if(nodeExtension.getArrangementExtensionId()==null) {
+            if(nodeExtension.getArrangementExtensionId() == null) {
                 throw new NullPointerException("Missing arrangement extension ID");
             }
         }

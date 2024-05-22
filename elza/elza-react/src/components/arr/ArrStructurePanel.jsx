@@ -597,6 +597,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                             name={'assignable'}
                             onChange={({target: {value}}) => this.filter({assignable: value})}
                             value={filter.assignable}
+                            className="form-select"
                         >
                             <option value={''}>{i18n('arr.structure.filter.assignable.all')}</option>
                             <option value={true}>{i18n('arr.structure.filter.assignable.true')}</option>

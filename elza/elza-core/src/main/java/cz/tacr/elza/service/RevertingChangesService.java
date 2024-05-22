@@ -33,6 +33,7 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 import org.slf4j.Logger;
@@ -384,6 +385,20 @@ public class RevertingChangesService {
             );
 
             descriptionItemService.reindexDescItem(toReindex);
+        }
+        sw.stop();
+
+        sw.start("delete from arr_inhibited_item");
+        {
+            Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_inhibited_item", "arr_inhibited_item", toChange);
+            int count = deleteEntityQuery.executeUpdate();
+
+            logger.debug("Deleted {} inhibited_item(s), fundId:{}, nodeId:{}", count, fundId, nodeId);
+
+            Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_inhibited_item", "arr_inhibited_item", toChange);
+            count = updateEntityQuery.executeUpdate();
+
+            logger.debug("Set deleteChange = NULL {} inhibited_item(s), fundId:{}, nodeId:{}", count, fundId, nodeId);
         }
         sw.stop();
 

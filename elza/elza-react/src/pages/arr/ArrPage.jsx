@@ -38,7 +38,7 @@ import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
-import {MODAL_DIALOG_SIZE, urlFundActions, urlNode, getFundVersion, urlFundNode} from '../../constants';
+import {MODAL_DIALOG_SIZE, getFundVersion, urlFundNode, urlFundActionsNew} from '../../constants';
 import { FOCUS_KEYS } from '../../constants.tsx';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
@@ -133,8 +133,8 @@ class ArrPage extends ArrParentPage {
         }
 
         // select already opened node
-        if(activeFund 
-            && urlFundId === activeFund.id 
+        if(activeFund
+            && urlFundId === activeFund.id
             && urlVersionId === activeVersionId
             && (
                 match?.params?.nodeId === activeNode?.selectedSubNodeId
@@ -149,7 +149,7 @@ class ArrPage extends ArrParentPage {
         await this.resolveUrlsRaw(urlFundId, urlVersionId)
 
         if(selectedNodeInfo){
-            // directly select node with info 
+            // directly select node with info
             dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId));
         } else {
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
@@ -169,8 +169,8 @@ class ArrPage extends ArrParentPage {
         const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
 
         // select active node form active fund
-        if(activeFund 
-            && urlFundId === activeFund.id 
+        if(activeFund
+            && urlFundId === activeFund.id
             && urlVersionId === activeVersionId
             && (
                 match?.params?.nodeId === activeNode?.selectedSubNodeId
@@ -392,13 +392,12 @@ class ArrPage extends ArrParentPage {
     }
 
     handleOpenFundActionForm = () => {
+        const dispatch = this.props.dispatch;
         const activeInfo = this.getActiveInfo();
-        const versionId = activeInfo.activeFund.versionId;
+        const fundId = activeInfo.activeFund.id;
         const subNode = activeInfo.activeSubNode;
 
-        this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
-        this.props.dispatch(fundActionFormShow(versionId));
-        this.props.dispatch(routerNavigate(urlFundActions(activeInfo.activeFund)));
+        dispatch(routerNavigate(urlFundActionsNew(fundId, getFundVersion(activeInfo.activeFund), [subNode].map(({ id }) => id))));
     };
 
     /**

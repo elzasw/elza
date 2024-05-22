@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
@@ -680,7 +681,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
-        Validate.notNull(changeMessage);
+    	Objects.requireNonNull(changeMessage);
 
         try {
 
@@ -1292,8 +1293,8 @@ private void processEvent(AbstractEventSimple event) {
      */
     public NodeData getNodeData(final NodeDataParam param, @Nullable UserDetail userDetail) {
 
-        Validate.notNull(param);
-        Validate.notNull(param.getFundVersionId());
+    	Objects.requireNonNull(param);
+    	Objects.requireNonNull(param.getFundVersionId());
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(param.getFundVersionId());
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);

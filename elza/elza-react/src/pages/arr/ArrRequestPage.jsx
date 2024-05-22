@@ -255,7 +255,7 @@ class ArrRequestPage extends ArrParentPage {
             <div className="fund-request-list-container">
                 <div className="filter">
                     <FormInput
-                        as="select"
+                        type="select"
                         className="type"
                         onChange={this.handleFilterType}
                         value={requestList.filter.type}

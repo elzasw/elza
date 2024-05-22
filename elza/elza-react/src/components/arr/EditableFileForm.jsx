@@ -97,7 +97,7 @@ class EditableFileForm extends AbstractReactComponent {
                         />
                         <Field
                             name="content"
-                            as="textarea"
+                            type="textarea"
                             component={FormInputField}
                             label={i18n('dms.file.content')}
                             disabled={submitting}

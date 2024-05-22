@@ -1,15 +1,15 @@
 /**
  * Komponenta pro import balíčků.
- *
- * @author Martin Šlapa
- * @since 22.12.2015
  */
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
+import {
+    Button as FluentButton,
+    tokens,
+} from "@fluentui/react-components";
 
-import {importPackage} from 'actions/admin/packages.jsx';
+import { importPackage } from 'actions/admin/packages.jsx';
 
 class AdminPackagesUpload extends AbstractReactComponent {
     constructor(props) {
@@ -27,16 +27,17 @@ class AdminPackagesUpload extends AbstractReactComponent {
     };
 
     handleChangeFile = () => {
-        this.setState({disabled: this.fileInput.current.files.length === 0});
+        this.setState({ disabled: this.fileInput.current.files.length === 0 });
     };
 
     render() {
+
         return (
-            <div>
+            <div style={{ padding: tokens.spacingHorizontalM, display: "flex", columnGap: tokens.spacingHorizontalS }} >
                 <FormInput onChange={this.handleChangeFile} ref={this.fileInput} name="file" type="file" />
-                <Button variant="outline-secondary" disabled={this.state.disabled} onClick={this.handleUpload}>
+                <FluentButton disabled={this.state.disabled} onClick={this.handleUpload}>
                     {i18n('admin.packages.action.import')}
-                </Button>
+                </FluentButton>
             </div>
         );
     }

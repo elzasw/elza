@@ -169,7 +169,7 @@ export default function UserSettingsModal({ onClose }: Props) {
                                                         <Field
                                                             key={'externalSystemId'}
                                                             name="externalSystemId"
-                                                            as={'select'}
+                                                            type={'select'}
                                                             component={FormInputField}
                                                             label={i18n("ap.ext-syncs.ext-system")}
                                                             disabled={submitting}

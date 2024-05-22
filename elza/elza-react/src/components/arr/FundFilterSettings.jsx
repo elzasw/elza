@@ -123,7 +123,7 @@ const renderCoordinatesFields = fields => {
             vals.push(
                 <div key={1} className="value-container">
                     <FormInput
-                        as="select"
+                        type="select"
                         defaultValue={10000}
                         value={fields[1].value}
                         onChange={e => fields[1].onChange(e.target.value)}
