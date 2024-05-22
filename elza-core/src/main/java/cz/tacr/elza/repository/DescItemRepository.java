@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
@@ -142,7 +143,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      */
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrDescItem findOpenDescItem(Integer descItemObjectId);
-
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu. (pro vícehodnotový atribut)
@@ -284,7 +284,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT count(i) FROM arr_desc_item i WHERE i.nodeId = :nodeId AND i.itemTypeId = :itemTypeId AND i.itemId != :itemId AND i.deleteChange IS NULL")
     int countByNodeIdAndItemTypeIdAndNotItemId(@Param("nodeId") Integer nodeId, @Param("itemTypeId") Integer itemTypeId, @Param("itemId") Integer itemId);
 
-
     @Query("SELECT new cz.tacr.elza.repository.vo.UsedItemTypeVO(i.itemTypeId, COUNT(i.itemId)) "
            + "FROM arr_desc_item i "
            + "JOIN i.node n "
@@ -301,4 +300,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
             + "AND (i.deleteChange IS NULL OR i.deleteChangeId > fv.lockChangeId) AND i.position = 1 "
             + "GROUP BY i.itemTypeId")
     List<UsedItemTypeVO> findUsedItemTypes(@Param("fundId") Integer fundId, @Param("fundVersionId") Integer fundVersionId);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN arr_data_structure_ref d ON i.data = d WHERE d.structuredObject = :structuredObject")
+    List<ArrDescItem> findByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 }
