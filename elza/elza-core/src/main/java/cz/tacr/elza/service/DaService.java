@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.da.controller.vo.DownloadDownloadAips;
+import cz.tacr.da.controller.vo.DownloadDownloadStatus;
+import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.connector.DaConnector;
@@ -18,11 +21,16 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class DaService {
 
     private static final Integer DA_UPDATE_PAGE_SIZE = 1000;
+
+    private static final String DIP_TYPE_PACKAGE_INFO = "package_info";
 
     @Autowired
     private DaConnector daConnector;
@@ -40,14 +48,30 @@ public class DaService {
 
         if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
             List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
-            //todo fantis update
+
+            List<String> aipCodes = updatesAips.getAipIds().stream()
+                    .map(UpdatedInfo::getAipId)
+                    .toList();
+
+            Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepository(aipCodes, digitalRepository).stream()
+                    .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
+
             for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
-                DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
-                syncQueueItem.setCode(updatedInfo.getAipId());
+                DaSyncQueueItem syncQueueItem = existingSyncQueueItemMap.get(updatedInfo.getAipId());
+
+                if (syncQueueItem == null) {
+                    syncQueueItem = new DaSyncQueueItem();
+                    syncQueueItem.setCode(updatedInfo.getAipId());
+                    syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                    syncQueueItem.setDigitalRepository(digitalRepository);
+                } else {
+                    syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+                }
+
                 syncQueueItem.setAipVersion(updatedInfo.getAipVersion());
-                syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
                 syncQueueItemList.add(syncQueueItem);
             }
+
             syncQueueItemRepository.saveAll(syncQueueItemList);
         }
 
@@ -65,12 +89,50 @@ public class DaService {
     }
 
     @Transactional
-    public Iterable<DaSyncQueueItem> getNextItems(int pageSize, DaSyncQueueItem.QueueItemState... states) {
+    public List<DaSyncQueueItem> getNextItems(int pageSize, DaSyncQueueItem.QueueItemState... states) {
         Pageable pageable = PageRequest.of(0, pageSize);
 
-        //todo fantis vracet pouze itemy, které mají stejný externí systém jako první
-        return syncQueueItemRepository.findByStates(Arrays.asList(states), pageable);
+        Iterable<DaSyncQueueItem> syncQueueItemIterable = syncQueueItemRepository.findByStates(Arrays.asList(states), pageable);
+        List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
+
+        if (syncQueueItemIterable.iterator().hasNext()) {
+            DaSyncQueueItem firstSyncQueueItem = syncQueueItemIterable.iterator().next();
+            ArrDigitalRepository digitalRepository = firstSyncQueueItem.getDigitalRepository();
+
+            for (DaSyncQueueItem syncQueueItem : syncQueueItemIterable) {
+                if (syncQueueItem.getDigitalRepository().getExternalSystemId().equals(digitalRepository.getExternalSystemId())) {
+                    syncQueueItemList.add(syncQueueItem);
+                }
+            }
+        }
+
+        return syncQueueItemList;
     }
 
 
+    public String downloadAips(ArrDigitalRepository digitalRepository, List<DaSyncQueueItem> syncQueueItemList) {
+        List<String> aipIds = syncQueueItemList.stream()
+                .map(DaSyncQueueItem::getCode)
+                .toList();
+
+        DownloadDownloadAips downloadDownloadAips = new DownloadDownloadAips();
+        downloadDownloadAips.setDipType(DIP_TYPE_PACKAGE_INFO);
+        downloadDownloadAips.setAipIds(aipIds);
+
+        return daConnector.downloadAips(digitalRepository, downloadDownloadAips);
+    }
+
+    public boolean downloadStatusFinished(ArrDigitalRepository digitalRepository, String batchId) {
+        DownloadDownloadStatus status = daConnector.downloadStatus(digitalRepository, batchId);
+        return status.getState() == RequestState.FINISHED;
+    }
+
+    public void downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
+        try {
+            byte[] aip = daConnector.downloadDownload(digitalRepository, batchId);
+        } catch (Exception e) {
+            //todo fantiš filetransfer
+        }
+        //todo fantiš uložit na disk
+    }
 }

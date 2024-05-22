@@ -2,6 +2,8 @@ package cz.tacr.elza.connector;
 
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
+import cz.tacr.da.controller.vo.DownloadDownloadAips;
+import cz.tacr.da.controller.vo.DownloadDownloadStatus;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -23,6 +25,30 @@ public class DaConnector {
     public UpdatedAips updates(ArrDigitalRepository digitalRepository, Integer pageSize, String query) {
         try {
             return getDefaultApi(digitalRepository).updates(pageSize, query);
+        } catch (ApiException e) {
+            throw new IllegalStateException("Došlo k chybě při volání DA", e);
+        }
+    }
+
+    public String downloadAips(ArrDigitalRepository digitalRepository, DownloadDownloadAips downloadDownloadAips) {
+        try {
+            return getDefaultApi(digitalRepository).downloadDownloadAips(downloadDownloadAips);
+        } catch (ApiException e) {
+            throw new IllegalStateException("Došlo k chybě při volání DA", e);
+        }
+    }
+
+    public DownloadDownloadStatus downloadStatus(ArrDigitalRepository digitalRepository, String batchId) {
+        try {
+            return getDefaultApi(digitalRepository).downloadGeStatus(batchId);
+        } catch (ApiException e) {
+            throw new IllegalStateException("Došlo k chybě při volání DA", e);
+        }
+    }
+
+    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
+        try {
+            return getDefaultApi(digitalRepository).downloadDownload(batchId);
         } catch (ApiException e) {
             throw new IllegalStateException("Došlo k chybě při volání DA", e);
         }
