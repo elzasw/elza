@@ -2,7 +2,6 @@ package cz.tacr.elza.repository;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.SORTABLE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
@@ -14,7 +13,6 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.ANALYZED; 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,59 +23,32 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
-//import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
-import org.apache.lucene.index.Term;
-//import org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.xml.QueryBuilder;
-import org.apache.lucene.search.BoostQuery;
-//import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.RamUsageEstimator;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.query.SearchResult;
-import org.hibernate.search.engine.search.sort.dsl.SearchSortFactory;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.scope.SearchScope;
 import org.hibernate.search.mapper.orm.session.SearchSession;
-//import org.hibernate.search.jpa.FullTextEntityManager;
-//import org.hibernate.search.jpa.FullTextQuery;
-//import org.hibernate.search.jpa.Search;
-//import org.hibernate.search.query.dsl.BooleanJunction;
-//import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.Area;
-import cz.tacr.elza.controller.vo.ExtensionFilterVO;
-import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder;
-import cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
@@ -99,157 +70,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     public static final String STAR = "*";
 
-    /**
-     * Factory for fulltext query parts
-     *
-     */
-    class FulltextCondFactory {
-        final SettingIndexSearch sis;
-
-        FulltextCondFactory(final SettingIndexSearch sis) {
-            this.sis = sis;
-        }
-
-        /**
-         * Return field definition
-         * 
-         * @param fields
-         * @param name
-         * @return
-         */
-        @Nullable
-        private SettingIndexSearch.Field getFieldSearchConfigByName(String name) {
-            if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
-                return null;
-            }
-            for (SettingIndexSearch.Field field : sis.getFields()) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
-            }
-            return null;
-        }
-
-        private Query parseTransQuery(String fieldName, String value) {
-//            try {
-//                QueryParser queryParser = new AnalyzingQueryParser(fieldName, getAnalyzer());
-//                queryParser.setAllowLeadingWildcard(true);
-//                return queryParser.parse(value);
-//            } catch (ParseException e) {
-//                return new WildcardQuery(new Term(fieldName, value));
-//            }
-            return null;
-        }
-
-//        private void addWildcardQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value,
-//                                      boolean trans, boolean exact, boolean wildcard) {
-//            float boost = 1.0f;
-//            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(fieldName);
-//            if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
-//                boost = fieldSearchConfig.getBoost();
-//            }
-//            String wildCardValue = value;
-//
-//            if (wildcard) {
-//                wildCardValue = STAR + value + STAR;
-//            }
-//
-//            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, wildCardValue)),
-//                    boost));
-//            if (trans) {
-//                query.should(new BoostQuery(parseTransQuery(DATA + SEPARATOR + fieldName + SEPARATOR + TRANS,
-//                        wildCardValue), boost));
-//            }
-//            if (exact) {
-//                addExactQuery(query, fieldName, value, DATA + SEPARATOR);
-//            }
-//        }
-
-        /**
-         * 
-         * @param query
-         * @param fieldName
-         *            Final field name
-         * @param value
-         */
-//        private void addExactQuery(BooleanJunction<BooleanJunction> query,
-//                                   String fieldName, String value, String fieldPrefix) {
-//            Float boost = null;
-//            Float boostTrans = null;
-//
-//            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(fieldName);
-//            if (fieldSearchConfig != null) {
-//                boost = fieldSearchConfig.getBoostExact();
-//                boostTrans = fieldSearchConfig.getBoostTransExact();
-//            }
-//
-//            if (boostTrans != null) {
-//                String fldName = (fieldPrefix != null) ? (fieldPrefix + fieldName + SEPARATOR + TRANS)
-//                        : fieldName + SEPARATOR + TRANS;
-//
-//                String transLitValue = removeDiacritic(value);
-//                query.should(new BoostQuery(new WildcardQuery(new Term(fldName, transLitValue)),
-//                        boostTrans));
-//            }
-//
-//            if (boost != null) {
-//                String fldName = (fieldPrefix != null) ? (fieldPrefix + fieldName) : fieldName;
-//                query.should(new BoostQuery(new WildcardQuery(new Term(fldName, value)), boost));
-//            }
-//        }
-
-        /**
-         * Add exact query for int value
-         * 
-         * @param transQuery
-         * @param fieldName
-         * @param accessPointId
-         */
-//        public void addExactQuery(BooleanJunction<BooleanJunction> transQuery, String fieldName,
-//                                  int accessPointId) {
-//            Query q = NumericRangeQuery.newIntRange(fieldName,
-//                                                    accessPointId, accessPointId, true, true);
-//
-//            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(fieldName);
-//            if (fieldSearchConfig != null) {
-//                Float boost = fieldSearchConfig.getBoostExact();
-//                if (boost != null) {
-//                    q = new BoostQuery(q, boost);
-//                }
-//            }
-//            transQuery.should(q);
-//        }
-    }
-
-//    private FullTextEntityManager getFullTextEntityManager() {
-//        return Search.getFullTextEntityManager(entityManager);
-//    }
-
-    /**
-     * Vytvoří query builder pro danou třídu.
-     *
-     * @param entityClass třída
-     *
-     * @return query builder
-     */
-//    private QueryBuilder createQueryBuilder(final Class<?> entityClass) {
-//        return getFullTextEntityManager().getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
-//    }
-
-    /**
-     * Vytvoří hibernate jpa query z lucene query.
-     *
-     * @param query lucene query
-     * @return hibernate jpa query
-     */
-//    private FullTextQuery createFullTextQuery(Query query, final Class<?> entityClass) {
-//        return getFullTextEntityManager().createFullTextQuery(query, entityClass);
-//    }
-
-//    private Analyzer getAnalyzer() {
-//        return getFullTextEntityManager().getSearchFactory().getAnalyzer("cz");
-//    }
-
     @Override
     public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
                                                                               SearchFilterVO searchFilter,
@@ -260,7 +80,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                                                               Integer from,
                                                                               Integer count,
                                                                               StaticDataProvider sdp) {
-
     	SearchSession session = Search.session(entityManager);
         SearchPredicateFactory factory = session.scope(ApCachedAccessPoint.class).predicate();
         SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state, revState);
@@ -279,22 +98,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 			Long hitCount = result.total().hitCount();
 
 		return new QueryResults<ApCachedAccessPoint>(hitCount.intValue(), result.hits());
-
-//    	  QueryBuilder queryBuilder = createQueryBuilder(ApCachedAccessPoint.class);
-//        Query query = buildQueryFromParams(queryBuilder, search, searchFilter, apTypeIdTree, scopeIds, state);
-//        SortField[] sortFields = new SortField[2];
-//        sortFields[0] = new SortField(null, SortField.Type.SCORE);
-//        sortFields[1] = new SortField(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, SortField.Type.STRING);
-//
-//        Sort sort = new Sort(sortFields);
-//
-//        FullTextQuery fullTextQuery = createFullTextQuery(query, ApCachedAccessPoint.class);
-//        fullTextQuery.setFirstResult(from);
-//        fullTextQuery.setMaxResults(count);
-//        fullTextQuery.setSort(sort);
-//
-//        // todo fetch ap_access_points
-//        return new QueryResults<ApCachedAccessPoint>(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
     }
 
     private SearchPredicate buildQueryFromParams(SearchPredicateFactory factory, 
@@ -330,16 +133,20 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		}
 
 		if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
+			BooleanPredicateClausesStep<?> aeTypeBool = factory.bool();
 			for (Integer typeId : apTypeIdTree) {
-				bool.should(factory.match().field(AP_TYPE_ID).matching(typeId.toString()));
+				aeTypeBool.should(factory.match().field(AP_TYPE_ID).matching(typeId.toString()));
 			}
+			bool.must(aeTypeBool);
 			empty = false;
 		}
 
 		if (CollectionUtils.isNotEmpty(scopeIds)) {
+			BooleanPredicateClausesStep<?> scopeBool = factory.bool();
 			for (Integer scope : scopeIds) {
-				bool.should(factory.match().field(SCOPE_ID).matching(scope.toString()));
+				scopeBool.should(factory.match().field(SCOPE_ID).matching(scope.toString()));
 			}
+			bool.must(scopeBool);
 			empty = false;
 		}
 
@@ -358,83 +165,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         return bool.toPredicate();
     }
-
-//    private Query buildQueryFromParams(QueryBuilder queryBuilder,
-//                                       String search,
-//                                       SearchFilterVO searchFilter,
-//                                       Collection<Integer> apTypeIdTree,
-//                                       Collection<Integer> scopeIds,
-//                                       ApState.StateApproval state) {
-//        BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
-//        boolean empty = true;
-//
-//        if (state != null) {
-//            BooleanJunction<BooleanJunction> stateQuery = queryBuilder.bool();
-//            stateQuery.should(new WildcardQuery(new Term(STATE, state.name().toLowerCase())));
-//            bool.must(stateQuery.createQuery());
-//            empty = false;
-//        }
-//
-//        if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
-//            BooleanJunction<BooleanJunction> aeTypeQuery = queryBuilder.bool();
-//            for (Integer apTypeId : apTypeIdTree) {
-//                aeTypeQuery.should(new WildcardQuery(new Term(AP_TYPE_ID, apTypeId.toString().toLowerCase())));
-//            }
-//            bool.must(aeTypeQuery.createQuery());
-//            empty = false;
-//        }
-//
-//        if (CollectionUtils.isNotEmpty(scopeIds)) {
-//            BooleanJunction<BooleanJunction> scopeQuery = queryBuilder.bool();
-//            for (Integer scopeId : scopeIds) {
-//                scopeQuery.should(new WildcardQuery(new Term(SCOPE_ID, scopeId.toString().toLowerCase())));
-//            }
-//            bool.must(scopeQuery.createQuery());
-//            empty = false;
-//        }
-//
-//        FulltextCondFactory fcf = new FulltextCondFactory(getElzaSearchConfig());
-//
-//        if (searchFilter != null) {
-//            if (StringUtils.isNotEmpty(searchFilter.getCode())) {
-//                Integer apId = Integer.parseInt(searchFilter.getCode());
-//                NumericRangeQuery<Integer> apIdQuery = NumericRangeQuery
-//                        .newIntRange(ApCachedAccessPoint.FIELD_ACCESSPOINT_ID,
-//                                     apId, apId, true, true);
-//                bool.must(apIdQuery);
-//                empty = false;
-//            }
-//
-//            if (StringUtils.isNotEmpty(searchFilter.getUser())) {
-//                bool.must(new WildcardQuery(new Term(DATA + SEPARATOR + USERNAME, STAR + searchFilter.getUser().toLowerCase() + STAR)));
-//                empty = false;
-//            }
-//
-//            if (searchFilter.getArea() != Area.ENTITY_CODE) {
-//                // prepare fulltext query
-//                Query q = process(queryBuilder, searchFilter, fcf);
-//                if (q != null) {
-//                    bool.must(q);
-//                    empty = false;
-//                }
-//            }
-//
-//        } else {
-//            // prepare fulltext query
-//            if (StringUtils.isNotEmpty(search)) {
-//                List<String> keyWords = getKeyWordsFromSearch(search);
-//                for (String keyWord : keyWords) {
-//                    bool.must(processIndexCondDef(queryBuilder, keyWord, null, fcf));
-//                    empty = false;
-//                }
-//            }
-//        }
-//
-//        if (empty) {
-//            return queryBuilder.all().createQuery();
-//        }
-//        return bool.createQuery();
-//    }
 
     /**
      * Return prepared query
@@ -692,7 +422,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         return bool.toPredicate();
 	}
-    
+
     private SearchPredicate processIndexCondDef(SearchPredicateFactory factory, String value, String partTypeCode) {
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
@@ -756,16 +486,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		step.should(factory.wildcard().field(addPrefix(fieldName) + ANALYZED).boost(boostTransExact).matching(value).toPredicate());
     	}
     }
-
-//    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value) {
-//    	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
-//    	if (sisField != null) { 
-//    		Float boostExact = sisField.getBoostExact();
-//    		if (boostExact != null) {
-//    			step.should(factory.match().field(fieldName).boost(boostExact).matching(value).toPredicate());
-//    		}
-//    	}
-//    }
 
     private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value, boolean prefix) {
     	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);

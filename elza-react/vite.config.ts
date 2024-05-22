@@ -29,6 +29,7 @@ export default ({ mode }) => {
         '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
       }
     },
+    define: {'process.env': process.env},
     plugins: [react()],
     build: {
       sourcemap: true,

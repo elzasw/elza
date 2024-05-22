@@ -51,8 +51,17 @@ public abstract class ArrItemVO {
      */
     private Boolean readOnly;
 
-    public ArrItemVO() {
+    /**
+     * Id nadřazeného (rodič) uzlu
+     */
+    private Integer fromNodeId;
 
+    /**
+     * Pokud je dědičnost potlačena == true
+     */
+    private Boolean inhibited;
+
+    public ArrItemVO() {
     }
 
     public ArrItemVO(ArrItem item) {
@@ -121,7 +130,23 @@ public abstract class ArrItemVO {
         this.readOnly = readOnly;
     }
 
-    /**
+    public Integer getFromNodeId() {
+		return fromNodeId;
+	}
+
+	public void setFromNodeId(Integer fromNodeId) {
+		this.fromNodeId = fromNodeId;
+	}
+
+	public Boolean getInhibited() {
+		return inhibited;
+	}
+
+	public void setInhibited(Boolean inhibited) {
+		this.inhibited = inhibited;
+	}
+
+	/**
      * Fill correspoding ArrDescItem with values from this object
      *
      * @param descItem

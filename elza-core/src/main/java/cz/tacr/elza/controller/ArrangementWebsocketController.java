@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,11 +28,13 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
@@ -55,9 +58,9 @@ import jakarta.transaction.Transactional;
 @Controller
 @WebSocketAwareController
 public class ArrangementWebsocketController {
+
 	@Autowired
 	ArrangementFormService arrangementFormService;
-
     @Autowired
     ArrangementService arrangementService;
     @Autowired
@@ -82,10 +85,10 @@ public class ArrangementWebsocketController {
 	        @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
 	        final StompHeaderAccessor requestHeaders) {
 
-		Validate.notNull(fundVersionId);
-		Validate.notNull(nodeId);
-		Validate.notNull(nodeVersion);
-		Validate.notNull(descItemVO);
+		Objects.requireNonNull(fundVersionId);
+		Objects.requireNonNull(nodeId);
+		Objects.requireNonNull(nodeVersion);
+		Objects.requireNonNull(descItemVO);
 
         // authorize request as logged used
 		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
@@ -106,9 +109,9 @@ public class ArrangementWebsocketController {
                                 @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
                                 final StompHeaderAccessor requestHeaders) {
         Validate.notEmpty(changeItems);
-        Validate.notNull(nodeId);
-        Validate.notNull(nodeVersion);
-        Validate.notNull(fundVersionId);
+        Objects.requireNonNull(nodeId);
+        Objects.requireNonNull(nodeVersion);
+        Objects.requireNonNull(fundVersionId);
 
         List<ArrItemVO> createItems = new ArrayList<>();
         List<ArrItemVO> updateItems = new ArrayList<>();
@@ -224,5 +227,42 @@ public class ArrangementWebsocketController {
 
         // odeslání dat zpět
 		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
+    }
+
+    /**
+     * Potlačení dědictví item.
+     * 
+     * @param arrInhibitedItem obsahuje nodeId & itemId
+     * @param requestHeaders
+     */
+    @Transactional
+    @MessageMapping("/arrangement/descItems/inhibit")
+    public void inhibitItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
+        Objects.requireNonNull(arrInhibitedItem);
+        Objects.requireNonNull(arrInhibitedItem.getNodeId());
+        Objects.requireNonNull(arrInhibitedItem.getItemId());
+
+        // pro kontrolu oprávnění ve servisu
+        ArrNode node = arrangementService.getNode(arrInhibitedItem.getNodeId());
+
+        Integer inhibitItemId = arrangementService.inhibitItem(node, arrInhibitedItem.getItemId());
+		webScoketStompService.sendReceiptAfterCommit(inhibitItemId, requestHeaders);
+    }
+
+    /**
+     * Povolení dědictví item.
+     * 
+     * @param inhibitItemId
+     * @param requestHeaders
+     */
+    @Transactional
+    @MessageMapping("/arrangement/descItems/allow")
+    public void allowItem(@Payload final Integer inhibitItemId, final StompHeaderAccessor requestHeaders) {
+        Objects.requireNonNull(inhibitItemId);
+
+        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(inhibitItemId); 
+
+        Integer resultItemId = arrangementService.allowItem(inhibitedItem.getNode(), inhibitedItem);
+		webScoketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);
     }
 }

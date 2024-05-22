@@ -78,7 +78,7 @@ class FundSettingsForm extends AbstractReactComponent {
                             <Field
                                 component={FormInputField}
                                 name={'strictMode.value'}
-                                as="select"
+                                type="select"
                                 placeholder="select"
                             >
                                 <option value="">{i18n('arr.fund.settings.rules.strictMode.default')}</option>

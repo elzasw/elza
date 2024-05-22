@@ -110,7 +110,7 @@ class IssueListForm extends AbstractReactComponent {
                 />
                 <Field
                     component={FormInputField}
-                    as="select"
+                    type="select"
                     name={'open'}
                     {...customProps}
                     label={i18n('issueList.open')}

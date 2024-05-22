@@ -145,10 +145,11 @@ class FundOutputFunctions extends AbstractReactComponent {
         return (
             <div className="functions-list-container">
                 <FormInput
-                    as="select"
+                    type="select"
                     onChange={e => this.handleStateSearch(e.target.value)}
                     value={fundOutputFunctions.filterRecommended}
                     disabled={!fundOutputFunctions.fetched}
+                    className="form-select"
                 >
                     <option value={true} key="recommended-filter">
                         {i18n('arr.output.functions.recommended')}

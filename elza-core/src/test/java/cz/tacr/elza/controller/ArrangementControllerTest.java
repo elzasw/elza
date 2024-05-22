@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,20 +34,28 @@ import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.ArrangementWebsocketControllerTest.ReceiptStatus;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
@@ -63,6 +74,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -70,7 +82,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutput;
@@ -105,7 +116,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final int MAX_SIZE = 999;
 
     @Test
-    public void arrangementTest() throws IOException, InterruptedException, ApiException {
+    public void arrangementTest() throws IOException, InterruptedException, ApiException, ExecutionException, IllegalAccessException {
 
         // vytvoření
         Fund fund = createdFund();
@@ -130,12 +141,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // atributy
         helperTestService.waitForWorkers();
-        attributeValues(fundVersion);
+        operationsDescItems(fundVersion);
 
         // validace
         helperTestService.waitForWorkers();
         validations(fundVersion, nodes);
-
+        
         // všechny formuláře / stromy / ...
         helperTestService.waitForWorkers();
         forms(fundVersion);
@@ -149,7 +160,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //smazání fondu
         helperTestService.waitForWorkers();
         deleteFund(fund);
-
     }
 
     //TODO: odkomentovat po změně importu institucí @Test
@@ -203,7 +213,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
-
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
@@ -211,7 +220,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         for (int j = 0; j < count; j++) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null, null);
-            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
+            createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
         }
 
         return fund;
@@ -234,18 +243,18 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // atributy
         helperTestService.waitForWorkers();
-        attributeValues(fundVersion);
+        operationsDescItems(fundVersion);
 
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 32);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 33);
         assertFalse(changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         assertNotNull(changesByNode);
         assertNotNull(changesByNode.getChanges());
-        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 8);
+        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 9);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
@@ -266,7 +275,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 32);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -278,8 +287,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         final Integer secondChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 2).getChangeId();
         helperTestService.waitForWorkers();
         revertChanges(fundVersion.getId(), lastChangeId, secondChangeId, null);
-
-
     }
 
     /**
@@ -446,7 +453,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         outputSettings.setOddPageOffsetX(42);
         outputSettings.setOddPageOffsetY(42);
 
-
         super.setOutputSettings(outputDetail.getId(), outputSettings);
         ArrOutput one = this.helperTestService.getOutputRepository()
                 .findById(outputDetail.getId())
@@ -478,15 +484,19 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Zavolání metod pro formuláře atd...
      *
      * @param fundVersion verze archivní pomůcky
+     * @throws ExecutionException 
+     * @throws InterruptedException 
+     * @throws IllegalAccessException 
      */
-    private void forms(final ArrFundVersionVO fundVersion) {
+    private void forms(final ArrFundVersionVO fundVersion) throws InterruptedException, ExecutionException, IllegalAccessException {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
-
+        Integer firstNodeId = nodes.get(1).getId();
+        Integer secondNodeId = nodes.get(2).getId();
 
         ArrangementController.FaTreeNodesParam inputFa = new ArrangementController.FaTreeNodesParam();
         inputFa.setVersionId(fundVersion.getId());
@@ -499,15 +509,45 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ndp.setFundVersionId(fundVersion.getId());
         ndp.setParents(true);
 
-        Collection<TreeNodeVO> nodeParents = getNodeData(ndp).getParents();
+        NodeData nodeData = getNodeData(ndp);
+        Collection<TreeNodeVO> nodeParents = nodeData.getParents();
         assertNotNull(nodeParents);
 
-        ArrangementController.DescFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(),
-                fundVersion.getId());
+        ArrangementController.DescFormDataNewVO nodeFormData = getNodeFormData(rootNode.getId(), fundVersion.getId());
         assertNotNull(nodeFormData.getParent());
 
-        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(fundVersion.getId(), rootNode.getId());
-        assertTrue(nodeFormsData.getForms().size() > 0);
+        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(fundVersion.getId(), rootNode.getId(), firstNodeId, secondNodeId);
+        assertTrue(nodeFormsData.getForms().size() == nodes.size());
+
+        // kontrola zděděných descItem v nodes.get(1)
+        ArrItemVO inheritedItem = findInheritedItem(nodeFormsData.getForms().get(firstNodeId));
+        assertNotNull(inheritedItem);
+        assertTrue(inheritedItem.getFromNodeId() == rootNode.getId());
+
+        // kontrola zděděných descItem v nodes.get(2)
+        inheritedItem = findInheritedItem(nodeFormsData.getForms().get(secondNodeId));
+        assertNotNull(inheritedItem);
+        assertTrue(inheritedItem.getFromNodeId() == rootNode.getId());
+
+        // zákaz dědění na úrovni nodes.get(2)
+        ArrInhibitedItemVO arrInhibitedItem = new ArrInhibitedItemVO(); 
+        arrInhibitedItem.setNodeId(secondNodeId);
+        arrInhibitedItem.setItemId(inheritedItem.getId());
+
+    	final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
+        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
+        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
+        session.setAutoReceipt(true);
+        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+
+        Receiptable receiptable = session.send(ArrangementWebsocketControllerTest.INHIBIT_DESC_ITEM, arrInhibitedItem);
+        ReceiptStatus status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        // zděděný ArrDescItem nyní chybí
+        nodeFormData = getNodeFormData(secondNodeId, fundVersion.getId());
+        inheritedItem = findInheritedItem(nodeFormData);
+        assertNull(inheritedItem);
 
         nodeFormsData = getNodeWithAroundFormsData(fundVersion.getId(), nodes.get(1).getId(), 5);
         assertTrue(nodeFormsData.getForms().size() > 0);
@@ -526,6 +566,21 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     /**
+     * Nalezení zděděného ArrItemVO
+     * 
+     * @param nodeFormData
+     * @return
+     */
+    private ArrItemVO findInheritedItem(ArrangementController.DescFormDataNewVO nodeFormData) {
+        for (ArrItemVO item : nodeFormData.getDescItems()) {
+        	if (item.getFromNodeId() != null) {
+        		return item;
+        	}
+        }
+        return null;
+    }
+
+    /**
      * Zavolání metod pro zjištění validací.
      *
      * @param fundVersion verze archivní pomůcky
@@ -537,29 +592,31 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Operace s atributy.
+     * Operace s descItems (create, update, delete).
      *
      * @param fundVersion verze archivní pomůcky
      */
-    private void attributeValues(final ArrFundVersionVO fundVersion) throws IOException, InterruptedException {
+    private void operationsDescItems(final ArrFundVersionVO fundVersion) throws IOException, InterruptedException {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
+        RulDescItemSpecExtVO spec;
 
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
         ArrNodeVO rootNode = nodes.get(0);
+
+        List<ApAccessPointVO> accessPoints = findRecord(null, null, null, null, null);
+        ApAccessPointVO accessPoint = accessPoints.get(0);
 
         // vytvoření hodnoty
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode,
-                type);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
 
-        assertNotNull(((ArrItemTextVO) descItem).getValue()
-                .equals(((ArrItemTextVO) descItemCreated).getValue()));
+        assertNotNull(((ArrItemTextVO) descItem).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
         assertNotNull(descItemCreated.getPosition());
         assertNotNull(descItemCreated.getDescItemObjectId());
 
@@ -573,8 +630,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
         assertTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
         assertTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
-        assertTrue(((ArrItemTextVO) descItemUpdated).getValue()
-                .equals(((ArrItemTextVO) descItemCreated).getValue()));
+        assertTrue(((ArrItemTextVO) descItemUpdated).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
 
         // odstranění hodnoty
         helperTestService.waitForWorkers();
@@ -586,7 +642,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = setNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, null);
         rootNode = descItemResult.getParent();
 
-                // Návratová struktura nesmí být prázdná
+        // Návratová struktura nesmí být prázdná
         assertNotNull(descItemResult);
         // Hodnota atributu nesmí být prázdná
         assertNotNull(descItemResult.getItem());
@@ -607,8 +663,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Hodnota atributu musí být prázdná
         Assert.assertNull(descItemResult.getItem());
 
-        helperTestService.waitForWorkers();
         // vytvoření další hodnoty
+        helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_SCALE");
         descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
@@ -616,12 +672,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemCreated = descItemResult.getItem();
 
         // fulltext
-
         fulltextTest(fundVersion);
 
         helperTestService.waitForWorkers();
-        descItemResult = deleteDescItemsByType(fundVersion.getId(),
-                rootNode.getId(), rootNode.getVersion(), type.getId());
+        descItemResult = deleteDescItemsByType(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId());
         rootNode = descItemResult.getParent();
 
         ArrNodeVO node = nodes.get(1);
@@ -635,7 +689,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření další hodnoty - vícenásobné
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_OTHER_ID");
-        RulDescItemSpecExtVO spec = findDescItemSpecByCode("SRD_OTHERID_CJ", type);
+        spec = findDescItemSpecByCode("SRD_OTHERID_CJ", type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -728,6 +782,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             assertTrue(recordsList.get(5).get("NAME").equals("kk"));
             assertTrue(recordsList.get(5).get("COUNT").equals("11"));
         }
+
+        // vytváření hodnoty pro dědictví
+        helperTestService.waitForWorkers();
+        type = findDescItemTypeByCode("SRD_ENTITY_ROLE");
+        spec = findDescItemSpecByCode("SRD_ENTITY_ROLE_1", type);
+        descItem = buildDescItem(type.getCode(), spec.getCode(), accessPoint, null, null, null);
+        descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
     }
 
     /**
@@ -933,13 +994,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Musí existovat pouze root node
         assertTrue(treeData.getNodes().size() == 1);
 
-        TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
+        TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
+        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
 
         // přidání prvního levelu pod root
         helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                fundVersion, rootNode, rootNode, "Série");
+        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD, 
+        		fundVersion, rootNode, rootNode, "Série");
 
         // rodič nového uzlu musí být root
         assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
@@ -1098,7 +1159,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 0;
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
-            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node, typeVo);
+            createDescItem(descItem, fundVersion, node, typeVo);
             index++;
         }
 
@@ -1110,7 +1171,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Thread.sleep(1000);
         helperTestService.waitForWorkers();
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
-
 
         //nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
@@ -1169,11 +1229,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         String value = "value";
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null, null);
-            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node,
-                    typeVo);
+            createDescItem(descItem, fundVersion, node, typeVo);
             index = -index;
         }
-
 
         List<UniqueValue> resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
         assertTrue(resultList.size() < nodes.size());
@@ -1188,8 +1246,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         resultValues = resultList.stream().map(UniqueValue::getValue).collect(Collectors.toList());
         assertTrue(resultValues.contains("value1"));
         assertTrue(!resultValues.contains("value-1"));
-
-
     }
 
     /**
@@ -1209,8 +1265,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_TITLE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
-                type);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
         ArrItemVO descItemCreated = descItemResult.getItem();
 
         assertNotNull(((ArrItemTextVO) descItem).getValue()
@@ -1229,7 +1284,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrItemVO result = items.get(0);
         ArrItemTextVO textVo = (ArrItemTextVO) result;
         assertTrue(textVo.getValue().equals("value"));
-
     }
 
     @Test
@@ -1314,7 +1368,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         deleteRefTemplateMapType(temp.getId(), mapType.getId());
 
         deleteRefTemplate(refTemplateVO.getId());
-
     }
 
     @Test
