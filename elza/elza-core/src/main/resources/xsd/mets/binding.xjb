@@ -7,9 +7,9 @@
   xmlns:namespace="http://jaxb2-commons.dev.java.net/basic/namespace-prefix"
   xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
 		http://jaxb2-commons.dev.java.net/basic/namespace-prefix 
-		https://raw.githubusercontent.com/Siggen/jaxb2-namespace-prefix/master/src/main/resources/prefix-namespace-schema.xsd"
+		https://raw.githubusercontent.com/Siggen/jaxb2-namespace-prefix/master/src/main/resources/prefix-namespace-schema.xsd"  
   jaxb:extensionBindingPrefixes="xjc"
-  jaxb:version="3.0">
+  version="3.0">
 	<jaxb:bindings schemaLocation="mets.xsd">	
 		<jaxb:bindings node="//*[@ref='xlink:label']">
 			<jaxb:property name="label2"/>
