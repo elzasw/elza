@@ -3155,9 +3155,9 @@ public class AccessPointService {
         		if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
         			for (ApIndex index : part.getIndices()) {
         				if (index.getIndexType().equals(DISPLAY_NAME)) {
-        					return index.getValue();
-        }
-    }
+        					return index.getIndexValue();
+        				}
+        			}
         		}
         	}
         }
