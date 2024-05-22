@@ -1,0 +1,30 @@
+<jaxb:bindings 
+  xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:namespace="http://jaxb2-commons.dev.java.net/basic/namespace-prefix"
+  xsi:schemaLocation="https://jakarta.ee/xml/ns/jaxb https://jakarta.ee/xml/ns/jaxb/bindingschema_3_0.xsd
+		http://jaxb2-commons.dev.java.net/basic/namespace-prefix 
+		https://raw.githubusercontent.com/Siggen/jaxb2-namespace-prefix/master/src/main/resources/prefix-namespace-schema.xsd"
+  jaxb:extensionBindingPrefixes="xjc"
+  jaxb:version="3.0">
+	<jaxb:bindings schemaLocation="mets.xsd">	
+		<jaxb:bindings node="//*[@ref='xlink:label']">
+			<jaxb:property name="label2"/>
+		</jaxb:bindings>
+		<jaxb:bindings>
+		    <namespace:prefix name="mets"/>
+		</jaxb:bindings>
+	</jaxb:bindings>
+	<jaxb:bindings schemaLocation="http://www.loc.gov/standards/xlink/xlink.xsd">
+		<jaxb:bindings node="//xs:attribute[@name='href']">
+			<jaxb:property>
+	  			<jaxb:baseType>
+					<xjc:javaType name="java.lang.String" adapter="com.lightcomp.kads.common.AnyUriAdapter" />
+			 	</jaxb:baseType>
+			 </jaxb:property>
+		</jaxb:bindings>
+	</jaxb:bindings>
+</jaxb:bindings>

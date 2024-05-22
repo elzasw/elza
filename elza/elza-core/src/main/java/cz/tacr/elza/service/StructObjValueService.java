@@ -45,6 +45,7 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -64,6 +65,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -107,6 +109,7 @@ public class StructObjValueService {
     private final ArrangementInternalService arrangementInternalService;
     private final StaticDataService staticDataService;
     private final DataService dataService;
+    private final DescItemRepository descItemRepository;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -136,7 +139,8 @@ public class StructObjValueService {
             final ArrangementInternalService arrangementInternalService,
             final EntityManager em,
             final StaticDataService staticDataService,
-            final DataService dataService) {
+            final DataService dataService,
+            final DescItemRepository descItemRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structObjRepository = structureDataRepository;
@@ -150,6 +154,7 @@ public class StructObjValueService {
         this.em = em;
         this.staticDataService = staticDataService;
         this.dataService = dataService;
+        this.descItemRepository = descItemRepository;
     }
 
     private ArrSobjVrequest addToValidateInternal(final ArrStructuredObject sobj) {
@@ -165,7 +170,7 @@ public class StructObjValueService {
      *            hodnota
      */
     public void addToValidate(final ArrStructuredObject sobj) {
-        Validate.notNull(sobj.getStructuredObjectId());
+    	Objects.requireNonNull(sobj.getStructuredObjectId());
 
         ArrSobjVrequest sobjVRequest = addToValidateInternal(sobj);
         sobjVrequestRepository.save(sobjVRequest);
@@ -346,6 +351,9 @@ public class StructObjValueService {
                 logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId="
                         + sobj.getStructuredObjectId(), e);
             }
+            // vyhledávání souvisejícího seznamu ArrDescItem + ArrCacheNode
+    		List<ArrDescItem> updateDescItems = descItemRepository.findByStructuredObject(sobj);
+    		arrangementInternalService.reindexArrDescItemAndArrCacheNode(updateDescItems);
         }
 
         // drop processed items
@@ -853,7 +861,7 @@ public class StructObjValueService {
         private final Map<String, Object> items = new HashMap<>();
 
         public void addItem(String itemTypeCode, Object value) {
-            Validate.notNull(itemTypeCode);
+        	Objects.requireNonNull(itemTypeCode);
             Validate.notBlank(itemTypeCode);
             items.put(itemTypeCode, value);
         }
