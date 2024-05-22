@@ -373,6 +373,7 @@ public class ApBuilder {
             if (revPart.getOriginalPartId() != null) {
                 part = partIdMap.get(revPart.getOriginalPartId());
                 updatePart(part, items);
+                revPartIdMap.put(revPart.getPartId(), part);
             } else {
                 // new part
                 // is new subpart of old part
