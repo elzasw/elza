@@ -1050,8 +1050,8 @@ public class RevisionService {
         // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
 
-        // Pokud je entita schvalena je nutne overit jeji bezchybnost
-        if (newStateApproval == StateApproval.APPROVED) {
+        // Pokud je entita schvalena nebo ke schvaleni je nutne overit jeji bezchybnost
+        if (newStateApproval == StateApproval.APPROVED || newStateApproval == StateApproval.TO_APPROVE) {
             if (accessPoint.getState() == ApStateEnum.ERROR) {
                 accessPointService.validateEntityAndFailOnError(newState);
             }
