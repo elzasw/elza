@@ -1,0 +1,2 @@
+PUBLIC "http://www.w3.org/1999/xlink" "../xlink.xsd"
+SYSTEM "http://www.loc.gov/standards/xlink/xlink.xsd" "../xlink.xsd"
