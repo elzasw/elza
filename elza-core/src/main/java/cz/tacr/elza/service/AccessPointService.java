@@ -39,6 +39,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
@@ -357,7 +358,7 @@ public class AccessPointService {
      */
     public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
-        if (!StringUtils.isNumeric(id)) {
+        if (UuidUtils.isUUID(id)) {
             accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
         } else {
             accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
@@ -380,7 +381,7 @@ public class AccessPointService {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
-        if (!StringUtils.isNumeric(ids.get(0))) {
+        if (UuidUtils.isUUID(ids.get(0))) {
             accessPoints = apAccessPointRepository.findApAccessPointsByUuids(ids);
         } else {
             List<Integer> integerIds = ids.stream().map(p -> Integer.valueOf(p)).collect(Collectors.toList());
@@ -406,9 +407,8 @@ public class AccessPointService {
         }
         List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
-            List<Integer> itemIds = arrRecordItems.stream().map(ArrItem::getItemId)
-                    .collect(Collectors.toList());
-            
+            List<Integer> itemIds = arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors.toList());
+
             logger.error("Přístupový bod je připojen k jednotce popisu a nelze ho smazat, accessPointId: {}, počet výskytů: {}",
                          accessPoint.getAccessPointId(), itemIds.size());
 
