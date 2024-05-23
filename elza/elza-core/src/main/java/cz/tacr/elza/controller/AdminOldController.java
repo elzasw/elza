@@ -118,8 +118,7 @@ public class AdminOldController {
     @Transactional
     public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
-        ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(externalSystemVO);
-        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope, digitalRepository);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         // TODO: zvážit vytvoření specializovaných  metod pro konkrétní typy external system
         externalSystem = externalSystemService.create(externalSystem);
         return factoryVo.createExtSystem(externalSystem);
@@ -148,8 +147,7 @@ public class AdminOldController {
     @Transactional
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
-        ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(externalSystemVO);
-        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope, digitalRepository);
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
         if (externalSystem instanceof ApExternalSystem) {
             camConnector.invalidate((ApExternalSystem) externalSystem);

@@ -22,10 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.DaAipVO;
-import cz.tacr.elza.controller.vo.DaRemoteRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.DaRemoteRepositoryVO;
 import cz.tacr.elza.domain.DaAip;
-import cz.tacr.elza.domain.DaRemoteRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1914,9 +1911,6 @@ public class ClientFactoryVO {
         if (extSystem instanceof ArrDigitizationFrontdesk) {
         	return ArrDigitizationFrontdeskVO.newInstance((ArrDigitizationFrontdesk) extSystem);
         }
-        if (extSystem instanceof DaRemoteRepository) {
-            return DaRemoteRepositoryVO.newInstance((DaRemoteRepository) extSystem);
-        }
 
         throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());
     }
@@ -1934,9 +1928,6 @@ public class ClientFactoryVO {
         }
         if (extSystem instanceof ArrDigitalRepository) {
             return ArrDigitalRepositorySimpleVO.newInstance((ArrDigitalRepository) extSystem);
-        }
-        if (extSystem instanceof DaRemoteRepository) {
-            return DaRemoteRepositorySimpleVO.newInstance((DaRemoteRepository) extSystem);
         }
 
         throw new BusinessException("Unrecognized external system", BaseCode.INVALID_STATE).set("type", extSystem.getClass());

@@ -15,7 +15,6 @@ export const EXT_SYSTEM_CLASS = {
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
-    DaRemoteRepository: '.DaRemoteRepositoryVO',
 };
 
 export const EXT_SYSTEM_CLASS_LABEL = {
@@ -23,7 +22,6 @@ export const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.DaRemoteRepository]: i18n('admin.extSystem.class.DaRemoteRepositoryVO'),
 };
 
 export const AP_EXT_SYSTEM_LABEL = {
@@ -38,7 +36,6 @@ export const GIS_SYSTEM_TYPE_LABEL = {
 }
 
 export const DIGITAL_REPOSITORY_TYPE_LABEL = {
-    [DigitalRepositoryType.Fedora]: i18n('admin.extSystem.fedora'),
     [DigitalRepositoryType.Wsdl]: i18n('admin.extSystem.wsdl'),
     [DigitalRepositoryType.Filesystem]: i18n('admin.extSystem.filesystem'),
 }
@@ -49,7 +46,6 @@ const FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue'],
-    [EXT_SYSTEM_CLASS.DaRemoteRepository]: ['apiKeyId', 'apiKeyValue'],
 };
 
 const REQUIRED_FIELDS = {
@@ -58,7 +54,6 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
-    [EXT_SYSTEM_CLASS.DaRemoteRepository]: ['digitalRepositoryId', 'url', 'apiKeyId', 'apiKeyValue'],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
@@ -68,12 +63,10 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
-        ...FIELDS[EXT_SYSTEM_CLASS.DaRemoteRepository],
     ];
 
     static state = {
         defaultScopes: [],
-        defaultDigitalRepository: [],
     };
 
     static requireFields = (...names) => data =>
@@ -97,19 +90,14 @@ class ExtSystemForm extends AbstractReactComponent {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
         } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
-        } else if (classJ === EXT_SYSTEM_CLASS.DaRemoteRepository) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.DaRemoteRepository]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
 
     componentDidMount() {
         WebApi.getAllScopes().then(scopes => {
-            WebApi.getAllDigitalRepositorySystem().then(digitalRepositories => {
-                this.setState({
-                    defaultDigitalRepository: digitalRepositories,
-                    defaultScopes: scopes,
-                });
+            this.setState({
+                defaultScopes: scopes,
             });
         });
     }
@@ -119,19 +107,6 @@ class ExtSystemForm extends AbstractReactComponent {
             return <>
                 <option key={null} />
                 {Object.values(this.state.defaultScopes).map((i, index) => (
-                    <option key={index} value={i.id}>
-                        {i.name}
-                    </option>
-                ))}
-            </>
-        }
-    }
-
-    optionDigitalRepositories() {
-        if (this.state != null) {
-            return <>
-                <option key={null} />
-                {Object.values(this.state.defaultDigitalRepository).map((i, index) => (
                     <option key={index} value={i.id}>
                         {i.name}
                     </option>
@@ -260,18 +235,6 @@ class ExtSystemForm extends AbstractReactComponent {
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div />}
-                    {classJ === EXT_SYSTEM_CLASS.DaRemoteRepository && (
-                        <div>
-                            <Field
-                                name="digitalRepositoryId"
-                                type="select"
-                                component={FormInputField}
-                                label={i18n('admin.extSystem.sysDigitalRepository')}
-                            >
-                                {this.optionDigitalRepositories()}
-                            </Field>
-                        </div>
-                    )}
                     <Field
                         name="code"
                         type="text"
@@ -309,8 +272,7 @@ class ExtSystemForm extends AbstractReactComponent {
                         />
                     )}
                     {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem
-                        || classJ === EXT_SYSTEM_CLASS.GisExternalSystem
-                        || classJ === EXT_SYSTEM_CLASS.DaRemoteRepository)
+                        || classJ === EXT_SYSTEM_CLASS.GisExternalSystem)
                         && (
                             <>
                                 <Field

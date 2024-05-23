@@ -16,7 +16,6 @@ export enum GisSystemType {
 }
 
 export enum DigitalRepositoryType {
-    Fedora = "FEDORA",
     Wsdl = "WSDL",
     Filesystem = "FILESYSTEM"
 }
