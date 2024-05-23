@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.DaRemoteRepositoryVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
@@ -823,13 +822,6 @@ public class ExternalSystemService {
      public ArrDigitalRepository getDigitalRepository(Integer digiRepId) {
          return digitalRepositoryRepository.getOneCheckExist(digiRepId);
      }
-
-    public ArrDigitalRepository getDigitalRepository(SysExternalSystemVO extSystem) {
-        if (extSystem instanceof DaRemoteRepositoryVO) {
-            return getDigitalRepository(((DaRemoteRepositoryVO) extSystem).getDigitalRepositoryId());
-        }
-        return null;
-    }
 
      public List<ExtSystemProperty> findUserProperties(Integer extSystemId, Integer userId) {
          // pokud userId == null, získáme hodnoty pro všechny uživatele

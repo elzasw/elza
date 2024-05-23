@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.SysExternalSystem;
 public class ArrDigitizationFrontdeskVO extends SysExternalSystemVO {
 
     @Override
-    public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository) {
+    public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitizationFrontdesk entity = new ArrDigitizationFrontdesk();
         this.fillEntity(entity);
 

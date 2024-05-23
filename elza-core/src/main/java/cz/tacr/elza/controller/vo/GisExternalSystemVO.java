@@ -22,7 +22,7 @@ public class GisExternalSystemVO extends SysExternalSystemVO {
     }
 
     @Override
-    public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository) {
+    public SysExternalSystem createEntity(ApScope scope) {
         GisExternalSystem entity = new GisExternalSystem();
         entity.setType(type);
         this.fillEntity(entity);

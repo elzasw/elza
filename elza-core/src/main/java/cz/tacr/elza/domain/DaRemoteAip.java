@@ -31,10 +31,6 @@ public class DaRemoteAip {
     @Column(name = "institution_code", length = StringLength.LENGTH_250, nullable = false)
     private String institutionCode;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaRemoteRepository.class)
-    @JoinColumn(name = "remote_repository_id", nullable = false)
-    private DaRemoteRepository remoteRepository;
-
     public Integer getRemoteAipId() {
         return remoteAipId;
     }
@@ -75,11 +71,4 @@ public class DaRemoteAip {
         this.institutionCode = institutionCode;
     }
 
-    public DaRemoteRepository getRemoteRepository() {
-        return remoteRepository;
-    }
-
-    public void setRemoteRepository(DaRemoteRepository remoteRepository) {
-        this.remoteRepository = remoteRepository;
-    }
 }

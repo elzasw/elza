@@ -78,7 +78,7 @@ public abstract class SysExternalSystemVO extends BaseCodeVo {
      *
      * @return
      */
-    abstract public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository);
+    abstract public SysExternalSystem createEntity(ApScope scope);
 
     protected void fillEntity(SysExternalSystem entity) {
         entity.setCode(getCode());

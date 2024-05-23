@@ -374,5 +374,12 @@
                                  referencedTableName="da_aip"/>
     </changeSet>
 
+    <changeSet id="20240523173100" author="fantis">
+        <dropForeignKeyConstraint baseTableName="da_remote_aip" constraintName="fk_da_remote_aip_da_remote_repository"/>
+        <dropColumn tableName="da_remote_aip" columnName="remote_repository_id"/>
+        <dropAllForeignKeyConstraints baseTableName="da_remote_repository"/>
+        <dropTable tableName="da_remote_repository"/>
+    </changeSet>
+
 
 </databaseChangeLog>

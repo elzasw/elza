@@ -62,7 +62,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     }
 
     @Override
-    public SysExternalSystem createEntity(ApScope scope, ArrDigitalRepository digitalRepository) {
+    public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
         this.fillEntity(entity);
 

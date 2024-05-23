@@ -21,17 +21,13 @@ import {
 class AdminExtSystemDetail extends AbstractReactComponent {
     static state = {
         defaultScopes: [],
-        defaultDigitalRepository: [],
     };
 
     componentDidMount() {
         this.fetchIfNeeded();
         WebApi.getAllScopes().then(scopes => {
-            WebApi.getAllDigitalRepositorySystem().then(digitalRepositories => {
-                this.setState({
-                    defaultDigitalRepository: digitalRepositories,
-                    defaultScopes: scopes,
-                });
+            this.setState({
+                defaultScopes: scopes,
             });
         });
     }
@@ -65,16 +61,6 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             return <>
                 <h4>{i18n('admin.extSystem.sysScope')}</h4>
                 <span>{scope.name}</span>
-            </>
-        }
-    };
-
-    digitalRepositoryValue = (id) => {
-        const digitalRepository = this.state?.defaultDigitalRepository.find(e => e.id === id);
-        if (digitalRepository != null) {
-            return <>
-                <h4>{i18n('admin.extSystem.sysDigitalRepository')}</h4>
-                <span>{digitalRepository.name}</span>
             </>
         }
     };
@@ -117,14 +103,6 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <span>{GIS_SYSTEM_TYPE_LABEL[extSystem.type]}</span>
 
                             {this.scopeValue(extSystem.scope)}
-                        </div>
-                    )}
-                    {classJ === EXT_SYSTEM_CLASS.DaRemoteRepository && (
-                        <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.DaRemoteRepository]}</span>
-
-                            {this.digitalRepositoryValue(extSystem.digitalRepositoryId)}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (

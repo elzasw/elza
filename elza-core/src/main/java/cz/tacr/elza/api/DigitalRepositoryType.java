@@ -6,10 +6,6 @@ package cz.tacr.elza.api;
 public enum DigitalRepositoryType  {
 
     /**
-     * Fedora
-     */
-    FEDORA,
-    /**
      * Wsdl
      */
     WSDL,

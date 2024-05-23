@@ -133,6 +133,7 @@ public class DaService {
         } catch (Exception e) {
             //todo fantiš filetransfer
         }
+        //todo fantiš stav syncqueueitem error or import_ok
         //todo fantiš uložit na disk
     }
 }
