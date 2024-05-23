@@ -9,9 +9,12 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
+
+import java.math.BigDecimal;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
@@ -42,6 +45,7 @@ public class ArrDescItemBinder implements TypeBinder {
         createAnalyzedField(FULLTEXT_ATT);
 
         createIntegerField(INTGER_ATT);
+        createDoubleField(DECIMAL_ATT);
         createLongField(NORMALIZED_FROM_ATT);
         createLongField(NORMALIZED_TO_ATT);
 
@@ -65,6 +69,13 @@ public class ArrDescItemBinder implements TypeBinder {
     private IndexFieldReference<Integer> createIntegerField(String name) {
     	return context.indexSchemaElement()
         		.field(name, f -> f.asInteger())
+        		.multiValued()
+        		.toReference();
+    }
+
+    private IndexFieldReference<Double> createDoubleField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asDouble())
         		.multiValued()
         		.toReference();
     }

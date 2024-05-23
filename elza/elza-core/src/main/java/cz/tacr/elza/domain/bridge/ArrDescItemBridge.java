@@ -9,6 +9,7 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 
@@ -43,6 +44,7 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     		document.addValue(FULLTEXT_ATT, arrDescItem.getFulltextValue());
     	}
 		document.addValue(INTGER_ATT, arrDescItem.getValueInt());
+		document.addValue(DECIMAL_ATT, arrDescItem.getValueDouble());
 		document.addValue(NORMALIZED_FROM_ATT, arrDescItem.getNormalizedFrom());
 		document.addValue(NORMALIZED_TO_ATT, arrDescItem.getNormalizedTo());
     }
