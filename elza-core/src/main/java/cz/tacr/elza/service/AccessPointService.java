@@ -1343,41 +1343,6 @@ public class AccessPointService {
         }
     }
 
-    /**
-     * Aktualizace stavajicich propojeni
-     *
-     * @param dataRefList
-     * @param bindingItemList
-     */
-    // 11.2.2021 PPy - zakomentovano, nejasna funkce
-    /*
-    private void createBindingForRel(final List<ReferencedEntities> dataRefList, final List<ApBindingItem> bindingItemList) {
-        //TODO fantiš optimalizovat
-        for (ReferencedEntities dataRef : dataRefList) {
-            ApBindingItem apBindingItem = findBindingItemByUuid(bindingItemList, dataRef.getUuid());
-            if (apBindingItem != null && apBindingItem.getItem() != null) {
-                ArrDataRecordRef dataRecordRef = dataRef.;
-                ApBinding currentEntity = apBindingItem.getBinding();
-                ApScope scope = currentEntity.getScope();
-                ApExternalSystem apExternalSystem = currentEntity.getApExternalSystem();
-                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope,
-                                                                                                    dataRef.getValue(),
-                                                                                                    apExternalSystem);
-                if (refBinding == null) {
-                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
-                } else {
-                    dataRecordRef.setBinding(refBinding);
-
-                    ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
-                    if (bindingState != null) {
-                        dataRecordRef.setRecord(bindingState.getAccessPoint());
-                    }
-                }
-                dataRecordRefRepository.save(dataRecordRef);
-            }
-        }
-    }*/
-
     public ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
         return apBindingItem.getPart();
@@ -1431,7 +1396,7 @@ public class AccessPointService {
 
         generateSync(state, apPart);
 
-        // pokud změníme preferovanou část, musíme reindexovat
+        // při změně hodnot v preferované části musíme reindexovat
         if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
 	        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
         }
@@ -2834,6 +2799,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         ApAccessPoint apAccessPoint = saveWithLock(accessPoint);
+        // reindexace při změně preferované části
         arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
 
         return apAccessPoint;
@@ -3656,14 +3622,6 @@ public class AccessPointService {
 
         dataRepository.save(newData);
         return itemRepository.save(newItem);
-    }
-
-    private ApIndex copyIndex(ApIndex index, ApPart partTo) {
-        ApIndex indexTo = new ApIndex();
-        indexTo.setIndexType(index.getIndexType());
-        indexTo.setPart(partTo);
-        indexTo.setIndexValue(index.getIndexValue());
-        return indexRepository.save(indexTo);
     }
 
     /**
