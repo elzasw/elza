@@ -37,6 +37,9 @@ public class DescItemTypeFilter {
     /** Typ hodnoty na který se má filtr aplikovat. */
     private RulItemType descItemType;
 
+    /** **/
+    private List<Integer> itemSpecIds;
+
     /** Podmínky pro seznam hodnot. */
     private List<DescItemCondition> valuesConditions;
 
@@ -53,11 +56,13 @@ public class DescItemTypeFilter {
      * @param conditions podmínky
      */
     public DescItemTypeFilter(final RulItemType descItemType,
+    				          final List<Integer> itemSpecIds,  
             			      final List<DescItemCondition> valuesConditions,
             			      final List<DescItemCondition> specsConditions,
             			      final List<DescItemCondition> conditions) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         this.descItemType = descItemType;
+        this.itemSpecIds = itemSpecIds;
         this.valuesConditions = valuesConditions;
         this.specsConditions = specsConditions;
         this.conditions = conditions;
@@ -215,8 +220,13 @@ public class DescItemTypeFilter {
     	if (!lucenePredicates.isEmpty()) {
         	SearchPredicateFactory factory = session.scope(ArrDescItem.class).predicate();
     		BooleanPredicateClausesStep<?> bool = factory.bool();
-    		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()).toPredicate());
-    		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId).toPredicate());
+    		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()));
+    		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId));
+    		if (itemSpecIds != null) {
+    			BooleanPredicateClausesStep<?> specs = factory.bool();
+    			itemSpecIds.forEach(specId -> specs.should(factory.match().field(ArrDescItem.SPECIFICATION_ATT).matching(specId)));
+    			bool.must(specs);
+    		}
 
     		lucenePredicates.forEach(p -> bool.must(p));
 
@@ -282,9 +292,5 @@ public class DescItemTypeFilter {
         }
 
         return false;
-    }
-
-    public RulItemType getDescItemType() {
-        return descItemType;
     }
 }
