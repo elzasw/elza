@@ -223,7 +223,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(Collection<? extends ArrData> data);
 
-    @Query("SELECT i from arr_desc_item i JOIN FETCH arr_data_record_ref d ON i.data = d JOIN FETCH i.node n JOIN FETCH i.createChange cc LEFT JOIN FETCH i.deleteChange dc WHERE d.record = :record AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n JOIN FETCH i.createChange cc LEFT JOIN FETCH i.deleteChange dc JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByRecord(@Param("record") final ApAccessPoint record);
 
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")
