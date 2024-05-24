@@ -675,6 +675,10 @@ public class EntityDBDispatcher {
         ApChange apChange = procCtx.getApChange();
         Validate.notNull(apChange, "Change cannot be null");
 
+        log.debug("Creating entity, changeId: {}, bindingId: {}, uuid: {}, entityId: {}",
+                  apChange.getChangeId(), binding != null ? binding.getBindingId() : null, uuid,
+                  entity.getEnt() != null ? entity.getEnt().getValue() : null);
+
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
 
         String apTypeCode = entity.getEnt().getValue();

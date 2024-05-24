@@ -2511,4 +2511,35 @@ where ris.code = 'ZP2015_ENTITY_ROLE_11'
 				WHERE dr.data_id = d.data_id</sql>
 	</changeSet>
 
+	<changeSet id="20240524093700" author="ppy">
+	  <!-- Establish missing links from arr_data_record_ref to ap_access_point -->
+		<sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id IN
+			(SELECT p.access_point_id FROM ap_item i
+				JOIN ap_part p ON i.part_id = p.part_id
+				JOIN arr_data_record_ref d ON i.data_id = d.data_id
+				JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+				WHERE i.delete_change_id IS NULL
+					AND d.binding_id IS NOT NULL AND d.record_id IS NULL
+					AND bs.delete_change_id IS NULL)</sql>
+		<sql dbms="postgresql">INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+			SELECT row_number() OVER (ORDER BY p.access_point_id) + (SELECT coalesce(
+				(SELECT max(async_request_id) FROM arr_async_request), 0)),
+				'AP', 1,
+				p.access_point_id
+			FROM ap_item i
+				JOIN ap_part p ON i.part_id = p.part_id
+				JOIN arr_data_record_ref d ON i.data_id = d.data_id
+				JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+				WHERE i.delete_change_id IS NULL
+					AND d.binding_id IS NOT NULL AND d.record_id IS NULL
+					AND bs.delete_change_id IS NULL</sql>
+		<sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(async_request_id), 0)+20) FROM arr_async_request)
+				WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
+		<sql dbms="postgresql">UPDATE arr_data_record_ref dr
+				SET record_id = d.access_point_id
+				FROM (SELECT d.data_id, bs.access_point_id FROM arr_data_record_ref d
+						JOIN ap_binding_state bs ON d.binding_id = bs.binding_id
+						WHERE d.binding_id IS NOT NULL AND d.record_id IS NULL) AS d
+				WHERE dr.data_id = d.data_id</sql>
+	</changeSet>
 </databaseChangeLog>
