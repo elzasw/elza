@@ -24,9 +24,8 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.search.IndexerProgressMonitor;
 
 /**
+ * Main administration service
  *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 19. 1. 2016
  */
 @Component
@@ -40,9 +39,6 @@ public class AdminService {
 
     @Autowired
     private IndexerProgressMonitor indexerProgressMonitor;
-
-    @Autowired
-    private ArrangementService arrangementService;
 
     private Future<?> indexerStatus;
 
