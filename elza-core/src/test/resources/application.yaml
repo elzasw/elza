@@ -63,6 +63,7 @@ elza:
 
 logging:
   level:
-    cz.tacr.elza: DEBUG
+    cz.tacr.elza: INFO
+#    cz.tacr.elza: DEBUG
 #    Request logging
 #    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
