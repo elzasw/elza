@@ -134,6 +134,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
         // switch line break algorithm - problem with missing last row
         pdfExpConfig.setForceLineBreakPolicy(true);
+        // allow to generate smaller files
+        pdfExpConfig.setForceSvgShapes(false);
     }
     @Override
     protected void generate(OutputStream os) throws IOException {

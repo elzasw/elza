@@ -108,7 +108,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND t.itemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeItemTypeIdAndLockChangeId(ArrNode node, Integer itemTypeId, ArrChange change);
 
-
     /**
 	 * Najde otevřené atributy s daným nodem a type a načte je včetně hodnot
 	 *
@@ -224,7 +223,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(Collection<? extends ArrData> data);
 
-    @Query("Select i from arr_desc_item i join arr_data_record_ref d on i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n JOIN FETCH i.createChange cc LEFT JOIN FETCH i.deleteChange dc JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByRecord(@Param("record") final ApAccessPoint record);
 
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")

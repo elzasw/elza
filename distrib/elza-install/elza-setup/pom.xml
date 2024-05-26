@@ -36,12 +36,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>cz.tacr.elza</groupId>
-            <artifactId>rules-simple</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
     </dependencies>
 
     <profiles>
