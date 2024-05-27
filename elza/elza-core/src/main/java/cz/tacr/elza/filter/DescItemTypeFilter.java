@@ -36,6 +36,9 @@ public class DescItemTypeFilter {
     /** Typ hodnoty na který se má filtr aplikovat. */
     private RulItemType descItemType;
 
+    /** Seznam ID specifikací filtru **/
+    private List<Integer> itemSpecIds;
+
     /** Podmínky pro seznam hodnot. */
     private List<DescItemCondition> valuesConditions;
 
@@ -53,12 +56,14 @@ public class DescItemTypeFilter {
      */
     public DescItemTypeFilter(
             final RulItemType descItemType,
+            final List<Integer> itemSpecIds,  
             final List<DescItemCondition> valuesConditions,
             final List<DescItemCondition> specsConditions,
             final List<DescItemCondition> conditions) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
 
         this.descItemType = descItemType;
+        this.itemSpecIds = itemSpecIds;
         this.valuesConditions = valuesConditions;
         this.specsConditions = specsConditions;
         this.conditions = conditions;
@@ -219,6 +224,12 @@ public class DescItemTypeFilter {
             BooleanJunction<BooleanJunction> booleanJunction = queryBuilder.bool();
             booleanJunction.must(createDescItemTypeQuery(queryBuilder));
             booleanJunction.must(createFundIdQuery(queryBuilder, fundId));
+            if (itemSpecIds != null) {
+                BooleanJunction<BooleanJunction> specJunction = queryBuilder.bool();
+                itemSpecIds.forEach(specId -> 
+                	specJunction.should(queryBuilder.keyword().onField(ArrDescItem.SPECIFICATION_ATT).matching(specId).createQuery()));
+                booleanJunction.must(specJunction.createQuery());
+            }
 
             luceneQueries.forEach(q -> {
                 booleanJunction.must(q);
