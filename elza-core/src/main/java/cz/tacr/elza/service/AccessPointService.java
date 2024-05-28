@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -41,7 +42,10 @@ import org.springframework.util.MultiValueMap;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -50,6 +54,7 @@ import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
@@ -75,6 +80,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -121,6 +127,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
@@ -170,6 +177,9 @@ public class AccessPointService {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+
+    @Autowired
+    private ApCachedAccessPointRepository apCachedAccessPointRepository;
 
     @Autowired
     private ApTypeRepository apTypeRepository;
@@ -287,6 +297,9 @@ public class AccessPointService {
 
     @Autowired
     private RevisionItemService revisionItemService;
+
+    @Autowired
+    private ApFactory apFactory;
 
     @Autowired
     private EntityManager em;
@@ -1778,6 +1791,95 @@ public class AccessPointService {
         return apAccessPointRepository.findAccessPointIdByState(state);
     }
 
+    /**
+     * Vyhledávání pomocí Lucene dotazů
+     * 
+     * @param search
+     * @param searchFilter
+     * @param fund
+     * @param apTypeIds
+     * @param scopeId
+     * @param state
+     * @param revState
+     * @param from
+     * @param count
+     * @param sdp
+     * @return
+     */
+	public FilteredResultVO<ApAccessPointVO> findUseLuceneQueries(String search,
+																  SearchFilterVO searchFilter,
+																  ArrFund fund,
+																  Set<Integer> apTypeIds, 
+																  Integer scopeId, 
+																  ApState.StateApproval state, 
+																  RevStateApproval revState,
+																  Integer from, Integer count,
+																  StaticDataProvider sdp) {
+		Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
+
+		QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+				.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
+
+		List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
+		for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
+			CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
+			String name = apFactory.findAeCachedEntityName(entity);
+			String description = apFactory.getDescription(entity);
+			accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
+		}
+
+		return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
+	}
+
+	public FilteredResultVO<ApAccessPointVO> findUseCriteriaQuery(String search,
+															      SearchFilterVO searchFilter,
+															      SearchType searchTypeName,
+															      SearchType searchTypeUsername,
+			  													  ArrFund fund,
+			  													  Set<Integer> apTypeIds, 
+			  													  Integer scopeId, 
+			  													  ApState.StateApproval state, 
+			  													  RevStateApproval revState,
+			  													  Integer from, Integer count,
+			  													  StaticDataProvider sdp) {
+        final long foundRecordsCount;
+        final List<ApState> foundRecords;
+
+        if (searchFilter == null && revState == null) {        
+	        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+	        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
+	        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+
+	        foundRecordsCount = findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId, states, 
+	        														searchTypeNameFinal, searchTypeUsernameFinal);
+	        OrderBy orderBy = OrderBy.LAST_CHANGE;
+	        if (foundRecordsCount < 1000) {
+	            orderBy = OrderBy.PREF_NAME;
+	        }
+	        foundRecords = findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy, fund,
+	        											  scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+		} else {
+
+	        Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
+	        Page<ApState> page = findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
+	                                                             state, revState, from, count, sdp);
+	        foundRecords = page.getContent();
+	        foundRecordsCount = page.getTotalElements();
+		}
+
+        final List<ApAccessPoint> accessPoints = foundRecords.stream().map(ApState::getAccessPoint).collect(Collectors.toList());
+
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApIndex> descriptionMap = findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
+
+        return new FilteredResultVO<>(foundRecords, apState ->
+                apFactory.createVO(apState,
+                    apState.getAccessPoint(),
+                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null,
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
+                foundRecordsCount);
+	}
+	
     /**
      * Zvýšení čísla verze archivní entity
      * 

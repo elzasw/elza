@@ -30,14 +30,14 @@ import cz.tacr.elza.filter.condition.SelectsNothingCondition;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 13. 4. 2016
  * @update Sergey Iryupin
- * @since 20. 3. 2024
+ * @since 24. 5. 2024
  */
 public class DescItemTypeFilter {
 
     /** Typ hodnoty na který se má filtr aplikovat. */
     private RulItemType descItemType;
 
-    /** **/
+    /** Seznam ID specifikací filtru */
     private List<Integer> itemSpecIds;
 
     /** Podmínky pro seznam hodnot. */
