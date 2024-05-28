@@ -13,6 +13,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.ANALYZED; 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,11 +45,13 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
@@ -108,18 +111,15 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     											 ApState.StateApproval state,
     											 RevStateApproval revState) {
         BooleanPredicateClausesStep<?> bool = factory.bool();
-        boolean empty = true;
 
 		if (searchFilter != null) {
 			if (StringUtils.isNotEmpty(searchFilter.getUser())) {
 				bool.should(factory.wildcard().field(USERNAME).matching(STAR + searchFilter.getUser().toLowerCase() + STAR).toPredicate());
-				empty = false;
 			}
 			if (searchFilter.getArea() != Area.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);
 				if (sp != null) {
 					bool.must(sp);
-					empty = false;
 				}
 			}
 		} else {
@@ -128,7 +128,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 	        	for (String keyWord : keyWords) {
 	        		bool.must(processIndexCondDef(factory, keyWord, null));
 	        	}
-	        	empty = false;
 	        }
 		}
 
@@ -138,7 +137,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 				aeTypeBool.should(factory.match().field(AP_TYPE_ID).matching(typeId.toString()));
 			}
 			bool.must(aeTypeBool);
-			empty = false;
 		}
 
 		if (CollectionUtils.isNotEmpty(scopeIds)) {
@@ -147,20 +145,17 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 				scopeBool.should(factory.match().field(SCOPE_ID).matching(scope.toString()));
 			}
 			bool.must(scopeBool);
-			empty = false;
 		}
 
 		if (state != null) {
 			bool.must(factory.match().field(STATE).matching(state.name().toLowerCase()));
-        	empty = false;
 		}
 
 		if (revState != null) {
 			bool.must(factory.match().field(REV_STATE).matching(revState.name().toLowerCase()));
-			empty = false;
 		}
 		
-		if (empty) {
+		if (!bool.hasClause()) {
             return factory.matchAll().toPredicate();
         }
         return bool.toPredicate();
@@ -287,6 +282,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 //        }
 //    }
 
+    /**
+     * Return prepared predicate
+     * 
+     * @param factory
+     * @param searchFilterVO
+     * @return null if BooleanPredicateClausesStep has no Clause
+     */
     @Nullable
     private SearchPredicate process(SearchPredicateFactory factory, SearchFilterVO searchFilterVO) {
     	StaticDataProvider sdp = staticDataService.getData();
@@ -296,7 +298,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		area = Area.ALL_NAMES;
     	}
     	BooleanPredicateClausesStep<?> bool = factory.bool();
-    	boolean empty = true;
 
     	if (StringUtils.isNotEmpty(search)) {
     		RulPartType defaultPartType = sdp.getDefaultPartType();
@@ -329,7 +330,6 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
     		}
-    		empty = false;
     	}
     	if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
     		// TODO
@@ -338,13 +338,17 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		// TODO
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-    		// TODO
+    		ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+    		String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+    		bool.must(processValueCondDef(sdp, factory, intervalCreation.toLowerCase(), "CRE_DATE", null, "PT_CRE"));
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-    		// TODO
+            ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+            String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+    		bool.must(processValueCondDef(sdp, factory, intervalExtinction.toLowerCase(), "EXT_DATE", null, "PT_EXT"));
     	}
 
-    	if (empty) {
+    	if (!bool.hasClause()) {
     		return null;
     	}
     	return bool.toPredicate();
