@@ -39,8 +39,6 @@ public class AdminService {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-    @Autowired
-
     private MassIndexingMonitor massIndexingMonitor;
 
     private Future<?> indexerStatus;
