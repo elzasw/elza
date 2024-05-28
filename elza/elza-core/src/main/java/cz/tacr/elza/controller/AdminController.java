@@ -5,16 +5,20 @@ import java.security.Principal;
 import java.util.Collection;
 
 import jakarta.transaction.Transactional;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.WebSocketSession;
 
+import cz.tacr.elza.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.controller.vo.AdminInfo;
 import cz.tacr.elza.controller.vo.LoggedUser;
 import cz.tacr.elza.controller.vo.LoggedUsers;
@@ -32,6 +36,7 @@ import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.UserService.UserStats;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.websocket.WebSocketThreadPoolTaskExecutor;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -52,6 +57,16 @@ public class AdminController implements AdminApi {
 
     @Autowired
     private UserService userService;
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> adminCopyPermissions(@ApiParam(value = "ID of target user", required = true) @PathVariable("userId") Integer userId,
+                                                     @ApiParam(value = "", required = true) @Valid @RequestBody AdminCopyPermissionParams adminCopyPermissionParams) {
+
+        userService.copyPermissions(userId, adminCopyPermissionParams.getFromUserId());
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     @Override
     public ResponseEntity<AdminInfo> adminInfo() {

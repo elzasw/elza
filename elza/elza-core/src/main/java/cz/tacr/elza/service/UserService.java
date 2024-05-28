@@ -2266,4 +2266,39 @@ public class UserService {
 
         };
     }
+
+    /**
+     * Append/copy permissions from one user to another
+     * 
+     * @param trgUserId
+     *            Target userId
+     * @param fromUserId
+     *            Source user
+     */
+    @AuthMethod(permission = { Permission.USR_PERM, Permission.USER_CONTROL_ENTITITY })
+    public void copyPermissions(Integer trgUserId, @NotNull Integer fromUserId) {
+        UsrUser trgUser = userRepository.findOneWithDetail(trgUserId);
+        UserDetail trgUserDetail = createUserDetail(trgUser);
+        
+        UsrUser fromUser = userRepository.findOneWithDetail(fromUserId);
+        List<UsrPermission> srcPermissions = permissionRepository.getAllPermissions(fromUser);
+        
+        List<UsrPermission> addPermissions = new ArrayList<>();
+
+        // iterate fromUserDetail permissions and check if exists equivalent in trgUserDetail
+        for (UsrPermission srcPermission : srcPermissions) {
+            if (trgUserDetail.hasPermission(srcPermission)) {
+                continue;
+            }
+            UsrPermission copy = srcPermission.copy();
+            copy.setPermissionId(null);
+            copy.setUser(trgUser);
+            addPermissions.add(copy);
+        }
+        if(CollectionUtils.isNotEmpty(addPermissions)) {
+            ChangedPermissionResult result = addUserPermission(trgUser, addPermissions, true);
+            logger.info("Copied permission from userId: {} to userId: {}, count: {}", fromUserId, trgUserId,
+                     result.getNewPermissions().size());
+        }
+    }
 }
