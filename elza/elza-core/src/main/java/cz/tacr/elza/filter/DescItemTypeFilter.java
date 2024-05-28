@@ -27,10 +27,6 @@ import cz.tacr.elza.filter.condition.SelectsNothingCondition;
 /**
  * Skupina filtrů pro typ atributu.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 13. 4. 2016
- * @update Sergey Iryupin
- * @since 24. 5. 2024
  */
 public class DescItemTypeFilter {
 
@@ -57,7 +53,6 @@ public class DescItemTypeFilter {
      */
     public DescItemTypeFilter(final RulItemType descItemType,
     				          final List<Integer> itemSpecIds,  
-            final List<Integer> itemSpecIds,  
             			      final List<DescItemCondition> valuesConditions,
             			      final List<DescItemCondition> specsConditions,
             			      final List<DescItemCondition> conditions) {
@@ -212,43 +207,37 @@ public class DescItemTypeFilter {
      * @param searchSession
      * @param fundId
      * @param lucenePredicates
-     * @return
+     * @return Return null if no predicates defined
      */
     private Map<Integer, Set<Integer>> processLuceneQueries(final SearchSession session, 
     														final Integer fundId,
-															final List<SearchPredicate> lucenePredicates) {
-    	Map<Integer, Set<Integer>> nodeIdToDescItemIds = null;
-    	if (!lucenePredicates.isEmpty()) {
-        	SearchPredicateFactory factory = session.scope(ArrDescItem.class).predicate();
-    		BooleanPredicateClausesStep<?> bool = factory.bool();
-    		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()));
-    		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId));
-    		if (itemSpecIds != null) {
-    			BooleanPredicateClausesStep<?> specs = factory.bool();
-    			itemSpecIds.forEach(specId -> specs.should(factory.match().field(ArrDescItem.SPECIFICATION_ATT).matching(specId)));
-    			bool.must(specs);
-    		}
-            if (itemSpecIds != null) {
-                BooleanJunction<BooleanJunction> specJunction = queryBuilder.bool();
-                itemSpecIds.forEach(specId -> 
-                	specJunction.should(queryBuilder.keyword().onField(ArrDescItem.SPECIFICATION_ATT).matching(specId).createQuery()));
-                booleanJunction.must(specJunction.createQuery());
-            }
+			final List<SearchPredicate> lucenePredicates) {
+		if (!lucenePredicates.isEmpty()) {
+			return null;
+		}
 
-    		lucenePredicates.forEach(p -> bool.must(p));
+		SearchPredicateFactory factory = session.scope(ArrDescItem.class).predicate();
+		BooleanPredicateClausesStep<?> bool = factory.bool();
+		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()));
+		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId));
+		if (itemSpecIds != null) {
+			BooleanPredicateClausesStep<?> specs = factory.bool();
+			itemSpecIds.forEach(
+					specId -> specs.should(factory.match().field(ArrDescItem.SPECIFICATION_ATT).matching(specId)));
+			bool.must(specs);
+		}
 
-    		SearchResult<ArrDescItem> descItems = session.search(ArrDescItem.class)
-    				.where(bool.toPredicate())
-    				.fetchAll();
+		lucenePredicates.forEach(p -> bool.must(p));
 
-    		nodeIdToDescItemIds = new HashMap<>(descItems.hits().size());
-    		for (ArrDescItem descItem : descItems.hits()) {
-              Integer nodeId = descItem.getNodeId();
-              Integer descItemId = descItem.getItemId();
-              Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
-              descItemIds.add(descItemId);
-    		}
-    	}
+		SearchResult<ArrDescItem> descItems = session.search(ArrDescItem.class).where(bool.toPredicate()).fetchAll();
+
+		Map<Integer, Set<Integer>> nodeIdToDescItemIds = new HashMap<>(descItems.hits().size());
+		for (ArrDescItem descItem : descItems.hits()) {
+			Integer nodeId = descItem.getNodeId();
+			Integer descItemId = descItem.getItemId();
+			Set<Integer> descItemIds = nodeIdToDescItemIds.computeIfAbsent(nodeId, k -> new HashSet<>());
+			descItemIds.add(descItemId);
+		}
 		return nodeIdToDescItemIds;
 	}
 
