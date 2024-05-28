@@ -1,6 +1,11 @@
 package cz.tacr.elza.security;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 
@@ -279,5 +284,19 @@ public class UserPermission {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Compare two permissions
+     * 
+     * @param srcPerm
+     * @return
+     */
+    public boolean isSame(UserPermission srcPerm) {
+        if (this.permission != srcPerm.permission) {
+            return false;
+        }
+
+        return false;
     }
 }

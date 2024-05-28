@@ -26,9 +26,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 
 /**
+ * Main administration service
  *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 19. 1. 2016
  */
 @Component
@@ -41,7 +40,6 @@ public class AdminService {
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
-    private ArrangementService arrangementService;
 
     private MassIndexingMonitor massIndexingMonitor;
 

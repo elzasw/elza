@@ -444,6 +444,9 @@ public class AccessPointService {
                                   final boolean mergeAp)
             throws SyncImpossibleException {
 
+        logger.info("Deleting accessPoint, id: {}, replacedBy: {}, mergeAp: {}", apState.getAccessPointId(),
+                    replacedBy != null ? replacedBy.getAccessPointId() : null, mergeAp);
+
         checkPermissionForEdit(apState);
 
         ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE;
@@ -511,6 +514,8 @@ public class AccessPointService {
             }
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
+        logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
+                    replacedBy != null ? replacedBy.getAccessPointId() : null);
     }
 
     /**
@@ -1008,15 +1013,20 @@ public class AccessPointService {
     private void replaceInArrItems(ApState replacedState,
                                    ApState replacementState)
             throws SyncImpossibleException {
+        logger.debug("AccessPoint replacement in ArrItems started ({}->{})", replacedState.getAccessPointId(),
+                     replacementState.getAccessPointId());
+        
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
         // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
+        logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
+
         // ArrItems
         final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream()
-                .collect(Collectors.groupingBy(ArrDescItem::getFundId));
+                .collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
         // fund to scopes
@@ -1034,7 +1044,6 @@ public class AccessPointService {
             });
         }
 
-
         final Map<Integer, ArrFundVersion> fundVersions;
         if (fundIds.isEmpty()) {
             fundVersions = Collections.emptyMap();
@@ -1042,6 +1051,8 @@ public class AccessPointService {
             fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
                     .collect(toMap(ArrFundVersion::getFundId, Function.identity()));
         }
+
+        logger.debug("Replacing in ArrItems in funds: {}", fundIds);
 
         final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REPLACE_REGISTER);
         for (Integer fundId : fundIds) {
@@ -1073,6 +1084,9 @@ public class AccessPointService {
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
         }
+
+        logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(),
+                     replacementState.getAccessPointId());
     }
     }
 
@@ -2116,7 +2130,7 @@ public class AccessPointService {
      * @param replace
      *            - nahradit zkopírovanou entitu novou nebo ne
      * @param skipItems
-     *            - seznam ID prvků popisu, které se nemají kopírovat
+     *            - seznam ID prvků popisu, které se nem)ají kopírovat
      * @return ApAccessPoint
      * @throws SyncImpossibleException
      */

@@ -57,6 +57,7 @@ public class DescItemTypeFilter {
      */
     public DescItemTypeFilter(final RulItemType descItemType,
     				          final List<Integer> itemSpecIds,  
+            final List<Integer> itemSpecIds,  
             			      final List<DescItemCondition> valuesConditions,
             			      final List<DescItemCondition> specsConditions,
             			      final List<DescItemCondition> conditions) {
@@ -227,6 +228,12 @@ public class DescItemTypeFilter {
     			itemSpecIds.forEach(specId -> specs.should(factory.match().field(ArrDescItem.SPECIFICATION_ATT).matching(specId)));
     			bool.must(specs);
     		}
+            if (itemSpecIds != null) {
+                BooleanJunction<BooleanJunction> specJunction = queryBuilder.bool();
+                itemSpecIds.forEach(specId -> 
+                	specJunction.should(queryBuilder.keyword().onField(ArrDescItem.SPECIFICATION_ATT).matching(specId).createQuery()));
+                booleanJunction.must(specJunction.createQuery());
+            }
 
     		lucenePredicates.forEach(p -> bool.must(p));
 
