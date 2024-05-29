@@ -173,6 +173,7 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
+import cz.tacr.elza.test.controller.AdminApi;
 import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
@@ -490,6 +491,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected IoApi ioApi;
 
+    protected AdminApi adminApi;
+
     protected static Map<String, String> cookies = null;
 
     @Override
@@ -506,6 +509,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         elzaApiClient.setReadTimeout(5 * 60 * 1000);
         elzaApiClient.setWriteTimeout(5 * 60 * 1000);
 
+        adminApi = new cz.tacr.elza.test.controller.AdminApi(elzaApiClient);
         fundsApi = new cz.tacr.elza.test.controller.FundsApi(elzaApiClient);
         daosApi = new cz.tacr.elza.test.controller.DaosApi(elzaApiClient);
         accesspointsApi = new cz.tacr.elza.test.controller.AccesspointsApi(elzaApiClient);
