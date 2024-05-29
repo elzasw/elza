@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrUser;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Respozitory pro {@link UsrGroupUser}.
@@ -29,4 +30,12 @@ public interface GroupUserRepository extends JpaRepository<UsrGroupUser, Integer
      * @return
      */
     List<UsrGroupUser> findByGroupAndUser(UsrGroup group, UsrUser user);
+
+    /**
+     * Return list of all user membership in groups
+     * 
+     * @param user
+     * @return
+     */
+    List<UsrGroupUser> findByUser(UsrUser user);
 }
