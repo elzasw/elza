@@ -1015,29 +1015,50 @@ public class UserService {
     }
 
     /**
+     * Join User to groups
+     *
+     * After joining groups user should be invalidated in cache
+     * 
+     * @param user
+     * @param users
+     * @return
+     */
+    private List<UsrGroupUser> joinGroups(UsrUser user, final Collection<UsrGroup> groups) {
+        List<UsrGroupUser> result = new ArrayList<>();
+        for (UsrGroup group : groups) {
+            List<UsrGroupUser> rels = groupUserRepository.findByGroupAndUser(group, user);
+
+            if (CollectionUtils.isNotEmpty(rels)) {
+                throw new BusinessException(
+                        "User '" + user.getUsername() + "' is already member of the group '" + group.getName() + "'",
+                        UserCode.ALREADY_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
+            }
+
+            result.add(joinGroup(user, group));
+        }
+        return result;
+    }
+
+    UsrGroupUser joinGroup(UsrUser user, UsrGroup group) {
+        UsrGroupUser item = new UsrGroupUser();
+        item.setGroup(group);
+        item.setUser(user);
+
+        return groupUserRepository.save(item);
+    }
+
+    /**
      * Přidání uživatelů do skupin.
      *
      * @param groups skupiny do které přidávám uživatele
      * @param users  přidávaní uživatelé
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
-    public void joinGroup(@NotEmpty final Set<UsrGroup> groups,
-                          @NotEmpty final Set<UsrUser> users) {
+    public void joinGroup(@NotEmpty final Collection<UsrGroup> groups,
+                          @NotEmpty final Collection<UsrUser> users) {
         for (UsrUser user : users) {
-            for (UsrGroup group : groups) {
-                List<UsrGroupUser> rels = groupUserRepository.findByGroupAndUser(group, user);
+            joinGroups(user, groups);
 
-                if (CollectionUtils.isNotEmpty(rels)) {
-                    throw new BusinessException("User '" + user.getUsername() + "' is already member of the group '" + group.getName() + "'",
-                            UserCode.ALREADY_IN_GROUP).set("user", user.getUsername()).set("group", group.getName());
-                }
-
-                UsrGroupUser item = new UsrGroupUser();
-                item.setGroup(group);
-                item.setUser(user);
-
-                groupUserRepository.save(item);
-            }
             invalidateCache(user);
         }
 
@@ -1871,7 +1892,7 @@ public class UserService {
      *
      * @param users uživatelé
      */
-    private void changeUsersEvent(final Set<UsrUser> users) {
+    private void changeUsersEvent(final Collection<UsrUser> users) {
         Set<Integer> userIds = users.stream().map(UsrUser::getUserId).collect(Collectors.toSet());
         eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, userIds));
     }
@@ -1899,7 +1920,7 @@ public class UserService {
      *
      * @param groups skupiny
      */
-    private void changeGroupsEvent(final Set<UsrGroup> groups) {
+    private void changeGroupsEvent(final Collection<UsrGroup> groups) {
         Set<Integer> groupIds = groups.stream().map(UsrGroup::getGroupId).collect(Collectors.toSet());
         eventNotificationService.publishEvent(new EventId(EventType.GROUP_CHANGE, groupIds));
     }
@@ -2281,7 +2302,7 @@ public class UserService {
         UserDetail trgUserDetail = createUserDetail(trgUser);
         
         UsrUser fromUser = userRepository.findOneWithDetail(fromUserId);
-        List<UsrPermission> srcPermissions = permissionRepository.getAllPermissions(fromUser);
+        List<UsrPermission> srcPermissions = permissionRepository.findByUserOrderByPermissionIdAsc(fromUser);
         
         List<UsrPermission> addPermissions = new ArrayList<>();
 
@@ -2296,9 +2317,30 @@ public class UserService {
             addPermissions.add(copy);
         }
         if(CollectionUtils.isNotEmpty(addPermissions)) {
-            ChangedPermissionResult result = addUserPermission(trgUser, addPermissions, true);
+            ChangedPermissionResult result = changePermission(trgUser, null, addPermissions, ChangePermissionType.ADD,
+                                                              true);
             logger.info("Copied permission from userId: {} to userId: {}, count: {}", fromUserId, trgUserId,
                      result.getNewPermissions().size());
         }
+
+        // Copy group membership
+        List<UsrGroupUser> srcUserGroups = groupUserRepository.findByUser(fromUser);
+        List<UsrGroupUser> trgUserGroups = groupUserRepository.findByUser(trgUser);
+
+        // Set of current membership
+        Set<Integer> currentGroupMemebership = trgUserGroups.stream().map(UsrGroupUser::getGroupId)
+                .collect(Collectors.toSet());
+        for (UsrGroupUser srcUserGroup : srcUserGroups) {
+            // check if not already member
+            if (!currentGroupMemebership.contains(srcUserGroup.getGroupId())) {
+                // create new group membership
+
+                joinGroup(trgUser, srcUserGroup.getGroup());
+                currentGroupMemebership.add(srcUserGroup.getGroupId());
+            }
+        }
+
+        invalidateCache(trgUser);
+        changeUserEvent(trgUser);
     }
 }

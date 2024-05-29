@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.test.controller.vo.Fund;
 
 
@@ -35,6 +37,7 @@ import cz.tacr.elza.test.controller.vo.Fund;
 public class UserControllerTest extends AbstractControllerTest {
 
     public static final String USER = "user1";
+    public static final String USER2 = "user2";
     public static final String PASS = "pass";
     public static final String PASS_NEW = "pass_new";
     public static final String NAME_GROUP_CHANGE = "Skupina 1x";
@@ -59,7 +62,7 @@ public class UserControllerTest extends AbstractControllerTest {
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele
-        UsrUserVO user = createUser(ap);
+        UsrUserVO user = createUser(ap, USER, PASS);
 
         // vyhledání uživatele
         FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10, null);
@@ -231,13 +234,48 @@ public class UserControllerTest extends AbstractControllerTest {
      * @return vytvořený uživatel
      * @param ap
      */
-    private UsrUserVO createUser(final ApAccessPointVO ap) {
+    private UsrUserVO createUser(final ApAccessPointVO ap, String userName, String password) {
         Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
-        valueMap.put(UsrAuthentication.AuthType.PASSWORD, PASS);
-        UsrUserVO user = createUser(USER, valueMap, ap.getId());
+        valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
+        UsrUserVO user = createUser(userName, valueMap, ap.getId());
 		assertNotNull(user);
 		assertNotNull(user.getId());
         return user;
     }
 
+    @Test
+    public void copyPermissionsTest() throws ApiException {
+        List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
+        ApAccessPointVO ap = records.get(0);
+
+        // vytvoření uživatele
+        UsrUserVO user = createUser(ap, USER, PASS);
+
+        List<UsrPermissionVO> permissionVOs = new ArrayList<>();
+        UsrPermissionVO permissionVO = new UsrPermissionVO();
+        permissionVO.setPermission(UsrPermission.Permission.FUND_RD_ALL);
+        permissionVOs.add(permissionVO);
+        addUserPermission(user.getId(), permissionVOs);
+
+        // pridani do skupiny
+        UsrGroupVO group = createGroup(new GroupController.CreateGroup(GROUP_NAME, GROUP_CODE));
+        assertNotNull(group);
+        assertNotNull(group.getId());
+        joinGroup(Collections.singleton(group.getId()), Collections.singleton(user.getId()));
+
+        // vytvoreni druheho uzivatele
+        UsrUserVO user2 = createUser(ap, USER2, PASS);
+        // copy
+        AdminCopyPermissionParams cpp = new AdminCopyPermissionParams();
+        cpp.setFromUserId(user.getId());
+        adminApi.adminCopyPermissions(user2.getId(), cpp);
+
+        // read permissions for user2
+        UsrUserVO usr2Vo = getUser(user2.getId());
+        List<UsrGroupVO> groups = usr2Vo.getGroups();
+        assertEquals(groups.size(), 1);
+        List<UsrPermissionVO> permList = usr2Vo.getPermissions();
+        assertEquals(permList.size(), 1);
+
+    }
 }
