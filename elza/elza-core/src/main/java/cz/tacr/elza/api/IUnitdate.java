@@ -28,6 +28,16 @@ public interface IUnitdate {
     void setValueFromEstimated(Boolean valueFromEstimated);
 
     /**
+     * @return počet sekund v normalizačním kalendáři - od
+     */
+    Long getNormalizedFrom();
+
+    /**
+     * @param normalizedFrom počet sekund v normalizačním kalendáři - od
+     */
+    void setNormalizedFrom(Long normalizedFrom);
+
+    /**
      * @return vrací datum "do" v iso formátu
      */
     String getValueTo();
@@ -46,6 +56,16 @@ public interface IUnitdate {
      * @param valueToEstimated je datum "do přibližný?
      */
     void setValueToEstimated(Boolean valueToEstimated);
+
+    /**
+     * @return počet sekund v normalizačním kalendáři - do
+     */
+    Long getNormalizedTo();
+
+    /**
+     * @param normalizedTo počet sekund v normalizačním kalendáři - do
+     */
+    void setNormalizedTo(Long normalizedTo);
 
     /**
      * Možnosti hodnot formátu:
