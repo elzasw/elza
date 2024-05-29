@@ -158,6 +158,8 @@ public class UnitDateConvertor {
                 }
             }
 
+            normalize(unitdate);
+
         } catch (Exception e) {
             unitdate.setFormat("");
             throw new SystemException("Vstupní řetězec není validní", BaseCode.PROPERTY_IS_INVALID)
@@ -166,6 +168,30 @@ public class UnitDateConvertor {
         }
 
         return unitdate;
+    }
+
+    /**
+     * Vyplnění polí normalizeFrom a normalizeTo
+     * 
+     * @param aeDataUnitdate
+     */
+    public static void normalize(IUnitdate aeDataUnitdate) {
+
+        String valueFrom = aeDataUnitdate.getValueFrom();
+        if (valueFrom == null) {
+            aeDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(valueFrom.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            aeDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(fromDate));
+        }
+
+        String valueTo = aeDataUnitdate.getValueTo();
+        if (valueTo == null) {
+            aeDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
+        } else {
+            LocalDateTime toDate = LocalDateTime.parse(valueTo.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(toDate));
+        }
     }
 
     /**
@@ -696,6 +722,7 @@ public class UnitDateConvertor {
             unitDate.setValueTo(to);
             unitDate.setValueToEstimated(false);
         }
+        normalize(unitDate);
 
         return unitDate;
     }
