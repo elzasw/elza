@@ -4,6 +4,8 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_FROM;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_TO;
 
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 String itemTypeCode = itemType.getCode().toLowerCase();
                 String itemSpecCode = itemSpec != null? itemSpec.getCode().toLowerCase() : null;
 
+                // TODO refactor logic using switch
+                
                 if (dataType == DataType.COORDINATES) {
                     continue;
                 }
@@ -169,6 +173,12 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     if (itemSpec != null) {
                         addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode, value.toLowerCase(), document, name);
                     }
+                }
+
+                // indexování polí unitdate
+                if (dataType == DataType.UNITDATE) {
+                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_FROM, item.getData().getNormalizedFrom());
+                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_TO, item.getData().getNormalizedTo());
                 }
 
                 // indexování polí s více než 32766 znaky

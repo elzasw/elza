@@ -338,14 +338,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		// TODO
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-    		ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-    		String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-    		bool.must(processValueCondDef(sdp, factory, intervalCreation.toLowerCase(), "CRE_DATE", null, "PT_CRE"));
+    		ArrDataUnitdate creDate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+    		bool.must(factory.range().field("data_cre_date_from").atMost(creDate.getNormalizedFrom()))
+    			.must(factory.range().field("data_cre_date_to").atLeast(creDate.getNormalizedTo()));
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-            ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-            String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-    		bool.must(processValueCondDef(sdp, factory, intervalExtinction.toLowerCase(), "EXT_DATE", null, "PT_EXT"));
+    		ArrDataUnitdate extDate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+    		bool.must(factory.range().field("data_ext_date_from").atMost(extDate.getNormalizedFrom()))
+    			.must(factory.range().field("data_ext_date_to").atLeast(extDate.getNormalizedTo()));
     	}
 
     	if (!bool.hasClause()) {
