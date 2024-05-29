@@ -619,7 +619,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  TODO pasek hack - cxf-codegen-plugin momentÃ¡lnÄ› neumÃ­ generovat tÅ™Ã­dy s jakarta ee9, nutno ruÄnÄ› pÅ™epsat importy -->
+            <!--  TODO pasek hack - cxf-codegen-plugin momentálnì neumí generovat tøídy s jakarta ee9, nutno ruènì pøepsat importy -->
             <!--
             <plugin> 
                 <groupId>com.google.code.maven-replacer-plugin</groupId>

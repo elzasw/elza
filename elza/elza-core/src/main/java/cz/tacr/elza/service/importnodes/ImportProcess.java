@@ -390,11 +390,14 @@ public class ImportProcess {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else if (item instanceof ItemUriRef) {
+            ItemUriRef itemUriRef = (ItemUriRef) item;
             data = new ArrDataUriRef();
-            ((ArrDataUriRef) data).setSchema(((ItemUriRef) item).getSchema());
-            ((ArrDataUriRef) data).setUriRefValue(((ItemUriRef) item).getValue());
-            ((ArrDataUriRef) data).setDescription(((ItemUriRef) item).getDescription());
-            ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(((ItemUriRef) item).getNodeId()));
+            ((ArrDataUriRef) data).setSchema(itemUriRef.getSchema());
+            ((ArrDataUriRef) data).setUriRefValue(itemUriRef.getValue());
+            ((ArrDataUriRef) data).setDescription(itemUriRef.getDescription());
+            if (itemUriRef.getNodeId() != null) {
+                ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(itemUriRef.getNodeId()));
+            }
         } else if (item instanceof ItemBit) {
             data = new ArrDataBit();
             ((ArrDataBit) data).setBitValue(((ItemBit) item).getValue());

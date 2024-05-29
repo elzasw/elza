@@ -16,6 +16,9 @@ enum UserSettingCategory {
     ApiKeys = 'ApiKeys',
 }
 
+const APIKEY_ID = "apiKeyId";
+const APIKEY_VALUE = "apiKeyValue";
+
 interface ApiKeyValueFields {
     externalSystemId?: string | number;
     apiKeyId: string;
@@ -45,22 +48,35 @@ export default function UserSettingsModal({ onClose }: Props) {
         (async () => {
             const { data } = await Api.externalSystems.externalSystemAllProperties(undefined, userId || undefined);
 
-            const usedExternalSystems = [...new Set(data.map((value) => value.extSystemId))];
-
-            const newApiKeys: ApiKeyValue[] = usedExternalSystems.map((id) => {
-                const apiKeyId = data.find(({ name, extSystemId, userId: _userId }) => {
-                    return userId === _userId && name === "apiKeyId" && extSystemId === id
-                })
-                const apiKeyValue = data.find(({ name, extSystemId, userId: _userId }) => {
-                    return userId === _userId && name === "apiKeyValue" && extSystemId === id
-                })
-                return {
-                    id,
-                    apiKeyId,
-                    apiKeyValue,
+            // prepare map of properties for each ext system
+            const extsysMap = new Map<number, ApiKeyValue>();
+            data.forEach(prop => {
+                if(userId !== prop.userId) {
+                    return;
                 }
-            })
-            setAvailableExternalSystems(externalSystems.filter(({ id }) => id != undefined && usedExternalSystems.indexOf(id) === -1))
+                // check if known property type
+                var keyValueObj = extsysMap.get(prop.extSystemId);
+                if(prop.name===APIKEY_ID) {
+                    if(keyValueObj === undefined) {
+                        keyValueObj = { id: prop.extSystemId, apiKeyId: prop };
+                        extsysMap.set(prop.extSystemId, keyValueObj);
+                    } else {
+                        keyValueObj.apiKeyId = prop;
+                    }
+                } else 
+                if(prop.name===APIKEY_VALUE) {
+                    if(keyValueObj === undefined) {
+                        keyValueObj = { id: prop.extSystemId, apiKeyValue: prop };
+                        extsysMap.set(prop.extSystemId, keyValueObj);
+                    } else {
+                        keyValueObj.apiKeyValue = prop;
+                    }
+                }
+            });
+
+            const newApiKeys: ApiKeyValue[] = [ ...extsysMap.values() ];
+
+            setAvailableExternalSystems(externalSystems.filter(({ id }) => id != undefined && !extsysMap.has(id) ))
             setApiKeys(newApiKeys);
         })()
     }, [userId, externalSystems])
@@ -78,12 +94,12 @@ export default function UserSettingsModal({ onClose }: Props) {
     const handleSubmit = async ({ externalSystemId, apiKeyId, apiKeyValue }: ApiKeyValueFields) => {
         if (externalSystemId && parseInt(externalSystemId.toString())) {
             await Api.externalSystems.externalSystemStoreProperties([{
-                name: "apiKeyValue",
+                name: APIKEY_VALUE,
                 value: apiKeyValue,
                 userId: userId || undefined,
                 extSystemId: parseInt(externalSystemId.toString()),
             }, {
-                name: "apiKeyId",
+                name: APIKEY_ID,
                 value: apiKeyId,
                 userId: userId || undefined,
                 extSystemId: parseInt(externalSystemId.toString()),

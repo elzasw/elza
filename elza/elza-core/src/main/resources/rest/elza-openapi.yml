@@ -744,6 +744,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoggedUsers'
+  /admin/user/{userId}/copy-permissions:
+    post:
+      tags:
+        - admin
+      operationId: Admin_copyPermissions
+      description: |-
+        Copy user permissions from another user
+
+        Method will append all permissions to given user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of target user
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Admin.CopyPermissionParams'
   /daorepository:
     get:
       operationId: DaoRepository_fsRepos
@@ -883,9 +908,7 @@ paths:
         - name: lastKey
           in: query
           required: false
-          description: >-
-            Optional parameter to return next batch of items. See FsItems for
-            more details.
+          description: Optional parameter to return next batch of items. See FsItems for more details.
           schema:
             type: string
       responses:
@@ -999,7 +1022,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '500':
-          description: Server Error
+          description: Server error
           content:
             application/json:
               schema:
@@ -1033,7 +1056,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '500':
-          description: Server Error
+          description: Server error
           content:
             application/json:
               schema:
@@ -1069,8 +1092,21 @@ components:
       schema:
         type: integer
   schemas:
+    Admin.CopyPermissionParams:
+      type: object
+      required:
+        - fromUserId
+      properties:
+        fromUserId:
+          type: integer
     AdminInfo:
       type: object
+      required:
+        - funds
+        - levels
+        - accessPoints
+        - users
+        - loggedUsers
       properties:
         funds:
           type: integer
@@ -1093,22 +1129,18 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
-      required:
-        - funds
-        - levels
-        - accessPoints
-        - users
-        - loggedUsers
     ApStateApproval:
       type: string
-      description: States of ApState
       enum:
         - NEW
         - TO_APPROVE
         - APPROVED
         - TO_AMEND
+      description: States of ApState
     ApStateUpdate:
       type: object
+      required:
+        - stateApproval
       properties:
         typeId:
           type: integer
@@ -1124,8 +1156,6 @@ components:
             - $ref: '#/components/schemas/ApStateApproval'
           description: state of ApState
       description: Data for changing state of ApAccessPoint
-      required:
-        - stateApproval
     AutoValue:
       type: object
       properties:
@@ -1141,6 +1171,9 @@ components:
       description: Automatically generated elements of the description
     BaseException:
       type: object
+      required:
+        - type
+        - code
       properties:
         type:
           type: string
@@ -1157,11 +1190,10 @@ components:
         stackTrace:
           type: string
       description: Error specification for the client
-      required:
-        - type
-        - code
     CopyAccessPointDetail:
       type: object
+      required:
+        - scope
       properties:
         scope:
           type: string
@@ -1175,8 +1207,6 @@ components:
             type: integer
           description: list of description element IDs not to copy
       description: Additional copy options
-      required:
-        - scope
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -1190,6 +1220,9 @@ components:
       description: Data for detele/replace ApAccessPoint
     EntityRef:
       type: object
+      required:
+        - id
+        - label
       properties:
         id:
           type: string
@@ -1201,9 +1234,6 @@ components:
           type: string
           description: optional description of entity
       description: Return value when copying ApAccessPoint
-      required:
-        - id
-        - label
     ExportParams:
       type: object
       properties:
@@ -1232,14 +1262,14 @@ components:
         - FINISHED
     ExportRequestStatus:
       type: object
+      required:
+        - state
       properties:
         state:
           $ref: '#/components/schemas/ExportRequestState'
         progress:
           type: integer
       description: Status of export
-      required:
-        - state
     ExtSystemProperty:
       type: object
       required:
@@ -1265,6 +1295,10 @@ components:
       description: Pairs name-value for external system and user
     FsItem:
       type: object
+      required:
+        - itemType
+        - name
+        - lastChange
       properties:
         itemType:
           allOf:
@@ -1281,18 +1315,16 @@ components:
           format: date-time
           description: Time of last change
       description: Single file system item
-      required:
-        - itemType
-        - name
-        - lastChange
     FsItemType:
       type: string
-      description: File system item type
       enum:
         - FOLDER
         - FILE
+      description: File system item type
     FsItems:
       type: object
+      required:
+        - items
       properties:
         items:
           type: array
@@ -1300,14 +1332,14 @@ components:
             $ref: '#/components/schemas/FsItem'
         lastKey:
           type: string
-          description: >-
-            Optional string to request next items. It is used if there are more
-            items.
+          description: Optional string to request next items. It is used if there are more items.
       description: Collection of file system items
-      required:
-        - items
     FsRepo:
       type: object
+      required:
+        - fsRepoId
+        - name
+        - path
       properties:
         fsRepoId:
           type: integer
@@ -1322,12 +1354,10 @@ components:
         path:
           type: string
           description: Repository path
-      required:
-        - fsRepoId
-        - name
-        - path
     FundSections:
       type: object
+      required:
+        - fundVersionId
       properties:
         fundVersionId:
           type: integer
@@ -1339,10 +1369,12 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
-      required:
-        - fundVersionId
     LoggedUser:
       type: object
+      required:
+        - userId
+        - user
+        - remoteAddr
       properties:
         userId:
           type: integer
@@ -1354,12 +1386,11 @@ components:
           type: string
           description: Remote address
       description: Logged user
-      required:
-        - userId
-        - user
-        - remoteAddr
     LoggedUsers:
       type: object
+      required:
+        - users
+        - totalCount
       properties:
         users:
           type: array
@@ -1371,15 +1402,12 @@ components:
           format: int32
           description: Total number of logged users
       description: List of logged users
-      required:
-        - users
-        - totalCount
     ReplaceType:
       type: string
-      description: Method of replacing ApAccessPoint
       enum:
         - SIMPLE
         - COPY_ALL
+      description: Method of replacing ApAccessPoint
     ResultAutoItems:
       type: object
       properties:
@@ -1390,6 +1418,8 @@ components:
       description: List of automatically generated items
     RevStateChange:
       type: object
+      required:
+        - state
       properties:
         typeId:
           type: integer
@@ -1402,15 +1432,13 @@ components:
             - $ref: '#/components/schemas/RevisionState'
           description: state of ApRevision
       description: Data for changing revision state of ApAccessPoint
-      required:
-        - state
     RevisionState:
       type: string
-      description: States of ApRevState
       enum:
         - ACTIVE
         - TO_APPROVE
         - TO_AMEND
+      description: States of ApRevState
     UsedItemType:
       type: object
       properties:

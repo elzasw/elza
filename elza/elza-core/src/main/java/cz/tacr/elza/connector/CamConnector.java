@@ -44,8 +44,8 @@ public class CamConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
-    public static final String APIKEY_ID = "apikeyId";
-    public static final String APIKEY_VALUE = "apikeyValue";
+    public static final String APIKEY_ID = "apiKeyId";
+    public static final String APIKEY_VALUE = "apiKeyValue";
 
     @Autowired
     private SchemaManager schemaManager;
