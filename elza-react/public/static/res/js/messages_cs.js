@@ -1241,7 +1241,7 @@ var messages = {
     "ap.ext-search.search": "Vyhledávání",
     "ap.ext-search.area": "Oblast hledání",
     "ap.ext-search.only-main-part": "Pouze hlavní část",
-    "ap.ext-search.user": "Uživatel",
+    "ap.ext-search.user": "Autor poslední změny",
     "ap.ext-search.id": "ID",
     "ap.ext-search.state": "Stav",
     "ap.ext-search.type": "Třída",
