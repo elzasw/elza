@@ -1055,8 +1055,8 @@ public class UserService {
      * @param users  přidávaní uživatelé
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
-    public void joinGroup(@NotEmpty final Set<UsrGroup> groups,
-                          @NotEmpty final Set<UsrUser> users) {
+    public void joinGroup(@NotEmpty final Collection<UsrGroup> groups,
+                          @NotEmpty final Collection<UsrUser> users) {
         for (UsrUser user : users) {
             joinGroups(user, groups);
 
@@ -1893,7 +1893,7 @@ public class UserService {
      *
      * @param users uživatelé
      */
-    private void changeUsersEvent(final Set<UsrUser> users) {
+    private void changeUsersEvent(final Collection<UsrUser> users) {
         Set<Integer> userIds = users.stream().map(UsrUser::getUserId).collect(Collectors.toSet());
         eventNotificationService.publishEvent(new EventId(EventType.USER_CHANGE, userIds));
     }
@@ -1921,7 +1921,7 @@ public class UserService {
      *
      * @param groups skupiny
      */
-    private void changeGroupsEvent(final Set<UsrGroup> groups) {
+    private void changeGroupsEvent(final Collection<UsrGroup> groups) {
         Set<Integer> groupIds = groups.stream().map(UsrGroup::getGroupId).collect(Collectors.toSet());
         eventNotificationService.publishEvent(new EventId(EventType.GROUP_CHANGE, groupIds));
     }
