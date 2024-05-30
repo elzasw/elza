@@ -1373,6 +1373,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              final ArrFundVersion fundVersion,
                                              final ArrChange change) {
 
+        this.logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
+                          fundVersion.getFundVersionId(),
+                          change.getChangeId(), descItem.getItemId());
+
         SingleItemChangeContext sicc = new SingleItemChangeContext(this.ruleService, this.eventNotificationService,
                                                                    fundVersion.getFundVersionId(), descItem.getNodeId());
 

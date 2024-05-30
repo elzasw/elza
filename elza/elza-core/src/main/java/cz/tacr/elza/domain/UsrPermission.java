@@ -109,6 +109,37 @@ public class UsrPermission {
     @Column(name = "groupControlId", updatable = false, insertable = false, nullable = false)
     private Integer groupControlId;
 
+    public UsrPermission() {
+    }
+
+    /**
+     * Copy constructor
+     * 
+     * User method .copy to copy object
+     * 
+     * @param src
+     */
+    protected UsrPermission(UsrPermission src) {
+        permissionId = src.permissionId;
+        permission = src.permission;
+        user = src.user;
+        userId = src.userId;
+        group = src.group;
+        groupId = src.groupId;
+        fund = src.fund;
+        fundId = src.fundId;
+        node = src.node;
+        nodeId = src.nodeId;
+        userControl = src.userControl;
+        groupControl = src.groupControl;
+        scope = src.scope;
+        scopeId = src.scopeId;
+        issueList = src.issueList;
+        issueListId = src.issueListId;
+        userControlId = src.userControlId;
+        groupControlId = src.groupControlId;
+    }
+
     /**
      * @return identifikátor entity
      */
@@ -768,5 +799,14 @@ public class UsrPermission {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Copy permissions to new object
+     * 
+     * @return
+     */
+    public UsrPermission copy() {
+        return new UsrPermission(this);
     }
 }

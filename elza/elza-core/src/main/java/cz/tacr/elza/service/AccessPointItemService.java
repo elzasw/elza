@@ -1,7 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,10 +34,8 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -223,116 +219,7 @@ public class AccessPointItemService {
 
         List<ApItem> deletedItems = itemRepository.saveAll(items);
         return deletedItems;
-
     }
-
-    /*
-    private void updateItems(final List<ApItemVO> updateItems,
-                             final Map<Integer, List<ApItem>> typeIdItemsMap,
-                             final List<ApItem> itemsDb,
-                             final Map<Integer, ApItem> objectIdItemMap,
-                             final ApChange change) {
-        StaticDataProvider sdp = staticDataService.getData();
-        List<ArrData> dataToSave = new ArrayList<>();
-        for (ApItemVO updateItem : updateItems) {
-            Integer objectId = updateItem.getObjectId();
-            ApItem item = objectIdItemMap.get(objectId);
-            if (item == null) {
-                throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
-            }
-
-            RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-
-            List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
-            ArrData data = updateItem.createDataEntity(em);
-            ApItem newItem = item.copy();
-            item.setDeleteChange(change);
-
-            newItem.setCreateChange(change);
-            newItem.setData(data);
-            if (itemType.getUseSpecification() != null && itemType.getUseSpecification()) {
-                // specification required
-                if (updateItem.getSpecId() == null) {
-                    throw new BusinessException("Received item without specification, itemType: " + itemType.getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode());
-                }
-                RulItemSpec itemSpec = sdp.getItemSpecById(updateItem.getSpecId());
-                if (itemSpec == null) {
-                    throw new BusinessException("Received item without valid specification, itemType: " + itemType
-                            .getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode())
-                                    .set("itemSpecId", updateItem.getSpecId());
-                }
-                newItem.setItemSpec(itemSpec);
-            } else {
-                // item type without specification
-                if (updateItem.getSpecId() != null) {
-                    throw new BusinessException("Received item with unexpected specification, itemType: " + itemType
-                            .getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode());
-                }
-                newItem.setItemSpec(null);
-            }
-
-            dataToSave.add(data);
-
-            itemsDb.add(newItem);
-            existsItems.add(newItem);
-
-            Integer oldPosition = item.getPosition();
-            Integer newPosition = updateItem.getPosition();
-            Validate.notNull(newPosition);
-            if (!Objects.equals(oldPosition, newPosition)) {
-                Validate.isTrue(newPosition > 0);
-                newPosition = Math.min(newPosition, findMaxPosition(existsItems));
-                List<ApItem> itemsToShift = findItemsBetween(existsItems, oldPosition, newPosition);
-                newItem.setPosition(newPosition);
-                itemsToShift.remove(newItem);
-                List<ApItem> newItems = shiftItems(itemsToShift, oldPosition.compareTo(newPosition), change);
-                itemsDb.addAll(newItems);
-                existsItems.addAll(newItems);
-            }
-        }
-        dataRepository.saveAll(dataToSave);
-    }
-    */
-
-    private int findMaxPosition(final List<ApItem> items) {
-        int max = 1;
-        for (ApItem item : items) {
-            if (item.getDeleteChange() == null) {
-                if (item.getPosition() > max) {
-                    max = item.getPosition();
-                }
-            }
-        }
-        return max;
-    }
-
-    /*
-    private void deleteItems(final List<ApItemVO> deleteItems,
-                             final Map<Integer, List<ApItem>> typeIdItemsMap,
-                             final List<ApItem> itemsDb,
-                             final Map<Integer, ApItem> objectIdItemMap,
-                             final ApChange change) {
-        for (ApItemVO deleteItem : deleteItems) {
-            Integer objectId = deleteItem.getObjectId();
-            ApItem item = objectIdItemMap.get(objectId);
-            if (item == null) {
-                throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
-            }
-
-            item.setDeleteChange(change);
-            List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
-            List<ApItem> itemsToShift = findItemsGE(existsItems, item.getPosition());
-            List<ApItem> newItems = shiftItems(itemsToShift, -1, change);
-            itemsDb.addAll(newItems);
-            existsItems.addAll(newItems);
-        }
-    }*/
 
     /**
      * @return identifikátor pro nový item AP
@@ -691,25 +578,6 @@ public class AccessPointItemService {
     public List<ApItem> findUnbindedItemByBinding(ApBinding binding) {
         return dataService.findItemsWithData(() -> itemRepository.findUnbindedItemByBinding(binding),
                 this::createDataResultList);
-    }
-
-    public static void normalize(ArrDataUnitdate aeDataUnitdate) {
-
-        String valueFrom = aeDataUnitdate.getValueFrom();
-        if (valueFrom == null) {
-            aeDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
-        } else {
-            LocalDateTime fromDate = LocalDateTime.parse(valueFrom.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            aeDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(fromDate));
-        }
-
-        String valueTo = aeDataUnitdate.getValueTo();
-        if (valueTo == null) {
-            aeDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
-        } else {
-            LocalDateTime toDate = LocalDateTime.parse(valueTo.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(toDate));
-        }
     }
 
     /**
