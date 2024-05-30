@@ -8,20 +8,17 @@ import java.util.List;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import org.junit.Test;
 
-import io.restassured.response.Response;
-
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import io.restassured.response.Response;
 
 
 /**
  * Testování metod z AdminController.
  *
- * @author Martin Šlapa
- * @since 16.2.2016
  */
 public class AdminControllerTest extends AbstractControllerTest {
 
@@ -81,5 +78,4 @@ public class AdminControllerTest extends AbstractControllerTest {
         externalSystems = getExternalSystems();
         assertTrue(externalSystems.size() == 2);
     }
-
 }

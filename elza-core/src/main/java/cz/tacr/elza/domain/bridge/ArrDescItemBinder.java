@@ -9,6 +9,7 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
@@ -34,7 +35,7 @@ public class ArrDescItemBinder implements TypeBinder {
         createIntegerField(FIELD_NODE_ID);
         createIntegerField(FIELD_FUND_ID);
 
-        createIntegerField(SPECIFICATION_ATT);
+        createIntegerField(SPECIFICATION_ATT); // itemSpecId
         createIntegerField(FIELD_DESC_ITEM_TYPE_ID);
         createIntegerField(FIELD_CREATE_CHANGE_ID);
         createIntegerField(FIELD_DELETE_CHANGE_ID);
@@ -42,6 +43,7 @@ public class ArrDescItemBinder implements TypeBinder {
         createAnalyzedField(FULLTEXT_ATT);
 
         createIntegerField(INTGER_ATT);
+        createDoubleField(DECIMAL_ATT);
         createLongField(NORMALIZED_FROM_ATT);
         createLongField(NORMALIZED_TO_ATT);
 
@@ -55,16 +57,16 @@ public class ArrDescItemBinder implements TypeBinder {
         		.toReference();
     }
 
-    private IndexFieldReference<String> createNotAnalyzedField(String name) {
+    private IndexFieldReference<Integer> createIntegerField(String name) {
     	return context.indexSchemaElement()
-        		.field(name, f -> f.asString())
+        		.field(name, f -> f.asInteger())
         		.multiValued()
         		.toReference();
     }
 
-    private IndexFieldReference<Integer> createIntegerField(String name) {
+    private IndexFieldReference<Double> createDoubleField(String name) {
     	return context.indexSchemaElement()
-        		.field(name, f -> f.asInteger())
+        		.field(name, f -> f.asDouble())
         		.multiValued()
         		.toReference();
     }

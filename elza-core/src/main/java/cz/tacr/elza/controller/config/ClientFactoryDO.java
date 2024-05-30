@@ -514,7 +514,7 @@ public class ClientFactoryDO {
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            return new DescItemTypeFilter(descItemType, valuesConditions, specsConditions, conditions);
+            return new DescItemTypeFilter(descItemType, filter.getSpecs(), valuesConditions, specsConditions, conditions);
         }
 
         return null;
