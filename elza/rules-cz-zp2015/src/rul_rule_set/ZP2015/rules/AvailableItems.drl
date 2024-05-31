@@ -142,6 +142,15 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
+rule "Povoleni dedicnosti"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_ENTITY_ROLE"))
+then
+    $itemType.setInheritance(true);
+end
+
+
 //
 // Hierarchie popisu
 //
