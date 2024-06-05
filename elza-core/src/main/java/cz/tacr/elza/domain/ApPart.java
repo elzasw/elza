@@ -207,4 +207,7 @@ public class ApPart implements AccessPointPart {
         this.keyValue = keyValue;
     }
 
+	public List<ApIndex> getIndices() {
+		return indices;
+	}
 }
