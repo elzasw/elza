@@ -533,7 +533,6 @@ public class ClientFactoryVO {
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
-        ArrData data = HibernateUtils.unproxy(item.getData());
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
         switch (dataType) {
@@ -851,11 +850,6 @@ public class ClientFactoryVO {
                 .collect(Collectors.toList());
     }
 
-    private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
-        Assert.notNull(itemTypeExt, "Typ hodnoty atributu musí být vyplněn");
-        return ItemTypeLiteVO.newInstance(itemTypeExt);
-    }
-
     /**
      * Vytvoření typu hodnoty atributu se specifikacemi.
      *
@@ -1090,20 +1084,9 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
-        return institutions.stream().map(i -> createInstitution(i)).collect(Collectors.toList());
-    }
-
-    /**
-     * Vytvoří VO instituce.
-     *
-     * @param institution instituce DO
-     * @return instituce VO
-     */
-    public ParInstitutionVO createInstitution(final ParInstitution institution) {
-        Assert.notNull(institution, "Instituce musí být vyplněny");
-        String displayName = accessPointService.findPreferredPartDisplayName(institution.getAccessPoint().getPreferredPart());
-        ParInstitutionVO institutionVO = ParInstitutionVO.newInstance(institution, displayName);
-        return institutionVO;
+    	Collection<ApAccessPoint> accessPoints = institutions.stream().map(i -> i.getAccessPoint()).collect(Collectors.toList());
+    	Map<Integer, ApIndex> indexMap = accessPointService.findPreferredPartIndexMap(accessPoints);
+        return institutions.stream().map(i -> ParInstitutionVO.newInstance(i, indexMap.get(i.getAccessPointId()))).collect(Collectors.toList());
     }
 
     /**

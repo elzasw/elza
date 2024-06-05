@@ -61,7 +61,7 @@ public class ParInstitutionVO {
         this.accessPointId = accessPointId;
     }
     
-    public static ParInstitutionVO newInstance(final ParInstitution institution, final String displayName) {
+    public static ParInstitutionVO newInstance(final ParInstitution institution, final ApIndex displayName) {
     	ParInstitutionTypeVO type = new ParInstitutionTypeVO();
     	type.setName(institution.getInstitutionType().getName());
     	type.setCode(institution.getInstitutionType().getCode());
@@ -72,7 +72,7 @@ public class ParInstitutionVO {
     	result.setAccessPointId(institution.getAccessPointId());
     	result.setCode(institution.getInternalCode());
     	result.setInstitutionType(type);
-    	result.setName(displayName);
+    	result.setName(displayName != null? displayName.getIndexValue() : null);
 
     	return result;
     }
