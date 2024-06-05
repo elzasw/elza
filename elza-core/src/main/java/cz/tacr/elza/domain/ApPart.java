@@ -3,7 +3,6 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 import org.hibernate.Length;
-import org.hibernate.annotations.Type;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -206,8 +205,4 @@ public class ApPart implements AccessPointPart {
     public void setKeyValue(ApKeyValue keyValue) {
         this.keyValue = keyValue;
     }
-
-	public List<ApIndex> getIndices() {
-		return indices;
-	}
 }
