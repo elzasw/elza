@@ -3246,6 +3246,15 @@ public class AccessPointService {
         throw new ObjectNotFoundException("Neexistuje preferred name", BaseCode.PROPERTY_NOT_EXIST).set("accessPoinId", accessPoint.getAccessPointId());
     }
 
+    public String findPreferredPartDisplayName(ApPart prefPart) {
+		for (ApIndex index : prefPart.getIndices()) {
+			if (index.getIndexType().equals(DISPLAY_NAME)) {
+				return index.getIndexValue();
+			}
+		}
+		return null;
+    }
+
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max,
                                                        String externalSystemCode,
                                                        SyncsFilterVO filter) {

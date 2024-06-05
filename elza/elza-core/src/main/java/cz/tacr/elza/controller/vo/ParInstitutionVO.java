@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ParInstitution;
 
 /**
@@ -60,11 +61,19 @@ public class ParInstitutionVO {
         this.accessPointId = accessPointId;
     }
     
-    public static ParInstitutionVO newInstance(final ParInstitution institution) {
+    public static ParInstitutionVO newInstance(final ParInstitution institution, final String displayName) {
+    	ParInstitutionTypeVO type = new ParInstitutionTypeVO();
+    	type.setName(institution.getInstitutionType().getName());
+    	type.setCode(institution.getInstitutionType().getCode());
+    	type.setId(institution.getInstitutionType().getInstitutionTypeId());
+
     	ParInstitutionVO result = new ParInstitutionVO();
     	result.setId(institution.getInstitutionId());
     	result.setAccessPointId(institution.getAccessPointId());
     	result.setCode(institution.getInternalCode());
+    	result.setInstitutionType(type);
+    	result.setName(displayName);
+
     	return result;
     }
 }

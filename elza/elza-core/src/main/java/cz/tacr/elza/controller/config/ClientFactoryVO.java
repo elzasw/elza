@@ -191,6 +191,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -289,6 +290,8 @@ public class ClientFactoryVO {
     @Autowired
     private ApIndexRepository indexRepository;
 
+    @Autowired
+    private AccessPointService accessPointService;
 
     /**
      * Vytvoření nastavení.
@@ -1087,7 +1090,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
-        return institutions.stream().map(i -> ParInstitutionVO.newInstance(i)).collect(Collectors.toList());
+        return institutions.stream().map(i -> createInstitution(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1098,11 +1101,8 @@ public class ClientFactoryVO {
      */
     public ParInstitutionVO createInstitution(final ParInstitution institution) {
         Assert.notNull(institution, "Instituce musí být vyplněny");
-        ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-
-        ParInstitutionVO institutionVO = ParInstitutionVO.newInstance(institution);
-        institutionVO.setName(displayName != null ? displayName.getIndexValue() : null);
-
+        String displayName = accessPointService.findPreferredPartDisplayName(institution.getAccessPoint().getPreferredPart());
+        ParInstitutionVO institutionVO = ParInstitutionVO.newInstance(institution, displayName);
         return institutionVO;
     }
 
