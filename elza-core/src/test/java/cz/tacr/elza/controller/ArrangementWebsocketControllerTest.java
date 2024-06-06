@@ -245,7 +245,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         assertNotNull(levels);
         assertTrue(levels.size() == 2);
 
-        // Přidání jednoho záznamu ArrInhibitedItem:
+        // Přidání jednoho záznamu ArrInhibitedItem (potlačení dědičnosti):
         //   node1 -> descItem1
         //   node2 -> descItem2
         // arrInhibitedItem <- node2,descItem1
