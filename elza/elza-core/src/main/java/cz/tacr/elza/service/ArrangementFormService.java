@@ -5,6 +5,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,9 +170,12 @@ public class ArrangementFormService {
 
 		if (lockChange == null) {
 			descItems = restoredNode.getDescItems();
-			inhibitedDescItemIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet());
+			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
+			inhibitedDescItemIds = new HashSet<>();
+			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
 			parentRestoredNodes.forEach(n ->
 				inhibitedDescItemIds.addAll(n.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet())));
+			// sbíráme všechny záznamy s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems().stream())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
