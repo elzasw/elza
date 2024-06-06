@@ -142,6 +142,7 @@ public class ArrangementFormService {
 		ArrNode node;
 		List<ArrDescItem> descItems;
 		Set<Integer> inhibitedDescItemIds;
+		Set<Integer> inhibitedNodeDescItemIds;
 		List<ArrDescItem> parentsDescItems;
 		RestoredNode restoredNode = null;
 		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
@@ -175,15 +176,18 @@ public class ArrangementFormService {
 			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
 			parentRestoredNodes.forEach(n ->
 				inhibitedDescItemIds.addAll(n.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet())));
-			// sbíráme všechny záznamy s povolenou dědičností z nadřazených uzlů
+			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems().stream())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
+			// seznam descItemId s potlačenou dědičností pro aktuální uzel
+			inhibitedNodeDescItemIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet());
 		} else {
 			descItems = arrangementInternal.getDescItems(lockChange, node);
-			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, CollectionUtils.union(List.of(nodeId), parentNodeIds));
+			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
 			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
+			inhibitedNodeDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, List.of(nodeId));
 		}
 
 		// získat seznam descItems, které lze zdědit
@@ -199,7 +203,7 @@ public class ArrangementFormService {
 		String ruleCode = version.getRuleSet().getCode();
 
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
-		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedDescItemIds);
+		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedNodeDescItemIds);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
 
         boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
