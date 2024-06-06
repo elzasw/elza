@@ -600,7 +600,7 @@ public class ClientFactoryVO {
 
         for (ArrDescItem item : items) {
             ArrItemVO itemVO = createItem(item);
-            if (item.getNodeId() != nodeId) {
+            if (!item.getNodeId().equals(nodeId)) {
             	itemVO.setFromNodeId(item.getNodeId());
             }
             if (inhibitedDescItemIds.contains(item.getItemId())) {
