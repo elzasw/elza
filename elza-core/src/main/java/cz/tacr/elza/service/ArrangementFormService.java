@@ -91,7 +91,7 @@ public class ArrangementFormService {
 	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
-
+    
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
@@ -104,7 +104,8 @@ public class ArrangementFormService {
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
 								  FundVersionRepository fundVersionRepository,
-								  NodeRepository nodeRepository, final ArrangementService arrangementService,
+								  NodeRepository nodeRepository, 
+								  final ArrangementService arrangementService,
 								  final ArrangementInternalService arrangementInternalService) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
@@ -142,7 +143,7 @@ public class ArrangementFormService {
 		ArrNode node;
 		List<ArrDescItem> descItems;
 		Set<Integer> inhibitedDescItemIds;
-		Set<Integer> inhibitedNodeDescItemIds;
+		Set<Integer> inhibitedDescItemObjectIds;
 		List<ArrDescItem> parentsDescItems;
 		RestoredNode restoredNode = null;
 		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
@@ -174,20 +175,19 @@ public class ArrangementFormService {
 			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
 			inhibitedDescItemIds = new HashSet<>();
 			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
-			parentRestoredNodes.forEach(n ->
-				inhibitedDescItemIds.addAll(n.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet())));
+			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems().stream())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
-			inhibitedNodeDescItemIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet());
+			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
 		} else {
 			descItems = arrangementInternal.getDescItems(lockChange, node);
 			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
 			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
-			inhibitedNodeDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, List.of(nodeId));
+			inhibitedDescItemObjectIds = arrangementInternal.getInhibitedDescItemObjectIds(lockChange, List.of(nodeId));
 		}
 
 		// získat seznam descItems, které lze zdědit
@@ -203,7 +203,7 @@ public class ArrangementFormService {
 		String ruleCode = version.getRuleSet().getCode();
 
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
-		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedNodeDescItemIds);
+		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedDescItemObjectIds);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
 
         boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
@@ -212,6 +212,28 @@ public class ArrangementFormService {
 			arrPerm = permNodeIdMap.get(nodeId);
 		}
 		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites, arrPerm);
+	}
+
+	/**
+	 * Získání seznamu ID (itemId) s potlačenou dědičností ze seznamu uzlů
+	 * 
+	 * @param restoredNodes
+	 * @return
+	 */
+	private Set<Integer> getInhibitedDescItemIds(Collection<RestoredNode> restoredNodes) {
+		Set<Integer> inhibitedDescItemIds = new HashSet<Integer>();
+		Set<Integer> descItemObjectIds = restoredNodes.stream()
+				.flatMap(i -> i.getInhibitedItems().stream())
+				.map(i -> i.getDescItemObjectId())
+				.collect(Collectors.toSet());
+		for (RestoredNode node : restoredNodes) {
+			for (ArrDescItem descItem : node.getDescItems()) {
+				if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
+					inhibitedDescItemIds.add(descItem.getItemId());
+				}
+			}
+		}
+		return inhibitedDescItemIds;
 	}
 
 	@Transactional

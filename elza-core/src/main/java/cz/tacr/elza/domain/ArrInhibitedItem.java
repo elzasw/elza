@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -27,13 +25,8 @@ public class ArrInhibitedItem {
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
-    @JoinColumn(name = "desc_item_id", nullable = false)
-    private ArrDescItem descItem;
-
-    @Column(name = "desc_item_id", updatable = false, insertable = false)
-    private Integer descItemId;
+    @Column(nullable = false)
+	protected Integer descItemObjectId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -70,17 +63,12 @@ public class ArrInhibitedItem {
 		return nodeId;
 	}
 
-	public ArrDescItem getDescItem() {
-		return descItem;
+	public Integer getDescItemObjectId() {
+		return descItemObjectId;
 	}
 
-	public void setDescItem(final ArrDescItem descItem) {
-		this.descItem = descItem;
-		this.descItemId = descItem != null ? descItem.getItemId() : null;
-	}
-
-	public Integer getDescItemId() {
-		return descItemId;
+	public void setDescItemObjectId(Integer descItemObjectId) {
+		this.descItemObjectId = descItemObjectId;
 	}
 
 	public ArrChange getCreateChange() {

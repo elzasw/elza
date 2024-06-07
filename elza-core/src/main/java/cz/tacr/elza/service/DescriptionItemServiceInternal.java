@@ -118,18 +118,29 @@ public class DescriptionItemServiceInternal {
     }
 
     /**
-     * Return list of inhibited descItem Ids by lockChange and fund
+     * Return list of inhibited itemId by lockChange and nodeIds
      *
      * @param lockChange
      * @param nodeIds
-     * @return
+     * @return 
      */
 	public Set<Integer> getInhibitedDescItemIds(ArrChange lockChange, Collection<Integer> nodeIds) {
     	Objects.requireNonNull(lockChange);
     	Objects.requireNonNull(nodeIds);
-    	return inhibitedItemRepository.findByNodeIdsAndLockChange(nodeIds, lockChange).stream()
-    			.map(i -> i.getDescItemId())
-    			.collect(Collectors.toSet());
+    	return inhibitedItemRepository.findItemIdsByNodeIdsAndLockChange(nodeIds, lockChange);
+	}
+
+    /**
+     * Return list of inhibited descItemObjectId by lockChange and nodeIds
+     *
+     * @param lockChange
+     * @param nodeIds
+     * @return 
+     */
+	public Set<Integer> getInhibitedDescItemObjectIds(ArrChange lockChange, Collection<Integer> nodeIds) {
+    	Objects.requireNonNull(lockChange);
+    	Objects.requireNonNull(nodeIds);
+    	return inhibitedItemRepository.findItemIdsByNodeIdsAndLockChange(nodeIds, lockChange);
 	}
 
 	public TitleValue createTitleValue(ArrDescItem descItem, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {

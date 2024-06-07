@@ -251,7 +251,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         // arrInhibitedItem <- node2,descItem1
         ArrInhibitedItemVO arrInhibitedItem = new ArrInhibitedItemVO(); 
         arrInhibitedItem.setNodeId(levels.get(levels.size() - 1).getNodeId());
-        arrInhibitedItem.setItemId(descItems.iterator().next().getItemId());
+        arrInhibitedItem.setDescItemObjectId(descItems.iterator().next().getDescItemObjectId());
 
         receiptable = session.send(INHIBIT_DESC_ITEM, arrInhibitedItem);
         status = waitingForReceipt(receiptable, sessionHandler);
@@ -264,7 +264,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         assertNotNull(inhibitItemId);
 
         // Označení přidané položky jako smazané
-        receiptable = session.send(ALLOW_DESC_ITEM, inhibitItemId);
+        receiptable = session.send(ALLOW_DESC_ITEM, arrInhibitedItem.getDescItemObjectId());
         status = waitingForReceipt(receiptable, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
@@ -283,7 +283,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         // Přidání jednoho záznamu ArrInhibitedItem s chybou
         // arrInhibitedItem <- node1,descItem1
         arrInhibitedItem.setNodeId(levels.iterator().next().getNodeId());
-        arrInhibitedItem.setItemId(descItems.iterator().next().getItemId());
+        arrInhibitedItem.setDescItemObjectId(descItems.iterator().next().getDescItemObjectId());
         receiptable = session.send(INHIBIT_DESC_ITEM, arrInhibitedItem);
         status = waitingForReceipt(receiptable, sessionHandler);
         assertEquals(ReceiptStatus.RCP_ERROR, status);

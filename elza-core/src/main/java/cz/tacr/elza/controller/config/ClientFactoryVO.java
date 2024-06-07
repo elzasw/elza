@@ -578,10 +578,10 @@ public class ClientFactoryVO {
      *
      * @param nodeId
      * @param items seznam DO atributů
-     * @param inhibitedDescItemIds
+     * @param inhibitedDescItemObjectIds
      * @return seznam VO atributů
      */
-    public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemIds) {
+    public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemObjectIds) {
         if (items == null) {
             return null;
         }
@@ -603,7 +603,7 @@ public class ClientFactoryVO {
             if (!item.getNodeId().equals(nodeId)) {
             	itemVO.setFromNodeId(item.getNodeId());
             }
-            if (inhibitedDescItemIds.contains(item.getItemId())) {
+            if (inhibitedDescItemObjectIds.contains(item.getDescItemObjectId())) {
             	itemVO.setInhibited(true);
             }
             ArrData data = HibernateUtils.unproxy(item.getData());

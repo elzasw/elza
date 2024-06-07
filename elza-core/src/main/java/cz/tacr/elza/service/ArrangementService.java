@@ -282,14 +282,14 @@ public class ArrangementService {
     }
 
     /**
-     * Načtení záznamy o potlačení dědictví na zaklade id.
+     * Načtení záznamy o potlačení dědictví na zaklade descItemObjectId.
      * 
-     * @param inhibitedItemId
+     * @param descItemObjectId
      * @return záznam o potlačení dědictví
      * @throws ObjectNotFoundException objekt nenalezen
      */
-    public ArrInhibitedItem getInhibitedItem(@NotNull Integer inhibitedItemId) {
-    	return inhibitedItemRepository.findById(inhibitedItemId).orElseThrow(inhibitedItem(inhibitedItemId));
+    public ArrInhibitedItem getInhibitedItem(@NotNull Integer descItemObjectId) {
+    	return inhibitedItemRepository.findByDescItemObjectId(descItemObjectId).orElseThrow(inhibitedItem(descItemObjectId));
     }
 
     /**
@@ -2281,22 +2281,22 @@ public class ArrangementService {
     @Transactional(TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
-	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemId) {
-		ArrDescItem descItem = descItemRepository.findById(descItemId).orElseThrow();
+	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
+		ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
 
 		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
 		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
 		if (!nodeIds.contains(descItem.getNodeId())) {
             throw new SystemException("Element JP nebyl nalezen na nadřazených úrovních", BaseCode.INVALID_STATE)
                     .set("nodeId", node.getNodeId())
-                    .set("descItemId", descItemId);
+                    .set("descItemObjectId", descItemObjectId);
 		}
 
 		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);		 
 
 		ArrInhibitedItem inhibitedItem = new ArrInhibitedItem();
 		inhibitedItem.setNode(node);
-		inhibitedItem.setDescItem(descItem);
+		inhibitedItem.setDescItemObjectId(descItemObjectId);
 		inhibitedItem.setCreateChange(createChange);
 
 		inhibitedItemRepository.save(inhibitedItem);
