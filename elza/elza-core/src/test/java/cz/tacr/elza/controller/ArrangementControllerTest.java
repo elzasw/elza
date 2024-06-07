@@ -529,10 +529,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(inheritedItem);
         assertTrue(inheritedItem.getFromNodeId() == rootNode.getId());
 
-        // zákaz dědění na úrovni nodes.get(2)
+        // zákaz dědictví na úrovni #2 nodes.get(2)
         ArrInhibitedItemVO arrInhibitedItem = new ArrInhibitedItemVO(); 
         arrInhibitedItem.setNodeId(secondNodeId);
-        arrInhibitedItem.setItemId(inheritedItem.getId());
+        arrInhibitedItem.setDescItemObjectId(inheritedItem.getDescItemObjectId());
 
     	final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
@@ -544,10 +544,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ReceiptStatus status = waitingForReceipt(receiptable, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
-        // zděděný ArrDescItem nyní chybí
+        // zděděný ArrDescItem má pozitivní příznak potlačené dědičnosti na úrovni #2
         nodeFormData = getNodeFormData(secondNodeId, fundVersion.getId());
         inheritedItem = findInheritedItem(nodeFormData);
-        //assertNull(inheritedItem); // TODO added next level for test
+        assertNotNull(inheritedItem.getInhibited());
+        assertTrue(inheritedItem.getInhibited());
 
         nodeFormsData = getNodeWithAroundFormsData(fundVersion.getId(), nodes.get(1).getId(), 5);
         assertTrue(nodeFormsData.getForms().size() > 0);
