@@ -793,6 +793,7 @@ when
       "ZP2015_ATTACHMENT",
       // Role entit jsou možné vždy
       "ZP2015_ENTITY_ROLE",
+      "ZP2015_ENTITY_ROLE_TEXT",
       "ZP2015_TITLE_PUBLIC",
       "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE"
       ) )
@@ -6616,4 +6617,37 @@ when  $activeLevel: ActiveLevel( )
     $itemType: RulItemTypeExt( code in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID")  )
 then
     $itemType.setMaxType(RulItemType.Type.POSSIBLE);
+end
+
+//
+// PP_010 Role entit textově u jednotky popisu
+//
+rule "PP_010_01 Role entit textově u jednotky popisu - typ"
+no-loop
+when $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
+
+rule "PP_010_02 Role entit textově u jednotky popisu - specifikace"
+no-loop
+when $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // osoba/bytost související s jednotkami popisu
+        "ZP2015_ENTITY_ROLE_66",
+        // rod/rodina související s jednotkami popisu
+		"ZP2015_ENTITY_ROLE_67",
+		// korporace související s jednotkami popisu
+		"ZP2015_ENTITY_ROLE_68",
+		// událost související s jednotkami popisu
+		"ZP2015_ENTITY_ROLE_69",
+		// dílo/výtvor související s jednotkami popisu
+		"ZP2015_ENTITY_ROLE_70",
+		// geografický objekt související s jednotkami popisu
+		"ZP2015_ENTITY_ROLE_71",
+		// obecný pojem související s jednotkou popisu
+		"ZP2015_ENTITY_ROLE_72"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
