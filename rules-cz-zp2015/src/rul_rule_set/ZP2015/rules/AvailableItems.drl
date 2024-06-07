@@ -793,7 +793,6 @@ when
       "ZP2015_ATTACHMENT",
       // Role entit jsou možné vždy
       "ZP2015_ENTITY_ROLE",
-      "ZP2015_ENTITY_ROLE_TEXT",
       "ZP2015_TITLE_PUBLIC",
       "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE"
       ) )
@@ -6624,23 +6623,23 @@ end
 //
 rule "PP_010_01 Role entit textově u jednotky popisu - typ"
 no-loop
-when $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
+when ActiveLevel($items: descItems)
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $items
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 rule "PP_010_02 Role entit textově u jednotky popisu - specifikace"
 no-loop
-when $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
+when ActiveLevel($items: descItems)
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $items
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autor
         "ZP2015_ENTITY_ROLE_1",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
-        // vydavatelé / nakladatelé
-        "ZP2015_ENTITY_ROLE_16",        
-        // objednatelé/příjemci 
-        "ZP2015_ENTITY_ROLE_19",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // žadatelé
