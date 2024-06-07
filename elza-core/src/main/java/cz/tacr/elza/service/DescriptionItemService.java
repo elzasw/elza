@@ -65,6 +65,7 @@ import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -89,6 +90,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -182,6 +184,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private DataService dataService;
+
+    @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
 
     private TransactionSynchronizationAdapter indexWorkNotify;
 
@@ -443,8 +448,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange createChange,
                                                     final BatchChangeContext batchChangeCtx) {
-        Validate.notNull(createChange);
-        Validate.notNull(node);
+    	java.util.Objects.requireNonNull(createChange);
+    	java.util.Objects.requireNonNull(node);
 
         descItem.setNode(node);
         descItem.setCreateChange(createChange);
@@ -819,9 +824,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrChange change,
                                                     final boolean moveAfter,
                                                     final boolean force) {
-        Validate.notNull(fundVersion);
+    	java.util.Objects.requireNonNull(fundVersion);
         Validate.notEmpty(descItemsToDelete);
-        Validate.notNull(change);
+        java.util.Objects.requireNonNull(change);
 
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
         List<ArrDescItem> results = deleteDescriptionItems(descItemsToDelete, fundVersion, change, moveAfter, force, changeContext);
@@ -892,6 +897,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         descItem.setDeleteChange(change);
         ArrDescItem retDescItem = descItemRepository.save(descItem);
+
+        // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
+        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByDescItemObjectId(descItem.getDescItemObjectId()).orElse(null);
+        if (inhibitedItem != null) {
+        	inhibitedItem.setDeleteChange(change);
+        	inhibitedItemRepository.save(inhibitedItem);
+        }
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
@@ -1373,7 +1385,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              final ArrFundVersion fundVersion,
                                              final ArrChange change) {
 
-        this.logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
+        logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
                           fundVersion.getFundVersionId(),
                           change.getChangeId(), descItem.getItemId());
 
