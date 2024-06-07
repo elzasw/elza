@@ -598,10 +598,12 @@ public class ClientFactoryVO {
         List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
         Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
 
+        int inhPos = -items.size();
         for (ArrDescItem item : items) {
             ArrItemVO itemVO = createItem(item);
             if (!item.getNodeId().equals(nodeId)) {
             	itemVO.setFromNodeId(item.getNodeId());
+            	itemVO.setPosition(inhPos++);
             }
             if (inhibitedDescItemObjectIds.contains(item.getDescItemObjectId())) {
             	itemVO.setInhibited(true);
@@ -613,6 +615,9 @@ public class ClientFactoryVO {
             }
             result.add(itemVO);
         }
+
+        // řazení záznamů podle position
+        Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
         return result;
     }
 
