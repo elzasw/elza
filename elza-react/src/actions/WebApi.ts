@@ -312,6 +312,14 @@ export class WebApiCls {
         );
     }
 
+    inhibitDescItem(nodeId:number, descItemObjectId:number){
+        return callWS('/arrangement/descItems/inhibit', {nodeId, descItemObjectId});
+    }
+
+    allowDescItem(descItemObjectId:number){
+        return callWS('/arrangement/descItems/allow', descItemObjectId);
+    }
+
     setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
         // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
 

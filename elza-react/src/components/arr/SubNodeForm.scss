@@ -196,6 +196,13 @@ $descItemDraggerSize: 6px;
                             }
                             &:last-child {
                             }
+                            &.inhibited {
+                                .desc-item-spec, .desc-item-value {
+                                    input {
+                                        text-decoration: line-through;
+                                    }
+                                }
+                            }
 
                             .desc-item-value-container {
                                 display: flex;
