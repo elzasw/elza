@@ -211,8 +211,8 @@ public class DescItemTypeFilter {
      */
     private Map<Integer, Set<Integer>> processLuceneQueries(final SearchSession session, 
     														final Integer fundId,
-			final List<SearchPredicate> lucenePredicates) {
-		if (!lucenePredicates.isEmpty()) {
+    														final List<SearchPredicate> lucenePredicates) {
+		if (lucenePredicates.isEmpty()) {
 			return null;
 		}
 
