@@ -93,6 +93,7 @@
     </changeSet>
 
     <changeSet id="20240424101900" author="sergey.iryupin">
+        <validCheckSum>9:1882606d24b988cf0ebfdf2fedc3ecce</validCheckSum>
     	<createTable tableName="arr_inhibited_item">
     		<column name="inhibited_item_id" type="int">
     			<constraints primaryKey="true" primaryKeyName="pk_arr_inhibited_item" nullable="false"/>
@@ -118,13 +119,10 @@
         <createIndex indexName="arr_inhibited_item_node_id_idx" tableName="arr_inhibited_item" unique="false">
             <column name="node_id" type="int"/>
         </createIndex>
-        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_inhibited_item_desc_item_pidx
-                               ON arr_inhibited_item(desc_item_id)
-                               WHERE delete_change_id IS NULL</sql>
     </changeSet>
 
     <changeSet id="20240606142800" author="sergey.iryupin">
-    	<delete tableName="arr_inhibited_item"/>
+        <validCheckSum>9:f295599a8d1c8d449ff855b0d0d6ac02</validCheckSum>
         <dropColumn tableName="arr_inhibited_item" columnName="desc_item_id"/>
         <addColumn tableName="arr_inhibited_item">
             <column name="desc_item_object_id" type="int">
@@ -132,7 +130,7 @@
             </column>
         </addColumn>
         <sql dbms="postgresql">CREATE UNIQUE INDEX arr_inhibited_item_desc_item_object_pidx
-                               ON arr_inhibited_item(desc_item_object_id)
+                               ON arr_inhibited_item(desc_item_object_id, node_id)
                                WHERE delete_change_id IS NULL</sql>
 	</changeSet>
 
