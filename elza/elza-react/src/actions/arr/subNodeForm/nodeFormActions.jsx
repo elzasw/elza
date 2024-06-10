@@ -277,6 +277,13 @@ export class NodeFormActions extends ItemFormActions {
         );
     }
 
+    _callSetInhibitDescItem(nodeId, itemId, inhibit){
+        if(inhibit){
+            return WebApi.inhibitDescItem(nodeId, itemId);
+        }
+        return WebApi.allowDescItem(itemId);
+    }
+
     // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
         const type = getRoutingKeyType(routingKey);

@@ -46,6 +46,7 @@ class FormDescItemGroup extends AbstractReactComponent {
         onDescItemTypeLock: PropTypes.func.isRequired,
         onDescItemTypeCopy: PropTypes.func.isRequired,
         onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
+        onDescItemInhibit: PropTypes.func.isRequired,
     };
 
     render() {
@@ -94,6 +95,7 @@ class FormDescItemGroup extends AbstractReactComponent {
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
             onDescItemNotIdentified,
+            onDescItemInhibit,
         } = this.props;
 
         const onFuncs = {
@@ -117,6 +119,7 @@ class FormDescItemGroup extends AbstractReactComponent {
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
             onDescItemNotIdentified,
+            onDescItemInhibit,
         };
 
         const descItemTypes = [];
@@ -133,6 +136,7 @@ class FormDescItemGroup extends AbstractReactComponent {
 
                 descItemTypes.push(
                     <FormDescItemType
+                        parentId={subNodeForm.nodeId}
                         key={descItemType.id}
                         descItemType={descItemType}
                         descItemTypeIndex={descItemTypeIndex}
