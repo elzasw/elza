@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>3.0.0-BETA-3-SNAPSHOT</version>
+        <version>3.0.0-BETA-3</version>
     </parent>
     <artifactId>elza-core</artifactId>
     <name>ELZA Core</name>
@@ -619,7 +619,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  TODO pasek hack - cxf-codegen-plugin momentálnì neumí generovat tøídy s jakarta ee9, nutno ruènì pøepsat importy -->
+            <!--  TODO pasek hack - cxf-codegen-plugin momentï¿½lnï¿½ neumï¿½ generovat tï¿½ï¿½dy s jakarta ee9, nutno ruï¿½nï¿½ pï¿½epsat importy -->
             <!--
             <plugin> 
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
