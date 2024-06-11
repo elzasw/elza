@@ -68,7 +68,7 @@ class DescItemBit extends AbstractReactComponent<Props> {
             }
             inputEl = (
                 <FormControl
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, [...cls, "form-select"])}
                     as={'select'}
                     ref={this.focusEl as any}
                     disabled={locked || descItem.undefined}

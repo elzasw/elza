@@ -13,6 +13,8 @@ export default ({ mode }) => {
   const endpoint = process.env.ENDPOINT || defaultEndpoint;
 
   return defineConfig({
+    // Make paths relative
+    base: "./",
     resolve: {
       alias: {
         "src": path.resolve(__dirname, "./src/"),
@@ -27,6 +29,7 @@ export default ({ mode }) => {
         '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
       }
     },
+    define: {'process.env': process.env},
     plugins: [react()],
     build: {
       sourcemap: true,

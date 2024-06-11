@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
@@ -72,6 +73,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query(FETCH_NODES_WITH_DATA)
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
+	@Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.itemTypeId IN (?2) AND i.deleteChange IS NULL")
+	List<ArrDescItem> findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds);
+
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t JOIN i.itemSpec s WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2 AND s.itemSpecId = ?3")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeIdAndSpecItemTypeId(ArrNode node, Integer itemTypeId, Integer itemSpecId);
 
@@ -101,7 +105,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t WHERE i.node = ?1 AND t.itemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeItemTypeIdAndLockChangeId(ArrNode node, Integer itemTypeId, ArrChange change);
-
 
     /**
 	 * Najde otevřené atributy s daným nodem a type a načte je včetně hodnot
@@ -139,7 +142,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      */
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrDescItem findOpenDescItem(Integer descItemObjectId);
-
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu. (pro vícehodnotový atribut)
@@ -219,7 +221,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(Collection<? extends ArrData> data);
 
-    @Query("Select i from arr_desc_item i join arr_data_record_ref d on i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n JOIN FETCH i.createChange cc LEFT JOIN FETCH i.deleteChange dc JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByRecord(@Param("record") final ApAccessPoint record);
 
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")
@@ -281,7 +283,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT count(i) FROM arr_desc_item i WHERE i.nodeId = :nodeId AND i.itemTypeId = :itemTypeId AND i.itemId != :itemId AND i.deleteChange IS NULL")
     int countByNodeIdAndItemTypeIdAndNotItemId(@Param("nodeId") Integer nodeId, @Param("itemTypeId") Integer itemTypeId, @Param("itemId") Integer itemId);
 
-
     @Query("SELECT new cz.tacr.elza.repository.vo.UsedItemTypeVO(i.itemTypeId, COUNT(i.itemId)) "
            + "FROM arr_desc_item i "
            + "JOIN i.node n "
@@ -298,4 +299,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
             + "AND (i.deleteChange IS NULL OR i.deleteChangeId > fv.lockChangeId) AND i.position = 1 "
             + "GROUP BY i.itemTypeId")
     List<UsedItemTypeVO> findUsedItemTypes(@Param("fundId") Integer fundId, @Param("fundVersionId") Integer fundVersionId);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN arr_data_structure_ref d ON i.data = d WHERE d.structuredObject = :structuredObject")
+    List<ArrDescItem> findByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 }

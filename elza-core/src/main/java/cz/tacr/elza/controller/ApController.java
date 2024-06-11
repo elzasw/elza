@@ -7,7 +7,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -86,7 +84,6 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevState;
@@ -116,7 +113,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -137,7 +133,6 @@ import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
-
 
 /**
  * REST kontroler pro registry.
@@ -218,11 +213,17 @@ public class ApController {
      * @param search            hledaný řetězec, může být null či prázdný (pak vrací vše)
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
-     * @param apTypeId   IDčka typu záznamu, může být null
-     * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
-     * @param itemSpecId   id specifikace
+     * @param apTypeId          IDčka typu záznamu, může být null
+     * @param versionId         id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
+     * @param itemSpecId        id specifikace
+     * @param itemTypeId
      * @param state             stav schválení přístupového bodu
      * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
+     * @param lastRecordNr
+     * @param searchTypeName
+     * @param searchTypeUsername
+     * @param revState
+     * @param searchFilter
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
 	@Transactional
@@ -241,9 +242,6 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername,
                                                              @RequestParam(required = false) @Nullable final RevStateApproval revState,
                                                              @RequestBody(required = false)@Nullable final SearchFilterVO searchFilter) {
-        final long foundRecordsCount;
-        final List<ApState> foundRecords;
-
         StaticDataProvider sdp = staticDataService.getData();
 
         ArrFund fund;
@@ -295,49 +293,13 @@ public class ApController {
             apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
         }
 
-        if (StringUtils.isNotEmpty(search) || searchFilter != null) {
-
-        	return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, revState, scopeId, searchFilter, sdp);
+        if (StringUtils.isNotEmpty(search)) {
+        	return accessPointService.findUseLuceneQueries(search, searchFilter, fund, apTypeIds, scopeId, state, revState, from, count, sdp);
         }
-
-//		if (searchFilter == null && revState == null) {        
-//        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
-//        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-//        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
-//
-//        foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId,
-//                                                                                   states, searchTypeNameFinal,
-//                                                                                   searchTypeUsernameFinal);
-//        OrderBy orderBy = OrderBy.LAST_CHANGE;
-//        if (foundRecordsCount < 1000) {
-//            orderBy = OrderBy.PREF_NAME;
-//        }
-//        foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy,
-//                                                                         fund,
-//                                                                         scopeId, states, searchTypeNameFinal,
-//                                                                         searchTypeUsernameFinal);
-//        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
-//		} else {
-
-        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
-        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
-                                                                                state, revState, from, count, sdp);
-        foundRecords = page.getContent();
-        foundRecordsCount = page.getTotalElements();
-
-        final List<ApAccessPoint> accessPoints = foundRecords.stream()
-                .map(ApState::getAccessPoint)
-                .collect(Collectors.toList());
-
-        final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
-        final Map<Integer, ApIndex> descriptionMap = accessPointService.findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
-
-        return new FilteredResultVO<>(foundRecords, apState ->
-                apFactory.createVO(apState,
-                    apState.getAccessPoint(),
-                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null,
-                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
-                foundRecordsCount);
+        return accessPointService.findUseCriteriaQuery(search, searchFilter, 
+        										       searchTypeName, searchTypeUsername, 
+        										       fund, apTypeIds, scopeId, state, revState, 
+        										       from, count, sdp);
     }
 
     private Set<Integer> applyApTypeFilter(StaticDataProvider sdp, Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
@@ -359,33 +321,6 @@ public class ApController {
             }
             return result;
         }
-    }
-
-    private FilteredResultVO<ApAccessPointVO> findAccessPointFulltext(String search,
-                                                                      Integer from,
-                                                                      Integer count,
-                                                                      ArrFund fund,
-                                                                      Set<Integer> apTypeIds,
-                                                                      ApState.StateApproval state,
-                                                                      RevStateApproval revState,
-                                                                      Integer scopeId,
-                                                                      SearchFilterVO searchFilter,
-                                                                      StaticDataProvider sdp) {
-
-        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
-
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
-                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
-
-        List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
-        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
-            CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
-            String name = apFactory.findAeCachedEntityName(entity);
-            String description = apFactory.getDescription(entity);
-            accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
-        }
-
-        return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
     }
 
     /**
@@ -410,42 +345,6 @@ public class ApController {
         }
         return apFactory.createVO(apState, true);
     }
-
-    /**
-     * Vytvoření přístupového bodu s přesměrováním
-     *
-     * @param accessPoint zakládaný přístupový bod
-     * @return přístupový bod nebo přesměrování
-     */
-    /*@Transactional
-    @RequestMapping(value = "/", method = RequestMethod.POST)
-    public ModelAndView createAccessPointWithRedirect(@RequestBody final ApAccessPointCreateVO accessPoint) {
-        Integer typeId = accessPoint.getTypeId();
-        Integer scopeId = accessPoint.getScopeId();
-
-        ApScope scope = accessPointService.getScope(scopeId);
-        ApType type = accessPointService.getType(typeId);
-        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
-
-        ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
-        ApAccessPointVO apAccessPointVO = apFactory.createVO(apState, true);
-
-        if (createEntityRequest.getEntityClass() != null) {
-            String response = createEntityRequest.getResponse();
-            if (response != null) {
-                response = response.replace("{status}", "SUCCESS")
-                            .replace("{entityUuid}", apAccessPointVO.getUuid())
-                            .replace("{entityId}", String.valueOf(apAccessPointVO.getId()));
-            }
-            createEntityRequest.setEntityClass(null);
-            createEntityRequest.setResponse(null);
-            return new ModelAndView("redirect:" + response);
-        }
-
-        ModelAndView modelAndView = new ModelAndView("viewPage");
-        modelAndView.addObject("ApAccessPointVO", apAccessPointVO);
-        return modelAndView;
-    }*/
 
     /**
      * Nastaví pravidla přístupovému bodu podle typu.
@@ -840,16 +739,11 @@ public class ApController {
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
-//        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository //TODO hibernate search 6
-//                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
-//                                                  null, from, max, sdp);
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = new QueryResults<>(0,null); //TODO hibernate search 6
-        /*
-        filter.setAeTypeIds(apTypes);
-        return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);
-        */
-        ArchiveEntityResultListVO ret = new ArchiveEntityResultListVO();
-        ret.setTotal(cachedAccessPointResult.getRecordCount());
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds, null, null, from, max, sdp);
+
+        ArchiveEntityResultListVO resultList = new ArchiveEntityResultListVO();
+        resultList.setTotal(cachedAccessPointResult.getRecordCount());
         List<ArchiveEntityVO> data;
         List<ApCachedAccessPoint> records = cachedAccessPointResult.getRecords();
         if (CollectionUtils.isEmpty(records)) {
@@ -868,8 +762,8 @@ public class ApController {
                 data.add(ae);
             }
         }
-        ret.setData(data);
-        return ret;
+        resultList.setData(data);
+        return resultList;
     }
 
     /**

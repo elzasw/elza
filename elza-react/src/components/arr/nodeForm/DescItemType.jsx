@@ -81,6 +81,7 @@ class DescItemType extends AbstractReactComponent {
         arrPerm: PropTypes.bool,
         isValueUndefined: PropTypes.bool,
         onDescItemNotIdentified: PropTypes.func,
+        onDescItemInhibit: PropTypes.func,
         closed: PropTypes.bool,
         copy: PropTypes.bool,
         conformityInfoMissings: PropTypes.array,
@@ -844,13 +845,14 @@ class DescItemType extends AbstractReactComponent {
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
         const {refType, readMode, infoType, rulDataType, draggable} = this.props;
 
-        let cls = 'desc-item-type-desc-item-container';
-        if (actions.length > 0) {
-            cls += ' with-action';
-        }
-        if (infoType.rep === 1) {
-            cls += ' draggable-desc-items';
-        }
+        const cls = classNames(
+            "desc-item-type-desc-item-container",
+            {
+                "with-action": actions.length > 0,
+                "draggable-desc-items": infoType.rep === 1,
+                "inhibited": descItem.inhibited
+            }
+        );
 
         const parts = [];
         let partsCls = 'desc-item-value-container';
@@ -1332,8 +1334,10 @@ class DescItemType extends AbstractReactComponent {
             closed,
             readMode,
             onDescItemNotIdentified,
+            onDescItemInhibit,
             arrPerm,
             refType,
+            parentId,
         } = this.props;
         const {descItemType} = this.state;
 
@@ -1349,6 +1353,7 @@ class DescItemType extends AbstractReactComponent {
                 // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
                 const editable = (!infoType.cal || infoType.calSt) && !descItem.readOnly;
                 const canDeleteDescItem = this.getShowDeleteDescItem(descItem);
+                const isInheritedItem = descItem.fromNodeId != undefined && descItem.fromNodeId != parentId;
 
                 // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
                 if (!readMode && editable) {
@@ -1358,6 +1363,7 @@ class DescItemType extends AbstractReactComponent {
                         && refType.useSpecification
                         && infoType.ind
                         && onDescItemNotIdentified
+                        && !isInheritedItem
                     ) {
                         actions.push(
                             <NoFocusButton
@@ -1372,7 +1378,10 @@ class DescItemType extends AbstractReactComponent {
                     }
 
                     // pokud je opakovatelny, nebo je jich vice nez 1
-                    if ((infoType.rep === 1 || descItemType.descItems.length > 1) && canDeleteDescItem) {
+                    if ((infoType.rep === 1 || descItemType.descItems.length > 1)
+                        && canDeleteDescItem
+                        && !isInheritedItem
+                    ) {
                         actions.push(
                             <NoFocusButton
                                 key="delete"
@@ -1382,6 +1391,32 @@ class DescItemType extends AbstractReactComponent {
                                 <Icon glyph="fa-times" />
                             </NoFocusButton>,
                         );
+                    }
+                    if (onDescItemInhibit
+                        && isInheritedItem
+                    ) {
+                    if(!descItem.inhibited){
+                        actions.push(
+                            <NoFocusButton
+                                key="inhibit"
+                                onClick={() => onDescItemInhibit(descItem, true)}
+                                title={i18n('subNodeForm.inhibitDescItem')}
+                            >
+                                <Icon glyph="fa-times" />
+                            </NoFocusButton>,
+                        );
+                    }
+                    else {
+                        actions.push(
+                            <NoFocusButton
+                                key="allow"
+                                onClick={() => onDescItemInhibit(descItem, false)}
+                                title={i18n('subNodeForm.allowDescItem')}
+                            >
+                                <Icon glyph="fa-undo" />
+                            </NoFocusButton>,
+                        );
+                    }
                     }
                 }
                 const errors = conformityInfo.errors[descItem.descItemObjectId];
@@ -1398,7 +1433,7 @@ class DescItemType extends AbstractReactComponent {
                 }
 
 
-                let canModifyDescItem = !(locked || closed || descItem.readOnly);
+                let canModifyDescItem = !(locked || closed || descItem.readOnly || isInheritedItem);
 
                 // Pokud nemá právo na pořádání, nelze provádět akci
                 if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {

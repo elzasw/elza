@@ -206,6 +206,7 @@ class LecturingTop extends React.Component<any> {
                     name={'protocol'}
                     onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)}
                     value={issueListId}
+                    className="form-select"
                 >
                     {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
                     {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
@@ -218,6 +219,7 @@ class LecturingTop extends React.Component<any> {
                             disabled={!issueListId}
                             onChange={({target: {value}}: any) => this.filter({state: value})}
                             value={issueList.filter.state}
+                            className="form-select"
                         >
                             <option value={''}>{i18n('global.all')}</option>
                             {issueStates.fetched && issueStates.data.map(basicOptionMap)}
@@ -230,6 +232,7 @@ class LecturingTop extends React.Component<any> {
                             disabled={!issueListId}
                             onChange={({target: {value}}: any) => this.filter({type: value})}
                             value={issueList.filter.type}
+                            className="form-select"
                         >
                             <option value={''}>{i18n('global.all')}</option>
                             {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}

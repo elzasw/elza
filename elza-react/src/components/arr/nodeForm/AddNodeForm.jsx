@@ -509,11 +509,12 @@ class AddNodeForm extends AbstractReactComponent {
                             <Col xs={12}>
                                 <FormInput
                                     ref="selsel"
-                                    as="select"
+                                    type="select"
                                     disabled={loading || submitting}
                                     label={i18n('arr.fund.addNode.direction')}
                                     defaultValue={initDirection}
                                     onChange={this.handleDirectionChange}
+                                    className="form-select"
                                 >
                                     {options}
                                 </FormInput>
@@ -658,12 +659,13 @@ class AddNodeForm extends AbstractReactComponent {
                                 <FormInput
                                     ref="select"
                                     key={'tmpl-select'}
-                                    as="select"
+                                    type="select"
                                     name={'template'}
                                     disabled={loading || submitting}
                                     label={''}
                                     onChange={this.handleTemplateChange}
                                     defaultValue={defaultValueTemplate}
+                                    className="form-select"
                                 >
                                     <option value={''} key="no-select">
                                         {i18n('global.action.select')}

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -39,8 +40,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
@@ -49,6 +54,7 @@ import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
@@ -74,6 +80,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -120,10 +127,10 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -170,6 +177,9 @@ public class AccessPointService {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+
+    @Autowired
+    private ApCachedAccessPointRepository apCachedAccessPointRepository;
 
     @Autowired
     private ApTypeRepository apTypeRepository;
@@ -277,9 +287,6 @@ public class AccessPointService {
     private AccessPointCacheService accessPointCacheService;
 
     @Autowired
-    private ApRevItemRepository revItemRepository;
-
-    @Autowired
     private ApRevisionRepository revisionRepository;
 
     @Autowired
@@ -290,6 +297,9 @@ public class AccessPointService {
 
     @Autowired
     private RevisionItemService revisionItemService;
+
+    @Autowired
+    private ApFactory apFactory;
 
     @Autowired
     private EntityManager em;
@@ -361,7 +371,7 @@ public class AccessPointService {
      */
     public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
-        if (!StringUtils.isNumeric(id)) {
+        if (UuidUtils.isUUID(id)) {
             accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
         } else {
             accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
@@ -384,7 +394,7 @@ public class AccessPointService {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
-        if (!StringUtils.isNumeric(ids.get(0))) {
+        if (UuidUtils.isUUID(ids.get(0))) {
             accessPoints = apAccessPointRepository.findApAccessPointsByUuids(ids);
         } else {
             List<Integer> integerIds = ids.stream().map(p -> Integer.valueOf(p)).collect(Collectors.toList());
@@ -410,9 +420,8 @@ public class AccessPointService {
         }
         List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
-            List<Integer> itemIds = arrRecordItems.stream().map(ArrItem::getItemId)
-                    .collect(Collectors.toList());
-            
+            List<Integer> itemIds = arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors.toList());
+
             logger.error("Přístupový bod je připojen k jednotce popisu a nelze ho smazat, accessPointId: {}, počet výskytů: {}",
                          accessPoint.getAccessPointId(), itemIds.size());
 
@@ -434,6 +443,9 @@ public class AccessPointService {
                                   final ApAccessPoint replacedBy,
                                   final boolean mergeAp)
             throws SyncImpossibleException {
+
+        logger.info("Deleting accessPoint, id: {}, replacedBy: {}, mergeAp: {}", apState.getAccessPointId(),
+                    replacedBy != null ? replacedBy.getAccessPointId() : null, mergeAp);
 
         checkPermissionForEdit(apState);
 
@@ -502,6 +514,8 @@ public class AccessPointService {
             }
         }
         deleteAccessPointPublishAndReindex(apState, accessPoint, change);
+        logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
+                    replacedBy != null ? replacedBy.getAccessPointId() : null);
     }
 
     /**
@@ -999,15 +1013,20 @@ public class AccessPointService {
     private void replaceInArrItems(ApState replacedState,
                                    ApState replacementState)
             throws SyncImpossibleException {
+        logger.debug("AccessPoint replacement in ArrItems started ({}->{})", replacedState.getAccessPointId(),
+                     replacementState.getAccessPointId());
+        
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
         // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
+        logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
+
         // ArrItems
         final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream()
-                .collect(Collectors.groupingBy(ArrDescItem::getFundId));
+                .collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
         // fund to scopes
@@ -1025,7 +1044,6 @@ public class AccessPointService {
             });
         }
 
-
         final Map<Integer, ArrFundVersion> fundVersions;
         if (fundIds.isEmpty()) {
             fundVersions = Collections.emptyMap();
@@ -1033,6 +1051,8 @@ public class AccessPointService {
             fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
                     .collect(toMap(ArrFundVersion::getFundId, Function.identity()));
         }
+
+        logger.debug("Replacing in ArrItems in funds: {}", fundIds);
 
         final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REPLACE_REGISTER);
         for (Integer fundId : fundIds) {
@@ -1064,6 +1084,9 @@ public class AccessPointService {
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
         }
+
+        logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(),
+                     replacementState.getAccessPointId());
     }
     }
 
@@ -1347,41 +1370,6 @@ public class AccessPointService {
         }
     }
 
-    /**
-     * Aktualizace stavajicich propojeni
-     *
-     * @param dataRefList
-     * @param bindingItemList
-     */
-    // 11.2.2021 PPy - zakomentovano, nejasna funkce
-    /*
-    private void createBindingForRel(final List<ReferencedEntities> dataRefList, final List<ApBindingItem> bindingItemList) {
-        //TODO fantiš optimalizovat
-        for (ReferencedEntities dataRef : dataRefList) {
-            ApBindingItem apBindingItem = findBindingItemByUuid(bindingItemList, dataRef.getUuid());
-            if (apBindingItem != null && apBindingItem.getItem() != null) {
-                ArrDataRecordRef dataRecordRef = dataRef.;
-                ApBinding currentEntity = apBindingItem.getBinding();
-                ApScope scope = currentEntity.getScope();
-                ApExternalSystem apExternalSystem = currentEntity.getApExternalSystem();
-                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope,
-                                                                                                    dataRef.getValue(),
-                                                                                                    apExternalSystem);
-                if (refBinding == null) {
-                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
-                } else {
-                    dataRecordRef.setBinding(refBinding);
-
-                    ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
-                    if (bindingState != null) {
-                        dataRecordRef.setRecord(bindingState.getAccessPoint());
-                    }
-                }
-                dataRecordRefRepository.save(dataRecordRef);
-            }
-        }
-    }*/
-
     public ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
         return apBindingItem.getPart();
@@ -1434,6 +1422,11 @@ public class AccessPointService {
         apItemService.deleteItems(deleteItems, change);
 
         generateSync(state, apPart);
+
+        // při změně hodnot v preferované části musíme reindexovat
+        if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
+	        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+        }
 
         return true;
     }
@@ -1693,8 +1686,8 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApState changeApType(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId,
                                 final Integer apTypeId) {
-        Validate.notNull(accessPointId);
-        Validate.notNull(apTypeId);
+    	Objects.requireNonNull(accessPointId);
+    	Objects.requireNonNull(apTypeId);
 
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
@@ -1812,6 +1805,95 @@ public class AccessPointService {
         return apAccessPointRepository.findAccessPointIdByState(state);
     }
 
+    /**
+     * Vyhledávání pomocí Lucene dotazů
+     * 
+     * @param search
+     * @param searchFilter
+     * @param fund
+     * @param apTypeIds
+     * @param scopeId
+     * @param state
+     * @param revState
+     * @param from
+     * @param count
+     * @param sdp
+     * @return
+     */
+	public FilteredResultVO<ApAccessPointVO> findUseLuceneQueries(String search,
+																  SearchFilterVO searchFilter,
+																  ArrFund fund,
+																  Set<Integer> apTypeIds, 
+																  Integer scopeId, 
+																  ApState.StateApproval state, 
+																  RevStateApproval revState,
+																  Integer from, Integer count,
+																  StaticDataProvider sdp) {
+		Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
+
+		QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+				.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
+
+		List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
+		for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
+			CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
+			String name = apFactory.findAeCachedEntityName(entity);
+			String description = apFactory.getDescription(entity);
+			accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
+		}
+
+		return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
+	}
+
+	public FilteredResultVO<ApAccessPointVO> findUseCriteriaQuery(String search,
+															      SearchFilterVO searchFilter,
+															      SearchType searchTypeName,
+															      SearchType searchTypeUsername,
+			  													  ArrFund fund,
+			  													  Set<Integer> apTypeIds, 
+			  													  Integer scopeId, 
+			  													  ApState.StateApproval state, 
+			  													  RevStateApproval revState,
+			  													  Integer from, Integer count,
+			  													  StaticDataProvider sdp) {
+        final long foundRecordsCount;
+        final List<ApState> foundRecords;
+
+        if (searchFilter == null && revState == null) {        
+	        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+	        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
+	        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+
+	        foundRecordsCount = findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId, states, 
+	        														searchTypeNameFinal, searchTypeUsernameFinal);
+	        OrderBy orderBy = OrderBy.LAST_CHANGE;
+	        if (foundRecordsCount < 1000) {
+	            orderBy = OrderBy.PREF_NAME;
+	        }
+	        foundRecords = findApAccessPointByTextAndType(search, apTypeIds, from, count, orderBy, fund,
+	        											  scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+		} else {
+
+	        Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
+	        Page<ApState> page = findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
+	                                                             state, revState, from, count, sdp);
+	        foundRecords = page.getContent();
+	        foundRecordsCount = page.getTotalElements();
+		}
+
+        final List<ApAccessPoint> accessPoints = foundRecords.stream().map(ApState::getAccessPoint).collect(Collectors.toList());
+
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApIndex> descriptionMap = findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
+
+        return new FilteredResultVO<>(foundRecords, apState ->
+                apFactory.createVO(apState,
+                    apState.getAccessPoint(),
+                    nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null,
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
+                foundRecordsCount);
+	}
+	
     /**
      * Zvýšení čísla verze archivní entity
      * 
@@ -2048,7 +2130,7 @@ public class AccessPointService {
      * @param replace
      *            - nahradit zkopírovanou entitu novou nebo ne
      * @param skipItems
-     *            - seznam ID prvků popisu, které se nemají kopírovat
+     *            - seznam ID prvků popisu, které se nem)ají kopírovat
      * @return ApAccessPoint
      * @throws SyncImpossibleException
      */
@@ -2833,6 +2915,9 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         ApAccessPoint apAccessPoint = saveWithLock(accessPoint);
+        // reindexace při změně preferované části
+        arrangementInternalService.reindexArrDescItemAndArrCacheNode(apAccessPoint);
+
         return apAccessPoint;
     }
 
@@ -3147,18 +3232,18 @@ public class AccessPointService {
 
     public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
-        if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
-            return "";
+        if (cachedAccessPoint != null && cachedAccessPoint.getParts() != null) {
+        	for (CachedPart part : cachedAccessPoint.getParts()) {
+        		if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+        			for (ApIndex index : part.getIndices()) {
+        				if (index.getIndexType().equals(DISPLAY_NAME)) {
+        					return index.getIndexValue();
+        				}
+        			}
+        		}
+        	}
         }
-        CachedPart preferredPart = cachedAccessPoint.getParts().stream()
-                .filter(p -> p.getPartId().equals(cachedAccessPoint.getPreferredPartId()))
-                .findAny()
-                .orElse(null);
-        ApIndex index = preferredPart.getIndices().stream()
-                .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
-                .findAny()
-                .orElse(null);
-        return index == null ? "": index.getIndexValue();
+        throw new ObjectNotFoundException("Neexistuje preferred name", BaseCode.PROPERTY_NOT_EXIST).set("accessPoinId", accessPoint.getAccessPointId());
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max,
@@ -3653,14 +3738,6 @@ public class AccessPointService {
 
         dataRepository.save(newData);
         return itemRepository.save(newItem);
-    }
-
-    private ApIndex copyIndex(ApIndex index, ApPart partTo) {
-        ApIndex indexTo = new ApIndex();
-        indexTo.setIndexType(index.getIndexType());
-        indexTo.setPart(partTo);
-        indexTo.setIndexValue(index.getIndexValue());
-        return indexRepository.save(indexTo);
     }
 
     /**

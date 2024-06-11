@@ -721,6 +721,30 @@ export class ItemFormActions {
         };
     }
 
+    _callSetInhibitDescItem(nodeId, itemId, inhibit) {}
+
+    fundSubNodeFormValueSetInhibit(nodeId, itemId, inhibit) {
+        return (dispatch, getState) => {
+            const {arrRegion} = getState();
+
+            const activeFund = arrRegion.funds[arrRegion.activeIndex];
+            if(activeFund == undefined){
+                throw "No active fund";
+            }
+
+            const versionId = activeFund.activeVersion?.id;
+            const routingKey = activeFund.nodes?.nodes[activeFund.nodes.activeIndex]?.routingKey
+
+            if(versionId == undefined){
+                throw "No active version";
+            }
+
+            this._callSetInhibitDescItem(nodeId, itemId, inhibit).then(() => {
+                dispatch(this._fundSubNodeFormFetch(versionId, nodeId, routingKey, true));
+            })
+        }
+    }
+
     fundSubNodeFormHandleClose(versionId, routingKey) {
         return (dispatch, getState) => {
             const state = getState();

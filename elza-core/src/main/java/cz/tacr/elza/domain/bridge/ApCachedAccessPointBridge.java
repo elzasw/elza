@@ -4,10 +4,10 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.REL_AP_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_FROM;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_TO;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,10 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -40,13 +36,9 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.annotation.Nullable;
@@ -59,6 +51,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     private static SettingIndexSearch settingIndexSearch;
     
+    // TODO převést na použití Bean
     private static AccessPointCacheService accessPointCacheService;
 
     public static final String AP_TYPE_ID = "ap_type_id";
@@ -66,9 +59,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     public static final String STATE = "state";
     public static final String REV_STATE = "rev_state";
 
-    public static final String PREFIX_PREF = "_pref";
+    public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
-    public static final String INDEX = "_index";
+    public static final String INDEX = "index";
 
     public static final String USERNAME = "username";
 
@@ -149,6 +142,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 String itemTypeCode = itemType.getCode().toLowerCase();
                 String itemSpecCode = itemSpec != null? itemSpec.getCode().toLowerCase() : null;
 
+                // TODO refactor logic using switch
+
                 if (dataType == DataType.COORDINATES) {
                     continue;
                 }
@@ -160,6 +155,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                     if (dataRecordRef == null || dataRecordRef.getRecordId() == null) {
                         continue;
                     }
+                    document.addValue(REL_AP_ID, dataRecordRef.getRecordId());
                     value = dataRecordRef.getRecordId().toString();
                 } else {
                     ArrData data = HibernateUtils.unproxy(item.getData());
@@ -174,11 +170,17 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 }
 
                 if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                    addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
+                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
 
                     if (itemSpec != null) {
-                        addField(name + PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode, value.toLowerCase(), document, name);
+                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode, value.toLowerCase(), document, name);
                     }
+                }
+
+                // indexování polí unitdate
+                if (dataType == DataType.UNITDATE) {
+                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_FROM, item.getData().getNormalizedFrom());
+                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_TO, item.getData().getNormalizedTo());
                 }
 
                 // indexování polí s více než 32766 znaky
@@ -201,12 +203,12 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 if (index.getIndexType().equals(DISPLAY_NAME)) {
 
                     if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                        addField(name + PREFIX_PREF + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                        addSortField(name + PREFIX_PREF + INDEX, index.getIndexValue().toLowerCase(), document);
+                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                        addSortField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document);
                     }
 
-                    addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                    addField(name + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                    addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                    addField(name + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
                 }
             }
         }
