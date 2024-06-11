@@ -170,6 +170,7 @@
 	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()
 	.beginBlock().addValue("ZP2015_STORAGE_COND").endBlock()
 	.beginBlock().addValue("ZP2015_SCALE").endBlock()
+	.beginBlock().addValue("ZP2015_SCALE_NUMERICAL").endBlock()
 	.beginBlock().addValue("ZP2015_SIZE").endBlock()
 	.beginBlock().addValue("ZP2015_WRITING").endBlock()
 	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()
@@ -384,6 +385,7 @@
 	.setBlockSeparators("","; ")
 	.beginBlock().addValue("ZP2015_STORAGE_COND").endBlock()
 	.beginBlock().addValue("ZP2015_SCALE").endBlock()
+	.beginBlock().addValue("ZP2015_SCALE_NUMERICAL").endBlock()
 	.beginBlock().addValue("ZP2015_SIZE").endBlock()
 	.beginBlock().addValue("ZP2015_WRITING").endBlock()	
 	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()]]></defaultValueExpression>

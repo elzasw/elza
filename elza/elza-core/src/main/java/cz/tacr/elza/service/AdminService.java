@@ -26,9 +26,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 
 /**
+ * Main administration service
  *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 19. 1. 2016
  */
 @Component
@@ -39,9 +38,6 @@ public class AdminService {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
-
-    @Autowired
-    private ArrangementService arrangementService;
 
     private MassIndexingMonitor massIndexingMonitor;
 
@@ -67,7 +63,7 @@ public class AdminService {
     	}
 
     	SearchSession searchSession = Search.session(entityManager);
-    	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class); // TODO add ArrDescItem.class
+    	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class, ArrDescItem.class); // TODO add ArrDescItem.class
     	//massIndexer.monitor(massIndexingMonitor);
     	indexerStatus = massIndexer.start().toCompletableFuture();
     }

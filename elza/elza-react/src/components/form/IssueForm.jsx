@@ -69,7 +69,7 @@ class IssueForm extends AbstractReactComponent {
                     </Field>
                     <Field
                         name="description"
-                        as="textarea"
+                        type="textarea"
                         component={FormInputField}
                         label={i18n('issue.text')}
                     />

@@ -118,7 +118,11 @@ class FundFilterCondition extends AbstractReactComponent {
             <div className={cls}>
                 {lbl}
                 <div className="inputs-container">
-                    <FormInput as="select" onChange={this.handleCodeChange} value={selectedCode}>
+                    <FormInput
+                        type="select"
+                        onChange={this.handleCodeChange}
+                        value={selectedCode}
+                    >
                         {items.map(i => {
                             return (
                                 <option key={i.code} value={i.code}>

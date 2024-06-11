@@ -601,7 +601,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         return (
             <div className="fund-output-list-container">
-                <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
+                <FormInput type="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
                     <option value="" key="no-filter">
                         {i18n('arr.output.list.state.all')}
                     </option>

@@ -336,7 +336,7 @@ const FundBulkModificationsForm = ({
                     <Field
                         key={'replaceSpec'}
                         name="replaceSpec"
-                        as={'select'}
+                        type={'select'}
                         component={FormInputField}
                         label={i18n(
                             getIsEnumType()
@@ -383,7 +383,7 @@ const FundBulkModificationsForm = ({
                         <Field
                             key="replaceSpec"
                             name="replaceSpec"
-                            as={'select'}
+                            type={'select'}
                             component={FormInputField}
                             label={i18n(
                                 getIsEnumType()
@@ -601,7 +601,7 @@ const FundBulkModificationsForm = ({
                             <Field
                                 key={'operationType'}
                                 name="operationType"
-                                as={'select'}
+                                type={'select'}
                                 component={FormInputField}
                                 disabled={submitting}
                                 placeholder="Vyberte operaci..."

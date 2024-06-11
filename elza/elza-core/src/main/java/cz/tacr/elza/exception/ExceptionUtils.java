@@ -1,13 +1,16 @@
 package cz.tacr.elza.exception;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.cam.client.ApiException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 
 /**
  * Pomocná třída pro zjednodušené vytváření vyjímek.
@@ -41,7 +44,7 @@ public class ExceptionUtils {
     }
 
     public static void equalsElseBusiness(final Object o1, final Object o2, final String message, final ErrorCode code) {
-        if (!ObjectUtils.equals(o1, o2)) {
+        if (!Objects.equals(o1, o2)) {
             throw new BusinessException(message, code);
         }
     }
@@ -51,7 +54,7 @@ public class ExceptionUtils {
     }
 
     public static void notEqualsElseBusiness(final Object o1, final Object o2, final String message, final ErrorCode code) {
-        if (ObjectUtils.equals(o1, o2)) {
+        if (Objects.equals(o1, o2)) {
             throw new BusinessException(message, code);
         }
     }
@@ -84,5 +87,16 @@ public class ExceptionUtils {
             sb.append(", response: ").append(body);
         }
         return sb.toString();
+    }
+
+    public static ErrorCode getErrorCodeEnum(String type, String code) {
+        switch (type) {
+        case "ArrangementCode":
+        	return ArrangementCode.valueOf(code);
+        case "RegistryCode":
+        	return RegistryCode.valueOf(code);
+        default:
+        	throw new RuntimeException("Undefined error type: " + type + ", code: " + code);
+        }
     }
 }

@@ -20,7 +20,7 @@ const SpecificationField: FC<Props> = ({itemsMap, itemTypeId, itemSpecIds, ...re
     itemSpecsList = itemSpecsList.sort((a, b) => a.viewOrder - b.viewOrder);
 
     return (
-        <FormInput as={'select'} {...rest}>
+        <FormInput type={'select'} {...rest}>
             <option key={''}></option>
             {itemSpecsList.map(spec => {
                 return (

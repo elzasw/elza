@@ -43,4 +43,8 @@ public class ItemInteger extends AbstractItem {
     protected Integer getValue() {
         return value;
     }
+
+    public Integer getIntegerValue() {
+        return value;
+    }
 }

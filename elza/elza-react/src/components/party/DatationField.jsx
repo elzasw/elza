@@ -98,7 +98,7 @@ class DatationField extends AbstractReactComponent {
                     </TooltipTrigger>
                 </div>
                 {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}
-                {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote} />}
+                {allowedNote && <FormInput type="textarea" {...fields.note} label={labelNote} />}
             </div>
         );
     }

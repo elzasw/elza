@@ -34,7 +34,6 @@ public class UpdateEntityWorker implements UploadWorker {
     @Override
     public void process(final CamService camService,
                         final BatchUpdateSavedXml batchUpdateResult) {
-        camService.updateBinding(extSyncsQueueItem, batchUpdateResult, itemUuidMap, partUuidMap, stateMap);
+        camService.updateBinding(extSyncsQueueItem, batchUpdateResult, itemUuidMap, partUuidMap, stateMap, updateXml.getInf());
     }
-
 }

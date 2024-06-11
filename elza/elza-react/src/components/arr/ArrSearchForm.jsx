@@ -158,7 +158,7 @@ class ArrSearchForm extends AbstractReactComponent {
             <div>
                 <Field
                     name="text"
-                    as="textarea"
+                    type="textarea"
                     component={FormInputField}
                     label={i18n('search.extended.input.text')}
                     disabled={submitting}

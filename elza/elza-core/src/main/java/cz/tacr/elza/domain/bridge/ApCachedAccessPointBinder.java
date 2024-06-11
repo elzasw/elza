@@ -43,6 +43,11 @@ public class ApCachedAccessPointBinder implements TypeBinder {
     public static final String ANALYZED = "_analyzed";
     public static final String SORTABLE = "_sortable";
 
+    public static final String REL_AP_ID = "rel_accesspoint_id";
+
+    public static final String NORM_FROM = "_from";
+    public static final String NORM_TO = "_to";
+
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
     private TypeBindingContext context;
 
@@ -66,6 +71,9 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 	        fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
 
+        // pole obsahující odkaz na jinou entitu
+        createIntField(REL_AP_ID);
+
         // part type codes
         for (String partCode : configurationReader.getPartTypeCodes()) {
         	for (String suffix : Arrays.asList("", "_index")) {
@@ -76,6 +84,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         	}
         }
 
+        // TODO avoid creating combinations that will not be indexed
+        
         // item type codes
         for (String itemTypeCode : configurationReader.getItemTypeCodes()) {
         	for (String pref : Arrays.asList("", "pref_")) {
@@ -83,6 +93,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 	            fields.put(name + SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
+	            createLongField(name + NORM_FROM);
+	            createLongField(name + NORM_TO);
 	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
 	            	String nameAddSpec = "data_" + pref + itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase();
 		            fields.put(nameAddSpec + ANALYZED, createAnalyzedField(nameAddSpec));
@@ -114,4 +126,18 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         		.multiValued()
         		.toReference();
     }
+
+    private IndexFieldReference<Integer> createIntField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asInteger())
+        		.multiValued()
+        		.toReference();
+    }    
+
+    private IndexFieldReference<Long> createLongField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asLong())
+        		.multiValued()
+        		.toReference();
+    }    
 }

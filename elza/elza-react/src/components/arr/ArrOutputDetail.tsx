@@ -284,7 +284,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
                     {fundOutputDetail.error && (
                         <div>
                             <FormInput
-                                as="textarea"
+                                type="textarea"
                                 value={fundOutputDetail.error}
                                 disabled
                                 label={i18n('arr.output.title.error')}

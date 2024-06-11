@@ -65,7 +65,7 @@ export function AddGroupForm({
                     />
                     <Field
                         name="description"
-                        as="textarea"
+                        type="textarea"
                         component={FormInputField}
                         label={i18n('admin.group.title.description')}
                     />

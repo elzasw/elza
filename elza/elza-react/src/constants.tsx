@@ -159,6 +159,7 @@ export const OUTPUTS = 'outputs';
 export const ACTIONS = 'actions';
 export const DAOS = 'daos';
 export const REQUESTS = 'requests';
+export const NEW = 'new';
 
 export const URL_ENTITY = '/entity';
 export const URL_ENTITY_CREATE = '/entity-create';
@@ -209,7 +210,7 @@ export const urlNode = (nodeId: number | string | undefined) => {
     return URL_NODE + "/" + nodeId;
 }
 
-const fundSub = (fundId: number, versionId: number | undefined, sub: string, subId?: number) => {
+const fundSub = (fundId: number, versionId: number | undefined, sub: string, subId?: number | string) => {
     const url = `${urlFundBase(fundId, versionId)}/${sub}`;
     return subId == null ? url : url + '/' + subId;
 }
@@ -232,6 +233,10 @@ export const urlFundMovements = (fundId: number, versionId?: number) => {
 
 export const urlFundOutputs = (fundId: number, versionId?: number, outputId?: number) => {
     return fundSub(fundId, versionId, OUTPUTS, outputId);
+}
+
+export const urlFundActionsNew = (fundId: number, versionId?: number, nodeIds?: number[]) => {
+    return fundSub(fundId, versionId, ACTIONS, `${NEW}${nodeIds && nodeIds.length > 0 ? `?nodeIds=${nodeIds.join(",")}` : ""}`);
 }
 
 export const urlFundActions = (fundId: number, versionId?: number, actionId?: number) => {

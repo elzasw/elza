@@ -6,7 +6,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.service.AccessPointItemService;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
@@ -25,7 +24,6 @@ public class UnitdateComparator implements Comparator {
     public Predicate toPredicate(final QueryComparator comparator, final String value) {
         CriteriaBuilder cb = ctx.cb;
         ArrDataUnitdate data = UnitDateConvertor.convertIsoToUnitDate(value, new ArrDataUnitdate());
-        AccessPointItemService.normalize(data);
         Long normalizedFrom = data.getNormalizedFrom();
         Long normalizedTo = data.getNormalizedTo();
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);

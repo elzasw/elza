@@ -20,11 +20,7 @@ import cz.tacr.elza.domain.RulItemType;
 @Repository
 public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, Integer> {
 
-    ArrCachedNode findOneByNodeId(Integer nodeId);
-
-	final static String FIND_BY_NODE_ID = "SELECT cd FROM arr_cached_node cd"
-	        + " JOIN FETCH cd.node"
-	        + " WHERE cd.nodeId IN (?1)";
+	final static String FIND_BY_NODE_ID = "SELECT cd FROM arr_cached_node cd JOIN FETCH cd.node WHERE cd.nodeId IN (?1)";
 
 	/**
 	 * Fetch list of nodes from cache
@@ -39,6 +35,9 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
 
 	@Query(FIND_BY_NODE_ID)
 	ArrCachedNode findByNodeId(Integer nodeId);
+
+    @Query("SELECT cn FROM arr_cached_node cn WHERE cn.nodeId IN (?1)")
+    List<ArrCachedNode> findByNodeIdsInNoFetch(Collection<Integer> nodeIds);
 
 	@Query("SELECT cn FROM arr_cached_node cn JOIN FETCH cn.node node WHERE node IN (?1)")
     List<ArrCachedNode> findByNodeIn(Collection<ArrNode> nodes);

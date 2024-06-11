@@ -218,7 +218,7 @@ public class ItemTypeUpdater {
             List<RulItemType> currentPackageTypes = es.getValue();
             if (currentPackageTypes.size() > 0) {
                 Integer lastPackageViewOrder = currentPackageTypes.get(currentPackageTypes.size() - 1).getViewOrder();
-                Validate.notNull(lastPackageViewOrder);
+                Objects.requireNonNull(lastPackageViewOrder);
                 if (lastPackageViewOrder > lastUsedOrderPos) {
                     lastUsedOrderPos = lastPackageViewOrder;
                 }
@@ -807,8 +807,8 @@ public class ItemTypeUpdater {
 
         boolean modified = false;
 
-        Validate.notNull(dbItemType.getDataTypeId());
-        Validate.notNull(dbItemType.getRulPackage());
+        Objects.requireNonNull(dbItemType.getDataTypeId());
+        Objects.requireNonNull(dbItemType.getRulPackage());
 
         if (!Objects.equals(dbItemType.getCode(), itemType.getCode())) {
             dbItemType.setCode(itemType.getCode());
@@ -985,6 +985,7 @@ public class ItemTypeUpdater {
 
         if (CollectionUtils.isNotEmpty(itemAptypesNew)) {
             itemAptypesNew = itemAptypeRepository.saveAll(itemAptypesNew);
+            logger.info("Added table rul_item_aptype by itemSpecs, size=" + itemAptypesNew.size());
         }
     }
 
@@ -1038,13 +1039,14 @@ public class ItemTypeUpdater {
                     }
                 }
             }
-            
+
             // delete remaining itemApTypes
             this.deleteItemApTypes.addAll(itemAptypeByAptypeId.values());
         }
 
         if (CollectionUtils.isNotEmpty(itemAptypesNew)) {
             itemAptypesNew = itemAptypeRepository.saveAll(itemAptypesNew);
+            logger.info("Added table rul_item_aptype by itemTypes, size=" + itemAptypesNew.size());
         }
     }
 

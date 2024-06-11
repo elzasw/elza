@@ -6,12 +6,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 
 import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.hibernate.search.mapper.orm.work.SearchIndexingPlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +26,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -31,6 +40,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -62,6 +72,8 @@ public class ArrangementInternalService {
     private NodeRepository nodeRepository;
     @Autowired
     private DescItemRepository descItemRepository;
+    @Autowired
+    private CachedNodeRepository cachedNodeRepository;
 
     /**
      * Vytvoření objektu pro změny s primárním uzlem.
@@ -253,9 +265,9 @@ public class ArrangementInternalService {
      * @return upravený objekt změny
      */
     public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
-        Validate.notNull(change);
-        Validate.notNull(newType);
-        Validate.notNull(change.getChangeId());
+    	Objects.requireNonNull(change);
+    	Objects.requireNonNull(newType);
+    	Objects.requireNonNull(change.getChangeId());
         UserDetail userDetail = userService.getLoggedUserDetail();
         change.setChangeDate(OffsetDateTime.now());
         if (userDetail != null && userDetail.getId() != null) {
@@ -294,5 +306,34 @@ public class ArrangementInternalService {
             }
         }
         return true;
+    }
+
+    /**
+     * Přeindexování ArrDescItem(s) & ArrCacheNode(s)
+     * 
+     * @param apAccessPoint
+     */
+    public void reindexArrDescItemAndArrCacheNode(ApAccessPoint apAccessPoint) {
+		List<ArrDescItem> updateDescItems = descItemRepository.findArrItemByRecord(apAccessPoint);
+        reindexArrDescItemAndArrCacheNode(updateDescItems);
+    }
+
+    /**
+     * Přeindexování ArrDescItem(s) & ArrCacheNode(s)
+     *
+     * @param reindexDescItems
+     */
+    public void reindexArrDescItemAndArrCacheNode(List<ArrDescItem> reindexDescItems) {
+    	Objects.requireNonNull(reindexDescItems);
+
+    	// získáme seznam ArrCachedNode pro přeindexování
+    	Set<Integer> nodeIds = reindexDescItems.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
+        List<ArrCachedNode> reindexCachedNodes = cachedNodeRepository.findByNodeIdsInNoFetch(nodeIds);
+
+        // přeindexování arr_desc_item + arr_chached_node
+        SearchSession searchSession = Search.session(em);
+        SearchIndexingPlan indexingPlan = searchSession.indexingPlan();
+        reindexDescItems.forEach(descItem -> indexingPlan.addOrUpdate(descItem));
+        reindexCachedNodes.forEach(cachedNode -> indexingPlan.addOrUpdate(cachedNode));
     }
 }

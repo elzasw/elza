@@ -180,7 +180,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             label={i18n('arr.request.title.daoRequest.type')}
-                            as="select"
+                            type="select"
                             onChange={this.handleDaoTypeChange}
                             name={'daoType'}
                         >
@@ -196,7 +196,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             label={i18n('arr.request.title.digitizationRequest')}
-                            as="select"
+                            type="select"
                             name={'requestId'}
                             onChange={this.handleRequestChange}
                             disabled={!requestFetched}
@@ -217,7 +217,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             label={i18n('arr.request.title.daoRequest.digitizationFrontdesk')}
-                            as="select"
+                            type="select"
                             name={'digitizationFrontdesk'}
                             disabled={!requestFetched}
                         >
@@ -233,7 +233,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             label={i18n('arr.request.title.description')}
-                            as="textarea"
+                            type="textarea"
                             name={'description'}
                             disabled={!requestFetched}
                         />

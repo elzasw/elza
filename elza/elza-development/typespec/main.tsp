@@ -427,8 +427,23 @@ namespace ElzaAPI.DaoRepository {
 namespace ElzaAPI.Admin {
 
     /** Creating missing items in arr_cached_node */
-    @route("admin/arrangement/missing-cached-nodes")
+    @route("arrangement/missing-cached-nodes")
     op syncNodeCache(): { 
+        @Http.statusCode statusCode: 200;
+    };
+
+    model CopyPermissionParams {
+        fromUserId: integer
+    };
+
+    /**
+     * Copy user permissions from another user
+     * 
+     * Method will append all permissions to given user
+     * @param userId ID of target user
+     */
+    @route("user/{userId}/copy-permissions")
+    @post op copyPermissions(@path userId: integer, @body params: CopyPermissionParams): {
         @Http.statusCode statusCode: 200;
     };
 

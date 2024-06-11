@@ -156,7 +156,7 @@ class ScopeListForm extends AbstractReactComponent<Props> {
                         {/** TODO předělat na {@link LanguageCodeField.jsx} */}
                         <Field
                             component={FormInputField}
-                            as="select"
+                            type="select"
                             name={'language'}
                             {...customProps}
                             label={i18n('accesspoint.scope.language')}
@@ -175,7 +175,7 @@ class ScopeListForm extends AbstractReactComponent<Props> {
                 />
                 <Field
                     component={FormInputField}
-                    as="select"
+                    type="select"
                     name={'ruleSetCode'}
                     {...customProps}
                     label={i18n('accesspoint.scope.ruleSetCode')}

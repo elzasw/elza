@@ -52,7 +52,7 @@ class RunActionForm extends AbstractReactComponent {
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FF name="code" as="select" label={i18n('arr.fundAction.form.type')} className="form-control">
+                        <FF name="code" type="select" label={i18n('arr.fundAction.form.type')}>
                             <option key="novalue" value={null} />
                             {actionConfig.map(item => (
                                 <option key={item.code} value={item.code}>

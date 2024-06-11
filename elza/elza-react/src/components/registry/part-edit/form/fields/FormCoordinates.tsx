@@ -175,7 +175,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO> & {additio
                                 }}
                                 disabled={disabled}
                                 renderComponent={FormInput}
-                                as="textarea"
+                                type="textarea"
                                 />
                             </div>
                             <Button

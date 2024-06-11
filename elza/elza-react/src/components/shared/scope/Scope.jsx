@@ -73,7 +73,7 @@ class Scope extends AbstractReactComponent {
         }
 
         return (
-            <FormInput as="select" {...other}>
+            <FormInput type="select" {...other}>
                 <option key="null" />
                 {data.map(i => (
                     <option value={i.id} key={i.id}>
