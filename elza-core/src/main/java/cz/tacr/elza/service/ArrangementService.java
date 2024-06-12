@@ -2282,8 +2282,10 @@ public class ArrangementService {
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
 	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
-		ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
+		logger.info("Find descItem by desItemObjectId={}", descItemObjectId);
+    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
 
+    	logger.info("Start checking if descItem exists in parent levels...");
 		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
 		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
 		if (!nodeIds.contains(descItem.getNodeId())) {
@@ -2291,6 +2293,7 @@ public class ArrangementService {
                     .set("nodeId", node.getNodeId())
                     .set("descItemObjectId", descItemObjectId);
 		}
+		logger.info("End checking if descItem exists in parent levels.");
 
 		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);		 
 
@@ -2299,8 +2302,11 @@ public class ArrangementService {
 		inhibitedItem.setDescItemObjectId(descItemObjectId);
 		inhibitedItem.setCreateChange(createChange);
 
-		inhibitedItemRepository.save(inhibitedItem);
+		inhibitedItem = inhibitedItemRepository.save(inhibitedItem);
+		logger.info("Saved ArrInhibitedItem, inhibitedItemId={}", inhibitedItem.getInhibitedItemId());		
+
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+		logger.info("Syncronized node, nodeId={}", node.getNodeId());
 
 		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
 		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
