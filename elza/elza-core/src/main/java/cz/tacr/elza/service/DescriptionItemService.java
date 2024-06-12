@@ -1252,9 +1252,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 this::createDataResultList);
     }
 
+    @Transactional
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds),
-                this::createDataResultList);
+    	List<ArrDescItem> result = descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+    	result.forEach(i -> HibernateUtils.unproxy(i.getData()));
+    	return result;
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId) {
