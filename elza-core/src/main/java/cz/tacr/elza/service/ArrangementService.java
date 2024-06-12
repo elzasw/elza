@@ -2301,7 +2301,9 @@ public class ArrangementService {
 
 		inhibitedItem = inhibitedItemRepository.save(inhibitedItem);
 
+		logger.debug("Syncronize nodeId: {}", node.getNodeId());
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+		logger.debug("Syncronized nodeId: {}", node.getNodeId());
 
 		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
 		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
