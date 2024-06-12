@@ -21,7 +21,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
 
-
 /**
  * Repository for Description items
  *
@@ -66,10 +65,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      */
 	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position")
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
-
-	// TODO: 'JOIN FETCH i.data' dočasné řešení, aby fungoval test ArrangementControllerTest.replaceDataValuesTest()
-	@Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position")
-    List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNullFetchData(Collection<Integer> nodeIds);
 
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.itemTypeId IN (?2) AND i.deleteChange IS NULL")
 	List<ArrDescItem> findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds);
