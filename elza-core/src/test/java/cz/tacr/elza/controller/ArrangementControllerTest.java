@@ -1192,7 +1192,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         body.setSelectionType(ArrangementController.SelectionType.NODES);
         placeDataValues(fundVersion.getId(), typeVo.getId(), "nova_value", body);
 
-        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+        List<ArrDescItem> byNodesAndDeleteChangeIsNull = descItemRepository.findByNodeIdsAndDeleteChangeIsNullFetchData(nodeIds);
         assertTrue(byNodesAndDeleteChangeIsNull.size() >= nodeIds.size());
         for (ArrDescItem descItem : byNodesAndDeleteChangeIsNull) {
             if (descItem.getItemTypeId().equals(typeVo.getId())) {
