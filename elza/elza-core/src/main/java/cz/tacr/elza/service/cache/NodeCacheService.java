@@ -546,12 +546,18 @@ public class NodeCacheService {
         }
 
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
+        logger.debug("Find all nodes by ids: {}", nodeIds);        
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        logger.debug("Create ArrDescItem map by node ids: {}", nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
+        logger.debug("Create ArrInhibitedItem map by node ids: {}", nodeIds);
         Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
+        logger.debug("Create ArrDaoLink map by node ids: {}", nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
+        logger.debug("Create ArrNodeExtension map by node ids: {}", nodeIds);
         Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
 
+        logger.debug("Process nodes by node ids: {}", nodeIds);
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
 
@@ -566,6 +572,7 @@ public class NodeCacheService {
             cachedNode.setData(nodeData);
         }
 
+        logger.debug("Processed nodes by node ids: {}", nodeIds);
         return cachedNodes;
     }
 
