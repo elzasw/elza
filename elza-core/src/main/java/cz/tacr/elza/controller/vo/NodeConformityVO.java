@@ -9,9 +9,6 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 
 /**
  * VO pro validace JP.
- *
- * @author Martin Šlapa
- * @since 26.1.2016
  */
 public class NodeConformityVO {
 
@@ -105,14 +102,15 @@ public class NodeConformityVO {
     public void setPolicyTypeIdsVisible(final Map<Integer, Boolean> policyTypeIdsVisible) {
         this.policyTypeIdsVisible = policyTypeIdsVisible;
     }
-    
+
     public static NodeConformityVO newInstance(final ArrNodeConformityExt nodeConformity) {
     	NodeConformityVO result = new NodeConformityVO();
     	result.setNodeId(nodeConformity.getNodeId());
     	result.setState(nodeConformity.getState());
     	result.setDescription(nodeConformity.getDescription());
     	result.setDate(nodeConformity.getDate());
-    	// TODO added missingList, errorList
+    	result.setMissingList(NodeConformityMissingVO.newInstance(nodeConformity.getMissingList()));
+    	result.setErrorList(NodeConformityErrorVO.newInstance(nodeConformity.getErrorList()));
     	return result;
     }
 }
