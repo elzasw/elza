@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import jakarta.persistence.EntityManager;
+
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -33,7 +34,7 @@ public class DescItemTypeFilter {
     /** Typ hodnoty na který se má filtr aplikovat. */
     private RulItemType descItemType;
 
-    /** Seznam ID specifikací filtru */
+    /** Seznam ID specifikací filtru. */
     private List<Integer> itemSpecIds;
 
     /** Podmínky pro seznam hodnot. */
@@ -45,6 +46,9 @@ public class DescItemTypeFilter {
     /** Logické podmínky. */
     private List<DescItemCondition> conditions;
 
+    /** Datum fixace verze archivního fondu. */
+    private Integer lockChangeId;
+    
     /**
      * Konstruktor pro podmínky.
      *
@@ -55,13 +59,15 @@ public class DescItemTypeFilter {
     				          final List<Integer> itemSpecIds,  
             			      final List<DescItemCondition> valuesConditions,
             			      final List<DescItemCondition> specsConditions,
-            			      final List<DescItemCondition> conditions) {
+            			      final List<DescItemCondition> conditions,
+            			      final Integer lockChangeId) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         this.descItemType = descItemType;
         this.itemSpecIds = itemSpecIds;
         this.valuesConditions = valuesConditions;
         this.specsConditions = specsConditions;
         this.conditions = conditions;
+        this.lockChangeId = lockChangeId;
     }
 
     /**
@@ -79,9 +85,9 @@ public class DescItemTypeFilter {
 														final Integer lockChangeId) {
         Map<Integer, Set<Integer>> valuesResult = resolveSectionConditions(valuesConditions, searchSession, fundId, lockChangeId);
         Map<Integer, Set<Integer>> specsResult = resolveSectionConditions(specsConditions, searchSession, fundId, lockChangeId);
-        Map<Integer, Set<Integer>> logicalResult = resolveSectionConditions(conditions, searchSession, fundId, lockChangeId);
+        Map<Integer, Set<Integer>> conditionsResult = resolveSectionConditions(conditions, searchSession, fundId, lockChangeId);
 
-        return joinQueriesResultsAnd(valuesResult, specsResult, logicalResult);
+        return joinQueriesResultsAnd(valuesResult, specsResult, conditionsResult);
     }
 
     private Map<Integer, Set<Integer>> resolveSectionConditions(final List<DescItemCondition> sectionConditions, 
@@ -220,6 +226,17 @@ public class DescItemTypeFilter {
 		BooleanPredicateClausesStep<?> bool = factory.bool();
 		bool.must(factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(descItemType.getItemTypeId()));
 		bool.must(factory.match().field(ArrDescItem.FIELD_FUND_ID).matching(fundId));
+		if (lockChangeId == null) {
+			bool.mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID));
+		} else {
+			// TODO tuto implementaci je třeba zkontrolovat
+			// záznam musí být vytvořen (create_change_id) dříve lockChangeId
+			// a byl smazán (delete_change_id) až poté lockChangeId nebo nebyl smazán
+			bool.must(factory.range().field(ArrDescItem.FIELD_CREATE_CHANGE_ID).lessThan(lockChangeId));
+			bool.must(factory.bool()
+					.should(factory.range().field(ArrDescItem.FIELD_DELETE_CHANGE_ID).greaterThan(lockChangeId))
+					.should(factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID))));
+		}
 		if (itemSpecIds != null) {
 			BooleanPredicateClausesStep<?> specs = factory.bool();
 			itemSpecIds.forEach(
