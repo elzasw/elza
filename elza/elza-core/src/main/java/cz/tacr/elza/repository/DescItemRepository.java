@@ -66,7 +66,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position")
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
-	@Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.itemTypeId IN (?2) AND i.deleteChange IS NULL")
+	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId IN (?1) AND i.itemTypeId IN (?2) AND i.deleteChange IS NULL")
 	List<ArrDescItem> findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.itemType t JOIN i.itemSpec s WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.itemTypeId = ?2 AND s.itemSpecId = ?3")

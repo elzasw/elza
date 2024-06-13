@@ -255,7 +255,7 @@ public class ClientFactoryDO {
         return arrFund;
     }
 
-    public List<DescItemTypeFilter> createFilters(final Filters filters) {
+    public List<DescItemTypeFilter> createFilters(final Filters filters, final Integer lockChangeId) {
         if (filters == null || filters.getFilters() == null || filters.getFilters().isEmpty()) {
             return null;
         }
@@ -264,13 +264,12 @@ public class ClientFactoryDO {
         Set<Integer> descItemTypeIds = filtersMap.keySet();
         List<RulItemType> descItemTypes = itemTypeRepository.findAllById(descItemTypeIds);
 
-
         List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());
-        ;
+
         descItemTypes.forEach(type -> {
             Filter filter = filtersMap.get(type.getItemTypeId());
             if (filter != null) {
-                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(type, filter);
+                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(type, filter, lockChangeId);
                 if (descItemTypeFilter != null) {
                     descItemTypeFilters.add(descItemTypeFilter);
                 }
@@ -285,9 +284,10 @@ public class ClientFactoryDO {
      *
      * @param descItemType typ atributu
      * @param filter       VO filtr
+     * @param lockChangeId
      * @return filtr pro daný typ atributu
      */
-    private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter) {
+    private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter, final Integer lockChangeId) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         Assert.notNull(filter, "Filter musí být vyplněn");
 
@@ -514,7 +514,7 @@ public class ClientFactoryDO {
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            return new DescItemTypeFilter(descItemType, filter.getSpecs(), valuesConditions, specsConditions, conditions);
+            return new DescItemTypeFilter(descItemType, filter.getSpecs(), valuesConditions, specsConditions, conditions, lockChangeId);
         }
 
         return null;
