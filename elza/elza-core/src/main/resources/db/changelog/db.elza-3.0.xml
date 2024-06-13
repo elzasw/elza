@@ -381,5 +381,100 @@
         <dropTable tableName="da_remote_repository"/>
     </changeSet>
 
+    <changeSet id="20240612170020" author="pasek">
+        <createTable tableName="da_change">
+            <column name="change_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_change" nullable="false"/>
+            </column>
+            <column name="change_date" type="timestamp"/>
+            <column name="user_id" type="int"/>
+            <column name="aip_id" type="int"/>
+            <column name="type" type="varchar(25)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="da_change" baseColumnNames="user_id"
+                                 constraintName="fk_da_change_usr_user"
+                                 referencedTableName="usr_user"
+                                 referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint baseTableName="da_change" baseColumnNames="aip_id" constraintName="fk_da_change_da_aip"
+                                 referencedTableName="da_aip"
+                                 referencedColumnNames="aip_id"/>
+    </changeSet>
+
+    <changeSet id="20240523175100" author="pasek">
+        <createTable tableName="da_aip_state">
+            <column name="aip_state_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_aip_state" nullable="false"/>
+            </column>
+            <column name="aip_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="aip_version" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_size" type="bigint"/>
+            <column name="fund_code" type="varchar(250)"/>
+            <column name="fund_id" type="int"/>
+            <column name="institution_code" type="varchar(250)"/>
+            <column name="institution_id" type="int"/>
+            <column name="unitdate_from" type="timestamp"/>
+            <column name="unitdate_to" type="timestamp"/>
+            <column name="originator" type="varchar(250)"/>
+            <column name="originator_cam_id" type="varchar(50)"/>
+            <column name="access_point_id" type="int"/>
+            <column name="ingestion_code" type="varchar(250)"/>
+            <column name="reference_number" type="varchar(250)"/>
+            <column name="nad_change_code" type="varchar(250)"/>
+            <column name="create_dao_structure" type="boolean"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="aip_id"
+                                 constraintName="fk_da_aip_state_da_aip"
+                                 referencedTableName="da_aip"
+                                 referencedColumnNames="aip_id"/>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_aip_state_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_aip_state_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="fund_id"
+                                 constraintName="fk_da_aip_change_arr_fund"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"/>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="institution_id"
+                                 constraintName="fk_da_aip_state_par_institution"
+                                 referencedTableName="par_institution"
+                                 referencedColumnNames="institution_id"/>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="access_point_id"
+                                 constraintName="fk_da_aip_state_ap_access_point"
+                                 referencedTableName="ap_access_point"
+                                 referencedColumnNames="access_point_id"/>
+    </changeSet>
+    <changeSet id="20240613085140" author="pasek">
+        <createTable tableName="da_local_cache">
+            <column name="local_cache_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_local_cache" nullable="false"/>
+            </column>
+            <column name="sync_queue_item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aip_state_id" type="int"/>
+            <column name="aip_type" type="varchar(25)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="da_local_cache" baseColumnNames="sync_queue_item_id"
+                                 constraintName="fk_da_local_cache_da_sync_queue_item"
+                                 referencedTableName="da_sync_queue_item"
+                                 referencedColumnNames="sync_queue_item_id"/>
+        <addForeignKeyConstraint baseTableName="da_local_cache" baseColumnNames="aip_state_id"
+                                 constraintName="fk_da_local_cache_da_aip_state"
+                                 referencedTableName="da_aip_state"
+                                 referencedColumnNames="aip_state_id"/>
+    </changeSet>
+
 
 </databaseChangeLog>
