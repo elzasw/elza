@@ -127,13 +127,14 @@ public class DaService {
         return status.getState() == RequestState.FINISHED;
     }
 
-    public void downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
+    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
         try {
-            byte[] aip = daConnector.downloadDownload(digitalRepository, batchId);
+            return  daConnector.downloadDownload(digitalRepository, batchId);
         } catch (Exception e) {
             //todo fantiš filetransfer
         }
         //todo fantiš stav syncqueueitem error or import_ok
         //todo fantiš uložit na disk
+        return null;
     }
 }

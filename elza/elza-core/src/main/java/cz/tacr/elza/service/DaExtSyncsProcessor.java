@@ -2,13 +2,23 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
+import jakarta.xml.bind.JAXBException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @Component
 public class DaExtSyncsProcessor implements Runnable {
@@ -17,6 +27,9 @@ public class DaExtSyncsProcessor implements Runnable {
 
     @Autowired
     private DaService daService;
+
+    @Autowired
+    private PackageInfoService packageInfoService;
 
     private volatile Thread asyncThread = null;
 
@@ -69,7 +82,10 @@ public class DaExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            daService.downloadDownload(digitalRepository, batchId);
+                            byte[] downloadedBytes = daService.downloadDownload(digitalRepository, batchId);
+                            processPackageInfo(downloadedBytes);
+
+
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             importListSize = DEFAULT_IMPORT_LIST_SIZE;
@@ -98,6 +114,47 @@ public class DaExtSyncsProcessor implements Runnable {
             lock.notifyAll();
             logger.error("DaExtSyncsProcessor - thread finished");
         }
+    }
+
+    public void processPackageInfo(byte[] bytes) throws IOException {
+        Path tempZip = Files.createTempFile("temp", ".zip");
+        try (FileOutputStream fos = new FileOutputStream(tempZip.toFile())) {
+            fos.write(bytes);
+        }
+
+        Path tempDir = Files.createTempDirectory("unzipped");
+
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(tempZip))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                Path filePath = tempDir.resolve(entry.getName());
+                if (entry.isDirectory()) {
+                    Files.createDirectories(filePath);
+                } else {
+                    Files.createDirectories(filePath.getParent());
+                    Files.copy(zipInputStream, filePath);
+                }
+            }
+        }
+
+        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
+            str.forEach(path -> {
+                File file = path.toFile();
+                try {
+                    packageInfoService.processPackageInfo(file);
+                } catch (Exception e) {
+                    logger.error("Nastala chyba při zpracování souboru package-info.xml", e);
+                }
+            });
+        }
+
+        // Odstranit dočasné soubory a adresáře
+        try (Stream<Path> str = Files.walk(tempDir)) {
+            str.map(Path::toFile).forEach(File::delete);
+        }
+        Files.delete(tempZip);
+
+
     }
 
 }
