@@ -996,6 +996,11 @@ class DescItemType extends AbstractReactComponent {
             return false;
         }
 
+        const hasOnlyInheritedItems = !descItemType.descItems.find(({fromNodeId, id}) => fromNodeId == undefined && id != undefined);
+        if(hasOnlyInheritedItems){
+            return false;
+        }
+
         if (descItemType.descItems.length === 0) {
             return true;
         }
@@ -1163,6 +1168,11 @@ class DescItemType extends AbstractReactComponent {
         const isRepeatableEnum = infoType.rep && rulDataType.code === 'ENUM';
         const isRepeatableValueWithoutSpec = infoType.rep && !refType.useSpecification;
 
+        const originalItems = descItemType.descItems.filter(({fromNodeId}) => fromNodeId == undefined);
+        const inhibitedInheritedItems = descItemType.descItems.filter(({fromNodeId, inhibited}) => fromNodeId != undefined && inhibited);
+
+        const hasAllInheritedInhibitedItems = inhibitedInheritedItems.length == (descItemType.descItems.length - originalItems.length);
+
         if (
             !closed
                 && !readMode
@@ -1173,14 +1183,15 @@ class DescItemType extends AbstractReactComponent {
                 )
                 && infoType.ind
                 && onDescItemNotIdentified
-                && descItemType.descItems.length <= 1
+                && originalItems.length == 1
+                && hasAllInheritedInhibitedItems
         ) {
             actions.push(
                 <NoFocusButton
                     key="undefinedValue"
                     onClick={() => {
-                        if (descItemType.descItems.length === 1) {
-                            onDescItemNotIdentified(0, descItemType.descItems[0]);
+                        if (originalItems.length === 1) {
+                            onDescItemNotIdentified(0, originalItems[0]);
                         }
                     }}
                     title={i18n('subNodeForm.descItemType.title.undefinedValue')}

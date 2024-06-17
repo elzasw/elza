@@ -225,9 +225,10 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
     addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap);
+    const hasOnlyInheritedInhibitedValues = !resultDescItemType.descItems.find(({ fromNodeId, inhibited }) => fromNodeId == null || (fromNodeId != null && !inhibited));
 
-    // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
-    if (resultDescItemType.descItems.length === 0) {
+    // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací) nebo jsou všechny zděděné hodnoty potlačené
+    if (resultDescItemType.descItems.length === 0 || hasOnlyInheritedInhibitedValues) {
         resultDescItemType.descItems.push(createDescItem(refType, addedByUser));
     }
 
@@ -272,9 +273,13 @@ export function addForcedSpecifications(
 
     // Seznam existujících specifikací
     const existingSpecIds = {};
-    resultDescItemType.descItems.forEach(descItem => {
-        if (typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== ('' as any)) {
-            existingSpecIds[descItem.descItemSpecId] = true;
+    resultDescItemType.descItems.forEach(({descItemSpecId, fromNodeId, inhibited}) => {
+        const isInhibitedInheritedItem = fromNodeId != null && inhibited;
+        if (
+            typeof descItemSpecId != 'undefined'
+                && !isInhibitedInheritedItem // use inherited specification only when not inhibited
+        ) {
+            existingSpecIds[descItemSpecId] = true;
         }
     });
 
