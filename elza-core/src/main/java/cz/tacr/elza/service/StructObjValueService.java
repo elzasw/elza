@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -32,7 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -175,7 +174,7 @@ public class StructObjValueService {
         ArrSobjVrequest sobjVRequest = addToValidateInternal(sobj);
         sobjVrequestRepository.save(sobjVRequest);
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 notifyGenerator();
@@ -194,7 +193,7 @@ public class StructObjValueService {
 
         sobjVrequestRepository.saveAll((Iterable<ArrSobjVrequest>) (() -> it));
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 notifyGenerator();
@@ -217,7 +216,7 @@ public class StructObjValueService {
 
         sobjVrequestRepository.saveAll((Iterable<ArrSobjVrequest>) (() -> it));
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 notifyGenerator();

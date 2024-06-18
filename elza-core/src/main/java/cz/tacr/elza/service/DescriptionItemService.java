@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
@@ -187,11 +187,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
 
-    private TransactionSynchronizationAdapter indexWorkNotify;
+    private TransactionSynchronization indexWorkNotify;
 
     @PostConstruct
     public void init() {
-        this.indexWorkNotify = new TransactionSynchronizationAdapter() {
+        this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
                 indexWorkProcessor.notifyIndexing();

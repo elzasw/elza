@@ -42,7 +42,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.FileSystemUtils;
@@ -195,7 +195,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.validation.constraints.NotNull;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
-
 
 /**
  * Service pro správu importovaných balíčků s pravidly, hromadnými akcemi apod.
@@ -717,7 +716,7 @@ public class PackageService {
         entityManager.flush();
 
         staticDataService.reloadOnCommit();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 staticDataService.refreshForCurrentThread();
@@ -1176,8 +1175,8 @@ public class PackageService {
      * @param rulPackage  not-null
      */
     private void processSettings(final List<UISettings> newSettings, final RulPackage rulPackage) {
-        Validate.notNull(newSettings);
-        Validate.notNull(rulPackage);
+    	Objects.requireNonNull(newSettings);
+    	Objects.requireNonNull(rulPackage);
 
         List<UISettings> allSettings = settingsRepository.findAll();
 
@@ -1228,7 +1227,7 @@ public class PackageService {
         if (settings == null) {
             return Collections.emptyList();
         }
-        Validate.notNull(settings.getSettings());
+        Objects.requireNonNull(settings.getSettings());
 
         List<UISettings> result = new ArrayList<>(settings.getSettings().size());
 
