@@ -3,14 +3,13 @@ package cz.tacr.elza.service.eventnotification;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.google.common.eventbus.EventBus;
@@ -22,7 +21,6 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
-
 
 /**
  * Servisní třída pro registraci události, která bude odeslána klientům.
@@ -42,7 +40,7 @@ public class EventNotificationService implements IEventNotificationService {
 
     @Override
     public void publishEvent(final AbstractEventSimple event) {
-        Validate.notNull(event);
+    	Objects.requireNonNull(event);
         logger.debug("Publish event: {}, {}", event.getEventType(), event.toString());
 
         AfterTransactionListener listener = null;
@@ -97,7 +95,7 @@ public class EventNotificationService implements IEventNotificationService {
      * Priorita odeslání zpráv je nastavena na 0. Toto umožňuje odeslat ostatní
      * zprávy dříve či později.
      */
-    private class AfterTransactionListener extends TransactionSynchronizationAdapter {
+    private class AfterTransactionListener implements TransactionSynchronization {
 
         /**
          * Mapa připravených událostí.
