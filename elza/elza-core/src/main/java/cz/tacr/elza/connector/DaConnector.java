@@ -1,5 +1,6 @@
 package cz.tacr.elza.connector;
 
+import com.lightcomp.ft.wsdl.v1.FileTransferService;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
@@ -19,6 +20,7 @@ public class DaConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(DaConnector.class);
 
+    public static final int FILE_TRANSFER_ERROR_CODE = 413;
 
     private final Map<Integer, DaInstance> instanceMap = new HashMap<>();
 
@@ -46,12 +48,8 @@ public class DaConnector {
         }
     }
 
-    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
-        try {
-            return getDefaultApi(digitalRepository).downloadDownload(batchId);
-        } catch (ApiException e) {
-            throw new IllegalStateException("Došlo k chybě při volání DA", e);
-        }
+    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
+        return getDefaultApi(digitalRepository).downloadDownload(batchId);
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {
@@ -62,13 +60,21 @@ public class DaConnector {
         return get(digitalRepository).getDefaultApi();
     }
 
+    private FileTransferService getFileTransferService(ArrDigitalRepository digitalRepository) {
+        return get(digitalRepository).getFileTransferService();
+    }
+
     public DaInstance get(ArrDigitalRepository digitalRepository) {
         if (digitalRepository.getDigitalRepositoryType() == DigitalRepositoryType.WSDL ||
                 digitalRepository.getDigitalRepositoryType() == DigitalRepositoryType.FILESYSTEM) {
             // use cache instanceMap
             DaInstance daInstance = instanceMap.get(digitalRepository.getExternalSystemId());
             if (daInstance == null) {
-                daInstance = new DaInstance(digitalRepository.getUrl(), digitalRepository.getApiKeyId(), digitalRepository.getApiKeyValue());
+                daInstance = new DaInstance(digitalRepository.getUrl(),
+                        digitalRepository.getApiKeyId(),
+                        digitalRepository.getApiKeyValue(),
+                        digitalRepository.getUsername(),
+                        digitalRepository.getPassword());
                 instanceMap.put(digitalRepository.getExternalSystemId(), daInstance);
             }
             return daInstance;

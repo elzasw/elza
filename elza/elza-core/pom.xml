@@ -550,6 +550,37 @@
 				</dependencies>
 			</plugin>
             <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <version>${cxf.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+                            <defaultOptions>
+                                <exceptionSuper>java.lang.RuntimeException</exceptionSuper>
+                                <!-- Note: extraargs cannot be specified inside defaultOptions due to bug in plugin -->
+                            </defaultOptions>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <wsdl>${basedir}/src/main/resources/wsdl/filetransfer/file-transfer-v1.wsdl</wsdl>
+                                    <extraargs>
+                                        <!--                                        <extraarg>-quiet</extraarg>-->
+                                        <!--                                        <extraarg>-verbose</extraarg>-->
+                                        <extraarg>-autoNameResolution</extraarg>
+                                    </extraargs>
+                                </wsdlOption>
+                            </wsdlOptions>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <version>${openapiGenerator.version}</version>
@@ -637,7 +668,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  TODO pasek hack - cxf-codegen-plugin momentálnì neumí generovat tøídy s jakarta ee9, nutno ruènì pøepsat importy -->
+            <!--  TODO pasek hack - cxf-codegen-plugin momentï¿½lnï¿½ neumï¿½ generovat tï¿½ï¿½dy s jakarta ee9, nutno ruï¿½nï¿½ pï¿½epsat importy -->
             <!--
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>

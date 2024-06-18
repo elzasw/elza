@@ -1,7 +1,5 @@
 package com.lightcomp.kads.premis;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -25,12 +23,6 @@ public class PremisReaderWriter {
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static void main (String[] args) throws FileNotFoundException, JAXBException {
-        FileInputStream is = new FileInputStream("C:\\Users\\pasek\\Downloads\\PACKAGE-INFO.xml");
-        PremisComplexType unmarshal = unmarshal(is);
-        System.out.println("end");
     }
 
     public static PremisComplexType unmarshal(InputStream is) throws JAXBException {
