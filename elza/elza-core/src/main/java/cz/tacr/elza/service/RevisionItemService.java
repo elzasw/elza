@@ -379,19 +379,11 @@ public class RevisionItemService {
     }
 
     public List<ApRevItem> findItemByEntity(ApAccessPoint replaced) {
-        return dataService.findItemsWithData(() -> revItemRepository.findItemByEntity(replaced),
-                this::createDataResultList);
+        return dataService.findItemsWithData(revItemRepository.findItemByEntity(replaced));
     }
 
     public List<ApRevItem> findByPart(ApRevPart revPart) {
-        return dataService.findItemsWithData(() -> revItemRepository.findByPart(revPart),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ApRevItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemsWithData(revItemRepository.findByPart(revPart));
     }
 
     public void createDeletedItems(ApRevPart revPart, ApChange apChange, List<ApItem> apItems) {

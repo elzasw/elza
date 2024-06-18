@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -76,7 +75,6 @@ import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -376,19 +374,11 @@ public class ArrIOService {
     }
 
     private ArrItem findByItemObjectIdAndDeleteChangeIsNullFetchData(int descItemObjectId) {
-        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndDeleteChangeIsNullFetchData(descItemObjectId),
-                this::createDataResultList);
+        return dataService.findItemWithData(itemRepository.findByItemObjectIdAndDeleteChangeIsNull(descItemObjectId));
     }
 
     private ArrItem findByItemObjectIdAndChangeFetchData(int descItemObjectId, ArrChange lockChange) {
-        return dataService.findItemWithData(() -> itemRepository.findByItemObjectIdAndChangeFetchData(descItemObjectId, lockChange),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemWithData(itemRepository.findByItemObjectIdAndChange(descItemObjectId, lockChange));
     }
 
     public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {

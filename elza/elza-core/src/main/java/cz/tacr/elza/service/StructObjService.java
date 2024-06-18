@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-
+import jakarta.transaction.Transactional;
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -562,26 +563,22 @@ public class StructObjService {
     }
 
     public List<ArrStructuredItem> findByStructObjIdAndDeleteChangeIsNullFetchData(Integer structuredObjectId) {
-        return dataService.findItemsWithData(() -> structureItemRepository.findByStructObjIdAndDeleteChangeIsNullFetchData(structuredObjectId),
-                structObjService::createDataResultList);
+        return dataService.findItemsWithData(structureItemRepository.findByStructObjIdAndDeleteChangeIsNull(structuredObjectId));
     }
 
     private List<ArrStructuredItem> findByStructuredObjectListAndDeleteChangeIsNullFetchData(List<ArrStructuredObject> structuredObjectList) {
-        return dataService.findItemsWithData(() -> structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(structuredObjectList),
-                structObjService::createDataResultList);
+        return dataService.findItemsWithData(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNull(structuredObjectList));
     }
 
     private List<ArrStructuredItem> findOpenItemsAfterPositionFetchData(RulItemType itemType,
                                                                         ArrStructuredObject structuredObject,
                                                                         Integer position,
                                                                         Pageable pageRequest) {
-        return dataService.findItemsWithData(() -> structureItemRepository.findOpenItemsAfterPositionFetchData(itemType, structuredObject, position, pageRequest),
-                structObjService::createDataResultList);
+        return dataService.findItemsWithData(structureItemRepository.findOpenItemsAfterPosition(itemType, structuredObject, position, pageRequest));
     }
 
     private ArrStructuredItem findOpenItemFetchData(Integer itemObjectId) {
-        return dataService.findItemWithData(() -> structureItemRepository.findOpenItemFetchData(itemObjectId),
-                structObjService::createDataResultList);
+        return dataService.findItemWithData(structureItemRepository.findOpenItem(itemObjectId));
     }
 
     /**
@@ -914,8 +911,8 @@ public class StructObjService {
      * @param value textová hodnota, která je parsována
      */
     public void addItemsFromValue(final ArrStructuredObject structuredObject, final String value) {
-        Validate.notNull(structuredObject);
-        Validate.notNull(value);
+    	Objects.requireNonNull(structuredObject);
+    	Objects.requireNonNull(value);
         StructObjValueService.ParseResult parseResult = structObjService.parseValue(structuredObject, value.trim());
         if (parseResult == null) {
             return; // typ nemá parsovací script, nic neděláme
@@ -1308,7 +1305,7 @@ public class StructObjService {
      * @return povolené entity
      */
     public List<RulStructuredType> findStructureTypes(final ArrFundVersion fundVersion) {
-        Validate.notNull(fundVersion);
+    	Objects.requireNonNull(fundVersion);
 
         List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES.toString(), UISettings.EntityType.RULE);
         UISettings settingsUse = null;

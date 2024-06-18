@@ -16,19 +16,24 @@ public interface Item {
     Integer getItemTypeId();
 
     /**
-     * @return identifikátor specifikace atributu
+     * @return identifikátor specifikace atributů
      */
     Integer getItemSpecId();
 
     /**
-     * @return pozice hodnoty atributu
+     * @return pozice hodnoty atributů
      */
     Integer getPosition();
 
     /**
-     * @return data hodnoty atributu
+     * @return data hodnoty atributů
      */
     ArrData getData();
+
+    /**
+     * @return id hodnoty atributů
+     */
+    Integer getDataId();
 
     /**
      * @return jedná se o nedefinovaný atribut (tzn. nemá data hodnoty atributu)

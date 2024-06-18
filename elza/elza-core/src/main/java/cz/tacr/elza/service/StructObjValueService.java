@@ -1086,13 +1086,6 @@ public class StructObjValueService {
     }
 
     public List<ArrStructuredItem> findByStructuredObjectAndDeleteChangeIsNullFetchData(ArrStructuredObject structuredObject) {
-        return dataService.findItemsWithData(() -> structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structuredObject),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrStructuredItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemsWithData(structureItemRepository.findByStructuredObjectAndDeleteChangeIsNull(structuredObject));
     }
 }
