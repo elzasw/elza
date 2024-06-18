@@ -90,7 +90,6 @@ public class ApRevItem implements AccessPointItem {
     private Boolean deleted;
 
     public ApRevItem() {
-
     }
 
     public ApRevItem(final ApRevItem other) {
@@ -194,6 +193,14 @@ public class ApRevItem implements AccessPointItem {
 
     public void setData(final ArrData data) {
         this.data = data;
+        this.dataId = data != null? data.getDataId() : null;
+    }
+
+    public Integer getDataId() {
+    	if (dataId == null && data != null) {
+    		return data.getDataId();
+    	}
+    	return dataId;
     }
 
     public Integer getDeleteChangeId() {
@@ -233,5 +240,9 @@ public class ApRevItem implements AccessPointItem {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public boolean isUndefined() {
+        return data == null;
     }
 }
