@@ -1,9 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.beans.Transient;
-
-// import
-// org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -98,7 +94,7 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
 	protected ArrData data;
 
     @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
-    private Integer dataId;
+    protected Integer dataId;
 
     @Column(name = FIELD_READ_ONLY, nullable = false)
     private Boolean readOnly = false;
@@ -107,7 +103,6 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
 	 * Default constructor
 	 */
 	protected ArrItem() {
-
 	}
 
 	/**
@@ -301,9 +296,17 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
     public ArrData getData() {
         return data;
     }
-
+        
     public void setData(final ArrData data) {
         this.data = data;
+        this.dataId = data != null? data.getDataId() : null;
+    }
+
+    public Integer getDataId() {
+    	if (dataId == null && data != null) {
+    		return data.getDataId();
+    	}
+        return dataId;
     }
 
     @JsonIgnore
@@ -327,6 +330,5 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
      *
      * @return Return copy of the object
      */
-    @Transient
     abstract public ArrItem makeCopy();
 }

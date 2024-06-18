@@ -1,10 +1,8 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-import cz.tacr.elza.repository.vo.DataResult;
-import cz.tacr.elza.service.DataService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,9 +61,6 @@ public class GenerateUnitId extends BulkAction {
     @Autowired
     LockedValueRepository usedValueRepository;
 
-    @Autowired
-    private DataService dataService;
-
 	protected final GenerateUnitIdConfig config;
 
     private SealedUnitIdTree sealedUnitIdTree;
@@ -73,7 +68,7 @@ public class GenerateUnitId extends BulkAction {
     private RulItemSpec extraSlashLevelSpec;
 
 	public GenerateUnitId(GenerateUnitIdConfig unitIdConfig) {
-		Validate.notNull(unitIdConfig);
+		Objects.requireNonNull(unitIdConfig);
 		this.config = unitIdConfig;
 	}
 
@@ -87,37 +82,37 @@ public class GenerateUnitId extends BulkAction {
 
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
-		Validate.notNull(unitIdCode);
+		Objects.requireNonNull(unitIdCode);
 		ItemType itemTypeWrapper = staticDataProvider.getItemTypeByCode(unitIdCode);
-		Validate.notNull(itemTypeWrapper);
+		Objects.requireNonNull(itemTypeWrapper);
 		descItemType = itemTypeWrapper.getEntity();
 
 		// read level type
 		String levelTypeCode = config.getLevelTypeCode();
-		Validate.notNull(levelTypeCode);
+		Objects.requireNonNull(levelTypeCode);
 		ItemType levelTypeWrapper = staticDataProvider.getItemTypeByCode(levelTypeCode);
-		Validate.notNull(levelTypeWrapper);
+		Objects.requireNonNull(levelTypeWrapper);
 		descItemLevelType = levelTypeWrapper.getEntity();
 
 		// item for previous value
 		String previousIdCode = config.getPreviousIdCode();
-		Validate.notNull(previousIdCode);
+		Objects.requireNonNull(previousIdCode);
 		ItemType previousIdTypeWrapper = staticDataProvider.getItemTypeByCode(previousIdCode);
-		Validate.notNull(previousIdTypeWrapper);
+		Objects.requireNonNull(previousIdTypeWrapper);
         // check that data type is string - ArrDataString
         Validate.isTrue(previousIdTypeWrapper.getDataType() == DataType.STRING);
 
 		descItemPreviousType = previousIdTypeWrapper.getEntity();
 
 		String previousIdSpecCode = config.getPreviousIdSpecCode();
-		Validate.notNull(previousIdSpecCode);
+		Objects.requireNonNull(previousIdSpecCode);
 		descItemPreviousSpec = previousIdTypeWrapper.getItemSpecByCode(previousIdSpecCode);
-		Validate.notNull(descItemPreviousSpec);
+		Objects.requireNonNull(descItemPreviousSpec);
 
 		String extraLevelSpecCode = config.getExtraDelimiterAfter();
-		Validate.notNull(extraLevelSpecCode);
+		Objects.requireNonNull(extraLevelSpecCode);
         extraSlashLevelSpec = levelTypeWrapper.getItemSpecByCode(extraLevelSpecCode);
-        Validate.notNull(extraSlashLevelSpec);
+        Objects.requireNonNull(extraSlashLevelSpec);
 
     }
 
@@ -157,14 +152,7 @@ public class GenerateUnitId extends BulkAction {
     }
 
     private List<ArrLockedValue> findByFundAndItemType(ArrFund fund, RulItemType itemType) {
-        return dataService.findItemsWithData(() -> usedValueRepository.findByFundAndItemType(fund, itemType),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrLockedValue> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getItem().getData().getDataId(), i.getItem().getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return usedValueRepository.findByFundAndItemType(fund, itemType);
     }
 
 	@Override
@@ -183,7 +171,7 @@ public class GenerateUnitId extends BulkAction {
         for (Integer nodeId : runContext.getInputNodeIds()) {
             ArrNode nodeRef = nodeRepository.getOne(nodeId);
             ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-			Validate.notNull(level);
+            Objects.requireNonNull(level);
 
             UnitIdGenerator generator = appCtx.getBean(UnitIdGenerator.class, level, params);
             generator.run();

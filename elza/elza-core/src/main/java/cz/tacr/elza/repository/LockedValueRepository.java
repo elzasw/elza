@@ -17,13 +17,12 @@ import cz.tacr.elza.domain.RulItemType;
 
 public interface LockedValueRepository extends JpaRepository<ArrLockedValue, Integer>, DeleteFundHistory {
 
-    @Query("select lv from arr_locked_value lv " +
-            "join fetch lv.item it " +
-            "join fetch it.itemType ity " +
-            "join fetch ity.dataType " +
-            "where lv.fund = :fund and it.itemType = :itemType")
-    List<ArrLockedValue> findByFundAndItemType(@Param("fund") ArrFund fund,
-                                             @Param("itemType") RulItemType itemType);
+    @Query("SELECT lv FROM arr_locked_value lv " +
+            "JOIN FETCH lv.item it " +
+            "JOIN FETCH it.itemType ity " +
+            "JOIN FETCH ity.dataType " +
+            "WHERE lv.fund = :fund AND it.itemType = :itemType")
+    List<ArrLockedValue> findByFundAndItemType(@Param("fund") ArrFund fund, @Param("itemType") RulItemType itemType);
 
     @Modifying
     @Query("DELETE FROM arr_locked_value lv " +
