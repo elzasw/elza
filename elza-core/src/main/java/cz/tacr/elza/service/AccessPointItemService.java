@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -518,66 +517,49 @@ public class AccessPointItemService {
         return position;
     }
 
-    public List<DataResult> createDataResultList(List<ApItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
-    }
-
     public List<ApItem> findValidItemsByPart(ApPart part) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPart(part),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByPart(part));
     }
 
     public List<ApItem> findItemsByParts(List<ApPart> parts) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByParts(parts),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByParts(parts));
     }
 
     public List<ApItem> findValidItemsByPartId(Integer partId) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByPartId(partId),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByPartId(partId));
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final RulItemType itemType, final String partTypeCode) {
-        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode));
     }
 
     public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes,
                                   final String partTypeCode) {
-        return dataService.findItemsWithData(() -> itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode));
     }
 
     public List<ApItem> findValidItemsByAccessPoint(ApAccessPoint accessPoint) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoint(accessPoint),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoint(accessPoint));
     }
 
     public List<ApItem> findNewerValidItemsByAccessPoint(ApAccessPoint accessPoint, Integer changeId) {
-        return dataService.findItemsWithData(() -> itemRepository.findNewerValidItemsByAccessPoint(accessPoint, changeId),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findNewerValidItemsByAccessPoint(accessPoint, changeId));
     }
 
     public List<ApItem> findValidItemsByAccessPoints(Collection<ApAccessPoint> accessPoints) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPoints(accessPoints),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoints(accessPoints));
     }
 
     public List<ApItem> findValidItemsByAccessPointMultiFetch(ApAccessPoint accessPoint) {
-        return dataService.findItemsWithData(() -> itemRepository.findValidItemsByAccessPointMultiFetch(accessPoint),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findValidItemsByAccessPointMultiFetch(accessPoint));
     }
 
     public List<ApItem> findItemByEntity(ApAccessPoint replaced) {
-        return dataService.findItemsWithData(() -> itemRepository.findItemByEntity(replaced),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findItemByEntity(replaced));
     }
 
     public List<ApItem> findUnbindedItemByBinding(ApBinding binding) {
-        return dataService.findItemsWithData(() -> itemRepository.findUnbindedItemByBinding(binding),
-                this::createDataResultList);
+        return dataService.findItemsWithData(itemRepository.findUnbindedItemByBinding(binding));
     }
 
     /**

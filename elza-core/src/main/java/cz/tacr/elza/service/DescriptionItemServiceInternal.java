@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +42,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
-import cz.tacr.elza.repository.vo.DataResult;
 
 /**
  * Internal service for description items.
@@ -87,10 +85,7 @@ public class DescriptionItemServiceInternal {
     public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
     	Objects.requireNonNull(lockChange);
     	Objects.requireNonNull(node);
-        List<ArrDescItem> itemList;
-        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndChange(node, lockChange),
-                this::createDataResultList);
-        return itemList;
+        return dataService.findItemsWithData(descItemRepository.findByNodeAndChange(node, lockChange));
     }
 
     /**
@@ -105,16 +100,7 @@ public class DescriptionItemServiceInternal {
      */
     public List<ArrDescItem> getDescItems(final ArrNode node) {
     	Objects.requireNonNull(node);
-        List<ArrDescItem> itemList;
-        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
-                this::createDataResultList);
-        return itemList;
-    }
-
-    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNull(node));
     }
 
     /**
