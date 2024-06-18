@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.da.ApiException;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import jakarta.xml.bind.JAXBException;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 
 @Component
 public class DaExtSyncsProcessor implements Runnable {
@@ -82,7 +85,14 @@ public class DaExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            byte[] downloadedBytes = daService.downloadDownload(digitalRepository, batchId);
+                            byte[] downloadedBytes = null;
+                            try {
+                                downloadedBytes = daService.downloadDownload(digitalRepository, batchId);
+                            } catch (ApiException e) {
+                                if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
+                                    downloadedBytes = daService.downloadFileTransfer(digitalRepository, batchId);
+                                }
+                            }
                             processPackageInfo(downloadedBytes);
 
 

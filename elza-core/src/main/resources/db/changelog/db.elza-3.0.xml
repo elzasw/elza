@@ -476,5 +476,157 @@
                                  referencedColumnNames="aip_state_id"/>
     </changeSet>
 
+    <changeSet id="20240613095700" author="fantis">
+        <createTable tableName="da_dao">
+            <column name="dao_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_dao" nullable="false"/>
+            </column>
+            <column name="aip_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="type" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="varchar(250)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="da_dao" baseColumnNames="aip_id"
+                                 constraintName="fk_da_dao_da_aip"
+                                 referencedTableName="da_aip"
+                                 referencedColumnNames="aip_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_dao_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_dao_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+    </changeSet>
+
+    <changeSet id="20240613110700" author="fantis">
+        <createTable tableName="da_dao_file_folder">
+            <column name="dao_file_folder_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_dao_file_folder" nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="label" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="representation_dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_file_folder_id" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="da_dao_file_folder" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_dao_file_folder_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file_folder" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_dao_file_folder_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file_folder" baseColumnNames="representation_dao_id"
+                                 constraintName="fk_da_dao_file_folder_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file_folder" baseColumnNames="parent_file_folder_id"
+                                 constraintName="fk_da_dao_file_folder_da_dao_file_folder"
+                                 referencedTableName="da_dao_file_folder"
+                                 referencedColumnNames="dao_file_folder_id"/>
+    </changeSet>
+
+    <changeSet id="20240613111100" author="fantis">
+        <createTable tableName="da_dao_relation">
+            <column name="dao_relation_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_dao_relation" nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="da_dao_relation" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_dao_relation_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_relation" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_dao_relation_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_relation" baseColumnNames="dao_id"
+                                 constraintName="fk_da_dao_relation_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_relation" baseColumnNames="parent_dao_id"
+                                 constraintName="fk_da_dao_relation_parent_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+    </changeSet>
+
+    <changeSet id="20240613111500" author="fantis">
+        <createTable tableName="da_dao_file">
+            <column name="dao_file_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_dao_file" nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="checksum" type="varchar(250)"/>
+            <column name="checksum_type" type="varchar(10)"/>
+            <column name="mime_type" type="varchar(50)"/>
+            <column name="size" type="bigint"/>
+            <column name="image_height" type="int"/>
+            <column name="image_width" type="int"/>
+            <column name="source_x_dimension_unit" type="varchar(10)"/>
+            <column name="source_x_dimension_value" type="int"/>
+            <column name="source_y_dimension_unit" type="varchar(10)"/>
+            <column name="source_y_dimension_value" type="int"/>
+            <column name="duration" type="varchar(250)"/>
+            <column name="description" type="varchar(2000)"/>
+            <column name="file_name" type="varchar(1000)"/>
+            <column name="dao_file_folder_id" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="da_dao_file" baseColumnNames="dao_id"
+                                 constraintName="fk_da_dao_file_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_dao_file_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_dao_file_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_file" baseColumnNames="dao_file_folder_id"
+                                 constraintName="fk_da_dao_file_da_dao_file_folder"
+                                 referencedTableName="da_dao_file_folder"
+                                 referencedColumnNames="dao_file_folder_id"/>
+    </changeSet>
+
 
 </databaseChangeLog>

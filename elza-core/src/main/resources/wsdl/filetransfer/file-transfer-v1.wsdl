@@ -1,0 +1,248 @@
+<?xml  version='1.0' encoding='utf-8' ?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="FileTransferService" targetNamespace="http://www.lightcomp.com/ft/wsdl/v1" xmlns:tns="http://www.lightcomp.com/ft/wsdl/v1" xmlns:ft="http://www.lightcomp.com/ft/xsd/v1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/">
+	<wsdl:import namespace="http://www.lightcomp.com/ft/xsd/v1" location="file-transfer-v1.xsd"/>
+	<wsdl:types/>
+	<wsdl:message name="ReceiveRequest">
+		<wsdl:documentation>Requirement to receive data from the server.</wsdl:documentation>
+		<wsdl:part name="receiveRequest" element="ft:ReceiveRequest"/>
+	</wsdl:message>
+	<wsdl:message name="FileTransferException">
+		<wsdl:documentation>File transfer exception. Allows to pass a detail description of error.</wsdl:documentation>
+		<wsdl:part name="errorDescription" element="ft:ErrorDescription">
+			<wsdl:documentation>Detail description of error</wsdl:documentation>
+		</wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="SendRequest">
+		<wsdl:documentation>Data sent to the server, parameter of the Send method.</wsdl:documentation>
+		<wsdl:part name="sendRequest" element="ft:SendRequest"/>
+	</wsdl:message>
+	<wsdl:message name="ReceiveResponse">
+		<wsdl:documentation>Response to a request to receive data from the server. Contains the transmitted frame.</wsdl:documentation>
+		<wsdl:part name="frame" element="ft:Frame"/>
+	</wsdl:message>
+	<wsdl:message name="AbortResponse">
+		<wsdl:documentation>Empty response to abort request.</wsdl:documentation>
+	</wsdl:message>
+	<wsdl:message name="AbortRequest">
+		<wsdl:documentation>Request to abort transfer. ID of transfer has to be provided.</wsdl:documentation>
+		<wsdl:part name="abortRequest" element="ft:AbortRequest"/>
+	</wsdl:message>
+	<wsdl:message name="BeginRequest">
+		<wsdl:documentation>The date of the request to start the transfer. The structure is a parameter of the Begin method. It contains the transfer type and other optional user data.</wsdl:documentation>
+		<wsdl:part name="beginRequest" element="ft:BeginRequest"/>
+	</wsdl:message>
+	<wsdl:message name="SendResponse">
+		<wsdl:documentation>Response to the method "Send"</wsdl:documentation>
+	</wsdl:message>
+	<wsdl:message name="StatusResponse">
+		<wsdl:documentation>Response to transfer status request.</wsdl:documentation>
+		<wsdl:part name="status" element="ft:TransferStatus"/>
+	</wsdl:message>
+	<wsdl:message name="FinishResponse">
+		<wsdl:documentation>Response to the completed transfer.</wsdl:documentation>
+		<wsdl:part name="response" element="ft:GenericData"/>
+	</wsdl:message>
+	<wsdl:message name="FinishRequest">
+		<wsdl:documentation>Request to complete the transfer</wsdl:documentation>
+		<wsdl:part name="finishRequest" element="ft:FinishRequest"/>
+	</wsdl:message>
+	<wsdl:message name="StatusRequest">
+		<wsdl:documentation>Transfer status request</wsdl:documentation>
+		<wsdl:part name="statusRequest" element="ft:TransferStatusRequest"/>
+	</wsdl:message>
+	<wsdl:message name="BeginResponse">
+		<wsdl:documentation>Response to request to start transfer. Response contains identifier of the transfer.</wsdl:documentation>
+		<wsdl:part name="beginResponse" element="ft:BeginResponse"/>
+	</wsdl:message>
+	<wsdl:portType name="FileTransferService">
+		<wsdl:documentation>File Transfer allows you to transfer data from client to server or from server to client. A client is defined as the party that actively calls the server. The server responds to client requests. The server can serve multiple clients/transfers in parallel.&#xD;
+The API consists of five transfer methods/services and a sixth to determine the status of the transfer.</wsdl:documentation>
+		<wsdl:operation name="Abort">
+			<wsdl:documentation>Service to interrupt a transfer in progress. The request to interrupt the transfer is sent by the client. The request can only be made if the transfer is still active. Once interrupted, the transfer cannot be resumed and continued.&#xD;
+&#xD;
+When a request for interrupting a transfer is made, the transfer identifier is sent as the only input parameter. The transfer identifier is obtained from the response to the Begin call.&#xD;
+&#xD;
+Response. If the transfer can no longer be aborted or the transfer with the given identifier is not found on the server, a FileTransferException occurs.</wsdl:documentation>
+			<wsdl:input name="abortRequest" message="tns:AbortRequest"/>
+			<wsdl:output name="abortResponse" message="tns:AbortResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Begin">
+			<wsdl:documentation>Service to start data transfer. The data transfer is initiated by the Begin call which includes the parameters of the requested transfer. Each transmission to be initiated is of a specific type. The type of transfer is specified by a string with a fixed meaning. Data is transferred in the form of a directory with files and always in one direction - either from server to client or from client to server. The direction of transfer is fixed to the type of transfer and agreed upon by both parties in advance.&#xD;
+The initiation of the transfer may include the transfer of optional user data. The requirements for the parameterisation of the initiation of the transfer are always defined separately within the documentation of the application that uses the FileTransfer service.&#xD;
+&#xD;
+The possible parameters of the method are:&#xD;
+	- transfer type - should always be specified, it is a text constant&#xD;
+	- identifier of the transferred data - optional identifier that specifies the transferred data. For example, for the transfer type "DOWNLOAD" the identifier could be the file name.&#xD;
+	- binary data - an optional part of the request can be binary data&#xD;
+	- XML data - an optional part of the request can be an XML document&#xD;
+&#xD;
+The service will evaluate the legitimacy of the request to start the transfer. If the transfer is initiated, a transfer identifier is returned. In case of an incorrect request, a FileTransferException is raised.&#xD;
+Once a transfer is successfully initiated, it is active until it completes, aborts, fails, or times out. If the transfer is from client to server, the Send method is called, if the transfer is from server to client, the Receive method is called.&#xD;
+The response to start the transfer is the TransferId. This is the unique identifier of the transfer.</wsdl:documentation>
+			<wsdl:input name="beginRequest" message="tns:BeginRequest"/>
+			<wsdl:output name="beginResponse" message="tns:BeginResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Finish">
+			<wsdl:documentation>Service to complete the transfer. Calling the method means that all data has already been transferred and will not be followed by a Send or Receive call.&#xD;
+The call parameter is the transfer identifier.&#xD;
+If the method completes successfully, the other side confirms the successful completion of the transfer. If the method ends with an error - an exception occurs, it means that the entire transfer is considered unsuccessful. If the exception is of type BUSY, the service call should be repeated later.&#xD;
+The result of a successful call to the transfer completion method is a GenericData structure. This structure allows additional response data to be passed from the server to the client. The scope of the data transferred in this way is subject to the specification of the service usage. A typical example of the data passed may be a stored entity identifier.</wsdl:documentation>
+			<wsdl:input name="finishRequest" message="tns:FinishRequest"/>
+			<wsdl:output name="finishResponse" message="tns:FinishResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Receive">
+			<wsdl:documentation>A service for transferring data from the server to the client. The method is called after the transfer has been successfully initiated by calling "Begin" and obtaining the transfer identifier.&#xD;
+The call parameter is the transfer identifier (the result of the "Begin" method) and the frame sequence number. The first transmitted frame has sequence number 0. It is possible to request the current or the next frame during the transmission. For example, after frame number 2 has been transmitted, the method can be called repeatedly to transmit frame number 2 or to transmit the next frame number 3. The frames must be transmitted one after the other and cannot be transmitted in random order.&#xD;
+&#xD;
+The response to a service call is a frame, it means "Frame" structure. This structure includes a flag (attribute "last") indicating whether it is the last frame of the transmission. Once the last frame has been transmitted, the method can no longer be called and the transmission should be terminated. The transfer is completed by calling "Finish".&#xD;
+&#xD;
+A FileTransferException may occur when the method is called. The caller must respect the BUSY state and attempt to continue the transfer when possible. In case of any other exception, this is a non-recoverable transfer error and the transfer is terminated.</wsdl:documentation>
+			<wsdl:input name="receiveRequest" message="tns:ReceiveRequest"/>
+			<wsdl:output name="receiveResponse" message="tns:ReceiveResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Status">
+			<wsdl:documentation>A service for obtaining information about the status of a transfer. The method can be called at any time. The method parameter is the transfer identifier.&#xD;
+The method allows to resume transfer after a previous transfer error or loss of connection. The result of the call is the transfer status information and the number of the last transmitted frame. If the transfer has been properly terminated, the method also returns data identical to the response to the "Finish" method call. The period of availability of the completed transfer information depends on the configuration of the specific service.&#xD;
+If any of the previous calls end with a BUSY exception, the method can be used to verify the server is available again.</wsdl:documentation>
+			<wsdl:input name="statusRequest" message="tns:StatusRequest"/>
+			<wsdl:output name="statusResponse" message="tns:StatusResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Send">
+			<wsdl:documentation>Service for transferring data from client to server. The method is called after the transfer has been successfully initiated by calling Begin and obtaining the transfer identifier.&#xD;
+The method is used to transfer a frame with data. The frame contains a header, blocks describing the folders and files to be transferred and data consisting of a stream of binary file data.&#xD;
+The parameters of the method are the transfer identifier and the frame to be transferred. Individual frames are transferred sequentially one after the other. The first frame is number 0. The last frame transferred must have the "last" flag set.&#xD;
+In case of a transmission failure, the last frame can be retransmitted. If the method call ends without error, the other side has received the frame and the next frame can be sent.&#xD;
+&#xD;
+A FileTransferException may occur when the method is called. If the exception is of type BUSY, the caller should resend the last frame later. If the exception is of any other type, it means the transfer has failed and the transfer will be terminated.</wsdl:documentation>
+			<wsdl:input name="sendRequest" message="tns:SendRequest">
+				<wsdl:documentation>Sent data</wsdl:documentation>
+			</wsdl:input>
+			<wsdl:output name="sendResponse" message="tns:SendResponse"/>
+			<wsdl:fault name="fileTransferException" message="tns:FileTransferException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="FileTransferSOAPBinding" type="tns:FileTransferService">
+		<wsdl:documentation>FileTransferService, SOAP binding</wsdl:documentation>
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="Abort">
+			<wsdl:documentation>Service to interrupt a transfer in progress. The request to interrupt the transfer is sent by the client. The request can only be made if the transfer is still active. Once interrupted, the transfer cannot be resumed and continued.&#xD;
+&#xD;
+When a request for interrupting a transfer is made, the transfer identifier is sent as the only input parameter. The transfer identifier is obtained from the response to the Begin call.&#xD;
+&#xD;
+Response. If the transfer can no longer be aborted or the transfer with the given identifier is not found on the server, a FileTransferException occurs.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Abort" style="document"/>
+			<wsdl:input name="abortRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="abortResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Finish">
+			<wsdl:documentation>Service to complete the transfer. Calling the method means that all data has already been transferred and will not be followed by a Send or Receive call.&#xD;
+The call parameter is the transfer identifier.&#xD;
+If the method completes successfully, the other side confirms the successful completion of the transfer. If the method ends with an error - an exception occurs, it means that the entire transfer is considered unsuccessful. If the exception is of type BUSY, the service call should be repeated later.&#xD;
+The result of a successful call to the transfer completion method is a GenericData structure. This structure allows additional response data to be passed from the server to the client. The scope of the data transferred in this way is subject to the specification of the service usage. A typical example of the data passed may be a stored entity identifier.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Finish" style="document"/>
+			<wsdl:input name="finishRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="finishResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Receive">
+			<wsdl:documentation>A service for transferring data from the server to the client. The method is called after the transfer has been successfully initiated by calling "Begin" and obtaining the transfer identifier.&#xD;
+The call parameter is the transfer identifier (the result of the "Begin" method) and the frame sequence number. The first transmitted frame has sequence number 0. It is possible to request the current or the next frame during the transmission. For example, after frame number 2 has been transmitted, the method can be called repeatedly to transmit frame number 2 or to transmit the next frame number 3. The frames must be transmitted one after the other and cannot be transmitted in random order.&#xD;
+&#xD;
+The response to a service call is a frame, it means "Frame" structure. This structure includes a flag (attribute "last") indicating whether it is the last frame of the transmission. Once the last frame has been transmitted, the method can no longer be called and the transmission should be terminated. The transfer is completed by calling "Finish".&#xD;
+&#xD;
+A FileTransferException may occur when the method is called. The caller must respect the BUSY state and attempt to continue the transfer when possible. In case of any other exception, this is a non-recoverable transfer error and the transfer is terminated.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Receive" style="document"/>
+			<wsdl:input name="receiveRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="receiveResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Status">
+			<wsdl:documentation>A service for obtaining information about the status of a transfer. The method can be called at any time. The method parameter is the transfer identifier.&#xD;
+The method allows to resume transfer after a previous transfer error or loss of connection. The result of the call is the transfer status information and the number of the last transmitted frame. If the transfer has been properly terminated, the method also returns data identical to the response to the "Finish" method call. The period of availability of the completed transfer information depends on the configuration of the specific service.&#xD;
+If any of the previous calls end with a BUSY exception, the method can be used to verify the server is available again.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Status" style="document"/>
+			<wsdl:input name="statusRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="statusResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Send">
+			<wsdl:documentation>Service for transferring data from client to server. The method is called after the transfer has been successfully initiated by calling Begin and obtaining the transfer identifier.&#xD;
+The method is used to transfer a frame with data. The frame contains a header, blocks describing the folders and files to be transferred and data consisting of a stream of binary file data.&#xD;
+The parameters of the method are the transfer identifier and the frame to be transferred. Individual frames are transferred sequentially one after the other. The first frame is number 0. The last frame transferred must have the "last" flag set.&#xD;
+In case of a transmission failure, the last frame can be retransmitted. If the method call ends without error, the other side has received the frame and the next frame can be sent.&#xD;
+&#xD;
+A FileTransferException may occur when the method is called. If the exception is of type BUSY, the caller should resend the last frame later. If the exception is of any other type, it means the transfer has failed and the transfer will be terminated.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Send" style="document"/>
+			<wsdl:input name="sendRequest">
+				<wsdl:documentation>Sent data</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="sendResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Begin">
+			<wsdl:documentation>Service to start data transfer. The data transfer is initiated by the Begin call which includes the parameters of the requested transfer. Each transmission to be initiated is of a specific type. The type of transfer is specified by a string with a fixed meaning. Data is transferred in the form of a directory with files and always in one direction - either from server to client or from client to server. The direction of transfer is fixed to the type of transfer and agreed upon by both parties in advance.&#xD;
+The initiation of the transfer may include the transfer of optional user data. The requirements for the parameterisation of the initiation of the transfer are always defined separately within the documentation of the application that uses the FileTransfer service.&#xD;
+&#xD;
+The possible parameters of the method are:&#xD;
+	- transfer type - should always be specified, it is a text constant&#xD;
+	- identifier of the transferred data - optional identifier that specifies the transferred data. For example, for the transfer type "DOWNLOAD" the identifier could be the file name.&#xD;
+	- binary data - an optional part of the request can be binary data&#xD;
+	- XML data - an optional part of the request can be an XML document&#xD;
+&#xD;
+The service will evaluate the legitimacy of the request to start the transfer. If the transfer is initiated, a transfer identifier is returned. In case of an incorrect request, a FileTransferException is raised.&#xD;
+Once a transfer is successfully initiated, it is active until it completes, aborts, fails, or times out. If the transfer is from client to server, the Send method is called, if the transfer is from server to client, the Receive method is called.&#xD;
+The response to start the transfer is the TransferId. This is the unique identifier of the transfer.</wsdl:documentation>
+			<soap:operation soapAction="http://www.lightcomp.com/ft/ws/v1/Begin" style="document"/>
+			<wsdl:input name="beginRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="beginResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="fileTransferException">
+				<soap:fault name="fileTransferException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="FileTransferService">
+		<wsdl:documentation>Web service FileTransfer</wsdl:documentation>
+		<wsdl:port name="Port" binding="tns:FileTransferSOAPBinding">
+			<soap:address location="http://www.lightcomp.com/ft/ws/v1"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

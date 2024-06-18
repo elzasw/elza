@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
 import cz.tacr.da.controller.vo.DownloadDownloadStatus;
 import cz.tacr.da.controller.vo.RequestState;
@@ -127,14 +128,15 @@ public class DaService {
         return status.getState() == RequestState.FINISHED;
     }
 
-    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) {
+    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
+        return daConnector.downloadDownload(digitalRepository, batchId);
+    }
+
+    public byte[] downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) {
         try {
-            return  daConnector.downloadDownload(digitalRepository, batchId);
+            return daConnector.downloadDownload(digitalRepository, batchId); //todo
         } catch (Exception e) {
-            //todo fantiš filetransfer
+            throw new IllegalStateException(e);
         }
-        //todo fantiš stav syncqueueitem error or import_ok
-        //todo fantiš uložit na disk
-        return null;
     }
 }
