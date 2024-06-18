@@ -283,6 +283,21 @@
 		    <groupId>com.sun.xml.messaging.saaj</groupId>
 		    <artifactId>saaj-impl</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.lightcomp.ft</groupId>
+            <artifactId>file-transfer</artifactId>
+            <version>2.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<!-- Find bugs -->
 		<!--<dependency>-->
 		<!--<groupId>com.google.code.findbugs</groupId>-->
@@ -549,37 +564,6 @@
 					</dependency>-->
 				</dependencies>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-codegen-plugin</artifactId>
-                <version>${cxf.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
-                            <defaultOptions>
-                                <exceptionSuper>java.lang.RuntimeException</exceptionSuper>
-                                <!-- Note: extraargs cannot be specified inside defaultOptions due to bug in plugin -->
-                            </defaultOptions>
-                            <wsdlOptions>
-                                <wsdlOption>
-                                    <wsdl>${basedir}/src/main/resources/wsdl/filetransfer/file-transfer-v1.wsdl</wsdl>
-                                    <extraargs>
-                                        <!--                                        <extraarg>-quiet</extraarg>-->
-                                        <!--                                        <extraarg>-verbose</extraarg>-->
-                                        <extraarg>-autoNameResolution</extraarg>
-                                    </extraargs>
-                                </wsdlOption>
-                            </wsdlOptions>
-                        </configuration>
-                        <goals>
-                            <goal>wsdl2java</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
