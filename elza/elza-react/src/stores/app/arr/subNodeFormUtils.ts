@@ -185,14 +185,6 @@ export function createDescItemFromDb(descItemType, descItem) {
     return result;
 }
 
-function prevDescItemHasSamePrevValue(prevDescItem: DescItem, newDescItem: DescItem) {
-    return (
-        prevDescItem.prevValue === newDescItem.value &&
-        // Kontrola Spec (pokud není jsou obě hodnoty undefined a vše je ok)
-        prevDescItem.prevDescItemSpecId === prevDescItem.descItemSpecId
-    );
-}
-
 function addUid(descItem: DescItem, index) {
     if (typeof descItem.descItemObjectId !== 'undefined') {
         descItem._uid = descItem.descItemObjectId;
@@ -398,29 +390,17 @@ export function mergeDescItems(
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 const prevDescItem = prevDescItemMap[descItem.descItemObjectId!];
-                if (
-                    prevDescItem &&
-                    prevDescItemHasSamePrevValue(prevDescItem, descItem) &&
-                    (prevDescItem.touched || (!descItem.value && !descItem.undefined))
-                ) {
-                    // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
-                    const item = {...prevDescItem};
-                    if (state.updatedItem && state.updatedItem.descItemObjectId === descItem.descItemObjectId) {
-                        item.value = state.updatedItem.value;
-                    }
-                    addUid(item, null);
+                const item = createDescItemFromDb(resultDescItemType, descItem);
+
+                addUid(item, null);
+
+                if (prevDescItem) {
                     item.formKey = prevDescItem.formKey;
-                    resultDescItemType.descItems.push(item);
                 } else {
-                    const item = createDescItemFromDb(resultDescItemType, descItem);
-                    addUid(item, null);
-                    if (prevDescItem) {
-                        item.formKey = prevDescItem.formKey;
-                    } else {
-                        item.formKey = getNewFormKey(item);
-                    }
-                    resultDescItemType.descItems.push(item);
+                    item.formKey = getNewFormKey(item);
                 }
+
+                resultDescItemType.descItems.push(item);
             });
 
             // Doplnění o přidané a neuložené v aktuálním klientovi
