@@ -1,64 +1,64 @@
-# Úvod
-Tento demonstraèní projekt je návrhem øešení zpùsobu komunikace mezi ELZA clientem (webová aplikace) a ELZA serverem.
+# Ãšvod
+Tento demonstraÄnÃ­ projekt je nÃ¡vrhem Å™eÅ¡enÃ­ zpÅ¯sobu komunikace mezi ELZA clientem (webovÃ¡ aplikace) a ELZA serverem.
 
-Vıchodiska:
- * zmìny jsou na server z klienta zasílány ihned pøi jejich detekci, tj. opuštìní editovaného pole
- * na serveru jsou vyuívány optimistické zámky s cílem zamezit vzniku nechtìného pøepsání informací zadanıch jinım uivatelem
- * na jednotlivé klienty jsou zasílány ji nyní notifikace o zmìnách pomocí WebSocketu
+VÃ½chodiska:
+ * zmÄ›ny jsou na server z klienta zasÃ­lÃ¡ny ihned pÅ™i jejich detekci, tj. opuÅ¡tÄ›nÃ­ editovanÃ©ho pole
+ * na serveru jsou vyuÅ¾Ã­vÃ¡ny optimistickÃ© zÃ¡mky s cÃ­lem zamezit vzniku nechtÄ›nÃ©ho pÅ™epsÃ¡nÃ­ informacÃ­ zadanÃ½ch jinÃ½m uÅ¾ivatelem
+ * na jednotlivÃ© klienty jsou zasÃ­lÃ¡ny jiÅ¾ nynÃ­ notifikace o zmÄ›nÃ¡ch pomocÃ­ WebSocketu
 
-Problémy stávajícího øešení (do záøí 2016):
- * pøi rychlé editaci dochází k synchronizaèní chybì
- * pøi vzniku synchronizaèní chyby (i jiné chyby) není na klientovi ošetøeno její øešení, resp. zajištìn konzistentní stav. Model se nevrací do pøedchozího stavu
+ProblÃ©my stÃ¡vajÃ­cÃ­ho Å™eÅ¡enÃ­ (do zÃ¡Å™Ã­ 2016):
+ * pÅ™i rychlÃ© editaci dochÃ¡zÃ­ k synchronizaÄnÃ­ chybÄ›
+ * pÅ™i vzniku synchronizaÄnÃ­ chyby (i jinÃ© chyby) nenÃ­ na klientovi oÅ¡etÅ™eno jejÃ­ Å™eÅ¡enÃ­, resp. zajiÅ¡tÄ›n konzistentnÃ­ stav. Model se nevracÃ­ do pÅ™edchozÃ­ho stavu
  
-Dùvody vzniku synchronizaèních chyb:
-  * prohlíeè pro odesílání HTTP requestù vyuívá nìkolik vláken, není tím pádem zaruèeno poøadí jejich pøijetí na serveru
-  * server zpracovává pøijaté requesty více vláknovì a není zaruèeno jejich uspoøádání (ani z hlediska zahájení èi ukonèení)
+DÅ¯vody vzniku synchronizaÄnÃ­ch chyb:
+  * prohlÃ­Å¾eÄ pro odesÃ­lÃ¡nÃ­ HTTP requestÅ¯ vyuÅ¾Ã­vÃ¡ nÄ›kolik vlÃ¡ken, nenÃ­ tÃ­m pÃ¡dem zaruÄeno poÅ™adÃ­ jejich pÅ™ijetÃ­ na serveru
+  * server zpracovÃ¡vÃ¡ pÅ™ijatÃ© requesty vÃ­ce vlÃ¡knovÄ› a nenÃ­ zaruÄeno jejich uspoÅ™Ã¡dÃ¡nÃ­ (ani z hlediska zahÃ¡jenÃ­ Äi ukonÄenÃ­)
 
-# Principiální návrh øešení
-Cílem je zajistit uspoøádání poadavkù od jedné klientské aplikace a zaruèit jejich zpracování v tom poøadí v jakém vznikly. 
-Toho lze dosáhnout tak, e bude zaruèeno:
- * Poadavky jsou pøenášeny v tom poøadí v jakém vznikly
- * Poadavky jsou zpracovány v tom poøadí v jakém vznikly
+# PrincipiÃ¡lnÃ­ nÃ¡vrh Å™eÅ¡enÃ­
+CÃ­lem je zajistit uspoÅ™Ã¡dÃ¡nÃ­ poÅ¾adavkÅ¯ od jednÃ© klientskÃ© aplikace a zaruÄit jejich zpracovÃ¡nÃ­ v tom poÅ™adÃ­ v jakÃ©m vznikly. 
+Toho lze dosÃ¡hnout tak, Å¾e bude zaruÄeno:
+ * PoÅ¾adavky jsou pÅ™enÃ¡Å¡eny v tom poÅ™adÃ­ v jakÃ©m vznikly
+ * PoÅ¾adavky jsou zpracovÃ¡ny v tom poÅ™adÃ­ v jakÃ©m vznikly
 
-Poadavky lze pøenášet z klienta na server pomocí WebSocketù. Tím, e se vyuije tohoto spojení dojde k serializaci 
-odesílanıch poadavkù na ji klientovi. Souèasnì je zaruèeno, e poadavky na server dorazí ve správném poøadí. Druhou èástí 
-je zajištìní vyøizování poadavkù od jednoho klienta na serveru serializovanì. Toho lze dosáhnout implementací vhodného plánovaèe,
-kterı bude vyøizovat synchronnì poadavky pocházející z jedné klientské aplikace, tj. jednoho websocketu.
+PoÅ¾adavky lze pÅ™enÃ¡Å¡et z klienta na server pomocÃ­ WebSocketÅ¯. TÃ­m, Å¾e se vyuÅ¾ije tohoto spojenÃ­ dojde k serializaci 
+odesÃ­lanÃ½ch poÅ¾adavkÅ¯ na jiÅ¾ klientovi. SouÄasnÄ› je zaruÄeno, Å¾e poÅ¾adavky na server dorazÃ­ ve sprÃ¡vnÃ©m poÅ™adÃ­. Druhou ÄÃ¡stÃ­ 
+je zajiÅ¡tÄ›nÃ­ vyÅ™izovÃ¡nÃ­ poÅ¾adavkÅ¯ od jednoho klienta na serveru serializovanÄ›. Toho lze dosÃ¡hnout implementacÃ­ vhodnÃ©ho plÃ¡novaÄe,
+kterÃ½ bude vyÅ™izovat synchronnÄ› poÅ¾adavky pochÃ¡zejÃ­cÃ­ z jednÃ© klientskÃ© aplikace, tj. jednoho websocketu.
 
-# Zpùsob øešení komunikace
-Komunikace je zaloena na vyuití WebSocket protokolu v kombinaci se Stomp knihovnou. 
-Oproti pùvodní implementaci je implementace zaloena na èistıch WebSocketech tj. bez knihovny SockJS.
+# ZpÅ¯sob Å™eÅ¡enÃ­ komunikace
+Komunikace je zaloÅ¾ena na vyuÅ¾itÃ­ WebSocket protokolu v kombinaci se Stomp knihovnou. 
+Oproti pÅ¯vodnÃ­ implementaci je implementace zaloÅ¾ena na ÄistÃ½ch WebSocketech tj. bez knihovny SockJS.
 
-Stomp protokol je vyuíván ve verzi 1.2. Klientská strana je zaloena na knihovnì Stomp.js (https://github.com/ThoughtWire/stomp-websocket)
+Stomp protokol je vyuÅ¾Ã­vÃ¡n ve verzi 1.2. KlientskÃ¡ strana je zaloÅ¾ena na knihovnÄ› Stomp.js (https://github.com/ThoughtWire/stomp-websocket)
 
-Vyuívané vlastnosti Stomp protokolu:
- * heartbeat - pro zajištìní ivého kanálu
- * receipt - monost zajištìní potvrzení zpracování poadavku na stranì serveru
- * error - v pøípadì vzniku vıjimky pøi zpracování poadavku je zaslána zpráva error a dojde k odpojení klienta
+VyuÅ¾Ã­vanÃ© vlastnosti Stomp protokolu:
+ * heartbeat - pro zajiÅ¡tÄ›nÃ­ Å¾ivÃ©ho kanÃ¡lu
+ * receipt - moÅ¾nost zajiÅ¡tÄ›nÃ­ potvrzenÃ­ zpracovÃ¡nÃ­ poÅ¾adavku na stranÄ› serveru
+ * error - v pÅ™Ã­padÄ› vzniku vÃ½jimky pÅ™i zpracovÃ¡nÃ­ poÅ¾adavku je zaslÃ¡na zprÃ¡va error a dojde k odpojenÃ­ klienta
 
-Z klienta budou novì poadavky na zmìnu uzlu pøenášeny na server jako JSON requesty pøes WebSocket protokol. 
-Zpracování ostatních poadavkù, kde nehrozí vznik synchronizaèních chyb mohou bıt pøenášeny stávajícím zpùsobem beze zmìny.
+Z klienta budou novÄ› poÅ¾adavky na zmÄ›nu uzlu pÅ™enÃ¡Å¡eny na server jako JSON requesty pÅ™es WebSocket protokol. 
+ZpracovÃ¡nÃ­ ostatnÃ­ch poÅ¾adavkÅ¯, kde nehrozÃ­ vznik synchronizaÄnÃ­ch chyb mohou bÃ½t pÅ™enÃ¡Å¡eny stÃ¡vajÃ­cÃ­m zpÅ¯sobem beze zmÄ›ny.
 
-Minimální seznam operaci u nich musí dojít ke zmìnì zpùsobu pøenosu poadavkù:
- * vznik jednotky popisu - øeší se napø. pøípad, kdy se zmìní JP a hned poté se pod ní zaloí nová JP - tyto operace chceme synchronnì
- * zmìna jednotky popisu
- * vymazání jednotky popisu
- * pøesun jednotky popisu
+MinimÃ¡lnÃ­ seznam operaci u nichÅ¾ musÃ­ dojÃ­t ke zmÄ›nÄ› zpÅ¯sobu pÅ™enosu poÅ¾adavkÅ¯:
+ * vznik jednotky popisu - Å™eÅ¡Ã­ se napÅ™. pÅ™Ã­pad, kdy se zmÄ›nÃ­ JP a hned potÃ© se pod nÃ­ zaloÅ¾Ã­ novÃ¡ JP - tyto operace chceme synchronnÄ›
+ * zmÄ›na jednotky popisu
+ * vymazÃ¡nÃ­ jednotky popisu
+ * pÅ™esun jednotky popisu
 
-Logika na stranì klienta:
- * Klient odesílá poadavek pøes websocket a souèasnì si zvıší lokální èíslo verze na úrovni JP (nutno SYNCHRONIZOVAT !!!)
- * Pokud bude chtít klient dostávat potvrzení vyøízení poadavku, tak musí mít jejic counter a odesílat na server atribut receipt v hlavièce poadavku
- * Pokud pøijde ze serveru notifikace o nové verzi JP a pokud je verze menší rovna ne verze na klientovi, tak se notifikace ignoruje
- * Pokud pøijde ze serveru notifikace o nové verzi JP a pokud je verze vìtší ne verze na klientovi, tak se JP aktualizuje ze serveru
- * Pokud pøijde error zpráva ze serveru pøes WS, tak dojde k ukonèení WS (zajistí Stomp.js) a zobrazení chyby. 
-   Klient musí souèasnì zneplatnit všechny vyádané uzly, znovu se pøipojí k WS a obnoví informace o JP
+Logika na stranÄ› klienta:
+ * Klient odesÃ­lÃ¡ poÅ¾adavek pÅ™es websocket a souÄasnÄ› si zvÃ½Å¡Ã­ lokÃ¡lnÃ­ ÄÃ­slo verze na Ãºrovni JP (nutno SYNCHRONIZOVAT !!!)
+ * Pokud bude chtÃ­t klient dostÃ¡vat potvrzenÃ­ vyÅ™Ã­zenÃ­ poÅ¾adavku, tak musÃ­ mÃ­t jejic counter a odesÃ­lat na server atribut receipt v hlaviÄce poÅ¾adavku
+ * Pokud pÅ™ijde ze serveru notifikace o novÃ© verzi JP a pokud je verze menÅ¡Ã­ rovna neÅ¾ verze na klientovi, tak se notifikace ignoruje
+ * Pokud pÅ™ijde ze serveru notifikace o novÃ© verzi JP a pokud je verze vÄ›tÅ¡Ã­ neÅ¾ verze na klientovi, tak se JP aktualizuje ze serveru
+ * Pokud pÅ™ijde error zprÃ¡va ze serveru pÅ™es WS, tak dojde k ukonÄenÃ­ WS (zajistÃ­ Stomp.js) a zobrazenÃ­ chyby. 
+   Klient musÃ­ souÄasnÄ› zneplatnit vÅ¡echny vyÅ¾Ã¡danÃ© uzly, znovu se pÅ™ipojÃ­ k WS a obnovÃ­ informace o JP
 
-# Ukázkové øešení
-Demonstraèní projekt je pøipraven do stavu, kdy je moné jeho tøídy pøímo pøenést do aplikace a zaèít je vyuívat.
-Package core - obecné tøídy, lze plnì vyuít ve stávající podobì
-Package fund - ukázka reálného nasazení v aplikaci a vytvoøení pøíslušnıch endpoint
+# UkÃ¡zkovÃ© Å™eÅ¡enÃ­
+DemonstraÄnÃ­ projekt je pÅ™ipraven do stavu, kdy je moÅ¾nÃ© jeho tÅ™Ã­dy pÅ™Ã­mo pÅ™enÃ©st do aplikace a zaÄÃ­t je vyuÅ¾Ã­vat.
+Package core - obecnÃ© tÅ™Ã­dy, lze plnÄ› vyuÅ¾Ã­t ve stÃ¡vajÃ­cÃ­ podobÄ›
+Package fund - ukÃ¡zka reÃ¡lnÃ©ho nasazenÃ­ v aplikaci a vytvoÅ™enÃ­ pÅ™Ã­sluÅ¡nÃ½ch endpoint
 
-# Budoucí zmìny
-Pøepracování WebSocketTaskProcessor, aby vyuíval ThreadPool
-Pro vyuití Scope("session") bude nutné vyuít abstrakci nad HttpSession, napøíklad: Spring session
- * session je pak platná i po dobu websocket komunikace, viz: https://spring.io/blog/2014/09/16/preview-spring-security-websocket-support-sessions
+# BudoucÃ­ zmÄ›ny
+PÅ™epracovÃ¡nÃ­ WebSocketTaskProcessor, aby vyuÅ¾Ã­val ThreadPool
+Pro vyuÅ¾itÃ­ Scope("session") bude nutnÃ© vyuÅ¾Ã­t abstrakci nad HttpSession, napÅ™Ã­klad: Spring session
+ * session je pak platnÃ¡ i po dobu websocket komunikace, viz: https://spring.io/blog/2014/09/16/preview-spring-security-websocket-support-sessions
