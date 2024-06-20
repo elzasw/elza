@@ -6466,7 +6466,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", "ZP2015_ENTITY_ROLE_TEXT",
-    									"ZP2015_SIZE", "ZP2015_AMOUNT", "ZP2015_STORAGE_COND", "ZP2015_ITEM_MAT") )
+    									"ZP2015_LANGUAGE", "ZP2015_AMOUNT", "ZP2015_STORAGE_COND", "ZP2015_ITEM_MAT") )
 then
     $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
