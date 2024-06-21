@@ -105,7 +105,7 @@ export class websocket {
     };
 
     disconnect = (error = false) => {
-        if (this.stompClient && this.stompClient.ws.readyState < 3) {
+        if (this.stompClient?.ws?.readyState < 3) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log('Websocket disconnected');
             this.stompClient.deactivate();
