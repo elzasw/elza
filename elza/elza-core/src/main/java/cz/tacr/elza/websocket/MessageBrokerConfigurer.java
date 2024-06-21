@@ -4,17 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
-import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
@@ -25,7 +23,7 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
  */
 @Configuration
 @EnableWebSocketMessageBroker
-public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBrokerConfigurer {
+public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer {
 
     @Autowired
     @Qualifier("clientInboundChannelExecutor")
@@ -41,21 +39,23 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     }
 
     @Override
-    public void configureWebSocketTransport(final WebSocketTransportRegistration registration) {
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
                 clientInboundChannelExecutor));
         registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
                 clientOutboundChannelExecutor));
         registration.setSendBufferSizeLimit(512 * 1024);
         registration.setMessageSizeLimit(512 * 1024);
-        super.configureWebSocketTransport(registration);
+        //super.configureWebSocketTransport(registration); // TODO Spring Boot v3
+        // by https://docs.spring.io/spring-framework/reference/web/websocket/stomp/server-config.html
     }
 
     @Override
     public void configureMessageBroker(final MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/app");
-        registry.setUserDestinationPrefix("/user"); // direct message for subscribed user
-        registry.enableSimpleBroker("/topic")
+        registry
+        		.setApplicationDestinationPrefixes("/app")
+        		.setUserDestinationPrefix("/user") // direct message for subscribed user
+        		.enableSimpleBroker("/topic")
                 // Hearth beat interval
                 // 30000 - write interval for outgoing channel 
                 //       - timeout for inbound channel is 3*30000 = 90s
@@ -71,25 +71,27 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
 
     @Override
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
-        registry.setErrorHandler(new StompSubProtocolErrorHandler());
-        registry.addEndpoint("/stomp")
+        registry
+        		.setErrorHandler(new StompSubProtocolErrorHandler())
+        		.addEndpoint("/stomp")
                 .setAllowedOrigins("*") // kvůli reverse-proxy
                 // copy HTTP session attributes to simpSessionAttributes
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
     }
 
-    @Override
-    protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
-          messages
-               .nullDestMatcher().authenticated()
-               .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
-               .anyMessage().denyAll();
-    }
-
-    @Override
-    protected boolean sameOriginDisabled() {
-        return true;
-    }
+// TODO Spring Boot v3 -> WebSocketSecurityConfig.class    
+//    @Override
+//    protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
+//          messages
+//               .nullDestMatcher().authenticated()
+//               .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
+//               .anyMessage().denyAll();
+//    }
+//
+//    @Override
+//    protected boolean sameOriginDisabled() { // you want to allow other domains to access your site
+//        return true;
+//    }
 
     /**
      * Decorator is used to add/remove WebSocket session for {@link WebSocketThreadPoolTaskExecutor}.
