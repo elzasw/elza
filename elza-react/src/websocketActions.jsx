@@ -98,7 +98,6 @@ export class websocket {
             // this.stompClient.onreceipt = this.onReceipt;
             // this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
             console.info('Websocket connecting to ' + wsUrl);
-            debugger;
             this.stompClient.activate();
             console.log("#### activated")
             // this.stompClient.connect({}, this.onConnect, this.onError);
