@@ -47,6 +47,12 @@ if (typeof window.CustomEvent !== 'function') {
     window.CustomEvent = CustomEvent;
 }
 
+// Workaround for 'process is not defined' error in react-shortcuts
+// TODO - change react-shortcuts to newer/different version
+if(!window.process){
+    window.process = undefined;
+}
+
 // Globální init
 Utils.init();
 
