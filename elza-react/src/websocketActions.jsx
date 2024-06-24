@@ -98,7 +98,6 @@ export class websocket {
             // this.stompClient.onreceipt = this.onReceipt;
             // this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
             console.info('Websocket connecting to ' + wsUrl);
-            debugger;
             this.stompClient.activate();
             console.log("#### activated")
             // this.stompClient.connect({}, this.onConnect, this.onError);
@@ -106,7 +105,7 @@ export class websocket {
     };
 
     disconnect = (error = false) => {
-        if (this.stompClient && this.stompClient.ws.readyState < 3) {
+        if (this.stompClient?.ws?.readyState < 3) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log('Websocket disconnected');
             this.stompClient.deactivate();

@@ -3,7 +3,7 @@
  */
 
 import { setFocus } from 'actions/global/focus';
-import { statusSaved, statusSaving } from 'actions/global/status';
+import { statusSaved, statusSaving, savingApiWrapper } from 'actions/global/status';
 import { WebApi } from 'actions/index';
 import { i18n } from 'components/shared';
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
@@ -724,24 +724,8 @@ export class ItemFormActions {
     _callSetInhibitDescItem(nodeId, itemId, inhibit) {}
 
     fundSubNodeFormValueSetInhibit(nodeId, itemId, inhibit) {
-        return (dispatch, getState) => {
-            const {arrRegion} = getState();
-
-            const activeFund = arrRegion.funds[arrRegion.activeIndex];
-            if(activeFund == undefined){
-                throw "No active fund";
-            }
-
-            const versionId = activeFund.activeVersion?.id;
-            const routingKey = activeFund.nodes?.nodes[activeFund.nodes.activeIndex]?.routingKey
-
-            if(versionId == undefined){
-                throw "No active version";
-            }
-
-            this._callSetInhibitDescItem(nodeId, itemId, inhibit).then(() => {
-                dispatch(this._fundSubNodeFormFetch(versionId, nodeId, routingKey, true));
-            })
+        return (dispatch) => {
+            return savingApiWrapper(dispatch, this._callSetInhibitDescItem(nodeId, itemId, inhibit));
         }
     }
 

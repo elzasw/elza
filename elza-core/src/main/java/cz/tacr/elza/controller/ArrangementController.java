@@ -1872,7 +1872,7 @@ public class ArrangementController {
     public Integer filterNodes(@PathVariable("versionId") final Integer versionId,
                                @RequestBody(required = false) final Filters filters) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters, fundVersion.getLockChangeId());
         return filterTreeService.filterData(fundVersion, descItemFilters, filters.getNodeId());
     }
 
@@ -1980,7 +1980,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
-        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters, fundVersion.getLockChangeId());
         List<Integer> specIds = filterTreeService.findUniqueSpecIds(fundVersion, descItemType, descItemFilters, filters.getNodeId());
         specIds.add(null); // pro "Prázdné" položky
         return specIds;

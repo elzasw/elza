@@ -185,14 +185,6 @@ export function createDescItemFromDb(descItemType, descItem) {
     return result;
 }
 
-function prevDescItemHasSamePrevValue(prevDescItem: DescItem, newDescItem: DescItem) {
-    return (
-        prevDescItem.prevValue === newDescItem.value &&
-        // Kontrola Spec (pokud není jsou obě hodnoty undefined a vše je ok)
-        prevDescItem.prevDescItemSpecId === prevDescItem.descItemSpecId
-    );
-}
-
 function addUid(descItem: DescItem, index) {
     if (typeof descItem.descItemObjectId !== 'undefined') {
         descItem._uid = descItem.descItemObjectId;
@@ -225,9 +217,10 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
     addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap);
+    const hasOnlyInheritedInhibitedValues = !resultDescItemType.descItems.find(({ fromNodeId, inhibited }) => fromNodeId == null || (fromNodeId != null && !inhibited));
 
-    // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
-    if (resultDescItemType.descItems.length === 0) {
+    // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací) nebo jsou všechny zděděné hodnoty potlačené
+    if (resultDescItemType.descItems.length === 0 || hasOnlyInheritedInhibitedValues) {
         resultDescItemType.descItems.push(createDescItem(refType, addedByUser));
     }
 
@@ -272,9 +265,13 @@ export function addForcedSpecifications(
 
     // Seznam existujících specifikací
     const existingSpecIds = {};
-    resultDescItemType.descItems.forEach(descItem => {
-        if (typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== ('' as any)) {
-            existingSpecIds[descItem.descItemSpecId] = true;
+    resultDescItemType.descItems.forEach(({descItemSpecId, fromNodeId, inhibited}) => {
+        const isInhibitedInheritedItem = fromNodeId != null && inhibited;
+        if (
+            typeof descItemSpecId != 'undefined'
+                && !isInhibitedInheritedItem // use inherited specification only when not inhibited
+        ) {
+            existingSpecIds[descItemSpecId] = true;
         }
     });
 
@@ -393,29 +390,17 @@ export function mergeDescItems(
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 const prevDescItem = prevDescItemMap[descItem.descItemObjectId!];
-                if (
-                    prevDescItem &&
-                    prevDescItemHasSamePrevValue(prevDescItem, descItem) &&
-                    (prevDescItem.touched || (!descItem.value && !descItem.undefined))
-                ) {
-                    // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
-                    const item = {...prevDescItem};
-                    if (state.updatedItem && state.updatedItem.descItemObjectId === descItem.descItemObjectId) {
-                        item.value = state.updatedItem.value;
-                    }
-                    addUid(item, null);
+                const item = createDescItemFromDb(resultDescItemType, descItem);
+
+                addUid(item, null);
+
+                if (prevDescItem) {
                     item.formKey = prevDescItem.formKey;
-                    resultDescItemType.descItems.push(item);
                 } else {
-                    const item = createDescItemFromDb(resultDescItemType, descItem);
-                    addUid(item, null);
-                    if (prevDescItem) {
-                        item.formKey = prevDescItem.formKey;
-                    } else {
-                        item.formKey = getNewFormKey(item);
-                    }
-                    resultDescItemType.descItems.push(item);
+                    item.formKey = getNewFormKey(item);
                 }
+
+                resultDescItemType.descItems.push(item);
             });
 
             // Doplnění o přidané a neuložené v aktuálním klientovi

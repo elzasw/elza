@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -28,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
@@ -188,11 +187,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
 
-    private TransactionSynchronizationAdapter indexWorkNotify;
+    private TransactionSynchronization indexWorkNotify;
 
     @PostConstruct
     public void init() {
-        this.indexWorkNotify = new TransactionSynchronizationAdapter() {
+        this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
                 indexWorkProcessor.notifyIndexing();
@@ -1209,99 +1208,74 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
                                                            final int positionFrom,
                                                            final int positionTo) {
-
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
-                descItem.getNode(), positionFrom, positionTo),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(), descItem.getNode(), positionFrom, positionTo));
     }
 
     public List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndType(nodes, type),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodesAndType(nodes, type));
     }
 
     public List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, type, specs),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, type, specs));
     }
 
     private List<ArrDescItem> findOpenByFundAndType(ArrFund fund, RulItemType type) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndType(fund, type),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndType(fund, type));
     }
 
     private List<ArrDescItem> findOpenByFundAndTypeAndSpec(ArrFund fund,
                                                            RulItemType type,
                                                            Collection<RulItemSpec> specs) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs));
     }
 
     public List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNull(node));
     }
 
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(nodeIds, itemTypeIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(nodeIds, itemTypeIds));
     }
 
+    @Transactional
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemTypeId),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemTypeId));
     }
 
     public List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodeAndTypes(node, descItemTypes),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodeAndTypes(node, descItemTypes));
     }
 
     private List<ArrDescItem> findOpenDescItems(Integer descItemObjectId) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItems(descItemObjectId),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItems(descItemObjectId));
     }
 
     private List<ArrDescItem> findOpenDescItemsByIds(Collection<Integer> descItemObjectIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByIds(descItemObjectIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsByIds(descItemObjectIds));
     }
 
     public ArrDescItem findOpenDescItem(Integer descItemObjectId) {
-        return dataService.findItemWithData(() -> descItemRepository.findOpenDescItem(descItemObjectId),
-                this::createDataResultList);
+    	return dataService.findItemWithData(descItemRepository.findOpenDescItem(descItemObjectId));
     }
 
     private List<ArrDescItem> findOpenDescItemsAfterPosition(RulItemType itemType, ArrNode node, Integer position) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsAfterPosition(itemType, node, position),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsAfterPosition(itemType, node, position));
     }
 
     private List<ArrDescItem> findOpenDescItemsByItemType(RulItemType itemType, ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByItemType(itemType, node),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsByItemType(itemType, node));
     }
 
     public List<ArrDescItem> findByUriDataNode(final ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByUriDataNode(node),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
-        return itemList.stream()
-        		.filter(i -> i.getData() != null)
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+    	return dataService.findItemsWithData(descItemRepository.findByUriDataNode(node));
     }
 
     /**

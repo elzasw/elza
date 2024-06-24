@@ -20,7 +20,6 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.Resource;
 import com.nimbusds.jose.util.ResourceRetriever;
 import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +39,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -59,14 +57,13 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import cz.tacr.elza.repository.ItemTypeRepository;
-//import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import cz.tacr.elza.security.oauth2.OAuth2Properties;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
-import net.minidev.json.JSONObject;
+
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -76,7 +73,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  */
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 2)
 public class ApplicationSecurity {
 
@@ -123,7 +120,6 @@ public class ApplicationSecurity {
         return sessionRegistry;
     }
 
-
     @Bean
     public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
         return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
@@ -169,7 +165,7 @@ public class ApplicationSecurity {
                 throw new IOException(ex);
             }
 
-            if (response.getStatusCodeValue() != 200) {
+            if (response.getStatusCode().value() != 200) {
                 throw new IOException(response.toString());
             }
 
@@ -221,48 +217,60 @@ public class ApplicationSecurity {
         }
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.headers().frameOptions().sameOrigin();
-        http.authorizeRequests().requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated();
-        http.authorizeRequests().requestMatchers(
-                        new AntPathRequestMatcher("/services")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-                .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);
-        http.csrf().disable();
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+        	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
-        http.sessionManagement()
+        	.authorizeRequests()
+    			.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+    			.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+    			.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
+    			.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
+    		.and()
+    		.httpBasic().authenticationEntryPoint(authenticationEntryPoint)
+    		.and()
+
+//			// TODO replace @Deprecated methods
+//    			.authorizeHttpRequests(auth -> auth
+//        		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+//        		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+//        		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
+//        		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
+//        		.anyRequest().authenticated())
+//        	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
+
+        	.sessionManagement(session -> session
                 .maximumSessions(10)
                 .maxSessionsPreventsLogin(false)
-                .sessionRegistry(sessionRegistry());
-        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
-                .and()
-                .logout().permitAll().logoutSuccessHandler(apiLogoutSuccessHandler);
-        http.formLogin().successHandler(authenticationSuccessHandler);
-        http.formLogin().failureHandler(authenticationFailureHandler);
+                .sessionRegistry(sessionRegistry()))
+
+        	.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+
+        	.logout(logout -> logout.permitAll().logoutSuccessHandler(apiLogoutSuccessHandler))
+
+            .formLogin(formLogin -> formLogin
+        		.successHandler(authenticationSuccessHandler)
+        		.failureHandler(authenticationFailureHandler));
 
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
         return http.build();
     }
 
-
-
-    private void configureOAuth2(HttpSecurity http) throws Exception {
+	private void configureOAuth2(HttpSecurity http) throws Exception {
         if (!optionalOAuth2Props.isPresent()) {
             return;
         }
 
         http
-                // enable resource server
-                .oauth2ResourceServer()
-                // enable JWT processing
-                .jwt()
-                // set own authentication manager
-                //  - allows to set JwtUserDetailProvider as a AutheticationProvider for JWT
-                .authenticationManager(authenticationManagerBean());
+            // enable resource server & JWT processing
+            .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(getjwtDecoder())))
+
+            // set own authentication manager
+            //  - allows to set JwtUserDetailProvider as a AutheticationProvider for JWT
+            .authenticationManager(authenticationManagerBean());
 
         log.info("OAuth2 auto-user mapping filter was configured");
     }
@@ -277,5 +285,4 @@ public class ApplicationSecurity {
             log.info("SSO header authentication filter was configured");
         }
     }
-
 }
