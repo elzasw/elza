@@ -223,14 +223,23 @@ public class ApplicationSecurity {
             .csrf(AbstractHttpConfigurer::disable)
         	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
-        	.authorizeHttpRequests(auth -> auth
-        		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-        		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-        		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
-        		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-        		.anyRequest().permitAll())
+        	.authorizeRequests()
+    			.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+    			.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+    			.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
+    			.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
+    		.and()
+    		.httpBasic().authenticationEntryPoint(authenticationEntryPoint)
+    		.and()
 
-        	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
+//			// TODO replace @Deprecated methods
+//    			.authorizeHttpRequests(auth -> auth
+//        		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
+//        		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
+//        		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
+//        		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
+//        		.anyRequest().authenticated())
+//        	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
 
         	.sessionManagement(session -> session
                 .maximumSessions(10)
@@ -250,7 +259,7 @@ public class ApplicationSecurity {
         return http.build();
     }
 
-    private void configureOAuth2(HttpSecurity http) throws Exception {
+	private void configureOAuth2(HttpSecurity http) throws Exception {
         if (!optionalOAuth2Props.isPresent()) {
             return;
         }
