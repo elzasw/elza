@@ -8,17 +8,36 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.connector.DaConnector;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaChange;
+import cz.tacr.elza.domain.DaChangeType;
+import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.DaDaoFile;
+import cz.tacr.elza.domain.DaDaoFileFolder;
+import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
+import cz.tacr.elza.repository.DaChangeRepository;
+import cz.tacr.elza.repository.DaDaoFileFolderRepository;
+import cz.tacr.elza.repository.DaDaoFileRepository;
+import cz.tacr.elza.repository.DaDaoRelationRepository;
+import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.service.da.DaoProcessor;
+import gov.loc.mets.v1_11.schema.MetsType;
+import gov.loc.premis.v3.PremisComplexType;
 import jakarta.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,13 +53,25 @@ public class DaService {
     private static final String DIP_TYPE_PACKAGE_INFO = "package_info";
 
     @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
+    private UserService userService;
+    @Autowired
     private DaConnector daConnector;
-
     @Autowired
     private DaSyncQueueItemRepository syncQueueItemRepository;
-
     @Autowired
     private DaRemoteRepositorySyncRepository remoteRepositorySyncRepository;
+    @Autowired
+    private DaChangeRepository changeRepository;
+    @Autowired
+    private DaDaoRepository daoRepository;
+    @Autowired
+    private DaDaoRelationRepository daoRelationRepository;
+    @Autowired
+    private DaDaoFileRepository daoFileRepository;
+    @Autowired
+    private DaDaoFileFolderRepository daoFileFolderRepository;
 
     @Transactional
     public void synchronizaceDA(ArrDigitalRepository digitalRepository) {
@@ -87,6 +118,72 @@ public class DaService {
             daRemoteRepositorySync.setDigitalRepository(digitalRepository);
         }
         return daRemoteRepositorySync;
+    }
+
+    @Transactional
+    public void fillDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType) {
+        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType);
+        daoProcessor.process();
+    }
+
+    public DaChange createDaChange(DaAip aip, DaChangeType changeType) {
+        DaChange change = new DaChange();
+        change.setChangeDate(LocalDateTime.now());
+        change.setUser(userService.getLoggedUser());
+        change.setDaAip(aip);
+        change.setType(changeType);
+        return changeRepository.save(change);
+    }
+
+    public DaDao createDaDao(DaAip aip, DaChange change, String code, String label, DaDao.DaoType type) {
+        DaDao dao = new DaDao();
+        dao.setAip(aip);
+        dao.setCode(code);
+        dao.setCreateChange(change);
+        dao.setType(type);
+        dao.setLabel(label);
+        return daoRepository.save(dao);
+    }
+
+    public DaDaoRelation createDaDaoRelation(DaDao dao, DaDao parentDao, DaChange change) {
+        DaDaoRelation daoRelation = new DaDaoRelation();
+        daoRelation.setCreateChange(change);
+        daoRelation.setDao(dao);
+        daoRelation.setParentDao(parentDao);
+        return daoRelationRepository.save(daoRelation);
+    }
+
+    public DaDaoFileFolder createDaDaoFileFolder(DaDao representationDao, DaChange change, String label, @Nullable DaDaoFileFolder parentFileFolder) {
+        DaDaoFileFolder daoFileFolder = new DaDaoFileFolder();
+        daoFileFolder.setCreateChange(change);
+        daoFileFolder.setParentFileFolder(parentFileFolder);
+        daoFileFolder.setLabel(label);
+        daoFileFolder.setRepresentationDao(representationDao);
+        return daoFileFolderRepository.save(daoFileFolder);
+    }
+
+    public DaDaoFile createDaDaoFile(DaChange change, DaDao dao, DaDaoFileFolder daoFileFolder, String checksum, String checksumType,
+                                     String mimeType, BigInteger size, Integer imageHeight, Integer imageWidth, String sourceXDimensionUnit,
+                                     Integer sourceXDimensionValue, String sourceYDimensionUnit, Integer sourceYDimensionValue,
+                                     String duration, String description, String fileName) {
+        DaDaoFile daoFile = new DaDaoFile();
+        daoFile.setCreateChange(change);
+        daoFile.setDao(dao);
+        daoFile.setDaoFileFolder(daoFileFolder);
+        daoFile.setChecksum(checksum);
+        daoFile.setChecksumType(checksumType);
+        daoFile.setMimeType(mimeType);
+        daoFile.setSize(size);
+        daoFile.setImageHeight(imageHeight);
+        daoFile.setImageWidth(imageWidth);
+        daoFile.setSourceXDimensionUnit(sourceXDimensionUnit);
+        daoFile.setSourceXDimensionValue(sourceXDimensionValue);
+        daoFile.setSourceYDimensionUnit(sourceYDimensionUnit);
+        daoFile.setSourceYDimensionValue(sourceYDimensionValue);
+        daoFile.setDuration(duration);
+        daoFile.setDescription(description);
+        daoFile.setFileName(fileName);
+        return daoFileRepository.save(daoFile);
     }
 
     @Transactional

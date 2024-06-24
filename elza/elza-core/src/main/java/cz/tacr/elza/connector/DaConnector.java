@@ -1,6 +1,6 @@
 package cz.tacr.elza.connector;
 
-import com.lightcomp.ft.wsdl.v1.FileTransferService;
+import com.lightcomp.ft.client.Client;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
@@ -53,15 +53,16 @@ public class DaConnector {
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {
-        instanceMap.remove(digitalRepository.getExternalSystemId());
+        DaInstance daInstance = instanceMap.remove(digitalRepository.getExternalSystemId());
+        daInstance.stopFileTransferClient();
     }
 
     private DefaultApi getDefaultApi(ArrDigitalRepository digitalRepository) {
         return get(digitalRepository).getDefaultApi();
     }
 
-    private FileTransferService getFileTransferService(ArrDigitalRepository digitalRepository) {
-        return get(digitalRepository).getFileTransferService();
+    private Client getFileTransferClient(ArrDigitalRepository digitalRepository) {
+        return get(digitalRepository).getFileTransferClient();
     }
 
     public DaInstance get(ArrDigitalRepository digitalRepository) {
