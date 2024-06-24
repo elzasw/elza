@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -156,6 +155,7 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
@@ -2282,7 +2282,7 @@ public class ArrangementService {
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
 	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
-		ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
+    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
 
 		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
 		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
@@ -2299,8 +2299,14 @@ public class ArrangementService {
 		inhibitedItem.setDescItemObjectId(descItemObjectId);
 		inhibitedItem.setCreateChange(createChange);
 
-		inhibitedItemRepository.save(inhibitedItem);
+		inhibitedItem = inhibitedItemRepository.save(inhibitedItem);
+
+		logger.debug("Syncronize nodeId: {}", node.getNodeId());
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+		logger.debug("Syncronized nodeId: {}", node.getNodeId());
+
+		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
 
 		return inhibitedItem.getInhibitedItemId();
 	}
@@ -2321,6 +2327,9 @@ public class ArrangementService {
 
 		inhibitedItemRepository.save(inhibitedItem);
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
+
+		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
 
 		return inhibitedItem.getInhibitedItemId();
 	}

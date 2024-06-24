@@ -57,7 +57,7 @@ class AdminBulkList extends AbstractReactComponent {
         return <div>
             {asyncRequest.map((request, index) => {
                 const type = request.type;
-                return <CollapsablePanel tabIndex={index} header={<AdminBulkHeader name={i18n('admin.bulk.header.title.' + type)} data={request} />}>
+                return <CollapsablePanel tabIndex={index} eventKey={index} header={<AdminBulkHeader name={i18n('admin.bulk.header.title.' + type)} data={request} />}>
                     <AdminBulkBody type={type}/>
                 </CollapsablePanel>
             })}

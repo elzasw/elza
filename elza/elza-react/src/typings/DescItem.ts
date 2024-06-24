@@ -23,7 +23,9 @@ export interface DescItem<T = unknown> {
     //
     itemType: number;
     prevDescItemSpecId?: number;
-    descItemSpecId?: number;
+    descItemSpecId?: number | null;
+    fromNodeId?: number | null;
+    inhibited?: boolean | null;
 }
 
 // export interface DescItemRecordRef extends DescItem<number>{

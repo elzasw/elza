@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
@@ -50,6 +53,9 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
     @Autowired
     private StructObjService structObjService;
+
+    @Autowired
+    private PlatformTransactionManager tm;
 
     @Test
     public void importExportTest() throws IOException {
@@ -105,7 +111,9 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // check structured object item count
         Integer structObjId = structObjResult.getRows().iterator().next().getId();
-        List<ArrStructuredItem> structItems = structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
+        List<ArrStructuredItem> structItems = new TransactionTemplate(tm).execute(a -> {
+        	return structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
+        });
         Assert.assertTrue(structItems.size() == 2);
 
         // check structured object item data

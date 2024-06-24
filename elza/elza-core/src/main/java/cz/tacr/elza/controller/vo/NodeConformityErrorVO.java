@@ -1,10 +1,11 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
+import cz.tacr.elza.domain.ArrNodeConformityError;
+
 /**
  * VO pro chyby z validace.
- *
- * @author Martin Šlapa
- * @since 26.1.2016
  */
 public class NodeConformityErrorVO {
 
@@ -45,5 +46,20 @@ public class NodeConformityErrorVO {
 
     public void setPolicyTypeId(final Integer policyTypeId) {
         this.policyTypeId = policyTypeId;
+    }
+
+    public static NodeConformityErrorVO newInstance(final ArrNodeConformityError nodeConformityError) {
+    	NodeConformityErrorVO result = new NodeConformityErrorVO();
+    	result.setDescItemObjectId(nodeConformityError.getDescItemId());
+    	result.setDescription(nodeConformityError.getDescription());
+    	result.setPolicyTypeId(nodeConformityError.getPolicyTypeId());
+    	return result;
+    }
+
+    public static List<NodeConformityErrorVO> newInstance(final List<ArrNodeConformityError> mces) {
+    	if (mces == null) {
+    		return null;
+    	}
+    	return mces.stream().map(i -> NodeConformityErrorVO.newInstance(i)).toList();
     }
 }
