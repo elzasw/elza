@@ -39,7 +39,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -58,13 +57,13 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import cz.tacr.elza.repository.ItemTypeRepository;
-//import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import cz.tacr.elza.security.oauth2.OAuth2Properties;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
+
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -120,7 +119,6 @@ public class ApplicationSecurity {
         }
         return sessionRegistry;
     }
-
 
     @Bean
     public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
@@ -223,25 +221,18 @@ public class ApplicationSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-        	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
+        	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
-        http
-        	.authorizeRequests()
+        	.authorizeHttpRequests(auth -> auth
         		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
         		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
         		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
         		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-        	.and()
-        	.httpBasic().authenticationEntryPoint(authenticationEntryPoint);
+        		.anyRequest().authenticated())
 
-//        	.authorizeHttpRequests(request -> request
-//        		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-//        		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated())
-//			.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
+        	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
 
-        http.sessionManagement(session -> session
+        	.sessionManagement(session -> session
                 .maximumSessions(10)
                 .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry()))
@@ -265,10 +256,9 @@ public class ApplicationSecurity {
         }
 
         http
-            // enable resource server
-            .oauth2ResourceServer()
-            // enable JWT processing
-            .jwt()
+            // enable resource server & JWT processing
+            .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.decoder(getjwtDecoder())))
+
             // set own authentication manager
             //  - allows to set JwtUserDetailProvider as a AutheticationProvider for JWT
             .authenticationManager(authenticationManagerBean());
@@ -286,5 +276,4 @@ public class ApplicationSecurity {
             log.info("SSO header authentication filter was configured");
         }
     }
-
 }
