@@ -228,7 +228,7 @@ public class ApplicationSecurity {
         		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
         		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
         		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-        		.anyRequest().authenticated())
+        		.anyRequest().permitAll())
 
         	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
 
