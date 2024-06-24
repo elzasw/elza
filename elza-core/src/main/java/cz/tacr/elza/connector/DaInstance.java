@@ -1,14 +1,12 @@
 package cz.tacr.elza.connector;
 
-import com.lightcomp.ft.wsdl.v1.FileTransferService;
-import com.lightcomp.ft.wsdl.v1.FileTransferService_Service;
+import com.lightcomp.ft.FileTransfer;
+import com.lightcomp.ft.client.Client;
+import com.lightcomp.ft.client.ClientConfig;
 import cz.tacr.da.controller.DefaultApi;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.xml.namespace.QName;
 
 public class DaInstance {
 
@@ -16,7 +14,7 @@ public class DaInstance {
 
     private final DefaultApi defaultApi;
 
-    private final FileTransferService fileTransferService;
+    private final Client fileTransferClient;
 
     private final String url;
 
@@ -36,27 +34,21 @@ public class DaInstance {
         String apiUrl = getApiUrl();
         ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiKey, apiValue);
         defaultApi = new DefaultApi(apiClientDa);
-        fileTransferService = getWsClient(FileTransferService.class, FileTransferService_Service.SERVICE, url, username, password);
+        fileTransferClient = FileTransfer.createClient(createClientConfig(url, username, password));
+        fileTransferClient.start();
         logger.debug("Inicializován konektor na DA: {} (apiKey: {})", apiUrl, apiKey);
     }
 
-    private static <T> T getWsClient(Class<T> serviceClass, QName serviceName, String url, String username, String password) {
-        if (url.charAt(url.length() - 1) != '/') {
-            url += '/';
-        }
-        url += serviceName.getLocalPart();
-        try {
-            JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-            factory.setServiceName(serviceName);
-            factory.setAddress(url);
-            if (username != null) {
-                factory.setUsername(username);
-                factory.setPassword(password);
-            }
-            return factory.create(serviceClass);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private ClientConfig createClientConfig(final String url, final String username, final String password) {
+        ClientConfig clientConfig = new ClientConfig(url);
+    	if (username != null) {
+            ClientConfig.Authorization authorization = new ClientConfig.Authorization();
+            authorization.setAuthorizationType("Basic");
+            authorization.setPassword(password);
+            authorization.setUsername(username);
+            clientConfig.setAuthorization(authorization);
+    	}
+        return clientConfig;
     }
 
     public String getApiUrl() {
@@ -67,7 +59,11 @@ public class DaInstance {
         return defaultApi;
     }
 
-    public FileTransferService getFileTransferService() {
-        return fileTransferService;
+    public Client getFileTransferClient() {
+        return fileTransferClient;
+    }
+
+    public void stopFileTransferClient() {
+        fileTransferClient.stop();
     }
 }
