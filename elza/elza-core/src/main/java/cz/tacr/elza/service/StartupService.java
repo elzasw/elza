@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.service.da.DaExtSyncsProcessor;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;

@@ -1,4 +1,4 @@
-package cz.tacr.elza.service;
+package cz.tacr.elza.service.da;
 
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
@@ -24,7 +24,7 @@ import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
-import cz.tacr.elza.service.da.DaoProcessor;
+import cz.tacr.elza.service.UserService;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.premis.v3.PremisComplexType;
 import jakarta.transaction.Transactional;

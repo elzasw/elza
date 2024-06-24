@@ -1,4 +1,4 @@
-package cz.tacr.elza.service;
+package cz.tacr.elza.service.da;
 
 import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.elza.domain.DaAip;
