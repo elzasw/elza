@@ -13,6 +13,7 @@ import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.service.DaoLevelViewService;
 import gov.loc.mets.v1_11.schema.AmdSecType;
 import gov.loc.mets.v1_11.schema.DivType;
 import gov.loc.mets.v1_11.schema.FileGrpType;
@@ -57,6 +58,8 @@ public class DaoProcessor {
     private DaDaoFileRepository daoFileRepository;
     @Autowired
     private DaDaoFileFolderRepository daoFileFolderRepository;
+    @Autowired
+    private DaoLevelViewService levelViewService;
 
     private final DaAip aip;
 
@@ -119,7 +122,7 @@ public class DaoProcessor {
         createDaoFromStruct(metsType.getStructMap(), change);
 
         deleteOldComponents(change);
-
+        levelViewService.processLevelViewForAip(aip);
         aipState.setCreateDaoStructure(true);
         aipStateRepository.save(aipState);
         return true;

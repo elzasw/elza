@@ -627,6 +627,56 @@
                                  referencedTableName="da_dao_file_folder"
                                  referencedColumnNames="dao_file_folder_id"/>
     </changeSet>
+    <changeSet id="20240625102148" author="pasek">
+        <createTable tableName="da_level_view">
+            <column name="level_view_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_level_view" nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_level_view_id" type="int"/>
+            <column name="label" type="varchar(250)"/>
+        </createTable>
 
+        <addForeignKeyConstraint baseTableName="da_level_view" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_level_view_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_level_view" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_level_view_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_level_view" baseColumnNames="fund_id"
+                                 constraintName="fk_da_level_view_arr_fund"
+                                 referencedTableName="arr_fund"
+                                 referencedColumnNames="fund_id"/>
+        <addForeignKeyConstraint baseTableName="da_level_view" baseColumnNames="parent_level_view_id"
+                                 constraintName="fk_da_level_view_parent_da_level_view"
+                                 referencedTableName="da_level_view"
+                                 referencedColumnNames="level_view_id"/>
+    </changeSet>
+    <changeSet id="20240625115158" author="pasek">
+        <addColumn tableName="da_dao">
+            <column name="level_view_id" type="int" />
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="da_dao" baseColumnNames="level_view_id"
+                                 constraintName="fk_da_dao_da_level_view"
+                                 referencedTableName="da_level_view"
+                                 referencedColumnNames="level_view_id"/>
+    </changeSet>
+    <changeSet id="20240625115441" author="pasek">
+        <addColumn tableName="da_aip_state">
+            <column name="level_view_id" type="int" />
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="da_aip_state" baseColumnNames="level_view_id"
+                                 constraintName="fk_da_aip_state_da_level_view"
+                                 referencedTableName="da_level_view"
+                                 referencedColumnNames="level_view_id"/>
+    </changeSet>
 
 </databaseChangeLog>

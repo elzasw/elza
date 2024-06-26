@@ -45,6 +45,10 @@ public class DaDao {
     @Column(name = "label", length = StringLength.LENGTH_250)
     private String label;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaLevelView.class)
+    @JoinColumn(name = "level_view_id")
+    private DaLevelView levelView;
+
     public enum DaoType {
 
         LOGICAL,
@@ -109,5 +113,13 @@ public class DaDao {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public DaLevelView getLevelView() {
+        return levelView;
+    }
+
+    public void setLevelView(DaLevelView levelView) {
+        this.levelView = levelView;
     }
 }
