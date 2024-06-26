@@ -33,7 +33,6 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 import org.slf4j.Logger;
@@ -55,6 +54,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -855,7 +855,10 @@ public class RevertingChangesService {
                 { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_DELETE_CHANGE_ID },
 
                 { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.CREATE_CHANGE_ID },
-                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE_ID }
+                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE_ID },
+                
+                { ArrInhibitedItem.TABLE_NAME, ArrInhibitedItem.FIELD_CREATE_CHANGE_ID },
+                { ArrInhibitedItem.TABLE_NAME, ArrInhibitedItem.FIELD_DELETE_CHANGE_ID }
         };
 
         NamingStrategy ins = ImprovedNamingStrategy.INSTANCE;
