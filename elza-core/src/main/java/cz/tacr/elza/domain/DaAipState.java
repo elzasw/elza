@@ -82,6 +82,10 @@ public class DaAipState {
     @Column
     private Boolean createDaoStructure;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaLevelView.class)
+    @JoinColumn(name = "level_view_id")
+    private DaLevelView levelView;
+
     public Integer getAipStateId() {
         return aipStateId;
     }
@@ -232,5 +236,13 @@ public class DaAipState {
 
     public void setCreateDaoStructure(Boolean createDaoStructure) {
         this.createDaoStructure = createDaoStructure;
+    }
+
+    public DaLevelView getLevelView() {
+        return levelView;
+    }
+
+    public void setLevelView(DaLevelView levelView) {
+        this.levelView = levelView;
     }
 }
