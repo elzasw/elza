@@ -39,6 +39,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -223,23 +224,15 @@ public class ApplicationSecurity {
             .csrf(AbstractHttpConfigurer::disable)
         	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
-        	.authorizeRequests()
-    			.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-    			.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-    			.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
-    			.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-    		.and()
-    		.httpBasic().authenticationEntryPoint(authenticationEntryPoint)
-    		.and()
-
-//			// TODO replace @Deprecated methods
-//    			.authorizeHttpRequests(auth -> auth
-//        		.requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-//        		.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
-//        		.requestMatchers(new AntPathRequestMatcher("/services")).permitAll()
-//        		.requestMatchers(new AntPathRequestMatcher("/services/**")).authenticated()
-//        		.anyRequest().authenticated())
-//        	.httpBasic(auth -> auth.authenticationEntryPoint(authenticationEntryPoint))
+    		// by https://www.baeldung.com/spring-security-migrate-5-to-6
+        	/** 
+        	 * Dotaz na autorizaci /login je vychozi endpoint a nevyžaduje zvláštní povolení k přístupu,
+        	 * tento dotaz je zpracován výchozím Spring controller.
+        	 */
+    		.authorizeHttpRequests(auth -> auth
+           		.requestMatchers(new AntPathRequestMatcher("/"), new AntPathRequestMatcher("/res/**")).permitAll()
+        		.anyRequest().authenticated())
+    		.httpBasic(Customizer.withDefaults())
 
         	.sessionManagement(session -> session
                 .maximumSessions(10)
@@ -248,11 +241,11 @@ public class ApplicationSecurity {
 
         	.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
 
-        	.logout(logout -> logout.permitAll().logoutSuccessHandler(apiLogoutSuccessHandler))
-
             .formLogin(formLogin -> formLogin
-        		.successHandler(authenticationSuccessHandler)
-        		.failureHandler(authenticationFailureHandler));
+           		.successHandler(authenticationSuccessHandler)
+        		.failureHandler(authenticationFailureHandler))
+
+        	.logout(logout -> logout.permitAll().logoutSuccessHandler(apiLogoutSuccessHandler));
 
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
