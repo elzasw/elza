@@ -79,20 +79,6 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
     }
 
-// TODO Spring Boot v3 -> WebSocketSecurityConfig.class    
-//    @Override
-//    protected void configureInbound(final MessageSecurityMetadataSourceRegistry messages) {
-//          messages
-//               .nullDestMatcher().authenticated()
-//               .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
-//               .anyMessage().denyAll();
-//    }
-//
-//    @Override
-//    protected boolean sameOriginDisabled() { // you want to allow other domains to access your site
-//        return true;
-//    }
-
     /**
      * Decorator is used to add/remove WebSocket session for {@link WebSocketThreadPoolTaskExecutor}.
      */
