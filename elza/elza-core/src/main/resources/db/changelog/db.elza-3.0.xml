@@ -679,4 +679,36 @@
                                  referencedColumnNames="level_view_id"/>
     </changeSet>
 
+    <changeSet id="20240624164500" author="fantis">
+        <dropForeignKeyConstraint baseTableName="da_aip" constraintName="fk_da_aip_da_remote_aip"/>
+        <dropForeignKeyConstraint baseTableName="da_aip" constraintName="fk_da_aip_arr_fund"/>
+        <dropForeignKeyConstraint baseTableName="da_aip" constraintName="fk_da_aip_ap_access_point"/>
+
+        <dropColumn tableName="da_aip" columnName="aip_version"/>
+        <dropColumn tableName="da_aip" columnName="aip_size"/>
+        <dropColumn tableName="da_aip" columnName="aip_type"/>
+        <dropColumn tableName="da_aip" columnName="remote_aip_id"/>
+        <dropColumn tableName="da_aip" columnName="fund_id"/>
+        <dropColumn tableName="da_aip" columnName="create_date"/>
+        <dropColumn tableName="da_aip" columnName="last_change"/>
+        <dropColumn tableName="da_aip" columnName="unitdate_from"/>
+        <dropColumn tableName="da_aip" columnName="unitdate_to"/>
+        <dropColumn tableName="da_aip" columnName="originator_code"/>
+        <dropColumn tableName="da_aip" columnName="originator_id"/>
+        <dropColumn tableName="da_aip" columnName="ingestion_code"/>
+        <dropColumn tableName="da_aip" columnName="ref_no"/>
+        <dropColumn tableName="da_aip" columnName="change_code"/>
+    </changeSet>
+
+    <changeSet id="20240624165200" author="fantis">
+        <addColumn tableName="da_local_cache">
+            <column name="file_path" type="varchar(1000)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20240624165600" author="fantis">
+        <dropAllForeignKeyConstraints baseTableName="da_remote_aip"/>
+        <dropTable tableName="da_remote_aip"/>
+    </changeSet>
+
 </databaseChangeLog>

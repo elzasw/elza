@@ -1,10 +1,14 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -24,14 +28,16 @@ public class DaLocalCache {
     @JoinColumn(name = "sync_queue_item_id", nullable = false)
     private DaSyncQueueItem syncQueueItem;
 
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAipState.class)
     @JoinColumn(name = "aip_state_id")
     private DaAipState aipState;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 25, nullable = false)
-    private String aipType;
+    private AipType aipType;
 
+    @Column(length = StringLength.LENGTH_1000, nullable = false)
+    private String filePath;
 
     public Integer getLocalCacheId() {
         return localCacheId;
@@ -49,11 +55,11 @@ public class DaLocalCache {
         this.syncQueueItem = syncQueueItem;
     }
 
-    public String getAipType() {
+    public AipType getAipType() {
         return aipType;
     }
 
-    public void setAipType(String aipType) {
+    public void setAipType(AipType aipType) {
         this.aipType = aipType;
     }
 
@@ -63,5 +69,13 @@ public class DaLocalCache {
 
     public void setAipState(DaAipState aipState) {
         this.aipState = aipState;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }

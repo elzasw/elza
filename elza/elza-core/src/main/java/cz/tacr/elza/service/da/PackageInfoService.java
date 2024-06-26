@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import com.lightcomp.kads.premis.PremisReaderWriter;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
@@ -61,7 +62,7 @@ public class PackageInfoService {
     private AipStateRepository aipStateRepository;
 
     @Transactional
-    public void processPackageInfo(File file) throws FileNotFoundException, JAXBException {
+    public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws FileNotFoundException, JAXBException {
         FileInputStream is = new FileInputStream(file);
         DaAipState aipState = new DaAipState();
         PremisComplexType premisComplexType = PremisReaderWriter.unmarshal(is);
@@ -79,6 +80,7 @@ public class PackageInfoService {
                     daChange.setType(DaChangeType.AIP_CREATE);
                     daAip = new DaAip();
                     daAip.setCode(intellectualObject.getAipId());
+                    daAip.setDigitalRepository(digitalRepository);
                     aipRepository.save(daAip);
                 } else {
                     daChange.setType(DaChangeType.AIP_UPDATE);
@@ -113,8 +115,7 @@ public class PackageInfoService {
                 aipStateRepository.save(oldAipState);
             }
         }
-        aipStateRepository.save(aipState);
-
+        return aipStateRepository.save(aipState);
     }
 
 

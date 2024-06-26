@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import cz.tacr.da.ApiException;
+import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import org.apache.commons.collections4.CollectionUtils;
@@ -9,15 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 
@@ -28,9 +24,6 @@ public class DaExtSyncsProcessor implements Runnable {
 
     @Autowired
     private DaService daService;
-
-    @Autowired
-    private PackageInfoService packageInfoService;
 
     private volatile Thread asyncThread = null;
 
@@ -67,11 +60,13 @@ public class DaExtSyncsProcessor implements Runnable {
                 while (status == ThreadStatus.RUNNING) {
                     // pokud true - pauza po ukončení práce procesoru
                     boolean wait = true;
+                    List<DaSyncQueueItem> syncQueueItemList = null;
                     try {
-                        List<DaSyncQueueItem> syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                        syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
                             ArrDigitalRepository digitalRepository = syncQueueItemList.get(0).getDigitalRepository();
-                            String batchId = daService.downloadAips(digitalRepository, syncQueueItemList);
+                            AipType aipType = AipType.METADATA_BASE;
+                            String batchId = daService.downloadAips(digitalRepository, syncQueueItemList, aipType);
 
                             while (!daService.downloadStatusFinished(digitalRepository, batchId)) {
                                 try {
@@ -83,17 +78,23 @@ public class DaExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            byte[] downloadedBytes = null;
+                            Path zipFile;
                             try {
-                                downloadedBytes = daService.downloadDownload(digitalRepository, batchId);
+                                zipFile = daService.downloadDownload(digitalRepository, batchId);
                             } catch (ApiException e) {
                                 if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
-                                    downloadedBytes = daService.downloadFileTransfer(digitalRepository, batchId);
+                                    zipFile = daService.downloadFileTransfer(digitalRepository, batchId);
+                                } else {
+                                    throw e;
                                 }
                             }
-                            processPackageInfo(downloadedBytes);
 
+                            try (InputStream inputStream  = Files.newInputStream(zipFile)) {
+                                daService.processPackageInfo(digitalRepository, inputStream, aipType);
+                            }
+                            Files.delete(zipFile);
 
+                            daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             importListSize = DEFAULT_IMPORT_LIST_SIZE;
@@ -101,6 +102,8 @@ public class DaExtSyncsProcessor implements Runnable {
                             wait = false;
                         }
                     } catch (Exception ex) {
+                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.ERROR);
+
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
                         importListSize = 1;
@@ -122,47 +125,6 @@ public class DaExtSyncsProcessor implements Runnable {
             lock.notifyAll();
             logger.error("DaExtSyncsProcessor - thread finished");
         }
-    }
-
-    public void processPackageInfo(byte[] bytes) throws IOException {
-        Path tempZip = Files.createTempFile("temp", ".zip");
-        try (FileOutputStream fos = new FileOutputStream(tempZip.toFile())) {
-            fos.write(bytes);
-        }
-
-        Path tempDir = Files.createTempDirectory("unzipped");
-
-        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(tempZip))) {
-            ZipEntry entry;
-            while ((entry = zipInputStream.getNextEntry()) != null) {
-                Path filePath = tempDir.resolve(entry.getName());
-                if (entry.isDirectory()) {
-                    Files.createDirectories(filePath);
-                } else {
-                    Files.createDirectories(filePath.getParent());
-                    Files.copy(zipInputStream, filePath);
-                }
-            }
-        }
-
-        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
-            str.forEach(path -> {
-                File file = path.toFile();
-                try {
-                    packageInfoService.processPackageInfo(file);
-                } catch (Exception e) {
-                    logger.error("Nastala chyba při zpracování souboru package-info.xml", e);
-                }
-            });
-        }
-
-        // Odstranit dočasné soubory a adresáře
-        try (Stream<Path> str = Files.walk(tempDir)) {
-            str.map(Path::toFile).forEach(File::delete);
-        }
-        Files.delete(tempZip);
-
-
     }
 
 }

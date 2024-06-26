@@ -3,15 +3,25 @@ package cz.tacr.elza.api;
 
 public enum AipType {
 
-    PACKAGE_INFO,
+    PACKAGE_INFO("package_info"),
 
-    ARCHDESC,
+    ARCHDESC("archdesc"),
 
-    METADATA_BASE,
+    METADATA_BASE("metadata_base"),
 
-    AIP_BASE,
+    AIP_BASE("aip_base"),
 
-    AIP_RAW
+    AIP_RAW("aip_raw");
+
+    private final String value;
+
+    AipType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 
 
 }

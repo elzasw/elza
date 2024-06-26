@@ -20,4 +20,6 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
     List<DaSyncQueueItem> findByCodeInAndDigitalRepository(List<String> codes, ArrDigitalRepository digitalRepository);
+
+    DaSyncQueueItem findByCodeAndDigitalRepository(String code, ArrDigitalRepository digitalRepository);
 }
