@@ -1,6 +1,9 @@
 package cz.tacr.elza.connector;
 
 import com.lightcomp.ft.client.Client;
+import com.lightcomp.ft.client.DownloadRequest;
+import com.lightcomp.ft.simple.DwnldRequestImpl;
+import com.lightcomp.ft.xsd.v1.GenericDataType;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +54,13 @@ public class DaConnector {
 
     public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
         return getDefaultApi(digitalRepository).downloadDownload(batchId);
+    }
+
+    public void downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId, Path downloadDir) {
+        GenericDataType genericDataType = new GenericDataType();
+        genericDataType.setId(batchId);
+        DownloadRequest downloadRequest = new DwnldRequestImpl(downloadDir, genericDataType);
+        getFileTransferClient(digitalRepository).downloadSync(downloadRequest);
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {

@@ -34,6 +34,7 @@ public class ResourcePathResolver {
     private static final String GROOVY_DIR = "groovy";
     private static final String DMS_DIR = "dms";
     public static final String DPKG_DIR = "dpkg";
+    private static final String AIP_DIR = "aip";
 
     private static final String EXPORT_XML_DIR = "export-xml";
     private static final String IMPORT_XML_DIR = "import-xml";
@@ -114,6 +115,15 @@ public class ResourcePathResolver {
      */
     public Path getImportXmlTrasnformDir() {
         Path path = Paths.get(workDir, TRANSFORMS_DIR, IMPORT_XML_DIR);
+
+        return path;
+    }
+
+    /**
+     * @return Path to aip directory (may not exist).
+     */
+    public Path getAipDir() {
+        Path path = Paths.get(workDir, AIP_DIR);
 
         return path;
     }
