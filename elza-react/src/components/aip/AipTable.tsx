@@ -1,0 +1,251 @@
+import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent, useMemo} from 'react';
+import {useSelector} from 'react-redux';
+import {StoreHorizontalLoader} from 'components/shared';
+import storeFromArea from '../../shared/utils/storeFromArea.jsx';
+import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
+import './AipTable.scss';
+import { useHistory } from 'react-router';
+import {urlAip} from '../../constants.tsx';
+import { useThunkDispatch } from 'utils/hooks';
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS, setSelectedAips,} from "../../actions/aip/aip.ts";
+import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
+import { 
+    MenuCheckedValueChangeData,
+    MenuCheckedValueChangeEvent,
+    Table, 
+    TableBody, 
+    TableCell, 
+    TableCellLayout, 
+    TableColumnDefinition, 
+    TableColumnId, 
+    TableColumnSizingOptions, 
+    TableHeader, 
+    TableHeaderCell, 
+    TableRow, 
+    TableSelectionCell, 
+    useTableColumnSizing_unstable,
+    useTableFeatures, 
+    useTableSelection, 
+    useTableSort,
+    createTableColumn, 
+} from '@fluentui/react-components';
+import { colDef, getBoolIcon } from './utils.tsx';
+import { Row } from 'react-bootstrap';
+import AipFilterSection from './filter/AipFilterSection.tsx';
+import Pagination from 'components/shared/pagination/Pagination.tsx';
+
+const AipTable: FC = () => {
+    const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+    const {from, pageSize} = aips.filter;
+    const dispatch = useThunkDispatch();
+    const items = getAipRows(aips);
+    const history = useHistory();
+    const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) => 
+        createTableColumn<DaAipDetailVO>({
+            columnId: def.key,
+            renderHeaderCell: () => <>{def.name}</>,
+            renderCell: (item: DaAipDetailVO) => <>{getContent(item, def.key)}</>,
+            compare: (a, b) => {
+                switch(def.type) {
+                    case "number": return a[def.key] - b[def.key];
+                    case "bool": return Number(a[def.key]) - Number(b[def.key]);
+                    default: return a[def.key].localeCompare(b[def.key]);
+                }
+            },
+        })
+    );
+
+    const [columns, setColumns] = useState<TableColumnDefinition<DaAipDetailVO>[]>(columnsDef);
+
+    const getContent =(item: DaAipDetailVO, key: string) => {
+        switch(key) {
+            case "aipSize": return formatAipSize(item[key]);
+            case "unitdateFrom": return formatDate(new Date(item.unitdateFrom)) + " - " + formatDate(new Date(item.unitdateTo));
+            default: 
+                return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
+        }
+    }
+
+    useEffect(() => {
+        dispatch(aipsFetchIfNeeded());
+    },[
+        aips.filter.from,
+        aips.filter.pageSize,
+        aips.filter.filters,
+        dispatch,
+    ]);
+
+    const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
+        setColumns(
+            columnsDef.filter((col) => 
+                data.checkedItems.some((checked) => checked == def[col.columnId].name
+            ))
+        );
+    };
+
+    const handleSelect = (id) =>  history.push(urlAip(id));
+
+    const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
+
+    const def = colDef.reduce((acc, item) => {
+        const key = item.key;
+        acc[key] = {
+            name: item.name,
+            path: item.path,
+            type: item.type,
+            minWidth: item.minWidth,
+            idealWidth: item.idealWidth
+        };
+        return acc;
+    }, {});
+
+    const [columnSizingOptions] = useState<TableColumnSizingOptions>(def);
+    const { 
+        getRows, 
+        columnSizing_unstable, 
+        tableRef, 
+        sort: { getSortDirection, toggleColumnSort, sort },
+        selection: {
+            allRowsSelected,
+            someRowsSelected,
+            toggleAllRows,
+            toggleRow,
+            isRowSelected,
+          },
+    } = useTableFeatures(
+        { columns, items },
+        [
+            useTableColumnSizing_unstable({ columnSizingOptions }),
+            useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
+            useTableSelection({
+                selectionMode: "multiselect",
+                onSelectionChange: (e, data) => {
+                    const selectedRows = rows
+                        .filter(row => data.selectedItems.has(row.rowId))
+                        .map(row => row.item);
+                    dispatch(setSelectedAips(selectedRows));
+                }
+            }),
+        ] 
+      );
+    
+    const rows = sort(getRows((row) => {
+        const selected = isRowSelected(row.rowId);
+        return {
+            ...row,
+            onClick: (e: MouseEvent) => {
+                toggleRow(e, row.rowId);
+            },
+            onKeyDown: (e: KeyboardEvent) => {
+                if (e.key === " ") {
+                    e.preventDefault();
+                    toggleRow(e, row.rowId);
+                }
+            },
+            selected,
+            appearance: selected ? ("brand" as const) : ("none" as const),
+        };
+    }));
+
+    const headerSortProps = (columnId: TableColumnId) => ({
+        onClick: (e: MouseEvent) => {
+            toggleColumnSort(e, columnId);
+        },
+        sortDirection: getSortDirection(columnId),
+    });
+
+    const toggleAllKeydown = useCallback(
+        (e: KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === " ") {
+                toggleAllRows(e);
+                e.preventDefault();
+            }
+        },
+        [toggleAllRows]
+    );
+
+    const handlePageSizeChange= (pageSize:number) => {
+        dispatch(aipsFilter(aips.filter.filters, aips.filter.from, pageSize));
+    }
+
+    return (
+        <Row>
+            <StoreHorizontalLoader store={aips} />
+            {aips.fetched && (
+                <>
+                    <AipFilterSection 
+                        columns={columns.map(item => def[item.columnId]?.name)}
+                        onColsChange={toggleColumns}
+                    />
+                    <Table
+                        ref={tableRef}
+                        as="table"
+                        sortable
+                        {...columnSizing_unstable.getTableProps()}
+                        className="aip-table"
+                    >
+                        <TableHeader>
+                            <TableRow>
+                                <TableSelectionCell
+                                    checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
+                                    onClick={toggleAllRows}
+                                    onKeyDown={toggleAllKeydown}
+                                    checkboxIndicator={{"aria-label": "Vybrat vše"}}
+                                    className="header"
+                                    
+                                />
+                                {columns.map((column) => (
+                                    <TableHeaderCell
+                                        key={column.columnId}
+                                        {...columnSizing_unstable.getTableHeaderCellProps(column.columnId)}
+                                        {...headerSortProps(column.columnId)}
+                                        className="header"
+                                    >
+                                        {column.renderHeaderCell()}
+                                    </TableHeaderCell>
+                                ))}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {rows.map(({ item, selected, onClick }) => (
+                                <TableRow 
+                                    key={item.code}
+                                    className="table-row"
+                                >
+                                    <TableSelectionCell
+                                        checked={selected}
+                                        checkboxIndicator={{ "aria-label": "Vybrat" }}
+                                        onClick={onClick}
+                                    />
+
+                                    {columns.map(col => (
+                                        <TableCell
+                                            key={`item[${item.code}].${col.columnId}`} 
+                                            /** For correct functionality columnId must be the same as DaAipDetailVO keys */
+                                            {...columnSizing_unstable.getTableCellProps(col.columnId)}
+                                            onClick={() => handleSelect(item.aipId)}
+                                        >
+                                            <TableCellLayout truncate>
+                                                {col.renderCell(item)}
+                                            </TableCellLayout>
+                                    </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <Pagination
+                        onPageChange={handleChangePage}
+                        from={from}
+                        pageSize={pageSize}
+                        totalCount={aips.count}
+                        onPageSizeChange={handlePageSizeChange}
+                    />
+                </>
+            )
+        }
+    </Row>
+    );
+}
+
+export default AipTable;

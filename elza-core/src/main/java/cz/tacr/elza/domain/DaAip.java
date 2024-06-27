@@ -2,15 +2,9 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
-import jakarta.persistence.Access;
-import jakarta.persistence.AccessType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 
 @Entity(name = "da_aip")
@@ -30,6 +24,13 @@ public class DaAip {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDigitalRepository.class)
     @JoinColumn(name = "digital_repository_id", nullable = false)
     private ArrDigitalRepository digitalRepository;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "daAip")
+    private List<DaAipState> states;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "aip")
+    private List<DaSyncQueueItem> queueItems;
+
 
     public Integer getAipId() {
         return aipId;

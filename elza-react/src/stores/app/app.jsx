@@ -15,6 +15,8 @@ const initialState = {
     apExtSystemList: SimpleListReducer(), // seznam externích systémů
     aip: DetailReducer(),
     aipList: SimpleListReducer(),
+    accessPoints: SimpleListReducer(),
+    selectedAips: SimpleListReducer(),
     kmlExtSystemList: SimpleListReducer(), // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(), // seznam externích systémů

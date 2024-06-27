@@ -34,6 +34,8 @@ import { SyncsFilterVO } from '../api/SyncsFilterVO';
 import { ExtSyncsQueueResultListVO } from '../api/ExtSyncsQueueResultListVO';
 import { ApViewSettings } from '../api/ApViewSettings';
 import { UsrUserVO } from '../api/UsrUserVO';
+import { DaAipDetailVO } from 'api/DaAipDetailVO';
+import { AipFilter } from 'typings/store';
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
@@ -657,6 +659,13 @@ export class WebApiCls {
     /// Registry
     createAccessPoint(accessPoint: ApAccessPointCreateVO): Promise<ApAccessPointVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
+    }
+
+    getAccessPoints(text: String, max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<ApAccessPointVO[]> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.arrangementUrl + "/ap",
+            {from: from, count: max, text: text},
+        );
     }
 
     getStateApproval(accessPointId) {
@@ -1735,12 +1744,20 @@ export class WebApiCls {
         });
     }
 
-    getAip(aipId) {
+    getAip(aipId): Promise<DaAipDetailVO> {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/' + aipId);
     }
 
     findAips(fulltext: string, max: number = DEFAULT_LIST_SIZE, from: number = 0) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/find/all', { search: fulltext, from, count: max });
+    }
+
+    findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<DaAipDetailVO[]> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.arrangementUrl + '/aip/find/filter',
+            {from: from, count: max},
+            filters
+        );
     }
 
     getValidationItems(fundVersionId, fromIndex, toIndex) {

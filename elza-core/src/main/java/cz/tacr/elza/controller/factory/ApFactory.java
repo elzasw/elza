@@ -263,6 +263,14 @@ public class ApFactory {
         return createVO(apState, accessPoint, name, description);
     }
 
+    public List<ApAccessPointVO> createVOs(List<ApAccessPoint> accessPoints) {
+        List<ApAccessPointVO> result = new ArrayList<>();
+        for(ApAccessPoint ap : accessPoints) {
+            result.add(createVO(ap));
+        }
+        return result;
+    }
+
     // TODO: odstranit
     public Map<Integer, Integer> getTypeRuleSetMap() {
         List<TypeRuleSet> typeRuleSets = apTypeRepository.findTypeRuleSets();

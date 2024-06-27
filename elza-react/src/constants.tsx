@@ -278,6 +278,6 @@ export const urlEntityRevision = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}/revision`
 }
 
-export const urlAip = (aipId: number) => {
-    return `${URL_AIP}/${aipId}`;
+export const urlAip = (aipId?: number): string => {
+    return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
 }
