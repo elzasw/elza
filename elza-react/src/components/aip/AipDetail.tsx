@@ -48,7 +48,7 @@ const AipDetail = () => {
         <InlineDrawer
             separator
             position="end"
-            open={aip.id != null}
+            open={aip.id != null && aip.data != null}
             style={{ width: "400px" }}
             className='aip-detail'
         >
