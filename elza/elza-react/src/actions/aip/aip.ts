@@ -1,22 +1,25 @@
 import {WebApi} from 'actions/index.jsx';
 import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
 import * as DetailActions from '../../shared/detail/DetailActions';
-import { Aip, AipsFilter } from 'typings/store';
+import { Aip, AipFilter, AipsFilter } from 'typings/store';
+import { DaAipDetailVO } from 'api/DaAipDetailVO';
 
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
-export const ADMIN_AIP_SIZE = 200;
+export const AREA_SELECTED_AIPS = "selectedAips";
+export const DEFAULT_PAGE_SIZE = 25;
 
-export function aipsFilter(text: string, from: number, pageSize: number = ADMIN_AIP_SIZE) {
-    return SimpleListActions.filter(AREA_AIPS, {from, pageSize, text})
+export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number = DEFAULT_PAGE_SIZE) => {
+    return SimpleListActions.filter(AREA_AIPS, {from, pageSize, filters});
 }
 
-export function aipsFetchIfNeeded() {
+export const aipsFetchIfNeeded = () => {
     return SimpleListActions.fetchIfNeeded(AREA_AIPS, null, (parent?: unknown, filter: AipsFilter = {}) =>
         {
-            const {text, from, pageSize} = filter;
-            return WebApi.findAips(
-                text || "",
+            const {filters, from, pageSize} = filter;
+
+            return WebApi.findAipsByFilter(
+                filters || [],
                 pageSize,
                 from && from > 0 ? from : 0
             )
@@ -34,4 +37,8 @@ export function selectAip(id: number | string) {
 
 export function setAip(aip: Aip) {
     return DetailActions.updateValue(AREA_AIP, aip.id, aip);
+}
+
+export const setSelectedAips = (aips: DaAipDetailVO[]) => {
+    return SimpleListActions.setData(AREA_SELECTED_AIPS, null, aips);
 }

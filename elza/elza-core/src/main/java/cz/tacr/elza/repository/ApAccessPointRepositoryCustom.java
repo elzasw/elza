@@ -79,4 +79,6 @@ public interface ApAccessPointRepositoryCustom {
      * @return
      */
     ScrollableResults findUncachedAccessPoints();
+
+    FilteredResult<ApAccessPoint> findAccessPointsByText(String text, Integer firstResult, Integer maxResults);
 }

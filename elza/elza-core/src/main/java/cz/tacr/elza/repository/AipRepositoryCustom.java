@@ -1,8 +1,9 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.controller.vo.AipFilterVO;
 import cz.tacr.elza.domain.DaAip;
 
 public interface AipRepositoryCustom {
 
-    FilteredResult<DaAip> findAips(String search, Integer firstResult, Integer maxResults);
+    FilteredResult<DaAip> findAipsByFilter(AipFilterVO[] filters, Integer firstResult, Integer maxResults);
 }

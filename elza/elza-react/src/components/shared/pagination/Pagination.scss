@@ -1,0 +1,13 @@
+@import "../../../variables.scss";
+
+.pagination {
+    display: flex;
+    height: 30px;
+    padding: 5px 20px;
+    align-items: center;
+    gap: 1rem;
+
+    .arrow {
+        cursor: pointer;
+    }
+}

@@ -4,7 +4,9 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
-import {DaAipVO} from "../../api/DaAipVO.ts";
+import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
+import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
+import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
 
 export interface SplitterState {
     leftWidth: number;
@@ -74,6 +76,22 @@ export interface SimpleList<T> {
     sourceRows: T[];
 }
 
+export interface ApAccessPointFilter extends SimpleListFilter { }
+
+export interface ApAccessPoints {
+    count?: number;
+    currentDataKey?: string | number;
+    filter?: ApAccessPointFilter;
+    filterRows?: unknown;
+    getDataKey?: () => number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    filteredRows?: ApAccessPointVO[];
+    rows?: ApAccessPointVO[];
+    sourceRows?: ApAccessPointVO[];
+}
+
 export interface AdminFundsFilter extends SimpleListFilter { }
 
 export interface AdminFunds {
@@ -100,7 +118,19 @@ export interface AdminFund {
     reducer?: unknown;
     name?: string;
 }
-export interface AipsFilter extends SimpleListFilter { }
+export type AipFilter = {
+    id: string;
+    attr: keyof DaAipDetailVO;
+    criteria: AipFilterCriteria;
+    value?: any;
+    from?: string;
+    to?: string;
+    path: string;
+    label?: string;
+}
+export interface AipsFilter extends SimpleListFilter {
+    filters?: AipFilter[];
+}
 
 export interface Aips {
     count?: number;
@@ -111,14 +141,14 @@ export interface Aips {
     fetched?: boolean;
     isFetching?: boolean;
     reducer?: unknown;
-    filteredRows?: DaAipVO[];
-    rows?: DaAipVO[];
-    sourceRows?: DaAipVO[];
+    filteredRows?: DaAipDetailVO[];
+    rows?: DaAipDetailVO[];
+    sourceRows?: DaAipDetailVO[];
 }
 
 export interface Aip {
     currentDataKey?: number | string;
-    data?: DaAipVO | null;
+    data?: DaAipDetailVO | null;
     getDataKey?: () => number | string;
     id?: number | string;
     fetched?: boolean;
@@ -330,7 +360,8 @@ type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCod
 
 export interface App {
     aip: Aip;
-    aipList: SimpleList<DaAipVO>;
+    aipList: SimpleList<DaAipDetailVO>;
+    accessPoins:SimpleList<ApAccessPointVO>
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;

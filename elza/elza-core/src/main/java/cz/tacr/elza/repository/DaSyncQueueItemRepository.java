@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,9 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
     List<DaSyncQueueItem> findByCodeInAndDigitalRepository(List<String> codes, ArrDigitalRepository digitalRepository);
+
+    @Query("SELECT i FROM da_sync_queue_item i WHERE i.aip = :daAip")
+    DaSyncQueueItem findByAip(@Param("daAip") DaAip daAip);
 
     DaSyncQueueItem findByCodeAndDigitalRepository(String code, ArrDigitalRepository digitalRepository);
 }

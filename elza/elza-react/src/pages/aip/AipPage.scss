@@ -1,6 +1,20 @@
 @import "../../variables.scss";
+$header-height: 24px;
+
 
 .aip-page {
+    .app-header {
+        height: $header-height;
+        border-bottom: 1px solid $app-header-border;
+    }
+    .container {
+        display: flex;
+
+        .aip-table {
+            flex: 1;
+        }
+        
+    }
     .aip-list-container {
         padding: 5px;
         background: $fa-file-tree-bg;

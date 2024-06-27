@@ -343,16 +343,16 @@ class Ribbon extends AbstractReactComponent {
                             </Button>
                         </LinkContainer>
                     }
-                    <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-th-list" />
-                            <span className="btnText">{i18n('ribbon.action.registry')}</span>
-                        </Button>
-                    </LinkContainer>
                     <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-th-list" />
                             <span className="btnText">{i18n('ribbon.action.aip')}</span>
+                        </Button>
+                    </LinkContainer>
+                    <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-th-list" />
+                            <span className="btnText">{i18n('ribbon.action.registry')}</span>
                         </Button>
                     </LinkContainer>
                     {userDetail.hasOne(

@@ -1,43 +1,53 @@
 @import "../../variables.scss";
 
-.detail-container {
-    margin: 1em;
-
-    .detail-header {
+.aip-detail {
+    h2 {
+        font-weight: bold;
         width: auto;
     }
 
-    .ext-id {
-        margin: 0.5em;
-        background-color: var(--shade-2);
-        border-radius: 5px;
-        padding: 4px 8px;
-        align-items: center;
-    }
-
-    .state {
-        margin: 0.5em;
-        background-color: var(--color-blue);
-        border-radius: 5px;
-        color: var(--fg-shade-4);
-        padding: 4px 8px;
-        align-items: center;
-    }
-
-    .date {
-        margin: 0.5em;
-    }
-
     .detail-body {
-        .text {
-            font-size: 20px;
-            float: left;
-            margin: 0.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .open-btn {
+            margin-bottom: 0.5rem;
+            gap: 10px;
         }
 
-        .button-download {
-            float: left;
-            margin: 0.5em;
+        .FolderOpen20Filled {
+            margin-right: 50px;
         }
+
+        .item-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            gap: 10px;
+
+            .col {
+                width: 50%;
+            }
+
+            .label {
+                text-align: right;
+            }
+
+            .value {
+                text-align: left;
+            }
+        }
+    }
+
+
+    .br {
+        border: 1px solid;
+        padding: 5px;
+    }
+
+    .br:not(:last-of-type) {
+        margin-bottom: 1rem;
     }
 }

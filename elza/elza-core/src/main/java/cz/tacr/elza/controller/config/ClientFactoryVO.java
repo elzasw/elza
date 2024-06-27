@@ -21,8 +21,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.DaAipVO;
-import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -44,52 +45,6 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.Fund;
-import cz.tacr.elza.controller.vo.FundDetail;
-import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.GisExternalSystemVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -117,57 +72,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.ArrOutputTemplate;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.GisExternalSystem;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulExportFilter;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrAuthentication;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -176,23 +80,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.AuthenticationRepository;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DaoSyncService;
@@ -292,6 +179,11 @@ public class ClientFactoryVO {
     @Autowired
     private ApIndexRepository indexRepository;
 
+    @Autowired
+    private AipStateRepository aipStateRepository;
+
+    @Autowired
+    private DaSyncQueueItemRepository daSyncQueueItemRepository;
 
     /**
      * Vytvoření nastavení.
@@ -1941,11 +1833,25 @@ public class ClientFactoryVO {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
 
-    public List<DaAipVO> createAips(List<DaAip> aips) {
-        List<DaAipVO> aipVOList = new ArrayList<>();
+    public List<DaAipDetailVO> createAips(List<DaAip> aips) {
+        List<DaAipDetailVO> aipVOList = new ArrayList<>();
+
         for (DaAip aip : aips) {
-            aipVOList.add(DaAipVO.newInstance(aip));
+           aipVOList.add(createAip(aip));
         }
         return aipVOList;
+    }
+
+    public DaAipDetailVO createAip(DaAip daAip) {
+        DaAipState state = aipStateRepository.findByAip(daAip);
+        DaSyncQueueItem syncItem = daSyncQueueItemRepository.findByAip(daAip);
+
+        ApIndex institutionIndex = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+        String institutionName = institutionIndex.getIndexValue();
+
+        ApIndex originatorIndex = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
+        String originatorName = originatorIndex.getIndexValue();
+
+        return DaAipDetailVO.newInstance(daAip, state, syncItem, institutionName, originatorName);
     }
 }
