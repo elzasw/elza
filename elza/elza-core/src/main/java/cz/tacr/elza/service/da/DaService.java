@@ -171,15 +171,32 @@ public class DaService {
                 try {
                     Path zip = Paths.get(localCache.getFilePath());
 
-                    try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zip))) {
+                    Path tempDir = Files.createTempDirectory("unzipped");
+
+                    try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
                         ZipEntry entry;
                         while ((entry = zipInputStream.getNextEntry()) != null) {
-                            if (entry.getName().endsWith("METS.xml")) {
-                                metsType = MetsReaderWriter.unmarshal(zipInputStream);
-                            } else if (entry.getName().endsWith("PREMIS.xml")) {
-                                premisComplexType = PremisReaderWriter.unmarshal(zipInputStream);
+                            Path filePath = tempDir.resolve(entry.getName());
+                            if (entry.isDirectory()) {
+                                Files.createDirectories(filePath);
+                            } else {
+                                Files.createDirectories(filePath.getParent());
+                                Files.copy(zipInputStream, filePath);
                             }
                         }
+                    }
+                    try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
+                        Path mets = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor METS.xml"));
+                        metsType = MetsReaderWriter.unmarshal(mets);
+                    }
+                    try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
+                        Path premis = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor PREMIS.xml"));
+                        premisComplexType = PremisReaderWriter.unmarshal(premis);
+                    }
+
+                    // Odstranit dočasné soubory a adresáře
+                    try (Stream<Path> str = Files.walk(tempDir)) {
+                        str.map(Path::toFile).forEach(File::delete);
                     }
                 } catch (IOException | JAXBException e) {
                     logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
@@ -343,7 +360,11 @@ public class DaService {
 
     private Path createZip(File aipDir) throws IOException {
         String workDirAip = resourcePathResolver.getAipDir().toString();
-        File zip = new File(workDirAip + aipDir.getName() + ".zip");
+        File workDirAipFile = new File(workDirAip);
+        if (!workDirAipFile.exists()) {
+            workDirAipFile.mkdirs();
+        }
+        File zip = new File(workDirAip+ "/" + aipDir.getName() + ".zip");
         FileOutputStream fos = new FileOutputStream(zip);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
 
@@ -384,15 +405,34 @@ public class DaService {
 
     @Transactional
     public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath) {
+        DaLocalCache localCache = daLocalCacheRepository.findByAipState(aipState);
+        if (localCache == null) {
+            localCache = new DaLocalCache();
+        }
+
         DaAip aip = aipState.getDaAip();
         DaSyncQueueItem syncQueueItem = syncQueueItemRepository.findByCodeAndDigitalRepository(aip.getCode(), digitalRepository);
+        if (syncQueueItem == null) {
+            syncQueueItem = createSyncQueueItem(aip.getCode(), aip, digitalRepository, DaSyncQueueItem.QueueItemState.IMPORT_OK, aipState.getAipVersion());
+        }
 
-        DaLocalCache localCache = new DaLocalCache();
         localCache.setAipType(aipType);
-        localCache.setFilePath(filePath.getFileName().toString());
+        localCache.setFilePath(filePath.toAbsolutePath().toString());
         localCache.setSyncQueueItem(syncQueueItem);
         localCache.setAipState(aipState);
         daLocalCacheRepository.save(localCache);
+    }
+
+    @Transactional
+    public DaSyncQueueItem createSyncQueueItem(String code, DaAip aip, ArrDigitalRepository digitalRepository,
+                                               DaSyncQueueItem.QueueItemState queueItemState, String aipVersion) {
+        DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
+        syncQueueItem.setCode(code);
+        syncQueueItem.setAip(aip);
+        syncQueueItem.setDigitalRepository(digitalRepository);
+        syncQueueItem.setAipVersion(aipVersion);
+        syncQueueItem.setState(queueItemState);
+        return syncQueueItemRepository.save(syncQueueItem);
     }
 
 
