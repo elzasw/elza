@@ -1,0 +1,31 @@
+.aip-file-detail {
+    h4 {
+        font-weight: bold;
+    }
+
+    .aip-file-detail-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .item-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            gap: 10px;
+    
+            .col {
+                width: 50%;
+            }
+    
+            .label {
+                text-align: right;
+            }
+    
+            .value {
+                text-align: left;
+            }
+        }
+    }
+}

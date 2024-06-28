@@ -10,6 +10,7 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
+import cz.tacr.elza.controller.vo.DaDaoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaAip;
@@ -34,6 +35,7 @@ import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.UserService;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.premis.v3.PremisComplexType;
@@ -111,6 +113,10 @@ public class DaService {
     private DaLocalCacheRepository daLocalCacheRepository;
     @Autowired
     private AipStateRepository aipStateRepository;
+    @Autowired
+    private AipService aipService;
+    @Autowired
+    private DaDaoFileRepository daDaoFileRepository;
 
     @Transactional
     public void synchronizaceDA(ArrDigitalRepository digitalRepository) {
@@ -408,6 +414,17 @@ public class DaService {
         }
         fis.close();
     }
+
+    @Transactional
+    public List<DaDao> findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId, DaDao.DaoType type) {
+        DaAip aip = aipService.getAip(aipId);
+        List<DaDao> result = daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, type);
+        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(result);
+        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(result);
+
+        return daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, type);
+    }
+
 
     @Transactional
     public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath) {
