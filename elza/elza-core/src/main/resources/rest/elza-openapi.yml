@@ -15,6 +15,7 @@ tags:
     description: Vyhledávání
   - name: io
     description: Vstup a výstup informací
+  - name: aips
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -769,6 +770,66 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
+  /aip/create-dao-structure:
+    post:
+      tags:
+        - aips
+      operationId: Aip_createDaoStructure
+      description: Import AIP package
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Aip IDs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+  /aip/import-package:
+    post:
+      tags:
+        - aips
+      operationId: Aip_importPackage
+      description: Import AIP package
+      parameters:
+        - name: digitalRepositoryId
+          in: query
+          required: true
+          description: Digital repository ID
+          schema:
+            type: integer
+        - name: aipType
+          in: query
+          required: true
+          description: Aip package type
+          schema:
+            $ref: '#/components/schemas/AipType'
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
   /daorepository:
     get:
       operationId: DaoRepository_fsRepos
@@ -1129,6 +1190,15 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AipType:
+      type: string
+      enum:
+        - PACKAGE_INFO
+        - ARCHDESC
+        - METADATA_BASE
+        - AIP_BASE
+        - AIP_RAW
+      description: Aip package type
     ApStateApproval:
       type: string
       enum:
