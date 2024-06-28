@@ -417,6 +417,17 @@ model ExtSystemProperty {
     value: string;
 }
 
+/**
+ * Aip package type
+ */
+enum AipType {
+    PACKAGE_INFO,
+    ARCHDESC,
+    METADATA_BASE,
+    AIP_BASE,
+    AIP_RAW;
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -763,6 +774,47 @@ namespace ElzaAPI.Io {
           /** Failed to export requested data */
           @Http.statusCode statusCode: 500;
           @body data: BaseException; 
+       };
+}
+
+@tag("aips")
+@route("/aip")
+namespace ElzaAPI.Aip {
+    /**
+     * Import AIP package
+     */
+    @route("/import-package")
+    @post op importPackage(
+        /** Digital repository ID */
+        @query digitalRepositoryId: integer;
+        /** Aip package type */
+        @query aipType: AipType;
+        /** Import request parameters */
+        @header contentType: "application/octet-stream";
+        @body body: bytes;
+	): {
+         /** Package successfully imported */
+         @Http.statusCode statusCode: 200;
+       } | {
+         /** Failed to import package */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+       };
+
+    /**
+     * Import AIP package
+     */
+    @route("/create-dao-structure")
+    @post op createDaoStructure(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Dao structure successfully created */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to create dao structure */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
        };
 }
 
