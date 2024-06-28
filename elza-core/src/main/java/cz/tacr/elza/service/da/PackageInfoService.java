@@ -75,10 +75,10 @@ public class PackageInfoService {
         Map<String, Agent> agentMap = agentList.stream().collect(Collectors.toMap(Agent::getLocalIdentifier, Function.identity()));
         List<PackageObject> objectList = readObjects(premisComplexType.getObject());
         List<Event> eventList = readEvents(agentMap, premisComplexType.getEvent());
-        DaAip daAip = null;
         DaChange daChange = new DaChange();
         String aipCode = null;
         String fundCode = null;
+        String institutionCode = null;
         for (PackageObject packageObject : objectList) {
             if (packageObject instanceof IntellectualObject intellectualObject) {
                 if (intellectualObject.getAipId() != null) {
@@ -87,16 +87,19 @@ public class PackageInfoService {
                 if (intellectualObject.getFondsId() != null) {
                     fundCode = intellectualObject.getFondsId();
                 }
-                aipState.setInstitutionCode(intellectualObject.getInstituitionId());
-                ParInstitution parInstitution = institutionRepository.findByInternalCode(intellectualObject.getInstituitionId());
-                aipState.setInstitution(parInstitution);
+
+                if (intellectualObject.getInstituitionId() != null) {
+                    institutionCode = intellectualObject.getInstituitionId();
+                }
                 if (intellectualObject.getAipSize() != null) {
                     aipState.setAipSize(Long.valueOf(intellectualObject.getAipSize()));
                 }
-                aipState.setAipVersion(intellectualObject.getAipVersion());
+                if (intellectualObject.getAipVersion() != null) {
+                    aipState.setAipVersion(intellectualObject.getAipVersion());
+                }
             }
         }
-        daAip = aipRepository.findByCode(aipCode);
+        DaAip daAip = aipRepository.findByCode(aipCode);
         if (daAip == null) {
             daChange.setType(DaChangeType.AIP_CREATE);
             daAip = new DaAip();
@@ -111,6 +114,9 @@ public class PackageInfoService {
             }
             daChange.setType(DaChangeType.AIP_UPDATE);
         }
+        ParInstitution parInstitution = institutionRepository.findByInternalCode(institutionCode);
+        aipState.setInstitutionCode(institutionCode);
+        aipState.setInstitution(parInstitution);
         if (fundCode != null) {
             ArrFund arrFund = fundRepository.findByInternalCode(fundCode);
             aipState.setFund(arrFund);
