@@ -27,6 +27,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -120,6 +121,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     @Autowired
     private AccessPointService accessPointService;
 
+    @Lazy
     @Autowired
     private ArrangementService arrangementService;
 
