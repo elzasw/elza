@@ -12,4 +12,6 @@ import java.util.Collection;
 public interface DaLocalCacheRepository extends JpaRepository<DaLocalCache, Integer> {
 
     DaLocalCache findByAipStateAndAipTypeIn(DaAipState aipState, Collection<AipType> aipTypes);
+
+    DaLocalCache findByAipState(DaAipState aipState);
 }

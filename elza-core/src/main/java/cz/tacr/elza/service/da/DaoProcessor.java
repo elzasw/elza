@@ -172,7 +172,7 @@ public class DaoProcessor {
     @Nullable
     private DaDao createRepresentationDaoFromDiv(DivType divType, DaChange change) {
         DaDao representationDaDao;
-        if (divType.getLABEL().equals("Representations")) {
+        if (divType.getLABEL() != null && divType.getLABEL().equals("Representations")) {
             String code = divType.getID();
             DaDao.DaoType type = DaDao.DaoType.REPRESENTATION;
             String label = divType.getLABEL();
@@ -185,7 +185,8 @@ public class DaoProcessor {
 
             if (CollectionUtils.isNotEmpty(divType.getFptr())) {
                 for (DivType.Fptr fptr : divType.getFptr()) {
-                    representations.add((String) fptr.getFILEID());
+                    MetsType.FileSec.FileGrp fileGrp = (MetsType.FileSec.FileGrp) fptr.getFILEID();
+                    representations.add(fileGrp.getID());
                 }
             }
             return daDao;
@@ -370,7 +371,8 @@ public class DaoProcessor {
 
         if (CollectionUtils.isNotEmpty(divType.getFptr())) {
             for (DivType.Fptr fptr : divType.getFptr()) {
-                DaDao fileDao = fileDaoMap.get((String) fptr.getFILEID());
+                FileType fileType = (FileType) fptr.getFILEID();
+                DaDao fileDao = fileDaoMap.get(fileType.getID());
                 findOrCreateDaoRelation(fileDao, daDao, change);
             }
         }
@@ -426,7 +428,7 @@ public class DaoProcessor {
         DaDaoFileFolder fileFolder = null;
         List<DaDaoFileFolder> foundFileFolders = new ArrayList<>();
         List<DaDaoFileFolder> createdFileFolders = new ArrayList<>();
-        List<DaDaoFileFolder> fileFolderList = daDaoFileFolderMap.get(daDao.getCode());
+        List<DaDaoFileFolder> fileFolderList = daDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
         List<DaDaoFileFolder> newFileFolderList = newDaDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
 
         if (folderPath != null) {
