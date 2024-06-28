@@ -826,7 +826,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/octet-stream:
+          application/zip:
             schema:
               type: string
               format: binary

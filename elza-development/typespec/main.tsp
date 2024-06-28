@@ -790,7 +790,7 @@ namespace ElzaAPI.Aip {
         /** Aip package type */
         @query aipType: AipType;
         /** Import request parameters */
-        @header contentType: "application/octet-stream";
+        @header contentType: "application/zip";
         @body body: bytes;
 	): {
          /** Package successfully imported */
