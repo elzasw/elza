@@ -165,49 +165,55 @@ public class DaService {
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
             DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState, EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE));
 
-            if (localCache != null) {
-                MetsType metsType = null;
-                PremisComplexType premisComplexType = null;
-                try {
-                    Path zip = Paths.get(localCache.getFilePath());
+            if (aipState.getFund() == null) {
+                logger.info("AIP={} není navázaný na fund", aipId);
+                continue;
+            }
 
-                    Path tempDir = Files.createTempDirectory("unzipped");
+            if (localCache == null) {
+                logger.info("Nebyla nalezena lokální cache s metadaty pro AIP={}", aipId);
+                continue;
+            }
 
-                    try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
-                        ZipEntry entry;
-                        while ((entry = zipInputStream.getNextEntry()) != null) {
-                            Path filePath = tempDir.resolve(entry.getName());
-                            if (entry.isDirectory()) {
-                                Files.createDirectories(filePath);
-                            } else {
-                                Files.createDirectories(filePath.getParent());
-                                Files.copy(zipInputStream, filePath);
-                            }
+            MetsType metsType = null;
+            PremisComplexType premisComplexType = null;
+            try {
+                Path zip = Paths.get(localCache.getFilePath());
+
+                Path tempDir = Files.createTempDirectory("unzipped");
+
+                try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
+                    ZipEntry entry;
+                    while ((entry = zipInputStream.getNextEntry()) != null) {
+                        Path filePath = tempDir.resolve(entry.getName());
+                        if (entry.isDirectory()) {
+                            Files.createDirectories(filePath);
+                        } else {
+                            Files.createDirectories(filePath.getParent());
+                            Files.copy(zipInputStream, filePath);
                         }
                     }
-                    try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
-                        Path mets = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor METS.xml"));
-                        metsType = MetsReaderWriter.unmarshal(mets);
-                    }
-                    try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
-                        Path premis = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor PREMIS.xml"));
-                        premisComplexType = PremisReaderWriter.unmarshal(premis);
-                    }
+                }
+                try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
+                    Path mets = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor METS.xml"));
+                    metsType = MetsReaderWriter.unmarshal(mets);
+                }
+                try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
+                    Path premis = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor PREMIS.xml"));
+                    premisComplexType = PremisReaderWriter.unmarshal(premis);
+                }
 
-                    // Odstranit dočasné soubory a adresáře
-                    try (Stream<Path> str = Files.walk(tempDir)) {
-                        str.map(Path::toFile).forEach(File::delete);
-                    }
-                } catch (IOException | JAXBException e) {
-                    logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
+                // Odstranit dočasné soubory a adresáře
+                try (Stream<Path> str = Files.walk(tempDir)) {
+                    str.map(Path::toFile).forEach(File::delete);
                 }
-                try {
-                    applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType);
-                } catch (Exception e) {
-                    logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
-                }
-            } else {
-                logger.info("Nebyla nalezena lokální cache s metadaty pro AIP={}", aipId);
+            } catch (IOException | JAXBException e) {
+                logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
+            }
+            try {
+                applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType);
+            } catch (Exception e) {
+                logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
             }
         }
     }
