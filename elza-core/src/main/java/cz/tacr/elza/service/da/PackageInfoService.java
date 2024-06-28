@@ -73,29 +73,41 @@ public class PackageInfoService {
         List<Event> eventList = readEvents(agentMap, premisComplexType.getEvent());
         DaAip daAip = null;
         DaChange daChange = new DaChange();
+        String aipCode = null;
         for (PackageObject packageObject : objectList) {
             if (packageObject instanceof IntellectualObject intellectualObject) {
-                daAip = aipRepository.findByCode(intellectualObject.getAipId());
-                if (daAip == null) {
-                    daChange.setType(DaChangeType.AIP_CREATE);
-                    daAip = new DaAip();
-                    daAip.setCode(intellectualObject.getAipId());
-                    daAip.setDigitalRepository(digitalRepository);
-                    aipRepository.save(daAip);
-                } else {
-                    daChange.setType(DaChangeType.AIP_UPDATE);
+                if (intellectualObject.getAipId() != null) {
+                    aipCode = intellectualObject.getAipId();
                 }
-                daChange.setDaAip(daAip);
 
-                aipState.setDaAip(daAip);
+
+
                 aipState.setInstitutionCode(intellectualObject.getInstituitionId());
                 ParInstitution parInstitution = institutionRepository.findByInternalCode(intellectualObject.getInstituitionId());
                 aipState.setInstitution(parInstitution);
-
-                aipState.setAipSize(Long.valueOf(intellectualObject.getAipSize()));
+                if (intellectualObject.getAipSize() != null) {
+                    aipState.setAipSize(Long.valueOf(intellectualObject.getAipSize()));
+                }
                 aipState.setAipVersion(intellectualObject.getAipVersion());
             }
         }
+        daAip = aipRepository.findByCode(aipCode);
+        if (daAip == null) {
+            daChange.setType(DaChangeType.AIP_CREATE);
+            daAip = new DaAip();
+            daAip.setCode(aipCode);
+            daAip.setDigitalRepository(digitalRepository);
+            aipRepository.save(daAip);
+        } else {
+            DaAipState oldAipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip);
+            if (oldAipState != null) {
+                oldAipState.setDeleteChange(daChange);
+                aipStateRepository.save(oldAipState);
+            }
+            daChange.setType(DaChangeType.AIP_UPDATE);
+        }
+        aipState.setDaAip(daAip);
+        daChange.setDaAip(daAip);
         daChange.setChangeDate(LocalDateTime.now());
         changeRepository.save(daChange);
         aipState.setCreateChange(daChange);
@@ -106,13 +118,6 @@ public class PackageInfoService {
                     aipState.setOriginator(nameList.get(0));
                 }
                 accessPointRepository.findById(Integer.valueOf(event.getOriginator().getCamId())).ifPresent(aipState::setOriginatorAccessPoint);
-            }
-        }
-        if (daAip != null) {
-            DaAipState oldAipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip);
-            if (oldAipState != null) {
-                oldAipState.setDeleteChange(daChange);
-                aipStateRepository.save(oldAipState);
             }
         }
         return aipStateRepository.save(aipState);

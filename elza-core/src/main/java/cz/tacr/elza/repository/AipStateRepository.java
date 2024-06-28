@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface AipStateRepository extends JpaRepository<DaAipState, Integer> {
 
 
-    @Query("Select das from da_aip_state das where das.deleteChange is null and da_aip = :daAip")
     DaAipState findByDaAipAndDeleteChangeIsNull(@Param("daAip") DaAip daAip);
 
     @Query("SELECT das FROM da_aip_state das WHERE das.daAip = :daAip")
