@@ -321,8 +321,6 @@ public class DaoProcessor {
     }
 
     private void createFileFromMdSec(MdSecType mdSecType, DaDao daDao, DaChange change) {
-        String href = mdSecType.getMdRef().getHref();
-        DaDaoFileFolder fileFolder = findOrCreateFileFolder(daDao, change, null, href);
         String checksum = mdSecType.getMdRef().getCHECKSUM();
         String checksumType = mdSecType.getMdRef().getCHECKSUMTYPE();
         String mimeType = mdSecType.getMdRef().getMIMETYPE();
@@ -340,7 +338,7 @@ public class DaoProcessor {
             fileName = mdSecType.getMdRef().getHref();
         }
 
-        findOrCreateFile(change, daDao, fileFolder, checksum, checksumType, mimeType, size, imageHeight, imageWidth, sourceXDimensionUnit,
+        findOrCreateFile(change, daDao, null, checksum, checksumType, mimeType, size, imageHeight, imageWidth, sourceXDimensionUnit,
                 sourceXDimensionValue, sourceYDimensionUnit, sourceYDimensionValue, duration, description, fileName);
     }
 
@@ -388,11 +386,13 @@ public class DaoProcessor {
                                        String mimeType, BigInteger size, Integer imageHeight, Integer imageWidth, String sourceXDimensionUnit,
                                        Integer sourceXDimensionValue, String sourceYDimensionUnit, Integer sourceYDimensionValue,
                                        String duration, String description, String fileName) {
-        List<DaDaoFile> daDaoFiles = daDaoFileMap.get(dao.getCode());
+        List<DaDaoFile> daDaoFiles = daDaoFileMap.getOrDefault(dao.getCode(), new ArrayList<>());
         if (CollectionUtils.isNotEmpty(daDaoFiles)) {
             for (DaDaoFile daDaoFile : daDaoFiles) {
                 if (isFileSame(daDaoFile, daoFileFolder, checksum, checksumType, mimeType, size, imageHeight, imageWidth, sourceXDimensionUnit,
                         sourceXDimensionValue, sourceYDimensionUnit, sourceYDimensionValue, duration, description, fileName)) {
+                    daDaoFiles.remove(daDaoFile);
+                    daDaoFileMap.put(dao.getCode(), daDaoFiles);
                     return daDaoFile;
                 }
             }
@@ -443,17 +443,21 @@ public class DaoProcessor {
                 foundFileFolders.add(fileFolder);
             }
         }
+        DaDaoFileFolder parentFileFolder = fileFolder;
         String[] pathArray = href.split("/");
         for (String path : pathArray) {
-            fileFolder = findFileFolder(fileFolderList, path, fileFolder);
-            if (fileFolder == null) {
-                fileFolder = findFileFolder(newFileFolderList, path, fileFolder);
+            if (!path.contains(".")) {
+                fileFolder = findFileFolder(fileFolderList, path, parentFileFolder);
                 if (fileFolder == null) {
-                    fileFolder = daService.createDaDaoFileFolder(daDao, change, path, fileFolder);
-                    createdFileFolders.add(fileFolder);
+                    fileFolder = findFileFolder(newFileFolderList, path, parentFileFolder);
+                    if (fileFolder == null) {
+                        fileFolder = daService.createDaDaoFileFolder(daDao, change, path, parentFileFolder);
+                        createdFileFolders.add(fileFolder);
+                    }
+                } else {
+                    foundFileFolders.add(fileFolder);
                 }
-            } else {
-                foundFileFolders.add(fileFolder);
+                parentFileFolder = fileFolder;
             }
         }
 
