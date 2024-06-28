@@ -177,10 +177,12 @@ public class PackageInfoService {
                 IntellectualObject intellectualObject = new IntellectualObject();
                 loadIdentifiers(intellectualObject, intellectualEntity.getObjectIdentifier());
                 loadSignificantProperties(intellectualObject, intellectualEntity.getSignificantProperties());
+                objectList.add(intellectualObject);
             } else if (objectComplexType instanceof Representation representation) {
                 RepresentationObject representationObject = new RepresentationObject();
                 representationObject.setName(representation.getOriginalName().getValue());
                 loadIdentifiers(representationObject, representation.getObjectIdentifier());
+                objectList.add(representationObject);
             }
         }
         return objectList;
