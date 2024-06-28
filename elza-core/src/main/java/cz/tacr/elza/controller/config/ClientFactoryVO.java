@@ -1845,13 +1845,20 @@ public class ClientFactoryVO {
     public DaAipDetailVO createAip(DaAip daAip) {
         DaAipState state = aipStateRepository.findByAip(daAip);
         DaSyncQueueItem syncItem = daSyncQueueItemRepository.findByAip(daAip);
+        String institutionName = null;
+        String originatorName = null;
+        if(state.getInstitution() != null &&
+                state.getInstitution().getAccessPoint() != null &&
+                state.getInstitution().getAccessPoint().getPreferredPart() != null
+        ) {
+            ApIndex institutionIndex = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+            institutionName = institutionIndex.getIndexValue();
+        }
 
-        ApIndex institutionIndex = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-        String institutionName = institutionIndex.getIndexValue();
-
-        ApIndex originatorIndex = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
-        String originatorName = originatorIndex.getIndexValue();
-
+        if(state.getOriginatorAccessPoint() != null) {
+            ApIndex originatorIndex = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
+            originatorName = originatorIndex.getIndexValue();
+        }
         return DaAipDetailVO.newInstance(daAip, state, syncItem, institutionName, originatorName);
     }
 }

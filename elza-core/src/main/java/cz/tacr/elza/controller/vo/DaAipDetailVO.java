@@ -185,7 +185,9 @@ public class DaAipDetailVO {
 
         if(state != null) {
             vo.setAipVersion(state.getAipVersion());
-            vo.setFundName(state.getFund().getName());
+            if(state.getFund() != null) {
+                vo.setFundName(state.getFund().getName());
+            }
             vo.setFundCode(state.getFundCode());
             vo.setInstApName(instApName);
             vo.setInstitutionCode(state.getInstitutionCode());
