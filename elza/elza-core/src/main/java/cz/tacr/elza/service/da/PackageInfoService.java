@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
@@ -11,6 +12,7 @@ import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.vo.Agent;
 import cz.tacr.elza.service.vo.Event;
@@ -60,6 +62,8 @@ public class PackageInfoService {
     private ApAccessPointRepository accessPointRepository;
     @Autowired
     private AipStateRepository aipStateRepository;
+    @Autowired
+    private FundRepository fundRepository;
 
     @Transactional
     public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws FileNotFoundException, JAXBException {
@@ -74,14 +78,15 @@ public class PackageInfoService {
         DaAip daAip = null;
         DaChange daChange = new DaChange();
         String aipCode = null;
+        String fundCode = null;
         for (PackageObject packageObject : objectList) {
             if (packageObject instanceof IntellectualObject intellectualObject) {
                 if (intellectualObject.getAipId() != null) {
                     aipCode = intellectualObject.getAipId();
                 }
-
-
-
+                if (intellectualObject.getFondsId() != null) {
+                    fundCode = intellectualObject.getFondsId();
+                }
                 aipState.setInstitutionCode(intellectualObject.getInstituitionId());
                 ParInstitution parInstitution = institutionRepository.findByInternalCode(intellectualObject.getInstituitionId());
                 aipState.setInstitution(parInstitution);
@@ -106,6 +111,11 @@ public class PackageInfoService {
             }
             daChange.setType(DaChangeType.AIP_UPDATE);
         }
+        if (fundCode != null) {
+            ArrFund arrFund = fundRepository.findByInternalCode(fundCode);
+            aipState.setFund(arrFund);
+        }
+
         aipState.setDaAip(daAip);
         daChange.setDaAip(daAip);
         daChange.setChangeDate(LocalDateTime.now());
@@ -121,6 +131,18 @@ public class PackageInfoService {
             }
         }
         return aipStateRepository.save(aipState);
+    }
+
+    public String getFundCodeFromPackageInfoFile(File file) throws FileNotFoundException, JAXBException {
+        FileInputStream is = new FileInputStream(file);
+        PremisComplexType premisComplexType = PremisReaderWriter.unmarshal(is);
+        List<PackageObject> objectList = readObjects(premisComplexType.getObject());
+        for (PackageObject packageObject : objectList) {
+            if (packageObject instanceof IntellectualObject intellectualObject && intellectualObject.getFondsId() != null) {
+                return intellectualObject.getFondsId();
+            }
+        }
+        return null;
     }
 
 
