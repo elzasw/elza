@@ -13,6 +13,10 @@ import { useHistory } from 'react-router';
 import { urlAip } from '../../constants';
 
 import { FolderOpen20Filled } from '@fluentui/react-icons';
+import i18n from 'components/i18n';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
+import AipExplorer from './explorer/AipExplorer';
+import AipExplorerModalWrapper from './explorer/AipExplorerWrapper';
 
 const AipDetail = () => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
@@ -30,6 +34,20 @@ const AipDetail = () => {
     const handleClose = () => {
         dispatch(aipActions.selectAip(null));
         history.replace(urlAip());
+    }
+
+    const handleOpenExplorer = () => {
+        dispatch(
+            modalDialogShow(
+                this,
+                "AIP Průzkumník",
+                <AipExplorerModalWrapper
+                    onOk={() => {}}
+                    onClose={() => dispatch(modalDialogHide())}
+                />,
+                "aip-explorer"
+            ),
+        );
     }
 
     const DetailRow = ({label, value}: {label: string, value?: any}) => (
@@ -74,51 +92,51 @@ const AipDetail = () => {
                         <Button
                             as="a"
                             className="open-btn"
-                            // href="" TODO: add link
+                            onClick={handleOpenExplorer}
                         >
                             <FolderOpen20Filled/>
-                            <span>Otevřít průzkumník</span>
+                            <span>{i18n("aip.detail.explorer.open")}</span>
                         </Button>
 
-                        {aip.data.aipId && 
+                        {aip.data.aipId &&
                             <DetailRow label="Id" value={aip.data.aipId.toString()}/>}
-                        {aip.data.code && 
+                        {aip.data.code &&
                             <DetailRow label="Kód aipu" value={aip.data.code.toString()}/>}
-                        {aip.data.aipVersion && 
+                        {aip.data.aipVersion &&
                             <DetailRow label="Verze" value={aip.data.aipVersion}/>}
-                        {aip.data.fundName && 
+                        {aip.data.fundName &&
                             <DetailRow label="Archivní soubor" value={
                                 <a href=''>{aip.data.fundName}</a>
                             }/>
                         }
-                        {aip.data.instApName && 
+                        {aip.data.instApName &&
                             <DetailRow label="Instituce" value={
                                 <a href=''>{aip.data.instApName}</a>
                             }/>
                         }
-                        {aip.data.unitdateFrom && 
+                        {aip.data.unitdateFrom &&
                             <DetailRow label="Dotace od-do" value={
                                 formatDate(new Date(aip.data.unitdateFrom)) + " - " + formatDate(new Date(aip.data.unitdateTo))
                             }/>}
-                        {aip.data.originApName && 
+                        {aip.data.originApName &&
                             <DetailRow label="Původce" value={
                                 <a href=''>{aip.data.originApName}</a>
                             }/>
                         }
-                        {aip.data.stateingestionCode && 
+                        {aip.data.stateingestionCode &&
                             <DetailRow label="Číslo přejímky" value={aip.data.ingestionCode}/>}
-                        {aip.data.referenceNumber && 
+                        {aip.data.referenceNumber &&
                             <DetailRow label="Číslo jednací" value={aip.data.referenceNumber}/>}
-                        {aip.data.nadChangeCode && 
+                        {aip.data.nadChangeCode &&
                             <DetailRow label="Vnější změna" value={aip.data.nadChangeCode}/>}
-                        {aip.data.aipSize && 
+                        {aip.data.aipSize &&
                             <DetailRow label="Velikost" value={formatAipSize(aip.data.aipSize)}/>}
-                        {aip.data != null && 
+                        {aip.data != null &&
                             <DetailRow label="Načtena metadata" value={getBoolIcon(aip.data.createDaoStructure)}/>}
                         {/* TODO: @kasparova Podle zadání bude upřesněno v budoucnu
                         {aip.data.componentsLoaded != null && <DetailRow label="Stažené komponenty" value={getBoolIcon(aip.data.componentsLoaded)}/>}
                         {aip.data.linkedArchiveDesc != null && <DetailRow label="Napojen archivní popis" value={getBoolIcon(aip.data.linkedArchiveDesc)}/>} */}
-                        {aip.data.state && 
+                        {aip.data.state &&
                             <DetailRow label="Aktuální verze" value={aip.data.state}/>}
                     </div>
 

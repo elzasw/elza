@@ -1861,4 +1861,15 @@ public class ClientFactoryVO {
         }
         return DaAipDetailVO.newInstance(daAip, state, syncItem, institutionName, originatorName);
     }
+
+    public DaDaoVO createDaDaoVO(DaDao daDao) {
+        DaDaoVO result = new DaDaoVO();
+        result.setDaoId(daDao.getDaoId());
+        result.setAipId(daDao.getAip().getAipId());
+        result.setCode(daDao.getCode());
+        result.setLabel(daDao.getLabel());
+        result.setType(daDao.getType());
+        return result;
+    }
+
 }

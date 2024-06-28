@@ -57,8 +57,8 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
             validate={validate}
         >
         {({ submitting, handleSubmit, values, form }) => {
-            const inputVisible = 
-                values.criteria == AipFilterCriteria.CONTAINS || 
+            const inputVisible =
+                values.criteria == AipFilterCriteria.CONTAINS ||
                 values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN;
 
             return (
@@ -128,12 +128,12 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
                                     value={value}
                                     onChange={(e) => {
                                         form.change("value", e.target.value);
-                                        form.change("label", selectValues.filter(item => item.value = e.target.value)[0].label);
+                                        form.change("label", e.target.options[e.target.selectedIndex].label);
                                     }}
                                 >
                                     {!selectValues && <span>Načítání...</span>}
                                     {selectValues && selectValues.map(({value, label}: SelectionOptions, index: number) =>
-                                        <option key={index} value={value.toString()}>
+                                        <option key={index} value={Number(value)} label={label}>
                                             {label}
                                         </option>
                                     )}

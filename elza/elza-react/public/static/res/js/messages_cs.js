@@ -1854,7 +1854,15 @@ var messages = {
     "aip.actions.metadata": "Načíst metadata",
     "aip.actions.loadAips": "Načtení úplných aipů",
     "aip.actions.update": "Vynutit aktualizaci",
-
-
+    "aip.actions.explorer": "Náhled vybraného AIPu",
+    "aip.actions.as": "Přechod na související archivní popis",
+    "aip.explorer.detail.title": "Podrobnosti",
+    "aip.explorer.detail.name": "Název",
+    "aip.explorer.detail.checksum": "Kontrolní součet",
+    "aip.explorer.detail.format": "Formát",
+    "aip.explorer.detail.as": "Napojený archivní popis",
+    "aip.explorer.detail.relationRep": "Vztahy - reprezentace",
+    "aip.explorer.detail.relationLog": "Vztahy - logická struktura",
+    "aip.explorer.detail.parent": "Rodič",
     ____: "",
 };

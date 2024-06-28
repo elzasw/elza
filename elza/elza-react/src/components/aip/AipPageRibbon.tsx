@@ -1,4 +1,4 @@
-import { AREA_SELECTED_AIPS } from "actions/aip/aip";
+import { AREA_AIP, AREA_SELECTED_AIPS } from "actions/aip/aip";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
 import { FC } from "react";
@@ -9,13 +9,21 @@ import { AppState } from "typings/store";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
+    const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     //TODO: @kasparova implement when ready
     const handleLoadMetadata = () => {}
     const handleLoadAips = () => {}
     const handleForceUpdate = () => {}
 
+    const handleExplorer = () => {}
+    const handleAs = () => {}
+
     const altActions = [];
+    const itemActions = [];
+
+    console.log(aip)
+
     if (selectedAips?.rows?.length > 0) {
         altActions.push(
             <Button key="reloadMetadata" onClick={handleLoadMetadata}>
@@ -43,6 +51,15 @@ const AipPageRibbon: FC = () => {
         );
     }
 
+    let itemSection: React.ReactNode;
+    if (itemActions.length > 0) {
+        itemSection = (
+            <RibbonGroup key="item-actions" className="small">
+                {itemActions}
+            </RibbonGroup>
+        );
+    }
+
     let altSection: React.ReactNode;
     if (altActions.length > 0) {
         altSection = (
@@ -54,7 +71,7 @@ const AipPageRibbon: FC = () => {
 
     return (
         <div>
-            <Ribbon altSection={altSection} />
+            <Ribbon altSection={altSection} itemSection={itemSection}/>
         </div>
     );
 }

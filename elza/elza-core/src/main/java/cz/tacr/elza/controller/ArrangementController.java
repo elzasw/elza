@@ -2814,7 +2814,7 @@ public class ArrangementController {
     public FilteredResultVO<DaAipDetailVO> findAipsByFilter(@RequestBody final AipFilterVO[] filters,
                                                             @RequestParam("from") final Integer from,
                                                             @RequestParam("count") final Integer count) {
-        FilteredResult<DaAip> aips = aipService.findAipsByFilter(filters, from, count);
+        FilteredResult<DaAip> aips = aipService.findAipDetailsByFilter(filters, from, count);
         return new FilteredResultVO<>(factoryVo.createAips(aips.getList()), aips.getTotalCount());
     }
 
@@ -2822,7 +2822,7 @@ public class ArrangementController {
     @RequestMapping(value = "/aip/{aipId}",
             method = RequestMethod.GET)
     public DaAipDetailVO getAip(@PathVariable("aipId") Integer aipId) {
-        return aipService.getAip(aipId);
+        return aipService.getAipDetail(aipId);
     }
 
     @Transactional
