@@ -55,7 +55,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApBindingStateRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevStateRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
@@ -107,9 +106,6 @@ public class RevisionService {
 
     @Autowired
     private AccessPointItemService apItemService;
-
-    @Autowired
-    private ApItemRepository itemRepository;
 
     @Autowired
     private ApStateRepository stateRepository;
@@ -374,6 +370,8 @@ public class RevisionService {
         if (CollectionUtils.isEmpty(childrenParts)) {
             childrenParts = new ArrayList<>();
         }
+        // aby nedošlo k opakování ApRevItem
+        childrenParts.removeAll(revChildrenParts);
         childrenParts.addAll(revChildrenParts);
 
         List<ApRevPart> parts = new ArrayList<>();
@@ -383,7 +381,7 @@ public class RevisionService {
         List<ApRevItem> revItems = revisionItemService.findByParts(parts);
 
         updatePartValue(revState, part, childrenParts, revItems);
-        
+
         // we have to also update parent part
         ApRevPart revParentPart = part.getRevParentPart();
         if (revParentPart == null) {
@@ -662,7 +660,7 @@ public class RevisionService {
             }
         } else {
             // if the preferred part is ApRevPart (create in the revision)
-            Validate.notNull(revPartId);
+        	Objects.requireNonNull(revPartId);
             revPart = revisionPartService.findById(revPartId);
             List<ApRevItem> revItems = revisionItemService.findByPart(revPart);
 
@@ -1129,7 +1127,7 @@ public class RevisionService {
         for (ApRevPart revPart : createSubParts) {
             // find parent
             ApPart parentPart = revPartMap.get(revPart.getRevParentPart().getPartId());
-            Validate.notNull(parentPart);
+            Objects.requireNonNull(parentPart);
 
             ApPart part = partService.createPart(revPart.getPartType(), accessPoint, revPart.getCreateChange(),
                                                  parentPart);
