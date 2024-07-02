@@ -55,6 +55,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevStateRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
@@ -106,6 +107,9 @@ public class RevisionService {
 
     @Autowired
     private AccessPointItemService apItemService;
+
+    @Autowired
+    private ApItemRepository itemRepository;
 
     @Autowired
     private ApStateRepository stateRepository;
