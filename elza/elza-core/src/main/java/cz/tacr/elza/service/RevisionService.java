@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -369,13 +370,8 @@ public class RevisionService {
      */
     @Transactional(Transactional.TxType.MANDATORY)
     public void updatePartValue(final ApRevPart part, final ApRevState revState, final ApChange change) {
-        List<ApRevPart> childrenParts = revisionPartService.findPartsByParentPart(part.getOriginalPart());
+        Set<ApRevPart> childrenParts = new HashSet<>(revisionPartService.findPartsByParentPart(part.getOriginalPart()));
         List<ApRevPart> revChildrenParts = revisionPartService.findPartsByRevParentPart(part);
-        if (CollectionUtils.isEmpty(childrenParts)) {
-            childrenParts = new ArrayList<>();
-        }
-        // aby nedošlo k opakování ApRevItem
-        childrenParts.removeAll(revChildrenParts);
         childrenParts.addAll(revChildrenParts);
 
         List<ApRevPart> parts = new ArrayList<>();
@@ -427,7 +423,7 @@ public class RevisionService {
      */
     private void updatePartValue(final ApRevState revState,
                                  final ApRevPart revPart,
-                                 final List<ApRevPart> childRevParts,
+                                 final Collection<ApRevPart> childRevParts,
                                  final List<ApRevItem> revItems) {
         boolean preferred = isPrefered(revState, revPart);
         ApPart origPart = revPart.getOriginalPart();
