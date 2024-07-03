@@ -1,25 +1,61 @@
-package rul_rule_set.CAM.rules
+package rul_rule_set.CAM.rule
 
+import groovy.transform.Field
+import java.time.LocalDateTime
 import java.util.Arrays
 import java.util.List
+
+import org.apache.commons.lang3.StringUtils
 
 import cz.tacr.elza.groovy.GroovyAe
 import cz.tacr.elza.groovy.GroovyPart
 import cz.tacr.elza.groovy.GroovyItem
 import cz.tacr.elza.groovy.GroovyUtils
 
+import cz.tacr.elza.core.data.StaticDataProvider;
+
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 
-import cz.tacr.elza.service.cache.AccessPointCacheProvider
-import cz.tacr.elza.service.cache.CachedAccessPoint
+import cz.tacr.elza.drools.model.DrlUtils;
 
 import cz.tacr.elza.exception.codes.BaseCode
 import cz.tacr.elza.exception.ObjectNotFoundException
 
-return generate(AE, AP_CACHE_PROVIDER)
+import cz.tacr.elza.service.cache.AccessPointCacheProvider
+import cz.tacr.elza.service.cache.CachedAccessPoint
 
-// Získání seznamu názvů míst do celé hloubky vnoření: Kladno, Kladno, Česko
+@Field static StaticDataProvider sdp;
+@Field static boolean debug = false;
+
+// seznam vyloučených typů území
+@Field static final List<String> excludeTerritory = Arrays.asList(
+        "GT_COUNTRY",
+        "GT_LAND",
+        "GT_VOJVODSTVI",
+        "GT_MUNIPDISTR",
+        "GT_MUNIP",
+        "GT_MUNIPPART",
+        "GT_SQUARE",
+        "GT_WATERFRONT",
+        "GT_SEABOTSHAPE",
+        "GT_CITYDISTRICT",
+        "GT_OTHERAREA",
+        "GT_PROTNATPART",
+        "GT_FORESTPARK",
+        "GT_NATUREPART",
+        "GT_NATFORMATION",
+        "GT_WATERAREA",
+        "GT_NAMEDFORMATION",
+        "GT_COSMOSPART"
+        )
+
+        
+sdp = DATA_PROVIDER;
+return generate(AE, AP_CACHE_PROVIDER);
+
+// Získání seznamu názvů míst směrem k rodiči
+// Priklad: Kladno, Kladno, Česko
 static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
     // seznam vyloučených typů území
@@ -42,7 +78,7 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         )
 
     // získání seznamu geografických objektů a názvu země
-    String country
+    String country = null;
     String value
     int limitItems = 10
     ArrDataRecordRef dataRecord
@@ -59,7 +95,10 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         }
 
         dataRecord = GroovyUtils.findDataByRulItemTypeCode(cap, GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
-        cap = dataRecord == null? null : apcp.get(dataRecord.getRecordId())
+        if(dataRecord==null) {
+            break;
+        }
+        cap = apcp.get(dataRecord.getRecordId());
     }
 
     // převést seznam CachedAccessPoint na řetězec
@@ -72,13 +111,12 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
             continue
         }
         // nezobrazené typy území pro seznam zemí
-        if (excludeLands.contains(country.toLowerCase()) && excludeTerritory.contains(geoType)) {
+        if (country!=null && excludeLands.contains(country.toLowerCase()) && excludeTerritory.contains(geoType)) {
             continue
         }
         if (Objects.equals(geoType, "GT_CONTINENT") || Objects.equals(geoType, "GT_PLANET")) {
             break;
         }
-        //System.out.println(geoType)
         if (value == null) {
         	value = dataString.getStringValue()
         } else {
@@ -144,58 +182,29 @@ static String getSeperator(GroovyItem item) {
     return "; "
 }
 
-static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvider apcp) {
-    List<GroovyItem> items = new ArrayList<>()
-
-    // dočasně, jen pro ladění
-    for (GroovyPart part : ae.getParts()) {
-        //System.out.println(part.getPartType().getCode())
-        for (GroovyItem item : part.getItems()) {
-            //System.out.println(item)
+// generovani obecneho doplnku
+GroovyItem generateObecnyDoplnek(final GroovyAe ae) {
+    GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
+    if (genItem != null) {
+        if (!excludeTerritory.contains(genItem.getSpecCode())) {
+            return new GroovyItem(sdp.getItemTypeByCode("NM_SUP_GEN"), null, genItem.getValue())
         }
     }
+    return null;
+}
 
-    // seznam vyloučených typů území
-    List<String> excludeTerritory = Arrays.asList(
-        "GT_COUNTRY",
-        "GT_LAND",
-        "GT_VOJVODSTVI",
-        "GT_MUNIPDISTR",
-        "GT_MUNIP",
-        "GT_MUNIPPART",
-        "GT_SQUARE",
-        "GT_WATERFRONT",
-        "GT_SEABOTSHAPE",
-        "GT_CITYDISTRICT",
-        "GT_OTHERAREA",
-        "GT_PROTNATPART",
-        "GT_FORESTPARK",
-        "GT_NATUREPART",
-        "GT_NATFORMATION",
-        "GT_WATERAREA",
-        "GT_NAMEDFORMATION",
-        "GT_COSMOSPART"
-        )
-
-    // seznam zaniklých typů území
-    List<String> disappearedTerritory = Arrays.asList(
-        "GT_MUNIP",
-        "GT_MUNIPDISTR",
-        "GT_MUNIPPART",
-        "GT_CADASTRALTERRITORY",
-        "GT_STREET",
-        "GT_SQUARE",
-        "GT_WATERFRONT",
-        "GT_SETTLEMENT",
-        "GT_MILITARYAREA"
-        )
-
+// generovani chronologickeho doplnku
+GroovyItem generateChronolDoplnek(final GroovyAe ae) {
+    
     // načtení vzniku a zániku pro chronologický doplněk
-    GroovyItem fromClass = GroovyUtils.findFirstItem(ae, "PT_CRE", GroovyPart.PreferredFilter.ALL, "CRE_CLASS")
-    GroovyItem toClass = GroovyUtils.findFirstItem(ae, "PT_EXT", GroovyPart.PreferredFilter.ALL, "EXT_CLASS")
     GroovyItem from = GroovyUtils.findFirstItem(ae, "PT_CRE", GroovyPart.PreferredFilter.ALL, "CRE_DATE")
     GroovyItem to = GroovyUtils.findFirstItem(ae, "PT_EXT", GroovyPart.PreferredFilter.ALL, "EXT_DATE")
+    if(from==null&&to==null) {
+        return null;
+    }
 
+    GroovyItem fromClass = GroovyUtils.findFirstItem(ae, "PT_CRE", GroovyPart.PreferredFilter.ALL, "CRE_CLASS")
+    GroovyItem toClass = GroovyUtils.findFirstItem(ae, "PT_EXT", GroovyPart.PreferredFilter.ALL, "EXT_CLASS")
     // generování specifických prefixů pro vznik
     String prefixFrom = ""
     if (fromClass != null) {
@@ -222,12 +231,41 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
         }
     }
 
+    // Pokud vůbec není uveden vznik nebo je uveden vznik bez datace a u zániku není uvedena datace 
+    // nesmí být chronologický doplněk uveden, respektive je kontrolována jeho „prázdná“ hodnota. 
+    // Výjimkou je pouze hodnota „zaniklo“ u entit podřídy GEO_UNIT, viz výjimka výše.
+    if (GroovyUtils.hasParent(ae.getAeType(), "GEO")) {
+        // pokud objekt je GEO_UNIT
+        if (ae.getAeType().equals("GEO_UNIT")) {
+            // pokud objekt zanikl
+            if (toClass != null) {
+                GroovyItem geoType = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE");                
+                // pokud objekt je zařazen do seznamu excludeTerritory
+                if(geoType!=null&&
+                    Arrays.asList("GT_MUNIPDISTR", "GT_MUNIP", "GT_MILITARYAREA", "GT_CADASTRALTERRITORY",
+                        "GT_MUNIPPART", "GT_STREET", "GT_SQUARE", "GT_WATERFRONT", "GT_SETTLEMENT").contains(geoType.specCode)) {
+                    return new GroovyItem(sdp.getItemTypeByCode("NM_SUP_CHRO"), null, "zaniklo");
+                }                
+            }
+            // pokud objekt nezanikl a není znám vznik -> doplněk není
+            if(from==null) {
+                return null;
+            }
+        }
+    }
+
     // definice prefixu, když je shodný rok u datace od i do
-    String prefixYearEqual = ""
-    if (prefixFrom == "uváděno od " && prefixTo == "uváděno do ") {
-        prefixYearEqual = "uváděno "
-    } else {
-        if (prefixFrom == "působnost od " && prefixTo == "působnost do ") {
+    def generYearEqual = false
+    //definice prefixu, když je shodný rok u datace od i do, a příznaku, zda se má generovat jen jako rok nebo jako od-do
+    def prefixYearEqual = ""
+    def sameEstimates = from != null && to != null &&
+            ((from.getUnitdateValue().getValueFromEstimated() && to.getUnitdateValue().getValueToEstimated())
+            || (!from.getUnitdateValue().getValueFromEstimated() && !to.getUnitdateValue().getValueToEstimated()))
+    if(sameEstimates) {
+        generYearEqual = true
+        if (prefixFrom == "uváděno od " && prefixTo == "uváděno do ") {
+            prefixYearEqual = "uváděno "
+        } else if (prefixFrom == "působnost od " && prefixTo == "působnost do ") {
             prefixYearEqual = "působnost "
         }
     }
@@ -237,56 +275,79 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
                 .prefixFrom(prefixFrom)
                 .prefixTo(prefixTo)
                 .formatYear()
-                .yearEqual(true, prefixYearEqual)
+                .yearEqual(generYearEqual, prefixYearEqual)
                 .build()
-
-    // obecný doplněk
-    GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
-    if (genItem != null) {
-        if (!excludeTerritory.contains(genItem.getSpecCode())) {
-            GroovyItem obecItem = new GroovyItem("NM_SUP_GEN", null, genItem.getValue())
-            items.add(obecItem)
+     
+    boolean addQuestionmark = false;
+    // Pokud existuje událost zániku, ale není vyplněna datace – musí být použit 
+    // znak „?“ signalizující neznámé datum zániku.          
+    if (from != null && to == null) {
+        if(toClass != null) {
+            addQuestionmark = true;
+        } else
+        // Není uveden zánik, ale může být osoba
+        if (ae.getAeType().equals("PERSON_INDIVIDUAL")) {
+          // Pokud je starsi nez 120let
+          if(DrlUtils.lessThan(from.getValue(), LocalDateTime.now().minusYears(120))) {
+            addQuestionmark = true;
+          }
         }
     }
+    if(addQuestionmark) {
+       nmSupChro += "?";
+    }
+
 
     // chronologický doplněk
-    GroovyItem chroItem = new GroovyItem("NM_SUP_CHRO", null, nmSupChro)
-    if (!chroItem.getValue().isEmpty()) {
-        // pokud se jedná o geo objekt
-        if (GroovyUtils.hasParent(ae.getAeType(), "GEO")) {
-            // pokud objekt je GEO_UNIT
-            if (ae.getAeType().equals("GEO_UNIT")) {
-                // pokud objekt zanikl
-                if (to != null) {
-                    // pokud objekt je zařazen do seznamu excludeTerritory
-                    if (genItem != null && disappearedTerritory.contains(genItem.getSpecCode())) {
-                    	items.add(new GroovyItem("NM_SUP_CHRO", null, "zaniklo"))
-                	} else {
-	                    items.add(chroItem)
-                	}    
-                }
-                // pokud objekt nezanikl - nic neoznačujeme
-            }
-        } else {
-            items.add(chroItem)
-        }
+    if (StringUtils.isBlank(nmSupChro)) {
+        // Asi nikdy nenastatne
+        return null;
+    }
+
+    return new GroovyItem(sdp.getItemTypeByCode("NM_SUP_CHRO"), null, nmSupChro);
+}
+
+// generovani doplnku
+List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvider apcp) {
+    List<GroovyItem> items = new ArrayList<>()
+
+    // dočasně, jen pro ladění
+    if(debug) {
+      for (GroovyPart part : ae.getParts()) {
+          System.out.println(part.getPartType().getCode())
+          for (GroovyItem item : part.getItems()) {
+              System.out.println(item);
+          }
+      }
+    }
+
+    // obecný doplněk
+    GroovyItem obecnyDoplnek = generateObecnyDoplnek(ae)
+    if(obecnyDoplnek!=null) {
+        items.add(obecnyDoplnek);
     }
 
     // geografický doplněk
     GroovyItem geo = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_ADMIN_CLASS")
     if (geo != null) {
-        if (geo.getValue() != null) {
-            if (geo.getIntValue() > 0) {
-                String geoName = getGeoName(geo, apcp)
-				if (geoName != null) {
-                	GroovyItem geoItem = new GroovyItem("NM_SUP_GEO", null, geoName)
-                	items.add(geoItem)
-				}
-            } else {
-                throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
-                    .set("entityId", geo.getValue())
+        if (geo.getIntValue() > 0) {
+            String geoName = getGeoName(geo, apcp)
+            if (geoName != null) {
+                GroovyItem geoItem = new GroovyItem(sdp.getItemTypeByCode("NM_SUP_GEO"), null, geoName)
+                items.add(geoItem)
             }
         }
+        // If parent now knonwn -> cannot create sup_geo
+        // } else {
+        //    throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
+        //    .set("entityId", geo.getValue())
+        // }
+    }
+    
+    // chronologicky doplnek
+    GroovyItem chronolDoplnek = generateChronolDoplnek(ae);
+    if(chronolDoplnek!=null) {
+        items.add(chronolDoplnek);
     }
 
     // odkazy na geografické doplňky a autory
@@ -298,19 +359,21 @@ static List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvid
                 if (rel.getIntValue() > 0) {
                 	String geoName = getGeoName(rel, apcp)
                 	if (geoName != null) {
-	                    GroovyItem relGeoItem = new GroovyItem("NM_SUP_GEO", null, geoName)
+	                    GroovyItem relGeoItem = new GroovyItem(sdp.getItemTypeByCode("NM_SUP_GEO"), null, geoName)
                     	addGroovyItem(items, relGeoItem)
                 	}
-                } else {
-                    throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
-                        .set("entityId", rel.getValue())
                 }
+                // if parent not known -> cannot create sup_geo
+                //} else {
+                //    throw new ObjectNotFoundException("Entita nebyla načtena z externího systému", BaseCode.DB_INTEGRITY_PROBLEM)
+                //        .set("entityId", rel.getValue())
+                //}
             }
         }
         // autor/tvůrce pro podtřídu autorská a umělecká díla
         if (ae.getAeType().equals("ARTWORK_ARTWORK")) {
             if (rel.getSpecCode().equals("RT_AUTHOR")) {
-                GroovyItem itemAuth = new GroovyItem("NM_AUTH", null, convertAuthString(rel))
+                GroovyItem itemAuth = new GroovyItem(sdp.getItemTypeByCode("NM_AUTH"), null, convertAuthString(rel))
                 addGroovyItem(items, itemAuth, getSeperator(rel))
             }
         }

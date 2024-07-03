@@ -33,6 +33,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -113,6 +114,7 @@ import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.ApBuilder;
 import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.ExpectedItems;
 import cz.tacr.elza.drools.model.GeoModel;
 import cz.tacr.elza.drools.model.Index;
 import cz.tacr.elza.drools.model.ItemSpec;
@@ -131,6 +133,7 @@ import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
@@ -166,6 +169,8 @@ public class RuleService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
+    @Autowired
+    private ApplicationContext appCtx;
     @Autowired
     private EntityManager entityManager;
     @Autowired
@@ -1368,6 +1373,8 @@ public class RuleService {
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
 
+        // get GroovyService
+        GroovyService groovyService = appCtx.getBean(GroovyService.class);
         StaticDataProvider sdp = staticDataService.getData();
 
         ApState state = stateRepository.findById(stateId).orElseThrow(() -> new ObjectNotFoundException("ApState neexistuje", BaseCode.ID_NOT_EXIST).setId(stateId));
@@ -1385,6 +1392,8 @@ public class RuleService {
         List<ApIndex> indexList = indexRepository.findIndicesByAccessPoint(state.getAccessPointId());
 
         List<ApRevIndex> revIndexes = null;
+        // Auto generated item values
+        List<GroovyItem> autoItems = null;
         if (includeRevision) {
             ApRevision revision = revisionService.findRevisionByState(state);
             if (revision != null) {
@@ -1407,8 +1416,23 @@ public class RuleService {
                         indexList.add(origIndex);
                     }
                 }
+                autoItems = groovyService.getAutoItemsForRev(state, revision);
             }
         }
+
+        if (autoItems == null) {
+            autoItems = groovyService.getAutoItems(state);
+        }
+
+        ExpectedItems expectedItems;
+        if (CollectionUtils.isEmpty(autoItems)) {
+            expectedItems = new ExpectedItems();
+        } else {
+            List<AbstractItem> expItems = autoItems.stream().map(autoItem -> convertItem(autoItem))
+                    .collect(Collectors.toList());
+            expectedItems = new ExpectedItems(expItems);
+        }
+
 
         Ap ap = apBuilder.build();
 
@@ -1451,7 +1475,8 @@ public class RuleService {
         Map<String, Integer> identMap = apBuilder.createIdentMap();
 
         List<AbstractItem> items = apBuilder.createAbstractItemList();
-        ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(), items);
+        ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(),
+                items, expectedItems);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
@@ -1486,6 +1511,29 @@ public class RuleService {
         }
 
         return apValidationErrorsVO;
+    }
+
+    /**
+     * Convert Auto item from GroovyScript to ApItem
+     * 
+     * @param autoItem
+     * @return
+     */
+    private AbstractItem convertItem(GroovyItem groovyItem) {
+        switch(groovyItem.getItemType().getDataType()) 
+        {
+        case BIT:
+            return new BoolItem(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getBoolValue());
+        case ENUM:
+            return new Item(0, groovyItem.getItemType(), groovyItem.getSpecType(), null);
+        case STRING:
+        case TEXT:
+            return new Item(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getValue());
+        case INT:
+            return new IntItem(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getIntValue());
+        }
+        throw new SystemException("Unsupported conversion, item type: " + groovyItem.getTypeCode()
+                + ", dataType: " + groovyItem.getItemType().getDataType(), BaseCode.SYSTEM_ERROR);
     }
 
     private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
