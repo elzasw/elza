@@ -4,7 +4,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.arrangement.DeleteFundHistory;
@@ -28,17 +27,16 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     @Query("SELECT coalesce(max(i.descItemObjectId), 0) FROM arr_item i")
     Integer findMaxItemObjectId();
 
-    @Query("SELECT i FROM arr_item i WHERE i.deleteChange IS NULL")
-    List<ArrItem> findByDeleteChangeIsNull();
-
     @Query("SELECT i FROM arr_item i WHERE i.descItemObjectId = ?1 AND i.deleteChange IS NULL")
     ArrItem findByItemObjectIdAndDeleteChangeIsNull(int descItemObjectId); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType  
 
     @Query("SELECT i FROM arr_item i WHERE i.descItemObjectId = :descItemObjectId AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
     ArrItem findByItemObjectIdAndChange(@Param("descItemObjectId") int descItemObjectId, @Param("lockChange") ArrChange lockChange); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
 
-    @Query("SELECT COUNT(i) FROM arr_item i JOIN i.itemType t WHERE i.itemType = ?1")
+    @Query("SELECT COUNT(i) FROM arr_item i WHERE i.itemType = ?1")
     long countByType(RulItemType itemType);
+
+    List<ArrItem> findByData(ArrData arrData);
 
     @Query("SELECT i FROM arr_item i "
             + "LEFT JOIN arr_desc_item di ON di.itemId = i.itemId "
@@ -76,8 +74,6 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
             + "LEFT JOIN sis.fund sif "
             + "WHERE dif = :fund OR oif = :fund OR sif = :fund")
     List<ItemChange> findByFund(@Param("fund") ArrFund fund);
-
-    List<ArrItem> findByData(ArrData arrData);
 
     @Override
     @Modifying
