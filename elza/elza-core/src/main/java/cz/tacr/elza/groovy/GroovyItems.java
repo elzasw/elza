@@ -1,32 +1,36 @@
 package cz.tacr.elza.groovy;
 
-import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.validation.constraints.NotNull;
+
+import cz.tacr.elza.core.data.ItemType;
+
+/**
+ * Collection of GroovyItems
+ * 
+ * Items might be returned by item type.
+ */
 public class GroovyItems {
 
-    private List<GroovyItem> allItems = new ArrayList<>();
+    private final List<GroovyItem> allItems = new ArrayList<>();
 
-    private Map<String, List<GroovyItem>> mapItems = new HashMap<>();
+    private final Map<ItemType, List<GroovyItem>> mapItems = new HashMap<>();
 
     public List<GroovyItem> getAllItems() {
         return allItems;
     }
 
-    public Map<String, List<GroovyItem>> getItems() {
-        return mapItems;
-    }
-
-    public List<GroovyItem> getItems(@NotNull String itemType) {
+    public List<GroovyItem> getItems(@NotNull ItemType itemType) {
         return mapItems.getOrDefault(itemType, Collections.emptyList());
     }
 
-    public void addItem(final GroovyItem item) {
-        addItem(item.getTypeCode(), item);
-    }
-
-    public void addItem(@NotNull final String itemType, final GroovyItem item) {
-        List<GroovyItem> groovyItems = mapItems.computeIfAbsent(itemType, k -> new ArrayList<>());
+    public void addItem(@NotNull final GroovyItem item) {
+        List<GroovyItem> groovyItems = mapItems.computeIfAbsent(item.getItemType(), k -> new ArrayList<>());
         groovyItems.add(item);
         allItems.add(item);
     }
