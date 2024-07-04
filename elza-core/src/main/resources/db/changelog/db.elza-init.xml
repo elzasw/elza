@@ -5,12 +5,14 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
     <!--Verze 1.0 - vytvoreni schematu databaze-->
     <changeSet id="1" author="ppyt">
-  <!-- Run this only on new DB -->
-  <preConditions onFail="MARK_RAN">
-    <not>
-      <changeSetExecuted id="20180903234907" author="ppyt" changeLogFile="db/changelog/db.elza-0.17.xml" />
-    </not>
-  </preConditions>
+    	<validCheckSum>9:9bd2b42461654aff7a6f783b22714941</validCheckSum>
+
+		<!-- Run this only on new DB -->
+		<preConditions onFail="MARK_RAN">
+		  <not>
+		    <changeSetExecuted id="20180903234907" author="ppyt" changeLogFile="db/changelog/db.elza-0.17.xml" />
+		  </not>
+		</preConditions>
 
         <createTable tableName="db_hibernate_sequences">
             <column name="sequence_name" type="nvarchar(255)">
@@ -2002,12 +2004,6 @@
                                  referencedTableName="arr_data"
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
-      <createIndex tableName="arr_item" indexName="arr_item_create_change_idx">
-        <column name="create_change_id" />
-      </createIndex>
-      <createIndex tableName="arr_item" indexName="arr_item_delete_change_idx">
-        <column name="delete_change_id" />
-      </createIndex>
 
         <createTable tableName="arr_desc_item">
             <column name="item_id" type="int">
