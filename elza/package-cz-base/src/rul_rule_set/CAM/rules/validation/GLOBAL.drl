@@ -94,7 +94,7 @@ end
 
 rule "R_UNQ_002 Označení entity mezi sebou - u jména, malá a velká písmena"
 when $part: ModelPart(type == PartType.PT_NAME )
-     $index: Index(indexType in ("SHORT_NAME", "DISPLAY_NAME_LOWER", "SORT_NAME")) from $part.indices
+     $index: Index(indexType in ("DISPLAY_NAME_LOWER", "SORT_NAME")) from $part.indices
 then
      $index.setRepeatable(true);
 end
