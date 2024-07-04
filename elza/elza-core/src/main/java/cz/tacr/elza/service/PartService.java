@@ -370,7 +370,8 @@ public class PartService {
             }
             String value = StringUtils.stripToNull(keyValue.getValue());
             if (value == null) {
-                throw new SystemException("Prázdná hodnota pro ApKeyValue").set("keyType", keyType);
+                throw new SystemException("Prázdná hodnota pro ApKeyValue, keyType: " + keyType).set("keyType",
+                                                                                                     keyType);
             }
             if (value.length() > StringLength.LENGTH_4000) {
                 value = value.substring(0, StringLength.LENGTH_4000 - 1);

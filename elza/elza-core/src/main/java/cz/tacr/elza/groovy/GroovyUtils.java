@@ -1,5 +1,15 @@
 package cz.tacr.elza.groovy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
@@ -10,24 +20,10 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-
-import javax.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
 public class GroovyUtils {
 
     public static GroovyAppender createAppender(final GroovyPart p) {
         return new GroovyAppender(p);
-    }
-
-    public static GroovyAppender createAppender() {
-        return new GroovyAppender();
     }
 
     public static GroovyUnitdateFormatter formatUnitdate(final GroovyItem from, final GroovyItem to) {
