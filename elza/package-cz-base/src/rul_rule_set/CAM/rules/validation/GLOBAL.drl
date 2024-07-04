@@ -92,6 +92,13 @@ then
      $index.setRepeatable(true);
 end
 
+rule "R_UNQ_002_Opakovatelné indexy malými písmeny"
+when $part: ModelPart(type == PartType.PT_EVENT)
+     $index: Index(indexType in ("DISPLAY_NAME_LOWER")) from $part.indices
+then
+     $index.setRepeatable(true);
+end
+
 
 /*
 Pravidla pro porovnání datací
