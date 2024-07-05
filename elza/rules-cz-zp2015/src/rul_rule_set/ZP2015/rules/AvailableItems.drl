@@ -6462,7 +6462,7 @@ end
 
 rule "Doporučené prvky pro podtyp korespondence (vždy)"
 no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", "ZP2015_ENTITY_ROLE_TEXT",
@@ -6474,7 +6474,7 @@ end
 
 rule "Mozne specifikace pro prvek Mnozstvi v podtypu korespondence"
 no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
     $itemType : RulItemTypeExt(code in ("ZP2015_AMOUNT") )
     $itemSpec : RulItemSpecExt(code in ("ZP2015_AMOUNT_PIECES", "ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES") ) from $itemType.rulItemSpecList
@@ -6482,10 +6482,11 @@ then
   $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Doporucene specifikace pro prvek Mnozstvi v podtypu korespondence"
+rule "Doporucene specifikace pro prvek Mnozstvi v podtypu korespondence (složka)"
 no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $ownItems
     not (DescItem(type=="ZP2015_AMOUNT") from $ownItems )
     $itemType : RulItemTypeExt(code in ("ZP2015_AMOUNT") )
     $itemSpec : RulItemSpecExt(code in ("ZP2015_AMOUNT_PIECES") ) from $itemType.rulItemSpecList
@@ -6493,10 +6494,22 @@ then
   $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
+rule "Doporucene specifikace pro prvek Mnozstvi v podtypu korespondence (jednotlivost a část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER",
+    												"ZP2015_UNIT_TYPE_PART") ) from $ownItems
+    not (DescItem(type=="ZP2015_AMOUNT") from $ownItems )
+    $itemType : RulItemTypeExt(code in ("ZP2015_AMOUNT") )
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES") ) from $itemType.rulItemSpecList
+then
+  $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
+end
 
 rule "RE_036 Doporučené role entit pro korespondenci (vždy)"
 no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems && $items: descItems )
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE", "ZP2015_ENTITY_ROLE_TEXT" ) )
     $itemSpec: RulItemSpecExt( code in (

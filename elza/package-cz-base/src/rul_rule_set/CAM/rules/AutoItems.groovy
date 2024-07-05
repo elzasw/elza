@@ -27,29 +27,6 @@ import cz.tacr.elza.service.cache.CachedAccessPoint
 
 @Field static StaticDataProvider sdp;
 @Field static boolean debug = false;
-
-// seznam vyloučených typů území
-@Field static final List<String> excludeTerritory = Arrays.asList(
-        "GT_COUNTRY",
-        "GT_LAND",
-        "GT_VOJVODSTVI",
-        "GT_MUNIPDISTR",
-        "GT_MUNIP",
-        "GT_MUNIPPART",
-        "GT_SQUARE",
-        "GT_WATERFRONT",
-        "GT_SEABOTSHAPE",
-        "GT_CITYDISTRICT",
-        "GT_OTHERAREA",
-        "GT_PROTNATPART",
-        "GT_FORESTPARK",
-        "GT_NATUREPART",
-        "GT_NATFORMATION",
-        "GT_WATERAREA",
-        "GT_NAMEDFORMATION",
-        "GT_COSMOSPART"
-        )
-
         
 sdp = DATA_PROVIDER;
 return generate(AE, AP_CACHE_PROVIDER);
@@ -186,8 +163,43 @@ static String getSeperator(GroovyItem item) {
 GroovyItem generateObecnyDoplnek(final GroovyAe ae) {
     GroovyItem genItem = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE")
     if (genItem != null) {
+        // seznam typů geo objektů, kde se automaticky nevytváří obecný doplněk
+        List<String> excludeTerritory = Arrays.asList(
+                "GT_COUNTRY",
+                "GT_LAND",
+                "GT_VOJVODSTVI",
+                "GT_MUNIPDISTR",
+                "GT_MUNIP",
+                "GT_MUNIPPART",
+                "GT_SQUARE",
+                "GT_WATERFRONT",
+                "GT_SEABOTSHAPE",
+                "GT_CITYDISTRICT",
+                "GT_OTHERAREA",
+                "GT_PROTNATPART",
+                "GT_FORESTPARK",
+                "GT_NATUREPART",
+                "GT_NATFORMATION",
+                "GT_WATERAREA",
+                "GT_NAMEDFORMATION",
+                "GT_COSMOSPART"
+                )
+        
         if (!excludeTerritory.contains(genItem.getSpecCode())) {
-            return new GroovyItem(sdp.getItemTypeByCode("NM_SUP_GEN"), null, genItem.getValue())
+             
+            def value;
+            switch(genItem.getSpecCode()) {
+            case "GT_AUTONOMOUSPART":
+                value = "autonomní část"; 
+                break;
+            case "GT_TERRITORIALUNIT":
+                value = "část státu";
+                break;
+            default:
+                // standardne se prevezme
+                value = genItem.getValue();
+            }
+            return new GroovyItem(sdp.getItemTypeByCode("NM_SUP_GEN"), null, value)
         }
     }
     return null;
@@ -240,7 +252,7 @@ GroovyItem generateChronolDoplnek(final GroovyAe ae) {
             // pokud objekt zanikl
             if (toClass != null) {
                 GroovyItem geoType = GroovyUtils.findFirstItem(ae, "PT_BODY", GroovyPart.PreferredFilter.ALL, "GEO_TYPE");                
-                // pokud objekt je zařazen do seznamu excludeTerritory
+                // pokud objekt je zařazen do seznamu
                 if(geoType!=null&&
                     Arrays.asList("GT_MUNIPDISTR", "GT_MUNIP", "GT_MILITARYAREA", "GT_CADASTRALTERRITORY",
                         "GT_MUNIPPART", "GT_STREET", "GT_SQUARE", "GT_WATERFRONT", "GT_SETTLEMENT").contains(geoType.specCode)) {
