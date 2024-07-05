@@ -11,6 +11,7 @@ import cz.tacr.elza.drools.model.ModelPart;
 import cz.tacr.elza.drools.model.Index;
 import cz.tacr.elza.drools.model.GeoModel;
 import cz.tacr.elza.drools.model.DrlUtils;
+import cz.tacr.elza.drools.model.ExpectedItems;
 global ApValidationErrors results;
 
 
@@ -26,3 +27,27 @@ when $ae: Ap( $aeParts : parts)
 then 
     results.addError("U zániku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end
+
+rule "R_NAM_005 Kontrola chronologickeho doplňku se zánikem"
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_NAME) from $ae.parts
+     $partExt: Part(type == PartType.PT_EXT) from $ae.parts
+     ExpectedItems( $expItems: items )
+     $expSupChro: Item(type == "NM_SUP_CHRO" ) from $expItems
+     $item: Item(type == "NM_SUP_CHRO", value!=$expSupChro.value ) from $part.items
+then
+    results.addError("Chronologický doplněk neodpovídá očekávané hodnotě. Hodnota: " + $item.getValue() + ", očekáváná hodnota: " + $expSupChro.getValue());
+end
+
+
+rule "R_NAM_005 Kontrola chronologickeho doplňku bez zániku"
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_NAME) from $ae.parts
+     not $partExt: Part(type == PartType.PT_EXT) from $ae.parts
+     ExpectedItems( $expItems: items )
+     $expSupChro: Item(type == "NM_SUP_CHRO" ) from $expItems
+     $item: Item(type == "NM_SUP_CHRO", value!=$expSupChro.value && value!=($expSupChro.value + "?")) from $part.items
+then
+    results.addError("Chronologický doplněk neodpovídá očekávané hodnotě. Hodnota: " + $item.getValue() + ", očekáváná hodnota: " + $expSupChro.getValue());
+end
+

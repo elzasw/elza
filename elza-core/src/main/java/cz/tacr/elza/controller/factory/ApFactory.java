@@ -903,9 +903,8 @@ public class ApFactory {
     }
 
     private PartValidationErrorsVO createVO(final Integer id, final List<String> errors) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO();
-        partValidationErrorsVO.setId(id);
-        partValidationErrorsVO.setErrors(errors);
+        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(id);
+        partValidationErrorsVO.addErrors(errors);
         return partValidationErrorsVO;
     }
 

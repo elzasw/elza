@@ -18,5 +18,5 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_LOCATION", "ZP2015_PACKET_DEPOSITORY", "ZP2015_PACKET_ROW", "ZP2015_PACKET_COLUMN", "ZP2015_PACKET_SHELF"))
 then
-    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end

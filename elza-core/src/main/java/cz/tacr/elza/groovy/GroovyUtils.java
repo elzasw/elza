@@ -26,10 +26,6 @@ public class GroovyUtils {
         return new GroovyAppender(p);
     }
 
-    public static GroovyAppender createAppender() {
-        return new GroovyAppender();
-    }
-
     public static GroovyUnitdateFormatter formatUnitdate(final GroovyItem from, final GroovyItem to) {
         return new GroovyUnitdateFormatter(from, to);
     }

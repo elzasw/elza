@@ -118,14 +118,16 @@ public class AdminController implements AdminApi {
                 lu.setRemoteAddr(remoteAddr.toString());
             }
             Principal principal = session.getPrincipal();
-            Authentication auth = (Authentication) principal;
-            UserDetail userDetail = (UserDetail) auth.getDetails();
-
-            lu.setUserId(userDetail.getId());
-            lu.setUser(userDetail.getUsername());
-            lus.addUsersItem(lu);
+            if (principal != null) {
+	            Authentication auth = (Authentication) principal;
+	            UserDetail userDetail = (UserDetail) auth.getDetails();
+	
+	            lu.setUserId(userDetail.getId());
+	            lu.setUser(userDetail.getUsername());
+	            lus.addUsersItem(lu);
+            }
         }        
-        
+
         lus.setTotalCount(sessions.size());
         return new ResponseEntity<>(lus, HttpStatus.OK);
     }
