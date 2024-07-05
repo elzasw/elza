@@ -84,6 +84,28 @@ public class Node {
         return nodeProvider.getNode(parentNodeId);
     }
 
+    /**
+     * Return collection of all parent nodes
+     * 
+     * @return
+     */
+    public List<Node> getParentNodes() {
+        NodeId parentNodeId = nodeId.getParent();
+        if (parentNodeId == null) {
+            return Collections.emptyList();
+        }
+        if (nodeProvider == null) {
+            return null;
+        }
+        List<Node> result = new ArrayList<>();
+        while (parentNodeId != null) {
+            Node parentNode = nodeProvider.getNode(parentNodeId);
+            result.add(parentNode);
+            parentNodeId = parentNode.getParent();
+        }
+        return result;
+    }
+
     public NodeProvider getNodeProvider() {
         return nodeProvider;
     }

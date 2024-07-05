@@ -85,13 +85,19 @@ Lze nastavit pro konkrétní typy pártů a typy indexů jejich opakovatelnost.
 Fakticky stačí nastavit opakovatelnost událostí a návazných vztahů k PT_BEGIN, PT_EXT a PT_EVENT
 */
 
-rule "R_UNQ_Opakovatelné indexy u události"
-when $part: ModelPart(type == PartType.PT_EVENT)
+rule "R_UNQ_Opakovatelné indexy u události a označení"
+when $part: ModelPart(type == PartType.PT_EVENT )
      $index: Index(indexType in ("SHORT_NAME", "DISPLAY_NAME", "DISPLAY_NAME_LOWER", "SORT_NAME")) from $part.indices
 then
      $index.setRepeatable(true);
 end
 
+rule "R_UNQ_002 Označení entity mezi sebou - u jména, malá a velká písmena"
+when $part: ModelPart(type == PartType.PT_NAME )
+     $index: Index(indexType in ("DISPLAY_NAME_LOWER", "SORT_NAME")) from $part.indices
+then
+     $index.setRepeatable(true);
+end
 
 /*
 Pravidla pro porovnání datací

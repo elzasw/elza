@@ -34,6 +34,7 @@ public class ModelValidationRules extends Rules {
         facts.add(modelValidation.getGeoModel());
         facts.addAll(modelValidation.getModelParts());
         facts.addAll(modelValidation.getItems());
+        facts.add(modelValidation.getExpectedItems());
 
         logger.debug("Model (workerId: {}) for AP created",
                      Thread.currentThread().getId(),

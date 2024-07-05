@@ -135,52 +135,38 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 	                    continue;
 	                }
 	                logger.info("Reading package info: {}", path);
-	
+
 	                PackageInfoWrapper pkg = getPackageInfo(path);
-	
+
 	                if (pkg == null) {
 	                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
 	                    continue;
 	                }
-	
+
 	                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
+
 	                // žádné informace o balíčku nebo nižší verzi
-	                if (mapPkg == null || mapPkg.getVersion() < pkg.getVersion() || (testing && mapPkg.getVersion() <= pkg.getVersion())) {
-	                    packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
-	                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
-	
-	                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
-	
-	                    ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
-	                    for (ItemType itemType : itemTypes.getItemTypes()) {
-	                        if (!itemTypeCodes.contains(itemType.getCode())) {
-	                            itemTypeCodes.add(itemType.getCode());
-	                        }
-	                    }
-	
-	                    ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
-	                    for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-	                    	if (!itemSpecCodes.contains(itemSpec.getCode())) {
-	                    		itemSpecCodes.add(itemSpec.getCode());
-	                    		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-	                    			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-	                    			listItemSpecCodes.add(itemSpec.getCode());
-	                    		}
-	                    	}
-	                    }
-	
-	                    PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
-	                    if (partTypes != null) {
-		                    for (PartType partType : partTypes.getPartTypes()) {
-		                        if (!partTypeCodes.contains(partType.getCode())) {
-		                            partTypeCodes.add(partType.getCode());
-		                        }
-		                    }
-	                    }
-	                } else {
-	                    throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
-	                            + pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
+	                boolean readFromFile = true;
+	                if (mapPkg != null) {
+	                	// mame data z db
+	                	if (mapPkg.getVersion() > pkg.getVersion()) {
+	                		throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
+		                			+ pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
+	                	}
+	                	// verze v databázi a v zip archivu jsou stejné i to není vývoj
+	                	if (mapPkg.getVersion().equals(pkg.getVersion()) && !testing) {
+	                		readFromFile = false;
+	                	}
 	                }
+
+	                // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj 
+                	if (readFromFile) {
+	                	packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
+	                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+
+	                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
+	                	readTypeAndSpecDataFromZipFilePackage(streamMap, itemSpecCodes);
+                	}
 	            }
 	            allPackages = new ArrayList<>(latestVersionMap.values());
 	
@@ -188,6 +174,33 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 	            logger.error("Error processing a package zip file.", e);
 	            throw new SystemException("Error processing a package zip file.", e);
 	        }
+        }
+    }
+
+    private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap, List<String> itemSpecCodes) {
+        ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
+        for (ItemType itemType : itemTypes.getItemTypes()) {
+            if (!itemTypeCodes.contains(itemType.getCode())) {
+                itemTypeCodes.add(itemType.getCode());
+            }
+        }
+        ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
+        for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+        	if (!itemSpecCodes.contains(itemSpec.getCode())) {
+        		itemSpecCodes.add(itemSpec.getCode());
+        		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+        			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
+        			listItemSpecCodes.add(itemSpec.getCode());
+        		}
+        	}
+        }
+        PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
+        if (partTypes != null) {
+            for (PartType partType : partTypes.getPartTypes()) {
+                if (!partTypeCodes.contains(partType.getCode())) {
+                    partTypeCodes.add(partType.getCode());
+                }
+            }
         }
     }
 

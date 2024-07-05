@@ -134,4 +134,27 @@
                                WHERE delete_change_id IS NULL</sql>
 	</changeSet>
 
+	<changeSet id="20240703120300" author="sergey.iryupin">
+		<validCheckSum>9:dc195ae148efb804944000f967bb19cf</validCheckSum>
+		<dropUniqueConstraint tableName="arr_item" constraintName="arr_item_create_change_obj_unqct"/>
+		<sql dbms="postgresql">DROP INDEX IF EXISTS arr_item_create_change_idx</sql>
+		<sql dbms="postgresql">DROP INDEX IF EXISTS arr_item_delete_change_idx</sql>
+		<sql dbms="postgresql">DROP INDEX IF EXISTS arr_item_data_idx</sql>
+		<dropIndex tableName="arr_item" indexName="arr_item_dscitemobj_delchng_idx"/>
+		<dropIndex tableName="arr_item" indexName="arr_item_type_spec_idx"/>
+		<createIndex tableName="arr_item" indexName="arr_item_desc_item_obj_idx"><column name="desc_item_object_id"/></createIndex>
+		<createIndex tableName="arr_item" indexName="arr_item_desc_item_obj_create_change_delete_change_idx">
+			<column name="desc_item_object_id"/>
+			<column name="create_change_id"/>
+			<column name="delete_change_id"/>
+		</createIndex>
+		<!-- TODO: dočasně deaktivujte tento index, abyste se rozhodli, zda je potřeba -->
+		<!--<createIndex tableName="arr_item" indexName="arr_item_data_unique_idx" unique="true"><column name="data_id"/></createIndex>-->
+		<!-- TODO: ALTER INDEX old_name RENAME TO new_name -->
+		<sql dbms="postgresql">DROP INDEX IF EXISTS arr_item_object_pidx</sql>
+		<sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_desc_item_obj_delete_change_null_unique_idx ON arr_item(desc_item_object_id) WHERE delete_change_id IS NULL</sql>
+        <addUniqueConstraint tableName="arr_item" columnNames="desc_item_object_id, create_change_id" constraintName="arr_item_desc_item_obj_create_change_unique_ct"/>
+		<addUniqueConstraint tableName="arr_item" columnNames="desc_item_object_id, delete_change_id" constraintName="arr_item_desc_item_obj_delete_change_unique_ct"/>
+	</changeSet>
+
 </databaseChangeLog>

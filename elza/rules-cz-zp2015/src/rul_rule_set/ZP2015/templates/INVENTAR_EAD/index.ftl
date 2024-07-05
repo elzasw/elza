@@ -623,6 +623,34 @@
   </#if>
   <#list node.items as item>
     <#switch item.type.code>
+      <#case "ZP2015_LEVEL_TYPE">
+        <#if (item.specification.code=="ZP2015_LEVEL_ITEM"||item.specification.code=="ZP2015_LEVEL_PART")>
+          <#--  Jednotlivost nebo část mají vždy charakteristiku -->
+          <#local needsCharakteristikaJP=true>
+        </#if>
+        <#break>
+      <#case "ZP2015_FOLDER_TYPE">
+        <#--  Složka má charakteristiku pokud je EJ, tj. je typu množstevní, s typem EJ nebo logická  -->
+        <#if (item.specification.code=="ZP2015_FOLDER_UNITS"||item.specification.code=="ZP2015_FOLDER_SINGLE_TYPE")>
+          <#local needsCharakteristikaJP=true>
+        <#elseif (item.specification.code=="ZP2015_FOLDER_LOGICAL")>
+           <#-- V případě logické složky hledáme rodiče typu  ZP2015_FOLDER_UNITS nebo ZP2015_FOLDER_SINGLE_TYPE -->
+           <#list node.parentNodes as parentNode>
+             <#if parentNode.getSingleItem("ZP2015_LEVEL_TYPE").specification.code=="ZP2015_LEVEL_FOLDER">
+               <#-- zjištění typu -->
+               <#local folderType=parentNode.getSingleItem("ZP2015_FOLDER_TYPE").specification.code>
+               <#if (folderType=="ZP2015_FOLDER_UNITS"||folderType=="ZP2015_FOLDER_SINGLE_TYPE")>
+                 <#-- EJ -> konec -->
+                 <#local needsCharakteristikaJP=true>
+                 <#break>
+               </#if>
+             <#else>
+               <#-- Není složka -> konec -->
+               <#break>
+             </#if>
+           </#list>           
+        </#if>
+        <#break>
       <#case "ZP2015_UNIT_ID">
         <#if output.fund.fundNumber?has_content>
         <#lt>  <ead:unitid localtype="REFERENCNI_OZNACENI" label="referenční označení">CZ${output.fund.institution.code}//${output.fund.fundNumber}//${item.serializedValue}</ead:unitid>
