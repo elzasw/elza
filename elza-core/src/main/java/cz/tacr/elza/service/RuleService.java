@@ -1607,7 +1607,8 @@ public class RuleService {
                     String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
                     if (!index.isRepeatable() && indexCount.get(key) > 1) {
                         PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, index.getPart().getId());
-                        partValidationErrorsVO.getErrors().add("V části typu " + index.getPart().getType().value() + " je duplicitní index typu "
+                        partValidationErrorsVO.addError("V části typu " + index.getPart().getType().value()
+                                + " je duplicitní index typu "
                                 + index.getIndexType() + " hodnoty " + index.getValue());
                     }
                 }
@@ -1931,9 +1932,7 @@ public class RuleService {
     }
 
     private PartValidationErrorsVO createPartValidationErrorsVO(Integer partId) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO();
-        partValidationErrorsVO.setId(partId);
-        partValidationErrorsVO.setErrors(new ArrayList<>());
+        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(partId);
         return partValidationErrorsVO;
     }
 
