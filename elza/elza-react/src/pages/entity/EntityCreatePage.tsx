@@ -19,7 +19,7 @@ import { AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
 import PageLayout from "../shared/layout/PageLayout";
 import './EntityCreatePage.scss';
-import { ApAccessPointVO } from 'api';¨
+import { ApAccessPointVO } from 'api';
 import { ApItemVO } from 'api/ApItemVO';
 import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
