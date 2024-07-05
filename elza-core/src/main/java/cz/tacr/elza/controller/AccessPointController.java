@@ -22,8 +22,6 @@ import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
@@ -480,7 +478,7 @@ public class AccessPointController implements AccesspointsApi {
             return ResponseEntity.notFound().build();
         }
 
-        List<GroovyItem> items = groovyService.processAPItems(state);
+        List<GroovyItem> items = groovyService.getAutoItems(state);
 
         return ResponseEntity.ok(convertGroovyItems(items));
     }
@@ -501,21 +499,18 @@ public class AccessPointController implements AccesspointsApi {
             return ResponseEntity.notFound().build();
         }
 
-        List<GroovyItem> items = groovyService.processRevItems(state, revision);
+        List<GroovyItem> items = groovyService.getAutoItemsForRev(state, revision);
 
         return ResponseEntity.ok(convertGroovyItems(items));
     }
 
     private ResultAutoItems convertGroovyItems(List<GroovyItem> items) {
         ResultAutoItems resultAutoItems = new ResultAutoItems();
-        StaticDataProvider sdp = staticDataService.getData();
-        for (GroovyItem item : items) {
-            ItemType itemType = sdp.getItemTypeByCode(item.getTypeCode());
-            Validate.notNull(itemType, "Incorrect item type: %s", item.getTypeCode());
 
+        for (GroovyItem item : items) {
             AutoValue autoValue = new AutoValue();
+            autoValue.setItemTypeId(item.getItemType().getItemTypeId());
             autoValue.setItemSpecId(item.getSpecId());
-            autoValue.setItemTypeId(itemType.getItemTypeId());
             autoValue.setValue(item.getValue());
 
             resultAutoItems.addItemsItem(autoValue);

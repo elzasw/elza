@@ -13,13 +13,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from "react-router-dom";
 import { WebApi } from '../../actions';
 import { modalDialogShow } from '../../actions/global/modalDialog.jsx';
-import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
+import CreateAccessPointModal, { CreateAccessPointModalFields } from '../../components/registry/modal/CreateAccessPointModal';
 import { i18n } from '../../components/shared';
 import { AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
 import PageLayout from "../shared/layout/PageLayout";
 import './EntityCreatePage.scss';
-import { ApAccessPointVO } from 'api';
+import { ApAccessPointVO } from 'api';¨
+import { ApItemVO } from 'api/ApItemVO';
 import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
 function useQuery() {
@@ -48,21 +49,23 @@ export const EntityCreatePage:FC = () => {
     const entityClass = query.get("entity-class");
     const entityClasses = entityClass ? entityClass.split(",") : [];
 
-    const handleSubmit = async (formData: any) => {
+    const handleSubmit = async (formData: CreateAccessPointModalFields) => {
         if (!formData.partForm) {
             return Promise.reject("");
         }
-        const data = {
-            ...formData,
-            partForm: {
-                ...formData.partForm,
-                items: formData.partForm.items.filter((i:any) => i.value != null)
+
+        const items:ApItemVO[] = [];
+
+        formData.partForm.items.forEach(({updatedItem}) => {
+            if(updatedItem){
+                items.push(updatedItem);
             }
-        }
+        });
+
         const submitData:ApAccessPointCreateVO = {
-            partForm: data.partForm,
-            scopeId: data.scopeId,
-            typeId: data.apType.id,
+            partForm: {...formData.partForm, items},
+            scopeId: formData.scopeId,
+            typeId: formData.apType.id,
         };
 
         const entity = await WebApi.createAccessPoint(submitData);

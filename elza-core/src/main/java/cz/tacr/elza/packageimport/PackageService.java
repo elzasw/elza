@@ -818,6 +818,9 @@ public class PackageService {
 
                 return new PackageInfoWrapper(pkgZip, path);
             }
+        } catch (IOException e) {
+            logger.error("Failed to read packageInfo, file: " + path, e);
+            throw e;
         }
     }
 

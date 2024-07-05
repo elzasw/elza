@@ -51,7 +51,6 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -191,7 +190,7 @@ public class GroovyService {
         return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
-    public List<GroovyItem> processAPItems(@NotNull final ApState state) {
+    public List<GroovyItem> getAutoItems(@NotNull final ApState state) {
         ApScope scope = state.getScope();
         List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
@@ -201,7 +200,7 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
-    public List<GroovyItem> processRevItems(@NotNull final ApState state, @NotNull final ApRevision revision) {
+    public List<GroovyItem> getAutoItemsForRev(@NotNull final ApState state, @NotNull final ApRevision revision) {
         ApScope scope = state.getScope();
         List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
@@ -302,12 +301,8 @@ public class GroovyService {
             }
         }
 
-        ApType apType = sdp.getApTypeById(apTypeId);
-        RulPartType partType = sdp.getPartTypeById(part.getPartTypeId());
-
-        return new GroovyPart(apType.getCode(),
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
                 preferred,
-                partType,
                 groovyItems,
                 groovyParts);
     }
@@ -322,12 +317,8 @@ public class GroovyService {
             groovyItems.addItem(convertItem(revItem, sdp));
         }
 
-        ApType apType = sdp.getApTypeById(apTypeId);
-        RulPartType partType = sdp.getPartTypeById(part.getPartTypeId());
-
-        return new GroovyPart(apType.getCode(),
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
                               false,
-                              partType,
                               groovyItems,
                               Collections.emptyList());
     }
@@ -343,37 +334,39 @@ public class GroovyService {
         switch (dataType) {
             case BIT: {
                 ArrDataBit dataTmp = (ArrDataBit) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.isBitValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.isBitValue());
                 break;
             }
             case STRING: {
                 ArrDataString dataTmp = (ArrDataString) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getStringValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getStringValue());
                 break;
             }
             case COORDINATES: {
                 ArrDataCoordinates dataTmp = (ArrDataCoordinates) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getFulltextValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
                 break;
             }
             case TEXT: {
                 ArrDataText dataTmp = (ArrDataText) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getTextValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getTextValue());
                 break;
             }
             case INT: {
                 ArrDataInteger dataTmp = (ArrDataInteger) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getIntegerValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getIntegerValue());
                 break;
             }
             case UNITDATE: {
                 ArrDataUnitdate dataTmp = (ArrDataUnitdate) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp);
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp);
                 break;
             }
             case RECORD_REF: {
                 ArrDataRecordRef dataTmp = (ArrDataRecordRef) data;
+                // Name of AP
                 String value;
+                // Record Id
                 Integer intValue;
                 CachedAccessPoint accessPoint = null;
                 if (dataTmp.getRecord() != null) {
@@ -395,16 +388,16 @@ public class GroovyService {
                                     .set("dataId", dataTmp.getDataId());
                 }
 
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue, accessPoint);
+                groovyItem = new GroovyItem(itemType, itemSpec, accessPoint, value, intValue);
                 break;
             }
             case ENUM: {
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, itemSpec!=null?itemSpec.getName():null);
+                groovyItem = new GroovyItem(itemType, itemSpec, itemSpec != null ? itemSpec.getName() : null);
                 break;
             }
             case URI_REF: {
                 ArrDataUriRef dataTmp = (ArrDataUriRef) data;
-                groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getFulltextValue());
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
                 break;
             }
             default:
