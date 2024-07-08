@@ -1,8 +1,6 @@
 package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.repository.ExceptionThrow.institution;
-import static cz.tacr.elza.repository.ExceptionThrow.itemSpec;
-import static cz.tacr.elza.repository.ExceptionThrow.itemType;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -23,7 +21,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -144,10 +141,10 @@ public class ClientFactoryDO {
      * Vytvoření hodnoty atributu.
      *
      * @param descItemVO     VO hodnoty atributu
-     * @param descItemTypeId identiifkátor typu hodnoty atributu
+     * @param itemTypeId     identifkátor typu hodnoty atributu
      * @return
      */
-    public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer descItemTypeId) {
+    public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer itemTypeId) {
         ArrData data = null;
 
         if (!descItemVO.isUndefined()) {
@@ -156,12 +153,21 @@ public class ClientFactoryDO {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
-        RulItemType descItemType = getItemType(descItemTypeId);
-        descItem.setItemType(descItemType);
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemTypeId);
+        if(itemType==null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
+        			 BaseCode.ID_NOT_EXIST);
+        }
+        descItem.setItemType(itemType.getEntity());
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
-            descItem.setItemSpec(descItemSpec);
+            RulItemSpec itemSpec = itemType.getItemSpecById(descItemVO.getDescItemSpecId());
+            if(itemSpec==null) {
+            	throw new BusinessException("Failed to get item spec, itemTypeId: " + itemTypeId
+            			+", itemSpecId: " + descItemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            descItem.setItemSpec(itemSpec);
         }
 
         return descItem;
@@ -172,28 +178,54 @@ public class ClientFactoryDO {
         ArrStructuredItem structureItem = new ArrStructuredItem();
         structureItem.setData(data);
 
-        RulItemType descItemType = getItemType(itemTypeId);
-        structureItem.setItemType(descItemType);
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemTypeId);
+        if(itemType==null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
+        			 BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(itemType.getEntity());
 
         if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(itemVO.getDescItemSpecId());
-            structureItem.setItemSpec(descItemSpec);
+        	var itemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
+        	if(itemSpec==null) {
+            	throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId
+            			+", itemSpecId: " + itemVO.getDescItemSpecId(),
+           			 BaseCode.ID_NOT_EXIST);        		
+        	}
+            structureItem.setItemSpec(itemSpec);
         }
 
         return structureItem;
     }
 
-    public ArrStructuredItem createStructureItem(final ArrItemVO descItemVO) {
-        ArrData data = descItemVO.createDataEntity(em);
-        ArrStructuredItem structureItem = new ArrStructuredItem();
-        structureItem.setData(data);
-        BeanUtils.copyProperties(descItemVO, structureItem);
+    public ArrStructuredItem createStructureItem(final ArrItemVO descItemVO) {        
+        ArrStructuredItem structureItem = new ArrStructuredItem();        
         structureItem.setItemId(descItemVO.getId());
+        structureItem.setDescItemObjectId(descItemVO.getDescItemObjectId());
+        structureItem.setPosition(descItemVO.getPosition());
 
-        if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
-            structureItem.setItemSpec(descItemSpec);
+        // item type
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(descItemVO.getItemTypeId());
+        if(itemType==null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: "+descItemVO.getItemTypeId(), 
+        			BaseCode.ID_NOT_EXIST);
         }
+        structureItem.setItemType(itemType.getEntity());
+
+        // specification
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulItemSpec itemSpec = itemType.getItemSpecById(descItemVO.getDescItemSpecId());
+            if(itemSpec==null) {
+            	throw new BusinessException("Failed to get item spec, itemTypeId: " + descItemVO.getItemTypeId()
+            			+", itemSpecId: " + descItemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(itemSpec);
+        }
+        
+        ArrData data = descItemVO.createDataEntity(em);
+        structureItem.setData(data);
 
         return structureItem;
     }
@@ -208,21 +240,36 @@ public class ClientFactoryDO {
         return result;
     }
 
-    public ArrDescItem createDescItem(final ArrItemVO descItemVO) {
+    public ArrDescItem createDescItem(final StaticDataProvider sdp, final ArrItemVO itemVO) {
+    	
+    	var itemType = sdp.getItemTypeById(itemVO.getItemTypeId());
+    	if(itemType==null) {
+    		throw new BusinessException("Cannot find item type, itemTypeId: "+itemVO.getItemTypeId(), BaseCode.ID_NOT_EXIST)
+    			.set("itemTypeId", itemVO.getItemTypeId());
+    	}
+    	
         ArrDescItem descItem = new ArrDescItem();
+        descItem.setItemType(itemType.getEntity());
+        
+        if (itemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
+            if(descItemSpec==null) {
+        		throw new BusinessException("Cannot find item spec, itemTypeId: "+itemVO.getItemTypeId()
+        		+ ", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST)
+    				.set("itemTypeId", itemVO.getItemTypeId())
+    				.set("itemSpecId", itemVO.getDescItemSpecId());
+            	
+            }
+            descItem.setItemSpec(descItemSpec);
+        }        
 
         // Item is not undefined -> parse data
-        if (descItemVO.getUndefined() != Boolean.TRUE) {            
-            ArrData data = descItemVO.createDataEntity(em);
+        if (itemVO.getUndefined() != Boolean.TRUE) {            
+            ArrData data = itemVO.createDataEntity(em);
             descItem.setData(data);
-
-            if (descItemVO.getDescItemSpecId() != null) {
-                RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
-                descItem.setItemSpec(descItemSpec);
-            }            
-        }        
+        } 
         // Copy properties to application object
-        descItemVO.fill(descItem);
+        itemVO.fill(descItem);
 
         return descItem;
     }
@@ -733,36 +780,52 @@ public class ClientFactoryDO {
 
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
 
-        ArrData data = outputItemVO.createDataEntity(em);
         ArrOutputItem outputItem = new ArrOutputItem();
-        outputItem.setData(data);
 
-        RulItemType descItemType = getItemType(itemTypeId);
-        outputItem.setItemType(descItemType);
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemTypeId);
+        if(itemType==null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
+        			 BaseCode.ID_NOT_EXIST);
+        }
+        outputItem.setItemType(itemType.getEntity());
 
         if (outputItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(outputItemVO.getDescItemSpecId());
+            RulItemSpec descItemSpec = itemType.getItemSpecById(outputItemVO.getDescItemSpecId());
             outputItem.setItemSpec(descItemSpec);
         }
 
+        ArrData data = outputItemVO.createDataEntity(em);
+        outputItem.setData(data);
         return outputItem;
     }
 
-    public ArrOutputItem createOutputItem(final ArrItemVO descItemVO) {
-        ArrData data = descItemVO.createDataEntity(em);
+    public ArrOutputItem createOutputItem(final ArrItemVO itemVO) {
         ArrOutputItem outputItem = new ArrOutputItem();
-        outputItem.setData(data);
-        BeanUtils.copyProperties(descItemVO, outputItem);
-        outputItem.setItemId(descItemVO.getId());
+        
+        outputItem.setItemId(itemVO.getId());
+        outputItem.setDescItemObjectId(itemVO.getDescItemObjectId());
+        outputItem.setPosition(itemVO.getPosition());
+        
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemVO.getItemTypeId());
+        if(itemType==null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemVO.getItemTypeId(),
+        			 BaseCode.ID_NOT_EXIST);
+        }
+        outputItem.setItemType(itemType.getEntity());
+        
 
-        if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
+        if (itemVO.getDescItemSpecId() != null) {
+            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
             if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
+                throw new SystemException("Specifikace s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
             outputItem.setItemSpec(descItemSpec);
         }
 
+        ArrData data = itemVO.createDataEntity(em);
+        outputItem.setData(data);
         return outputItem;
     }
 
@@ -798,14 +861,5 @@ public class ClientFactoryDO {
     public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {
         Assert.notNull(configVO, "Nastavení musí být vyplněno");
         return configVO.createEntity();
-    }
-
-    private RulItemSpec getItemSpec(final Integer itemSpecId) {
-        return itemSpecRepository.findById(itemSpecId).orElseThrow(itemSpec(itemSpecId));
-    }
-
-    private RulItemType getItemType(final Integer itemTypeId) {
-        return itemTypeRepository.findById(itemTypeId)
-                .orElseThrow(itemType(itemTypeId));
     }
 }
