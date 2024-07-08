@@ -41,7 +41,7 @@ public class ExportServiceTest extends AbstractControllerTest {
         assertTrue(updates.getFromTrans().equals("0"));
         
         var lastChange = changeRepository.findTop1ByOrderByChangeIdDesc();
-        int toId = lastChange.getChangeId();        
+        int toId = lastChange.getChangeId();
         assertTrue(toId > 0);        
         assertTrue(updates.getToTrans().equals(String.valueOf(toId)));
         assertTrue(updates.getEntityIds().getIdentifier().size() > 0);
