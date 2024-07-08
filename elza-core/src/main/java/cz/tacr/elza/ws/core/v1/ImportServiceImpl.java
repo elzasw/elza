@@ -280,7 +280,7 @@ public class ImportServiceImpl implements ImportService {
             }
         }
 
-        camService.createAccessPoints(procCtx, newEntities);
+        camService.takeAccessPoints(procCtx, newEntities);
 
         if (updateEntities != null && updateEntities.size() > 0) {
             for (SyncEntityRequest syncReq : updateEntities) {

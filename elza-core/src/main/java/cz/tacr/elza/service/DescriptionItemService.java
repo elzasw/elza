@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
@@ -447,8 +447,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange createChange,
                                                     final BatchChangeContext batchChangeCtx) {
-    	java.util.Objects.requireNonNull(createChange);
-    	java.util.Objects.requireNonNull(node);
+    	Objects.requireNonNull(createChange);
+    	Objects.requireNonNull(node);
 
         descItem.setNode(node);
         descItem.setCreateChange(createChange);
@@ -1428,11 +1428,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
 		// item type have to be same
-		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+		if (!Objects.equals(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
 			throw new SystemException("Different item types, cannot update value");
 		}
 		// position have to be same
-		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+		if (!Objects.equals(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
@@ -1481,11 +1481,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
 		// item type have to be same
-		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+		if (!Objects.equals(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
 			throw new SystemException("Different item types, cannot update value");
 		}
 		// position have to be same
-		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+		if (!Objects.equals(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
@@ -1526,7 +1526,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final BatchChangeContext batchChangeContext) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
-        if (!Objects.equal(oldPosition, newPosition)) {
+        if (!Objects.equals(oldPosition, newPosition)) {
             updateItemPosition(fundVersion, change, descItemDB, newPosition, batchChangeContext);
             move = true;
         }

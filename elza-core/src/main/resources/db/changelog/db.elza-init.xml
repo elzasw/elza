@@ -782,7 +782,7 @@
         </createTable>
         <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="ap_change|change_id"/>
-            <column name="next_val" value="2"/>
+            <column name="next_val" value="20"/>
         </insert>
 
         <createTable tableName="ap_access_point">
