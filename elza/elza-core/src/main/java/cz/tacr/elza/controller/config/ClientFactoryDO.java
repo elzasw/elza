@@ -249,6 +249,7 @@ public class ClientFactoryDO {
     	}
     	
         ArrDescItem descItem = new ArrDescItem();
+        descItem.setItemType(itemType.getEntity());
         
         if (itemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
