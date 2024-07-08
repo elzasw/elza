@@ -267,9 +267,9 @@ public class ArrangementFormService {
 		ArrNode node = arrangementService.getNode(nodeId);
 
 		final StaticDataProvider dataProvider = this.staticData.getData();
-		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 
 		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, nodeVersion, createItems, updateItems, deleteItems);
 
@@ -291,12 +291,6 @@ public class ArrangementFormService {
 			// Odeslání dat zpět
 			wsStompService.sendReceiptAfterCommit(results, requestHeaders);
 		}
-	}
-
-	private ArrDescItem convertDescItem(final StaticDataProvider sdp, final ArrItemVO itemVO) {
-		ArrDescItem descItem = factoryDo.createDescItem(itemVO);
-		descItem.setItemType(sdp.getItemTypeById(itemVO.getItemTypeId()).getEntity());
-		return descItem;
 	}
 
 	/**
@@ -411,8 +405,8 @@ public class ArrangementFormService {
 				);
 				*/
 
-
-		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
+		var sdp = staticData.getData();
+		ArrDescItem descItem = factoryDo.createDescItem(sdp, descItemVO);
 
 		// store updated value
 		ArrDescItem descItemUpdated = descriptionItemService
@@ -436,7 +430,8 @@ public class ArrangementFormService {
 	// TODO: Refactorize return value to contain nodeId instead of parent
 	public DescItemResult updateDescItem(int fundVersionId, int nodeId, int nodeVersion, ArrItemVO descItemVO, boolean createNewVersion) {
 
-		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
+		var sdp = staticData.getData();
+		ArrDescItem descItem = factoryDo.createDescItem(sdp, descItemVO);
 
 		ArrDescItem descItemUpdated = descriptionItemService
 				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion, false);
