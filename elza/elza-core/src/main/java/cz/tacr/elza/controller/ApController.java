@@ -1094,7 +1094,7 @@ public class ApController {
 
         ApScope scope = accessPointService.getApScope(scopeId);
         ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
-        List<ApState> apStates = camService.createAccessPoints(procCtx, Collections.singletonList(entity));
+        List<ApState> apStates = camService.takeAccessPoints(procCtx, Collections.singletonList(entity));
         if (apStates.size() != 1) {
             throw new BusinessException("Failed to create accesspoint from entity", BaseCode.IMPORT_FAILED);
         }
@@ -1260,7 +1260,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.createAccessPoints(procCtx, entities);
+        camService.takeAccessPoints(procCtx, entities);
     }
 
     @Transactional
