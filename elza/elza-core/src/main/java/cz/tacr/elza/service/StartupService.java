@@ -195,14 +195,6 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
-        // vyklizení složky pro lucene index
-        Path luceneIndexes = resourcePathResolver.getLuceneIndexesDir();
-        try {
-			FileSystemUtils.deleteRecursively(luceneIndexes);
-		} catch (IOException e) {
-            logger.info("Error cleanup index folder {}", luceneIndexes, e);
-		}
-
         //---- stage 1 ------
         ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
 
