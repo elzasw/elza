@@ -1,0 +1,15 @@
+@import "../../../../variables.scss";
+
+.explorer-table {
+    overflow-x: auto;
+    word-wrap: break-word;
+
+    .header {
+       background-color: #b3b3b3ff;
+       padding: 5px;
+    }
+
+    .table-row:nth-child(even){
+       background-color: #e3e3e3ff;
+    }
+}

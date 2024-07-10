@@ -1,42 +1,73 @@
-import { Table, TableHeader, TableRow, TableSelectionCell, TableHeaderCell, TableBody, TableCell, TableCellLayout, useTableFeatures, useTableColumnSizing_unstable, TableColumnSizingOptions, useTableSelection, useTableSort, TableColumnDefinition, createTableColumn, TableColumnId } from "@fluentui/react-components";
+import { 
+    Table, 
+    TableHeader, 
+    TableRow, 
+    TableSelectionCell, 
+    TableHeaderCell, 
+    TableBody, 
+    TableCell, 
+    TableCellLayout, 
+    useTableFeatures, 
+    useTableColumnSizing_unstable, 
+    TableColumnSizingOptions, 
+    useTableSelection, 
+    useTableSort, 
+    TableColumnDefinition, 
+    createTableColumn, 
+    TableColumnId
+} from "@fluentui/react-components";
 import { FC, useCallback, useState, KeyboardEvent } from "react";
+import "./ExplorerTable.scss"
+import { formatAipSize } from "components/aip/utils";
+import { AREA_EXPLORER_ITEM, setExplorerItem } from "actions/aip/exp";
+import { useSelector } from "react-redux";
+import { storeFromArea } from "shared/utils";
+import { AppState } from "typings/store";
+import { useThunkDispatch } from "utils/hooks";
 
 type Item = {
-    name: string;
-    size: number;
-    format: string;
+    fileName?: string;
+    label?: string;
+    size?: number;
+    mimeType?: string;
 }
 
-const columnsDef: TableColumnDefinition<Item>[] = [
+const columns: TableColumnDefinition<Item>[] = [
     createTableColumn<Item>({
       columnId: "name",
       renderHeaderCell: () => <>Název</>,
+      renderCell: (item) => <>{item.fileName ? item.fileName : item.label || "-"}</>,
+      compare: (a, b) => {
+        const nameA = a.fileName || a.label;
+        const nameB = b.fileName || b.label;
+        return nameA?.localeCompare(nameB)}
     }),
     createTableColumn<Item>({
       columnId: "size",
       renderHeaderCell: () => <>Velikost</>,
+      renderCell: (item) => <>{item.size ? formatAipSize(item.size) : "-"}</>,
+      compare: (a, b) => b.size - a.size
     }),
     createTableColumn<Item>({
       columnId: "format",
       renderHeaderCell: () => <>Formát</>,
+      renderCell: (item) => <>{item.mimeType || "-"}</>,
+      compare: (a, b) => a.mimeType?.localeCompare(b.mimeType)
     }),
 ];
 
 const columnSizes = {
-    name: {idealWidth: 50, minWidth: 20},
-    size: {idealWidth: 50, minWidth: 20},
-    format: {idealWidth: 50, minWidth: 20}
+    name: {idealWidth: 500, minWidth: 20},
+    size: {idealWidth: 200, minWidth: 20},
+    format: {idealWidth: 300, minWidth: 20}
 }
 
 
-const AipFileTable: FC = () => {
-    const [columns, setColumns] = useState<TableColumnDefinition<Item>[]>(columnsDef);
-    const items = [
-        {name: "Nevim", size: 123456, format: 'xml'},
-        {name: "dalsi", size: 794561654, format: 'pdf'},
-        {name: "sloykz", size: null, format: null},
-    ];
-
+const ExplorerTable: FC = () => {
+    const expItem = useSelector((state: AppState) => storeFromArea(state, AREA_EXPLORER_ITEM));
+    const dispatch = useThunkDispatch();
+    
+    const items = expItem.id ? [...expItem.data.childFolders || [], ...expItem.data.childFiles || []] : [];
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
     const { 
         getRows, 
@@ -102,6 +133,9 @@ const AipFileTable: FC = () => {
         [toggleAllRows]
     );
 
+    const handleSelect = (item) => {
+        dispatch(setExplorerItem(item.daoFileFolderId, item));
+    }
 
     return (
         <> 
@@ -110,7 +144,7 @@ const AipFileTable: FC = () => {
                 as="table"
                 sortable
                 {...columnSizing_unstable.getTableProps()}
-                className="aip-table"
+                className="explorer-table"
             >
                 <TableHeader>
                     <TableRow>
@@ -150,10 +184,10 @@ const AipFileTable: FC = () => {
                                 <TableCell
                                     key={`item[${item.name}].${col.columnId}`} 
                                     {...columnSizing_unstable.getTableCellProps(col.columnId)}
-                                    onClick={() => {}}
+                                    onClick={() => handleSelect(item)}
                                 >
                                     <TableCellLayout truncate>
-                                        {/* {col.renderCell(item)} */}
+                                        {col.renderCell(item)}
                                     </TableCellLayout>
                             </TableCell>
                             ))}
@@ -172,4 +206,4 @@ const AipFileTable: FC = () => {
     );
 }
 
-export default AipFileTable;
+export default ExplorerTable;

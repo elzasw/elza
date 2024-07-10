@@ -1865,10 +1865,46 @@ public class ClientFactoryVO {
     public DaDaoVO createDaDaoVO(DaDao daDao) {
         DaDaoVO result = new DaDaoVO();
         result.setDaoId(daDao.getDaoId());
-        result.setAipId(daDao.getAip().getAipId());
         result.setCode(daDao.getCode());
         result.setLabel(daDao.getLabel());
         result.setType(daDao.getType());
+        return result;
+    }
+
+    public DaDaoFileVO createDaDaoFileVO(DaDaoFile daDaoFile) {
+        DaDaoFileVO result = new DaDaoFileVO();
+        result.setDao(createDaDaoVO(daDaoFile.getDao()));
+        result.setDaoFileId(daDaoFile.getDaoFileId());
+        result.setChecksum(daDaoFile.getChecksum());
+        result.setChecksumType(daDaoFile.getChecksumType());
+        result.setMimeType(daDaoFile.getMimeType());
+        result.setSize(daDaoFile.getSize());
+        result.setImageHeight(daDaoFile.getImageHeight());
+        result.setImageWidth(daDaoFile.getImageWidth());
+        result.setSourceXDimensionUnit(daDaoFile.getSourceXDimensionUnit());
+        result.setSourceXDimensionValue(daDaoFile.getSourceXDimensionValue());
+        result.setSourceYDimensionUnit(daDaoFile.getSourceYDimensionUnit());
+        result.setSourceYDimensionValue(daDaoFile.getSourceYDimensionValue());
+        result.setDuration(daDaoFile.getDuration());
+        result.setDescription(daDaoFile.getDescription());
+        result.setFileName(daDaoFile.getFileName());
+        if(daDaoFile.getDaoFileFolder() != null) {
+            result.setDaoFileFolder(createDaDaoFileFolderVO(daDaoFile.getDaoFileFolder()));
+        }
+        return result;
+    }
+
+
+    public DaDaoFileFolderVO createDaDaoFileFolderVO(DaDaoFileFolder daDaoFileFolder) {
+        DaDaoFileFolderVO result = new DaDaoFileFolderVO();
+//        result.setDeleteChange(daDaoFileFolder.getDeleteChange());
+//        result.setCreateChange(daDaoFileFolder.getCreateChange());
+        result.setDaoFileFolderId(daDaoFileFolder.getDaoFileFolderId());
+        if(daDaoFileFolder.getParentFileFolder() != null) {
+            result.setParentFolder(createDaDaoFileFolderVO(daDaoFileFolder.getParentFileFolder()));
+        }
+        result.setRepresentationDao(createDaDaoVO(daDaoFileFolder.getRepresentationDao()));
+        result.setLabel(daDaoFileFolder.getLabel());
         return result;
     }
 

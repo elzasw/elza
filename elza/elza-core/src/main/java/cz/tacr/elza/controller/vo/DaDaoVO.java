@@ -1,13 +1,19 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaDao;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DaDaoVO {
     private Integer daoId;
-    private Integer aipId;
+    private DaAip aip;
     private DaDao.DaoType type;
     private String code;
     private String label;
+    private List<DaDaoFileFolderVO> folders = new ArrayList<>();
+    private List<DaDaoFileVO> files = new ArrayList<>();
 
     public Integer getDaoId() {
         return daoId;
@@ -17,12 +23,12 @@ public class DaDaoVO {
         this.daoId = daoId;
     }
 
-    public Integer getAipId() {
-        return aipId;
+    public DaAip getAip() {
+        return aip;
     }
 
-    public void setAipId(Integer aipId) {
-        this.aipId = aipId;
+    public void setAip(DaAip aip) {
+        this.aip = aip;
     }
 
     public DaDao.DaoType getType() {
@@ -47,5 +53,21 @@ public class DaDaoVO {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public List<DaDaoFileFolderVO> getFolders() {
+        return folders;
+    }
+
+    public void setFolders(List<DaDaoFileFolderVO> folders) {
+        this.folders = folders;
+    }
+
+    public List<DaDaoFileVO> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<DaDaoFileVO> files) {
+        this.files = files;
     }
 }

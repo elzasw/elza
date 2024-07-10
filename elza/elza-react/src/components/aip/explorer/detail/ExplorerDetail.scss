@@ -1,9 +1,11 @@
-.aip-file-detail {
+.explorer-detail {
+    padding: 5px 10px;
+
     h4 {
         font-weight: bold;
     }
 
-    .aip-file-detail-body {
+    .explorer-detail-body {
         display: flex;
         flex-direction: column;
         align-items: center;

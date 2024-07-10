@@ -1,33 +1,22 @@
-import { AREA_AIP } from "actions/aip/aip";
-import i18n from "components/i18n";
 import { FC } from "react"
-import { Modal, Button, Row, Col} from "react-bootstrap";
-import { useSelector } from "react-redux";
-import { storeFromArea } from "shared/utils";
-import { AppState } from "typings/store";
-import AipTree from "./AipTree";
-import { useThunkDispatch } from "utils/hooks";
-import AipFileTable from "./AipFileTable";
-import { FluentProvider } from "@fluentui/react-components";
+import ExplorerTree from "./tree/ExplorerTree";
 import "./AipExplorer.scss";
-import AipFileDetail from "./AipFileDetail";
+import { Splitter } from "components/shared";
+import ExplorerTable from "./table/ExplorerTable";
+import ExplorerDetail from "./detail/ExplorerDetail";
+import ExplorerNavigationTab from "./ExplorerNavigationTab";
 
 const AipExplorer: FC = () => {
-    const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
-    const dispatch = useThunkDispatch();
 
     return (
-        <Row>
-            {/* <Col>
-                <AipTree />
-            </Col> */}
-            {/* <Col>
-                <AipFileTable />
-            </Col> */}
-            <Col>
-                <AipFileDetail />
-            </Col>
-        </Row>
+        <>
+            <ExplorerNavigationTab />
+            <Splitter 
+                left={<ExplorerTree />}
+                center={<ExplorerTable />}
+                right={<ExplorerDetail />}
+            />
+        </>
     );
 }
 

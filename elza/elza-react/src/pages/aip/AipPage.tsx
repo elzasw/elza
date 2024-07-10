@@ -9,7 +9,7 @@ import { AppState } from '../../typings/store';
 import { useThunkDispatch } from 'utils/hooks';
 import {urlAip} from '../../constants';
 import { useHistory, useRouteMatch } from 'react-router';
-import AipTable from 'components/aip/AipTable.tsx';
+import AipTable from 'components/aip/AipTable';
 import './AipPage.scss';
 import AipDetail from 'components/aip/AipDetail';
 import AipPageRibbon from 'components/aip/AipPageRibbon';

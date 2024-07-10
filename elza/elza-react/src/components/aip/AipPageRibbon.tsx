@@ -16,13 +16,9 @@ const AipPageRibbon: FC = () => {
     const handleLoadAips = () => {}
     const handleForceUpdate = () => {}
 
-    const handleExplorer = () => {}
-    const handleAs = () => {}
-
     const altActions = [];
     const itemActions = [];
 
-    console.log(aip)
 
     if (selectedAips?.rows?.length > 0) {
         altActions.push(

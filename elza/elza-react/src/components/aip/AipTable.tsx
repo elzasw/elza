@@ -164,7 +164,7 @@ const AipTable: FC = () => {
         [toggleAllRows]
     );
 
-    const handlePageSizeChange= (pageSize:number) => {
+    const handlePageSizeChange = (pageSize:number) => {
         dispatch(aipsFilter(aips.filter.filters, aips.filter.from, pageSize));
     }
 
