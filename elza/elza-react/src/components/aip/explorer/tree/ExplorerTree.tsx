@@ -25,6 +25,7 @@ const AipTree: FC = () => {
         event: TreeOpenChangeEvent,
         data: TreeOpenChangeData
     ) => {
+         //@ts-ignore
         dispatch(setExplorerItem(data.value.daoFileFolderId, data.value));
         setOpenItems((curr) =>
             data.open
