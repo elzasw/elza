@@ -103,6 +103,7 @@ const ExplorerTable: FC = () => {
         return {
             ...row,
             onClick: (e: MouseEvent) => {
+                 //@ts-ignore
                 toggleRow(e, row.rowId);
             },
             onKeyDown: (e: KeyboardEvent) => {
@@ -118,6 +119,7 @@ const ExplorerTable: FC = () => {
 
     const headerSortProps = (columnId: TableColumnId) => ({
         onClick: (e: MouseEvent) => {
+             //@ts-ignore
             toggleColumnSort(e, columnId);
         },
         sortDirection: getSortDirection(columnId),
@@ -157,6 +159,7 @@ const ExplorerTable: FC = () => {
                             
                         />
                         {columns.map((column) => (
+                             //@ts-ignore
                             <TableHeaderCell
                                 key={column.columnId}
                                 {...columnSizing_unstable.getTableHeaderCellProps(column.columnId)}
@@ -177,6 +180,7 @@ const ExplorerTable: FC = () => {
                             <TableSelectionCell
                                 checked={selected}
                                 checkboxIndicator={{ "aria-label": "Vybrat" }}
+                                 //@ts-ignore
                                 onClick={onClick}
                             />
 

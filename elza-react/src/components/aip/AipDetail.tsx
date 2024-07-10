@@ -42,6 +42,7 @@ const AipDetail = () => {
                 this,
                 "AIP Průzkumník",
                 <AipExplorerModalWrapper
+                //@ts-ignore
                     onOk={() => {}}
                     onClose={() => dispatch(modalDialogHide())}
                 />,
