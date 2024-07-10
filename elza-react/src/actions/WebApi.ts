@@ -90,6 +90,7 @@ export class WebApiCls {
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
     static apUrl = WebApiCls.registryUrl;
+    static daoUrl = WebApiCls.baseUrl + "/dao"; //TODO: @kasparova
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
     static exportUrl = WebApiCls.baseUrl + '/export';
@@ -119,6 +120,10 @@ export class WebApiCls {
 
     selectNode(nodeUuid) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
+    }
+
+    getDaDaoListByAipId(id) {
+        return AjaxUtils.ajaxGet(WebApiCls.daoUrl + "/" + id);
     }
 
     syncDaoLink(fundVersionId, nodeId) {

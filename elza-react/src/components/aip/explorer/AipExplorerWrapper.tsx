@@ -12,7 +12,7 @@ type AipExplorerModalWrapperProps = {
 const AipExplorerModalWrapper: FC = ({onOk, onClose}: AipExplorerModalWrapperProps) => {
 
     return (
-        <FluentProvider style={{ flex: 1 }}>
+        <FluentProvider>
             <Modal.Body>
                <AipExplorer />
             </Modal.Body>

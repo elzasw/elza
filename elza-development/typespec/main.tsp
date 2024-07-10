@@ -147,7 +147,7 @@ model FundSections {
 }
 
 /**
- * Fund node item type id and quantity 
+ * Fund node item type id and quantity
  */
 model UsedItemType {
 	rulItemTypeId: integer;
@@ -417,6 +417,50 @@ model ExtSystemProperty {
     value: string;
 }
 
+model DaDaoFileFolder {
+    daoFileFolderId: integer;
+    label: string;
+    representationDao: DaDao;
+    parentFileFolder?: DaDaoFileFolder;
+}
+
+model DaDaoFile {
+    daoFileId: integer;
+    dao: DaDao;
+    checksum: string;
+    checksumType: string;
+    mimeType: string;
+    size: integer;
+    imageHeight?: integer;
+    imageWidth?: integer;
+    sourceXDimensionUnit?: string;
+    sourceXDimensionValue?: integer;
+    sourceYDimensionUnit?: string;
+    sourceYDimensionValue?: integer;
+    duration?: integer;
+    description?: string;
+    filename: string;
+    daoFileFolder?: DaDaoFileFolder;
+}
+
+model DaDao {
+    daoId: integer;
+    type: DaDaoType;
+    code: string;
+    label: string;
+    folders: DaDaoFileFolder[];
+    files: DaDaoFile[];
+}
+
+enum DaDaoType {
+    REPRESENTATION,
+    LOGICAL,
+    FILE,
+    METAAMD,
+    METADMDINHERENT,
+    METADMDCONTEXTUAL
+}
+
 /**
  * Aip package type
  */
@@ -439,7 +483,7 @@ namespace ElzaAPI.Admin {
 
     /** Creating missing items in arr_cached_node */
     @route("arrangement/missing-cached-nodes")
-    op syncNodeCache(): { 
+    op syncNodeCache(): {
         @Http.statusCode statusCode: 200;
     };
 
@@ -449,7 +493,7 @@ namespace ElzaAPI.Admin {
 
     /**
      * Copy user permissions from another user
-     * 
+     *
      * Method will append all permissions to given user
      * @param userId ID of target user
      */
@@ -466,7 +510,7 @@ namespace ElzaAPI.Admin {
 
     /** Return list of logged users */
     @route("info/logged-users")
-    op loggedUsers(): LoggedUsers;    
+    op loggedUsers(): LoggedUsers;
 }
 
 @tag("externalsystems")
@@ -522,7 +566,7 @@ namespace ElzaAPI.Fund {
     /**
      * Return list of item type id & count
      */
-    @route("{fundId}/usedItemtypes/{fundVersionId}") 
+    @route("{fundId}/usedItemtypes/{fundVersionId}")
     op usedItemTypes(
         ...FundIdParameter,
 		...FundVersionIdParameter): UsedItemType[];
@@ -705,7 +749,7 @@ namespace ElzaAPI.AccessPoint {
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
+          @body data: BaseException;
        };
 
     /**
@@ -727,7 +771,7 @@ namespace ElzaAPI.AccessPoint {
 namespace ElzaAPI.Io {
     /**
      * Create export file of funds or access points
-     */ 
+     */
     @route("/export")
     @post op exportRequest(
         /** Export request parameters */
@@ -764,17 +808,40 @@ namespace ElzaAPI.Io {
         @header contentType: "*/*";
         @body data: bytes;
        } | {
-         /** Processing */ 
+         /** Processing */
          @Http.statusCode statusCode: 102;
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       } | { 
+          @body data: BaseException;
+       } | {
           /** Failed to export requested data */
           @Http.statusCode statusCode: 500;
-          @body data: BaseException; 
+          @body data: BaseException;
        };
+}
+
+
+@tag("dao")
+@route("/dao")
+namespace ElzaAPI.DaDao {
+    /**
+     * Get dao by aip id
+     */
+    @route("/{aipId}")
+    @get op getDaDaoList(
+        /** Aip id */
+        @path aipId: string;
+    ): {
+        /** Data fetched successfully */
+        @Http.statusCode statusCode: 200;
+        @body data: DaDao[];
+    } |
+    {
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 }
 
 @tag("aips")

@@ -95,7 +95,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
                                 cb.between(stateJoin.get("unitdateTo").as(String.class), filter.getFrom(), filter.getTo())
                         ));
                     } else {
-                        predicates.add(cb.between(path.as(String.class), filter.getFrom(), filter.getTo()));
+                        predicates.add(cb.between(path.as(Integer.class), Integer.parseInt(filter.getFrom()), Integer.parseInt(filter.getTo())));
                     }
                     break;
                 default:

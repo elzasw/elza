@@ -1,12 +1,3 @@
-    
-    @media (min-width: 576px) {
-    .aip-explorer {
-        max-width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-    }
-}
-
 .aip-explorer {
     .detail-body {
         display: flex;
@@ -14,5 +5,9 @@
         align-items: center;
         margin-bottom: 1rem;
     }
+    .modal-dialog {
+        max-width: 95vw;
+    }
+    word-wrap: break-word;
 }
 

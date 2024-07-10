@@ -10,6 +10,9 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
+import cz.tacr.elza.controller.vo.DaDaoFileVO;
 import cz.tacr.elza.controller.vo.DaDaoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -61,12 +64,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,6 +115,8 @@ public class DaService {
     private AipService aipService;
     @Autowired
     private DaDaoFileRepository daDaoFileRepository;
+    @Autowired
+    private ClientFactoryVO clientFactoryVO;
 
     @Transactional
     public void synchronizaceDA(ArrDigitalRepository digitalRepository) {
@@ -416,15 +416,80 @@ public class DaService {
     }
 
     @Transactional
-    public List<DaDao> findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId, DaDao.DaoType type) {
+    public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
         DaAip aip = aipService.getAip(aipId);
-        List<DaDao> result = daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, type);
-        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(result);
-        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(result);
+        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
+        Map<Integer, DaDaoFileFolderVO> itemMap = new HashMap<>();
+        DaDaoFileFolderVO root = null;
+        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
 
-        return daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, type);
+        List<DaDao> fileList = daDaoList
+                .stream()
+                .filter(daDao -> daDao.getType() == DaDao.DaoType.FILE)
+                .toList();
+        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(fileList);
+
+        //LOGICAL
+        List<DaDao> logicalList = daDaoList
+                .stream()
+                .filter(daDao -> daDao.getType() == DaDao.DaoType.LOGICAL)
+                .toList();
+
+        List<DaDaoFileVO> logicalFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(logicalList)
+                .stream()
+                .map(clientFactoryVO::createDaDaoFileVO)
+                .toList();
+
+        //METADATA-----
+        List<DaDao> metadataList = daDaoList
+                .stream()
+                .filter(
+                    daDao -> daDao.getType() == DaDao.DaoType.METAAMD ||
+                    daDao.getType() == DaDao.DaoType.METADMDINHERENT ||
+                    daDao.getType() == DaDao.DaoType.METADMDCONTEXTUAL
+                ).toList();
+
+        List<DaDaoFileVO> metadataFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(metadataList)
+                .stream()
+                .map(clientFactoryVO::createDaDaoFileVO)
+                .toList();
+        //--------------
+
+        for (DaDaoFileFolder folder : folders) {
+            DaDaoFileFolderVO item = clientFactoryVO.createDaDaoFileFolderVO(folder);
+            itemMap.put(folder.getDaoFileFolderId(), item);
+        }
+
+        for (DaDaoFileFolder folder : folders) {
+            DaDaoFileFolderVO item = itemMap.get(folder.getDaoFileFolderId());
+            if (folder.getParentFileFolder() == null) {
+                root = item;
+            } else {
+                DaDaoFileFolderVO parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
+                if(parent.getChildFolders()  == null) {
+                    parent.setChildFolders(new ArrayList<>());
+                }
+                parent.getChildFolders().add(item);
+            }
+        }
+
+        for (DaDaoFile file : files) {
+            if (file.getDaoFileFolder() == null) {
+                if(root.getChildFiles() == null) {
+                    root.setChildFiles(new ArrayList<>());
+                }
+                root.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+            } else {
+                DaDaoFileFolderVO parent = itemMap.get(file.getDaoFileFolder().getDaoFileFolderId());
+                if(parent.getChildFiles() == null) {
+                    parent.setChildFiles(new ArrayList<>());
+                }
+                parent.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+            }
+        }
+
+        return root;
     }
-
 
     @Transactional
     public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath) {
