@@ -50,7 +50,6 @@ public class DaDao {
     private DaLevelView levelView;
 
     public enum DaoType {
-
         LOGICAL,
         REPRESENTATION,
         FILE,
