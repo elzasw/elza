@@ -142,10 +142,20 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Povoleni dedicnosti"
+rule "Povoleni dedicnosti pro jazyk, role entit, autorske dilo"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_ENTITY_ROLE"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_ENTITY_ROLE", "ZP2015_ITEM_TITLE_REF"))
+then
+    $itemType.setInheritance(true);
+end
+
+rule "Povoleni dedicnosti pro puvodce"
+no-loop
+when
+    $activeLevel : ActiveLevel( )
+    $item: DescItem( type=="ZP2015_ORIGINATOR" ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_ORIGINATOR"))
 then
     $itemType.setInheritance(true);
 end
