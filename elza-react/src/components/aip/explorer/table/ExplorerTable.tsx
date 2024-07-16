@@ -19,11 +19,8 @@ import {
 import { FC, useCallback, useState, KeyboardEvent } from "react";
 import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/utils";
-import { AREA_EXPLORER_ITEM, setExplorerItem } from "actions/aip/exp";
-import { useSelector } from "react-redux";
-import { storeFromArea } from "shared/utils";
-import { AppState } from "typings/store";
-import { useThunkDispatch } from "utils/hooks";
+import { getFileName } from "../utils";
+import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
 
 type Item = {
     fileName?: string;
@@ -36,7 +33,7 @@ const columns: TableColumnDefinition<Item>[] = [
     createTableColumn<Item>({
       columnId: "name",
       renderHeaderCell: () => <>Název</>,
-      renderCell: (item) => <>{item.fileName ? item.fileName : item.label || "-"}</>,
+      renderCell: (item) => <>{item.fileName ? getFileName(item.fileName ): item.label || "-"}</>,
       compare: (a, b) => {
         const nameA = a.fileName || a.label;
         const nameB = b.fileName || b.label;
@@ -57,17 +54,23 @@ const columns: TableColumnDefinition<Item>[] = [
 ];
 
 const columnSizes = {
-    name: {idealWidth: 500, minWidth: 20},
-    size: {idealWidth: 200, minWidth: 20},
-    format: {idealWidth: 300, minWidth: 20}
+    name: {idealWidth: 300, minWidth: 50},
+    size: {idealWidth: 200, minWidth: 50},
+    format: {idealWidth: 300, minWidth: 50}
 }
 
-
 const ExplorerTable: FC = () => {
-    const expItem = useSelector((state: AppState) => storeFromArea(state, AREA_EXPLORER_ITEM));
-    const dispatch = useThunkDispatch();
-    
-    const items = expItem.id ? [...expItem.data.childFolders || [], ...expItem.data.childFiles || []] : [];
+    const {selectedItem, setSelectedItem} = useExplorerContext();
+    let items = null;
+    if(isDaoFileFolderVO(selectedItem) && 
+        !((!selectedItem.childFolders && !selectedItem.childFiles) 
+        || (selectedItem.childFolders && selectedItem.childFolders.length == 0))
+    ) {
+        items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []] 
+    } else {
+        items = selectedItem?.parent ? [...selectedItem.parent.childFolders || [], ...selectedItem.parent.childFiles || []] : [];
+    }
+
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
     const { 
         getRows, 
@@ -136,77 +139,68 @@ const ExplorerTable: FC = () => {
     );
 
     const handleSelect = (item) => {
-        dispatch(setExplorerItem(item.daoFileFolderId, item));
+        setSelectedItem(item)
     }
 
     return (
-        <> 
-            <Table
-                ref={tableRef}
-                as="table"
-                sortable
-                {...columnSizing_unstable.getTableProps()}
-                className="explorer-table"
-            >
-                <TableHeader>
-                    <TableRow>
-                        <TableSelectionCell
-                            checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
-                            onClick={toggleAllRows}
-                            onKeyDown={toggleAllKeydown}
-                            checkboxIndicator={{"aria-label": "Vybrat vše"}}
+        <Table
+            ref={tableRef}
+            as="table"
+            sortable
+            {...columnSizing_unstable.getTableProps()}
+            className="explorer-table"
+        >
+            <TableHeader>
+                <TableRow>
+                    <TableSelectionCell
+                        checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
+                        onClick={toggleAllRows}
+                        onKeyDown={toggleAllKeydown}
+                        checkboxIndicator={{"aria-label": "Vybrat vše"}}
+                        className="header"
+                        
+                    />
+                    {columns.map((column) => (
+                            //@ts-ignore
+                        <TableHeaderCell
+                            key={column.columnId}
+                            {...columnSizing_unstable.getTableHeaderCellProps(column.columnId)}
+                            {...headerSortProps(column.columnId)}
                             className="header"
-                            
+                        >
+                            {column.renderHeaderCell()}
+                        </TableHeaderCell>
+                    ))}
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {rows.map(({ item, selected, onClick }) => (
+                    <TableRow 
+                        key={`${item.fileName || item.label}.${item.size}`} 
+                        className="table-row"
+                    >
+                        <TableSelectionCell
+                            checked={selected}
+                            checkboxIndicator={{ "aria-label": "Vybrat" }}
+                                //@ts-ignore
+                            onClick={onClick}
                         />
-                        {columns.map((column) => (
-                             //@ts-ignore
-                            <TableHeaderCell
-                                key={column.columnId}
-                                {...columnSizing_unstable.getTableHeaderCellProps(column.columnId)}
-                                {...headerSortProps(column.columnId)}
-                                className="header"
+
+                        {columns.map(col => (
+                            <TableCell
+                                key={`item.${col.columnId}`} 
+                                {...columnSizing_unstable.getTableCellProps(col.columnId)}
+                                onClick={() => handleSelect(item)}
                             >
-                                {column.renderHeaderCell()}
-                            </TableHeaderCell>
+                                <TableCellLayout truncate>
+                                    {col.renderCell(item)}
+                                </TableCellLayout>
+                        </TableCell>
                         ))}
                     </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {rows.map(({ item, selected, onClick }) => (
-                        <TableRow 
-                            key={item.name}
-                            className="table-row"
-                        >
-                            <TableSelectionCell
-                                checked={selected}
-                                checkboxIndicator={{ "aria-label": "Vybrat" }}
-                                 //@ts-ignore
-                                onClick={onClick}
-                            />
-
-                            {columns.map(col => (
-                                <TableCell
-                                    key={`item[${item.name}].${col.columnId}`} 
-                                    {...columnSizing_unstable.getTableCellProps(col.columnId)}
-                                    onClick={() => handleSelect(item)}
-                                >
-                                    <TableCellLayout truncate>
-                                        {col.renderCell(item)}
-                                    </TableCellLayout>
-                            </TableCell>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        {/* <Pagination
-            onPageChange={handleChangePage}
-            from={from}
-            pageSize={pageSize}
-            totalCount={aips.count}
-            onPageSizeChange={handlePageSizeChange}
-        /> */}
-        </>
+                ))}
+            </TableBody>
+        </Table>
     );
 }
 

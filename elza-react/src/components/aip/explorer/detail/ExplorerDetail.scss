@@ -4,18 +4,28 @@
     h4 {
         font-weight: bold;
     }
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        cursor: pointer;
+    }
 
     .explorer-detail-body {
         display: flex;
         flex-direction: column;
-        align-items: center;
         margin-bottom: 1rem;
+
 
         .item-row {
             display: flex;
             justify-content: center;
             width: 100%;
             gap: 10px;
+
     
             .col {
                 width: 50%;

@@ -1858,6 +1858,7 @@ public class ClientFactoryVO {
             institutionName = institutionIndex.getIndexValue();
         }
 
+
         if(state.getOriginatorAccessPoint() != null) {
             ApIndex originatorIndex = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
             originatorName = originatorIndex.getIndexValue();

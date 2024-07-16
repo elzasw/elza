@@ -361,6 +361,7 @@ type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCod
 export interface App {
     aip: Aip;
     aipList: SimpleList<DaAipDetailVO>;
+    aipStricture: DetailStoreState<any>;
     daoList: SimpleList<any>; //TODO: @kasparova
     explorerItem: DetailStoreState<any> //TODO: @kasparova
     accessPoins:SimpleList<ApAccessPointVO>

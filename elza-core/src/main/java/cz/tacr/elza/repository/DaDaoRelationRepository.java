@@ -15,6 +15,6 @@ public interface DaDaoRelationRepository extends JpaRepository<DaDaoRelation, In
 
     List<DaDaoRelation> findByDaoInAndDeleteChangeIsNull(List<DaDao> daDaoList);
 
-    @Query("select dr from da_dao_relation dr where dr.parentDao = :daDao and dr.deleteChange = null")
+    @Query("select dr from da_dao_relation dr where dr.parentDao = :daDao and dr.deleteChange is null")
     List<DaDaoRelation> findByParentDaoAndDeleteChangeIsNull(@Param("daDao") DaDao daDao);
 }

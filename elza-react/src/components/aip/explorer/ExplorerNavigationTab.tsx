@@ -1,26 +1,47 @@
-import { AREA_EXPLORER_ITEM } from "actions/aip/exp";
 import { FC } from "react";
-import { useSelector } from "react-redux";
-import { storeFromArea } from "shared/utils";
-import { AppState } from "typings/store";
+import {
+    ArrowUp16Filled
+  } from "@fluentui/react-icons";
+import { Breadcrumb, BreadcrumbButton, BreadcrumbDivider, BreadcrumbItem, Tooltip } from "@fluentui/react-components";
+import { isDaoFileFolderVO, useExplorerContext } from "./ExplorerContext";
+import { turncate } from "./utils";
+
 
 const ExplorerNavigationTab: FC = () => {
-    const {data} = useSelector((state: AppState) => storeFromArea(state, AREA_EXPLORER_ITEM));
+    const {selectedItem, setSelectedItem} = useExplorerContext();
+    let parents = [];
+    let curr = selectedItem;
 
-    if(!data) return <></>
-
-    let parents = ["Balíček"];
-    let curr = data;
     while(curr != null) {
-        parents.push(curr.label);
-        curr = curr.parentFolder;
+        if(isDaoFileFolderVO(curr)) { //Nechceme v cestě zobrazovat file
+            parents.push(curr);
+        }
+        curr = curr.parent;
     }
 
-   
+   parents = parents.reverse();
+
+    const handleMoveUp = () => {
+        if (parents.length - 1) {
+            setSelectedItem(parents[parents.length - 2]);
+        }
+    }
+
     return (
-        <>{parents.reverse().map(parent => (
-            <>{parent} </>
-        ))}</>
+        <Breadcrumb size="medium" style={{marginBottom: "5px"}}>
+            <BreadcrumbButton as="button" onClick={handleMoveUp} icon={<ArrowUp16Filled color="black"/>}/>
+            {parents.map((parent, index) => 
+                <Tooltip
+                    content={parent.label}
+                    relationship="label"
+                >
+                    <BreadcrumbItem>
+                        <BreadcrumbButton as="button" onClick={() => setSelectedItem(parent)}>{turncate(parent.label)}</BreadcrumbButton>
+                        {index != parents.length - 1 && <BreadcrumbDivider />}
+                    </BreadcrumbItem>
+                </Tooltip>
+            )}
+        </Breadcrumb>
     );
 }
 export default ExplorerNavigationTab;
