@@ -100,6 +100,7 @@ public class PackageInfoService {
             }
         }
         DaAip daAip = aipRepository.findByCode(aipCode);
+        DaAipState oldAipState = null;
         if (daAip == null) {
             daChange.setType(DaChangeType.AIP_CREATE);
             daAip = new DaAip();
@@ -107,11 +108,7 @@ public class PackageInfoService {
             daAip.setDigitalRepository(digitalRepository);
             aipRepository.save(daAip);
         } else {
-            DaAipState oldAipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip);
-            if (oldAipState != null) {
-                oldAipState.setDeleteChange(daChange);
-                aipStateRepository.save(oldAipState);
-            }
+            oldAipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip);
             daChange.setType(DaChangeType.AIP_UPDATE);
         }
         ParInstitution parInstitution = institutionRepository.findByInternalCode(institutionCode);
@@ -127,6 +124,12 @@ public class PackageInfoService {
         daChange.setChangeDate(LocalDateTime.now());
         changeRepository.save(daChange);
         aipState.setCreateChange(daChange);
+
+        if (oldAipState != null) {
+            oldAipState.setDeleteChange(daChange);
+            aipStateRepository.save(oldAipState);
+        }
+
         for (Event event : eventList) {
             if (event.getOriginator() != null) {
                 List<String> nameList = event.getOriginator().getNameList();

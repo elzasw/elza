@@ -214,13 +214,8 @@ public class DaoProcessor {
     private void createDaoFromFileGrp(FileGrpType fileGrpType, DaDao representationDao, DaChange change) {
         if (CollectionUtils.isNotEmpty(fileGrpType.getFile())) {
             boolean representation = representations.contains(fileGrpType.getID());
-            String[] use = fileGrpType.getUSE().split("/");
-            String folderPath = null;
-            if (use.length == 2) {
-                folderPath = use[1];
-            }
             for (FileType fileType : fileGrpType.getFile()) {
-                createDaoFromFile(fileType, representationDao, change, representation, folderPath);
+                createDaoFromFile(fileType, representationDao, change, representation);
             }
         }
 
@@ -231,7 +226,7 @@ public class DaoProcessor {
         }
     }
 
-    private void createDaoFromFile(FileType fileType, DaDao representationDao, DaChange change, boolean representation, String folderPath) {
+    private void createDaoFromFile(FileType fileType, DaDao representationDao, DaChange change, boolean representation) {
         String code = fileType.getID();
         DaDao.DaoType type = DaDao.DaoType.FILE;
         String label = findOriginalNameInPremis(premisComplexType, code);
@@ -250,13 +245,13 @@ public class DaoProcessor {
             findOrCreateDaoRelation(daDao, representationDao, change);
         }
 
-        createFileFromFile(fileType, daDao, representationDao, change, folderPath);
+        createFileFromFile(fileType, daDao, representationDao, change);
         fileDaoMap.put(code, daDao);
     }
 
-    private void createFileFromFile(FileType fileType, DaDao daDao, DaDao representationDao, DaChange change, @Nullable String folderPath) {
+    private void createFileFromFile(FileType fileType, DaDao daDao, DaDao representationDao, DaChange change) {
         String href = getFileHref(fileType);
-        DaDaoFileFolder fileFolder = findOrCreateFileFolder(representationDao, change, folderPath, href);
+        DaDaoFileFolder fileFolder = findOrCreateFileFolder(representationDao, change, href);
         String checksum = fileType.getCHECKSUM();
         String checksumType = fileType.getCHECKSUMTYPE();
         String mimeType = fileType.getMIMETYPE();
@@ -424,26 +419,14 @@ public class DaoProcessor {
         return fileType.getFLocat().get(0).getHref();
     }
 
-    private DaDaoFileFolder findOrCreateFileFolder(DaDao daDao, DaChange change, String folderPath, String href) {
+    private DaDaoFileFolder findOrCreateFileFolder(DaDao daDao, DaChange change, String href) {
         DaDaoFileFolder fileFolder = null;
         List<DaDaoFileFolder> foundFileFolders = new ArrayList<>();
         List<DaDaoFileFolder> createdFileFolders = new ArrayList<>();
         List<DaDaoFileFolder> fileFolderList = daDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
         List<DaDaoFileFolder> newFileFolderList = newDaDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
 
-        if (folderPath != null) {
-            fileFolder = findFileFolder(fileFolderList, folderPath, null);
-            if (fileFolder == null) {
-                fileFolder = findFileFolder(newFileFolderList, folderPath, null);
-                if (fileFolder == null) {
-                    fileFolder = daService.createDaDaoFileFolder(daDao, change, folderPath, null);
-                    createdFileFolders.add(fileFolder);
-                }
-            } else {
-                foundFileFolders.add(fileFolder);
-            }
-        }
-        DaDaoFileFolder parentFileFolder = fileFolder;
+        DaDaoFileFolder parentFileFolder = null;
         String[] pathArray = href.split("/");
         for (String path : pathArray) {
             if (!path.contains(".")) {
