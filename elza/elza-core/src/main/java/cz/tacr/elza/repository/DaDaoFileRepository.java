@@ -12,4 +12,6 @@ import java.util.List;
 public interface DaDaoFileRepository extends JpaRepository<DaDaoFile, Integer> {
 
     List<DaDaoFile> findByDaoInAndDeleteChangeIsNull(List<DaDao> daDaoList);
+
+    DaDaoFile findByDao(DaDao dao);
 }

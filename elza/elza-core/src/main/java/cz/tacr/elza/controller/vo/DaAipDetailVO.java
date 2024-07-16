@@ -17,9 +17,29 @@ public class DaAipDetailVO {
 
     private String fundCode;
 
-    private String instApName;
+    private ParInstitutionVO institution;
 
-    private String institutionCode;
+    public ParInstitutionVO getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(ParInstitutionVO institution) {
+        this.institution = institution;
+    }
+
+    public ParInstitutionVO getOriginator() {
+        return originator;
+    }
+
+    public void setOriginator(ParInstitutionVO originator) {
+        this.originator = originator;
+    }
+
+    private ParInstitutionVO originator;
+//
+//    private String instApName;
+//
+//    private String institutionCode;
 
     private LocalDateTime unitdateFrom;
 
@@ -87,22 +107,22 @@ public class DaAipDetailVO {
     public void setFundCode(String fundCode) {
         this.fundCode = fundCode;
     }
-
-    public String getInstApName() {
-        return instApName;
-    }
-
-    public void setInstApName(String instApName) {
-        this.instApName = instApName;
-    }
-
-    public String getInstitutionCode() {
-        return institutionCode;
-    }
-
-    public void setInstitutionCode(String institutionCode) {
-        this.institutionCode = institutionCode;
-    }
+//
+//    public String getInstApName() {
+//        return instApName;
+//    }
+//
+//    public void setInstApName(String instApName) {
+//        this.instApName = instApName;
+//    }
+//
+//    public String getInstitutionCode() {
+//        return institutionCode;
+//    }
+//
+//    public void setInstitutionCode(String institutionCode) {
+//        this.institutionCode = institutionCode;
+//    }
 
     public LocalDateTime getUnitdateFrom() {
         return unitdateFrom;
@@ -189,8 +209,8 @@ public class DaAipDetailVO {
                 vo.setFundName(state.getFund().getName());
             }
             vo.setFundCode(state.getFundCode());
-            vo.setInstApName(instApName);
-            vo.setInstitutionCode(state.getInstitutionCode());
+//            vo.setInstApName(instApName);
+//            vo.setInstitutionCode(state.getInstitutionCode());
             vo.setUnitdateFrom(state.getUnitdateFrom());
             vo.setUnitdateTo(state.getUnitdateTo());
             vo.setOriginApName(originApName);

@@ -112,7 +112,7 @@ const AipDetail = () => {
                         }
                         {aip.data.instApName &&
                             <DetailRow label="Instituce" value={
-                                <a href=''>{aip.data.instApName}</a>
+                                <a href='/entity/1'>{aip.data.instApName}</a>
                             }/>
                         }
                         {aip.data.unitdateFrom &&

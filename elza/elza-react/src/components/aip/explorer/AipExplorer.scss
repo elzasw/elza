@@ -1,3 +1,5 @@
+@import "../../../variables.scss";
+
 .aip-explorer {
     .detail-body {
         display: flex;
@@ -5,9 +7,20 @@
         align-items: center;
         margin-bottom: 1rem;
     }
+
     .modal-dialog {
         max-width: 95vw;
     }
+    .modal-body {
+        padding: 5px;
+    }
+
+    .navigation-item {
+        color: $fg-color;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
     word-wrap: break-word;
 }
 

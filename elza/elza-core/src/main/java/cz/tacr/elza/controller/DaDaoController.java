@@ -16,7 +16,7 @@ public class DaDaoController {
 
     @RequestMapping(value = "/{aipId}", method = RequestMethod.GET)
     public
-    DaDaoFileFolderVO getDaDaoByAipAndType(@PathVariable("aipId") final Integer aipId) {
+    DaDaoFileFolderVO getDaDaoByAip(@PathVariable("aipId") final Integer aipId) {
         return daService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
     }
 }

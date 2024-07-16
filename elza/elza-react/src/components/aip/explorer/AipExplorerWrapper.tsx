@@ -9,23 +9,20 @@ type AipExplorerModalWrapperProps = {
     onClose: () => void;
 }
 
-const AipExplorerModalWrapper: FC = ({onOk, onClose}: AipExplorerModalWrapperProps) => {
-
-    return (
-        <FluentProvider>
-            <Modal.Body>
-               <AipExplorer />
-            </Modal.Body>
-            <Modal.Footer>
-                <Button onClick={onOk} variant="outline-secondary">
-                    OK
-                </Button>
-                <Button onClick={onClose} variant="link">
-                    {i18n('global.action.cancel')}
-                </Button>
-            </Modal.Footer>
-        </FluentProvider>
-    );
-}
+const AipExplorerModalWrapper: FC = ({onOk, onClose}: AipExplorerModalWrapperProps) => (
+    <FluentProvider>
+        <Modal.Body>
+            <AipExplorer />
+        </Modal.Body>
+        <Modal.Footer>
+            <Button onClick={onOk} variant="outline-secondary">
+                OK
+            </Button>
+            <Button onClick={onClose} variant="link">
+                {i18n('global.action.cancel')}
+            </Button>
+        </Modal.Footer>
+    </FluentProvider>
+);
 
 export default AipExplorerModalWrapper;

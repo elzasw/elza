@@ -10,6 +10,7 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
+import cz.tacr.elza.controller.AipStructureVO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
 import cz.tacr.elza.controller.vo.DaDaoFileVO;
@@ -415,80 +416,272 @@ public class DaService {
         fis.close();
     }
 
-    @Transactional
-    public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
-        DaAip aip = aipService.getAip(aipId);
-        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
-        Map<Integer, DaDaoFileFolderVO> itemMap = new HashMap<>();
-        DaDaoFileFolderVO root = null;
-        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+//    @Transactional
+//    public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
+//        DaAip aip = aipService.getAip(aipId);
+//        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
+//        Map<Integer, DaDaoFileFolderVO> itemMap = new HashMap<>();
+//        DaDaoFileFolderVO root = null;
+//        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+//
+//        List<DaDao> fileList = daDaoList
+//                .stream()
+//                .filter(daDao -> daDao.getType() == DaDao.DaoType.FILE)
+//                .toList();
+//        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(fileList);
+//
+//        //LOGICAL
+//        List<DaDao> logicalList = daDaoList
+//                .stream()
+//                .filter(daDao -> daDao.getType() == DaDao.DaoType.LOGICAL)
+//                .toList();
+//
+//
+//        //METADATA-----
+//        List<DaDao> metadataList = daDaoList
+//                .stream()
+//                .filter(
+//                    daDao -> daDao.getType() == DaDao.DaoType.METAAMD ||
+//                    daDao.getType() == DaDao.DaoType.METADMDINHERENT ||
+//                    daDao.getType() == DaDao.DaoType.METADMDCONTEXTUAL
+//                ).toList();
+//
+//        List<DaDaoFileVO> metadataFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(metadataList)
+//                .stream()
+//                .map(clientFactoryVO::createDaDaoFileVO)
+//                .toList();
+//        //--------------
+//
+//        for (DaDaoFileFolder folder : folders) {
+//            DaDaoFileFolderVO item = clientFactoryVO.createDaDaoFileFolderVO(folder);
+//            itemMap.put(folder.getDaoFileFolderId(), item);
+//        }
+//
+//        for (DaDaoFileFolder folder : folders) {
+//            DaDaoFileFolderVO item = itemMap.get(folder.getDaoFileFolderId());
+//            if (folder.getParentFileFolder() == null) {
+//                root = item;
+//            } else {
+//                DaDaoFileFolderVO parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
+//                if(parent.getChildFolders()  == null) {
+//                    parent.setChildFolders(new ArrayList<>());
+//                }
+//                parent.getChildFolders().add(item);
+//            }
+//        }
+//
+//        for (DaDaoFile file : files) {
+//            if (file.getDaoFileFolder() == null) {
+//                if(root.getChildFiles() == null) {
+//                    root.setChildFiles(new ArrayList<>());
+//                }
+//                root.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+//            } else {
+//                DaDaoFileFolderVO parent = itemMap.get(file.getDaoFileFolder().getDaoFileFolderId());
+//                if(parent.getChildFiles() == null) {
+//                    parent.setChildFiles(new ArrayList<>());
+//                }
+//                parent.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+//            }
+//        }
+//
+//        DaDaoFileFolderVO logicalRoot = null;
+//        Map<Integer, DaDaoFileFolderVO> log = new HashMap<>();
+//        for (DaDao dao : logicalList) {
+//            DaDaoFileFolderVO item = new DaDaoFileFolderVO();
+//            item.setDaoFileFolderId(dao.getDaoId());
+//            item.setLabel(dao.getLabel());
+//            log.put(item.getDaoFileFolderId(), item);
+//        }
+//
+//        for (DaDao dao : logicalList) {
+//            List<DaDaoRelation> relations = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(Collections.singletonList(dao));
+//            DaDaoFileFolderVO item = log.get(dao.getDaoId());
+//            if(relations.isEmpty()) {
+//                logicalRoot = item;
+//            } else {
+//                for(DaDaoRelation relation : relations) {
+//                    DaDaoFileFolderVO parent = log.get(relation.getParentDao().getDaoId());
+//                    if(parent.getChildFolders()  == null) {
+//                        parent.setChildFolders(new ArrayList<>());
+//                    }
+//                    parent.getChildFolders().add(item);
+//                }
+//            }
+//        }
+//
+//        DaDaoFileFolderVO mets = new DaDaoFileFolderVO();
+//        mets.setDaoFileFolderId(-1);
+//        mets.setLabel("Balíček (METS.xml)");
+//
+//        DaDaoFileFolderVO reprezentace = new DaDaoFileFolderVO();
+//        reprezentace.setDaoFileFolderId(-2);
+//        reprezentace.setLabel("Reprezentace");
+//        if(root != null) {
+//            reprezentace.setChildFolders(Collections.singletonList(root));
+//        }
+//
+//        DaDaoFileFolderVO logical = new DaDaoFileFolderVO();
+//        logical.setDaoFileFolderId(-3);
+//        logical.setLabel("Logická struktura");
+//        if(logicalRoot != null) {
+//            logical.setChildFolders(Collections.singletonList(logicalRoot));
+//        }
+//
+//        DaDaoFileFolderVO metadata = new DaDaoFileFolderVO();
+//        metadata.setDaoFileFolderId(-4);
+//        metadata.setLabel("Metadata");
+//        metadata.setChildFiles(metadataFiles);
+//
+//        mets.setChildFolders(Arrays.asList(reprezentace, logical, metadata));
+//
+//        return mets;
+//    }
+@Transactional
+public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
+    DaAip aip = aipService.getAip(aipId);
+    List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
+    Map<Integer, DaDaoFileFolderVO> itemMap = new HashMap<>();
 
-        List<DaDao> fileList = daDaoList
-                .stream()
-                .filter(daDao -> daDao.getType() == DaDao.DaoType.FILE)
+    DaDaoFileFolderVO representationRoot = null;
+
+    List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+    List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(filterDaDaoByType(daDaoList, DaDao.DaoType.FILE));
+
+    createFolderMap(folders, itemMap);
+
+    representationRoot = buildFolderHierarchy(folders, itemMap);
+    addFilesToFolders(files, itemMap, representationRoot);
+
+    DaDaoFileFolderVO logicalRoot = buildLogicalStructure(daDaoList);
+    DaDaoFileFolderVO metadata = buildMetadataStructure(daDaoList);
+
+    DaDaoFileFolderVO mets = new DaDaoFileFolderVO();
+    mets.setDaoFileFolderId(-1);
+    mets.setLabel("Balíček (METS.xml)");
+    mets.setChildFolders(Arrays.asList(
+            createFolderVO(-2, "Reprezentace", representationRoot),
+            createFolderVO(-3, "Logická struktura", logicalRoot),
+            metadata
+    ));
+
+    return mets;
+}
+
+    private List<DaDao> filterDaDaoByType(List<DaDao> daDaoList, DaDao.DaoType type) {
+        return daDaoList.stream()
+                .filter(daDao -> daDao.getType() == type)
                 .toList();
-        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(fileList);
+    }
 
-        //LOGICAL
-        List<DaDao> logicalList = daDaoList
-                .stream()
-                .filter(daDao -> daDao.getType() == DaDao.DaoType.LOGICAL)
-                .toList();
-
-        List<DaDaoFileVO> logicalFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(logicalList)
-                .stream()
-                .map(clientFactoryVO::createDaDaoFileVO)
-                .toList();
-
-        //METADATA-----
-        List<DaDao> metadataList = daDaoList
-                .stream()
-                .filter(
-                    daDao -> daDao.getType() == DaDao.DaoType.METAAMD ||
-                    daDao.getType() == DaDao.DaoType.METADMDINHERENT ||
-                    daDao.getType() == DaDao.DaoType.METADMDCONTEXTUAL
-                ).toList();
-
-        List<DaDaoFileVO> metadataFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(metadataList)
-                .stream()
-                .map(clientFactoryVO::createDaDaoFileVO)
-                .toList();
-        //--------------
-
-        for (DaDaoFileFolder folder : folders) {
+    private void createFolderMap(List<DaDaoFileFolder> folders, Map<Integer, DaDaoFileFolderVO> itemMap) {
+        folders.forEach(folder -> {
             DaDaoFileFolderVO item = clientFactoryVO.createDaDaoFileFolderVO(folder);
             itemMap.put(folder.getDaoFileFolderId(), item);
-        }
+        });
+    }
 
+    private DaDaoFileFolderVO buildFolderHierarchy(List<DaDaoFileFolder> folders, Map<Integer, DaDaoFileFolderVO> itemMap) {
+        DaDaoFileFolderVO root = null;
         for (DaDaoFileFolder folder : folders) {
             DaDaoFileFolderVO item = itemMap.get(folder.getDaoFileFolderId());
             if (folder.getParentFileFolder() == null) {
                 root = item;
             } else {
                 DaDaoFileFolderVO parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
-                if(parent.getChildFolders()  == null) {
+                if (parent.getChildFolders() == null) {
                     parent.setChildFolders(new ArrayList<>());
                 }
                 parent.getChildFolders().add(item);
             }
         }
+        return root;
+    }
 
+    private void addFilesToFolders(List<DaDaoFile> files, Map<Integer, DaDaoFileFolderVO> itemMap, DaDaoFileFolderVO root) {
         for (DaDaoFile file : files) {
-            if (file.getDaoFileFolder() == null) {
-                if(root.getChildFiles() == null) {
-                    root.setChildFiles(new ArrayList<>());
-                }
-                root.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+            DaDaoFileFolderVO parent = itemMap.getOrDefault(
+                    file.getDaoFileFolder() != null ? file.getDaoFileFolder().getDaoFileFolderId() : null, root
+            );
+            if (parent.getChildFiles() == null){
+                parent.setChildFiles(new ArrayList<>());
+            }
+            parent.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
+        }
+    }
+
+    private DaDaoFileFolderVO buildLogicalStructure(List<DaDao> daDaoList) {
+        Map<Integer, DaDaoFileFolderVO> log = new HashMap<>();
+        List<DaDao> logicalList = filterDaDaoByType(daDaoList, DaDao.DaoType.LOGICAL);
+        logicalList.forEach(dao -> {
+            DaDaoFileFolderVO item = createFolderVO(dao.getDaoId(), dao.getLabel());
+            log.put(item.getDaoFileFolderId(), item);
+        });
+        DaDaoFileFolderVO logicalRoot = null;
+        for (DaDao dao : logicalList) {
+            List<DaDaoRelation> relations = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(Collections.singletonList(dao));
+            DaDaoFileFolderVO item = log.get(dao.getDaoId());
+            if (relations.isEmpty()) {
+                logicalRoot = item;
             } else {
-                DaDaoFileFolderVO parent = itemMap.get(file.getDaoFileFolder().getDaoFileFolderId());
-                if(parent.getChildFiles() == null) {
-                    parent.setChildFiles(new ArrayList<>());
+                for (DaDaoRelation relation : relations) {
+                    DaDaoFileFolderVO parent = log.get(relation.getParentDao().getDaoId());
+                    if (parent.getChildFolders() == null) {
+                        parent.setChildFolders(new ArrayList<>());
+                    }
+                    parent.getChildFolders().add(item);
+                    List<DaDao> files = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(dao)
+                            .stream()
+                            .filter(daDaoRelationDao -> daDaoRelationDao.getDao().getType() == DaDao.DaoType.FILE)
+                            .map(DaDaoRelation::getDao)
+                            .toList();
+                    List<DaDaoFile> asd = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(files);
+
+
+                    if (item.getChildFiles() == null) {
+                        item.setChildFiles(new ArrayList<>());
+                    }
+                    asd.forEach(a ->  item.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(a)));
+
                 }
-                parent.getChildFiles().add(clientFactoryVO.createDaDaoFileVO(file));
             }
         }
+        return logicalRoot;
+    }
 
-        return root;
+    private DaDaoFileFolderVO buildMetadataStructure(List<DaDao> daDaoList) {
+        List<DaDao> metadataList = daDaoList.stream()
+                .filter(daDao -> daDao.getType() == DaDao.DaoType.METAAMD
+                        || daDao.getType() == DaDao.DaoType.METADMDINHERENT
+                        || daDao.getType() == DaDao.DaoType.METADMDCONTEXTUAL)
+                .toList();
+
+        List<DaDaoFileVO> metadataFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(metadataList)
+                .stream()
+                .map(clientFactoryVO::createDaDaoFileVO)
+                .toList();
+
+        DaDaoFileFolderVO metadata = new DaDaoFileFolderVO();
+        metadata.setDaoFileFolderId(-4);
+        metadata.setLabel("Metadata");
+        metadata.setChildFiles(metadataFiles);
+
+        return metadata;
+    }
+
+    private DaDaoFileFolderVO createFolderVO(int id, String label) {
+        DaDaoFileFolderVO vo = new DaDaoFileFolderVO();
+        vo.setDaoFileFolderId(id);
+        vo.setLabel(label);
+        return vo;
+    }
+
+    private DaDaoFileFolderVO createFolderVO(int id, String label, DaDaoFileFolderVO child) {
+        DaDaoFileFolderVO vo = createFolderVO(id, label);
+        if(child != null) {
+            vo.setChildFolders(Collections.singletonList(child));
+        }
+        return vo;
     }
 
     @Transactional
