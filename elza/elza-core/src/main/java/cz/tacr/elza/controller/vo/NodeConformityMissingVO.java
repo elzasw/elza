@@ -1,10 +1,11 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.List;
+
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+
 /**
  * VO pro chybějící položky z validace.
- *
- * @author Martin Šlapa
- * @since 26.1.2016
  */
 public class NodeConformityMissingVO {
 
@@ -58,5 +59,21 @@ public class NodeConformityMissingVO {
 
     public void setPolicyTypeId(final Integer policyTypeId) {
         this.policyTypeId = policyTypeId;
+    }
+
+    public static NodeConformityMissingVO newInstance(final ArrNodeConformityMissing nodeConformityMissing) {
+    	NodeConformityMissingVO result = new NodeConformityMissingVO();
+    	result.setDescItemSpecId(nodeConformityMissing.getItemSpecId());
+    	result.setDescItemTypeId(nodeConformityMissing.getItemTypeId());
+    	result.setDescription(nodeConformityMissing.getDescription());
+    	result.setPolicyTypeId(nodeConformityMissing.getPolicyTypeId());
+    	return result;
+    }
+    
+    public static List<NodeConformityMissingVO> newInstance(final List<ArrNodeConformityMissing> ncms) {
+    	if (ncms == null) {
+    		return null;
+    	}
+    	return ncms.stream().map(i -> NodeConformityMissingVO.newInstance(i)).toList();
     }
 }

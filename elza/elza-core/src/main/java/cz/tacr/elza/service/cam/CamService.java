@@ -195,12 +195,11 @@ public class CamService {
                 asyncRequestService,
                 partService,
                 accessPointCacheService,
-                itemRepository,
                 ruleService,
                 this);
     }
 
-    public List<ApState> createAccessPoints(final ProcessingContext procCtx,
+    public List<ApState> takeAccessPoints(final ProcessingContext procCtx,
                                             final List<EntityXml> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return Collections.emptyList();
@@ -213,7 +212,7 @@ public class CamService {
         }
 
         EntityDBDispatcher ec = createEntityDBDispatcher();
-        ec.createEntities(procCtx, entities);
+        ec.takeEntities(procCtx, entities);
 
         return ec.getApStates();
     }
@@ -664,8 +663,8 @@ public class CamService {
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        @NotNull ApBinding binding,
                                        @NotNull EntityXml entity, boolean syncQueue) throws SyncImpossibleException {
-        Validate.notNull(binding);
-        Validate.notNull(entity);
+    	Objects.requireNonNull(binding);
+    	Objects.requireNonNull(entity);
 
         log.debug("Entity synchronization request, bindingId: {}, value: {}, revId: {}",
                   binding.getBindingId(), binding.getValue(), entity.getRevi().getRid().getValue());

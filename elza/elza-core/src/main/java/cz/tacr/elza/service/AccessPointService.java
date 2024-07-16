@@ -2265,7 +2265,7 @@ public class AccessPointService {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_DELETE);
     }
 
-    private void publishAccessPointRestoreEvent(final ApAccessPoint accessPoint) {
+    public void publishAccessPointRestoreEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_RESTORE);
     }
 

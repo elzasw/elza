@@ -265,6 +265,7 @@ class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeCopy={this.handleDescItemTypeCopy}
                 onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev}
                 onDescItemNotIdentified={this.handleDescItemNotIdentified}
+                onDescItemInhibit={this.handleDescItemInhibit}
             />
         );
     }
@@ -871,6 +872,11 @@ class SubNodeForm extends AbstractReactComponent {
             ),
         );
     };
+
+    handleDescItemInhibit = (descItem, inhibit) => {
+        const {dispatch, formActions, subNodeForm} = this.props;
+        dispatch(formActions.fundSubNodeFormValueSetInhibit(subNodeForm.nodeId, descItem.descItemObjectId, inhibit));
+    }
 
     handleAddUnusedItem = (itemTypeId, index) => {
         const {formActions, versionId} = this.props;

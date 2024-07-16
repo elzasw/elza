@@ -221,7 +221,7 @@ public class DEExportService {
         }
 
         // check all access points
-        if (CollectionUtils.isNotEmpty(sections)) {
+        if (CollectionUtils.isNotEmpty(sections) && params.isIncludeAccessPoints()) {
 
             Collection<Integer> fundVersionIds = sections.stream().map(s -> s.getFundVersionId()).collect(Collectors.toList());
 
@@ -265,15 +265,15 @@ public class DEExportService {
      * @throws IOException
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    public void exportXmlDataToFile(DEExportParams request, Path xmlFile) throws IOException {
+    public void exportXmlDataToFile(DEExportParams params, Path xmlFile) throws IOException {
 
-        checkGlobalAndAccessPointPermission(request);
+        checkGlobalAndAccessPointPermission(params);
 
         ExportBuilder exportBuilder = new XmlExportBuilder();
 
         // write response
         try (OutputStream os = Files.newOutputStream(xmlFile, StandardOpenOption.WRITE)) {
-            exportData(os, exportBuilder, request);
+            exportData(os, exportBuilder, params);
         } catch(Exception e) {
             log.error("Failed to export data", e);
             throw e;

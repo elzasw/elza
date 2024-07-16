@@ -1,23 +1,9 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.UserService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -26,10 +12,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import java.util.List;
-
 
 /**
  * Kontrolér pro osoby.

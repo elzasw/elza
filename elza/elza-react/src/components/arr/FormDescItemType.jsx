@@ -58,6 +58,7 @@ class FormDescItemType extends AbstractReactComponent {
         onDescItemTypeCopy: PropTypes.func.isRequired,
         onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
         onDescItemNotIdentified: PropTypes.func.isRequired,
+        onDescItemInhibit: PropTypes.func.isRequired,
     };
 
     isDescItemLocked(nodeSetting, descItemTypeId) {
@@ -118,6 +119,8 @@ class FormDescItemType extends AbstractReactComponent {
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
             onDescItemNotIdentified,
+            onDescItemInhibit,
+            parentId,
         } = this.props;
 
         const rulDataType = refType.dataType;
@@ -154,6 +157,7 @@ class FormDescItemType extends AbstractReactComponent {
         return (
             <DescItemType
                 key={descItemType.id}
+                parentId={parentId}
                 typePrefix={typePrefix}
                 ref={ref => {
                     descItemRef && descItemRef('descItemType' + descItemType.id, ref);
@@ -196,6 +200,7 @@ class FormDescItemType extends AbstractReactComponent {
                 onDescItemNotIdentified={(descItemIndex, descItem) =>
                     onDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)
                 }
+                onDescItemInhibit={(descItem, inhibit) => onDescItemInhibit(descItem, inhibit)}
                 showNodeAddons={showNodeAddons}
                 locked={singleDescItemTypeEdit ? false : locked}
                 closed={closed}

@@ -31,6 +31,10 @@ static GroovyResult generate(final GroovyPart part) {
     shortName.add("NM_DEGREE_PRE").withSeparator(", ")
     shortName.add("NM_DEGREE_POST").withSeparator(" ")
     
-    result.addIndex("SHORT_NAME", shortName.build().toLowerCase());
+    GroovyAppender complGeo = GroovyUtils.createAppender(part)
+    complGeo.add("NM_SUP_GEO")
+    shortName.addStr(complGeo.build()).withSeparator(" ").withPrefix("(").withPostfix(")")
+
+    result.addIndex("SHORT_NAME", shortName.build());
     return result
 }

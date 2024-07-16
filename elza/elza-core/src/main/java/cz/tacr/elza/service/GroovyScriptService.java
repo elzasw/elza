@@ -1,6 +1,30 @@
 package cz.tacr.elza.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Validate;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+
 import com.google.common.eventbus.Subscribe;
+
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -18,23 +42,11 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.ws.types.v1.Did;
-import groovy.lang.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.Validate;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 /**
  * Servisní třída pro vykonávání groovy scriptů.
@@ -56,6 +68,7 @@ public class GroovyScriptService {
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
+    // Used for StaticDataProvider
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
     private static final String AP_CACHE_PROVIDER = "AP_CACHE_PROVIDER";
 
@@ -151,6 +164,7 @@ public class GroovyScriptService {
         Map<String, Object> input = new HashMap<>();
         input.put(ENTITA, groovyAe);
         input.put(AP_CACHE_PROVIDER, apCacheProvider);
+        input.put(DATA_PROVIDER, staticDataService.getData());
 
         return (List<GroovyItem>) groovyScriptFile.evaluate(input);
     }
@@ -215,10 +229,16 @@ public class GroovyScriptService {
             try {
                 script = createScript(variables);
             } catch (Throwable t) {
+                LOG.error("Failed to compile Groovy script: " + scriptFile, t);
                 throw new SystemException("Failed to create groovy script, source:" + scriptFile, t);
             }
-            Object result = script.run();
-            return result;
+            try {
+                Object result = script.run();
+                return result;
+            } catch (Throwable t) {
+                LOG.error("Failed to run Groovy script: ", t);
+                throw new SystemException("Failed to run groovy script, source:" + scriptFile, t);
+            }
         }
 
         private synchronized Script createScript(Binding variables) throws IOException {

@@ -15,6 +15,7 @@ import { RevisionItem } from "../../revision";
 import { DetailStoreState } from 'types';
 import { ApAccessPointVO } from 'api';
 import { AREA_REGISTRY_DETAIL } from 'actions/registry/registry';
+import { ApItemVOWithTempId } from '.';
 
 interface RenderItemsProps extends FieldArrayRenderProps<RevisionItem, any> {
     disabled: boolean;
@@ -67,9 +68,18 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
             >
                 {(item) => {
                     const index = absoluteIndex;
+
+                    let key:string;
+                    if(item.updatedItem?.id ){
+                        key = `id_${item.updatedItem.id}`;
+                    } else {
+                        // Assigning unique key from temporary id on desc item, that is not yet in db.
+                        key = `tempId_${(item.updatedItem as ApItemVOWithTempId).tempId}`;
+                    }
+
                     absoluteIndex++;
                     return <ApDescItem
-                        key={index}
+                        key={key} // change key for item to re-render properly after adding
                         deleteMode={deleteMode}
                         disabled={disabled}
                         name={`${itemPrefix}[${index}]`}

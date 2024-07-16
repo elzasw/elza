@@ -995,6 +995,8 @@ var messages = {
     "subNodeForm.digitizationSync": "Synchronizovat DAO",
     "subNodeForm.issueAdd": "Přidat připomínku",
     "subNodeForm.refSync": "Synchronizovat JP ze zdrojových AS",
+    "subNodeForm.inhibitDescItem": "Potlačit zděděnou hodnotu",
+    "subNodeForm.allowDescItem": "Povolit zděděnou hodnotu",
 
     "subNodeForm.descItem.edited": "Editováno",
     "subNodeForm.descItem.conflict": "Konflikt změn - obnovit hodnotu",

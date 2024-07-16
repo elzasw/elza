@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -237,7 +237,7 @@ public class OutputServiceInternal {
      */
     @Transactional
     public List<ArrNodeOutput> getOutputNodes(ArrOutput output, ArrChange lockChange) {
-        Validate.notNull(output);
+    	Objects.requireNonNull(output);
         if (lockChange == null) {
             return nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
         }
@@ -252,7 +252,7 @@ public class OutputServiceInternal {
      */
     @Transactional
     public List<ArrOutputItem> getOutputItems(ArrOutput output, ArrChange change) {
-        Validate.notNull(output);
+    	Objects.requireNonNull(output);
         if (change == null) {
             return findByOutputAndDeleteChangeIsNull(output);
         }
@@ -260,29 +260,19 @@ public class OutputServiceInternal {
     }
 
     public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
-        return dataService.findItemWithData(() -> outputItemRepository.findOpenOutputItem(descItemObjectId),
-                this::createDataResultList);
+        return dataService.findItemWithData(outputItemRepository.findOpenOutputItem(descItemObjectId));
     }
 
     public List<ArrOutputItem> findOpenOutputItems(Integer descItemObjectId) {
-        return dataService.findItemsWithData(() -> outputItemRepository.findOpenOutputItems(descItemObjectId),
-                this::createDataResultList);
+        return dataService.findItemsWithData(outputItemRepository.findOpenOutputItems(descItemObjectId));
     }
 
     public List<ArrOutputItem> findByOutputAndChange(ArrOutput output, ArrChange change) {
-        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndChange(output, change),
-                this::createDataResultList);
+        return dataService.findItemsWithData(outputItemRepository.findByOutputAndChange(output, change));
     }
 
     public List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(ArrOutput output) {
-        return dataService.findItemsWithData(() -> outputItemRepository.findByOutputAndDeleteChangeIsNull(output),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrOutputItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemsWithData(outputItemRepository.findByOutputAndDeleteChangeIsNull(output));
     }
 
     /**
@@ -438,7 +428,7 @@ public class OutputServiceInternal {
 
     @Transactional(TxType.MANDATORY)
     public void createOutputItem(ArrOutputItem outputItem, ArrFundVersion fundVersion, ArrChange createChange) {
-        Validate.notNull(createChange);
+    	Objects.requireNonNull(createChange);
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Output items cannot be deleted in closed fund version.",
@@ -480,9 +470,9 @@ public class OutputServiceInternal {
                                        ArrOutput output,
                                        Integer itemTypeId,
                                        ArrChange deleteChange) {
-        Validate.notNull(output);
-        Validate.notNull(itemTypeId);
-        Validate.notNull(deleteChange);
+    	Objects.requireNonNull(output);
+    	Objects.requireNonNull(itemTypeId);
+    	Objects.requireNonNull(deleteChange);
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Output items cannot be deleted in closed fund version.",
