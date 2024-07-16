@@ -1,10 +1,13 @@
 package cz.tacr.elza.drools.model;
 
 
-import cz.tacr.elza.drools.model.item.AbstractItem;
-
 import java.util.List;
 
+import cz.tacr.elza.drools.model.item.AbstractItem;
+
+/**
+ * AccessPoint validation model
+ */
 public class ModelValidation {
 
     private Ap ap;
@@ -17,12 +20,20 @@ public class ModelValidation {
 
     private List<AbstractItem> items;
 
-    public ModelValidation(Ap ap, GeoModel geoModel, List<ModelPart> modelParts, ApValidationErrors apValidationErrors, List<AbstractItem> items) {
+    private ExpectedItems expectedItems;
+
+    public ModelValidation(final Ap ap,
+                           final GeoModel geoModel,
+                           final List<ModelPart> modelParts,
+                           final ApValidationErrors apValidationErrors,
+                           final List<AbstractItem> items,
+                           final ExpectedItems expectedItems) {
         this.ap = ap;
         this.geoModel = geoModel;
         this.modelParts = modelParts;
         this.apValidationErrors = apValidationErrors;
         this.items = items;
+        this.expectedItems = expectedItems;
     }
 
     public Ap getAp() {
@@ -63,5 +74,9 @@ public class ModelValidation {
 
     public void setItems(List<AbstractItem> items) {
         this.items = items;
+    }
+
+    public ExpectedItems getExpectedItems() {
+        return expectedItems;
     }
 }

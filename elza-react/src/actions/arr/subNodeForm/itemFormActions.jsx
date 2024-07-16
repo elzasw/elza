@@ -3,7 +3,7 @@
  */
 
 import { setFocus } from 'actions/global/focus';
-import { statusSaved, statusSaving } from 'actions/global/status';
+import { statusSaved, statusSaving, savingApiWrapper } from 'actions/global/status';
 import { WebApi } from 'actions/index';
 import { i18n } from 'components/shared';
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
@@ -719,6 +719,14 @@ export class ItemFormActions {
                 });
             }
         };
+    }
+
+    _callSetInhibitDescItem(nodeId, itemId, inhibit) {}
+
+    fundSubNodeFormValueSetInhibit(nodeId, itemId, inhibit) {
+        return (dispatch) => {
+            return savingApiWrapper(dispatch, this._callSetInhibitDescItem(nodeId, itemId, inhibit));
+        }
     }
 
     fundSubNodeFormHandleClose(versionId, routingKey) {

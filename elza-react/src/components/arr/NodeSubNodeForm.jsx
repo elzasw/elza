@@ -47,6 +47,7 @@ import { refExternalSystemsFetchIfNeeded } from 'actions/refTables/externalSyste
 import { TextFragmentsWindow } from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
+import { DataTypeCode } from 'stores/app/accesspoint/itemFormUtils';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -622,16 +623,25 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 if (type.descItems.length > 0) {
                     const items = [];
                     type.descItems.forEach(item => {
-                        const itemCls = factory.createClass(item);
-                        const newItem = itemCls.copyItem(withValues);
+                        const refType = item.itemTypeId ? subNodeForm.refTypesMap[item.itemTypeId] : undefined;
+                        const itemClass = factory.createClass(item, refType);
+
+                        const newItem = itemClass.copyItem(withValues);
+
                         // enums are always stored
-                        if (withValues || item[CLS] === CLS_ITEM_ENUM) {
-                            newItem.strValue = itemCls.toSimpleString();
+                        if (withValues || refType.dataType.code === DataTypeCode.ENUM) {
+                            newItem.strValue = itemClass.toSimpleString();
                         }
-                        items.push(newItem);
+                        // skip inherited items
+                        if (item.position >= 0) {
+                            items.push(newItem);
+                        }
                     });
 
-                    formData[type.id] = items;
+                    // ignore item types without desc items
+                    if (items.length > 0) {
+                        formData[type.id] = items;
+                    }
                 }
             });
         });

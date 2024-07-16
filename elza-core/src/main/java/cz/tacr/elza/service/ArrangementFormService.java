@@ -5,6 +5,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,7 +91,7 @@ public class ArrangementFormService {
 	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
-
+    
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
@@ -103,7 +104,8 @@ public class ArrangementFormService {
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
 								  FundVersionRepository fundVersionRepository,
-								  NodeRepository nodeRepository, final ArrangementService arrangementService,
+								  NodeRepository nodeRepository, 
+								  final ArrangementService arrangementService,
 								  final ArrangementInternalService arrangementInternalService) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
@@ -141,6 +143,7 @@ public class ArrangementFormService {
 		ArrNode node;
 		List<ArrDescItem> descItems;
 		Set<Integer> inhibitedDescItemIds;
+		Set<Integer> inhibitedDescItemObjectIds;
 		List<ArrDescItem> parentsDescItems;
 		RestoredNode restoredNode = null;
 		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
@@ -169,17 +172,22 @@ public class ArrangementFormService {
 
 		if (lockChange == null) {
 			descItems = restoredNode.getDescItems();
-			inhibitedDescItemIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet());
-			parentRestoredNodes.forEach(n ->
-				inhibitedDescItemIds.addAll(n.getInhibitedItems().stream().map(i -> i.getDescItemId()).collect(Collectors.toSet())));
+			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
+			inhibitedDescItemIds = new HashSet<>();
+			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
+			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
+			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems().stream())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
+			// seznam descItemId s potlačenou dědičností pro aktuální uzel
+			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
 		} else {
 			descItems = arrangementInternal.getDescItems(lockChange, node);
-			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, CollectionUtils.union(List.of(nodeId), parentNodeIds));
+			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
 			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
+			inhibitedDescItemObjectIds = arrangementInternal.getInhibitedDescItemObjectIds(lockChange, List.of(nodeId));
 		}
 
 		// získat seznam descItems, které lze zdědit
@@ -195,7 +203,7 @@ public class ArrangementFormService {
 		String ruleCode = version.getRuleSet().getCode();
 
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
-		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedDescItemIds);
+		List<ArrItemVO> descItemsVOs = factoryVo.createItems(nodeId, descItems, inhibitedDescItemObjectIds);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
 
         boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
@@ -204,6 +212,28 @@ public class ArrangementFormService {
 			arrPerm = permNodeIdMap.get(nodeId);
 		}
 		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites, arrPerm);
+	}
+
+	/**
+	 * Získání seznamu ID (itemId) s potlačenou dědičností ze seznamu uzlů
+	 * 
+	 * @param restoredNodes
+	 * @return
+	 */
+	private Set<Integer> getInhibitedDescItemIds(Collection<RestoredNode> restoredNodes) {
+		Set<Integer> inhibitedDescItemIds = new HashSet<Integer>();
+		Set<Integer> descItemObjectIds = restoredNodes.stream()
+				.flatMap(i -> i.getInhibitedItems().stream())
+				.map(i -> i.getDescItemObjectId())
+				.collect(Collectors.toSet());
+		for (RestoredNode node : restoredNodes) {
+			for (ArrDescItem descItem : node.getDescItems()) {
+				if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
+					inhibitedDescItemIds.add(descItem.getItemId());
+				}
+			}
+		}
+		return inhibitedDescItemIds;
 	}
 
 	@Transactional
@@ -237,9 +267,9 @@ public class ArrangementFormService {
 		ArrNode node = arrangementService.getNode(nodeId);
 
 		final StaticDataProvider dataProvider = this.staticData.getData();
-		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
-		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
+		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> factoryDo.createDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 
 		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, nodeVersion, createItems, updateItems, deleteItems);
 
@@ -261,12 +291,6 @@ public class ArrangementFormService {
 			// Odeslání dat zpět
 			wsStompService.sendReceiptAfterCommit(results, requestHeaders);
 		}
-	}
-
-	private ArrDescItem convertDescItem(final StaticDataProvider sdp, final ArrItemVO itemVO) {
-		ArrDescItem descItem = factoryDo.createDescItem(itemVO);
-		descItem.setItemType(sdp.getItemTypeById(itemVO.getItemTypeId()).getEntity());
-		return descItem;
 	}
 
 	/**
@@ -381,8 +405,8 @@ public class ArrangementFormService {
 				);
 				*/
 
-
-		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
+		var sdp = staticData.getData();
+		ArrDescItem descItem = factoryDo.createDescItem(sdp, descItemVO);
 
 		// store updated value
 		ArrDescItem descItemUpdated = descriptionItemService
@@ -406,7 +430,8 @@ public class ArrangementFormService {
 	// TODO: Refactorize return value to contain nodeId instead of parent
 	public DescItemResult updateDescItem(int fundVersionId, int nodeId, int nodeVersion, ArrItemVO descItemVO, boolean createNewVersion) {
 
-		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
+		var sdp = staticData.getData();
+		ArrDescItem descItem = factoryDo.createDescItem(sdp, descItemVO);
 
 		ArrDescItem descItemUpdated = descriptionItemService
 				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion, false);

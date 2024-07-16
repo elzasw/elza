@@ -16,6 +16,8 @@ import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -57,6 +59,9 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Autowired
     AccessPointItemService itemService;
 
+    @Autowired
+    private PlatformTransactionManager tm;
+
     @Test
     public void copyAccessPointsTest() throws ApiException {
 
@@ -66,11 +71,15 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertNotNull(ap);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap);
         assertTrue(parts.size() == 3);
-        List<ApItem> items = itemService.findValidItemsByAccessPoint(ap);
+        List<ApItem> items = new TransactionTemplate(tm).execute(a -> {
+        	return itemService.findValidItemsByAccessPoint(ap);
+        });
         assertTrue(items.size() == 8);
 
         // let's delete the last part
-        List<ApItem> itemsSkip = itemService.findValidItemsByPartId(parts.get(parts.size() - 1).getPartId());
+        List<ApItem> itemsSkip = new TransactionTemplate(tm).execute(a -> {
+        	return itemService.findValidItemsByPartId(parts.get(parts.size() - 1).getPartId());
+        });
         List<Integer> skipItems = itemsSkip.stream().map(p -> p.getItemId()).collect(Collectors.toList());
 
         CopyAccessPointDetail copyAccessPointDetail = new CopyAccessPointDetail();
@@ -86,7 +95,9 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertNotNull(copyAp);
         List<ApPart> copyParts = partService.findPartsByAccessPoint(copyAp);
         assertTrue(copyParts.size() == 2); // -1
-        List<ApItem> copyItems = itemService.findValidItemsByAccessPoint(copyAp);
+        List<ApItem> copyItems = new TransactionTemplate(tm).execute(a -> {
+        	return itemService.findValidItemsByAccessPoint(copyAp);
+        });
         assertTrue(copyItems.size() == 5); // -3
     }
 

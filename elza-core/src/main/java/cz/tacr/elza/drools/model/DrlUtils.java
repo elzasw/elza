@@ -2,11 +2,11 @@ package cz.tacr.elza.drools.model;
 
 
 
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 
 public class DrlUtils {
@@ -47,6 +47,34 @@ public class DrlUtils {
         LocalDateTime firstFrom = LocalDateTime.parse(first.getValueFrom(), FORMATTER_ISO);
         LocalDateTime secondFrom = LocalDateTime.parse(second.getValueTo(), FORMATTER_ISO);
         return firstFrom.isBefore(secondFrom) || firstFrom.isEqual(secondFrom);
+    }
+
+    public static boolean greaterThan(String firstDate, LocalDateTime secondDate) {
+        ArrDataUnitdate first = UnitDateConvertor.convertToUnitDate(firstDate, new ArrDataUnitdate());
+
+        LocalDateTime firstTo = LocalDateTime.parse(first.getValueTo(), FORMATTER_ISO);
+        return firstTo.isAfter(secondDate);
+    }
+
+    public static boolean greaterThanOrEqualTo(String firstDate, LocalDateTime secondDate) {
+        ArrDataUnitdate first = UnitDateConvertor.convertToUnitDate(firstDate, new ArrDataUnitdate());
+
+        LocalDateTime firstTo = LocalDateTime.parse(first.getValueTo(), FORMATTER_ISO);
+        return firstTo.isAfter(secondDate) || firstTo.isEqual(secondDate);
+    }
+
+    public static boolean lessThan(String firstDate, LocalDateTime secondDate) {
+        ArrDataUnitdate first = UnitDateConvertor.convertToUnitDate(firstDate, new ArrDataUnitdate());
+
+        LocalDateTime firstFrom = LocalDateTime.parse(first.getValueFrom(), FORMATTER_ISO);
+        return firstFrom.isBefore(secondDate);
+    }
+
+    public static boolean lessThanOrEqualTo(String firstDate, LocalDateTime secondDate) {
+        ArrDataUnitdate first = UnitDateConvertor.convertToUnitDate(firstDate, new ArrDataUnitdate());
+
+        LocalDateTime firstFrom = LocalDateTime.parse(first.getValueFrom(), FORMATTER_ISO);
+        return firstFrom.isBefore(secondDate) || firstFrom.isEqual(secondDate);
     }
 
 }

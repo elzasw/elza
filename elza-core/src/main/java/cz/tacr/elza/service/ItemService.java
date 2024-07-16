@@ -151,11 +151,16 @@ public class ItemService {
                 }
             } else {
                 if (itemSpecId == null) {
+                	log.error("Item type without specification: " + itemTypeId + ", itemId: " + arrItem.getItemId());
                     throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
-                            ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
+                            ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                    	.set("itemTypeId", itemTypeId)
+                    	.level(Level.WARNING);
                 }
                 rulItemSpec = itemType.getItemSpecById(itemSpecId);
                 if (rulItemSpec == null) {
+                	log.error("Incorrect specification id, itemTypeId: " + itemTypeId + 
+                			", itemSpecId: " + itemSpecId + ", itemId: " + arrItem.getItemId());
                     throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
                 }
             }

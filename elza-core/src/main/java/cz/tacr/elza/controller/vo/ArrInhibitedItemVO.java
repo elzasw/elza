@@ -4,7 +4,7 @@ public class ArrInhibitedItemVO {
 	
 	private Integer nodeId;
 	
-	private Integer itemId;
+	private Integer descItemObjectId;
 
 	public Integer getNodeId() {
 		return nodeId;
@@ -14,11 +14,11 @@ public class ArrInhibitedItemVO {
 		this.nodeId = nodeId;
 	}
 
-	public Integer getItemId() {
-		return itemId;
+	public Integer getDescItemObjectId() {
+		return descItemObjectId;
 	}
 
-	public void setItemId(Integer itemId) {
-		this.itemId = itemId;
+	public void setDescItemObjectId(Integer descItemObjectId) {
+		this.descItemObjectId = descItemObjectId;
 	}
 }

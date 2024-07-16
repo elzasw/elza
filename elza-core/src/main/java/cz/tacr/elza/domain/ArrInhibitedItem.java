@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -15,6 +13,12 @@ import jakarta.persistence.ManyToOne;
 @Entity(name = "arr_inhibited_item")
 public class ArrInhibitedItem {
 
+    public final static String TABLE_NAME = "arr_inhibited_item";
+
+    public final static String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
+    public final static String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
@@ -27,26 +31,21 @@ public class ArrInhibitedItem {
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
-    @JoinColumn(name = "desc_item_id", nullable = false)
-    private ArrDescItem descItem;
-
-    @Column(name = "desc_item_id", updatable = false, insertable = false)
-    private Integer descItemId;
+    @Column(nullable = false)
+	protected Integer descItemObjectId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
-    @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
+    @Column(name = FIELD_CREATE_CHANGE_ID, nullable = false, updatable = false, insertable = false)
     private Integer createChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId", nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
     private ArrChange deleteChange;
 
-    @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
+    @Column(name = FIELD_DELETE_CHANGE_ID, nullable = true, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
 	public Integer getInhibitedItemId() {
@@ -70,17 +69,12 @@ public class ArrInhibitedItem {
 		return nodeId;
 	}
 
-	public ArrDescItem getDescItem() {
-		return descItem;
+	public Integer getDescItemObjectId() {
+		return descItemObjectId;
 	}
 
-	public void setDescItem(final ArrDescItem descItem) {
-		this.descItem = descItem;
-		this.descItemId = descItem != null ? descItem.getItemId() : null;
-	}
-
-	public Integer getDescItemId() {
-		return descItemId;
+	public void setDescItemObjectId(Integer descItemObjectId) {
+		this.descItemObjectId = descItemObjectId;
 	}
 
 	public ArrChange getCreateChange() {

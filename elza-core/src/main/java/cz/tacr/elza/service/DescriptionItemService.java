@@ -9,12 +9,12 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -28,11 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
@@ -65,6 +64,7 @@ import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -89,6 +89,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -183,11 +184,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     @Autowired
     private DataService dataService;
 
-    private TransactionSynchronizationAdapter indexWorkNotify;
+    @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
+
+    private TransactionSynchronization indexWorkNotify;
 
     @PostConstruct
     public void init() {
-        this.indexWorkNotify = new TransactionSynchronizationAdapter() {
+        this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
                 indexWorkProcessor.notifyIndexing();
@@ -443,8 +447,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange createChange,
                                                     final BatchChangeContext batchChangeCtx) {
-        Validate.notNull(createChange);
-        Validate.notNull(node);
+    	Objects.requireNonNull(createChange);
+    	Objects.requireNonNull(node);
 
         descItem.setNode(node);
         descItem.setCreateChange(createChange);
@@ -819,9 +823,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrChange change,
                                                     final boolean moveAfter,
                                                     final boolean force) {
-        Validate.notNull(fundVersion);
+    	java.util.Objects.requireNonNull(fundVersion);
         Validate.notEmpty(descItemsToDelete);
-        Validate.notNull(change);
+        java.util.Objects.requireNonNull(change);
 
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
         List<ArrDescItem> results = deleteDescriptionItems(descItemsToDelete, fundVersion, change, moveAfter, force, changeContext);
@@ -892,6 +896,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         descItem.setDeleteChange(change);
         ArrDescItem retDescItem = descItemRepository.save(descItem);
+
+        // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
+        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByDescItemObjectId(descItem.getDescItemObjectId()).orElse(null);
+        if (inhibitedItem != null) {
+        	inhibitedItem.setDeleteChange(change);
+        	inhibitedItemRepository.save(inhibitedItem);
+        }
 
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
@@ -1197,99 +1208,74 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
                                                            final int positionFrom,
                                                            final int positionTo) {
-
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
-                descItem.getNode(), positionFrom, positionTo),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(), descItem.getNode(), positionFrom, positionTo));
     }
 
     public List<ArrDescItem> findOpenByNodesAndType(Collection<ArrNode> nodes, RulItemType type) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndType(nodes, type),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodesAndType(nodes, type));
     }
 
     public List<ArrDescItem> findOpenByNodesAndTypeAndSpec(Collection<ArrNode> nodes, RulItemType type, Collection<RulItemSpec> specs) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, type, specs),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, type, specs));
     }
 
     private List<ArrDescItem> findOpenByFundAndType(ArrFund fund, RulItemType type) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndType(fund, type),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndType(fund, type));
     }
 
     private List<ArrDescItem> findOpenByFundAndTypeAndSpec(ArrFund fund,
                                                            RulItemType type,
                                                            Collection<RulItemSpec> specs) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs));
     }
 
     public List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNull(node));
     }
 
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(nodeIds, itemTypeIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndItemTypeIdsAndDeleteChangeIsNull(nodeIds, itemTypeIds));
     }
 
+    @Transactional
     public List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeId(ArrNode node, Integer descItemTypeId) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemTypeId),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemTypeId));
     }
 
     public List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenByNodeAndTypes(node, descItemTypes),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenByNodeAndTypes(node, descItemTypes));
     }
 
     private List<ArrDescItem> findOpenDescItems(Integer descItemObjectId) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItems(descItemObjectId),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItems(descItemObjectId));
     }
 
     private List<ArrDescItem> findOpenDescItemsByIds(Collection<Integer> descItemObjectIds) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByIds(descItemObjectIds),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsByIds(descItemObjectIds));
     }
 
     public ArrDescItem findOpenDescItem(Integer descItemObjectId) {
-        return dataService.findItemWithData(() -> descItemRepository.findOpenDescItem(descItemObjectId),
-                this::createDataResultList);
+    	return dataService.findItemWithData(descItemRepository.findOpenDescItem(descItemObjectId));
     }
 
     private List<ArrDescItem> findOpenDescItemsAfterPosition(RulItemType itemType, ArrNode node, Integer position) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsAfterPosition(itemType, node, position),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsAfterPosition(itemType, node, position));
     }
 
     private List<ArrDescItem> findOpenDescItemsByItemType(RulItemType itemType, ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findOpenDescItemsByItemType(itemType, node),
-                this::createDataResultList);
+    	return dataService.findItemsWithData(descItemRepository.findOpenDescItemsByItemType(itemType, node));
     }
 
     public List<ArrDescItem> findByUriDataNode(final ArrNode node) {
-        return dataService.findItemsWithData(() -> descItemRepository.findByUriDataNode(node),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
-        return itemList.stream()
-        		.filter(i -> i.getData() != null)
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+    	return dataService.findItemsWithData(descItemRepository.findByUriDataNode(node));
     }
 
     /**
@@ -1373,7 +1359,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              final ArrFundVersion fundVersion,
                                              final ArrChange change) {
 
-        this.logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
+        logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
                           fundVersion.getFundVersionId(),
                           change.getChangeId(), descItem.getItemId());
 
@@ -1442,11 +1428,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
 		// item type have to be same
-		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+		if (!Objects.equals(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
 			throw new SystemException("Different item types, cannot update value");
 		}
 		// position have to be same
-		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+		if (!Objects.equals(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
@@ -1495,11 +1481,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrDescItem descItemCurr = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
 		// item type have to be same
-		if (!Objects.equal(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
+		if (!Objects.equals(descItemCurr.getItemTypeId(), descItem.getItemTypeId())) {
 			throw new SystemException("Different item types, cannot update value");
 		}
 		// position have to be same
-		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
+		if (!Objects.equals(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
 		}
 
@@ -1540,7 +1526,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final BatchChangeContext batchChangeContext) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
-        if (!Objects.equal(oldPosition, newPosition)) {
+        if (!Objects.equals(oldPosition, newPosition)) {
             updateItemPosition(fundVersion, change, descItemDB, newPosition, batchChangeContext);
             move = true;
         }

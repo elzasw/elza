@@ -11,6 +11,8 @@ import cz.tacr.elza.drools.model.ModelPart;
 import cz.tacr.elza.drools.model.Index;
 import cz.tacr.elza.drools.model.GeoModel;
 import cz.tacr.elza.drools.model.DrlUtils;
+import cz.tacr.elza.drools.model.ExpectedItems;
+import java.time.LocalDateTime;
 global ApValidationErrors results;
 
 
@@ -59,4 +61,24 @@ when $ae: Ap( $aeParts : parts)
      not (Item(type == "CRE_DATE") from $part.items)
 then
     results.addError("Není vyplněna datace vzniku, musí být vyplněna, pokud není vyplněn zánik a jeho datace.");
+end
+
+/*
+R_NAM_005  Kontrola hodnoty chronologického doplňku
+*/
+
+rule "R_NAM_005 Kontrola chronologického doplňku bez zániku - fyzická osoba"
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_NAME) from $ae.parts
+     not $partExt: Part(type == PartType.PT_EXT) from $ae.parts
+     $partCre: Part(type == PartType.PT_CRE) from $ae.parts
+     Item(type == "CRE_CLASS", spec == "CRC_BIRTH") from $partCre.items
+     $itemFrom: Item(type == "CRE_DATE") from $partCre.items
+     // Narozen dříve než před 120roky
+     eval( DrlUtils.lessThan($itemFrom.getValue(), LocalDateTime.now().minusYears(120)) == true )
+     ExpectedItems( $expItems: items )
+     $expSupChro: Item(type == "NM_SUP_CHRO" ) from $expItems
+     $item: Item(type == "NM_SUP_CHRO", value!=$expSupChro.value) from $part.items
+then
+    results.addError("Chronologický doplněk neodpovídá očekávané hodnotě. Hodnota: " + $item.getValue() + ", očekáváná hodnota: " + $expSupChro.getValue());
 end

@@ -191,6 +191,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -289,6 +290,8 @@ public class ClientFactoryVO {
     @Autowired
     private ApIndexRepository indexRepository;
 
+    @Autowired
+    private AccessPointService accessPointService;
 
     /**
      * Vytvoření nastavení.
@@ -530,7 +533,6 @@ public class ClientFactoryVO {
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
-        ArrData data = HibernateUtils.unproxy(item.getData());
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
         switch (dataType) {
@@ -576,10 +578,10 @@ public class ClientFactoryVO {
      *
      * @param nodeId
      * @param items seznam DO atributů
-     * @param inhibitedDescItemIds
+     * @param inhibitedDescItemObjectIds
      * @return seznam VO atributů
      */
-    public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemIds) {
+    public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemObjectIds) {
         if (items == null) {
             return null;
         }
@@ -596,12 +598,14 @@ public class ClientFactoryVO {
         List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
         Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
 
+        int inhPos = -items.size();
         for (ArrDescItem item : items) {
             ArrItemVO itemVO = createItem(item);
-            if (item.getNodeId() != nodeId) {
+            if (!item.getNodeId().equals(nodeId)) {
             	itemVO.setFromNodeId(item.getNodeId());
+            	itemVO.setPosition(inhPos++);
             }
-            if (inhibitedDescItemIds.contains(item.getItemId())) {
+            if (inhibitedDescItemObjectIds.contains(item.getDescItemObjectId())) {
             	itemVO.setInhibited(true);
             }
             ArrData data = HibernateUtils.unproxy(item.getData());
@@ -611,6 +615,9 @@ public class ClientFactoryVO {
             }
             result.add(itemVO);
         }
+
+        // řazení záznamů podle position
+        Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
         return result;
     }
 
@@ -848,11 +855,6 @@ public class ClientFactoryVO {
                 .collect(Collectors.toList());
     }
 
-    private ItemTypeLiteVO createItemTypeLite(final RulItemTypeExt itemTypeExt) {
-        Assert.notNull(itemTypeExt, "Typ hodnoty atributu musí být vyplněn");
-        return ItemTypeLiteVO.newInstance(itemTypeExt);
-    }
-
     /**
      * Vytvoření typu hodnoty atributu se specifikacemi.
      *
@@ -1087,23 +1089,9 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<ParInstitutionVO> createInstitutionList(final List<ParInstitution> institutions) {
-        return institutions.stream().map(i -> ParInstitutionVO.newInstance(i)).collect(Collectors.toList());
-    }
-
-    /**
-     * Vytvoří VO instituce.
-     *
-     * @param institution instituce DO
-     * @return instituce VO
-     */
-    public ParInstitutionVO createInstitution(final ParInstitution institution) {
-        Assert.notNull(institution, "Instituce musí být vyplněny");
-        ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-
-        ParInstitutionVO institutionVO = ParInstitutionVO.newInstance(institution);
-        institutionVO.setName(displayName != null ? displayName.getIndexValue() : null);
-
-        return institutionVO;
+    	Collection<ApAccessPoint> accessPoints = institutions.stream().map(i -> i.getAccessPoint()).collect(Collectors.toList());
+    	Map<Integer, ApIndex> indexMap = accessPointService.findPreferredPartIndexMap(accessPoints);
+        return institutions.stream().map(i -> ParInstitutionVO.newInstance(i, indexMap.get(i.getAccessPointId()))).collect(Collectors.toList());
     }
 
     /**
