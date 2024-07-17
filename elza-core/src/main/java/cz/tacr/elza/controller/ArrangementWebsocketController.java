@@ -232,7 +232,7 @@ public class ArrangementWebsocketController {
     /**
      * Potlačení dědictví item.
      * 
-     * @param arrInhibitedItem obsahuje nodeId & itemId
+     * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
     @Transactional
@@ -252,15 +252,17 @@ public class ArrangementWebsocketController {
     /**
      * Povolení dědictví item.
      * 
-     * @param descItemObjectId
+     * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
     @Transactional
     @MessageMapping("/arrangement/descItems/allow")
-    public void allowItem(@Payload final Integer descItemObjectId, final StompHeaderAccessor requestHeaders) {
-        Objects.requireNonNull(descItemObjectId);
+    public void allowItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
+        Objects.requireNonNull(arrInhibitedItem);
+        Objects.requireNonNull(arrInhibitedItem.getNodeId());
+        Objects.requireNonNull(arrInhibitedItem.getDescItemObjectId());
 
-        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(descItemObjectId); 
+        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(arrInhibitedItem.getNodeId(), arrInhibitedItem.getDescItemObjectId()); 
 
         Integer resultItemId = arrangementService.allowItem(inhibitedItem.getNode(), inhibitedItem);
 		webScoketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);
