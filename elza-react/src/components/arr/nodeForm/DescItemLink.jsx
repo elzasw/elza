@@ -110,6 +110,7 @@ class DescItemLink extends AbstractReactComponent {
                     value={descItem.description || descItem.value}
                     cal={cal}
                     isValueUndefined={descItem.undefined}
+                    isValueInhibited={descItem.inhibited}
                 />
             );
         }

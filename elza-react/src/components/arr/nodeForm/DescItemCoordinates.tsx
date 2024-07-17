@@ -115,7 +115,12 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
 
         if (readMode) {
             if(descItem.undefined){
-                return <DescItemLabel value={value} cal={cal} isValueUndefined={descItem.undefined} />;
+                return <DescItemLabel
+                    value={value}
+                    cal={cal}
+                    isValueUndefined={descItem.undefined}
+                    isValueInhibited={descItem.inhibited}
+                />;
             }
 
             return <CoordinatesDisplay

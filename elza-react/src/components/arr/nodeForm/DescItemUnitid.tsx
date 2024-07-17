@@ -32,7 +32,12 @@ class DescItemUnitid extends AbstractReactComponent<Props> {
             inputValue(descItem.value);
 
         if (readMode) {
-            return <DescItemLabel value={value} cal={cal} isValueUndefined={descItem.undefined} />;
+            return <DescItemLabel
+                value={value}
+                cal={cal}
+                isValueUndefined={descItem.undefined}
+                isValueInhibited={descItem.inhibited}
+            />;
         }
 
         let cls: string[] = [];
