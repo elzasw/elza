@@ -6,6 +6,7 @@
     <!--Verze 1.0 - vytvoreni schematu databaze-->
     <changeSet id="1" author="ppyt">
     	<validCheckSum>9:9bd2b42461654aff7a6f783b22714941</validCheckSum>
+    	<validCheckSum>9:9c631d3dd600d55d35751e01ce184ae0</validCheckSum>
 
 		<!-- Run this only on new DB -->
 		<preConditions onFail="MARK_RAN">
