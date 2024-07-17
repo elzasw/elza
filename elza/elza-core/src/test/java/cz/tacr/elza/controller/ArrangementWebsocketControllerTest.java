@@ -264,7 +264,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         assertNotNull(inhibitItemId);
 
         // Označení přidané položky jako smazané
-        receiptable = session.send(ALLOW_DESC_ITEM, arrInhibitedItem.getDescItemObjectId());
+        receiptable = session.send(ALLOW_DESC_ITEM, arrInhibitedItem);
         status = waitingForReceipt(receiptable, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 

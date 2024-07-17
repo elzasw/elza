@@ -898,7 +898,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrDescItem retDescItem = descItemRepository.save(descItem);
 
         // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
-        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByDescItemObjectId(descItem.getDescItemObjectId()).orElse(null);
+        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByNodeIdAndDescItemObjectId(descItem.getNodeId(), descItem.getDescItemObjectId()).orElse(null);
         if (inhibitedItem != null) {
         	inhibitedItem.setDeleteChange(change);
         	inhibitedItemRepository.save(inhibitedItem);

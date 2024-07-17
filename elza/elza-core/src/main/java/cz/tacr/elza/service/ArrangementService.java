@@ -284,12 +284,13 @@ public class ArrangementService {
     /**
      * Načtení záznamy o potlačení dědictví na zaklade descItemObjectId.
      * 
+     * @param nodeId
      * @param descItemObjectId
      * @return záznam o potlačení dědictví
      * @throws ObjectNotFoundException objekt nenalezen
      */
-    public ArrInhibitedItem getInhibitedItem(@NotNull Integer descItemObjectId) {
-    	return inhibitedItemRepository.findByDescItemObjectId(descItemObjectId).orElseThrow(inhibitedItem(descItemObjectId));
+    public ArrInhibitedItem getInhibitedItem(@NotNull Integer nodeId, @NotNull Integer descItemObjectId) {
+    	return inhibitedItemRepository.findByNodeIdAndDescItemObjectId(nodeId, descItemObjectId).orElseThrow(inhibitedItem(descItemObjectId));
     }
 
     /**
