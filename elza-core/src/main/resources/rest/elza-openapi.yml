@@ -770,6 +770,46 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
+  /aip/create-dao-link:
+    post:
+      tags:
+        - aips
+      operationId: Aip_createDaoLink
+      description: Create dao link
+      parameters:
+        - name: aipId
+          in: query
+          required: true
+          description: AIP ID
+          schema:
+            type: integer
+        - name: daoId
+          in: query
+          required: true
+          description: DAO ID
+          schema:
+            type: integer
+        - name: nodeId
+          in: query
+          required: true
+          description: Node ID
+          schema:
+            type: integer
+        - name: linkType
+          in: query
+          required: true
+          description: Link type
+          schema:
+            $ref: '#/components/schemas/LinkType'
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /aip/create-dao-structure:
     post:
       tags:
@@ -795,6 +835,28 @@ paths:
               type: array
               items:
                 type: integer
+  /aip/delete-dao-link:
+    post:
+      tags:
+        - aips
+      operationId: Aip_deleteDaoLink
+      description: Delete dao link
+      parameters:
+        - name: daoLinkId
+          in: query
+          required: true
+          description: Dao link ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /aip/import-package:
     post:
       tags:
@@ -1467,6 +1529,13 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    LinkType:
+      type: string
+      enum:
+        - AIP
+        - PART_AIP
+        - COMPONENT_AIP
+      description: Link type
     LoggedUser:
       type: object
       required:

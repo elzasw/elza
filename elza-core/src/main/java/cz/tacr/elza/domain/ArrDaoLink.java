@@ -4,6 +4,8 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -45,7 +47,7 @@ public class ArrDaoLink {
     private Integer nodeId;
 
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDao.class)
-    @JoinColumn(name = "daoId", nullable = false)
+    @JoinColumn(name = "daoId")
     private ArrDao dao;
 
     @Column(name = "daoId", updatable = false, insertable = false)
@@ -67,6 +69,24 @@ public class ArrDaoLink {
 
     @Column(length = StringLength.LENGTH_250)
     private String scenario;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAip.class)
+    @JoinColumn(name = "aip_id", nullable = false)
+    private DaAip aip;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaDao.class)
+    @JoinColumn(name = "da_dao_id")
+    private DaDao daDao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "link_type", length = StringLength.LENGTH_ENUM, nullable = false)
+    private LinkType linkType;
+
+    public enum LinkType {
+        AIP,
+        PART_AIP,
+        COMPONENT_AIP
+    }
 
     public Integer getDaoLinkId() {
         return daoLinkId;
@@ -156,5 +176,29 @@ public class ArrDaoLink {
 
     public void setScenario(String scenario) {
         this.scenario = scenario;
+    }
+
+    public DaAip getAip() {
+        return aip;
+    }
+
+    public void setAip(DaAip aip) {
+        this.aip = aip;
+    }
+
+    public DaDao getDaDao() {
+        return daDao;
+    }
+
+    public void setDaDao(DaDao daDao) {
+        this.daDao = daDao;
+    }
+
+    public LinkType getLinkType() {
+        return linkType;
+    }
+
+    public void setLinkType(LinkType linkType) {
+        this.linkType = linkType;
     }
 }

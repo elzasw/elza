@@ -472,6 +472,15 @@ enum AipType {
     AIP_RAW;
 }
 
+/**
+ * Link type
+ */
+enum LinkType {
+    AIP,
+    PART_AIP,
+    COMPONENT_AIP;
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -883,6 +892,44 @@ namespace ElzaAPI.Aip {
         @Http.statusCode statusCode: 500;
         @body data: BaseException;
        };
+
+    /**
+     * Create dao link
+     */
+     @route("/create-dao-link")
+     @post op createDaoLink(
+        /** AIP ID */
+        @query aipId: integer;
+        /** DAO ID */
+        @query daoId: integer;
+        /** Node ID */
+        @query nodeId: integer;
+        /** Link type */
+        @query linkType: LinkType;
+     ) : {
+         /** Dao link successfully created */
+         @Http.statusCode statusCode: 200;
+        } | {
+         /** Failed to create dao link */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
+     /**
+      * Delete dao link
+      */
+      @route("/delete-dao-link")
+      @post op deleteDaoLink(
+         /** Dao link ID */
+         @query daoLinkId: integer;
+      ) : {
+          /** Dao link successfully deleted */
+          @Http.statusCode statusCode: 200;
+         } | {
+          /** Failed to delete dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+         };
 }
 
 @service({
