@@ -6651,6 +6651,10 @@ when ActiveLevel($items: descItems)
     $itemSpec: RulItemSpecExt( code in (
         // autor
         "ZP2015_ENTITY_ROLE_1",
+        // autoři hudby
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
@@ -6661,8 +6665,16 @@ when ActiveLevel($items: descItems)
         "ZP2015_ENTITY_ROLE_24",
         // schvalovatelé
         "ZP2015_ENTITY_ROLE_25",
+        // režiséři
+        "ZP2015_ENTITY_ROLE_27",
+        // scenáristé
+        "ZP2015_ENTITY_ROLE_28",
+        // interpreti hudby
+        "ZP2015_ENTITY_ROLE_30",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // dramaturgové
+        "ZP2015_ENTITY_ROLE_40",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // typová označení a názvy výrobků a typových staveb
