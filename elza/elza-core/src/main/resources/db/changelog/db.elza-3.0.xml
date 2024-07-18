@@ -732,4 +732,48 @@
                                  referencedColumnNames="dao_id"/>
     </changeSet>
 
+    <changeSet id="20240717130000" author="fantis">
+        <createTable tableName="da_dao_item">
+            <column name="dao_item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_dao_item" nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_spec_id" type="int"/>
+            <column name="data_id" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="dao_id"
+                                 constraintName="fk_da_dao_item_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="create_change_id"
+                                 constraintName="fk_da_dao_item_create_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="delete_change_id"
+                                 constraintName="fk_da_dao_item_delete_da_change"
+                                 referencedTableName="da_change"
+                                 referencedColumnNames="change_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="item_type_id"
+                                 constraintName="fk_da_dao_item_rul_item_type"
+                                 referencedTableName="rul_item_type"
+                                 referencedColumnNames="item_type_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="item_spec_id"
+                                 constraintName="fk_da_dao_item_rul_item_spec"
+                                 referencedTableName="rul_item_spec"
+                                 referencedColumnNames="item_spec_id"/>
+        <addForeignKeyConstraint baseTableName="da_dao_item" baseColumnNames="data_id"
+                                 constraintName="fk_da_dao_item_arr_data"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"/>
+    </changeSet>
+
 </databaseChangeLog>
