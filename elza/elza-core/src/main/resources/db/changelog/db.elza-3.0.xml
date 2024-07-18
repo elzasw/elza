@@ -711,4 +711,25 @@
         <dropTable tableName="da_remote_aip"/>
     </changeSet>
 
+    <changeSet id="20240717125500" author="fantis">
+        <addColumn tableName="arr_dao_link">
+            <column name="aip_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="da_dao_id" type="int"/>
+            <column name="link_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropNotNullConstraint tableName="arr_dao_link" columnName="dao_id"/>
+        <addForeignKeyConstraint baseTableName="arr_dao_link" baseColumnNames="aip_id"
+                                 constraintName="fk_arr_dao_link_da_aip"
+                                 referencedTableName="da_aip"
+                                 referencedColumnNames="aip_id"/>
+        <addForeignKeyConstraint baseTableName="arr_dao_link" baseColumnNames="da_dao_id"
+                                 constraintName="fk_arr_dao_link_da_dao"
+                                 referencedTableName="da_dao"
+                                 referencedColumnNames="dao_id"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.AipType;
+import cz.tacr.elza.controller.vo.LinkType;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.da.DaService;
@@ -39,6 +41,18 @@ public class AipController implements AipsApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipCreateDaoLink(Integer aipId, Integer daoId, Integer nodeId, LinkType linkType) {
+        daService.createDaoLink(aipId, daoId, nodeId, ArrDaoLink.LinkType.valueOf(linkType.name()));
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipDeleteDaoLink(Integer daoLinkId) {
+        daService.deleteDaoLink(daoLinkId);
         return ResponseEntity.ok().build();
     }
 }

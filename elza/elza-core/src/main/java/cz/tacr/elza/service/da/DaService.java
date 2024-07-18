@@ -10,13 +10,14 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
-import cz.tacr.elza.controller.AipStructureVO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
 import cz.tacr.elza.controller.vo.DaDaoFileVO;
-import cz.tacr.elza.controller.vo.DaDaoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
@@ -39,7 +40,10 @@ import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.UserService;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.premis.v3.PremisComplexType;
@@ -89,6 +93,8 @@ public class DaService {
     @Autowired
     private PackageInfoService packageInfoService;
     @Autowired
+    private ArrangementInternalService arrangementInternalService;
+    @Autowired
     private ResourcePathResolver resourcePathResolver;
     @Autowired
     private DaConnector daConnector;
@@ -116,6 +122,10 @@ public class DaService {
     private AipService aipService;
     @Autowired
     private DaDaoFileRepository daDaoFileRepository;
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
 
@@ -168,7 +178,7 @@ public class DaService {
 
     public void createDaoStructure(List<Integer> aipIds) {
         for (Integer aipId : aipIds) {
-            DaAip aip = aipRepository.findById(aipId).orElseThrow(() -> new ObjectNotFoundException("Nebyl nalezen AIP=" + aipId, AIP_NOT_FOUND));
+            DaAip aip = findAipById(aipId);
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
             DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState, EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE));
 
@@ -223,6 +233,14 @@ public class DaService {
                 logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
             }
         }
+    }
+
+    public DaAip findAipById(Integer aipId) {
+        return aipRepository.findById(aipId).orElseThrow(() -> new ObjectNotFoundException("Nebyl nalezen AIP=" + aipId, AIP_NOT_FOUND));
+    }
+
+    public DaDao findDaoById(Integer daoId) {
+        return daoRepository.findById(daoId).orElseThrow(() -> new ObjectNotFoundException("Nebylo nalezeno DAO=" + daoId, AIP_NOT_FOUND));
     }
 
     @Transactional
@@ -751,5 +769,34 @@ public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) 
         try (Stream<Path> str = Files.walk(downloadDir).filter(p -> p.getFileName().endsWith(".zip"))) {
             return str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
         }
+    }
+
+    @Transactional
+    public void createDaoLink(Integer aipId, Integer daoId, Integer nodeId, ArrDaoLink.LinkType linkType) {
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+        DaAip aip = findAipById(aipId);
+        DaDao daDao = null;
+
+        if (daoId != null) {
+            daDao = findDaoById(daoId);
+        }
+
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setNode(node);
+        arrDaoLink.setCreateChange(change);
+        arrDaoLink.setAip(aip);
+        arrDaoLink.setDaDao(daDao);
+        arrDaoLink.setLinkType(linkType);
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void deleteDaoLink(Integer daoLinkId) {
+        ArrDaoLink arrDaoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrDaoLink.getNode());
+        arrDaoLink.setDeleteChange(change);
+        daoLinkRepository.save(arrDaoLink);
     }
 }
