@@ -11,7 +11,10 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,5 +90,17 @@ public class ResponseFactory {
         }
         FileSystemResource fsr = new FileSystemResource(filePath);
         return new ResponseEntity<>(fsr, headers, HttpStatus.OK);
+    }
+
+    public static MultiValueMap<String, String> addHeaders(MultiValueMap<String, String> headers, String key, String value) {
+    	if (headers == null) {
+        	headers = new LinkedMultiValueMap<>();
+    	}
+        headers.add(key, value);
+        return headers;
+    }
+
+    public static MultiValueMap<String, String> headerContentTypeJson() {
+    	return ResponseFactory.addHeaders(null, HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     }
 }
