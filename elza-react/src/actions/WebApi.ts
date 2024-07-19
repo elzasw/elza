@@ -1814,7 +1814,7 @@ export class WebApiCls {
     }
 
     createFundFileRaw(formData) {
-        return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund/', {}, 'POST', formData);
+        return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund', {}, 'POST', formData);
     }
 
     createFundFile(formData) {
