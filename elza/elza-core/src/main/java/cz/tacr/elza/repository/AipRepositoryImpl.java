@@ -53,7 +53,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
                                                     final Root<DaAip> aipRoot) {
         List<Predicate> predicates = new ArrayList<>();
         Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.LEFT);
-        Join<DaAip, DaSyncQueueItem> syncJoin = aipRoot.join("queueItems", JoinType.LEFT);
+        Join<DaAip, DaSyncQueueItem> syncJoin = aipRoot.join("daSyncQueueItem", JoinType.LEFT);
         Join<DaAipState, ApAccessPoint> oApJoin = stateJoin.join("originatorAccessPoint", JoinType.LEFT);
         Join<DaAipState, ParInstitution> instJoin = stateJoin.join("institution", JoinType.LEFT);
         Join<ParInstitution, ApAccessPoint> instApJoin = instJoin.join("accessPoint", JoinType.LEFT);

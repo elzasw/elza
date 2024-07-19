@@ -33,6 +33,7 @@ import { colDef, getBoolIcon } from './utils.tsx';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
+import debounce from 'shared/utils/debounce.jsx';
 
 const AipTable: FC = () => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
@@ -57,10 +58,16 @@ const AipTable: FC = () => {
 
     const [columns, setColumns] = useState<TableColumnDefinition<DaAipDetailVO>[]>(columnsDef);
 
+    const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
+        return formatDate(new Date(unitdateFrom)) + " - " + unitdateTo ? formatDate(new Date(unitdateTo)) : "?";
+    }
+
     const getContent =(item: DaAipDetailVO, key: string) => {
         switch(key) {
             case "aipSize": return formatAipSize(item[key]);
-            case "unitdateFrom": return formatDate(new Date(item.unitdateFrom)) + " - " + formatDate(new Date(item.unitdateTo));
+            case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom,item.unitdateTo): "-";
+            case "fund.name": return item.fund.name;
+            case "institution.name": return item.institution.name;
             default: 
                 return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
         }
@@ -99,7 +106,8 @@ const AipTable: FC = () => {
         return acc;
     }, {});
 
-    const [columnSizingOptions] = useState<TableColumnSizingOptions>(def);
+
+    const [columnSizingOptions, setColumnSizingOptions] = useState<TableColumnSizingOptions>(def);
     const { 
         getRows, 
         columnSizing_unstable, 

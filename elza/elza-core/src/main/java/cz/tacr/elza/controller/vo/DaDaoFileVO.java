@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import java.math.BigInteger;
 
 public class DaDaoFileVO {
+    private String uuid;
     private Integer daoFileId;
     private DaDaoVO dao;
     private String checksum;
@@ -19,6 +20,25 @@ public class DaDaoFileVO {
     private String description;
     private String fileName;
     private DaDaoFileFolderVO daoFileFolder;
+    private DaDaoFileFolderVO parentFolderLogical;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public DaDaoFileFolderVO getParentFolderLogical() {
+        return parentFolderLogical;
+    }
+
+    public void setParentFolderLogical(DaDaoFileFolderVO logicalParentFolder) {
+        this.parentFolderLogical = logicalParentFolder;
+    }
+
+
 
     public Integer getDaoFileId() {
         return daoFileId;

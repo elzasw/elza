@@ -1,17 +1,18 @@
+import { ParInstitutionVO } from "./ParInstitutionVO.ts";
 import { QueueItemState } from "./QueueItemState.ts";
 
-export interface DaAipDetailVO {
+export type DaAipDetailVO = {
     aipId: number;
     code: string;
     digitalRepositoryId: number;
     aipVersion: string;
-    fundName: string;
-    fundCode: string;
-    instApName: string;
+    fund: any;
+    institution: ParInstitutionVO;
     institutionCode: string;
     unitdateFrom: string;
     unitdateTo: string;
-    originApName: string;
+    originatorInstitution: ParInstitutionVO;
+    originator: string;
     ingestionCode: string;
     referenceNumber: string;
     nadChangeCode: string;

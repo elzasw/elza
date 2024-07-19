@@ -14,13 +14,14 @@ import {
     useTableSort, 
     TableColumnDefinition, 
     createTableColumn, 
-    TableColumnId
+    TableColumnId,
+    TableFeaturePlugin
 } from "@fluentui/react-components";
 import { FC, useCallback, useState, KeyboardEvent } from "react";
 import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/utils";
 import { getFileName } from "../utils";
-import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { ExplorerMode, isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
 
 type Item = {
     fileName?: string;
@@ -60,18 +61,40 @@ const columnSizes = {
 }
 
 const ExplorerTable: FC = () => {
-    const {selectedItem, setSelectedItem} = useExplorerContext();
+    const {selectedItem, setSelectedItem, mode} = useExplorerContext();
+
     let items = null;
     if(isDaoFileFolderVO(selectedItem) && 
         !((!selectedItem.childFolders && !selectedItem.childFiles) 
         || (selectedItem.childFolders && selectedItem.childFolders.length == 0))
     ) {
         items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []] 
-    } else {
+    } else if(selectedItem) {
         items = selectedItem?.parent ? [...selectedItem.parent.childFolders || [], ...selectedItem.parent.childFiles || []] : [];
     }
 
+    if(!items) {
+        return <></>
+    }
+    
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
+    const plugins: TableFeaturePlugin[] = [
+        useTableColumnSizing_unstable({ columnSizingOptions }),
+        useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
+    ] 
+
+    if (mode == ExplorerMode.SELECT) {
+        plugins.push(useTableSelection({
+            selectionMode: "multiselect",
+            onSelectionChange: (e, data) => {
+                const selectedRows = rows
+                    .filter(row => data.selectedItems.has(row.rowId))
+                    .map(row => row.item);
+                //TODO: @kasparova action
+            }
+        }));
+    }
+
     const { 
         getRows, 
         columnSizing_unstable, 
@@ -86,19 +109,7 @@ const ExplorerTable: FC = () => {
           },
     } = useTableFeatures(
         { columns, items },
-        [
-            useTableColumnSizing_unstable({ columnSizingOptions }),
-            useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
-            useTableSelection({
-                selectionMode: "multiselect",
-                onSelectionChange: (e, data) => {
-                    const selectedRows = rows
-                        .filter(row => data.selectedItems.has(row.rowId))
-                        .map(row => row.item);
-                    //TODO: @kasparova action
-                }
-            }),
-        ] 
+        plugins
       );
     
     const rows = sort(getRows((row) => {
@@ -152,14 +163,14 @@ const ExplorerTable: FC = () => {
         >
             <TableHeader>
                 <TableRow>
-                    <TableSelectionCell
+                    {mode == ExplorerMode.SELECT && <TableSelectionCell
                         checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
                         onClick={toggleAllRows}
                         onKeyDown={toggleAllKeydown}
                         checkboxIndicator={{"aria-label": "Vybrat vše"}}
                         className="header"
                         
-                    />
+                    />}
                     {columns.map((column) => (
                             //@ts-ignore
                         <TableHeaderCell
@@ -179,12 +190,12 @@ const ExplorerTable: FC = () => {
                         key={`${item.fileName || item.label}.${item.size}`} 
                         className="table-row"
                     >
-                        <TableSelectionCell
+                        {mode == ExplorerMode.SELECT && <TableSelectionCell
                             checked={selected}
                             checkboxIndicator={{ "aria-label": "Vybrat" }}
                                 //@ts-ignore
                             onClick={onClick}
-                        />
+                        />}
 
                         {columns.map(col => (
                             <TableCell

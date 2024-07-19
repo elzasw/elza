@@ -1,10 +1,20 @@
+import { TreeItemValue } from "@fluentui/react-tree";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { DaoFileVO } from "api/DaoFileVO";
 import { createContext, useContext, useState } from "react";
 
+export enum ExplorerMode {
+    VIEW = "view", 
+    SELECT = "select"
+}
+
 type TExplorerContext = {
     selectedItem: DaoFileFolderVO | DaoFileVO;
     setSelectedItem: (item: DaoFileFolderVO | DaoFileVO) => void;
+    structure: DaoFileFolderVO
+    setStructure: (structure: DaoFileFolderVO) => void;
+    mode: ExplorerMode;
+    setMode: (mode: ExplorerMode) => void;
 }
 
 const ExpContext = createContext<TExplorerContext>(null);
@@ -16,17 +26,24 @@ export const isDaoFileFolderVO = (item: DaoFileFolderVO | DaoFileVO): item is Da
 }
 
 type ECProps = {
+    mode: ExplorerMode;
     children: React.ReactNode;
 }
 
 
-const ExplorerContext = ({children}: ECProps) => {
+const ExplorerContext = ({mode: modeProp, children}: ECProps) => {
     const [selectedItem, setSelectedItem] = useState<DaoFileFolderVO | DaoFileVO>(null);
+    const [mode, setMode] = useState<ExplorerMode>(modeProp);
+    const [structure, setStructure] = useState<DaoFileFolderVO>(null);
     
     return (
         <ExpContext.Provider value={{
             selectedItem,
             setSelectedItem,
+            mode,
+            setMode,
+            structure,
+            setStructure
         }}>
             {children}
         </ExpContext.Provider>

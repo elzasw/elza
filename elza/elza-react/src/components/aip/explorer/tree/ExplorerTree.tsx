@@ -12,16 +12,15 @@ import { useThunkDispatch } from "utils/hooks";
 import { AREA_AIP_STRUCTURE, fetchAipStructureIfNeeded } from "actions/aip/exp";
 import "./ExplorerTree.scss"
 import Folder from "./Folder";
-import { useExplorerContext } from "../ExplorerContext";
+import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
-import { DaoFileVO } from "api/DaoFileVO";
-import { turncate } from "../utils";
+import { findNodeByUUID } from "../utils";
 
 
 const AipTree: FC = () => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
-    const {selectedItem, setSelectedItem} = useExplorerContext();
+    const {selectedItem, setSelectedItem, setStructure} = useExplorerContext();
 
     if(structure) {
         structure.parent = null;
@@ -34,13 +33,32 @@ const AipTree: FC = () => {
         event: TreeOpenChangeEvent,
         data: TreeOpenChangeData
     ) => {
-        setSelectedItem(data.value as unknown as (DaoFileFolderVO | DaoFileVO))
+        const {node} = findNodeByUUID(structure, data.value);
+        setSelectedItem(node);
         setOpenItems((curr) =>
-            data.open
-                ? [...curr, data.value]
-                : curr.filter((value) => value !== data.value)
-        );
+                data.open
+                    ? [...curr, data.value]
+                    : curr.filter((value) => value !== data.value)
+            )
     };
+
+    const openChange = (value: TreeItemValue, close = false) => {
+        const opened = [...openItems];
+        if (close) {
+            setOpenItems(prev => prev.filter(uuid => uuid !== value))
+        } else {
+            const result = findNodeByUUID(structure, value);
+            if(result) {
+                const items = result.path.map(node => node.uuid);
+                items.forEach(item => {
+                    if (!opened.includes(item)) {
+                        opened.push(item)
+                    }
+                });
+                setOpenItems(opened);
+            }
+        }
+    }
 
     useEffect(() => {
         dispatch(fetchAipStructureIfNeeded(aip.id));
@@ -48,12 +66,18 @@ const AipTree: FC = () => {
 
     useEffect(() => {
         setSelectedItem(structure);
-        setOpenItems([structure]);
+        setStructure(structure)
     }, [structure]);
 
     useEffect(() => {
-        setOpenItems([...openItems, selectedItem] as TreeItemValue[]);
+        if (selectedItem) {
+            openChange(selectedItem.uuid);
+        }
     }, [selectedItem]);
+
+    if(!structure) {
+        return <></>
+    }
 
     return (
          <Tree
@@ -61,21 +85,22 @@ const AipTree: FC = () => {
             openItems={openItems}
             onOpenChange={handleOpenChange}
             style={{overflowX: "auto"}}
-            defaultOpenItems={[structure]}
+            defaultOpenItems={[structure.uuid]}
         >
-            {structure && <TreeItem itemType="branch" value={structure}>
+            {structure && <TreeItem itemType="branch" value={structure.uuid}>
                 <TreeItemLayout
                     expandIcon={
-                        openItems.includes(structure) ? 
+                        openItems.includes(structure.uuid) ? 
                             <SubtractSquare16Regular color="black"/> : 
                             <AddSquare16Regular color="black"/>
                     }
                 >
-                    {turncate(structure.label)}
+                    {structure.label}
                 </TreeItemLayout>
                 <Tree>
                     {structure?.childFolders && 
-                    structure.childFolders.map(folder => <Folder 
+                    structure.childFolders.map((folder: DaoFileFolderVO, index: number) => <Folder 
+                            key={`root-${index}`}
                             folder={folder} 
                             openItems={openItems} 
                             parent={structure}

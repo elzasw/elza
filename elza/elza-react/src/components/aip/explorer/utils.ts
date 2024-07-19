@@ -8,3 +8,53 @@ export const turncate = (str: string ): string => {
     }
     return str.slice(0, 17) + '...';
 }
+
+export const findNodeByUUID = (tree, uuid, path = []) => {
+    if (!tree) return null;
+
+    path.push(tree);
+
+    if (tree.uuid === uuid) {
+        return { node: tree, path };
+    }
+
+    if (Array.isArray(tree.childFiles)) {
+        for (const file of tree.childFiles) {
+            if (file.uuid === uuid) {
+                return { node: file, path: [...path, file] };
+            }
+        }
+    }
+
+    if (Array.isArray(tree.childFolders)) {
+        for (const folder of tree.childFolders) {
+            const result = findNodeByUUID(folder, uuid, [...path]); 
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}
+
+export const findNodeById = (tree, id, path = []) => {
+    if (!tree) return null;
+
+    path.push(tree);
+
+    if (tree.daoFileFolderId === id ) {
+        return { node: tree, path };
+    }
+
+    if (Array.isArray(tree.childFolders)) {
+        for (const folder of tree.childFolders) {
+            const result = findNodeById(folder, id, [...path]); 
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}

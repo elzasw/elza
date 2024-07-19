@@ -6,10 +6,14 @@ import ExplorerTable from "./table/ExplorerTable";
 import ExplorerDetail from "./detail/ExplorerDetail";
 import ExplorerNavigationTab from "./ExplorerNavigationTab";
 import { Divider } from "@fluentui/react-components";
-import ExplorerContext from "./ExplorerContext";
+import ExplorerContext, { ExplorerMode } from "./ExplorerContext";
 
-const AipExplorer: FC = () =>  (
-    <ExplorerContext>
+type AipExplorerProps = {
+    mode: ExplorerMode;
+}
+
+const AipExplorer = ({mode}: AipExplorerProps) => (
+    <ExplorerContext mode={mode}>
         <ExplorerNavigationTab />
         <Divider />
         <Splitter
