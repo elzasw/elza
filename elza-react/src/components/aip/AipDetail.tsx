@@ -17,11 +17,12 @@ import i18n from 'components/i18n';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import AipExplorer from './explorer/AipExplorer';
 import AipExplorerModalWrapper from './explorer/AipExplorerWrapper';
+import { ExplorerMode } from './explorer/ExplorerContext';
 
 const AipDetail = () => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
     const dispatch = useThunkDispatch();
-    const history = useHistory();
+    const history = useHistory();   
 
     const fetchData = () => {
         dispatch(aipActions.aipFetchIfNeeded(aip.id));
@@ -43,8 +44,9 @@ const AipDetail = () => {
                 "AIP Průzkumník",
                 <AipExplorerModalWrapper
                 //@ts-ignore
-                    onOk={() => {}}
+                    onOk={() => dispatch(modalDialogHide())}
                     onClose={() => dispatch(modalDialogHide())}
+                    mode={ExplorerMode.VIEW}
                 />,
                 "aip-explorer"
             ),
@@ -105,24 +107,29 @@ const AipDetail = () => {
                             <DetailRow label="Kód aipu" value={aip.data.code.toString()}/>}
                         {aip.data.aipVersion &&
                             <DetailRow label="Verze" value={aip.data.aipVersion}/>}
-                        {aip.data.fundName &&
+                        {aip.data.fund &&
                             <DetailRow label="Archivní soubor" value={
-                                <a href=''>{aip.data.fundName}</a>
+                                <a href={`/fund/${aip.data.fund.id}`}>{aip.data.fund.name}</a>
                             }/>
                         }
-                        {aip.data.instApName &&
+                        {aip.data.institution &&
                             <DetailRow label="Instituce" value={
-                                <a href='/entity/1'>{aip.data.instApName}</a>
+                                <a href={`/entity/${aip.data.institution.id}`}>{aip.data.institution.name}</a>
                             }/>
                         }
+                        {aip.data.institutionCode &&
+                            <DetailRow label="Kód instituce" value={aip.data.institutionCode}/>}
                         {aip.data.unitdateFrom &&
                             <DetailRow label="Dotace od-do" value={
                                 formatDate(new Date(aip.data.unitdateFrom)) + " - " + formatDate(new Date(aip.data.unitdateTo))
                             }/>}
-                        {aip.data.originApName &&
+                        {aip.data.originatorInstitution && 
                             <DetailRow label="Původce" value={
-                                <a href=''>{aip.data.originApName}</a>
+                                <a href={`/entity/${aip.data.originatorInstitution.id}`}>{aip.data.originatorInstitution.name}</a>
                             }/>
+                        }
+                        {aip.data.originator && !aip.data.originatorInstitution && 
+                            <DetailRow label="Původce" value={aip.data.originator}/>
                         }
                         {aip.data.stateingestionCode &&
                             <DetailRow label="Číslo přejímky" value={aip.data.ingestionCode}/>}

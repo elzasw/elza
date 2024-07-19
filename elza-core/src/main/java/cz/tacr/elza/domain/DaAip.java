@@ -28,9 +28,9 @@ public class DaAip {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "daAip")
     private List<DaAipState> states;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "aip")
-    private List<DaSyncQueueItem> queueItems;
-
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = DaSyncQueueItem.class)
+    @JoinColumn(name="aip_id", nullable = true)
+    private DaSyncQueueItem daSyncQueueItem;
 
     public Integer getAipId() {
         return aipId;
@@ -54,5 +54,21 @@ public class DaAip {
 
     public void setDigitalRepository(ArrDigitalRepository digitalRepository) {
         this.digitalRepository = digitalRepository;
+    }
+
+    public DaSyncQueueItem getDaSyncQueueItem() {
+        return daSyncQueueItem;
+    }
+
+    public void setDaSyncQueueItem(DaSyncQueueItem daSyncQueueItem) {
+        this.daSyncQueueItem = daSyncQueueItem;
+    }
+
+    public List<DaAipState> getStates() {
+        return states;
+    }
+
+    public void setStates(List<DaAipState> states) {
+        this.states = states;
     }
 }

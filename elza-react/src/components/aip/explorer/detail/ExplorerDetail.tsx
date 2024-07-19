@@ -1,12 +1,12 @@
 import i18n from "components/i18n";
 import { FC } from "react";
 import "./ExplorerDetail.scss";
-import { Button } from "@fluentui/react-components";
-import { getFileName } from "../utils";
+import { Button, TreeItemValue } from "@fluentui/react-components";
+import { findNodeById, getFileName } from "../utils";
 import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
 
 const ExplorerDetail: FC = () => {
-    const {selectedItem, setSelectedItem} = useExplorerContext();
+    const {selectedItem, setSelectedItem, structure} = useExplorerContext();
 
     const DetailRow = ({label, value}: {label: string, value?: any}) => (
         <div className="item-row">
@@ -20,36 +20,9 @@ const ExplorerDetail: FC = () => {
         </div>
     );
 
-    const selectFolder = (folder: any) => {
-        setSelectedItem(folder);
-    }
-
-    const renderParent = () => {
-        if(selectedItem?.parent) {
-            return (
-                <span>
-                    <a className="detail-item" onClick={() => selectFolder(selectedItem.parent)}>
-                        {renderValue(selectedItem.parent?.label)}
-                    </a>
-                </span>
-            );
-        }
-        return "-"
-    }
-
-    const renderChildren = () => {
-        if(isDaoFileFolderVO(selectedItem) && !selectedItem?.childFolders) return "-";
-        console.log("asdasd",selectedItem)
-        return (
-            <>
-                {isDaoFileFolderVO(selectedItem) && selectedItem.childFolders?.map((folder, index) => 
-                    <span>
-                        <a className="detail-item" onClick={() => selectFolder(folder)}>{folder.label}</a>
-                        {index != selectedItem?.childFolders.length - 1 && ", "}
-                    </span>
-                )}
-            </>
-        );
+    const selectFolder = (id) => {
+        const {node} = findNodeById(structure, id);
+        setSelectedItem(node);
     }
 
     const renderValue = (value: string) => {
@@ -66,6 +39,42 @@ const ExplorerDetail: FC = () => {
     if(!selectedItem) {
         return <p>Nebyl vybrám žádný objekt</p>
     }
+    const renderRepresentationParent = () => {
+        // @ts-ignore
+        if (!selectedItem.parentFolder && !selectedItem.daoFileFolder) {
+            return "-"
+        } else if (isDaoFileFolderVO(selectedItem)) {
+            return (
+                <span>
+                    <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolder.daoFileFolderId, )}>
+                        {renderValue(selectedItem.parentFolder?.label)}
+                    </a>
+                </span>
+            );
+        }
+        return (
+            <span>
+                <a className="detail-item" onClick={() => selectFolder(selectedItem.daoFileFolder.daoFileFolderId)}>
+                    {renderValue(selectedItem.daoFileFolder?.label)}
+                </a>
+            </span>
+        );
+    }
+
+    const renderLogicalParent = () => {
+        if (!selectedItem.parentFolderLogical) {
+            return "-"
+        }
+        return (
+            <span>
+                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolderLogical.daoFileFolderId)}>
+                    {renderValue(selectedItem.parentFolderLogical?.label)}
+                </a>
+            </span>
+        );
+    }
+
+    
 
     const renderFileData = () => {
         return (
@@ -120,11 +129,14 @@ const ExplorerDetail: FC = () => {
                 {selectedItem && renderFileData()}
             </div> 
 
-            {/* <div className="explorer-detail">
+            <div className="explorer-detail">
                 <h4>Vztahy - reprezentace</h4>
-                <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p>
-                <p><b>Potomci </b>{renderChildren()}</p>
-            </div> */}
+                {/* <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p> */}
+                <p><b>{i18n("aip.explorer.detail.parent")} </b> {renderRepresentationParent()}</p>
+                {/* <p><b>Potomci </b>{renderChildren()}</p> */}
+                <h4>Vztahy - logická struktura</h4>
+                <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderLogicalParent()}</p>
+            </div>
         </div>
     );
 }

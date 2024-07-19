@@ -111,8 +111,9 @@ const AipFilters = () => {
 
 				<MenuPopover className={classes.menuPopover}>
 				<MenuList>
-					{Object.keys(colDef).map(key => (
+					{Object.keys(colDef).map((key, index) => (
 						<MenuItem  
+							key={`filter-${index}`}
 							className={classes.menuItem}
 							onClick={() => handleFilterCreate(colDef[key])}
 						>

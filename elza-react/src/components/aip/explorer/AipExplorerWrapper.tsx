@@ -3,16 +3,18 @@ import i18n from "components/i18n";
 import { FC } from "react";
 import { Modal, Button } from "react-bootstrap";
 import AipExplorer from "./AipExplorer";
+import { ExplorerMode } from "./ExplorerContext";
 
 type AipExplorerModalWrapperProps = {
     onOk: () => void;
     onClose: () => void;
+    mode: ExplorerMode;
 }
 
-const AipExplorerModalWrapper: FC = ({onOk, onClose}: AipExplorerModalWrapperProps) => (
+const AipExplorerModalWrapper = ({onOk, onClose, mode}: AipExplorerModalWrapperProps) => (
     <FluentProvider>
         <Modal.Body>
-            <AipExplorer />
+            <AipExplorer mode={mode}/>
         </Modal.Body>
         <Modal.Footer>
             <Button onClick={onOk} variant="outline-secondary">

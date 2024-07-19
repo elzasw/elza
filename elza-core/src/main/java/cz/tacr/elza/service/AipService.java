@@ -33,7 +33,7 @@ public class AipService {
         if(aip == null) {
             return null;
         }
-        return clientFactoryVO.createAip(aip);
+        return clientFactoryVO.createAipDetail(aip);
     }
 
     @Transactional

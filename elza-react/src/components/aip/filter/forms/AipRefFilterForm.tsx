@@ -26,7 +26,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     };
 
     useEffect(() => {
-        if (item.key == "fundName") {
+        if (item.key == "fund.name") {
             dispatch(fundsFetchIfNeeded());
         } else {
             dispatch(accessPointsFetchIfNeeded());
@@ -34,7 +34,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     }, []);
 
     let selectValues;
-    if (item.key == "fundName") {
+    if (item.key == "fund.name") {
         selectValues = funds.fetched && funds.rows.map(item => ({value: item.id, label: item.name}));
     } else {
         selectValues = accessPoints.fetched && accessPoints.rows.map(item => ({value: item.id, label: item.name}));

@@ -30,7 +30,7 @@ export const generateUUID = () => {
         return v.toString(16);
     });
 }
-    
+
 /**
  * Přeformátování datumu do DD.MM.YYYY řetězce.
  *
@@ -46,13 +46,13 @@ export const formatDate = (date: Date): string => {
 
 export const formatAipSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['B', 'kB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     const size = (bytes / Math.pow(k, i)).toFixed(1);
-    
+
     return `${size} ${sizes[i]}`;
 }
 
@@ -70,13 +70,13 @@ export const findColDefByKey = (key: string) => {
 export const colDef = [
     {key: "aipId", name: "ID Aipu", path: DA_AIP_PATH, type: "number", minWidth: 50, idealWidth: 70},
     {key: "code", name: "Kód aipu", path: DA_AIP_PATH, type: "string", minWidth: 50, idealWidth: 70},
-    {key: "aipVersion", name: "Verze Aipu", path: DA_AIP_STATE_PATH,type: "string", minWidth: 60, idealWidth: 90},
-    {key: "fundName", name: "Archivní soubor", path: ARR_FUND, type: "ref", minWidth: 70, idealWidth: 115},
-    {key: "instApName", name: "Instituce", path: INST_ACCESS_POINT, type: "ref", minWidth: 70, idealWidth: 70},
-    {key: "institutionCode", name: "Kód instutuce", path:DA_AIP_STATE_PATH, type: "string", minWidth: 70, idealWidth:70},
+    {key: "aipVersion", name: "Verze Aipu", path: DA_AIP_STATE_PATH ,type: "string", minWidth: 60, idealWidth: 90},
+    {key: "fund.name", name: "Archivní soubor", path: ARR_FUND, type: "ref", minWidth: 70, idealWidth: 115},
+    {key: "institution.name", name: "Instituce", path: INST_ACCESS_POINT, type: "ref", minWidth: 70, idealWidth: 70},
+    {key: "institutionCode", name: "Kód instutuce", path: DA_AIP_STATE_PATH, type: "string", minWidth: 70, idealWidth:70},
     {key: "unitdateFrom", name: "Datace od-do", path: DA_AIP_STATE_PATH, type: "date", minWidth: 60, idealWidth: 105},
-    {key: "originApName", name: "Původce", path: ORIG_ACCESS_POINT, type: "ref", minWidth: 70, idealWidth: 70},
-    {key: "ingestionCode", name: "Číslo příjemky", path: DA_AIP_STATE_PATH,type: "string", minWidth: 65, idealWidth: 105},
+    {key: "originator", name: "Původce", path: ORIG_ACCESS_POINT, type: "ref", minWidth: 70, idealWidth: 70},
+    {key: "ingestionCode", name: "Číslo příjemky", path: DA_AIP_STATE_PATH, type: "string", minWidth: 65, idealWidth: 105},
     {key: "referenceNumber", name: "Číslo jednací", path: DA_AIP_STATE_PATH, type: "string", minWidth: 60, idealWidth: 100 },
     {key: "nadChangeCode",name: "Vnější změna", path: DA_AIP_STATE_PATH,type: "string", minWidth: 60, idealWidth: 100},
     {key: "aipSize", name: "Velikost", path: DA_AIP_STATE_PATH,type: "number", minWidth: 65, idealWidth: 65},

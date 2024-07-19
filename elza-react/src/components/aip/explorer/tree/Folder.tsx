@@ -16,13 +16,11 @@ type FolderProps = {
 
 const Folder = ({folder, openItems, parent}: FolderProps) => {
     const {selectedItem} = useExplorerContext();
-    const isSelected: boolean = isDaoFileFolderVO(selectedItem) && selectedItem.daoFileFolderId == folder.daoFileFolderId;
-    const isLeaf: boolean = (!folder.childFolders && !folder.childFiles) || (folder.childFolders && folder.childFolders.length == 0);
+    const isSelected: boolean = isDaoFileFolderVO(selectedItem) && selectedItem.uuid == folder.uuid;
     folder.parent = parent;
 
     const getExpandIcon = () => {
-        if(isLeaf) return undefined;
-        return openItems.includes(folder as unknown as TreeItemValue) ? (
+        return openItems.includes(folder.uuid) ? (
             <SubtractSquare16Regular color="black" />
             ) : (
             <AddSquare16Regular color="black"/>
@@ -30,7 +28,7 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
     }
 
     return (
-        <TreeItem itemType={isLeaf ? "leaf": "branch"} value={folder as unknown as TreeItemValue} >
+        <TreeItem itemType="branch" value={folder.uuid} >
             <TreeItemLayout
                 style={{backgroundColor: isSelected ?  "#e3e3e3ff" : undefined}}
                 expandIcon={getExpandIcon()}
@@ -38,8 +36,21 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
                 {turncate(folder.label)}
             </TreeItemLayout>
             <Tree>
-                {folder.childFolders?.map(item => <Folder folder={item} openItems={openItems} parent={folder} />)}
-                {folder.childFiles?.map(file => <File file={file} parent={folder}/>)}
+                {folder.childFolders?.map((item, index) => 
+                    <Folder 
+                        key={`folder-${index}`}
+                        folder={item} 
+                        openItems={openItems} 
+                        parent={folder}
+                     />
+                )}
+                {folder.childFiles?.map((file, index) => 
+                    <File 
+                        key={`file-${index}`}
+                        file={file} 
+                        parent={folder}
+                    />
+                )}
             </Tree>
         </TreeItem>
     );

@@ -13,39 +13,19 @@ public class DaAipDetailVO {
 
     private String aipVersion;
 
-    private String fundName;
-
-    private String fundCode;
+    private ArrFundVO fund;
 
     private ParInstitutionVO institution;
 
-    public ParInstitutionVO getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(ParInstitutionVO institution) {
-        this.institution = institution;
-    }
-
-    public ParInstitutionVO getOriginator() {
-        return originator;
-    }
-
-    public void setOriginator(ParInstitutionVO originator) {
-        this.originator = originator;
-    }
-
-    private ParInstitutionVO originator;
-//
-//    private String instApName;
-//
-//    private String institutionCode;
+    private ParInstitutionVO originatorInstitution;
 
     private LocalDateTime unitdateFrom;
 
     private LocalDateTime unitdateTo;
 
-    private String originApName;
+    private String originator;
+
+    private String institutionCode;
 
     private String ingestionCode;
 
@@ -92,20 +72,36 @@ public class DaAipDetailVO {
         this.aipVersion = aipVersion;
     }
 
-    public String getFundName() {
-        return fundName;
+    public ParInstitutionVO getInstitution() {
+        return institution;
     }
 
-    public void setFundName(String fundName) {
-        this.fundName = fundName;
+    public void setInstitution(ParInstitutionVO institution) {
+        this.institution = institution;
     }
 
-    public String getFundCode() {
-        return fundCode;
+    public ParInstitutionVO getOriginatorInstitution() {
+        return originatorInstitution;
     }
 
-    public void setFundCode(String fundCode) {
-        this.fundCode = fundCode;
+    public void setOriginatorInstitution(ParInstitutionVO originatorInstitution) {
+        this.originatorInstitution = originatorInstitution;
+    }
+
+    public void setOriginator(String originator) {
+        this.originator = originator;
+    }
+
+    public String getOriginator() {
+        return originator;
+    }
+
+    public ArrFundVO getFund() {
+        return fund;
+    }
+
+    public void setFund(ArrFundVO fund) {
+        this.fund = fund;
     }
 //
 //    public String getInstApName() {
@@ -140,13 +136,13 @@ public class DaAipDetailVO {
         this.unitdateTo = unitdateTo;
     }
 
-    public String getOriginApName() {
-        return originApName;
-    }
-
-    public void setOriginApName(String originApName) {
-        this.originApName = originApName;
-    }
+//    public String getOriginApName() {
+//        return originApName;
+//    }
+//
+//    public void setOriginApName(String originApName) {
+//        this.originApName = originApName;
+//    }
 
     public String getIngestionCode() {
         return ingestionCode;
@@ -196,33 +192,11 @@ public class DaAipDetailVO {
         this.state = state;
     }
 
+    public String getInstitutionCode() {
+        return institutionCode;
+    }
 
-    public static DaAipDetailVO newInstance(DaAip src, DaAipState state, DaSyncQueueItem item, String instApName, String originApName) {
-        DaAipDetailVO vo = new DaAipDetailVO();
-        vo.setAipId(src.getAipId());
-        vo.setCode(src.getCode());
-        vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
-
-        if(state != null) {
-            vo.setAipVersion(state.getAipVersion());
-            if(state.getFund() != null) {
-                vo.setFundName(state.getFund().getName());
-            }
-            vo.setFundCode(state.getFundCode());
-//            vo.setInstApName(instApName);
-//            vo.setInstitutionCode(state.getInstitutionCode());
-            vo.setUnitdateFrom(state.getUnitdateFrom());
-            vo.setUnitdateTo(state.getUnitdateTo());
-            vo.setOriginApName(originApName);
-            vo.setIngestionCode(state.getIngestionCode());
-            vo.setReferenceNumber(state.getReferenceNumber());
-            vo.setNadChangeCode(state.getNadChangeCode());
-            vo.setAipSize(state.getAipSize());
-            vo.setMetadataLoad(state.getMetadataLoad());
-        }
-        if(item != null) {
-            vo.setState(item.getState());
-        }
-        return vo;
+    public void setInstitutionCode(String institutionCode) {
+        this.institutionCode = institutionCode;
     }
 }

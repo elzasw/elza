@@ -5,6 +5,7 @@ import {
 import { Breadcrumb, BreadcrumbButton, BreadcrumbDivider, BreadcrumbItem, Tooltip } from "@fluentui/react-components";
 import { isDaoFileFolderVO, useExplorerContext } from "./ExplorerContext";
 import { turncate } from "./utils";
+import { select } from "shared/detail/DetailActions";
 
 
 const ExplorerNavigationTab: FC = () => {
@@ -32,6 +33,7 @@ const ExplorerNavigationTab: FC = () => {
             <BreadcrumbButton as="button" onClick={handleMoveUp} icon={<ArrowUp16Filled color="black"/>}/>
             {parents.map((parent, index) => 
                 <Tooltip
+                    key={`bread-${index}`}
                     content={parent.label}
                     relationship="label"
                 >
