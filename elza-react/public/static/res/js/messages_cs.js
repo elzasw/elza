@@ -153,6 +153,7 @@ var messages = {
     "exception.base.GENERATING_EXPORT_FAILED": "Generování exportu selhalo",
     "exception.base.EXPORT_FAILED_DELETED_AP": "Generování exportu selhalo z důvodu přítomnosti zneplatněných archivních entit",
     "exception.base.EXPORT_FAILED_DELETED_AP.detail": "Zneplatněné archivní entity",
+    "exception.base.IMPORT_FAILED": "Chyba při importu souboru",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
