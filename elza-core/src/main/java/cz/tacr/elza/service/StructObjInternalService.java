@@ -207,7 +207,7 @@ public class StructObjInternalService {
     }
 
     private void copyItems(final ArrStructuredObject sourceStructuredObject, final ArrStructuredObject targetStructuredObject) {
-        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceStructuredObject);
+        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNull(sourceStructuredObject);
         List<ArrStructuredItem> copyItems = new ArrayList<>(items.size());
         for (ArrStructuredItem item : items) {
             ArrData newData = copyData(item);

@@ -43,6 +43,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
     public static final String ANALYZED = "_analyzed";
     public static final String SORTABLE = "_sortable";
 
+    public static final String REL_AP_ID = "rel_accesspoint_id";
+
     public static final String NORM_FROM = "_from";
     public static final String NORM_TO = "_to";
 
@@ -68,6 +70,9 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 	        fields.put(name + ANALYZED, createAnalyzedField(name));
 	        fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
+
+        // pole obsahující odkaz na jinou entitu
+        createIntField(REL_AP_ID);
 
         // part type codes
         for (String partCode : configurationReader.getPartTypeCodes()) {
@@ -121,6 +126,13 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         		.multiValued()
         		.toReference();
     }
+
+    private IndexFieldReference<Integer> createIntField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asInteger())
+        		.multiValued()
+        		.toReference();
+    }    
 
     private IndexFieldReference<Long> createLongField(String name) {
     	return context.indexSchemaElement()

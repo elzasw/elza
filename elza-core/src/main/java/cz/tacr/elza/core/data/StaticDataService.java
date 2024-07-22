@@ -1,13 +1,13 @@
 package cz.tacr.elza.core.data;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.lang3.Validate;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -104,6 +104,8 @@ public class StaticDataService {
     final ComponentRepository componentRepository;
 
     final PolicyTypeRepository policyTypeRepository;
+    
+    final ApplicationContext context;
 
     @Autowired
     public StaticDataService(final EntityManager em,
@@ -126,7 +128,8 @@ public class StaticDataService {
                              final PartTypeRepository partTypeRepository,
                              final ApExternalSystemRepository apExternalSystemRepository,
                              final ComponentRepository componentRepository,
-                             final PolicyTypeRepository policyTypeRepository) {
+                             final PolicyTypeRepository policyTypeRepository, 
+                             final ApplicationContext context) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.arrangementRuleRepository = arrangementRuleRepository;
@@ -148,6 +151,7 @@ public class StaticDataService {
         this.apExternalSystemRepository = apExternalSystemRepository;
         this.componentRepository = componentRepository;
         this.policyTypeRepository = policyTypeRepository;
+        this.context = context;
     }
 
     /**
@@ -159,7 +163,7 @@ public class StaticDataService {
         if (activeProvider == null) {
             // init type enums
             // enums from DB are initialized only once
-            DataType.init(dataTypeRepository);
+            DataType.init(dataTypeRepository, context);
         }
         // prepare active provider
         activeProvider = createProvider();
@@ -216,7 +220,7 @@ public class StaticDataService {
 
         StaticDataProvider provider = activeProvider;
         // some provider have to exists
-        Validate.notNull(provider);
+        Objects.requireNonNull(provider);
 
         threadSpecificProvider.set(provider);
 	}

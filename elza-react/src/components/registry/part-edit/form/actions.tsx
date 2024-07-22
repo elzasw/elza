@@ -27,12 +27,12 @@ export const addEmptyItems = (
     arrayInsert: (index: number, value: RevisionItem) => void,
     userAction: boolean,
 ) => {
-    let newItems = getNewItems(attributes, refTables, userAction);
+    let emptyItems = attributes.map((attribute) => createEmptyItem(attribute, refTables, userAction));
 
     // Vložení do formuláře - od konce
     // sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
 
-    newItems.reverse().forEach(item => {
+    emptyItems.reverse().forEach(item => {
         let index = findItemPlacePosition(item, formItems, partTypeId, refTables);
         arrayInsert(index, item);
     });
@@ -79,57 +79,61 @@ const getItemsWithValues = (
     })
 }
 
-const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: RefTablesState, userAction: boolean) => {
-    return attributes.map(attribute => {
-        const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
-        const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
+let tempIdCounter = 0;
+// Extending APItemVO with temporary id for newly created desc items, that don't have id from db.
+// Used for 'key' attribute.
+export type ApItemVOWithTempId = ApItemVO & {tempId: number};
 
-        const item: ApItemVO = {
-            typeId: attribute.itemTypeId,
-            '@class': ItemInfo.getItemClass(dataType.code),
-            position: 1, // TODO: dořešit pozici
-        };
+const createEmptyItem = (attribute: ApCreateTypeVO, refTables: RefTablesState, userAction: boolean) => {
+    const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
+    const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
 
-        // Implicitní hodnoty
-        switch (dataType.code) {
-            case RulDataTypeCodeEnum.BIT:
-                ((item as unknown) as ApItemBitVO).value = false;
-                break;
+    const item: ApItemVOWithTempId = {
+        typeId: attribute.itemTypeId,
+        '@class': ItemInfo.getItemClass(dataType.code),
+        position: 1, // TODO: dořešit pozici
+        tempId: tempIdCounter++,
+    };
+
+
+    // Implicitní hodnoty
+    switch (dataType.code) {
+        case RulDataTypeCodeEnum.BIT:
+            ((item as unknown) as ApItemBitVO).value = false;
+            break;
+    }
+
+    // Implicitní specifikace - pokud má specifikaci a má právě jednu položku a současně jde o povinnou hodnotu
+    // Pokud uživatel přidal ručně i pro nepovinné
+    if (itemType.useSpecification && (attribute.requiredType === RequiredType.REQUIRED || userAction)) {
+        if (attribute.itemSpecIds && attribute.itemSpecIds.length === 1) {
+            item.specId = attribute.itemSpecIds[0];
         }
+    }
 
-        // Implicitní specifikace - pokud má specifikaci a má právě jednu položku a současně jde o povinnou hodnotu
-        // Pokud uživatel přidal ručně i pro nepovinné
-        if (itemType.useSpecification && (attribute.requiredType === RequiredType.REQUIRED || userAction)) {
-            if (attribute.itemSpecIds && attribute.itemSpecIds.length === 1) {
-                item.specId = attribute.itemSpecIds[0];
-            }
-        }
-
-        return {
-            updatedItem: item,
-            typeId: attribute.itemTypeId,
-            '@class': ItemInfo.getItemClass(dataType.code),
-        };
-    });
-
+    return {
+        updatedItem: item,
+        typeId: attribute.itemTypeId,
+        '@class': ItemInfo.getItemClass(dataType.code),
+    };
 }
 
 export const getUpdatedForm = async (
-    data: RevisionApPartForm, 
-    typeId: number, 
-    scopeId: number, 
+    data: RevisionApPartForm,
+    typeId: number,
+    scopeId: number,
     apViewSettings: DetailStoreState<ApViewSettings>,
     refTables: RefTablesState,
     partTypeId: number,
-    partId?: number, 
-    parentPartId?: number, 
+    partId?: number,
+    parentPartId?: number,
     accessPointId?: number,
     revParentPartId?: number,
 ) => {
     const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
-    const items = data.items.filter((item) => 
+    const items = data.items.filter((item) =>
         item.updatedItem?.changeType !== "DELETED"
-    ).map((item) => 
+    ).map((item) =>
         item.updatedItem || item.item as any
     );
     // console.log("get updated form items", items, data, parentPartId, revParentPartId);
@@ -162,15 +166,15 @@ export const getUpdatedForm = async (
     }
 };
 
-export const getItemsWithRequired = ( 
-    items: RevisionItem[], 
-    attributes: ApCreateTypeVO[], 
+export const getItemsWithRequired = (
+    items: RevisionItem[],
+    attributes: ApCreateTypeVO[],
     partTypeId: number,
     refTables: RefTablesState,
 ) => {
     const newItems: RevisionItem[] = [];
     addEmptyItems(
-        getRequiredAttributes(items, attributes), 
+        getRequiredAttributes(items, attributes),
         refTables,
         items,
         partTypeId,

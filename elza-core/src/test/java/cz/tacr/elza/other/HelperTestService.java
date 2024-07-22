@@ -17,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
@@ -70,7 +72,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -237,6 +238,9 @@ public class HelperTestService {
     private StaticDataService staticDataService;
 
     @Autowired
+    protected ResourcePathResolver resourcePathResolver;
+
+    @Autowired
     protected EntityManager em;
 
     @Transactional
@@ -271,6 +275,13 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
+
+        // vyčištění složek s indexovými soubory
+		try {
+			FileSystemUtils.deleteRecursively(resourcePathResolver.getLuceneIndexesDir());
+		} catch (IOException e) {
+			logger.info("Error cleanup index folder {}", resourcePathResolver.getLuceneIndexesDir(), e);
+		}
 
         if (stopTasks) {
             packageService.startAsyncTasks();

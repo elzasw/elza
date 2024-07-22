@@ -232,7 +232,7 @@ public class ArrangementWebsocketController {
     /**
      * Potlačení dědictví item.
      * 
-     * @param arrInhibitedItem obsahuje nodeId & itemId
+     * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
     @Transactional
@@ -240,27 +240,29 @@ public class ArrangementWebsocketController {
     public void inhibitItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
         Objects.requireNonNull(arrInhibitedItem);
         Objects.requireNonNull(arrInhibitedItem.getNodeId());
-        Objects.requireNonNull(arrInhibitedItem.getItemId());
+        Objects.requireNonNull(arrInhibitedItem.getDescItemObjectId());
 
         // pro kontrolu oprávnění ve servisu
         ArrNode node = arrangementService.getNode(arrInhibitedItem.getNodeId());
 
-        Integer inhibitItemId = arrangementService.inhibitItem(node, arrInhibitedItem.getItemId());
+        Integer inhibitItemId = arrangementService.inhibitItem(node, arrInhibitedItem.getDescItemObjectId());
 		webScoketStompService.sendReceiptAfterCommit(inhibitItemId, requestHeaders);
     }
 
     /**
      * Povolení dědictví item.
      * 
-     * @param inhibitItemId
+     * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
     @Transactional
     @MessageMapping("/arrangement/descItems/allow")
-    public void allowItem(@Payload final Integer inhibitItemId, final StompHeaderAccessor requestHeaders) {
-        Objects.requireNonNull(inhibitItemId);
+    public void allowItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
+        Objects.requireNonNull(arrInhibitedItem);
+        Objects.requireNonNull(arrInhibitedItem.getNodeId());
+        Objects.requireNonNull(arrInhibitedItem.getDescItemObjectId());
 
-        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(inhibitItemId); 
+        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(arrInhibitedItem.getNodeId(), arrInhibitedItem.getDescItemObjectId()); 
 
         Integer resultItemId = arrangementService.allowItem(inhibitedItem.getNode(), inhibitedItem);
 		webScoketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);
