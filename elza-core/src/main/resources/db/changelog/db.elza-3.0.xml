@@ -5,53 +5,31 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="20230315100801" author="pasek">
-        <validCheckSum>ANY</validCheckSum>
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="usr_authentication" columnName="value"/>
-        </preConditions>
+        <validCheckSum>9:fe337f37598c082713e8e78b7f24a31a</validCheckSum>
         <renameColumn tableName="usr_authentication" oldColumnName="value" newColumnName="auth_value"/>
-    </changeSet>
-    <changeSet id="20230315100802" author="pasek">
         <renameColumn tableName="ap_rev_index" oldColumnName="value" newColumnName="rev_value"/>
-    </changeSet>
-    <changeSet id="20230315100803" author="pasek">
         <renameColumn tableName="arr_data_integer" oldColumnName="value" newColumnName="integer_value"/>
-    </changeSet>
-    <changeSet id="20230315100804" author="pasek">
         <renameColumn tableName="ap_index" oldColumnName="value" newColumnName="index_value"/>
-    </changeSet>
-    <changeSet id="20230315100805" author="pasek">
         <renameColumn tableName="ap_binding" oldColumnName="value" newColumnName="binding_value"/>
-    </changeSet>
-    <changeSet id="20230315100806" author="pasek">
         <renameColumn tableName="ap_binding_item" oldColumnName="value" newColumnName="item_value"/>
-    </changeSet>
-    <changeSet id="20230315100807" author="pasek">
         <renameColumn tableName="ap_key_value" oldColumnName="value" newColumnName="key_value"/>
-    </changeSet>
-    <changeSet id="20230315100808" author="pasek">
         <renameColumn tableName="arr_data_json_table" oldColumnName="value" newColumnName="data_value"/>
-    </changeSet>
-    <changeSet id="20230315100809" author="pasek">
         <renameColumn tableName="ui_settings" oldColumnName="value" newColumnName="settings_value"/>
-    </changeSet>
-    <changeSet id="20230315100810" author="pasek">
         <renameColumn tableName="arr_data_coordinates" oldColumnName="value" newColumnName="coordinates_value"/>
-    </changeSet>
-    <changeSet id="20230315100811" author="pasek">
         <renameColumn tableName="arr_data_date" oldColumnName="value" newColumnName="date_value"/>
-    </changeSet>
-    <changeSet id="20230315100812" author="pasek">
         <renameColumn tableName="arr_data_decimal" oldColumnName="value" newColumnName="decimal_value"/>
-    </changeSet>
-    <changeSet id="20230315100813" author="pasek">
         <renameColumn tableName="arr_structured_object" oldColumnName="value" newColumnName="object_value"/>
+        <renameColumn tableName="arr_data_string" oldColumnName="value" newColumnName="string_value"/>
+        <renameColumn tableName="arr_data_text" oldColumnName="value" newColumnName="text_value"/>
+        <renameColumn tableName="arr_data_unitid" oldColumnName="value" newColumnName="unit_value"/>
+        <renameColumn tableName="arr_data_uri_ref" oldColumnName="value" newColumnName="uri_ref_value"/>
+        <renameColumn tableName="arr_data_bit" oldColumnName="value" newColumnName="bit_value"/>
+        <!-- Je nutná úplná aktualizace cache -->
+        <delete tableName="ap_cached_access_point"/>
+		<delete tableName="arr_cached_node"/>
+		<!-- Čištění složky s indexovými soubory lucene/indexes -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
     </changeSet>
-
-	<!-- TODO refine the algorithm for next_val
-    <changeSet id="20231219133600" author="sergey.iryupin">
-    	<sql>UPDATE db_hibernate_sequences SET next_val = next_val + 20 WHERE next_val &lt; 20</sql>
-    </changeSet>-->
 
     <changeSet id="20240304112900" author="sergey.iryupin">
     	<createTable tableName="hsearch_agent">
@@ -155,6 +133,12 @@
 		<sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_desc_item_obj_delete_change_null_unique_idx ON arr_item(desc_item_object_id) WHERE delete_change_id IS NULL</sql>
         <addUniqueConstraint tableName="arr_item" columnNames="desc_item_object_id, create_change_id" constraintName="arr_item_desc_item_obj_create_change_unique_ct"/>
 		<addUniqueConstraint tableName="arr_item" columnNames="desc_item_object_id, delete_change_id" constraintName="arr_item_desc_item_obj_delete_change_unique_ct"/>
+	</changeSet>
+
+	<changeSet id="20240722124700" author="sergey.iryupin">
+		<!-- přejmenování klíčů po přejmenování tabulek -->
+		<sql dbms="postgresql">ALTER INDEX IF EXISTS ap_external_id_pkey RENAME TO ap_binding_pkey</sql>
+		<sql dbms="postgresql">ALTER INDEX IF EXISTS ap_fragment_pkey RENAME TO ap_part_pkey</sql>
 	</changeSet>
 
 </databaseChangeLog>
