@@ -2,8 +2,18 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Access;
+import jakarta.persistence.AccessType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /**
  * Prvek popisu pro přístupové body.
@@ -15,7 +25,7 @@ import jakarta.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
-public class ApItem implements Item, AccessPointCacheSerializable, AccessPointItem {
+public class ApItem implements AccessPointCacheSerializable, AccessPointItem {
 
     public static final String PART_ID = "partId";
     public static final String PART = "part";
@@ -78,7 +88,6 @@ public class ApItem implements Item, AccessPointCacheSerializable, AccessPointIt
     private Integer partId;
 
     public ApItem() {
-
     }
 
     public ApItem(final ApItem other) {
@@ -180,6 +189,14 @@ public class ApItem implements Item, AccessPointCacheSerializable, AccessPointIt
 
     public void setData(final ArrData data) {
         this.data = data;
+        this.dataId = data != null? data.getDataId() : null;
+    }
+
+    public Integer getDataId() {
+    	if (dataId == null && data != null) {
+    		return data.getDataId();
+    	}
+        return dataId;
     }
 
     public Integer getDeleteChangeId() {

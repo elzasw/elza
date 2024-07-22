@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import cz.tacr.elza.service.da.DaExtSyncsProcessor;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.ObjectListIterator;
@@ -193,6 +192,7 @@ public class StartupService implements SmartLifecycle {
 
     /**
      * Method for explicit starting of the service
+     * @throws IOException 
      */
     public void startNow() {
         Validate.isTrue(!running, "Already started");
@@ -243,12 +243,10 @@ public class StartupService implements SmartLifecycle {
 
         // vyklizení složky pro exportní soubory xml
         Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
-        if (Files.exists(exportXmlTrasnformDir)) {
-            try {
-                FileUtils.cleanDirectory(exportXmlTrasnformDir.toFile());
-            } catch (IOException e) {
-                logger.error("Error cleanup folder {}", exportXmlTrasnformDir);
-            }
+        try {
+        	FileSystemUtils.deleteRecursively(exportXmlTrasnformDir);
+        } catch (IOException e) {
+            logger.error("Error cleanup folder {}", exportXmlTrasnformDir, e);
         }
 
         running = true;

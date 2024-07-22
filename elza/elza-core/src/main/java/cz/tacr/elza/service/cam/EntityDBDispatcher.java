@@ -78,7 +78,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -161,11 +160,7 @@ public class EntityDBDispatcher {
 
     final private AsyncRequestService asyncRequestService;
 
-    final private ApItemRepository itemRepository;
-
     final private RuleService ruleService;
-
-    //final private AccessPointDataService accessPointDataService;
 
     final private CamService camService;
 
@@ -187,7 +182,6 @@ public class EntityDBDispatcher {
                               final AsyncRequestService asyncRequestService,
                               final PartService partService,
                               final AccessPointCacheService accessPointCacheService,
-                              final ApItemRepository itemRepository,
                               final RuleService ruleService,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
@@ -202,21 +196,20 @@ public class EntityDBDispatcher {
         this.camService = camService;
         this.partService = partService;
         this.accessPointCacheService = accessPointCacheService;
-        this.itemRepository = itemRepository;
         this.ruleService = ruleService;
     }
 
     /**
-     * Method to create entities
+     * Method to take entities
      *
      * Method should not be called from async queues.
      * Method will fail if other entity with same key value exists
      *
      * @param procCtx
      * @param entities
+     * @throws SyncImpossibleException 
      */
-    public void createEntities(ProcessingContext procCtx,
-                               List<EntityXml> entities) {
+    public void takeEntities(ProcessingContext procCtx, List<EntityXml> entities) {
 
         ApExternalSystem apExternalSystem = procCtx.getApExternalSystem();
         if (procCtx.getApChange() == null) {
@@ -303,11 +296,23 @@ public class EntityDBDispatcher {
                 // update entity if deleted
                 state = entityInfo.getState();
                 if (state.getDeleteChangeId() == null) {
-                    // entity exists and is valid, connect entity with current records
-                    // nop is needed
+                    // entity exists and not deleted -> synchronization entity with current records
+                	if (bindingState == null) {
+                		bindingState = externalSystemService.createBindingState(binding, state.getAccessPoint(), 
+                				procCtx.getApChange(),
+                				entity.getEns().value(),
+                				entity.getRevi().getRid() != null ? entity.getRevi().getRid().getValue() : null,
+                				entity.getRevi().getUsr() != null ? entity.getRevi().getUsr().getValue() : null,
+                				entity.getReid() != null ? entity.getReid().getValue() : null,
+                				SyncState.SYNC_OK,
+                                state.getAccessPoint().getPreferredPart(),
+                                state.getApType());
+                	}
+                    state = synchronizeAccessPoint(procCtx, state, bindingState, entity, false);
+                    createdEntities.add(state);
                 } else {
                     state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
-                    accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
+                    accessPointService.publishAccessPointRestoreEvent(state.getAccessPoint());
                     createdEntities.add(state);
                 }
             } else {
@@ -318,8 +323,8 @@ public class EntityDBDispatcher {
             accessPointService.setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
         }
 
-        dataRecordRefRepository.saveAll(dataRecordRefList);
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
+            dataRecordRefRepository.saveAll(dataRecordRefList);
             List<Integer> accessPointIds = ObjectListIterator.findIterable(dataRecordRefList,
                                                                            accessPointRepository::findAccessPointIdsByRefData);
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
@@ -330,13 +335,19 @@ public class EntityDBDispatcher {
         this.procCtx = null;
     }
 
-    public void connectEntity(ProcessingContext procCtx,
-                              ApState state,
-                              EntityXml entity, boolean replace,
-                              boolean async) {
-        Validate.notNull(procCtx.getApChange());
+    /**
+     * Connecting to an existing entity
+     * 
+     * @param procCtx
+     * @param state
+     * @param entity
+     * @param replace
+     * @param async
+     */
+    public void connectEntity(ProcessingContext procCtx, ApState state, EntityXml entity, boolean replace, boolean async) {
+    	Objects.requireNonNull(procCtx.getApChange());
 
-        this.procCtx = procCtx;
+    	this.procCtx = procCtx;
 
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApChange apChange = procCtx.getApChange();
@@ -345,8 +356,11 @@ public class EntityDBDispatcher {
             partService.deleteParts(accessPoint, apChange);
         }
 
-        ApBinding binding = externalSystemService.createApBinding(Long.toString(entity.getEid().getValue()),
-                                                                  procCtx.getApExternalSystem(), true);
+        String bindingValue = Long.toString(entity.getEid().getValue());
+        ApBinding binding = procCtx.getBindingByValue(bindingValue);
+        if (binding == null) {
+        	binding = externalSystemService.createApBinding(bindingValue, procCtx.getApExternalSystem(), true);
+        }
 
         createPartsFromEntityXml(entity, accessPoint, apChange, state, binding, async);
 
@@ -365,20 +379,17 @@ public class EntityDBDispatcher {
      * @param syncQueue
      *            True if called from sync queue (without UI and direct user
      *            feedback)
-     * @throws SyncImpossibleException
+     * @return ApState
      */
-    public void synchronizeAccessPoint(ProcessingContext procCtx,
+    public ApState synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
                                        @Nonnull final ApBindingState prevBindingState,
                                        EntityXml entity,
-                                       boolean syncQueue)
-            throws SyncImpossibleException {
-        Validate.notNull(procCtx.getApChange());
-        Validate.notNull(prevBindingState);
-
+                                       boolean syncQueue) {
+    	Objects.requireNonNull(procCtx.getApChange());
+    	Objects.requireNonNull(prevBindingState);
 
         this.procCtx = procCtx;
-
 
         // Flag if entity is deleted
         // Deleted entity has to be retained as deleted if
@@ -429,7 +440,7 @@ public class EntityDBDispatcher {
                                                                              accessPoint.getPreferredPart(),
                                                                              state.getApType());
                 this.procCtx = null;
-                return;
+                return state;
             }
         }
 
@@ -484,7 +495,18 @@ public class EntityDBDispatcher {
                 if (replacedBindingState.isPresent()) {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
-                    accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
+                    try {
+						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
+					} catch (SyncImpossibleException e) {
+			            log.error("Replacement error, accessPointId: {}, replacedAccessPointId: {}",
+			            		  state.getAccessPointId(),
+			            		  replacementState.getAccessPointId());
+			            throw new BusinessException("Replacement error, accessPointId: " + state.getAccessPointId()
+			                      + "replacedAccessPointId: " + replacementState.getAccessPointId(),
+			                      BaseCode.INVALID_STATE)
+			                      .set("accessPointId", state.getAccessPointId())
+			                      .set("replacedAccessPointId", replacementState.getAccessPointId());
+					}
                     state.setReplacedBy(replacedBy);
                 }
             }
@@ -530,6 +552,8 @@ public class EntityDBDispatcher {
         }
 
         this.procCtx = null;
+
+        return state;
     }
 
     /**
@@ -559,14 +583,13 @@ public class EntityDBDispatcher {
         return apState;
     }
 
-    void createPartsFromEntityXml(
-                                  final EntityXml entity,
+    private void createPartsFromEntityXml(final EntityXml entity,
                                   final ApAccessPoint accessPoint,
                                   final ApChange apChange,
                                   final ApState apState,
                                   final ApBinding binding,
                                   boolean async) {
-        Validate.notNull(binding);
+    	Objects.requireNonNull(binding);
 
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
@@ -665,7 +688,7 @@ public class EntityDBDispatcher {
      * @return ApState
      */
     public ApState createAccessPoint(ProcessingContext procCtx, EntityXml entity, ApBinding binding, boolean async) {
-        Validate.notNull(procCtx.getApChange());
+    	Objects.requireNonNull(procCtx.getApChange());
         this.procCtx = procCtx;
 
         return createAccessPoint(entity, binding, entity.getEuid().getValue(), async);
@@ -1094,7 +1117,7 @@ public class EntityDBDispatcher {
         }
 
         ItemUpdates itemUpdates = findNewOrChangedItems(apPart, itemsXml);
-        Validate.notNull(itemUpdates);
+        Objects.requireNonNull(itemUpdates);
 
         List<ApItem> result = new ArrayList<>(itemUpdates.getItemCount());
         // remove unchanged items from binding lookup and add to result
@@ -1149,7 +1172,7 @@ public class EntityDBDispatcher {
             return;
         }
         Map<String, ApBindingItem> bindingItemLookup = bindingItemsByPart.get(part.getPartId());
-        Validate.notNull(bindingItemLookup);
+        Objects.requireNonNull(bindingItemLookup);
         for (ApBindingItem bindingItem : bindingItemsInPart) {
             bindingItemLookup.remove(bindingItem.getValue());
         }

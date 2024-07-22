@@ -33,7 +33,7 @@ public class Structured {
 	public List<StructObjItem> getItems() {
 		if(items==null) {
 			// read description items (if needed) from DB
-			List<ArrStructuredItem> dbItems = itemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+			List<ArrStructuredItem> dbItems = itemRepos.findByStructuredObjectAndDeleteChangeIsNull(structObj);
 			items = ModelFactory.createStructuredItems(dbItems);
 		}
 		return items;

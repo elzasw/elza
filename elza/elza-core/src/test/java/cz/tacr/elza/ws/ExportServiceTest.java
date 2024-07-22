@@ -37,11 +37,12 @@ public class ExportServiceTest extends AbstractControllerTest {
     @Test
     public void searchEntityUpdatesTest() {
         EntityUpdates updates = exportServiceImpl.searchEntityUpdates(new SearchEntityUpdates());
-        int toId = changeRepository.findTop1ByOrderByChangeIdDesc().getChangeId();
-
         assertNotNull(updates);
-        assertTrue(toId > 0);
         assertTrue(updates.getFromTrans().equals("0"));
+        
+        var lastChange = changeRepository.findTop1ByOrderByChangeIdDesc();
+        int toId = lastChange.getChangeId();
+        assertTrue(toId > 0);        
         assertTrue(updates.getToTrans().equals(String.valueOf(toId)));
         assertTrue(updates.getEntityIds().getIdentifier().size() > 0);
     }

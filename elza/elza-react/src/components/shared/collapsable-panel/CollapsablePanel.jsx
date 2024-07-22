@@ -3,7 +3,7 @@ import AbstractReactComponent from '../../AbstractReactComponent';
 import * as Utils from '../../Utils';
 import Icon from '../icon/Icon';
 import NoFocusButton from '../button/NoFocusButton';
-import {Accordion, Card} from 'react-bootstrap';
+import {Accordion, AccordionCollapse, AccordionHeader, AccordionItem} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './CollapsablePanelKeymap.jsx';
@@ -53,8 +53,8 @@ class CollapsablePanel extends AbstractReactComponent {
                 {...otherProps}
                 className={isOpen ? 'open' : null}
             >
-                <Card>
-                    <Accordion.Toggle as={Card.Header} eventKey="0">
+                <AccordionItem eventKey={eventKey}>
+                    <AccordionHeader>
                         <Shortcuts
                             name="CollapsablePanel"
                             handler={(action, e) => this.handleShortcuts(action, e)}
@@ -70,11 +70,11 @@ class CollapsablePanel extends AbstractReactComponent {
                                 </NoFocusButton>
                             )}
                         </Shortcuts>
-                    </Accordion.Toggle>
-                    <Accordion.Collapse eventKey={true}>
-                        <Card.Body>{children}</Card.Body>
-                    </Accordion.Collapse>
-                </Card>
+                    </AccordionHeader>
+                    <AccordionCollapse eventKey={eventKey}>
+                        {children}
+                    </AccordionCollapse>
+                </AccordionItem>
             </Accordion>
         );
     }

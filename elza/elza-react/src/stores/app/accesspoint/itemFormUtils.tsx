@@ -14,6 +14,7 @@ export enum DataTypeCode {
     DECIMAL = 'DECIMAL',
     DATE = 'DATE',
     URI_REF = 'URI_REF',
+    BIT = 'BIT',
 }
 
 export enum ItemAvailability {

@@ -466,7 +466,7 @@ class FundDataGrid extends AbstractReactComponent {
         if(prevColumnsOrder.length > 0){
             return prevColumnsOrder;
         }
-        return gridViews.map(({id}) => id.toString());
+        return (gridViews || []).map(({id}) => id.toString());
     }
 
     buildColumns(fund, ruleSet, fundDataGrid, descItemTypes, rulDataTypes) {

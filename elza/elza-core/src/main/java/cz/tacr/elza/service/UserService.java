@@ -37,7 +37,7 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
@@ -956,8 +956,8 @@ public class UserService {
     }
 
     public UsrAuthentication findAuthentication(UsrUser user, UsrAuthentication.AuthType authType) {
-        Validate.notNull(user);
-        Validate.notNull(authType);
+    	Objects.requireNonNull(user);
+    	Objects.requireNonNull(authType);
         UsrAuthentication result;
         if (allowDefaultUser && user.getUsername().equalsIgnoreCase(defaultUsername)) {
             result = new UsrAuthentication();
@@ -971,13 +971,13 @@ public class UserService {
     }
 
     public List<UsrAuthentication> findAuthentication(String value, UsrAuthentication.AuthType authType) {
-        Validate.notNull(value);
-        Validate.notNull(authType);
+    	Objects.requireNonNull(value);
+    	Objects.requireNonNull(authType);
         return authenticationRepository.findByAuthValueAndAuthType(value, authType);
     }
 
     public List<UsrAuthentication> findAuthentications(UsrUser user) {
-        Validate.notNull(user);
+    	Objects.requireNonNull(user);
         return authenticationRepository.findByUser(user);
     }
 
@@ -996,7 +996,7 @@ public class UserService {
      * @param userId id uživatele, kterému přepočítáváme práva
      */
     private void invalidateUserCache(@NotNull final Integer userId) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 userPermissionsCache.invalidate(userId);
@@ -1179,9 +1179,9 @@ public class UserService {
                               @Nullable final Integer accessPointId,
                               @NotNull @NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap) {
-        Validate.notNull(valuesMap);
-        Validate.notNull(username);
-        Validate.notNull(user);
+    	Objects.requireNonNull(valuesMap);
+    	Objects.requireNonNull(username);
+    	Objects.requireNonNull(user);
 
         if (accessPointId != null && !accessPointId.equals(user.getAccessPoint().getAccessPointId())) {
             ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);

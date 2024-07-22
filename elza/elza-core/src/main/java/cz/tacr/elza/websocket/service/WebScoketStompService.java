@@ -1,5 +1,7 @@
 package cz.tacr.elza.websocket.service;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +14,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
@@ -35,7 +37,7 @@ public class WebScoketStompService {
     private transient SmartMessageConverter messageConverter;
 
     public void sendReceiptAfterCommit(Object payload, StompHeaderAccessor requestHeaders) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 
             @Override
             public int getOrder() {
@@ -55,7 +57,7 @@ public class WebScoketStompService {
     }
 
     public void sendReceipt(Object payload, StompHeaderAccessor requestHeaders) {
-        Validate.notNull(payload);
+    	Objects.requireNonNull(payload);
 
         String sessionId = Validate.notEmpty(requestHeaders.getSessionId());
         String receiptId = Validate.notEmpty(requestHeaders.getReceipt());

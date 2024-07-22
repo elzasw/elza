@@ -173,7 +173,7 @@ export class WebApiCls {
 
     copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl + '/copyOlderSiblingAttribute/',
+            WebApiCls.arrangementUrl + '/copyOlderSiblingAttribute',
             { versionId, descItemTypeId },
             { id: nodeId, version: nodeVersionId },
         );
@@ -317,6 +317,14 @@ export class WebApiCls {
             changeItems,
             true,
         );
+    }
+
+    inhibitDescItem(nodeId:number, descItemObjectId:number){
+        return callWS('/arrangement/descItems/inhibit', {nodeId, descItemObjectId});
+    }
+
+    allowDescItem(descItemObjectId:number){
+        return callWS('/arrangement/descItems/allow', descItemObjectId);
     }
 
     setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {

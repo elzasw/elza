@@ -1,8 +1,13 @@
 package cz.tacr.elza.groovy;
 
+
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -10,14 +15,14 @@ import jakarta.validation.constraints.NotNull;
 public class GroovyItem {
 
     /**
+     * Typ prvku
+     */
+    private final ItemType itemType;
+
+    /**
      * Specifikace.
      */
     private final RulItemSpec rulItemSpec;
-
-    /**
-     * Kód typu.
-     */
-    private final String typeCode;
 
     /**
      * Logická hodnota.
@@ -44,48 +49,71 @@ public class GroovyItem {
      */
     private CachedAccessPoint accessPoint = null;
 
-    public GroovyItem(@NotNull final String typeCode,
+    public GroovyItem(@NotNull final ItemType itemType,
+                      @Nullable final RulItemSpec rulItemSpec) {
+        this.itemType = itemType;
+        this.rulItemSpec = rulItemSpec;
+    }
+
+    public GroovyItem(@NotNull final ItemType itemType,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value) {
+        this(itemType, rulItemSpec);
+        if (itemType.getDataType() != DataType.TEXT &&
+                itemType.getDataType() != DataType.STRING &&
+                // TODO: Improve URI REF support
+                itemType.getDataType() != DataType.URI_REF &&
+                // TODO: Improve coordinates support
+                itemType.getDataType() != DataType.COORDINATES &&
+                // TODO: Improve enum support
+                itemType.getDataType() != DataType.ENUM) {
+            throw new BusinessException("String value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
         this.value = value;
-        this.rulItemSpec = rulItemSpec;
-        this.typeCode = typeCode;
     }
 
-    public GroovyItem(@NotNull final String typeCode,
+    public GroovyItem(@NotNull final ItemType itemType,
                       @Nullable final RulItemSpec rulItemSpec,
+                      @Nullable final CachedAccessPoint accessPoint,
                       @NotNull final String value,
-                      @NotNull final Integer intValue,
-                      @Nullable final CachedAccessPoint accessPoint) {
-        this.value = value;
-        this.rulItemSpec = rulItemSpec;
-        this.intValue = intValue;
-        this.typeCode = typeCode;
+                      @NotNull final Integer intValue) {
+        this(itemType, rulItemSpec);
+        if (itemType.getDataType() != DataType.RECORD_REF) {
+            throw new BusinessException("RecordRef value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
         this.accessPoint = accessPoint;
+        this.value = value;
+        this.intValue = intValue;
     }
 
-    public GroovyItem(@NotNull final String typeCode,
+    public GroovyItem(@NotNull final ItemType itemType,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final Boolean boolValue) {
+        this(itemType, rulItemSpec);
+        if (itemType.getDataType() != DataType.BIT) {
+            throw new BusinessException("Boolean value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
         this.boolValue = boolValue;
-        this.rulItemSpec = rulItemSpec;
-        this.typeCode = typeCode;
     }
 
-    public GroovyItem(@NotNull final String typeCode,
+    public GroovyItem(@NotNull final ItemType itemType,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final Integer intValue) {
+        this(itemType, rulItemSpec);
+        if (itemType.getDataType() != DataType.INT) {
+            throw new BusinessException("Integer value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
         this.intValue = intValue;
-        this.rulItemSpec = rulItemSpec;
-        this.typeCode = typeCode;
     }
 
-    public GroovyItem(@NotNull final String typeCode,
+    public GroovyItem(@NotNull final ItemType itemType,
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final IUnitdate value) {
+        this(itemType, rulItemSpec);
+        if (itemType.getDataType() != DataType.UNITDATE) {
+            throw new BusinessException("Integer value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
+        }
         this.value = UnitDateConvertor.convertToString(value);
-        this.rulItemSpec = rulItemSpec;
-        this.typeCode = typeCode;
         this.unitdateValue = value;
     }
 
@@ -138,8 +166,12 @@ public class GroovyItem {
         return (rulItemSpec != null) ? rulItemSpec.getViewOrder() : null;
     }
 
+    public ItemType getItemType() {
+        return itemType;
+    }
+
     public String getTypeCode() {
-        return typeCode;
+        return itemType.getCode();
     }
 
     public void addValue(GroovyItem item) {
@@ -166,12 +198,16 @@ public class GroovyItem {
     public String toString() {
         return "GroovyItem{" +
                 "spec='" + rulItemSpec + '\'' +
-                ", typeCode='" + typeCode + '\'' +
+                ", typeCode='" + itemType.getCode() + '\'' +
                 ", boolValue=" + boolValue +
                 ", value='" + value + '\'' +
                 ", intValue=" + intValue +
                 ", unitdateValue=" + unitdateValue +
                 ", apTypeId=" + getApTypeId() +
                 '}';
+    }
+
+    public RulItemSpec getSpecType() {
+        return rulItemSpec;
     }
 }

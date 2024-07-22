@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -857,7 +858,7 @@ public class NodeCacheService {
 
             for (ArrNode node : nodes) {
                 // Node has to have valid nodeId
-                Validate.notNull(node.getNodeId());
+            	Objects.requireNonNull(node.getNodeId());
 
                 CachedNode cachedNode = new CachedNode(node.getNodeId(), node.getUuid(), node.getFundId());
                 String data = serialize(cachedNode, false);

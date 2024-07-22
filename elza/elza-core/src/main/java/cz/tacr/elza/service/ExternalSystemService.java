@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -132,9 +132,6 @@ public class ExternalSystemService {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private DataService dataService;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -350,11 +347,11 @@ public class ExternalSystemService {
             }
         }
 
-        if (StringUtils.isEmpty(externalSystem.getCode())) {
+        if (ObjectUtils.isEmpty(externalSystem.getCode())) {
             throw new BusinessException("Nevyplněno pole: code", BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
         }
 
-        if (StringUtils.isEmpty(externalSystem.getName())) {
+        if (ObjectUtils.isEmpty(externalSystem.getName())) {
             throw new BusinessException("Nevyplněno pole: name", BaseCode.PROPERTY_NOT_EXIST).set("property", "name");
         }
 
@@ -451,8 +448,8 @@ public class ExternalSystemService {
     public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem,
                                      final boolean flush) {
-        Validate.notNull(value);
-        Validate.notNull(apExternalSystem);
+    	Objects.requireNonNull(value);
+    	Objects.requireNonNull(apExternalSystem);
 
         ApBinding apBinding = new ApBinding();
         apBinding.setValue(value);
@@ -560,9 +557,9 @@ public class ExternalSystemService {
                                              ApChange apChange, final String value,
                                              final ApPart part,
                                              final ApItem item) {
-        Validate.notNull(binding);
-        Validate.notNull(apChange);
-        Validate.notNull(value);
+    	Objects.requireNonNull(binding);
+    	Objects.requireNonNull(apChange);
+    	Objects.requireNonNull(value);
         Validate.isTrue(part == null ^ item == null);
 
         ApBindingItem apBindingItem = new ApBindingItem();
@@ -728,20 +725,11 @@ public class ExternalSystemService {
     }
 
     public List<ApBindingItem> getBindingItems(final ApBinding binding) {
-        return dataService.findItemsWithData(() -> bindingItemRepository.findByBinding(binding),
-                this::createDataResultList);
+        return bindingItemRepository.findByBinding(binding);
     }
 
     public List<ApBindingItem> findItemsForSync(final ApBinding binding, final Integer syncChangeId) {
-        return dataService.findItemsWithData(() -> bindingItemRepository.findItemsForSync(binding, syncChangeId),
-                this::createDataResultList);
-    }
-
-    public List<DataResult> createDataResultList(List<ApBindingItem> itemList) {
-        return itemList.stream()
-                .filter(i -> i.getItem() != null)
-                .map(i -> new DataResult(i.getItem().getData().getDataId(), i.getItem().getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return bindingItemRepository.findItemsForSync(binding, syncChangeId);
     }
 
     /**

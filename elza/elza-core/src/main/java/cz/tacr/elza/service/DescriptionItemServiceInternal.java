@@ -1,13 +1,11 @@
 package cz.tacr.elza.service;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,8 +32,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -46,7 +42,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
-import cz.tacr.elza.repository.vo.DataResult;
 
 /**
  * Internal service for description items.
@@ -90,10 +85,7 @@ public class DescriptionItemServiceInternal {
     public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
     	Objects.requireNonNull(lockChange);
     	Objects.requireNonNull(node);
-        List<ArrDescItem> itemList;
-        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndChange(node, lockChange),
-                this::createDataResultList);
-        return itemList;
+        return dataService.findItemsWithData(descItemRepository.findByNodeAndChange(node, lockChange));
     }
 
     /**
@@ -108,31 +100,33 @@ public class DescriptionItemServiceInternal {
      */
     public List<ArrDescItem> getDescItems(final ArrNode node) {
     	Objects.requireNonNull(node);
-        List<ArrDescItem> itemList;
-        itemList = dataService.findItemsWithData(() -> descItemRepository.findByNodeAndDeleteChangeIsNull(node),
-                this::createDataResultList);
-        return itemList;
-    }
-
-    public List<DataResult> createDataResultList(List<ArrDescItem> itemList) {
-        return itemList.stream()
-                .map(i -> new DataResult(i.getData().getDataId(), i.getItemType().getDataType()))
-                .collect(Collectors.toList());
+        return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNull(node));
     }
 
     /**
-     * Return list of inhibited descItem Ids by lockChange and fund
+     * Return list of inhibited itemId by lockChange and nodeIds
      *
      * @param lockChange
      * @param nodeIds
-     * @return
+     * @return 
      */
 	public Set<Integer> getInhibitedDescItemIds(ArrChange lockChange, Collection<Integer> nodeIds) {
     	Objects.requireNonNull(lockChange);
     	Objects.requireNonNull(nodeIds);
-    	return inhibitedItemRepository.findByNodeIdsAndLockChange(nodeIds, lockChange).stream()
-    			.map(i -> i.getDescItemId())
-    			.collect(Collectors.toSet());
+    	return inhibitedItemRepository.findItemIdsByNodeIdsAndLockChange(nodeIds, lockChange);
+	}
+
+    /**
+     * Return list of inhibited descItemObjectId by lockChange and nodeIds
+     *
+     * @param lockChange
+     * @param nodeIds
+     * @return 
+     */
+	public Set<Integer> getInhibitedDescItemObjectIds(ArrChange lockChange, Collection<Integer> nodeIds) {
+    	Objects.requireNonNull(lockChange);
+    	Objects.requireNonNull(nodeIds);
+    	return inhibitedItemRepository.findItemIdsByNodeIdsAndLockChange(nodeIds, lockChange);
 	}
 
 	public TitleValue createTitleValue(ArrDescItem descItem, Map<Integer, ApIndex> accessPointNames, final boolean dataExport) {

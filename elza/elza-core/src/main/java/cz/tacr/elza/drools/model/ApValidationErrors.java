@@ -19,7 +19,11 @@ public class ApValidationErrors {
         this.errors = errors;
     }
 
+    // Add error to the result
     public void addError(String error) {
-        this.errors.add(error);
+        // check if not same error twice
+        if (!errors.contains(error)) {
+            errors.add(error);
+        }
     }
 }

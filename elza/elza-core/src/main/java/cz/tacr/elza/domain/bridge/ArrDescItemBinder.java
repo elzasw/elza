@@ -28,8 +28,8 @@ public class ArrDescItemBinder implements TypeBinder {
     public void bind(TypeBindingContext context) {
     	this.context = context;
 
-    	// při změně pole data přepočti index
-        context.dependencies().use(FIELD_DATA);
+    	// při změně pole data nebo deleteChange přepočti index
+        context.dependencies().use(FIELD_DATA).use(FIELD_DELETE_CHANGE_ID);
 
         createIntegerField(FIELD_ITEM_ID);
         createIntegerField(FIELD_NODE_ID);

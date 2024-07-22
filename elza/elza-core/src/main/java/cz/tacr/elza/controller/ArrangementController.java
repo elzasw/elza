@@ -939,11 +939,11 @@ public class ArrangementController {
                                          @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
                                          @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
-        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
+        Validate.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
@@ -960,7 +960,7 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
-        Assert.notNull(copyNodesValidate, "Neplatná struktura");
+    	Validate.notNull(copyNodesValidate, "Neplatná struktura");
         Integer sourceFundVersionId = copyNodesValidate.getSourceFundVersionId();
         Integer targetFundVersionId = copyNodesValidate.getTargetFundVersionId();
         Assert.notNull(sourceFundVersionId, "Neplatný identifikátor zdrojové verze AS");
@@ -1810,7 +1810,7 @@ public class ArrangementController {
     public Integer filterNodes(@PathVariable("versionId") final Integer versionId,
                                @RequestBody(required = false) final Filters filters) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters, fundVersion.getLockChangeId());
         return filterTreeService.filterData(fundVersion, descItemFilters, filters.getNodeId());
     }
 
@@ -1918,7 +1918,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
-        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
+        List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters, fundVersion.getLockChangeId());
         List<Integer> specIds = filterTreeService.findUniqueSpecIds(fundVersion, descItemType, descItemFilters, filters.getNodeId());
         specIds.add(null); // pro "Prázdné" položky
         return specIds;
