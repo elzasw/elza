@@ -132,38 +132,43 @@ public class DaService {
     @Transactional
     public void synchronizaceDA(ArrDigitalRepository digitalRepository) {
         DaRemoteRepositorySync daRemoteRepositorySync = getDaRemoteRepositorySync(digitalRepository);
-        UpdatedAips updatesAips = daConnector.updates(digitalRepository, DA_UPDATE_PAGE_SIZE, daRemoteRepositorySync.getNextQuery());
+        String nextQuery = daRemoteRepositorySync.getNextQuery();
+        UpdatedAips updatesAips;
+        do {
+            updatesAips = daConnector.updates(digitalRepository, DA_UPDATE_PAGE_SIZE, nextQuery);
+            nextQuery = updatesAips.getNextQuery();
 
-        if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
-            List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
+                List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
 
-            List<String> aipCodes = updatesAips.getAipIds().stream()
-                    .map(UpdatedInfo::getAipId)
-                    .toList();
+                List<String> aipCodes = updatesAips.getAipIds().stream()
+                        .map(UpdatedInfo::getAipId)
+                        .toList();
 
-            Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepository(aipCodes, digitalRepository).stream()
-                    .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
+                Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepository(aipCodes, digitalRepository).stream()
+                        .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
 
-            for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
-                DaSyncQueueItem syncQueueItem = existingSyncQueueItemMap.get(updatedInfo.getAipId());
+                for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
+                    DaSyncQueueItem syncQueueItem = existingSyncQueueItemMap.get(updatedInfo.getAipId());
 
-                if (syncQueueItem == null) {
-                    syncQueueItem = new DaSyncQueueItem();
-                    syncQueueItem.setCode(updatedInfo.getAipId());
-                    syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
-                    syncQueueItem.setDigitalRepository(digitalRepository);
-                } else {
-                    syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+                    if (syncQueueItem == null) {
+                        syncQueueItem = new DaSyncQueueItem();
+                        syncQueueItem.setCode(updatedInfo.getAipId());
+                        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                        syncQueueItem.setDigitalRepository(digitalRepository);
+                    } else {
+                        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+                    }
+
+                    syncQueueItem.setAipVersion(updatedInfo.getAipVersion());
+                    syncQueueItemList.add(syncQueueItem);
                 }
 
-                syncQueueItem.setAipVersion(updatedInfo.getAipVersion());
-                syncQueueItemList.add(syncQueueItem);
+                syncQueueItemRepository.saveAll(syncQueueItemList);
             }
+        } while (updatesAips.getAipIds().size() == DA_UPDATE_PAGE_SIZE);
 
-            syncQueueItemRepository.saveAll(syncQueueItemList);
-        }
-
-        daRemoteRepositorySync.setNextQuery(updatesAips.getNextQuery());
+        daRemoteRepositorySync.setNextQuery(nextQuery);
         remoteRepositorySyncRepository.save(daRemoteRepositorySync);
     }
 
