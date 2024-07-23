@@ -102,7 +102,7 @@ window.onerror = function(message, url, line, column, error) {
         }
     } catch (e) {}
 
-    // if(message == "ResizeObserver loop completed with undelivered notifications.") return; 
+    if(message == "ResizeObserver loop completed with undelivered notifications.") return; //FIXME: @kasparova
 
     store.dispatch(
         addToastr(

@@ -282,6 +282,7 @@ var messages = {
     "ribbon.action.arr.output": "Výstupy",
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
+    "ribbon.action.arr.ab": "Archivní balíčky",
     "ribbon.action.arr.dataGrid.export": "Export",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
@@ -764,6 +765,9 @@ var messages = {
     "arr.movements.move.under": "Přesunout pod",
     "arr.movements.move.before": "Přesunout před",
     "arr.movements.move.after": "Přesunout za",
+
+    "arr.ab.connect.individually": "Připojit jednotlivě",
+    "arr.ab.connect.collectively": "Připojit hromadně",
 
     "arr.linked-nodes.title": "Odkazující JP",
 

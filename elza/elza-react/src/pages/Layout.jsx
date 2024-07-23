@@ -20,6 +20,7 @@ import {
     ArrDataGridPage,
     ArrMovementsPage,
     ArrOutputPage,
+    ArrAipPage,
     ArrPage,
     ArrRequestPage,
     EntityCreatePage,
@@ -46,6 +47,7 @@ import {
     OUTPUTS,
     REQUESTS,
     NODE,
+    AIP,
     TREE,
     urlFundTree,
     URL_ENTITY,
@@ -210,6 +212,7 @@ class Layout extends AbstractReactComponent {
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                        <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                         <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
@@ -225,6 +228,7 @@ class Layout extends AbstractReactComponent {
                                         <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
                                         <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                         <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                        <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                         <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
                                         <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                         <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />

@@ -1,5 +1,9 @@
+@import "../../../../variables.scss";
+
 .explorer-detail {
     padding: 5px 10px;
+    height: 100%;
+    border-left: 1px solid $border-color;
 
     h4 {
         font-weight: bold;

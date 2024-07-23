@@ -10,6 +10,7 @@ type AipFilterTagProps = {
 
 const AipFilterTag = ({filter}: AipFilterTagProps) => {
     const classes = useStyles();
+
     const getOperator = () => {
         switch(filter.criteria) {
             case AipFilterCriteria.DOES_NOT_CONTAIN: return "-";
@@ -31,6 +32,10 @@ const AipFilterTag = ({filter}: AipFilterTagProps) => {
                 return filter.value;
             };
         } 
+    }
+
+    if (filter.invisible) {
+        return null;
     }
 
     return (

@@ -8,7 +8,7 @@ type PaginationProps = {
     pageSize: number;
     onPageChange: (nextFrom: number, pageSize: number) => void;
     onPageSizeChange: (pageSize: number) => void;
-}
+}   
 
 /** 
  * Different pagination based on the new design
@@ -62,7 +62,7 @@ const Pagination = ({from, totalCount, pageSize, onPageSizeChange, onPageChange}
                 className="arrow" 
             />
 
-            <span className="middle-text">
+            <span className="middle-text pages">
                 {currentPage + 1} / {pageCount}
             </span>
 

@@ -129,7 +129,7 @@ const ExplorerDetail: FC = () => {
                 {selectedItem && renderFileData()}
             </div> 
 
-            <div className="explorer-detail">
+            <div>
                 <h4>Vztahy - reprezentace</h4>
                 {/* <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p> */}
                 <p><b>{i18n("aip.explorer.detail.parent")} </b> {renderRepresentationParent()}</p>

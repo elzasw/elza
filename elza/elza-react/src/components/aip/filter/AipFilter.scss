@@ -1,39 +1,41 @@
 @import "../../../variables.scss";
 
-.form-check {
-    display: flex;
-    align-items: center;
-
-    .form-check-label {
-        margin-left: 5px;
-    }
-
-    .form-check-input:checked  {
-        background-color: $bg-color;
-        border-color: $bg-color;
-    } 
-
-    .form-check-input:focus {
-        outline: 5px solid $shade-0 ;
-    }
-}
-
-.filter-btn {
-    background-color: #e3e3e3ff !important;
-    margin-right: 5px !important;
-}
-
-.tag-group {
-    gap: 0 !important;
-}
-
-.filters {
-    display: flex; 
-    align-items: center; 
-}
 
 .aip-filter-section {
     display: flex; 
     gap: 5px;
-    padding: 5px 20px
+    padding: 5px 20px;
+    align-items: center;
+
+    .form-check {
+        display: flex;
+        align-items: center;
+    
+        .form-check-label {
+            margin-left: 5px;
+        }
+    
+        .form-check-input:checked  {
+            background-color: $bg-color;
+            border-color: $bg-color;
+        } 
+    
+        .form-check-input:focus {
+            outline: 5px solid $shade-0 ;
+        }
+    }
+    
+    .filter-btn {
+        background-color: #e3e3e3ff !important;
+        margin-right: 5px !important;
+    }
+    
+    .tag-group {
+        gap: 0 !important;
+    }
+    
+    .filters {
+        display: flex; 
+        align-items: center; 
+    }
   }

@@ -119,14 +119,15 @@ export interface AdminFund {
     name?: string;
 }
 export type AipFilter = {
-    id: string;
-    attr: keyof DaAipDetailVO;
+    id?: string;
+    attr: string;
     criteria: AipFilterCriteria;
     value?: any;
     from?: string;
     to?: string;
     path: string;
     label?: string;
+    invisible?: boolean;
 }
 export interface AipsFilter extends SimpleListFilter {
     filters?: AipFilter[];

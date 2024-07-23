@@ -16,11 +16,21 @@ import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { QueueItemState } from "api/QueueItemState";
 
-const AipFilters = () => {
+type AipFiltersProps = {
+	filterDisabled: boolean;
+	initialFilters?: AipFilter[];
+	hiddenValues?: string[];
+	filters: AipFilter[]
+	createFilter: (filter: AipFilter) => void;
+	removeFilter: (id: string) => void;
+}
+
+const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, removeFilter}: AipFiltersProps) => {
 	const {filter} = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
-    const [filters, setFilters] = useState<AipFilter[]>([]);
+	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
     const dispatch = useThunkDispatch();
 	const classes = useStyles();
+
 
     const handleClose = () => {
         dispatch(modalDialogHide());
@@ -32,13 +42,14 @@ const AipFilters = () => {
 	
 	const handleCreate = (filter: AipFilter) => {
 		handleClose();
-		const oldFilters = filters;
-		filter.id = generateUUID();
-		setFilters([...oldFilters, filter]);
+		createFilter(filter);
+		// const oldFilters = filters;
+		// filter.id = generateUUID();
+		// setFilters([...oldFilters, filter]);
 	}
 
 	const handleRemove = (_e, { value }) => {
-		setFilters(filters.filter((item) => item.id != value));
+		removeFilter(value);
 	}
 
 	const getForm = (item) => {
@@ -100,10 +111,11 @@ const AipFilters = () => {
     return (
 		<div className="filters">
 			<Menu>
-				<MenuTrigger disableButtonEnhancement>
+				<MenuTrigger disableButtonEnhancement >
 					<MenuButton
 						menuIcon={<Icon glyph="fa-filter"/>}     
 						shape="square"
+						disabled={filterDisabled}
 						className="filter-btn"
 					>
 					</MenuButton>
@@ -111,21 +123,21 @@ const AipFilters = () => {
 
 				<MenuPopover className={classes.menuPopover}>
 				<MenuList>
-					{Object.keys(colDef).map((key, index) => (
+					{Object.keys(columnsDef).map((key, index) => (
 						<MenuItem  
 							key={`filter-${index}`}
 							className={classes.menuItem}
-							onClick={() => handleFilterCreate(colDef[key])}
+							onClick={() => handleFilterCreate(columnsDef[key])}
 						>
-							{colDef[key].name}
+							{columnsDef[key].name}
 						</MenuItem>
 					))}
 				</MenuList>
 				</MenuPopover>
 			</Menu>
 			
-			<TagGroup onDismiss={handleRemove} aria-label="Filtry" className="tag-group">
-				{filters.map(filter =>(
+			<TagGroup onDismiss={filterDisabled ? undefined : handleRemove} aria-label="Filtry" className="tag-group" >
+				{filters.map(filter => (
 					<AipFilterTag filter={filter} />
 				))}
 			</TagGroup>

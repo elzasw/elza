@@ -24,8 +24,10 @@ import {
     URL_NODE,
     urlFundActions, urlFundDaos,
     urlFundGrid,
+    urlFundAb,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP,
+    AIP
 } from "../../constants";
 import UserSettingsModal from 'components/user/UserSettingsModal';
 
@@ -243,6 +245,14 @@ class Ribbon extends AbstractReactComponent {
                         </Button>
                     </LinkContainer>,
                 );
+                arrParts.push(
+                    <LinkContainer key="ribbon-btn-arr-ab" to={urlFundAb(fundId, versionId)}>
+                        <Button variant='default' className={window.location.pathname.includes(AIP) ? "active" : ""}>
+                            <Icon glyph="fa-archive" />
+                            <span className="btnText">{i18n('ribbon.action.arr.ab')}</span>
+                        </Button>
+                    </LinkContainer>,
+                );
             }
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
@@ -345,7 +355,7 @@ class Ribbon extends AbstractReactComponent {
                     }
                     <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
                         <Button variant={'default'}>
-                            <Icon glyph="fa-th-list" />
+                            <Icon glyph="fa-archive" />
                             <span className="btnText">{i18n('ribbon.action.aip')}</span>
                         </Button>
                     </LinkContainer>

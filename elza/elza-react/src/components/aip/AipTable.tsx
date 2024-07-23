@@ -33,14 +33,23 @@ import { colDef, getBoolIcon } from './utils.tsx';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
-import debounce from 'shared/utils/debounce.jsx';
+import { AipFilter } from 'typings/store/index.ts';
 
-const AipTable: FC = () => {
+type AipTableProps = {
+    onAipSelect?: (id: number) => void;
+    filterDisabled?: boolean; 
+    initialFilters?: AipFilter[];
+    hiddenValues?: string[]
+}
+
+const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: AipTableProps) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
+
+
     const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) => 
         createTableColumn<DaAipDetailVO>({
             columnId: def.key,
@@ -50,7 +59,7 @@ const AipTable: FC = () => {
                 switch(def.type) {
                     case "number": return a[def.key] - b[def.key];
                     case "bool": return Number(a[def.key]) - Number(b[def.key]);
-                    default: return a[def.key].localeCompare(b[def.key]);
+                    default: return a[def.key]?.localeCompare(b[def.key]);
                 }
             },
         })
@@ -59,13 +68,13 @@ const AipTable: FC = () => {
     const [columns, setColumns] = useState<TableColumnDefinition<DaAipDetailVO>[]>(columnsDef);
 
     const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
-        return formatDate(new Date(unitdateFrom)) + " - " + unitdateTo ? formatDate(new Date(unitdateTo)) : "?";
+        return formatDate(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDate(new Date(unitdateTo)) : "?");
     }
 
     const getContent =(item: DaAipDetailVO, key: string) => {
         switch(key) {
             case "aipSize": return formatAipSize(item[key]);
-            case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom,item.unitdateTo): "-";
+            case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund.name;
             case "institution.name": return item.institution.name;
             default: 
@@ -75,6 +84,11 @@ const AipTable: FC = () => {
 
     useEffect(() => {
         dispatch(aipsFetchIfNeeded());
+
+        if(hiddenValues) {
+            const res = columns.filter(col => !hiddenValues.includes(col.columnId.toString()));
+            setColumns(res);
+        }
     },[
         aips.filter.from,
         aips.filter.pageSize,
@@ -173,24 +187,27 @@ const AipTable: FC = () => {
     );
 
     const handlePageSizeChange = (pageSize:number) => {
-        dispatch(aipsFilter(aips.filter.filters, aips.filter.from, pageSize));
+        dispatch(aipsFilter(aips.filter.filters, 0, pageSize));
     }
 
     return (
-        <Row>
+        <Row className='aip-table'>
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
                     <AipFilterSection 
                         columns={columns.map(item => def[item.columnId]?.name)}
                         onColsChange={toggleColumns}
+                        filterDisabled={filterDisabled}
+                        initialFilters={initialFilters}
+                        hiddenValues={hiddenValues}
                     />
                     <Table
                         ref={tableRef}
                         as="table"
                         sortable
                         {...columnSizing_unstable.getTableProps()}
-                        className="aip-table"
+                        className="aip-table-body"
                     >
                         <TableHeader>
                             <TableRow>
@@ -231,7 +248,7 @@ const AipTable: FC = () => {
                                             key={`item[${item.code}].${col.columnId}`} 
                                             /** For correct functionality columnId must be the same as DaAipDetailVO keys */
                                             {...columnSizing_unstable.getTableCellProps(col.columnId)}
-                                            onClick={() => handleSelect(item.aipId)}
+                                            onClick={() => onAipSelect ? onAipSelect(item.aipId) : handleSelect(item.aipId)}
                                         >
                                             <TableCellLayout truncate>
                                                 {col.renderCell(item)}
