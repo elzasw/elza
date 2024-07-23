@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -309,6 +310,7 @@ public class ClientFactoryDO {
                 ArrDescItem.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
                 ArrDescItem.SPECIFICATION_ATT);
+        List<Integer> itemSpecIds = Objects.equals(filter.getSpecsType(), ValuesTypes.UNSELECTED) ? null : filter.getSpecs();
 
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
@@ -528,7 +530,7 @@ public class ClientFactoryDO {
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            return new DescItemTypeFilter(descItemType, filter.getSpecs(), valuesConditions, specsConditions, conditions);
+            return new DescItemTypeFilter(descItemType, itemSpecIds, valuesConditions, specsConditions, conditions);
         }
 
         return null;
