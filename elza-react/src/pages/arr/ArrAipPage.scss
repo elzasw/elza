@@ -1,0 +1,37 @@
+@import "../../variables.scss";
+$abBtnSize: 7em;
+
+.ab-actions-container {
+    height: 100%;
+    padding: 0 10px;
+    text-align: center;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .btn {
+        width: $abBtnSize;
+        height: $abBtnSize;
+        display: block;
+        position: relative;
+        margin: 5px 0;
+        padding:1.2em;
+        align-items: center;
+        justify-content: center;
+        white-space: pre-wrap;
+        line-height: 1.2em;
+        border:none;
+        background-color: $homepage-button-bg;
+        color: $fg-color;
+
+        &:hover{
+            background-color: $homepage-button-bg-hover;
+        }
+        .icon{
+            font-size: 1.5em;
+            margin-bottom:0.1em;
+            color:$fg-color;
+        }
+    }
+}

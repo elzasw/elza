@@ -62,8 +62,9 @@ const columnSizes = {
 
 const ExplorerTable: FC = () => {
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
+    const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
 
-    let items = null;
+    let items = [];
     if(isDaoFileFolderVO(selectedItem) && 
         !((!selectedItem.childFolders && !selectedItem.childFiles) 
         || (selectedItem.childFolders && selectedItem.childFolders.length == 0))
@@ -71,28 +72,6 @@ const ExplorerTable: FC = () => {
         items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []] 
     } else if(selectedItem) {
         items = selectedItem?.parent ? [...selectedItem.parent.childFolders || [], ...selectedItem.parent.childFiles || []] : [];
-    }
-
-    if(!items) {
-        return <></>
-    }
-    
-    const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
-    const plugins: TableFeaturePlugin[] = [
-        useTableColumnSizing_unstable({ columnSizingOptions }),
-        useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
-    ] 
-
-    if (mode == ExplorerMode.SELECT) {
-        plugins.push(useTableSelection({
-            selectionMode: "multiselect",
-            onSelectionChange: (e, data) => {
-                const selectedRows = rows
-                    .filter(row => data.selectedItems.has(row.rowId))
-                    .map(row => row.item);
-                //TODO: @kasparova action
-            }
-        }));
     }
 
     const { 
@@ -109,7 +88,19 @@ const ExplorerTable: FC = () => {
           },
     } = useTableFeatures(
         { columns, items },
-        plugins
+        [
+            useTableColumnSizing_unstable({ columnSizingOptions }),
+            useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
+            useTableSelection({
+                selectionMode: "multiselect",
+                onSelectionChange: (e, data) => {
+                    const selectedRows = rows
+                        .filter(row => data.selectedItems.has(row.rowId))
+                        .map(row => row.item);
+                    //TODO: @kasparova action
+                }
+            })
+        ] 
       );
     
     const rows = sort(getRows((row) => {

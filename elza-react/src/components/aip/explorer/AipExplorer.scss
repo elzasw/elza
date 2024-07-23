@@ -1,6 +1,17 @@
 @import "../../../variables.scss";
 
+.not-selected {
+    text-align: center;
+    height: 100%;
+    border-right: 1px solid $border-color;
+}
+
 .aip-explorer {
+    border: 1px solid $border-color;
+    height: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
+
     .detail-body {
         display: flex;
         flex-direction: column;
@@ -11,9 +22,10 @@
     .modal-dialog {
         max-width: 95vw;
     }
-    .modal-body {
-        padding: 5px;
-    }
+
+    // .modal-body {
+    //     padding: 0;
+    // }
 
     .navigation-item {
         color: $fg-color;
@@ -21,6 +33,5 @@
         text-decoration: none;
     }
 
-    word-wrap: break-word;
 }
 

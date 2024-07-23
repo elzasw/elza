@@ -12,7 +12,7 @@ import { useThunkDispatch } from "utils/hooks";
 import { AREA_AIP_STRUCTURE, fetchAipStructureIfNeeded } from "actions/aip/exp";
 import "./ExplorerTree.scss"
 import Folder from "./Folder";
-import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { findNodeByUUID } from "../utils";
 
@@ -22,7 +22,7 @@ const AipTree: FC = () => {
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const {selectedItem, setSelectedItem, setStructure} = useExplorerContext();
 
-    if(structure) {
+    if (structure) {
         structure.parent = null;
     }
 
@@ -84,8 +84,8 @@ const AipTree: FC = () => {
             aria-label="Průzkumník"
             openItems={openItems}
             onOpenChange={handleOpenChange}
-            style={{overflowX: "auto"}}
             defaultOpenItems={[structure.uuid]}
+            className="explorer-tree"
         >
             {structure && <TreeItem itemType="branch" value={structure.uuid}>
                 <TreeItemLayout

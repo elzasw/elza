@@ -1,8 +1,11 @@
 @import "../../variables.scss";
 
 
-.aip-page {
-    .aip-table {
+.aip-table {
+    margin: 0;
+    overflow: auto;
+
+    .aip-table-body {
         overflow-x: auto;
 
         .header {
@@ -33,5 +36,6 @@
         margin-left: auto; 
         background-color: #e3e3e3ff;
         padding: 0 10px;
+        min-width: max-content;
       }
 }

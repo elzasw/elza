@@ -35,11 +35,11 @@ export const AipPage: FC = () => {
     }, [match.params.id]);
 
     return (
-        <div className="aip-page">
+        <div >
             <AipPageRibbon />
             <div style={{display: "flex"}}>
                 <div style={{flex: "1"}}>
-                    <AipTable/>
+                    <AipTable />
                 </div>
                 <AipDetail />
             </div>

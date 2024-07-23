@@ -1,7 +1,6 @@
 import { FormInputField, i18n } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form"
 import { DaAipDetailVO } from "api/DaAipDetailVO";
-import { colDef } from "components/aip/utils";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AipFilter } from "typings/store";
 import { AipFilterFormProps } from "./AipFilterFormProps";

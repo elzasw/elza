@@ -1,8 +1,7 @@
 @import "../../../../variables.scss";
 
 .explorer-table {
-    overflow-x: auto;
-    word-wrap: break-word;
+    overflow: auto;
 
     .header {
        background-color: #b3b3b3ff;
