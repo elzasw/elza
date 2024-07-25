@@ -7,10 +7,12 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
+import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
+import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.service.DaoLevelViewService;
@@ -26,12 +28,16 @@ import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import org.apache.commons.collections4.CollectionUtils;
+import org.archivists.ead3.schema.Ead;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +52,8 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 public class DaoProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(DaoProcessor.class);
+
     @Autowired
     private DaService daService;
     @Autowired
@@ -59,6 +67,8 @@ public class DaoProcessor {
     @Autowired
     private DaDaoFileFolderRepository daoFileFolderRepository;
     @Autowired
+    private DaDaoItemRepository daoItemRepository;
+    @Autowired
     private DaoLevelViewService levelViewService;
 
     private final DaAip aip;
@@ -66,6 +76,10 @@ public class DaoProcessor {
     private final MetsType metsType;
 
     private final PremisComplexType premisComplexType;
+
+    private final Path tempDir;
+
+    private Ead ead;
 
     private Map<String, DaDao> daDaoMap;
 
@@ -75,16 +89,19 @@ public class DaoProcessor {
 
     private Map<String, List<DaDaoFile>> daDaoFileMap;
 
+    private Map<String, List<DaDaoItem>> daDaoItemMap;
+
     private final Map<String, DaDao> fileDaoMap = new HashMap<>();
 
     private final List<String> representations = new ArrayList<>();
 
     private final Map<String, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
-    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType) {
+    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
         this.aip = aip;
         this.metsType = metsType;
         this.premisComplexType = premisComplexType;
+        this.tempDir = tempDir;
     }
 
 
@@ -99,6 +116,8 @@ public class DaoProcessor {
                 .collect(Collectors.groupingBy(f -> f.getRepresentationDao().getCode()));
         daDaoFileMap = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
                 .collect(Collectors.groupingBy(f -> f.getDao().getCode()));
+        daDaoItemMap = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
+                .collect(Collectors.groupingBy(i -> i.getDao().getCode()));
 
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
         DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_UPDATE : DaChangeType.AIP_CREATE;
@@ -120,6 +139,9 @@ public class DaoProcessor {
 
         //logical
         createDaoFromStruct(metsType.getStructMap(), change);
+
+        //ead
+//        createDaoItemsFromEad(ead.getArchdesc(), change);
 
         deleteOldComponents(change);
         levelViewService.processLevelViewForAip(aip);
@@ -144,15 +166,21 @@ public class DaoProcessor {
                 .flatMap(List::stream)
                 .collect(Collectors.toSet());
 
+        Set<DaDaoItem> daDaoItemSet = daDaoItemMap.values().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
+
         daDaoSet.forEach(d -> d.setDeleteChange(change));
         daDaoRelationSet.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderSet.forEach(f -> f.setDeleteChange(change));
         daDaoFileSet.forEach(f -> f.setDeleteChange(change));
+        daDaoItemSet.forEach(i -> i.setDeleteChange(change));
 
         daoRepository.saveAll(daDaoSet);
         daoRelationRepository.saveAll(daDaoRelationSet);
         daoFileFolderRepository.saveAll(daDaoFileFolderSet);
         daoFileRepository.saveAll(daDaoFileSet);
+        daoItemRepository.saveAll(daDaoItemSet);
     }
 
     @Nullable
@@ -294,9 +322,20 @@ public class DaoProcessor {
         for (MdSecType mdSecType : dmdSec) {
             String code = mdSecType.getID();
             DaDao.DaoType type = mdSecType.getGROUPID().equals("CONTEXTUAL") ? DaDao.DaoType.METADMDCONTEXTUAL : DaDao.DaoType.METADMDINHERENT;
+            String href = mdSecType.getMdRef().getHref();
+
+            if (type == DaDao.DaoType.METADMDINHERENT) {
+                try {
+                    href = href.replace("/", "\\");
+                    ead = daService.loadEadFile(tempDir, href);
+                } catch (Exception e) {
+                    logger.error("Došlo k chybě při načtení EAD souboru {}", href, e);
+                }
+            }
+
             String label = findOriginalNameInPremis(premisComplexType, code);
             if (label == null) {
-                label = mdSecType.getMdRef().getHref();
+                label = href;
             }
 
             createDaoFromMdSecType(mdSecType, code, label, type, change);
