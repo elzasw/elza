@@ -64,12 +64,17 @@ public class DaoLevelViewService {
         }
 
         List<DaDaoRelation> childrenList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(Collections.singletonList(daDao));
-        if (!childrenList.isEmpty()) {
+        if (!childrenList.isEmpty() && parentLevelView == null) {
             return;
         }
 
         List<DaDaoRelation> parentList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
         if (parentList.isEmpty()) {
+            return;
+        }
+
+        List<DaDaoRelation> otherThenLogicalRelations = parentList.stream().filter(dr -> !dr.getDao().getType().equals(DaDao.DaoType.LOGICAL)).toList();
+        if (!otherThenLogicalRelations.isEmpty()) {
             return;
         }
 
@@ -92,8 +97,6 @@ public class DaoLevelViewService {
             levelView.setParentLevelView(parentLevelView);
             daLevelViewRepository.save(levelView);
         }
-        aipState.setLevelView(levelView);
-        aipStateRepository.save(aipState);
 
         daDao.setLevelView(levelView);
         daoRepository.save(daDao);

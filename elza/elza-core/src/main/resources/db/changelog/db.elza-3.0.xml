@@ -810,4 +810,9 @@
                                  referencedColumnNames="data_id"/>
     </changeSet>
 
+    <changeSet id="20240725160300" author="fantis">
+        <dropForeignKeyConstraint baseTableName="da_aip_state" constraintName="fk_da_aip_state_da_level_view"/>
+        <dropColumn tableName="da_aip_state" columnName="level_view_id"/>
+    </changeSet>
+
 </databaseChangeLog>
