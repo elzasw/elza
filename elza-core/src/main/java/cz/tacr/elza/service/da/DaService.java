@@ -45,11 +45,13 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.premis.v3.PremisComplexType;
 import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBException;
 import org.apache.commons.collections4.CollectionUtils;
+import org.archivists.ead3.schema.Ead;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -225,6 +227,12 @@ public class DaService {
                     premisComplexType = PremisReaderWriter.unmarshal(premis);
                 }
 
+                try {
+                    applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType, tempDir);
+                } catch (Exception e) {
+                    logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
+                }
+
                 // Odstranit dočasné soubory a adresáře
                 try (Stream<Path> str = Files.walk(tempDir)) {
                     str.map(Path::toFile).forEach(File::delete);
@@ -232,11 +240,13 @@ public class DaService {
             } catch (IOException | JAXBException e) {
                 logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
             }
-            try {
-                applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType);
-            } catch (Exception e) {
-                logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
-            }
+        }
+    }
+
+    public Ead loadEadFile(Path tempDir, String filePath) throws IOException, JAXBException {
+        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
+            Path ead = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
+            return EadReaderWriter.unmarshal(ead);
         }
     }
 
@@ -249,8 +259,8 @@ public class DaService {
     }
 
     @Transactional
-    public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType) {
-        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType);
+    public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
+        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir);
         daoProcessor.process();
     }
 

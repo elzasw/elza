@@ -529,6 +529,35 @@
                             </plugins>
 			</configuration>
                     </execution>
+                    <execution>
+                        <id>generate-ead</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xinheritance</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/ead</generateDirectory>
+                            <schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+                            <schemaIncludes>
+                                <include>ead3.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+                            <bindingIncludes>
+                                <include>ead3-bindings.xml</include>
+                            </bindingIncludes>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                    </execution>
 				</executions>
                 <dependencies>
                     <!--<dependency>
