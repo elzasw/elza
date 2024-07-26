@@ -6,13 +6,21 @@ import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
+import {Api} from "../../api";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     //TODO: @kasparova implement when ready
-    const handleLoadMetadata = () => {}
+    const handleLoadMetadata = () => {
+        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        Api.aips.aipCreateDaoStructure(aipIds);
+    }
+    const handleDeleteMetadata = () => {
+        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        Api.aips.aipDeleteDaoStructure(aipIds);
+    }
     const handleLoadAips = () => {}
     const handleForceUpdate = () => {}
 
@@ -26,6 +34,14 @@ const AipPageRibbon: FC = () => {
                 <Icon glyph="fa-download" />
                 <div>
                     <span className="btnText">{i18n("aip.actions.metadata")}</span>
+                </div>
+            </Button>
+        );
+        altActions.push(
+            <Button key="deleteMetadata" onClick={handleDeleteMetadata}>
+                <Icon glyph="fa-trash" />
+                <div>
+                    <span className="btnText">{i18n("aip.actions.deleteMetadata")}</span>
                 </div>
             </Button>
         );

@@ -878,7 +878,7 @@ namespace ElzaAPI.Aip {
        };
 
     /**
-     * Import AIP package
+     * Create dao structure
      */
     @route("/create-dao-structure")
     @post op createDaoStructure(
@@ -889,6 +889,22 @@ namespace ElzaAPI.Aip {
         @Http.statusCode statusCode: 200;
        } | {
         /** Failed to create dao structure */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Delete dao structure
+     */
+    @route("/delete-dao-structure")
+    @post op deleteDaoStructure(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Dao structure successfully deleted */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to delete dao structure */
         @Http.statusCode statusCode: 500;
         @body data: BaseException;
        };

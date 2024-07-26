@@ -80,7 +80,7 @@ export const colDef = [
     {key: "referenceNumber", name: "Číslo jednací", path: DA_AIP_STATE_PATH, type: "string", minWidth: 60, idealWidth: 100 },
     {key: "nadChangeCode",name: "Vnější změna", path: DA_AIP_STATE_PATH,type: "string", minWidth: 60, idealWidth: 100},
     {key: "aipSize", name: "Velikost", path: DA_AIP_STATE_PATH,type: "number", minWidth: 65, idealWidth: 65},
-    {key: "createDaoStructure", name: "Načtená metadata", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
+    {key: "metadataLoad", name: "Načtená metadata", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
     // TODO: @kasparova Bude upřesněno v budoucnu
     // {name: "Stažené komponenty", type: "bool", minWidth: 90, idealWidth: 145},
     // {name: "Napojen archivní popis", type: "bool", minWidth: 70, idealWidth: 155},

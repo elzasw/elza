@@ -80,7 +80,7 @@ public class DaAipState {
     private String nadChangeCode;
 
     @Column
-    private Boolean createDaoStructure;
+    private Boolean metadataLoad;
 
     public Integer getAipStateId() {
         return aipStateId;
@@ -226,11 +226,11 @@ public class DaAipState {
         this.nadChangeCode = nadChangeCode;
     }
 
-    public Boolean getCreateDaoStructure() {
-        return createDaoStructure;
+    public Boolean getMetadataLoad() {
+        return metadataLoad;
     }
 
-    public void setCreateDaoStructure(Boolean createDaoStructure) {
-        this.createDaoStructure = createDaoStructure;
+    public void setMetadataLoad(Boolean metadataLoad) {
+        this.metadataLoad = metadataLoad;
     }
 }
