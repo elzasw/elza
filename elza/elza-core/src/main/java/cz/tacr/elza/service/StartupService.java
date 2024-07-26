@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.service.da.DaExtSyncsProcessor;
+import cz.tacr.elza.service.da.DaImportExtSyncsProcessor;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -91,7 +91,7 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
-    private final DaExtSyncsProcessor daExtSyncsProcessor;
+    private final DaImportExtSyncsProcessor daImportExtSyncsProcessor;
 
     private final HibernateConfiguration hibernateConfiguration;
 
@@ -146,7 +146,7 @@ public class StartupService implements SmartLifecycle {
                           final RuleService ruleService,
                           final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
-                          final DaExtSyncsProcessor daExtSyncsProcessor,
+                          final DaImportExtSyncsProcessor daImportExtSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
                           final UserService userService) {
@@ -169,7 +169,7 @@ public class StartupService implements SmartLifecycle {
         this.ruleService = ruleService;
         this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
-        this.daExtSyncsProcessor = daExtSyncsProcessor;
+        this.daImportExtSyncsProcessor = daImportExtSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
         this.userService = userService;
@@ -310,7 +310,7 @@ public class StartupService implements SmartLifecycle {
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
-        daExtSyncsProcessor.startExtSyncs();
+        daImportExtSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();
     }

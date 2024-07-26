@@ -18,9 +18,9 @@ import java.util.List;
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 
 @Component
-public class DaExtSyncsProcessor implements Runnable {
+public class DaImportExtSyncsProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(DaExtSyncsProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(DaImportExtSyncsProcessor.class);
 
     @Autowired
     private DaService daService;
@@ -47,7 +47,7 @@ public class DaExtSyncsProcessor implements Runnable {
         synchronized (lock) {
             status = ThreadStatus.RUNNING;
             if (this.asyncThread == null) {
-                this.asyncThread = new Thread(this,"DaExtSyncsProcessor");
+                this.asyncThread = new Thread(this,"DaImportExtSyncsProcessor");
                 this.asyncThread.start();
             }
         }
@@ -119,11 +119,11 @@ public class DaExtSyncsProcessor implements Runnable {
                     }
                 }
             } catch (Exception e) {
-                logger.error("DaExtSyncsProcessor - processor thread error", e);
+                logger.error("DaImportExtSyncsProcessor - processor thread error", e);
             }
             status = ThreadStatus.STOPPED;
             lock.notifyAll();
-            logger.error("DaExtSyncsProcessor - thread finished");
+            logger.error("DaImportExtSyncsProcessor - thread finished");
         }
     }
 
