@@ -1,4 +1,4 @@
-import { AREA_AIP, AREA_SELECTED_AIPS } from "actions/aip/aip";
+import {aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
 import { FC } from "react";
@@ -7,19 +7,25 @@ import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import {Api} from "../../api";
+import {useThunkDispatch} from "../../utils/hooks";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
+    const dispatch = useThunkDispatch();
 
     //TODO: @kasparova implement when ready
     const handleLoadMetadata = () => {
         let aipIds = selectedAips.rows.map(aip => aip.aipId)
-        Api.aips.aipCreateDaoStructure(aipIds);
+        Api.aips.aipCreateDaoStructure(aipIds).then(() => {
+            dispatch(aipsFetchIfNeeded(true))
+        });
     }
     const handleDeleteMetadata = () => {
         let aipIds = selectedAips.rows.map(aip => aip.aipId)
-        Api.aips.aipDeleteDaoStructure(aipIds);
+        Api.aips.aipDeleteDaoStructure(aipIds).then(() => {
+            dispatch(aipsFetchIfNeeded(true))
+        });
     }
     const handleLoadAips = () => {}
     const handleForceUpdate = () => {}
