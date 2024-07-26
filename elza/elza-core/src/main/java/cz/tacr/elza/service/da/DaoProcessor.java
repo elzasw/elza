@@ -83,19 +83,19 @@ public class DaoProcessor {
 
     private Map<String, DaDao> daDaoMap;
 
-    private Map<String, List<DaDaoRelation>> daDaoRelationMap;
+    private Map<Integer, List<DaDaoRelation>> daDaoRelationMap;
 
-    private Map<String, List<DaDaoFileFolder>> daDaoFileFolderMap;
+    private Map<Integer, List<DaDaoFileFolder>> daDaoFileFolderMap;
 
-    private Map<String, List<DaDaoFile>> daDaoFileMap;
+    private Map<Integer, List<DaDaoFile>> daDaoFileMap;
 
-    private Map<String, List<DaDaoItem>> daDaoItemMap;
+    private Map<Integer, List<DaDaoItem>> daDaoItemMap;
 
     private final Map<String, DaDao> fileDaoMap = new HashMap<>();
 
     private final List<String> representations = new ArrayList<>();
 
-    private final Map<String, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
+    private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
     public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
         this.aip = aip;
@@ -111,13 +111,13 @@ public class DaoProcessor {
                 .collect(Collectors.toMap(DaDao::getCode, Function.identity()));
 
         daDaoRelationMap = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
-                .collect(Collectors.groupingBy(r -> r.getDao().getCode()));
+                .collect(Collectors.groupingBy(r -> r.getDao().getDaoId()));
         daDaoFileFolderMap = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList).stream()
-                .collect(Collectors.groupingBy(f -> f.getRepresentationDao().getCode()));
+                .collect(Collectors.groupingBy(f -> f.getRepresentationDao().getDaoId()));
         daDaoFileMap = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
-                .collect(Collectors.groupingBy(f -> f.getDao().getCode()));
+                .collect(Collectors.groupingBy(f -> f.getDao().getDaoId()));
         daDaoItemMap = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
-                .collect(Collectors.groupingBy(i -> i.getDao().getCode()));
+                .collect(Collectors.groupingBy(i -> i.getDao().getDaoId()));
 
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
         DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_UPDATE : DaChangeType.AIP_CREATE;
@@ -326,8 +326,8 @@ public class DaoProcessor {
 
             if (type == DaDao.DaoType.METADMDINHERENT) {
                 try {
-                    href = href.replace("/", "\\");
-                    ead = daService.loadEadFile(tempDir, href);
+                    String newHref = href.replace("/", "\\");
+                    ead = daService.loadEadFile(tempDir, newHref);
                 } catch (Exception e) {
                     logger.error("Došlo k chybě při načtení EAD souboru {}", href, e);
                 }
@@ -420,13 +420,13 @@ public class DaoProcessor {
                                        String mimeType, BigInteger size, Integer imageHeight, Integer imageWidth, String sourceXDimensionUnit,
                                        Integer sourceXDimensionValue, String sourceYDimensionUnit, Integer sourceYDimensionValue,
                                        String duration, String description, String fileName) {
-        List<DaDaoFile> daDaoFiles = daDaoFileMap.getOrDefault(dao.getCode(), new ArrayList<>());
+        List<DaDaoFile> daDaoFiles = daDaoFileMap.getOrDefault(dao.getDaoId(), new ArrayList<>());
         if (CollectionUtils.isNotEmpty(daDaoFiles)) {
             for (DaDaoFile daDaoFile : daDaoFiles) {
                 if (isFileSame(daDaoFile, daoFileFolder, checksum, checksumType, mimeType, size, imageHeight, imageWidth, sourceXDimensionUnit,
                         sourceXDimensionValue, sourceYDimensionUnit, sourceYDimensionValue, duration, description, fileName)) {
                     daDaoFiles.remove(daDaoFile);
-                    daDaoFileMap.put(dao.getCode(), daDaoFiles);
+                    daDaoFileMap.put(dao.getDaoId(), daDaoFiles);
                     return daDaoFile;
                 }
             }
@@ -462,8 +462,8 @@ public class DaoProcessor {
         DaDaoFileFolder fileFolder = null;
         List<DaDaoFileFolder> foundFileFolders = new ArrayList<>();
         List<DaDaoFileFolder> createdFileFolders = new ArrayList<>();
-        List<DaDaoFileFolder> fileFolderList = daDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
-        List<DaDaoFileFolder> newFileFolderList = newDaDaoFileFolderMap.getOrDefault(daDao.getCode(), new ArrayList<>());
+        List<DaDaoFileFolder> fileFolderList = daDaoFileFolderMap.getOrDefault(daDao.getDaoId(), new ArrayList<>());
+        List<DaDaoFileFolder> newFileFolderList = newDaDaoFileFolderMap.getOrDefault(daDao.getDaoId(), new ArrayList<>());
 
         DaDaoFileFolder parentFileFolder = null;
         String[] pathArray = href.split("/");
@@ -484,11 +484,11 @@ public class DaoProcessor {
         }
 
         fileFolderList.removeAll(foundFileFolders);
-        daDaoFileFolderMap.put(daDao.getCode(), fileFolderList);
+        daDaoFileFolderMap.put(daDao.getDaoId(), fileFolderList);
 
         newFileFolderList.addAll(createdFileFolders);
         newFileFolderList.addAll(foundFileFolders);
-        newDaDaoFileFolderMap.put(daDao.getCode(), newFileFolderList);
+        newDaDaoFileFolderMap.put(daDao.getDaoId(), newFileFolderList);
 
         return fileFolder;
     }
@@ -506,13 +506,13 @@ public class DaoProcessor {
     }
 
     private void findOrCreateDaoRelation(DaDao daDao, DaDao parentDao, DaChange change) {
-        List<DaDaoRelation> daoRelations = daDaoRelationMap.getOrDefault(daDao.getCode(), null);
+        List<DaDaoRelation> daoRelations = daDaoRelationMap.getOrDefault(daDao.getDaoId(), null);
         DaDaoRelation relation = findDaoRelation(parentDao, daDao, daoRelations);
         if (relation == null) {
             daService.createDaDaoRelation(daDao, parentDao, change);
         } else {
             daoRelations.remove(relation);
-            daDaoRelationMap.put(daDao.getCode(), daoRelations);
+            daDaoRelationMap.put(daDao.getDaoId(), daoRelations);
         }
     }
 
