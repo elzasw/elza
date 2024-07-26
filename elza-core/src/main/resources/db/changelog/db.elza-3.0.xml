@@ -815,4 +815,9 @@
         <dropColumn tableName="da_aip_state" columnName="level_view_id"/>
     </changeSet>
 
+    <changeSet id="20240725174100" author="fantis">
+        <renameColumn tableName="da_aip_state" oldColumnName="create_dao_structure" newColumnName="metadata_load"/>
+        <addDefaultValue tableName="da_aip_state" columnName="metadata_load" defaultValueBoolean="false"/>
+    </changeSet>
+
 </databaseChangeLog>

@@ -16,6 +16,6 @@ export interface DaAipDetailVO {
     referenceNumber: string;
     nadChangeCode: string;
     aipSize: number;
-    createDaoStructure: boolean;
+    metadataLoad: boolean;
     syncState: QueueItemState;
 }

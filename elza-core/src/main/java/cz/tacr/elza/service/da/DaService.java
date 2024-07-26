@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
+import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
@@ -35,6 +36,7 @@ import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
+import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
@@ -44,6 +46,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.MetsType;
@@ -97,6 +100,8 @@ public class DaService {
     @Autowired
     private ArrangementInternalService arrangementInternalService;
     @Autowired
+    private DaoLevelViewService levelViewService;
+    @Autowired
     private ResourcePathResolver resourcePathResolver;
     @Autowired
     private DaConnector daConnector;
@@ -128,6 +133,8 @@ public class DaService {
     private DaoLinkRepository daoLinkRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private DaDaoItemRepository daoItemRepository;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
 
@@ -262,6 +269,36 @@ public class DaService {
     public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
         DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir);
         daoProcessor.process();
+    }
+
+    @Transactional
+    public void deleteDaoStructure(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findByIdAndLinkNotExists(aipIds);
+
+        List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
+        List<DaDao> daDaoList = daoRepository.findByAipInAndDeleteChangeIsNull(aipList);
+        List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoFileFolder> daDaoFileFolderList = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoFile> daDaoFileList = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoItem> daDaoItemList = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+
+        DaChange change = createDaChange(null, DaChangeType.AIP_UPDATE);
+
+        stateList.forEach(s -> s.setMetadataLoad(false));
+        daDaoList.forEach(d -> d.setDeleteChange(change));
+        daDaoRelationList.forEach(r -> r.setDeleteChange(change));
+        daDaoFileFolderList.forEach(f -> f.setDeleteChange(change));
+        daDaoFileList.forEach(f -> f.setDeleteChange(change));
+        daDaoItemList.forEach(i -> i.setDeleteChange(change));
+
+        aipStateRepository.saveAll(stateList);
+        daoRepository.saveAll(daDaoList);
+        daoRelationRepository.saveAll(daDaoRelationList);
+        daoFileFolderRepository.saveAll(daDaoFileFolderList);
+        daoFileRepository.saveAll(daDaoFileList);
+        daoItemRepository.saveAll(daDaoItemList);
+
+        levelViewService.deleteDisconnectedLevelViews(change);
     }
 
     public DaChange createDaChange(DaAip aip, DaChangeType changeType) {

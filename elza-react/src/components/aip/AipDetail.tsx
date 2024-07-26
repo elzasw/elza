@@ -133,7 +133,7 @@ const AipDetail = () => {
                         {aip.data.aipSize &&
                             <DetailRow label="Velikost" value={formatAipSize(aip.data.aipSize)}/>}
                         {aip.data != null &&
-                            <DetailRow label="Načtena metadata" value={getBoolIcon(aip.data.createDaoStructure)}/>}
+                            <DetailRow label="Načtena metadata" value={getBoolIcon(aip.data.metadataLoad)}/>}
                         {/* TODO: @kasparova Podle zadání bude upřesněno v budoucnu
                         {aip.data.componentsLoaded != null && <DetailRow label="Stažené komponenty" value={getBoolIcon(aip.data.componentsLoaded)}/>}
                         {aip.data.linkedArchiveDesc != null && <DetailRow label="Napojen archivní popis" value={getBoolIcon(aip.data.linkedArchiveDesc)}/>} */}

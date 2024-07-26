@@ -144,8 +144,8 @@ public class DaoProcessor {
 //        createDaoItemsFromEad(ead.getArchdesc(), change);
 
         deleteOldComponents(change);
-        levelViewService.processLevelViewForAip(aip);
-        aipState.setCreateDaoStructure(true);
+        levelViewService.processLevelViewForAip(aip, change);
+        aipState.setMetadataLoad(true);
         aipStateRepository.save(aipState);
         return true;
     }

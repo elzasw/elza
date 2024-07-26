@@ -3,14 +3,12 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
-import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AipStateRepository;
-import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLevelViewRepository;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,23 +35,17 @@ public class DaoLevelViewService {
     @Autowired
     private DaLevelViewRepository daLevelViewRepository;
 
-    @Autowired
-    private DaChangeRepository daChangeRepository;
-
     private static final Logger logger = LoggerFactory.getLogger(DaoLevelViewService.class);
 
 
-    public void processLevelViewForAip(DaAip daAip) {
+    public void processLevelViewForAip(DaAip daAip, DaChange change) {
         List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(daAip);
-        DaChange change = new DaChange();
-        change.setDaAip(daAip);
-        change.setType(DaChangeType.AIP_CREATE);
-        change.setChangeDate(LocalDateTime.now());
-        daChangeRepository.save(change);
 
         for (DaDao daDao : daDaoList) {
             processDao(daDao, change, null);
         }
+
+        deleteDisconnectedLevelViews(change);
     }
 
     private void processDao(DaDao daDao, DaChange change, DaLevelView parentLevelView) {
@@ -104,4 +95,10 @@ public class DaoLevelViewService {
         processDao(dao, change, levelView);
     }
 
+    public void deleteDisconnectedLevelViews(DaChange change) {
+        List<DaLevelView> levelViewList = daLevelViewRepository.findDisconnectedLevelViews();
+
+        levelViewList.forEach(d -> d.setDeleteChange(change));
+        daLevelViewRepository.saveAll(levelViewList);
+    }
 }

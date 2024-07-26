@@ -55,7 +55,7 @@ public class DaAipDetailVO {
 
     private Long aipSize;
 
-    private Boolean createDaoStructure;
+    private Boolean metadataLoad;
 
     private DaSyncQueueItem.QueueItemState state;
 
@@ -180,12 +180,12 @@ public class DaAipDetailVO {
         this.aipSize = aipSize;
     }
 
-    public Boolean getCreateDaoStructure() {
-        return createDaoStructure;
+    public Boolean getMetadataLoad() {
+        return metadataLoad;
     }
 
-    public void setCreateDaoStructure(Boolean createDaoStructure) {
-        this.createDaoStructure = createDaoStructure;
+    public void setMetadataLoad(Boolean metadataLoad) {
+        this.metadataLoad = metadataLoad;
     }
 
     public DaSyncQueueItem.QueueItemState getState() {
@@ -218,7 +218,7 @@ public class DaAipDetailVO {
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());
             vo.setAipSize(state.getAipSize());
-            vo.setCreateDaoStructure(state.getCreateDaoStructure());
+            vo.setMetadataLoad(state.getMetadataLoad());
         }
         if(item != null) {
             vo.setState(item.getState());

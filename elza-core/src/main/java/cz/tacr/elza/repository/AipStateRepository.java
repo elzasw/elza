@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface AipStateRepository extends JpaRepository<DaAipState, Integer> {
 
@@ -15,4 +17,6 @@ public interface AipStateRepository extends JpaRepository<DaAipState, Integer> {
 
     @Query("SELECT das FROM da_aip_state das WHERE das.daAip = :daAip AND das.deleteChange IS NULL")
     DaAipState findByAip(@Param("daAip") DaAip daAip);
+
+    List<DaAipState> findByDaAipInAndDeleteChangeIsNull(List<DaAip> aipList);
 }

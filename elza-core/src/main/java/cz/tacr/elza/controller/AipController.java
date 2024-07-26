@@ -32,6 +32,12 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<Void> aipDeleteDaoStructure(List<Integer> aipIds) {
+        daService.deleteDaoStructure(aipIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<Void> aipImportPackage(Integer digitalRepositoryId, AipType aipType, Resource file) {
         try {
             try (InputStream is = file.getInputStream()) {

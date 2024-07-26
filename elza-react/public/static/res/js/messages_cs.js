@@ -1854,6 +1854,7 @@ var messages = {
     "aip.filter.value.notNull": "Hodnota nastavena",
     "aip.filter.columns": "Vybrat sloupce",
     "aip.actions.metadata": "Načíst metadata",
+    "aip.actions.deleteMetadata": "Smazat metadata",
     "aip.actions.loadAips": "Načtení úplných aipů",
     "aip.actions.update": "Vynutit aktualizaci",
     "aip.actions.explorer": "Náhled vybraného AIPu",
