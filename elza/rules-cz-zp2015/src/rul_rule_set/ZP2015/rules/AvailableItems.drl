@@ -6657,6 +6657,8 @@ when ActiveLevel($items: descItems)
         "ZP2015_ENTITY_ROLE_10",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
+        // objednatelé/příjemci
+        "ZP2015_ENTITY_ROLE_19",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // žadatelé
@@ -6673,6 +6675,8 @@ when ActiveLevel($items: descItems)
         "ZP2015_ENTITY_ROLE_30",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // kartografové
+        "ZP2015_ENTITY_ROLE_33",
         // dramaturgové
         "ZP2015_ENTITY_ROLE_40",
         // výrobci
