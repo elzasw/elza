@@ -13,7 +13,7 @@ export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number 
     return SimpleListActions.filter(AREA_AIPS, {from, pageSize, filters});
 }
 
-export const aipsFetchIfNeeded = () => {
+export const aipsFetchIfNeeded = (forceFetch = false) => {
     return SimpleListActions.fetchIfNeeded(AREA_AIPS, null, (parent?: unknown, filter: AipsFilter = {}) =>
         {
             const {filters, from, pageSize} = filter;
@@ -23,7 +23,8 @@ export const aipsFetchIfNeeded = () => {
                 pageSize,
                 from && from > 0 ? from : 0
             )
-        }
+        },
+        forceFetch
     );
 }
 
