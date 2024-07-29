@@ -9,12 +9,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class DaExportExtSyncsProcessor implements Runnable {
@@ -67,7 +69,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
                             Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
                             ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
-                            Path exportDir = null;
+                            Path exportDir = daService.createOutputDir(syncQueueItemList);
                             String batchId = UUID.randomUUID().toString();
                             daService.ingestFileTransfer(digitalRepository, exportDir, batchId);
 
@@ -83,7 +85,10 @@ public class DaExportExtSyncsProcessor implements Runnable {
 
                             List<String> successfullAipIds = daService.ingestResult(digitalRepository, batchId);
 
-                            Files.delete(exportDir);
+                            // Odstranit dočasné soubory a adresáře
+                            try (Stream<Path> str = Files.walk(exportDir)) {
+                                str.map(Path::toFile).forEach(File::delete);
+                            }
 
                             List<DaSyncQueueItem> successfull = syncQueueItemList.stream()
                                     .filter(q -> successfullAipIds.contains(q.getCode()))
