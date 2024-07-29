@@ -1,7 +1,5 @@
 package cz.tacr.elza.service.da;
 
-import cz.tacr.da.ApiException;
-import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
@@ -11,17 +9,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
-
-import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
-public class DaImportExtSyncsProcessor implements Runnable {
+public class DaExportExtSyncsProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(DaImportExtSyncsProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(DaExportExtSyncsProcessor.class);
 
     @Autowired
     private DaService daService;
@@ -36,9 +34,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
     private static final int DOWNLOAD_CHECK_TIME_INTERVAL = 100;
 
-    private static final int DEFAULT_IMPORT_LIST_SIZE = 100;
+    private static final int DEFAULT_EXPORT_LIST_SIZE = 100;
 
-    private int importListSize = DEFAULT_IMPORT_LIST_SIZE;
+    private int exportListSize = DEFAULT_EXPORT_LIST_SIZE;
 
     private enum ThreadStatus {
         RUNNING, STOP_REQUEST, STOPPED
@@ -50,7 +48,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
         synchronized (lock) {
             status = ThreadStatus.RUNNING;
             if (this.asyncThread == null) {
-                this.asyncThread = new Thread(this,"DaImportExtSyncsProcessor");
+                this.asyncThread = new Thread(this,"DaExportExtSyncsProcessor");
                 this.asyncThread.start();
             }
         }
@@ -65,14 +63,15 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     boolean wait = true;
                     List<DaSyncQueueItem> syncQueueItemList = null;
                     try {
-                        syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                        syncQueueItemList = daService.getNextItems(exportListSize, DaSyncQueueItem.QueueItemState.EXPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
                             Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
                             ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
-                            AipType aipType = AipType.METADATA_BASE;
-                            String batchId = daService.downloadAips(digitalRepository, syncQueueItemList, aipType);
+                            Path exportDir = null;
+                            String batchId = UUID.randomUUID().toString();
+                            daService.ingestFileTransfer(digitalRepository, exportDir, batchId);
 
-                            while (!daService.downloadStatusFinished(digitalRepository, batchId)) {
+                            while (!daService.ingestStatusFinished(digitalRepository, batchId)) {
                                 try {
                                     // wake up every minute to retry
                                     lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
@@ -82,27 +81,20 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            Path zipFile;
-                            try {
-                                zipFile = daService.downloadDownload(digitalRepository, batchId);
-                            } catch (ApiException e) {
-                                if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
-                                    zipFile = daService.downloadFileTransfer(digitalRepository, batchId);
-                                } else {
-                                    throw e;
-                                }
-                            }
+                            List<String> successfullAipIds = daService.ingestResult(digitalRepository, batchId);
 
-                            try (InputStream inputStream  = Files.newInputStream(zipFile)) {
-                                daService.processPackageInfo(digitalRepository, inputStream, aipType);
-                            }
-                            Files.delete(zipFile);
+                            Files.delete(exportDir);
 
-                            daService.updateAipToQueueItems(syncQueueItemList);
-                            daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
+                            List<DaSyncQueueItem> successfull = syncQueueItemList.stream()
+                                    .filter(q -> successfullAipIds.contains(q.getCode()))
+                                    .collect(Collectors.toList());
+                            Collection<DaSyncQueueItem> error = CollectionUtils.subtract(syncQueueItemList, successfull);
+
+                            daService.changeQueueItemsState(successfull, DaSyncQueueItem.QueueItemState.EXPORT_OK);
+                            daService.changeQueueItemsState(error, DaSyncQueueItem.QueueItemState.ERROR);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
-                            importListSize = DEFAULT_IMPORT_LIST_SIZE;
+                            exportListSize = DEFAULT_EXPORT_LIST_SIZE;
                             // pauza po ukončení práce procesoru není potřeba
                             wait = false;
                         }
@@ -111,7 +103,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
-                        importListSize = 1;
+                        exportListSize = 1;
                     }
                     if (wait) {
                         try {
@@ -124,11 +116,11 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     }
                 }
             } catch (Exception e) {
-                logger.error("DaImportExtSyncsProcessor - processor thread error", e);
+                logger.error("DaExportExtSyncsProcessor - processor thread error", e);
             }
             status = ThreadStatus.STOPPED;
             lock.notifyAll();
-            logger.error("DaImportExtSyncsProcessor - thread finished");
+            logger.error("DaExportExtSyncsProcessor - thread finished");
         }
     }
 

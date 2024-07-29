@@ -2,12 +2,16 @@ package cz.tacr.elza.connector;
 
 import com.lightcomp.ft.client.Client;
 import com.lightcomp.ft.client.DownloadRequest;
+import com.lightcomp.ft.client.UploadRequest;
 import com.lightcomp.ft.simple.DwnldRequestImpl;
+import com.lightcomp.ft.simple.UploadRequestImpl;
 import com.lightcomp.ft.xsd.v1.GenericDataType;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
 import cz.tacr.da.controller.vo.DownloadDownloadStatus;
+import cz.tacr.da.controller.vo.IngestIngestResult;
+import cz.tacr.da.controller.vo.IngestIngestStatus;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -63,9 +67,34 @@ public class DaConnector {
         getFileTransferClient(digitalRepository).downloadSync(downloadRequest);
     }
 
+    public IngestIngestStatus ingestStatus(ArrDigitalRepository digitalRepository, String batchId) {
+        try {
+            return getDefaultApi(digitalRepository).ingestGeStatus(batchId);
+        } catch (ApiException e) {
+            throw new IllegalStateException("Došlo k chybě při volání DA", e);
+        }
+    }
+
+    public IngestIngestResult ingestResult(ArrDigitalRepository digitalRepository, String batchId) {
+        try {
+            return getDefaultApi(digitalRepository).ingestGetResult(batchId);
+        } catch (ApiException e) {
+            throw new IllegalStateException("Došlo k chybě při volání DA", e);
+        }
+    }
+
+    public void ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir, String batchId) {
+        GenericDataType genericDataType = new GenericDataType();
+        genericDataType.setId(batchId);
+        UploadRequest uploadRequest = new UploadRequestImpl(exportDir, genericDataType);
+        getFileTransferClient(digitalRepository).uploadSync(uploadRequest);
+    }
+
     public void invalidate(ArrDigitalRepository digitalRepository) {
         DaInstance daInstance = instanceMap.remove(digitalRepository.getExternalSystemId());
-        daInstance.stopFileTransferClient();
+        if (daInstance != null) {
+            daInstance.stopFileTransferClient();
+        }
     }
 
     private DefaultApi getDefaultApi(ArrDigitalRepository digitalRepository) {

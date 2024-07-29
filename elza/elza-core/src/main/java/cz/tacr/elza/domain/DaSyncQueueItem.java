@@ -96,6 +96,10 @@ public class DaSyncQueueItem {
 
         IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK
 
+        EXPORT_NEW("K exportu"),
+
+        EXPORT_OK("Exportováno"),
+
         ERROR("Chyba");
 
         private String value;

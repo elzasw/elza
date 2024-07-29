@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.service.da.DaExportExtSyncsProcessor;
 import cz.tacr.elza.service.da.DaImportExtSyncsProcessor;
 import jakarta.persistence.EntityManager;
 
@@ -93,6 +94,8 @@ public class StartupService implements SmartLifecycle {
 
     private final DaImportExtSyncsProcessor daImportExtSyncsProcessor;
 
+    private final DaExportExtSyncsProcessor daExportExtSyncsProcessor;
+
     private final HibernateConfiguration hibernateConfiguration;
 
     private final AccessPointCacheService accessPointCacheService;
@@ -147,6 +150,7 @@ public class StartupService implements SmartLifecycle {
                           final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
                           final DaImportExtSyncsProcessor daImportExtSyncsProcessor,
+                          final DaExportExtSyncsProcessor daExportExtSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
                           final UserService userService) {
@@ -170,6 +174,7 @@ public class StartupService implements SmartLifecycle {
         this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.daImportExtSyncsProcessor = daImportExtSyncsProcessor;
+        this.daExportExtSyncsProcessor = daExportExtSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
         this.userService = userService;
@@ -192,7 +197,7 @@ public class StartupService implements SmartLifecycle {
 
     /**
      * Method for explicit starting of the service
-     * @throws IOException 
+     * @throws IOException
      */
     public void startNow() {
         Validate.isTrue(!running, "Already started");
@@ -311,6 +316,7 @@ public class StartupService implements SmartLifecycle {
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
         daImportExtSyncsProcessor.startExtSyncs();
+        daExportExtSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();
     }

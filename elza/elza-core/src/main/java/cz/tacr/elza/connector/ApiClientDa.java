@@ -41,14 +41,25 @@ public class ApiClientDa extends ApiClient {
     public static final int CONNECTION_TIMEOUT = 60000;
 
     public ApiClientDa(@NotNull final String url,
-                       @NotNull final String apiKey,
-                       @NotNull final String apiValue) {
+                       final String apiKey,
+                       final String apiValue) {
         super();
         try {
-            daInit(url, apiKey, apiValue);
+            if (apiKey == null || apiValue == null) {
+                daInit(url);
+            } else {
+                daInit(url, apiKey, apiValue);
+            }
         } catch (GeneralSecurityException gse) {
             throw new SystemException("Failed to initialize SSL client", gse);
         }
+    }
+
+    protected void daInit(final String url) {
+        setBasePath(url);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        OkHttpClient httpClient = builder.build();
+        setHttpClient(httpClient);
     }
 
     protected void daInit(final String url, final String apiKey, final String apiValue)
