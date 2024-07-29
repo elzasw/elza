@@ -22,13 +22,13 @@ public class DaInstance {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Není nastavena properta da.url pro připojení api");
         } else if (StringUtils.isEmpty(apiKey)) {
-            throw new IllegalArgumentException("Není nastavena properta da.api-key pro připojení api");
+//            throw new IllegalArgumentException("Není nastavena properta da.api-key pro připojení api");
         } else if (StringUtils.isEmpty(apiValue)) {
-            throw new IllegalArgumentException("Není nastavena properta da.api-value pro připojení api");
+//            throw new IllegalArgumentException("Není nastavena properta da.api-value pro připojení api");
         } else if (StringUtils.isEmpty(username)) {
-            throw new IllegalArgumentException("Není nastavena properta da.username pro připojení api");
+//            throw new IllegalArgumentException("Není nastavena properta da.username pro připojení api");
         } else if (StringUtils.isEmpty(password)) {
-            throw new IllegalArgumentException("Není nastavena properta da.password pro připojení api");
+//            throw new IllegalArgumentException("Není nastavena properta da.password pro připojení api");
         }
         this.url = StringUtils.stripEnd(url.trim(), "/");
         String apiUrl = getApiUrl();

@@ -820,4 +820,8 @@
         <addDefaultValue tableName="da_aip_state" columnName="metadata_load" defaultValueBoolean="false"/>
     </changeSet>
 
+    <changeSet id="20240729172400" author="fantis">
+        <modifyDataType tableName="da_dao_file" columnName="mime_type" newDataType="varchar(250)"/>
+    </changeSet>
+
 </databaseChangeLog>

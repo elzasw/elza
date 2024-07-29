@@ -5,6 +5,9 @@ import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.vo.DownloadDownloadAips;
 import cz.tacr.da.controller.vo.DownloadDownloadStatus;
+import cz.tacr.da.controller.vo.IngestIngestResult;
+import cz.tacr.da.controller.vo.IngestIngestStatus;
+import cz.tacr.da.controller.vo.IngestPackageIngestSuccess;
 import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
@@ -47,6 +50,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DaoLevelViewService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.MetsType;
@@ -61,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -137,9 +142,23 @@ public class DaService {
     private DaDaoItemRepository daoItemRepository;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
+    @Scheduled(cron = "0 0 2 * * *")
+    public void synchronizeDaRepositories() {
+        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
+        for (ArrDigitalRepository digitalRepository : digitalRepositories) {
+            try {
+                applicationContext.getBean(DaService.class).synchronizeDA(digitalRepository);
+            } catch (Exception e) {
+                logger.error("Došlo k chybě při pokusu o stažení změn z DA pro externí systém ID={} {}", digitalRepository.getExternalSystemId(), e.getMessage(), e);
+            }
+        }
+    }
 
     @Transactional
-    public void synchronizaceDA(ArrDigitalRepository digitalRepository) {
+    public void synchronizeDA(ArrDigitalRepository digitalRepository) {
         DaRemoteRepositorySync daRemoteRepositorySync = getDaRemoteRepositorySync(digitalRepository);
         String nextQuery = daRemoteRepositorySync.getNextQuery();
         UpdatedAips updatesAips;
@@ -383,7 +402,21 @@ public class DaService {
     }
 
     @Transactional
-    public void changeQueueItemsState(List<DaSyncQueueItem> syncQueueItemList, DaSyncQueueItem.QueueItemState state) {
+    public void updateAipToQueueItems(List<DaSyncQueueItem> syncQueueItemList) {
+        if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
+            List<String> codes = syncQueueItemList.stream().map(DaSyncQueueItem::getCode).collect(Collectors.toList());
+            Map<String, DaAip> aipMap = aipRepository.findByCodeIn(codes).stream()
+                    .collect(Collectors.toMap(DaAip::getCode, aip -> aip));
+            for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
+                DaAip aip = aipMap.getOrDefault(syncQueueItem.getCode(), null);
+                syncQueueItem.setAip(aip);
+            }
+            syncQueueItemRepository.saveAll(syncQueueItemList);
+        }
+    }
+
+    @Transactional
+    public void changeQueueItemsState(Collection<DaSyncQueueItem> syncQueueItemList, DaSyncQueueItem.QueueItemState state) {
         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
             for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
                 syncQueueItem.setState(state);
@@ -821,6 +854,22 @@ public DaDaoFileFolderVO findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) 
         try (Stream<Path> str = Files.walk(downloadDir).filter(p -> p.getFileName().endsWith(".zip"))) {
             return str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
         }
+    }
+
+    public boolean ingestStatusFinished(ArrDigitalRepository digitalRepository, String batchId) {
+        IngestIngestStatus status = daConnector.ingestStatus(digitalRepository, batchId);
+        return status.getState() == RequestState.FINISHED;
+    }
+
+    public List<String> ingestResult(ArrDigitalRepository digitalRepository, String batchId) {
+        IngestIngestResult result = daConnector.ingestResult(digitalRepository, batchId);
+        return result.getAccepted().stream()
+                .map(IngestPackageIngestSuccess::getAipId)
+                .collect(Collectors.toList());
+    }
+
+    public void ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir, String batchId) {
+        daConnector.ingestFileTransfer(digitalRepository, exportDir, batchId);
     }
 
     @Transactional

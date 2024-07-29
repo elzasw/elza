@@ -41,7 +41,7 @@ public class DaDaoFile {
     @Column(name = "checksum_type", length = StringLength.LENGTH_10)
     private String checksumType;
 
-    @Column(name = "mime_type", length = StringLength.LENGTH_50)
+    @Column(name = "mime_type", length = StringLength.LENGTH_250)
     private String mimeType;
 
     @Column(name = "size")

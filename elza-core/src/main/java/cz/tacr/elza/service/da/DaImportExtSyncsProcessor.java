@@ -4,6 +4,7 @@ import cz.tacr.da.ApiException;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
+import cz.tacr.elza.service.ExternalSystemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
     @Autowired
     private DaService daService;
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     private volatile Thread asyncThread = null;
 
@@ -64,7 +67,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     try {
                         syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
-                            ArrDigitalRepository digitalRepository = syncQueueItemList.get(0).getDigitalRepository();
+                            Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
+                            ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
                             AipType aipType = AipType.METADATA_BASE;
                             String batchId = daService.downloadAips(digitalRepository, syncQueueItemList, aipType);
 
@@ -94,6 +98,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             }
                             Files.delete(zipFile);
 
+                            daService.updateAipToQueueItems(syncQueueItemList);
                             daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
