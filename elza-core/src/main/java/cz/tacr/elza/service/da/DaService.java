@@ -461,7 +461,7 @@ public class DaService {
                 }
 
                 if (aipState != null) {
-                    Path zipDir = createZip(aipDir);
+                    Path zipDir = createZip(aipDir, resourcePathResolver.getAipDir());
                     applicationContext.getBean(DaService.class).createLocalCache(aipState, digitalRepository, aipType, zipDir);
                 }
             }
@@ -474,8 +474,8 @@ public class DaService {
         }
     }
 
-    private Path createZip(File aipDir) throws IOException {
-        String workDirAip = resourcePathResolver.getAipDir().toString();
+    private Path createZip(File aipDir, Path folder) throws IOException {
+        String workDirAip = folder.toString();
         File workDirAipFile = new File(workDirAip);
         if (!workDirAipFile.exists()) {
             workDirAipFile.mkdirs();
@@ -517,6 +517,44 @@ public class DaService {
             zipOut.write(bytes, 0, length);
         }
         fis.close();
+    }
+
+    @Transactional
+    public Path createOutputDir(List<DaSyncQueueItem> syncQueueItemList) throws IOException {
+        List<DaLocalCache> localCaches = daLocalCacheRepository.findBySyncQueueItemIn(syncQueueItemList);
+
+        Path tempDir = Files.createTempDirectory("result");
+
+        for (DaLocalCache localCache : localCaches) {
+            Path zip = Paths.get(localCache.getFilePath());
+
+            Path aipDir = tempDir.resolve(localCache.getSyncQueueItem().getCode());
+            Files.createDirectories(aipDir);
+
+            try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
+                ZipEntry entry;
+                while ((entry = zipInputStream.getNextEntry()) != null) {
+                    Path filePath = aipDir.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.createDirectories(filePath.getParent());
+                        Files.copy(zipInputStream, filePath);
+                    }
+                }
+            }
+        }
+
+        Path exportDir = Files.createTempDirectory("exportZip");
+        createZip(tempDir.toFile(), exportDir);
+
+
+        // Odstranit dočasné soubory a adresáře
+        try (Stream<Path> str = Files.walk(tempDir)) {
+            str.map(Path::toFile).forEach(File::delete);
+        }
+
+        return exportDir;
     }
 
 //    @Transactional
