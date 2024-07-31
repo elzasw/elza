@@ -2,8 +2,9 @@ import {CLS} from './factoryConsts';
 import {JAVA_ATTR_CLASS} from '../../constants';
 
 export class Item {
-    constructor(item) {
+    constructor(item, refType) {
         this.item = item;
+        this.refType = refType;
     }
 
     toSimpleString() {

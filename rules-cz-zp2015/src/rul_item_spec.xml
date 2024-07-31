@@ -868,6 +868,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_6">
         <name>autor hudby / skladatel</name>
@@ -878,6 +879,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_7">
         <name>autor choreografie / choreograf</name>
@@ -1003,6 +1005,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_20">
         <name>distributor</name>
@@ -1102,6 +1105,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_28">
         <name>scenárista</name>
@@ -1111,6 +1115,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_29">
         <name>kameraman</name>
@@ -1131,6 +1136,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_31">
         <name>fotograf</name>
@@ -1161,6 +1167,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_34">
         <name>editor</name>
@@ -1219,6 +1226,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_87">
         <name>odborná spolupráce</name>
