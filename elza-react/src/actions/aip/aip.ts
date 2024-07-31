@@ -7,6 +7,7 @@ import { DaAipDetailVO } from 'api/DaAipDetailVO';
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
 export const AREA_SELECTED_AIPS = "selectedAips";
+export const AIP_LOGICAL_TREE = "aipLogicalTree"
 export const DEFAULT_PAGE_SIZE = 25;
 
 export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number = DEFAULT_PAGE_SIZE) => {
@@ -29,7 +30,7 @@ export const aipsFetchIfNeeded = (forceFetch = false) => {
 }
 
 export function aipFetchIfNeeded(id: number) {
-    return DetailActions.fetchIfNeeded(AREA_AIP, id, (id:number) => WebApi.getAip(id));
+    return DetailActions.fetchIfNeeded(AREA_AIP, id, (id: number) => WebApi.getAip(id));
 }
 
 export function selectAip(id: number | string) {
@@ -44,6 +45,6 @@ export const setSelectedAips = (aips: DaAipDetailVO[]) => {
     return SimpleListActions.setData(AREA_SELECTED_AIPS, null, aips);
 }
 
-export const unselectAips = () => {
-    return SimpleListActions.setData(AREA_SELECTED_AIPS, null, null);
+export const fetchAipLogicalTreeIfNeeded = (ids: number[]) => {
+    return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, (id: number[]) => WebApi.getAipsLogicalTree(ids))
 }

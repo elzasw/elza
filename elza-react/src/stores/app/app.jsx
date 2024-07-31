@@ -20,6 +20,7 @@ const initialState = {
     explorerItem: DetailReducer(),
     accessPoints: SimpleListReducer(),
     selectedAips: SimpleListReducer(),
+    aipLogicalTree: DetailReducer(),
     kmlExtSystemList: SimpleListReducer(), // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(), // seznam externích systémů
