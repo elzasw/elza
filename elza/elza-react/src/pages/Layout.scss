@@ -30,6 +30,7 @@ $color-orange: #d7760d;
 $color-yellow: #e7d704;
 $color-blue: #0092ff;
 $color-green: #B6D7A8;
+$color-grey: #e3e3e3ff;
 
 $color-link: #23527c;
 
@@ -101,6 +102,7 @@ $color-link: mix(#66afe9, $fg-color, 50%);
     --color-yellow: #{$color-yellow};
     --color-blue: #{$color-blue};
     --color-green: #{$color-green};
+    --color-grey: #{$color-grey};
 
     --color-link: #{$color-link};
 }
@@ -181,6 +183,7 @@ $color-link: $accent-color-fg;
     --color-yellow: #{$color-yellow};
     --color-blue: #{$color-blue};
     --color-green: #{$color-green};
+    --color-grey: #{$color-grey};
 
     --color-link: #{$color-link};
 }

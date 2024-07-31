@@ -4,30 +4,46 @@ import { Button } from "../../../components/ui";
 import { AREA_AIPS, AREA_SELECTED_AIPS } from "../../../actions/aip/aip";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "../../../shared/utils";
+import { useThunkDispatch } from "utils/hooks";
+import { modalDialogShow } from "actions/global/modalDialog";
+import AipAssignmentModal from "./assignment/AipAssignmentModal";
+import { useEffect } from "react";
 
 
-const ActionsContainer = () => {
-    const data = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
+type ActionsContainerProps = {
+    fund: any
+}
+
+const ActionsContainer = ({fund}: ActionsContainerProps) => {
+    const selectedAips = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+    console.log('aips :>> ', selectedAips);
+    const dispatch = useThunkDispatch();
 
     const handleConnectIndividually = () => {
 
     }
 
-    const handleConnectCollectively = () => {
-        
+    const handleConnectBulk = () => {
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.aip.assignment.bulk.title'),
+                <AipAssignmentModal aips={selectedAips.count > 0 ? selectedAips.rows : aips.rows} tree={fund.fundTree}/>,
+                "aip-assignment"
+            ),
+        );
     }
 
-
     return (
-        <div className="ab-actions-container">
-            <Button onClick={handleConnectCollectively}>
+        <div className="actions-container">
+            <Button onClick={handleConnectBulk}>
                 <Icon glyph="fa-solif fa-link" />
-                <div>{i18n('arr.ab.connect.collectively')} ({data.count > 0 ? data.count : aips.count})</div>
+                <div>{i18n('arr.aip.assignment.bulk')} ({selectedAips.count > 0 ? selectedAips.count : aips.count})</div>
             </Button>
             <Button onClick={handleConnectIndividually}>
                 <Icon glyph="fa-solif fa-link" />
-                <div>{i18n('arr.ab.connect.individually')}</div>
+                <div>{i18n('arr.aip.assignment.individually')}</div>
             </Button>
         </div>
     );

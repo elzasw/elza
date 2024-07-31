@@ -1,19 +1,19 @@
-import { 
-    Table, 
-    TableHeader, 
-    TableRow, 
-    TableSelectionCell, 
-    TableHeaderCell, 
-    TableBody, 
-    TableCell, 
-    TableCellLayout, 
-    useTableFeatures, 
-    useTableColumnSizing_unstable, 
-    TableColumnSizingOptions, 
-    useTableSelection, 
-    useTableSort, 
-    TableColumnDefinition, 
-    createTableColumn, 
+import {
+    Table,
+    TableHeader,
+    TableRow,
+    TableSelectionCell,
+    TableHeaderCell,
+    TableBody,
+    TableCell,
+    TableCellLayout,
+    useTableFeatures,
+    useTableColumnSizing_unstable,
+    TableColumnSizingOptions,
+    useTableSelection,
+    useTableSort,
+    TableColumnDefinition,
+    createTableColumn,
     TableColumnId,
     TableFeaturePlugin
 } from "@fluentui/react-components";
@@ -65,19 +65,19 @@ const ExplorerTable: FC = () => {
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
 
     let items = [];
-    if(isDaoFileFolderVO(selectedItem) && 
-        !((!selectedItem.childFolders && !selectedItem.childFiles) 
+    if(selectedItem && !selectedItem.fileName &&
+        !((!selectedItem.childFolders && !selectedItem.childFiles)
         || (selectedItem.childFolders && selectedItem.childFolders.length == 0))
     ) {
-        items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []] 
+        items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []]
     } else if(selectedItem) {
         items = selectedItem?.parent ? [...selectedItem.parent.childFolders || [], ...selectedItem.parent.childFiles || []] : [];
     }
 
-    const { 
-        getRows, 
-        columnSizing_unstable, 
-        tableRef, 
+    const {
+        getRows,
+        columnSizing_unstable,
+        tableRef,
         sort: { getSortDirection, toggleColumnSort, sort },
         selection: {
             allRowsSelected,
@@ -97,12 +97,12 @@ const ExplorerTable: FC = () => {
                     const selectedRows = rows
                         .filter(row => data.selectedItems.has(row.rowId))
                         .map(row => row.item);
-                    //TODO: @kasparova action
+                        console.log('selectedRows :>> ', selectedRows);
                 }
             })
-        ] 
+        ]
       );
-    
+
     const rows = sort(getRows((row) => {
         const selected = isRowSelected(row.rowId);
         return {
@@ -160,7 +160,7 @@ const ExplorerTable: FC = () => {
                         onKeyDown={toggleAllKeydown}
                         checkboxIndicator={{"aria-label": "Vybrat vše"}}
                         className="header"
-                        
+
                     />}
                     {columns.map((column) => (
                             //@ts-ignore
@@ -176,9 +176,9 @@ const ExplorerTable: FC = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {rows.map(({ item, selected, onClick }) => (
-                    <TableRow 
-                        key={`${item.fileName || item.label}.${item.size}`} 
+                {rows.map(({ item, selected, onClick }, index) => (
+                    <TableRow
+                        key={`${item.fileName || item.label}.${item.size}${index}`}
                         className="table-row"
                     >
                         {mode == ExplorerMode.SELECT && <TableSelectionCell
@@ -190,7 +190,7 @@ const ExplorerTable: FC = () => {
 
                         {columns.map(col => (
                             <TableCell
-                                key={`item.${col.columnId}`} 
+                                key={`item.${col.columnId}`}
                                 {...columnSizing_unstable.getTableCellProps(col.columnId)}
                                 onClick={() => handleSelect(item)}
                             >

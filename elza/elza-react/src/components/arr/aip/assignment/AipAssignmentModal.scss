@@ -1,0 +1,15 @@
+@import "../../../../variables.scss";
+
+.aip-assignment {
+    display: flex;
+
+    .modal-dialog {
+        max-width: 95vw;
+    }
+    .modal-content {
+        height: 90vh;
+    }
+    .modal-body-container {
+        flex: 1
+    }
+}  

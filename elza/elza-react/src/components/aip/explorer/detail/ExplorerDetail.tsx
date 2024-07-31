@@ -1,9 +1,9 @@
 import i18n from "components/i18n";
 import { FC } from "react";
 import "./ExplorerDetail.scss";
-import { Button, TreeItemValue } from "@fluentui/react-components";
-import { findNodeById, getFileName } from "../utils";
-import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { Button,  } from "@fluentui/react-components";
+import {  findNodeByUUID,  } from "../utils";
+import {  useExplorerContext } from "../ExplorerContext";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem, structure} = useExplorerContext();
@@ -21,7 +21,7 @@ const ExplorerDetail: FC = () => {
     );
 
     const selectFolder = (id) => {
-        const {node} = findNodeById(structure, id);
+        const {node} = findNodeByUUID(structure, id);
         setSelectedItem(node);
     }
 
@@ -33,69 +33,55 @@ const ExplorerDetail: FC = () => {
     }
 
     const renderName = () => {
-        return renderValue(isDaoFileFolderVO(selectedItem) ? selectedItem.label : getFileName(selectedItem.fileName));
+        return selectedItem.label || selectedItem.fileName;
     }
 
     if(!selectedItem) {
         return <p>Nebyl vybrám žádný objekt</p>
     }
     const renderRepresentationParent = () => {
-        // @ts-ignore
-        if (!selectedItem.parentFolder && !selectedItem.daoFileFolder) {
-            return "-"
-        } else if (isDaoFileFolderVO(selectedItem)) {
-            return (
-                <span>
-                    <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolder.daoFileFolderId, )}>
-                        {renderValue(selectedItem.parentFolder?.label)}
-                    </a>
-                </span>
-            );
-        }
         return (
             <span>
-                <a className="detail-item" onClick={() => selectFolder(selectedItem.daoFileFolder.daoFileFolderId)}>
-                    {renderValue(selectedItem.daoFileFolder?.label)}
+                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolder.uuid)}>
+                    {renderValue(selectedItem.parentFolder?.label)}
                 </a>
             </span>
         );
     }
 
     const renderLogicalParent = () => {
-        if (!selectedItem.parentFolderLogical) {
-            return "-"
-        }
         return (
             <span>
-                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolderLogical.daoFileFolderId)}>
+                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolderLogical.uuid)}>
                     {renderValue(selectedItem.parentFolderLogical?.label)}
                 </a>
             </span>
         );
     }
 
-    
+
 
     const renderFileData = () => {
+        console.log('selectedItem :>> ', selectedItem);
         return (
             <div className="explorer-detail-body">
-                <DetailRow 
-                    label={i18n("aip.explorer.detail.name")} 
+                <DetailRow
+                    label={i18n("aip.explorer.detail.name")}
                     value={renderName()}
                 />
-                <DetailRow 
-                    label={i18n("aip.explorer.detail.checksum")} 
-                    value={renderValue(isDaoFileFolderVO(selectedItem) ? null : selectedItem.checksumType)}
+                <DetailRow
+                    label={i18n("aip.explorer.detail.checksum")}
+                    value={renderValue(selectedItem.checksumType)}
                 />
-                <DetailRow 
-                    label={i18n("aip.explorer.detail.format")} 
-                    value={renderValue(isDaoFileFolderVO(selectedItem) ? null : selectedItem.mimeType)}
+                <DetailRow
+                    label={i18n("aip.explorer.detail.format")}
+                    value={renderValue(selectedItem.mimeType)}
                 />
                 {/* TODO: @kasparova */}
-                <DetailRow 
-                    label={i18n("aip.explorer.detail.as")} 
+                <DetailRow
+                    label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
-                    value={renderValue(isDaoFileFolderVO(selectedItem) ? null : selectedItem.as)}
+                    value={renderValue(selectedItem.as)}
                 />
             </div>
         );
@@ -123,19 +109,19 @@ const ExplorerDetail: FC = () => {
                     <span>Stáhnout</span>
                 </Button>
             </div>
-            
+
             <h4>{i18n("aip.explorer.detail.title")}</h4>
             <div className="explorer-detail-body">
                 {selectedItem && renderFileData()}
-            </div> 
+            </div>
 
             <div>
                 <h4>Vztahy - reprezentace</h4>
                 {/* <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p> */}
-                <p><b>{i18n("aip.explorer.detail.parent")} </b> {renderRepresentationParent()}</p>
+                <p><b>{i18n("aip.explorer.detail.parent")} </b> {selectedItem.parentFolder ? renderRepresentationParent() : "-"}</p>
                 {/* <p><b>Potomci </b>{renderChildren()}</p> */}
                 <h4>Vztahy - logická struktura</h4>
-                <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderLogicalParent()}</p>
+                <p><b>{i18n("aip.explorer.detail.parent")} </b>{ selectedItem.parentFolderLogical ? renderLogicalParent() : "-"}</p>
             </div>
         </div>
     );

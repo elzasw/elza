@@ -766,8 +766,12 @@ var messages = {
     "arr.movements.move.before": "Přesunout před",
     "arr.movements.move.after": "Přesunout za",
 
-    "arr.ab.connect.individually": "Připojit jednotlivě",
-    "arr.ab.connect.collectively": "Připojit hromadně",
+    "arr.aip.assignment.individually": "Připojit jednotlivě",
+    "arr.aip.assignment.individually.title": "Připojení balíčku s archivním popisem",
+    "arr.aip.assignment.bulk": "Připojit hromadně",
+    "arr.aip.assignment.bulk.title": "Hromadné připojení balíčku s archivním popisem",
+    "arr.aip.assignment.link": "Připojit k JP",
+    "arr.aip.assignment.create": "Vytvořit JP z vybraných",
 
     "arr.linked-nodes.title": "Odkazující JP",
 

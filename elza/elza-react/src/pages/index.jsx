@@ -10,7 +10,7 @@ export {default as AdminRequestsQueuePage} from 'pages/admin/AdminRequestsQueueP
 export {default as ArrPage} from 'pages/arr/ArrPage.jsx';
 export {default as ArrDataGridPage} from 'pages/arr/ArrDataGridPage.jsx';
 export {default as ArrMovementsPage} from 'pages/arr/ArrMovementsPage.jsx';
-export {default as ArrAipPage} from 'pages/arr/ArrAipPage';
+export {default as ArrAipPage} from 'pages/arr/ArrAipPage.tsx';
 export {default as ArrDaoPage} from 'pages/arr/ArrDaoPage.jsx';
 export {default as FundActionPage} from 'pages/arr/FundActionPage.jsx';
 export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';

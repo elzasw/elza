@@ -15,14 +15,14 @@ import { urlAip } from '../../constants';
 import { FolderOpen20Filled } from '@fluentui/react-icons';
 import i18n from 'components/i18n';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
-import AipExplorer from './explorer/AipExplorer';
 import AipExplorerModalWrapper from './explorer/AipExplorerWrapper';
 import { ExplorerMode } from './explorer/ExplorerContext';
+import AipDetailBody from './AipDetailBody';
 
 const AipDetail = () => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
     const dispatch = useThunkDispatch();
-    const history = useHistory();   
+    const history = useHistory();
 
     const fetchData = () => {
         dispatch(aipActions.aipFetchIfNeeded(aip.id));
@@ -52,19 +52,6 @@ const AipDetail = () => {
             ),
         );
     }
-
-    const DetailRow = ({label, value}: {label: string, value?: any}) => (
-        <div className="item-row">
-            <div className="label col">
-                <b>{label}</b>
-            </div>
-            {value && <div className="value col">
-                {value}
-            </div>
-            }
-        </div>
-    );
-
     return (
         <InlineDrawer
             separator
@@ -87,7 +74,7 @@ const AipDetail = () => {
                       <h2>Detail AIP</h2>
                 </DrawerHeaderTitle>
             </DrawerHeader>
-            <DrawerBody >
+            <DrawerBody>
                 {aip.isFetching && <span>Načítání...</span>}
                 {aip.data && <>
                     <div className='detail-body'>
@@ -100,52 +87,7 @@ const AipDetail = () => {
                             <FolderOpen20Filled/>
                             <span>{i18n("aip.detail.explorer.open")}</span>
                         </Button>
-
-                        {aip.data.aipId &&
-                            <DetailRow label="Id" value={aip.data.aipId.toString()}/>}
-                        {aip.data.code &&
-                            <DetailRow label="Kód aipu" value={aip.data.code.toString()}/>}
-                        {aip.data.aipVersion &&
-                            <DetailRow label="Verze" value={aip.data.aipVersion}/>}
-                        {aip.data.fund &&
-                            <DetailRow label="Archivní soubor" value={
-                                <a href={`/fund/${aip.data.fund.id}`}>{aip.data.fund.name}</a>
-                            }/>
-                        }
-                        {aip.data.institution &&
-                            <DetailRow label="Instituce" value={
-                                <a href={`/entity/${aip.data.institution.id}`}>{aip.data.institution.name}</a>
-                            }/>
-                        }
-                        {aip.data.institutionCode &&
-                            <DetailRow label="Kód instituce" value={aip.data.institutionCode}/>}
-                        {aip.data.unitdateFrom &&
-                            <DetailRow label="Dotace od-do" value={
-                                formatDate(new Date(aip.data.unitdateFrom)) + " - " + formatDate(new Date(aip.data.unitdateTo))
-                            }/>}
-                        {aip.data.originatorInstitution && 
-                            <DetailRow label="Původce" value={
-                                <a href={`/entity/${aip.data.originatorInstitution.id}`}>{aip.data.originatorInstitution.name}</a>
-                            }/>
-                        }
-                        {aip.data.originator && !aip.data.originatorInstitution && 
-                            <DetailRow label="Původce" value={aip.data.originator}/>
-                        }
-                        {aip.data.stateingestionCode &&
-                            <DetailRow label="Číslo přejímky" value={aip.data.ingestionCode}/>}
-                        {aip.data.referenceNumber &&
-                            <DetailRow label="Číslo jednací" value={aip.data.referenceNumber}/>}
-                        {aip.data.nadChangeCode &&
-                            <DetailRow label="Vnější změna" value={aip.data.nadChangeCode}/>}
-                        {aip.data.aipSize &&
-                            <DetailRow label="Velikost" value={formatAipSize(aip.data.aipSize)}/>}
-                        {aip.data != null &&
-                            <DetailRow label="Načtena metadata" value={getBoolIcon(aip.data.metadataLoad)}/>}
-                        {/* TODO: @kasparova Podle zadání bude upřesněno v budoucnu
-                        {aip.data.componentsLoaded != null && <DetailRow label="Stažené komponenty" value={getBoolIcon(aip.data.componentsLoaded)}/>}
-                        {aip.data.linkedArchiveDesc != null && <DetailRow label="Napojen archivní popis" value={getBoolIcon(aip.data.linkedArchiveDesc)}/>} */}
-                        {aip.data.state &&
-                            <DetailRow label="Aktuální verze" value={aip.data.state}/>}
+                        <AipDetailBody detail={aip.data} />
                     </div>
 
                     {/* <h2>Chyba</h2>

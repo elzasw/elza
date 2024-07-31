@@ -84,13 +84,14 @@ function callWS(url, data, needResponse = true) {
 export class WebApiCls {
     static baseUrl = '/api';
     static v1 = WebApiCls.baseUrl + '/v1';
+    static aipV1 = WebApiCls.v1 + '/aip';
     static fundV1 = WebApiCls.v1 + '/fund';
     static authUrl = WebApiCls.baseUrl + '/auth';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
     static apUrl = WebApiCls.registryUrl;
-    static daoUrl = WebApiCls.baseUrl + "/dao"; //TODO: @kasparova
+    static daoUrl = WebApiCls.baseUrl + "/dao";
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
     static exportUrl = WebApiCls.baseUrl + '/export';
@@ -123,7 +124,7 @@ export class WebApiCls {
     }
 
     getDaDaoListByAipId(id) {
-        return AjaxUtils.ajaxGet(WebApiCls.daoUrl + "/" + id);
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/" + id);
     }
 
     syncDaoLink(fundVersionId, nodeId) {
@@ -1187,6 +1188,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
     }
 
+    getAipsLogicalTree(aipIds) {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/levelViewTree', null, aipIds);
+    }
+
     getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
         const data = {
             fundVersionId: fundVersionId,
@@ -1758,16 +1763,12 @@ export class WebApiCls {
     }
 
     getAip(aipId): Promise<DaAipDetailVO> {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/' + aipId);
-    }
-
-    findAips(fulltext: string, max: number = DEFAULT_LIST_SIZE, from: number = 0) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/aip/find/all', { search: fulltext, from, count: max });
+        return AjaxUtils.ajaxGet(WebApiCls.aipV1 + '/' + aipId);
     }
 
     findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<DaAipDetailVO[]> {
         return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/aip/find/filter',
+            WebApiCls.aipV1 + '/find/filter',
             {from: from, count: max},
             filters
         );

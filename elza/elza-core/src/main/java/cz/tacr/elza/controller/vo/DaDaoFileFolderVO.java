@@ -13,23 +13,6 @@ public class DaDaoFileFolderVO {
     private List<DaDaoFileFolderVO> childFolders;
     private List<DaDaoFileVO> childFiles;
     private DaDaoFileFolderVO parentFolder;
-
-    public DaDaoFileFolderVO getParentFolderLogical() {
-        return parentFolderLogical;
-    }
-
-    public void setParentFolderLogical(DaDaoFileFolderVO parentFolderLogical) {
-        this.parentFolderLogical = parentFolderLogical;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     private DaDaoFileFolderVO parentFolderLogical;
 
     public Integer getDaoFileFolderId() {
@@ -88,6 +71,21 @@ public class DaDaoFileFolderVO {
         this.childFiles = childFiles;
     }
 
+    public DaDaoFileFolderVO getParentFolderLogical() {
+        return parentFolderLogical;
+    }
+
+    public void setParentFolderLogical(DaDaoFileFolderVO parentFolderLogical) {
+        this.parentFolderLogical = parentFolderLogical;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public DaDaoFileFolderVO getParentFolder() {
         return parentFolder;

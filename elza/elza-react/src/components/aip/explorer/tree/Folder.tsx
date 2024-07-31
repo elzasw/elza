@@ -4,7 +4,7 @@ import {
     AddSquare16Regular,
     SubtractSquare16Regular,
   } from "@fluentui/react-icons";
-import { isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { turncate } from "../utils";
 
@@ -16,7 +16,7 @@ type FolderProps = {
 
 const Folder = ({folder, openItems, parent}: FolderProps) => {
     const {selectedItem} = useExplorerContext();
-    const isSelected: boolean = isDaoFileFolderVO(selectedItem) && selectedItem.uuid == folder.uuid;
+    const isSelected: boolean = selectedItem.uuid == folder.uuid;
     folder.parent = parent;
 
     const getExpandIcon = () => {
@@ -24,7 +24,7 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
             <SubtractSquare16Regular color="black" />
             ) : (
             <AddSquare16Regular color="black"/>
-            ) 
+            )
     }
 
     return (
@@ -36,18 +36,18 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
                 {turncate(folder.label)}
             </TreeItemLayout>
             <Tree>
-                {folder.childFolders?.map((item, index) => 
-                    <Folder 
+                {folder.childFolders?.map((item, index) =>
+                    <Folder
                         key={`folder-${index}`}
-                        folder={item} 
-                        openItems={openItems} 
+                        folder={item}
+                        openItems={openItems}
                         parent={folder}
                      />
                 )}
-                {folder.childFiles?.map((file, index) => 
-                    <File 
+                {folder.childFiles?.map((file, index) =>
+                    <File
                         key={`file-${index}`}
-                        file={file} 
+                        file={file}
                         parent={folder}
                     />
                 )}

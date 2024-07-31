@@ -1,13 +1,13 @@
 package cz.tacr.elza.service;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ExplorerTreeNode;
+import cz.tacr.elza.controller.vo.ExplorerTreeNodeFile;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
@@ -27,22 +27,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.DeleteException;
@@ -50,15 +35,6 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoLinkRequestRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
@@ -87,6 +63,15 @@ public class DaoService {
 
     @Autowired
     private DaoRepository daoRepository;
+
+    @Autowired
+    private DaDaoRepository daDaoRepository;
+
+    @Autowired
+    ClientFactoryVO clientFactoryVO;
+
+    @Autowired
+    private DaDaoFileRepository daDaoFileRepository;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -129,6 +114,15 @@ public class DaoService {
 
     @Autowired
     private DaoServiceInternal daoServiceInternal;
+
+    @Autowired
+    private DaDaoFileFolderRepository daoFileFolderRepository;
+
+    @Autowired
+    private DaDaoRelationRepository daoRelationRepository;
+
+    @Autowired
+    private AipService aipService;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -183,7 +177,7 @@ public class DaoService {
         Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
 
-        Pageable pageable = PageRequest.of(index, maxResults);  
+        Pageable pageable = PageRequest.of(index, maxResults);
         if (unassigned) {
             return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
         } else {
@@ -501,9 +495,9 @@ public class DaoService {
 
     /**
      * Získání url na dao.
-     * 
+     *
      * @param contextPath
-     * 
+     *
      * @param dao
      *            dao
      * @param daoLink
@@ -513,7 +507,7 @@ public class DaoService {
      */
     public String getDaoUrl(String contextPath,
                             final ArrDao dao,
-    						final ArrDaoLink daoLink, 
+    						final ArrDaoLink daoLink,
                             final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewDaoUrl();
 
@@ -538,7 +532,7 @@ public class DaoService {
                     contextPath = contextPath.substring(0, contextPath.length() - 1);
                 }
             }
-            url = contextPath + "/api/digirepo/{repoId}?filePath={code}"; 
+            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
             url = "/api/digirepo/{repoId}?filePath={code}";
             if (StringUtils.isNotBlank(daoCode)) {
                 daoCode = StringUtils.replace(daoCode, "\\", "/");
@@ -710,4 +704,196 @@ public class DaoService {
     public List<ArrDaoFile> findDaoFiles(List<ArrDao> daos) {
         return daoFileRepository.findByDaoIn(daos);
     }
+
+    @Transactional
+    public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
+        DaAip aip = aipService.getAip(aipId);
+        List<DaDao> daDaoList = daDaoRepository.findByAipAndDeleteChangeIsNull(aip);
+        Map<Integer, ExplorerTreeNode> itemMap = new HashMap<>();
+
+        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(filterDaDaoByType(daDaoList, DaDao.DaoType.FILE));
+        List<ExplorerTreeNodeFile> fileNodes = new ArrayList<>();
+        for (DaDaoFile f : files) {
+            DaDaoRelation relation =
+                    daoRelationRepository.findByDaoInAndDeleteChangeIsNull(Collections.singletonList(f.getDao()))
+                            .stream()
+                            .filter(i -> i.getParentDao().getType() == DaDao.DaoType.LOGICAL)
+                            .toList()
+                            .get(0);
+            ExplorerTreeNodeFile fileNode =  clientFactoryVO.createExplorerTreeNodeFile(f);
+            fileNode.setParentFolderLogical(createParent(createExplorerTreeNode(relation.getParentDao().getDaoId(), relation.getParentDao().getLabel())));
+            fileNodes.add(fileNode);
+        }
+
+        createRepresentationFolderMap(folders, itemMap);
+
+        ExplorerTreeNode representationRoot = buildFolderHierarchy(folders, itemMap);
+        addFilesToFolders(fileNodes, itemMap, representationRoot);
+
+        Map<Integer, ExplorerTreeNode> logicalMap = new HashMap<>();
+        createLogicalFolderMap(daDaoList, logicalMap);
+        List<DaDao> logicalList = daDaoList.stream().filter(i -> i.getType() == DaDao.DaoType.LOGICAL).toList();
+
+        ExplorerTreeNode logicalRoot = buildLogicalStructure(logicalList, logicalMap);
+        addFilesToFoldersLogical(fileNodes, logicalMap, logicalRoot);
+        ExplorerTreeNode metadata = buildMetadataStructure(daDaoList);
+        ExplorerTreeNode representation = createExplorerTreeNode(
+                null,
+                "Reprezentace",
+                representationRoot != null ?  Collections.singletonList(representationRoot) : null
+        );
+        ExplorerTreeNode logical = createExplorerTreeNode(
+                null,
+                "Logická struktura",
+                logicalRoot != null ?  Collections.singletonList(logicalRoot) : null
+        );
+
+        return createExplorerTreeNode(null, "Balíček", Arrays.asList(representation, logical, metadata));
+    }
+
+    private ExplorerTreeNode createParent(ExplorerTreeNode src) {
+        ExplorerTreeNode result = new ExplorerTreeNode();
+        result.setUuid(src.getUuid());
+        result.setDaoId(src.getDaoId());
+        result.setLabel(src.getLabel());
+        return result;
+    }
+
+    private List<DaDao> filterDaDaoByType(List<DaDao> daDaoList, DaDao.DaoType type) {
+        return daDaoList.stream()
+                .filter(daDao -> daDao.getType() == type)
+                .toList();
+    }
+
+    private void createRepresentationFolderMap(List<DaDaoFileFolder> folders, Map<Integer, ExplorerTreeNode> itemMap) {
+        folders.forEach(folder -> {
+            ExplorerTreeNode item = clientFactoryVO.createExplorerTreeNode(folder);
+            itemMap.put(folder.getDaoFileFolderId(), item);
+        });
+    }
+
+    private void createLogicalFolderMap(List<DaDao> daDaoList, Map<Integer, ExplorerTreeNode> itemMap) {
+        List<DaDao> logicalList = filterDaDaoByType(daDaoList, DaDao.DaoType.LOGICAL);
+        logicalList.forEach(dao -> {
+            ExplorerTreeNode item = createExplorerTreeNode(dao.getDaoId(), dao.getLabel());
+            itemMap.put(dao.getDaoId(), item);
+        });
+
+    }
+
+    private ExplorerTreeNode buildFolderHierarchy(List<DaDaoFileFolder> folders, Map<Integer, ExplorerTreeNode> itemMap) {
+        ExplorerTreeNode root = null;
+        for (DaDaoFileFolder folder : folders) {
+            ExplorerTreeNode item = itemMap.get(folder.getDaoFileFolderId());
+            if(item == null) {
+                continue;
+            }
+            if (folder.getParentFileFolder() == null) {
+                root = item;
+            } else {
+                ExplorerTreeNode parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
+                if (parent.getChildFolders() == null) {
+                    parent.setChildFolders(new ArrayList<>());
+                }
+                item.setParentFolder(createParent(parent));
+                parent.getChildFolders().add(item);
+            }
+        }
+        return root;
+    }
+
+    private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
+        for (ExplorerTreeNodeFile file : files) {
+            ExplorerTreeNodeFile copy = clientFactoryVO.copyFile(file);
+            copy.setUuid(UUID.randomUUID().toString());
+            ExplorerTreeNode parent = itemMap.getOrDefault(
+                    file.getParentFolderLogical() != null ? file.getParentFolderLogical().getDaoId() : null, root
+            );
+            if (parent.getChildFiles() == null){
+                parent.setChildFiles(new ArrayList<>());
+            }
+            file.setParentFolderLogical(createParent(parent));
+            parent.getChildFiles().add(copy);
+        }
+    }
+    private void addFilesToFolders(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
+        for (ExplorerTreeNodeFile file : files) {
+            ExplorerTreeNode parent = itemMap.getOrDefault(file.getDaoFileFolderId(), root);
+            file.setParentFolder(createParent(parent));
+            if (parent.getChildFiles() == null){
+                parent.setChildFiles(new ArrayList<>());
+            }
+            parent.getChildFiles().add(file);
+        }
+    }
+
+    private ExplorerTreeNode buildLogicalStructure(List<DaDao> daDaoList, Map<Integer, ExplorerTreeNode> itemMap) {
+        ExplorerTreeNode logicalRoot = null;
+        for (DaDao dao : daDaoList) {
+            List<DaDaoRelation> relations = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(Collections.singletonList(dao));
+            ExplorerTreeNode item = itemMap.get(dao.getDaoId());
+            if(item == null) {
+                continue;
+            }
+            if (relations.isEmpty()) {
+                logicalRoot = item;
+            } else {
+                for (DaDaoRelation relation : relations) {
+                    ExplorerTreeNode parent = itemMap.get(relation.getParentDao().getDaoId());
+                    if (parent.getChildFolders() == null) {
+                        parent.setChildFolders(new ArrayList<>());
+                    }
+                    item.setParentFolderLogical(createParent(parent));
+                    parent.getChildFolders().add(item);
+
+                    if (item.getChildFiles() == null) {
+                        item.setChildFiles(new ArrayList<>());
+                    }
+                }
+            }
+        }
+        return logicalRoot;
+    }
+
+    private ExplorerTreeNode buildMetadataStructure(List<DaDao> daDaoList) {
+        List<DaDao> metadataList = daDaoList.stream()
+                .filter(daDao -> daDao.getType() == DaDao.DaoType.METAAMD
+                        || daDao.getType() == DaDao.DaoType.METADMDINHERENT
+                        || daDao.getType() == DaDao.DaoType.METADMDCONTEXTUAL)
+                .toList();
+
+        List<ExplorerTreeNodeFile> metadataFiles = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(metadataList)
+                .stream()
+                .map(clientFactoryVO::createExplorerTreeNodeFile)
+                .toList();
+
+        ExplorerTreeNode metadata = new ExplorerTreeNode();
+        metadata.setUuid(UUID.randomUUID().toString());
+        metadata.setLabel("Metadata");
+        metadata.setChildFiles(metadataFiles);
+
+        return metadata;
+    }
+
+    private ExplorerTreeNode createExplorerTreeNode(Integer id, String label) {
+        ExplorerTreeNode node = new ExplorerTreeNode();
+        node.setUuid(UUID.randomUUID().toString());
+        node.setDaoId(id);
+        node.setLabel(label);
+        return node;
+    }
+
+    private ExplorerTreeNode createExplorerTreeNode(Integer id, String label, List<ExplorerTreeNode> children) {
+        ExplorerTreeNode vo = createExplorerTreeNode(id, label);
+        if(children != null && !children.isEmpty()) {
+            vo.setChildFolders(children);
+        }
+        return vo;
+    }
+
+    public List<DaDao> getDaosByTypeAndAipIn(List<Integer> aipIds, DaDao.DaoType type) {
+        return daDaoRepository.findByAipIdsAndTypeAndDeleteChangeIsNullAndLevelViewIdIsNotNull(aipIds, type);
+    }
+
 }

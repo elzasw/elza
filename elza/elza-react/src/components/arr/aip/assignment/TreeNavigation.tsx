@@ -1,90 +1,84 @@
 import { ArrowUp16Filled } from "@fluentui/react-icons";
 import {
-    Breadcrumb,
-    BreadcrumbButton,
-    BreadcrumbDivider,
-    BreadcrumbItem,
-    Button,
-    Menu,
-    MenuItem,
-    MenuList,
-    MenuPopover,
-    MenuTrigger,
-    PartitionBreadcrumbItems,
-    Tooltip,
-    isTruncatableBreadcrumbContent,
-    makeStyles,
-    partitionBreadcrumbItems,
+    Breadcrumb, 
+    BreadcrumbButton, 
+    BreadcrumbDivider, 
+    BreadcrumbItem, 
+    Button, 
+    Menu, 
+    MenuItem, 
+    MenuList, 
+    MenuPopover, 
+    MenuTrigger, 
+    PartitionBreadcrumbItems, 
+    Tooltip, 
+    TreeItemValue, 
+    isTruncatableBreadcrumbContent, 
+    makeStyles, 
+    partitionBreadcrumbItems, 
     truncateBreadcrumbLongName,
-    useOverflowMenu
+    useOverflowMenu 
 } from "@fluentui/react-components";
-import { isDaoFileFolderVO, useExplorerContext } from "./ExplorerContext";
 import {
     MoreHorizontalRegular,
     MoreHorizontalFilled,
     bundleIcon,
   } from "@fluentui/react-icons";
 import React from "react";
-import { generateUUID } from "../utils";
-import { DaoFileFolderVO } from "api/DaoFileFolderVO";
+import { FlatItem } from "./AipsLogicalContainer";
+import { findNodeByValue } from "./utils";
 
-type Item = {
-    key: number;
-    item: DaoFileFolderVO
-};
+type TreeNavigationProps = {
+    selectedNode: TreeItemValue;
+    nodes: any;
+    onSelect: (node: TreeItemValue) => void;
+}
 
-const ExplorerNavigationTab = () => {
-    const {selectedItem, setSelectedItem} = useExplorerContext();
-
+const TreeNavigation = ({onSelect, selectedNode, nodes}: TreeNavigationProps) => {
     let items = [];
-    let curr = selectedItem;
-    let index = 0;
-
-    while(curr != null) {
-        if(!curr.fileName) {
-          items.push({key: index, item: {...curr}});
-          index = index + 1;
-        }
-        curr = curr.parent;
+    let parent = findNodeByValue(nodes, selectedNode);
+    while(parent != undefined) {
+        items.push(parent);
+        parent = findNodeByValue(nodes, parent.parentValue)
     }
 
     items = items.reverse();
-    console.log('items :>> ', items);
-
-    const handleMoveUp = () => {
-        if (items.length - 1) {
-            setSelectedItem(items[items.length - 2].item);
-        }
-    }
-
+    
     const {
         startDisplayedItems,
         overflowItems,
         endDisplayedItems,
-      }: PartitionBreadcrumbItems<Item> = partitionBreadcrumbItems({
+      }: PartitionBreadcrumbItems<FlatItem> = partitionBreadcrumbItems({
         items,
-        maxDisplayedItems: 5,
+        maxDisplayedItems: 5
       });
 
-      const renderBreadcrumbItem = (item, isLastItem: boolean = false) => {
+      const handleMoveUp = () => {
+        const parent = findNodeByValue(nodes, findNodeByValue(nodes, selectedNode) ?.parentValue);
+        if(parent) {
+            onSelect(parent.value);
+        }
+      }
+
+      const renderBreadcrumbItem = (item: FlatItem, isLastItem: boolean = false) => {
         return (
-            <React.Fragment key={generateUUID()}>
-                {isTruncatableBreadcrumbContent(item.item.label, 20) ? (
-                <Tooltip
-                    key={generateUUID()}
-                    content={item.item.label}
-                    relationship="label"
-                >
+            <React.Fragment key={item.value}>
+                {isTruncatableBreadcrumbContent(item.content, 20) ? (
+                    <Tooltip
+                        key={`bread-${item.value}`}
+                        content={item.content}
+                        relationship="label"
+                    >
                         <BreadcrumbItem>
-                            <BreadcrumbButton as="button" onClick={() => setSelectedItem(item.item)}>
-                                {truncateBreadcrumbLongName(item.item.label, 20)}
+                            <BreadcrumbButton as="button" onClick={() => onSelect(item.value)}>
+                                {truncateBreadcrumbLongName(item.content, 20)}
                             </BreadcrumbButton>
                             {!isLastItem && <BreadcrumbDivider />}
                         </BreadcrumbItem>
                     </Tooltip>
                 ) : (
                     <BreadcrumbItem>
-                        <BreadcrumbButton as="button" onClick={() => setSelectedItem(item.item)}>{item.item.label}</BreadcrumbButton>
+                        <BreadcrumbButton as="button" onClick={() => onSelect(item.value)}>{item.content}</BreadcrumbButton>
                         {!isLastItem && <BreadcrumbDivider />}
                     </BreadcrumbItem>
                 )}
@@ -93,28 +87,36 @@ const ExplorerNavigationTab = () => {
       }
 
     return (
-        <Breadcrumb size="medium">
-            <BreadcrumbButton as="button" onClick={handleMoveUp} icon={<ArrowUp16Filled color="black"/>}/>
-            {startDisplayedItems.map((item) =>
-                renderBreadcrumbItem(item, false)
-            )}
-            {overflowItems && overflowItems.length > 0 &&
+        <Breadcrumb 
+          size="small"
+          style={{overflowX: "auto"}}
+          >
+            <BreadcrumbButton 
+              as="button" 
+              onClick={handleMoveUp} 
+              icon={<ArrowUp16Filled color="black"/>}
+            />
+            {startDisplayedItems.map((item) => {
+             const isLastItem = item.value === selectedNode;
+                return renderBreadcrumbItem(item, isLastItem)
+            })}
+            {overflowItems && overflowItems.length > 0 && 
                 <OverflowMenu
                     overflowItems={overflowItems}
                     startDisplayedItems={startDisplayedItems}
                     endDisplayedItems={endDisplayedItems}
-                    setSelectedItem={setSelectedItem}
+                    setSelectedItem={onSelect}
                 />
             }
             {endDisplayedItems &&
                 endDisplayedItems.map((item) => {
-                const isLastItem = item.key === 0;
+                const isLastItem = item.value === selectedNode;
                 return renderBreadcrumbItem(item, isLastItem);
             })}
         </Breadcrumb>
     );
 }
-export default ExplorerNavigationTab;
+export default TreeNavigation;
 
 const MoreHorizontal = bundleIcon(MoreHorizontalFilled, MoreHorizontalRegular);
 
@@ -128,20 +130,20 @@ const useTooltipStyles = makeStyles({
 
 type OverflowMenuProps = {
     setSelectedItem: (item) => void;
-} & PartitionBreadcrumbItems<Item>
+} & PartitionBreadcrumbItems<FlatItem>
 
 const OverflowMenu = (props: OverflowMenuProps) => {
     const { overflowItems, setSelectedItem } = props;
     const { ref, isOverflowing, overflowCount } =
       useOverflowMenu<HTMLButtonElement>();
-
+  
     const tooltipStyles = useTooltipStyles();
-
+  
     if (!isOverflowing && overflowItems && overflowItems.length === 0) {
       return null;
     }
 
-    const getTooltipContent = (breadcrumbItems: readonly Item[] | undefined) => {
+    const getTooltipContent = (breadcrumbItems: readonly FlatItem[] | undefined) => {
         if (!breadcrumbItems) {
           return "";
         }
@@ -149,24 +151,24 @@ const OverflowMenu = (props: OverflowMenuProps) => {
           return (
             <>
               {acc}
-              {arr[0].item !== initialValue.item && " > "}
-              {initialValue.item.label}
+              {arr[0].value !== initialValue.value && " > "}
+              {initialValue.content}
             </>
           );
         }, <React.Fragment />);
       };
-
+  
     const overflowItemsCount = overflowItems
       ? overflowItems.length + overflowCount
       : overflowCount;
     const tooltipContent =
-      overflowItemsCount > 5
+      overflowItemsCount > 3
         ? `${overflowItemsCount} items`
         : {
             children: getTooltipContent(overflowItems),
             className: tooltipStyles.tooltip,
           };
-
+          
     return (
       <BreadcrumbItem>
         <Menu hasIcons>
@@ -188,10 +190,10 @@ const OverflowMenu = (props: OverflowMenuProps) => {
                 overflowItems.map((item) => (
                     <MenuItem
                         icon={null}
-                        key={generateUUID()}
-                        onClick={() => setSelectedItem(item.item)}
+                        key={`over-${item.value}`}
+                        onClick={() => setSelectedItem(item.value)}
                     >
-                        {item.item.label}
+                        {item.content}
                     </MenuItem>
                 ))}
             </MenuList>

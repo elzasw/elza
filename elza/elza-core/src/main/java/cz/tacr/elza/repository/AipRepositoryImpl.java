@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.controller.vo.AipFilterGen;
 import cz.tacr.elza.controller.vo.AipFilterVO;
 import cz.tacr.elza.domain.*;
 import jakarta.persistence.EntityManager;
@@ -16,7 +17,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public FilteredResult<DaAip> findAipsByFilter(final AipFilterVO[] filters, final Integer firstResult , final Integer maxResults) {
+    public FilteredResult<DaAip> findAipsByFilter(final List<AipFilterGen> filters, final Integer firstResult , final Integer maxResults) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<DaAip> query = cb.createQuery(DaAip.class);
         CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
@@ -48,7 +49,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
 
-    private <T> Predicate prepareFindAipByFilterCount(final AipFilterVO[] filters,
+    private <T> Predicate prepareFindAipByFilterCount(final List<AipFilterGen> filters,
                                                     final CriteriaBuilder cb,
                                                     final Root<DaAip> aipRoot) {
         List<Predicate> predicates = new ArrayList<>();
@@ -59,7 +60,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Join<ParInstitution, ApAccessPoint> instApJoin = instJoin.join("accessPoint", JoinType.LEFT);
         Join<DaAipState, ArrFund> fundJoin = stateJoin.join("fund", JoinType.LEFT);
 
-        for (AipFilterVO filter : filters) {
+        for (AipFilterGen filter : filters) {
             Path<?> path;
             switch (filter.getPath()) {
                 case "da_aip" -> path = aipRoot.get(filter.getAttr());
