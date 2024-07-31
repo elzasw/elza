@@ -202,25 +202,25 @@ export function getNewFormKey(descItem: DescItem) {
     }
 
     // vytvori novy klic pokud neexistuje v seznamu _formKeys
-    let formKey = _formKeys[descItem.itemType];
+    let formKey = _formKeys[descItem.itemTypeId];
     formKey = !formKey ? 1 : (formKey + 1);
 
-    _formKeys[descItem.itemType] = formKey;
-    return `fk_${descItem.itemType}_${formKey}`;
+    _formKeys[descItem.itemTypeId] = formKey;
+    return `fk_${descItem.itemTypeId}_${formKey}`;
 }
 
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
 //
 export function consolidateDescItems(resultDescItemType, infoType, refType, addedByUser, emptySystemSpecToKeyMap = {}) {
-    // var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
+    const forceVisibility = infoType.itemType == RulItemTypeType.REQUIRED || infoType.itemType == RulItemTypeType.RECOMMENDED;
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
     addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap);
     const hasOnlyInheritedInhibitedValues = !resultDescItemType.descItems.find(({ fromNodeId, inhibited }) => fromNodeId == null || (fromNodeId != null && !inhibited));
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací) nebo jsou všechny zděděné hodnoty potlačené
-    if (resultDescItemType.descItems.length === 0 || hasOnlyInheritedInhibitedValues) {
+    if (resultDescItemType.descItems.length === 0 || (hasOnlyInheritedInhibitedValues && forceVisibility)) {
         resultDescItemType.descItems.push(createDescItem(refType, addedByUser));
     }
 
@@ -498,7 +498,10 @@ function addChangedItemIfExists(data, item) {
     }
 }
 
-type WierdMapType<T> = {[key: number]: T; ids: number[]};
+interface MapWithIds<T> {
+    [key: number]: T;
+    ids: number[];
+};
 /**
  * Gets descItem ids per type as map.
  *
@@ -507,12 +510,12 @@ type WierdMapType<T> = {[key: number]: T; ids: number[]};
  * @return Object
  */
 function getMapByItemType(items) {
-    const types: WierdMapType<{items: number[]}> = {ids: []};
+    const types: MapWithIds<{ items: number[] }> = { ids: [] };
 
     for (let i = 0; i < items.ids.length; i++) {
         let itemId = items.ids[i];
         let item = items[itemId];
-        let typeId = item.itemType;
+        let typeId = item.itemTypeId;
         if (!types[typeId]) {
             types[typeId] = {
                 items: [],
@@ -525,7 +528,7 @@ function getMapByItemType(items) {
 }
 
 /**
- * Inserts item type into item
+ * Inserts item type id into item
  *
  * @param Object item
  * @param Object items
@@ -535,7 +538,7 @@ function getMapByItemType(items) {
 function insertItemType(item, items) {
     item = {
         ...item,
-        itemType: items[item.descItemObjectId].itemType,
+        itemTypeId: items[item.descItemObjectId].itemTypeId,
     };
     return item;
 }
@@ -559,7 +562,9 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     // Inserting item type from local descItems,
     // because it is not defined on the item received from server
-    changedItem = insertItemType(changedItem, flatLocalForm.descItems);
+    if (!changedItem.itemTypeId) {
+        changedItem = insertItemType(changedItem, flatLocalForm.descItems);
+    }
     addChangedItemIfExists(flatForm, changedItem);
 
     flatLocalForm.update(flatForm);
@@ -580,15 +585,6 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
-
-    // Odebrání pomocných dat - sice prasárna, ale jinak by se to muselo celé přepsat - commit 85921c4ed7d187d41759fa938370dcaac3da5aa1
-    Object.values((flatLocalForm.types as any) as {[key: number]: DescItemType}).forEach(type => {
-        type.descItems &&
-            type.descItems.forEach(descItem => {
-                delete descItem.itemType;
-            });
-    });
-    // console.log(8888, Object.values(flatLocalForm.types));
 
     return state;
 }
@@ -628,20 +624,20 @@ function insertDescItemSpecsMap(types, specs) {
  * */
 function restoreFormDataStructure(data, refTypesMap) {
     let groupId, group, typeId, type, descItemId, descItem, specId, spec;
-    let usedTypes: WierdMapType<{descItems: DescItem[]; specs: any[]}> = {ids: []};
-    let usedGroups: WierdMapType<{descItemTypes: DescItemType[]}> = {ids: []};
+    let usedTypes: MapWithIds<{ descItems: DescItem[]; specs: any[] }> = { ids: [] };
+    let usedGroups: MapWithIds<{ descItemTypes: DescItemType[] }> = { ids: [] };
     let descItemGroups: DescItemGroup[] = [];
 
     for (let d = 0; d < data.descItems.ids.length; d++) {
         descItemId = data.descItems.ids[d];
         descItem = data.descItems[descItemId];
 
-        if (!usedTypes[descItem.itemType]) {
-            type = data.types[descItem.itemType];
+        if (!usedTypes[descItem.itemTypeId]) {
+            type = data.types[descItem.itemTypeId];
             type.descItems = [];
             type.specs = [];
-            usedTypes[descItem.itemType] = type;
-            usedTypes.ids.push(descItem.itemType);
+            usedTypes[descItem.itemTypeId] = type;
+            usedTypes.ids.push(descItem.itemTypeId);
         }
 
         const refType = refTypesMap[type.id];
@@ -658,7 +654,7 @@ function restoreFormDataStructure(data, refTypesMap) {
             }
         }
 
-        usedTypes[descItem.itemType].descItems.push(descItem);
+        usedTypes[descItem.itemTypeId].descItems.push(descItem);
     }
 
     for (let s = 0; s < data.specs.ids.length; s++) {
@@ -731,10 +727,10 @@ class FlatFormData {
     */
 
     _emptyItemCounter = 0;
-    groups: WierdMapType<DescItemGroup> = {ids: []};
-    types: WierdMapType<DescItemType> = {ids: []};
-    descItems: WierdMapType<DescItem> = {ids: []};
-    specs: WierdMapType<ItemSpec> = {ids: []};
+    groups: MapWithIds<DescItemGroup> = { ids: [] };
+    types: MapWithIds<DescItemType> = { ids: [] };
+    descItems: MapWithIds<DescItem> = { ids: [] };
+    specs: MapWithIds<ItemSpec> = { ids: [] };
     refTables: any;
 
     constructor(refTables) {
@@ -807,7 +803,7 @@ class FlatFormData {
             if (item.prevValue !== newItem.value) {
                 newItem.value = item.value;
             }
-            newItem = createDescItemFromDb(types[newItem.itemType], newItem);
+            newItem = createDescItemFromDb(types[newItem.itemTypeId], newItem);
             items[newItemId] = newItem;
         }
         this.descItems = items;
@@ -846,7 +842,7 @@ class FlatFormData {
         let itemSpecsMap = this._getForcedSpecsByType(specs);
         let refTypesMap:any = getMapFromList(this.refTables.descItemTypes.items); // @TODO odstranit 'any' az bude dostupne otypovani u this.refTables.descItemTypes.items
         let refDataTypesMap:any = getMapFromList(this.refTables.rulDataTypes.items); // @TODO odstranit 'any' az bude dostupne otypovani u this.refTables.rulDataTypes.items
-        let newItems: WierdMapType<DescItem> = {ids: []} as any;
+        let newItems: MapWithIds<DescItem> = { ids: [] } as any;
 
         for (let t = 0; t < types.ids.length; t++) {
             let typeId = types.ids[t];
@@ -873,7 +869,7 @@ class FlatFormData {
                         nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
                         newItem = createDescItem(refType, false, lastPosition + 1);
                         newItem.descItemSpecId = unusedForcedSpecs[s];
-                        newItem.itemType = typeId;
+                        newItem.itemTypeId = typeId;
                         lastPosition++;
 
                         newItems[nextEmptyItemId] = newItem;
@@ -885,7 +881,7 @@ class FlatFormData {
                 //Add forced itemTypes
                 else if (!typeItems) {
                     newItem = createDescItem(refType, false);
-                    newItem.itemType = typeId;
+                    newItem.itemTypeId = typeId;
 
                     newItems[nextEmptyItemId] = newItem;
                     // TODO Proč je tu najednou string ? @stanekpa?
@@ -937,8 +933,8 @@ class FlatFormData {
      *
      * @return Object
      */
-    _getForcedSpecsByType(specs: WierdMapType<ItemSpec>) {
-        let types: {[key: number]: {specs: number[]}; ids: number[]} = {ids: []};
+    _getForcedSpecsByType(specs: MapWithIds<ItemSpec>) {
+        let types: { [key: number]: { specs: number[] }; ids: number[] } = { ids: [] };
 
         for (let i = 0; i < specs.ids.length; i++) {
             let itemId = specs.ids[i];
@@ -1059,7 +1055,7 @@ class FlatFormData {
             let item = {
                 ...items[d],
                 // AAAAAAAAAAAAAAAAAAAAAAAAA
-                itemType: type.id,
+                itemTypeId: type.id,
                 // aaaaaaaa: 11111111
             };
             let itemId: string | null = null;
@@ -1354,7 +1350,7 @@ export function createDescItem(
         value: null,
         error: {hasError: false},
         addedByUser,
-        itemType: refType.id,
+        itemTypeId: refType.id,
         position,
     };
 
@@ -1447,7 +1443,7 @@ function checkDescItemSpec(spec) {
 }
 
 function checkDescItem(item) {
-    log('itemType', item, isNumber);
+    log('itemTypeId', item, isNumber);
 }
 
 function checkDescItemType(type) {

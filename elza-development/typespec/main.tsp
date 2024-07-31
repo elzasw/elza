@@ -215,54 +215,67 @@ model RevStateChange {
  * ItemData classes extensions
  */
 model DataBit extends ItemData {
+    type: "DataBit";
     bitValue: boolean;
 }
 
 model DataCoordinates extends ItemData {
+    type: "DataCoordinates";
     value: string;
 }
 
 model DataDate extends ItemData {
+    type: "DataDate";
     value: offsetDateTime;
 }
 
 model DataDecimal extends ItemData {
+    type: "DataDecimal";
     value: decimal;
 }
 
 model DataFileRef extends ItemData {
+    type: "DataFileRef";
     fileId: integer;
 }
 
 model DataInteger extends ItemData {
+    type: "DataInteger";
     integerValue: integer;
 }
 
 model DataJsonTable extends ItemData {
+    type: "DataJsonTable";
     value: string;
 }
 
 model DataNull extends ItemData {
+    type: "DataNull";
 }
 
 model DataRecordRef extends ItemData {
+    type: "DataRecordRef";
     recordId: integer;
     bindingId: integer;
 }
 
 model DataString extends ItemData {
+    type: "DataString";
     stringValue: string;
 }
 
 model DataStructureRef extends ItemData {
+    type: "DataStructureRef";
     structuredObjectId: integer;
 }
 
 model DataText extends ItemData {
+    type: "DataText";
     textValue: string;
 }
 
 model DataUnitdate extends ItemData {
+    type: "DataUnitdate";
     valueFrom: string;
     valueFromEstimated: boolean;
     valueTo: string;
@@ -273,10 +286,12 @@ model DataUnitdate extends ItemData {
 }
 
 model DataUnitid extends ItemData {
+    type: "DataUnitid";
     unitId: string;
 }
 
 model DataUriRef extends ItemData {
+    type: "DataUriRef";
     schema: string;
     uriRefValue: string;
     description: string;
@@ -287,11 +302,12 @@ model DataUriRef extends ItemData {
 /**
  * Item data
  */
+@discriminator("type")
 model ItemData {
     /** data id */
-    dataId: integer;
+    dataId?: integer;
     /** data type id */
-    dataTypeId: integer;
+    dataTypeId?: integer;
 }
 
 /**
@@ -302,6 +318,54 @@ enum ChangeType {
     UPDATED,
     DELETED,
     ORIGINAL
+}
+
+/**
+ * Výsledek vytvoření nebo aktualizace ArrDescItem
+ */
+model ItemDataResult {
+    /** parent node */
+    parent?: Node;
+    /** item */
+    item?: NodeItem;
+}
+
+/**
+ * Náhrada za třídu ArrNodeVO
+ */
+model Node {
+    /** id of node */
+    id: integer;
+    /** node version */
+    version: integer;
+    /** node uuid */
+    uuid: string;
+}
+
+/**
+ * Náhrada za třídu ArrItemVO
+ */
+model NodeItem {
+    /** id of item */
+    id?: integer;
+    /** id value of item */
+    itemObjectId?: integer;
+    /** pozition */
+    position?: integer;
+    /** no value */
+    undefined?: boolean;
+    /** id type of item */
+    itemTypeId?: integer;
+    /** id spec of item */
+    itemSpecId?: integer;
+    /** value cannot be changed */
+    readOnly?: boolean;
+    /** id parent node */
+    nodeId?: integer;
+    /** if inheritance is prohibited - true */
+    inhibited?: boolean;
+    /** item data */
+    data?: ItemData;
 }
 
 /**
@@ -554,6 +618,55 @@ namespace ElzaAPI.Fund {
     };
 }
 
+@tag("descitems")
+@route("/descItems")
+namespace ElzaAPI.DescItem {
+    /**
+     * Create attribute value
+     */
+    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create/new")
+    @put op createDescItem(
+        /** id AP version */
+        @path fundVersionId: integer,
+        /** id node */
+        @path nodeId: integer,
+        /** node version */
+        @path nodeVersion: integer,
+        /** id type of item */
+        @path descItemTypeId: integer;
+        /** new attribute value */
+        @body body: NodeItem
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body result: ItemDataResult;
+       };
+    /**
+     * Update attribute value
+     */
+    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new")
+    @put op updateDescItem(
+        /** id AP version */
+        @path fundVersionId: integer,
+        /** id node */
+        @path nodeId: integer,
+        /** node version */
+        @path nodeVersion: integer,
+        /** create a new version or not? */ 
+        @path createNewVersion: boolean,
+        /** new attribute value */
+        @body body: NodeItem
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body result: ItemDataResult;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+}
+
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
@@ -768,7 +881,6 @@ namespace ElzaAPI.Io {
 
 @service({
     title: "ELZA API",
-    version: "1.0.0",
 })
 namespace ElzaAPI {
 

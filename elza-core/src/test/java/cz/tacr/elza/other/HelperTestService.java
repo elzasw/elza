@@ -12,6 +12,9 @@ import java.util.zip.ZipOutputStream;
 
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -70,7 +75,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -271,6 +275,9 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
+
+        MassIndexer massIndexer = Search.session(em).massIndexer(ApCachedAccessPoint.class, ArrDescItem.class);
+        massIndexer.start().toCompletableFuture();
 
         if (stopTasks) {
             packageService.startAsyncTasks();

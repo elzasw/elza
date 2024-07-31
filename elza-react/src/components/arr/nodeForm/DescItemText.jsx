@@ -21,7 +21,13 @@ class DescItemText extends AbstractReactComponent {
         let value = descItem.value;
 
         if (readMode) {
-            return <DescItemLabel value={value} hideTooltip={true} cal={cal} isValueUndefined={descItem.undefined} />;
+            return <DescItemLabel
+                value={value}
+                hideTooltip={true}
+                cal={cal}
+                isValueUndefined={descItem.undefined}
+                isValueInhibited={descItem.inhibited}
+            />;
         }
 
         value = descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : inputValue(value);
