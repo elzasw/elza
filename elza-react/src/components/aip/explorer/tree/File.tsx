@@ -10,12 +10,12 @@ type FileProps = {
 
 const File = ({file, parent}: FileProps) => {
     const {selectedItem} = useExplorerContext();
-    const isSelected = selectedItem && !isDaoFileFolderVO(selectedItem) && selectedItem.uuid == file.uuid;
+    const isSelected = selectedItem && selectedItem.uuid == file.uuid;
     file.parent = parent;
-    
+
     return (
         <TreeItem
-            itemType="leaf" 
+            itemType="leaf"
             value={file.uuid}
             style={{backgroundColor: isSelected ? "#e3e3e3ff" : undefined}}
         >

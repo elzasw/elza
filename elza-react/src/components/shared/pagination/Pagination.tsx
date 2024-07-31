@@ -8,9 +8,9 @@ type PaginationProps = {
     pageSize: number;
     onPageChange: (nextFrom: number, pageSize: number) => void;
     onPageSizeChange: (pageSize: number) => void;
-}   
+}
 
-/** 
+/**
  * Different pagination based on the new design
  */
 const Pagination = ({from, totalCount, pageSize, onPageSizeChange, onPageChange}: PaginationProps) => {
@@ -36,39 +36,39 @@ const Pagination = ({from, totalCount, pageSize, onPageSizeChange, onPageChange}
     }
 
     const currentPage = Math.ceil(from / pageSize);
-    const pageCount = Math.ceil(totalCount / pageSize) ;
+    const pageCount = Math.ceil(totalCount / pageSize);
 
     return (
         <div className="pagination">
-             <Icon 
-                onClick={handleFirstPage} 
-                glyph="fa-angle-double-left fa-lg" 
-                className="arrow" 
+             <Icon
+                onClick={handleFirstPage}
+                glyph="fa-angle-double-left fa-lg"
+                className="arrow"
             />
-            <Icon 
-                onClick={handlePrevPage} 
-                glyph="fa-angle-left fa-lg" 
-                className="arrow" 
+            <Icon
+                onClick={handlePrevPage}
+                glyph="fa-angle-left fa-lg"
+                className="arrow"
             />
-           
-            <Icon 
-                onClick={handleNextPage} 
-                glyph="fa-angle-right fa-lg" 
-                className="arrow" 
+
+            <Icon
+                onClick={handleNextPage}
+                glyph="fa-angle-right fa-lg"
+                className="arrow"
             />
-             <Icon 
-                onClick={handleLastPage} 
-                glyph="fa-angle-double-right fa-lg" 
-                className="arrow" 
+             <Icon
+                onClick={handleLastPage}
+                glyph="fa-angle-double-right fa-lg"
+                className="arrow"
             />
 
             <span className="middle-text pages">
-                {currentPage + 1} / {pageCount}
+                {currentPage + 1} / {pageCount || pageCount + 1}
             </span>
 
-            <Dropdown 
-                size="small" 
-                appearance="underline" 
+            <Dropdown
+                size="small"
+                appearance="underline"
                 style={{minWidth:"auto"}}
                 onOptionSelect={(e, data) => onPageSizeChange(Number(data.optionValue))}
                 defaultValue={pageSize ? pageSize.toString() : options[0].toString()}

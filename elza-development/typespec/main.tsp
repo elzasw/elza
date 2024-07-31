@@ -63,6 +63,12 @@ model FundIdParameter {
     fundId: integer;
 }
 
+model AipIdParameter {
+    /** Aip ID */
+    @path
+    aipId: integer;
+}
+
 model FundVersionIdParameter {
     /** Fund ID Version*/
     @path
@@ -452,6 +458,311 @@ model DaDao {
     files: DaDaoFile[];
 }
 
+/**
+ * Custom uzel stromu
+ */
+model TreeNodeCustomGen {
+    /**
+     * Unikátní identifikátor uzlu
+     */
+    UUID: string;
+    /**
+     * Název
+     */
+    name: string;
+    /**
+     * Hodnota
+     */
+    value: integer[];
+    /**
+     * Hloubka
+     */
+    depth: integer;
+    /**
+     * Příznak, zda udel má potomky
+     */
+    hasChildren: boolean;
+    /**
+     * Unikátení identifikátor rodičovského uzlu
+     */
+    parent: string
+}
+
+/**
+ * Custom strom
+ */
+model TreeDataCustomGen {
+    /**
+     * Seznam uzlů stromu
+     */
+    nodes: TreeNodeCustomGen[];
+    /**
+     * Seznam uuid již expandovaných uzlů
+     */
+    expandedIdsExtension: string[];
+}
+
+/**
+ * Archivní soubor
+ */
+model ArrFundGen {
+    /**
+     * Identifikátor
+     */
+    id: integer;
+    /**
+     * Název
+     */
+    name: string;
+    /**
+     * Kód
+     */
+    internalCode: string;
+    /**
+     * Číslo
+     */
+    fundNumber: integer;
+    /**
+     * Značka
+     */
+    mark: string;
+    /**
+     * Datum vytvoření
+     */
+    createDate: string;
+    /**
+     * ID instituce archivního souboru
+     */
+    institutionId: integer;
+    /**
+     * Unitdate
+     */
+    unitdate: string;
+}
+
+
+    /**
+     * Stav outputu
+     */
+enum OutputState {
+    /**
+     * Rozpracovaný
+     */
+    OPEN,
+    /**
+     * Běží hromadná akce
+     */
+    COMPUTING,
+    /**
+     * Generování
+     */
+    GENERATING,
+    /**
+     * Vygenerovaný
+     */
+    FINISHED,
+    /**
+     * Vygenerovaný neaktuální
+     */
+    OUTDATED
+}
+
+/**
+ * Progres synchronizace
+ */
+enum SyncProgress {
+    /**
+     * Čeká se
+     */
+    UPLOAD_PENDING,
+    /**
+     * Začal
+     */
+    UPLOAD_STARTED
+}
+
+/**
+ * Stav synchronizace
+ */
+enum SyncState {
+    /**
+     * OK
+     */
+    SYNC_OK,
+    /**
+     * Nesynchronizováno
+     */
+    NOT_SYNCED,
+    /**
+     * Lokální změna
+     */
+    LOCAL_CHANGE
+}
+
+model AipDetailFilteredResult {
+    /**
+     * Počet výsledků
+     */
+    count: integer;
+    /**
+     * Seznam objektů
+     */
+    rows: AipDetailVO[];
+}
+
+/**
+ * Stav rejstříku
+ */
+enum ApState {
+    OK,
+    ERROR,
+    TEMP,
+    INIT
+}
+
+/**
+ * VO pro instituce
+ */
+model ParInstitutionGen {
+    /**
+     * Id instituce
+     */
+    id: integer;
+    /**
+     * Typ instituce
+     */
+    institutionType: BaseCode;
+    /**
+     * Id {@ApAccessPoint}
+     */
+    accessPointId: integer;
+    /**
+     * Název instituce
+     */
+    name: string;
+    /**
+     * Kód instituce
+     */
+    code: string
+}
+
+/**
+ * Souhrný model pro enumy
+ */
+model BaseCode {
+    /**
+     * Identifikátor
+     */
+    id: integer;
+    /**
+     * Kód
+     */
+    code: string;
+    /**
+     * Název
+     */
+    name: string;
+}
+
+/**
+ * Výčet stavů aktualizace AIPu
+ */
+enum QueueItemState {
+    /**
+     * K aktualizaci
+     */
+    UPDATE,
+    /**
+     * Ke stažení
+     */
+    IMPORT_NEW,
+    /**
+     * Aktualizováno/Staženo
+     */
+    IMPORT_OK,
+    /**
+     * Chyba
+     */
+    ERROR
+}
+
+/**
+ * Vo pro detail AIPu
+ */
+model AipDetailVO {
+    /**
+     * Id AIPu
+     */
+    aipId: integer;
+    /**
+     * Kód AIPu
+     */
+    code: string;
+    /**
+     * Id digitálního repozitáře
+     */
+    digitalRepositoryId: integer;
+    /**
+     * Verze AIPu
+     */
+    aipVersion: string;
+    /**
+     * Archivní soubor
+     */
+    fund: ArrFundGen;
+    /**
+     * Instituce
+     */
+    institution: ParInstitutionGen;
+    /**
+     * Instituce původce
+     */
+    originatorInstitution: ParInstitutionGen;
+    /**
+     * Původce
+     */
+    originator: string;
+    /**
+     * Datace od
+     */
+    unitdateFrom: string;
+    /**
+     * Datace do
+     */
+    unitdateTo: string;
+    /**
+     * Kód instituce
+     */
+    institutionCode: string;
+    /**
+     * Číslo příjemky
+     */
+    ingestionCode: string;
+    /**
+     * Číslo jednací příjemky ve spisovce
+     */
+    referenceNumber: string;
+    /**
+     * Identifikátor vnější změny NAD v PEvA
+     */
+    nadChangeCode: string;
+    /**
+     * Velikost AIPu v bytech
+     */
+    aipSize: integer;
+    /**
+     * Příznak načtených metadat
+     */
+    metadataLoad: boolean;
+    /**
+     * Stav aktualizace
+     */
+    state: QueueItemState;
+}
+
+/**
+ * Dao type
+ */
 enum DaDaoType {
     REPRESENTATION,
     LOGICAL,
@@ -459,6 +770,70 @@ enum DaDaoType {
     METAAMD,
     METADMDINHERENT,
     METADMDCONTEXTUAL
+}
+
+/**
+ * Filter aipu
+ */
+model AipFilterGen {
+    /**
+     * UUID filtru
+     */
+    id: string;
+    /**
+     * Atribut, podle kterého chceme filtrovat
+     */
+    attr: string;
+    /**
+     * filtrovaná hodnota
+     */
+    value: string;
+    /**
+     * Způsob porovnání
+     */
+    criteria: AipFilterCriteriaGen;
+    /**
+     * Hodnota od
+     */
+    from?: string;
+    /**
+     * Hodnota do
+     */
+    to?: string;
+    /**
+     * Cesta
+     */
+    path: string;
+}
+
+/**
+ * Způsob porovnání hodnot filtru
+ */
+enum AipFilterCriteriaGen {
+    /**
+     * Hodnota je null
+     */
+    IS_NULL,
+    /**
+     * Hodnota není null
+     */
+    IS_NOT_NULL,
+    /**
+     * Hodnota obsahuje
+     */
+    CONTAINS,
+    /**
+     * Hodnota neobsahuje
+     */
+    DOES_NOT_CONTAIN,
+    /**
+     * Hodnota se rovná
+     */
+    EQUALS,
+    /**
+     * Hodnota je v rozmezí
+     */
+    BETWEEN
 }
 
 /**
@@ -830,29 +1205,6 @@ namespace ElzaAPI.Io {
        };
 }
 
-
-@tag("dao")
-@route("/dao")
-namespace ElzaAPI.DaDao {
-    /**
-     * Get dao by aip id
-     */
-    @route("/{aipId}")
-    @get op getDaDaoList(
-        /** Aip id */
-        @path aipId: string;
-    ): {
-        /** Data fetched successfully */
-        @Http.statusCode statusCode: 200;
-        @body data: DaDao[];
-    } |
-    {
-        /** Failed to export requested data */
-        @Http.statusCode statusCode: 500;
-        @body data: BaseException;
-    };
-}
-
 @tag("aips")
 @route("/aip")
 namespace ElzaAPI.Aip {
@@ -946,11 +1298,81 @@ namespace ElzaAPI.Aip {
           @Http.statusCode statusCode: 500;
           @body data: BaseException;
          };
+
+     /**
+      * Get level view tree for aips with ids
+      */
+     @route("/levelViewTree")
+     @post op levelViewTree(
+        /** Aip IDs */
+        @body aipIds: integer[];
+     ) : {
+         /** Dao link successfully deleted */
+         @Http.statusCode statusCode: 200;
+         @body data: TreeDataCustomGen;
+        } | {
+         /** Failed to get tree */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
+     /**
+      * Get aip detail by id
+      */
+     @route("/{aipId}")
+     @get op getAip (
+        /** Aip ID */
+        ...AipIdParameter
+     ) : {
+         /** Aip detail retrieved*/
+         @Http.statusCode statusCode: 200;
+         @body data: AipDetailVO;
+        } | {
+         /** Failed to get tree */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
+     /**
+      * Find aips by filters
+      */
+     @route("/find/filter")
+     @post op findByFilter(
+        /** Array of filters */
+        @body filters: AipFilterGen[];
+        @query from: integer;
+        @query count: integer;
+     ) : {
+         /** Dao link successfully deleted */
+         @Http.statusCode statusCode: 200;
+         @body data: AipDetailFilteredResult;
+        } | {
+         /** Failed to get tree */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
+        /**
+      * Get level view tree for aips with ids
+      */
+     @route("/tree")
+     @post op tree(
+        /** Aip IDs */
+        @query aipId: integer;
+     ) : {
+         /** Dao link successfully deleted */
+         @Http.statusCode statusCode: 200;
+         @body data: TreeDataCustomGen;
+        } | {
+         /** Failed to get tree */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
 }
 
 @service({
     title: "ELZA API",
-    version: "1.0.0",
 })
 namespace ElzaAPI {
 

@@ -917,28 +917,115 @@ paths:
             schema:
               type: string
               format: binary
-  /dao/{aipId}:
-    get:
+  /aip/levelViewTree:
+    post:
       tags:
-        - dao
-      operationId: getDaDaoList
-      description: Get dao by aip id
-      parameters:
-        - name: aipId
-          in: path
-          required: true
-          description: Aip id
-          schema:
-            type: string
+        - aips
+      operationId: Aip_levelViewTree
+      description: Get level view tree for aips with ids
+      parameters: [ ]
       responses:
         '200':
           description: The request has succeeded.
           content:
             application/json:
               schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/DaDao'
+                $ref: '#/components/schemas/TreeDataCustomGen'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Aip IDs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+  /aip/find/filter:
+    post:
+      tags:
+        - aips
+      operationId: Aip_findByFilter
+      description: Find aips by filters
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: count
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AipDetailFilteredResult'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Array of filters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AipFilterGen'
+  /aip/{aipId}:
+    get:
+      tags:
+        - aips
+      operationId: Aip_getAip
+      description: Get aip detail by id
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AipDetailVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /aip/tree:
+    post:
+      tags:
+        - aips
+      operationId: Aip_tree
+      description: Get level view tree for aips with ids
+      parameters:
+        - name: aipId
+          in: query
+          required: true
+          description: Aip IDs
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreeDataCustomGen'
         '500':
           description: Server error
           content:
@@ -1239,6 +1326,13 @@ paths:
                 $ref: '#/components/schemas/BaseException'
 components:
   parameters:
+    AipIdParameter:
+      name: aipId
+      in: path
+      required: true
+      description: Aip ID
+      schema:
+        type: integer
     FsRepoIdParameter:
       name: fsrepoId
       in: path
@@ -1305,6 +1399,139 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AipDetailFilteredResult:
+      type: object
+      required:
+        - count
+        - rows
+      properties:
+        count:
+          type: integer
+          description: Počet výsledků
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/AipDetailVO'
+          description: Seznam objektů
+    AipDetailVO:
+      type: object
+      required:
+        - aipId
+        - code
+        - digitalRepositoryId
+        - aipVersion
+        - fund
+        - institution
+        - originatorInstitution
+        - originator
+        - unitdateFrom
+        - unitdateTo
+        - institutionCode
+        - ingestionCode
+        - referenceNumber
+        - nadChangeCode
+        - aipSize
+        - metadataLoad
+        - state
+      properties:
+        aipId:
+          type: integer
+          description: Id AIPu
+        code:
+          type: string
+          description: Kód AIPu
+        digitalRepositoryId:
+          type: integer
+          description: Id digitálního repozitáře
+        aipVersion:
+          type: string
+          description: Verze AIPu
+        fund:
+          allOf:
+            - $ref: '#/components/schemas/ArrFundGen'
+          description: Archivní soubor
+        institution:
+          allOf:
+            - $ref: '#/components/schemas/ParInstitutionGen'
+          description: Instituce
+        originatorInstitution:
+          allOf:
+            - $ref: '#/components/schemas/ParInstitutionGen'
+          description: Instituce původce
+        originator:
+          type: string
+          description: Původce
+        unitdateFrom:
+          type: string
+          description: Datace od
+        unitdateTo:
+          type: string
+          description: Datace do
+        institutionCode:
+          type: string
+          description: Kód instituce
+        ingestionCode:
+          type: string
+          description: Číslo příjemky
+        referenceNumber:
+          type: string
+          description: Číslo jednací příjemky ve spisovce
+        nadChangeCode:
+          type: string
+          description: Identifikátor vnější změny NAD v PEvA
+        aipSize:
+          type: integer
+          description: Velikost AIPu v bytech
+        metadataLoad:
+          type: boolean
+          description: Příznak načtených metadat
+        state:
+          allOf:
+            - $ref: '#/components/schemas/QueueItemState'
+          description: Stav aktualizace
+      description: Vo pro detail AIPu
+    AipFilterGen:
+      type: object
+      required:
+        - id
+        - attr
+        - value
+        - criteria
+        - path
+      properties:
+        id:
+          type: string
+          description: UUID filtru
+        attr:
+          type: string
+          description: Atribut, podle kterého chceme filtrovat
+        value:
+          type: string
+          description: filtrovaná hodnota
+        criteria:
+          allOf:
+            - $ref: '#/components/schemas/AipFilterCriteriaGen'
+          description: Způsob porovnání
+        from:
+          type: string
+          description: Hodnota od
+        to:
+          type: string
+          description: Hodnota do
+        path:
+          type: string
+          description: Cesta
+      description: Filter aipu
+    AipFilterCriteriaGen:
+      type: string
+      enum:
+        - IS_NULL
+        - IS_NOT_NULL
+        - CONTAINS
+        - DOES_NOT_CONTAIN
+        - EQUALS
+        - BETWEEN
+      description: Způsob porovnání hodnot filtru
     AipType:
       type: string
       enum:
@@ -1314,6 +1541,14 @@ components:
         - AIP_BASE
         - AIP_RAW
       description: Aip package type
+    ApState:
+      type: string
+      enum:
+        - OK
+        - ERROR
+        - TEMP
+        - INIT
+      description: Stav rejstříku
     ApStateApproval:
       type: string
       enum:
@@ -1341,6 +1576,43 @@ components:
             - $ref: '#/components/schemas/ApStateApproval'
           description: state of ApState
       description: Data for changing state of ApAccessPoint
+    ArrFundGen:
+      type: object
+      required:
+        - id
+        - name
+        - internalCode
+        - fundNumber
+        - mark
+        - createDate
+        - institutionId
+        - unitdate
+      properties:
+        id:
+          type: integer
+          description: Identifikátor
+        name:
+          type: string
+          description: Název
+        internalCode:
+          type: string
+          description: Kód
+        fundNumber:
+          type: integer
+          description: Číslo
+        mark:
+          type: string
+          description: Značka
+        createDate:
+          type: string
+          description: Datum vytvoření
+        institutionId:
+          type: integer
+          description: ID instituce archivního souboru
+        unitdate:
+          type: string
+          description: Unitdate
+      description: Archivní soubor
     AutoValue:
       type: object
       properties:
@@ -1354,6 +1626,23 @@ components:
           type: string
           description: value of the element
       description: Automatically generated elements of the description
+    BaseCode:
+      type: object
+      required:
+        - id
+        - code
+        - name
+      properties:
+        id:
+          type: integer
+          description: Identifikátor
+        code:
+          type: string
+          description: Kód
+        name:
+          type: string
+          description: Název
+      description: Souhrný model pro enumy
     BaseException:
       type: object
       required:
@@ -1375,6 +1664,14 @@ components:
         stackTrace:
           type: string
       description: Error specification for the client
+    ChangeType:
+      type: string
+      enum:
+        - NEW
+        - UPDATED
+        - DELETED
+        - ORIGINAL
+      description: Type of change Item
     CopyAccessPointDetail:
       type: object
       required:
@@ -1594,6 +1891,40 @@ components:
           format: int32
           description: Total number of logged users
       description: List of logged users
+    ParInstitutionGen:
+      type: object
+      required:
+        - id
+        - institutionType
+        - accessPointId
+        - name
+        - code
+      properties:
+        id:
+          type: integer
+          description: Id instituce
+        institutionType:
+          allOf:
+            - $ref: '#/components/schemas/BaseCode'
+          description: Typ instituce
+        accessPointId:
+          type: integer
+          description: Id {
+        name:
+          type: string
+          description: Název instituce
+        code:
+          type: string
+          description: Kód instituce
+      description: VO pro instituce
+    QueueItemState:
+      type: string
+      enum:
+        - UPDATE
+        - IMPORT_NEW
+        - IMPORT_OK
+        - ERROR
+      description: Výčet stavů aktualizace AIPu
     ReplaceType:
       type: string
       enum:
@@ -1631,6 +1962,67 @@ components:
         - TO_APPROVE
         - TO_AMEND
       description: States of ApRevState
+    SyncProgress:
+      type: string
+      enum:
+        - UPLOAD_PENDING
+        - UPLOAD_STARTED
+      description: Progres synchronizace
+    SyncState:
+      type: string
+      enum:
+        - SYNC_OK
+        - NOT_SYNCED
+        - LOCAL_CHANGE
+      description: Stav synchronizace
+    TreeDataCustomGen:
+      type: object
+      required:
+        - nodes
+        - expandedIdsExtension
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNodeCustomGen'
+          description: Seznam uzlů stromu
+        expandedIdsExtension:
+          type: array
+          items:
+            type: string
+          description: Seznam uuid již expandovaných uzlů
+      description: Custom strom
+    TreeNodeCustomGen:
+      type: object
+      required:
+        - UUID
+        - name
+        - value
+        - depth
+        - hasChildren
+        - parent
+      properties:
+        UUID:
+          type: string
+          description: Unikátní identifikátor uzlu
+        name:
+          type: string
+          description: Název
+        value:
+          type: array
+          items:
+            type: integer
+          description: Hodnota
+        depth:
+          type: integer
+          description: Hloubka
+        hasChildren:
+          type: boolean
+          description: Příznak, zda udel má potomky
+        parent:
+          type: string
+          description: Unikátení identifikátor rodičovského uzlu
+      description: Custom uzel stromu
     UsedItemType:
       type: object
       properties:

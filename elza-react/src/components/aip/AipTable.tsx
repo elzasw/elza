@@ -7,27 +7,27 @@ import './AipTable.scss';
 import { useHistory } from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS, setSelectedAips,} from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
-import { 
+import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableCellLayout, 
-    TableColumnDefinition, 
-    TableColumnId, 
-    TableColumnSizingOptions, 
-    TableHeader, 
-    TableHeaderCell, 
-    TableRow, 
-    TableSelectionCell, 
+    Table,
+    TableBody,
+    TableCell,
+    TableCellLayout,
+    TableColumnDefinition,
+    TableColumnId,
+    TableColumnSizingOptions,
+    TableHeader,
+    TableHeaderCell,
+    TableRow,
+    TableSelectionCell,
     useTableColumnSizing_unstable,
-    useTableFeatures, 
-    useTableSelection, 
+    useTableFeatures,
+    useTableSelection,
     useTableSort,
-    createTableColumn, 
+    createTableColumn,
 } from '@fluentui/react-components';
 import { colDef, getBoolIcon } from './utils.tsx';
 import { Row } from 'react-bootstrap';
@@ -37,7 +37,7 @@ import { AipFilter } from 'typings/store/index.ts';
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
-    filterDisabled?: boolean; 
+    filterDisabled?: boolean;
     initialFilters?: AipFilter[];
     hiddenValues?: string[]
 }
@@ -50,7 +50,9 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
     const history = useHistory();
 
 
-    const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) => 
+
+
+    const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) =>
         createTableColumn<DaAipDetailVO>({
             columnId: def.key,
             renderHeaderCell: () => <>{def.name}</>,
@@ -77,7 +79,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund.name;
             case "institution.name": return item.institution.name;
-            default: 
+            default:
                 return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
         }
     }
@@ -98,7 +100,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
-            columnsDef.filter((col) => 
+            columnsDef.filter((col) =>
                 data.checkedItems.some((checked) => checked == def[col.columnId].name
             ))
         );
@@ -122,10 +124,10 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
 
     const [columnSizingOptions, setColumnSizingOptions] = useState<TableColumnSizingOptions>(def);
-    const { 
-        getRows, 
-        columnSizing_unstable, 
-        tableRef, 
+    const {
+        getRows,
+        columnSizing_unstable,
+        tableRef,
         sort: { getSortDirection, toggleColumnSort, sort },
         selection: {
             allRowsSelected,
@@ -148,9 +150,9 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                     dispatch(setSelectedAips(selectedRows));
                 }
             }),
-        ] 
+        ]
       );
-    
+
     const rows = sort(getRows((row) => {
         const selected = isRowSelected(row.rowId);
         return {
@@ -195,7 +197,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
-                    <AipFilterSection 
+                    <AipFilterSection
                         columns={columns.map(item => def[item.columnId]?.name)}
                         onColsChange={toggleColumns}
                         filterDisabled={filterDisabled}
@@ -217,7 +219,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                                     onKeyDown={toggleAllKeydown}
                                     checkboxIndicator={{"aria-label": "Vybrat vše"}}
                                     className="header"
-                                    
+
                                 />
                                 {columns.map((column) => (
                                     <TableHeaderCell
@@ -233,7 +235,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                         </TableHeader>
                         <TableBody>
                             {rows.map(({ item, selected, onClick }) => (
-                                <TableRow 
+                                <TableRow
                                     key={item.code}
                                     className="table-row"
                                 >
@@ -245,8 +247,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
                                     {columns.map(col => (
                                         <TableCell
-                                            key={`item[${item.code}].${col.columnId}`} 
-                                            /** For correct functionality columnId must be the same as DaAipDetailVO keys */
+                                            key={`item[${item.code}].${col.columnId}`}
                                             {...columnSizing_unstable.getTableCellProps(col.columnId)}
                                             onClick={() => onAipSelect ? onAipSelect(item.aipId) : handleSelect(item.aipId)}
                                         >

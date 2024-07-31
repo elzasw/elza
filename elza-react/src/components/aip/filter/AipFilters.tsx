@@ -39,13 +39,10 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 	useEffect(() => {
 		dispatch(aipsFilter(filters, 0, filter.pageSize));
 	}, [filters]);
-	
+
 	const handleCreate = (filter: AipFilter) => {
 		handleClose();
 		createFilter(filter);
-		// const oldFilters = filters;
-		// filter.id = generateUUID();
-		// setFilters([...oldFilters, filter]);
 	}
 
 	const handleRemove = (_e, { value }) => {
@@ -56,34 +53,34 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 		switch(item.type){
 			case "date":
 			case "number": return (
-				<AipNumericFilterForm 
-					item={item} 
+				<AipNumericFilterForm
+					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 				/>);
 			case "string": return (
 				<AipStringFilterForm
-					item={item} 
+					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 				/>);
 			case "ref": {
 				return (
 				<AipRefFilterForm
-					item={item} 
+					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 				/>)}
 			case "bool" : return (
 				<AipEnumFilterForm
-					item={item} 
+					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 					selectValues={[{label: "ANO", value: true}, {label: "NE", value: false}]}
 				/>)
 			case "enum": return (
 				<AipEnumFilterForm
-					item={item} 
+					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 					selectValues={[
@@ -113,7 +110,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 			<Menu>
 				<MenuTrigger disableButtonEnhancement >
 					<MenuButton
-						menuIcon={<Icon glyph="fa-filter"/>}     
+						menuIcon={<Icon glyph="fa-filter"/>}
 						shape="square"
 						disabled={filterDisabled}
 						className="filter-btn"
@@ -124,7 +121,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 				<MenuPopover className={classes.menuPopover}>
 				<MenuList>
 					{Object.keys(columnsDef).map((key, index) => (
-						<MenuItem  
+						<MenuItem
 							key={`filter-${index}`}
 							className={classes.menuItem}
 							onClick={() => handleFilterCreate(columnsDef[key])}
@@ -135,13 +132,13 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 				</MenuList>
 				</MenuPopover>
 			</Menu>
-			
+
 			<TagGroup onDismiss={filterDisabled ? undefined : handleRemove} aria-label="Filtry" className="tag-group" >
 				{filters.map(filter => (
-					<AipFilterTag filter={filter} />
+					<AipFilterTag key={filter.id} filter={filter} />
 				))}
 			</TagGroup>
-			
+
 		</div>
     );
 }

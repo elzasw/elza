@@ -1,4 +1,3 @@
-import { FC } from "react"
 import ExplorerTree from "./tree/ExplorerTree";
 import "./AipExplorer.scss";
 import { Splitter } from "components/shared";``
@@ -26,7 +25,7 @@ const AipExplorer = ({mode}: AipExplorerProps) => {
             </div>
         );
     }
-    
+
     return (
         <ExplorerContext mode={mode}>
             <div className="aip-explorer">
@@ -42,6 +41,6 @@ const AipExplorer = ({mode}: AipExplorerProps) => {
         </ExplorerContext>
     );
 }
-   
+
 
 export default AipExplorer

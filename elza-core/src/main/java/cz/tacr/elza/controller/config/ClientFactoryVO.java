@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.config;
 
-import static cz.tacr.elza.exception.codes.ArrangementCode.FUND_NOT_FOUND;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
@@ -282,6 +285,37 @@ public class ClientFactoryVO {
     public OffsetDateTime convertDateTime(LocalDateTime localDateTime) {
         ZoneOffset offset = OffsetDateTime.now().getOffset();
         return localDateTime.atOffset(offset);
+    }
+
+    public ArrFundGen createFundGen(final ArrFund fund) {
+        Assert.notNull(fund, "AS musí být vyplněn");
+
+        ArrFundGen fundGen = new ArrFundGen();
+        fundGen.setFundNumber(fund.getFundNumber());
+        fundGen.setCreateDate(fund.getCreateDate().toString());
+        fundGen.setId(fundGen.getId());
+        fundGen.setInternalCode(fund.getInternalCode());
+        fundGen.setInstitutionId(fund.getInstitution().getInstitutionId());
+        fundGen.setUnitdate(fund.getUnitdate());
+        fundGen.setName(fund.getName());
+
+        return fundGen;
+    }
+
+    public ParInstitutionGen createParInstitutionGen(final ParInstitution institution, final ApIndex displayName) {
+        cz.tacr.elza.controller.vo.BaseCode type = new cz.tacr.elza.controller.vo.BaseCode();
+        type.setName(institution.getInstitutionType().getName());
+        type.setCode(institution.getInstitutionType().getCode());
+        type.setId(institution.getInstitutionType().getInstitutionTypeId());
+
+        ParInstitutionGen result = new ParInstitutionGen();
+        result.setId(institution.getInstitutionId());
+        result.setAccessPointId(institution.getAccessPointId());
+        result.setCode(institution.getInternalCode());
+        result.setInstitutionType(type);
+        result.setName(displayName != null? displayName.getIndexValue() : null);
+
+        return result;
     }
 
     /**
@@ -1817,8 +1851,8 @@ public class ClientFactoryVO {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
 
-    public List<DaAipDetailVO> createAips(List<DaAip> aips) {
-        List<DaAipDetailVO> aipVOList = new ArrayList<>();
+    public List<AipDetailVO> createAips(List<DaAip> aips) {
+        List<AipDetailVO> aipVOList = new ArrayList<>();
 
         for (DaAip aip : aips) {
            aipVOList.add(createAipDetail(aip));
@@ -1826,8 +1860,8 @@ public class ClientFactoryVO {
         return aipVOList;
     }
 
-    public DaAipDetailVO createAipDetail(DaAip daAip) {
-        DaAipState state = daAip.getStates().stream().filter(item -> item.getDeleteChange() == null).findFirst().orElse(null);
+    public AipDetailVO createAipDetail(DaAip daAip) {
+        DaAipState state = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(Collections.singletonList(daAip)).get(0);
         ParInstitution originator = null;
         if(state.getOriginatorAccessPoint() != null) {
             originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
@@ -1835,37 +1869,54 @@ public class ClientFactoryVO {
         return createAipDetailVO(daAip, state, originator);
     }
 
-    private DaAipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator) {
-        DaAipDetailVO vo = new DaAipDetailVO();
+    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator) {
+        AipDetailVO vo = new AipDetailVO();
         vo.setAipId(src.getAipId());
         vo.setCode(src.getCode());
         vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
 
         if(state != null) {
             vo.setAipVersion(state.getAipVersion());
-            vo.setFund(createFundVO(state.getFund(), false, null));
-            vo.setUnitdateFrom(state.getUnitdateFrom());
-            vo.setUnitdateTo(state.getUnitdateTo());
+
+            vo.setFund(createFundGen(state.getFund()));
+            if(state.getUnitdateFrom() != null) {
+                vo.setUnitdateFrom(state.getUnitdateFrom().toString());
+            }
+            if(state.getUnitdateTo() != null) {
+                vo.setUnitdateTo(state.getUnitdateTo().toString());
+            }
             vo.setInstitutionCode(state.getInstitutionCode());
             if(state.getInstitution() != null) {
-                vo.setInstitution(createInstitution(state.getInstitution()));
+                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+                vo.setInstitution(createParInstitutionGen(state.getInstitution(), displayName));
             }
             if(originator != null) {
-                vo.setOriginatorInstitution(createInstitution(originator));
+                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
+                vo.setOriginatorInstitution(createParInstitutionGen(originator, displayName));
             }
             vo.setOriginator(state.getOriginator());
             vo.setIngestionCode(state.getIngestionCode());
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());
-            vo.setAipSize(state.getAipSize());
-            vo.setCreateDaoStructure(state.getCreateDaoStructure());
+            vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
+            vo.setMetadataLoad(state.getMetadataLoad());
         }
         if(src.getDaSyncQueueItem() != null) {
-            vo.setState(src.getDaSyncQueueItem().getState());
+            vo.setState(mapQueueItemState(src.getDaSyncQueueItem().getState()));
         }
         return vo;
     }
 
+    private QueueItemState mapQueueItemState(
+            cz.tacr.elza.domain.DaSyncQueueItem.QueueItemState state) {
+        switch (state) {
+            case ERROR -> { return QueueItemState.ERROR; }
+            case UPDATE -> { return QueueItemState.UPDATE; }
+            case IMPORT_OK -> { return QueueItemState.IMPORT_OK; }
+            case IMPORT_NEW -> { return QueueItemState.IMPORT_NEW; }
+            default -> throw new BusinessException("Unrecognized queue item state", BaseCode.INVALID_STATE);
+        }
+    }
     public DaDaoVO createDaDaoVO(DaDao daDao) {
         DaDaoVO result = new DaDaoVO();
         result.setDaoId(daDao.getDaoId());
@@ -1875,11 +1926,9 @@ public class ClientFactoryVO {
         return result;
     }
 
-    public DaDaoFileVO createDaDaoFileVO(DaDaoFile daDaoFile) {
-        DaDaoFileVO result = new DaDaoFileVO();
+    public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile) {
+        ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
         result.setUuid(UUID.randomUUID().toString());
-        result.setDao(createDaDaoVO(daDaoFile.getDao()));
-        result.setDaoFileId(daDaoFile.getDaoFileId());
         result.setChecksum(daDaoFile.getChecksum());
         result.setChecksumType(daDaoFile.getChecksumType());
         result.setMimeType(daDaoFile.getMimeType());
@@ -1893,17 +1942,18 @@ public class ClientFactoryVO {
         result.setDuration(daDaoFile.getDuration());
         result.setDescription(daDaoFile.getDescription());
         result.setFileName(daDaoFile.getFileName());
+        result.setDaoId(daDaoFile.getDao().getDaoId());
         if(daDaoFile.getDaoFileFolder() != null) {
-            result.setDaoFileFolder(createDaDaoFileFolderVO(daDaoFile.getDaoFileFolder()));
+            result.setDaoFileFolderId(daDaoFile.getDaoFileFolder().getDaoFileFolderId());
         }
         return result;
     }
 
-    public DaDaoFileVO copyFile(DaDaoFileVO file) {
-        DaDaoFileVO result = new DaDaoFileVO();
+    public ExplorerTreeNodeFile copyFile(ExplorerTreeNodeFile file) {
+        ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
         result.setUuid(file.getUuid());
-        result.setDao(file.getDao());
-        result.setDaoFileId(file.getDaoFileId());
+        result.setDaoId(file.getDaoId());
+        result.setDaoFileFolderId(file.getDaoFileFolderId());
         result.setChecksum(file.getChecksum());
         result.setChecksumType(file.getChecksumType());
         result.setMimeType(file.getMimeType());
@@ -1917,23 +1967,22 @@ public class ClientFactoryVO {
         result.setDuration(file.getDuration());
         result.setDescription(file.getDescription());
         result.setFileName(file.getFileName());
-        if(file.getDaoFileFolder() != null) {
-            result.setDaoFileFolder(file.getDaoFileFolder());
-        }
         if(file.getParentFolderLogical() != null) {
             result.setParentFolderLogical(file.getParentFolderLogical());
+        }
+        if(file.getParentFolder() != null) {
+            result.setParentFolder(file.getParentFolder());
         }
         return result;
     }
 
-    public DaDaoFileFolderVO createDaDaoFileFolderVO(DaDaoFileFolder daDaoFileFolder) {
-        DaDaoFileFolderVO result = new DaDaoFileFolderVO();
+    public ExplorerTreeNode createExplorerTreeNode(DaDaoFileFolder daDaoFileFolder) {
+        ExplorerTreeNode result = new ExplorerTreeNode();
         result.setUuid(UUID.randomUUID().toString());
-        result.setDaoFileFolderId(daDaoFileFolder.getDaoFileFolderId());
+        result.setDaoId(daDaoFileFolder.getRepresentationDao().getDaoId());
         if(daDaoFileFolder.getParentFileFolder() != null) {
-            result.setParentFolder(createDaDaoFileFolderVO(daDaoFileFolder.getParentFileFolder()));
+            result.setParentFolder(createExplorerTreeNode(daDaoFileFolder.getParentFileFolder()));
         }
-        result.setRepresentationDao(createDaDaoVO(daDaoFileFolder.getRepresentationDao()));
         result.setLabel(daDaoFileFolder.getLabel());
         return result;
     }

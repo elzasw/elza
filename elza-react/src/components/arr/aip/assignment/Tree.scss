@@ -1,0 +1,9 @@
+@import "../../../../variables.scss";
+
+.tree {
+    overflow: auto;
+    
+    .selected-node {
+        background-color: $color-grey;
+    }
+}

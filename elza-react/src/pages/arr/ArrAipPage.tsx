@@ -1,20 +1,17 @@
 import './ArrPage.scss';
 import './ArrAipPage.scss';
 import PropTypes from 'prop-types';
-import {connect, useSelector} from 'react-redux';
+import {connect} from 'react-redux';
 import ArrParentPage from './ArrParentPage';
-import { Icon, RibbonGroup, i18n} from '../../components/shared';
+import { RibbonGroup} from '../../components/shared';
 import { Ribbon} from '../../components/index';
 import { getFundVersion, urlFundAb} from "../../constants";
 import AipTable from '../../components/aip/AipTable';
 import AipExplorer from '../../components/aip/explorer/AipExplorer';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
-import { Button } from '../../components/ui';
-import { AREA_SELECTED_AIPS, selectAip } from '../../actions/aip/aip';
+import { selectAip } from '../../actions/aip/aip';
 import { generateUUID } from 'components/aip/utils';
 import { AipFilterCriteria } from 'components/aip/filter/forms/EnumAipFilterCriteria';
-import { storeFromArea } from 'shared/utils';
-import { AppState } from 'typings/store';
 import ActionsContainer from 'components/arr/aip/ActionsContainer';
 
 /**
@@ -88,27 +85,18 @@ const ArrAipPage = class ArrAipPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
-    handleConnectIndividually() {
-
-    }
-
-    handleConnectCollectively() {
-        
-    }
-
     renderLeftPanel(readMode, closed) {
         const activeFund = this.getActiveFund(this.props);
 
         return (
-            <AipTable 
-                onAipSelect={(id) => this.props.dispatch(selectAip(id))} 
+            <AipTable
+                onAipSelect={(id) => this.props.dispatch(selectAip(id))}
                 initialFilters={[{
                     id: generateUUID(),
                     attr: "fund.name",
                     criteria: AipFilterCriteria.EQUALS,
                     value: activeFund.id,
                     path: "arr_fund",
-                    label: activeFund.name,
                     invisible: true,
                 }]}
                 hiddenValues={["fund.name", "institution.name", "institutionCode"]}
@@ -122,18 +110,9 @@ const ArrAipPage = class ArrAipPage extends ArrParentPage {
         );
     }
     renderRightPanel(readMode, closed) {
+        const activeFund = this.getActiveFund(this.props);
         return (
-            <ActionsContainer />
-            // <div className="ab-actions-container">
-            //     <Button onClick={this.handleConnectCollectively}>
-            //         <Icon glyph="fa-solif fa-link" />
-            //         <div>{i18n('arr.ab.connect.collectively')} ()</div>
-            //     </Button>
-            //     <Button onClick={this.handleConnectIndividually}>
-            //         <Icon glyph="fa-solif fa-link" />
-            //         <div>{i18n('arr.ab.connect.individually')}</div>
-            //     </Button>
-            // </div>
+            <ActionsContainer fund={activeFund}/>
         );
     }
 };

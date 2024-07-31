@@ -18,5 +18,5 @@ export type DaAipDetailVO = {
     nadChangeCode: string;
     aipSize: number;
     metadataLoad: boolean;
-    syncState: QueueItemState;
+    state: QueueItemState;
 }

@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -67,16 +68,6 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
-import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
@@ -283,7 +274,7 @@ public class ArrangementService {
 
     /**
      * Načtení záznamy o potlačení dědictví na zaklade descItemObjectId.
-     * 
+     *
      * @param nodeId
      * @param descItemObjectId
      * @return záznam o potlačení dědictví
@@ -377,7 +368,7 @@ public class ArrangementService {
     /**
      * @param fund
      * @param ruleSet
-     * @param scopes  
+     * @param scopes
      * @return Upravená archivní pomůcka
      */
     @Transactional
@@ -398,7 +389,7 @@ public class ArrangementService {
                     || !Objects.equals(fund.getFundNumber(), originalFund.getFundNumber())
                     || !Objects.equals(fund.getMark(), originalFund.getMark())
                     || !Objects.equals(fund.getUnitdate(), originalFund.getUnitdate())) {
-                throw new SystemException("Parameters: name, fundNumber, mark, unitdate - can change only Superuser (admin)", 
+                throw new SystemException("Parameters: name, fundNumber, mark, unitdate - can change only Superuser (admin)",
                                           BaseCode.INSUFFICIENT_PERMISSIONS)
                                           .set("fundId", fund.getFundId());
             }
@@ -967,7 +958,7 @@ public class ArrangementService {
                                                            final ArrFundToNodeList arrFundToNodeList) {
         List<ArrFundToNodeList> fundToNodeList = new ArrayList<>();
 
-        // If the variable `arrFundToNodeList` has a value 
+        // If the variable `arrFundToNodeList` has a value
         if (arrFundToNodeList != null) {
             fundToNodeList.add(arrFundToNodeList);
         } else {
@@ -1044,7 +1035,7 @@ public class ArrangementService {
         Integer fundId = version.getFund().getFundId();
         Integer lockChangeId = version.getLockChangeId();
 
-        Set<Integer> nodeIds = lockChangeId != null? 
+        Set<Integer> nodeIds = lockChangeId != null?
         		nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId) :
         		nodeRepository.findByFulltext(searchValue, fundId);
 
@@ -2255,7 +2246,7 @@ public class ArrangementService {
 
     /**
      * Získání seznamu typů id a počet id každého typu
-     * 
+     *
      * @param fundVersion
      * @return seznam UsedItemType
      */
@@ -2268,13 +2259,13 @@ public class ArrangementService {
         }
         List<UsedItemType> result = new ArrayList<>(types.size());
         types.forEach(i -> result.add(new UsedItemType().rulItemTypeId(i.getRulItemTypeId()).count(i.getCount().intValue())));
-        
+
         return result;
     }
 
     /**
      * Potlačení dědictví item.
-     * 
+     *
      * @param node
      * @param itemId
      * @return inhibitedItemId
@@ -2293,7 +2284,7 @@ public class ArrangementService {
                     .set("descItemObjectId", descItemObjectId);
 		}
 
-		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);		 
+		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);
 
 		ArrInhibitedItem inhibitedItem = new ArrInhibitedItem();
 		inhibitedItem.setNode(node);
@@ -2314,7 +2305,7 @@ public class ArrangementService {
 
     /**
      * Povolení dědictví item.
-     * 
+     *
      * @param node
      * @param inhibitItem
      * @return inhibitedItemId

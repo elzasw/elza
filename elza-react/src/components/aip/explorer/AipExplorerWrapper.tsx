@@ -1,6 +1,5 @@
 import {  FluentProvider } from "@fluentui/react-components";
 import i18n from "components/i18n";
-import { FC } from "react";
 import { Modal, Button } from "react-bootstrap";
 import AipExplorer from "./AipExplorer";
 import { ExplorerMode } from "./ExplorerContext";

@@ -43,3 +43,7 @@ export function setAip(aip: Aip) {
 export const setSelectedAips = (aips: DaAipDetailVO[]) => {
     return SimpleListActions.setData(AREA_SELECTED_AIPS, null, aips);
 }
+
+export const unselectAips = () => {
+    return SimpleListActions.setData(AREA_SELECTED_AIPS, null, null);
+}

@@ -1,22 +1,22 @@
 import { ArrowUp16Filled } from "@fluentui/react-icons";
 import {
-    Breadcrumb, 
-    BreadcrumbButton, 
-    BreadcrumbDivider, 
-    BreadcrumbItem, 
-    Button, 
-    Menu, 
-    MenuItem, 
-    MenuList, 
-    MenuPopover, 
-    MenuTrigger, 
-    PartitionBreadcrumbItems, 
-    Tooltip, 
-    isTruncatableBreadcrumbContent, 
-    makeStyles, 
-    partitionBreadcrumbItems, 
+    Breadcrumb,
+    BreadcrumbButton,
+    BreadcrumbDivider,
+    BreadcrumbItem,
+    Button,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    PartitionBreadcrumbItems,
+    Tooltip,
+    isTruncatableBreadcrumbContent,
+    makeStyles,
+    partitionBreadcrumbItems,
     truncateBreadcrumbLongName,
-    useOverflowMenu 
+    useOverflowMenu
 } from "@fluentui/react-components";
 import { isDaoFileFolderVO, useExplorerContext } from "./ExplorerContext";
 import {
@@ -35,20 +35,21 @@ type Item = {
 
 const ExplorerNavigationTab = () => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
-    
+
     let items = [];
     let curr = selectedItem;
     let index = 0;
 
     while(curr != null) {
-        if(isDaoFileFolderVO(curr)) { //Nechceme v cestě zobrazovat file
-            items.push({key: index, item: {...curr}});
-            index = index + 1;
+        if(!curr.fileName) {
+          items.push({key: index, item: {...curr}});
+          index = index + 1;
         }
         curr = curr.parent;
     }
 
     items = items.reverse();
+    console.log('items :>> ', items);
 
     const handleMoveUp = () => {
         if (items.length - 1) {
@@ -97,7 +98,7 @@ const ExplorerNavigationTab = () => {
             {startDisplayedItems.map((item) =>
                 renderBreadcrumbItem(item, false)
             )}
-            {overflowItems && overflowItems.length > 0 && 
+            {overflowItems && overflowItems.length > 0 &&
                 <OverflowMenu
                     overflowItems={overflowItems}
                     startDisplayedItems={startDisplayedItems}
@@ -133,9 +134,9 @@ const OverflowMenu = (props: OverflowMenuProps) => {
     const { overflowItems, setSelectedItem } = props;
     const { ref, isOverflowing, overflowCount } =
       useOverflowMenu<HTMLButtonElement>();
-  
+
     const tooltipStyles = useTooltipStyles();
-  
+
     if (!isOverflowing && overflowItems && overflowItems.length === 0) {
       return null;
     }
@@ -154,7 +155,7 @@ const OverflowMenu = (props: OverflowMenuProps) => {
           );
         }, <React.Fragment />);
       };
-  
+
     const overflowItemsCount = overflowItems
       ? overflowItems.length + overflowCount
       : overflowCount;
@@ -165,7 +166,7 @@ const OverflowMenu = (props: OverflowMenuProps) => {
             children: getTooltipContent(overflowItems),
             className: tooltipStyles.tooltip,
           };
-          
+
     return (
       <BreadcrumbItem>
         <Menu hasIcons>

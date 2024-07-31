@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -29,7 +30,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
@@ -231,7 +231,7 @@ public class ArrangementWebsocketController {
 
     /**
      * Potlačení dědictví item.
-     * 
+     *
      * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
@@ -251,7 +251,7 @@ public class ArrangementWebsocketController {
 
     /**
      * Povolení dědictví item.
-     * 
+     *
      * @param ArrInhibitedItemVO obsahuje nodeId & descItemObjectId
      * @param requestHeaders
      */
@@ -262,7 +262,7 @@ public class ArrangementWebsocketController {
         Objects.requireNonNull(arrInhibitedItem.getNodeId());
         Objects.requireNonNull(arrInhibitedItem.getDescItemObjectId());
 
-        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(arrInhibitedItem.getNodeId(), arrInhibitedItem.getDescItemObjectId()); 
+        ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(arrInhibitedItem.getNodeId(), arrInhibitedItem.getDescItemObjectId());
 
         Integer resultItemId = arrangementService.allowItem(inhibitedItem.getNode(), inhibitedItem);
 		webScoketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);

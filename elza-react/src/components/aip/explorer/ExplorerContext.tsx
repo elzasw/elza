@@ -4,15 +4,15 @@ import { DaoFileVO } from "api/DaoFileVO";
 import { createContext, useContext, useState } from "react";
 
 export enum ExplorerMode {
-    VIEW = "view", 
+    VIEW = "view",
     SELECT = "select"
 }
 
 type TExplorerContext = {
-    selectedItem: DaoFileFolderVO | DaoFileVO;
-    setSelectedItem: (item: DaoFileFolderVO | DaoFileVO) => void;
-    structure: DaoFileFolderVO
-    setStructure: (structure: DaoFileFolderVO) => void;
+    selectedItem: any;
+    setSelectedItem: (item: any) => void;
+    structure: any;
+    setStructure: (structure: any) => void;
     mode: ExplorerMode;
     setMode: (mode: ExplorerMode) => void;
 }
@@ -35,7 +35,7 @@ const ExplorerContext = ({mode: modeProp, children}: ECProps) => {
     const [selectedItem, setSelectedItem] = useState<DaoFileFolderVO | DaoFileVO>(null);
     const [mode, setMode] = useState<ExplorerMode>(modeProp);
     const [structure, setStructure] = useState<DaoFileFolderVO>(null);
-    
+
     return (
         <ExpContext.Provider value={{
             selectedItem,
