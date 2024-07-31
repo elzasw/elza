@@ -17,6 +17,10 @@
     // align-items: center;
   }
 
+  .desc-item-spec-label.inhibited, .desc-item-label-value.inhibited{
+    text-decoration: line-through;
+  }
+
   .desc-item-spec-label {
     flex-shrink: 1;
     white-space: nowrap;

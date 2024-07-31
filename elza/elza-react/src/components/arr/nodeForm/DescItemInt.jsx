@@ -45,7 +45,12 @@ class DescItemInt extends AbstractReactComponent {
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
         if (readMode) {
-            return <DescItemLabel value={value} cal={cal} isValueUndefined={descItem.undefined} />;
+            return <DescItemLabel
+                value={value}
+                cal={cal}
+                isValueUndefined={descItem.undefined}
+                isValueInhibited={descItem.inhibited}
+            />;
         }
 
         let cls = [];

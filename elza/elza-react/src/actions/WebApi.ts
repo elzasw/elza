@@ -316,8 +316,8 @@ export class WebApiCls {
         return callWS('/arrangement/descItems/inhibit', {nodeId, descItemObjectId});
     }
 
-    allowDescItem(descItemObjectId:number){
-        return callWS('/arrangement/descItems/allow', descItemObjectId);
+    allowDescItem(nodeId: number, descItemObjectId:number){
+        return callWS('/arrangement/descItems/allow', {nodeId, descItemObjectId});
     }
 
     setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
@@ -1814,7 +1814,7 @@ export class WebApiCls {
     }
 
     createFundFileRaw(formData) {
-        return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund/', {}, 'POST', formData);
+        return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund', {}, 'POST', formData);
     }
 
     createFundFile(formData) {

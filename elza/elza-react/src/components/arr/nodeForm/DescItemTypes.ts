@@ -1,3 +1,5 @@
+import { DescItem } from "typings/DescItem";
+
 export type IDescItemBaseProps = {
     hasSpecification: boolean;
     descItem: IDescItemStructure;
@@ -16,24 +18,7 @@ export type IDescItemBaseProps = {
     descItemFactory: Function;
 };
 
-export interface IDescItemProps<T> {
-    id?: number;
-    '@class': string;
-    prevValue: null;
-    hasFocus: boolean;
-    touched: boolean;
-    visited: boolean;
-    saving: boolean;
-    value: T;
-    error: IDescItemError;
-    addedByUser: boolean;
-    formKey: string;
-    position: number;
-    undefined: boolean;
-    descItemObjectId?: number;
-}
-
-export interface IDescItemStructure extends IDescItemProps<any> {
+export interface IDescItemStructure extends DescItem<any> {
     structureData: {
         id: number;
         value: string;
@@ -53,7 +38,7 @@ export type IDescItemError = {
 export type ArrStructureObjectState = 'TEMP' | 'OK' | 'ERROR';
 
 export type DescItemComponentProps<T> = {
-    descItem: IDescItemProps<T | undefined>;
+    descItem: DescItem<T | undefined>;
     onChange: (newValue: T) => void;
     onBlur: () => void;
     onFocus: () => void;

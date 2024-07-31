@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import static cz.tacr.elza.common.ResponseFactory.headerContentTypeJson;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -25,7 +26,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({ ObjectNotFoundException.class })
+    @ExceptionHandler({ObjectNotFoundException.class})
+    @ResponseBody
     public ResponseEntity<ExceptionResponse> abstractException(final ObjectNotFoundException exception) {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(exception);
         builder.logError(logger);
@@ -39,7 +41,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(cause);
         builder.logError(logger);
 
-        return new ResponseEntity<>(builder.build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(builder.build(), headerContentTypeJson(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({ObjectOptimisticLockingFailureException.class, StaleObjectStateException.class, OptimisticLockingFailureException.class})
@@ -60,7 +62,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(exception);
         builder.logError(logger);
 
-        return new ResponseEntity<>(builder.build(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(builder.build(), headerContentTypeJson(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({AccessDeniedException.class})
@@ -69,6 +71,6 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(exception);
         builder.logError(logger);
 
-        return new ResponseEntity<>(builder.build(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(builder.build(), headerContentTypeJson(), HttpStatus.FORBIDDEN);
     }
 }
