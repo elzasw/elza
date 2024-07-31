@@ -3,7 +3,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>3.0.0-RC-3</version>
+        <version>3.0.0-RC-4-SNAPSHOT</version>
     </parent>
     <artifactId>rules-simple-dev</artifactId>
     <name>ELZA Simple Rules</name>
