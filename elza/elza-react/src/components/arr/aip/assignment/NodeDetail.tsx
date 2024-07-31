@@ -20,11 +20,10 @@ const NodeDetail = ({tree, nodes, selectedNode}: NodeDetailProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
     const dispatch = useThunkDispatch();
     const node = tree.nodes.find(n => n.UUID == selectedNode);
-    
 
     useEffect(() => {
-        if(node && !node.hasChildren) {
-            dispatch(aipActions.aipFetchIfNeeded(node.value));
+        if(node) {
+            dispatch(aipActions.aipFetchIfNeeded(node.value[0]));
         }
     }, [selectedNode]);
 
@@ -45,7 +44,7 @@ const NodeDetail = ({tree, nodes, selectedNode}: NodeDetailProps) => {
                         {index > 0 && ", "}
                         <a href={`/aip/${aipId}`}>
                             {aipId}
-                        </a> 
+                        </a>
                     </>
                 ))}
             </div>
@@ -55,12 +54,11 @@ const NodeDetail = ({tree, nodes, selectedNode}: NodeDetailProps) => {
     return (
        <div className="py-2">
            {renderHeader()}
-
             <h4><b>Související AIP</b>
             {aip.data && <Button as="a" href={`/aip/${aip.data.aipId}`}>
                 <Icon glyph="fa-sign-in" />
             </Button>}
-            </h4> 
+            </h4>
             {aip.data && <AipDetailBody detail={aip.data} />}
        </div>
     );

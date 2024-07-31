@@ -5,9 +5,12 @@ import "./AipAssignmentModal.scss";
 import { Icon, i18n } from "components/shared";
 import AipsLogicalTree from "./AipsLogicalContainer";
 import { useEffect, useState } from "react";
-import { WebApi } from "actions";
-import { findNodeInTree} from "./utils";
 import FundTree from "./FundTree";
+import { useSelector } from "react-redux";
+import { storeFromArea } from "shared/utils";
+import { AppState } from "typings/store";
+import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
+import { useThunkDispatch } from "utils/hooks";
 
 
 type AipAssignmentModalProps = {
@@ -19,24 +22,22 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     const [logicalTree, setLogicalTree] = useState(null);
     const [leftSelectedNode, setLeftSelectedNode] = useState<TreeItemValue>(null);
     const [rightSelectedNode, setRightSelectedNode] = useState<TreeItemValue>(tree.nodes[0].id);
+    const structure = useSelector((state: AppState) => storeFromArea(state, AIP_LOGICAL_TREE))
+    const dispatch = useThunkDispatch();
 
     useEffect(() => {
-        if(aips) {
-            WebApi.getAipsLogicalTree(aips.map(aip => aip.aipId)).then((result) => {
-                setLogicalTree(result);
-                setLeftSelectedNode(result.nodes[0].UUID);
-            });
-        }
+        const ids = aips.map(aip => aip.aipId)
+        dispatch(fetchAipLogicalTreeIfNeeded(ids));
     },[]);
-  
+
+    useEffect(() => {
+        if(structure.data) {
+            setLogicalTree(structure.data);
+            setLeftSelectedNode(structure.data.nodes[0].UUID);
+        }
+    },[structure]);
+
     const handleConnectToJP = () => {
-        const leftNode = findNodeInTree(logicalTree, leftSelectedNode);
-        /** Pokud !node.hasChildren tak node.id je aipId.
-            Pokud node.hasChildren, musim najít seznam dětí a seznam jejich id je seznam id aipů co jsou děti daného node 
-        */ 
-        console.log('leftNode :>> ', leftNode);
-        const rightNode = findNodeInTree(tree, rightSelectedNode);
-        console.log('rightNode :>> ', rightNode);
 
     }
 
