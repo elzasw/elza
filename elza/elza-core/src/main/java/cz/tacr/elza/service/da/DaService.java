@@ -19,6 +19,7 @@ import cz.tacr.elza.controller.vo.DaDaoFileVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
@@ -33,6 +34,8 @@ import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
@@ -378,6 +381,16 @@ public class DaService {
         daoFile.setDescription(description);
         daoFile.setFileName(fileName);
         return daoFileRepository.save(daoFile);
+    }
+
+    public DaDaoItem createDaDaoItem(DaDao dao, DaChange change, RulItemType itemType, RulItemSpec itemSpec, ArrData data) {
+        DaDaoItem daoItem = new DaDaoItem();
+        daoItem.setCreateChange(change);
+        daoItem.setDao(dao);
+        daoItem.setItemType(itemType);
+        daoItem.setItemSpec(itemSpec);
+        daoItem.setData(data);
+        return daoItemRepository.save(daoItem);
     }
 
     @Transactional
