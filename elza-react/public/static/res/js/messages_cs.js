@@ -772,6 +772,8 @@ var messages = {
     "arr.aip.assignment.bulk.title": "Hromadné připojení balíčku s archivním popisem",
     "arr.aip.assignment.link": "Připojit k JP",
     "arr.aip.assignment.create": "Vytvořit JP z vybraných",
+    "arr.aip.assignment.select-and-create": "Výběrové připojení s JP",
+    "arr.aip.assignment.create-and-link": "Vytvořit JP s propojením",
 
     "arr.linked-nodes.title": "Odkazující JP",
 
