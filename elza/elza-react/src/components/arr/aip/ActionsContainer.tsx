@@ -7,7 +7,9 @@ import { storeFromArea } from "../../../shared/utils";
 import { useThunkDispatch } from "utils/hooks";
 import { modalDialogShow } from "actions/global/modalDialog";
 import AipAssignmentModal from "./assignment/AipAssignmentModal";
-import { useEffect } from "react";
+import AipIndividualAssignmentModal from "./assignment/AipIndividualAssignmentModal.tsx";
+import {AppState} from "../../../typings/store";
+import * as aipActions from "../../../actions/aip/aip.ts";
 
 
 type ActionsContainerProps = {
@@ -17,11 +19,25 @@ type ActionsContainerProps = {
 const ActionsContainer = ({fund}: ActionsContainerProps) => {
     const selectedAips = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+    const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
     console.log('aips :>> ', selectedAips);
     const dispatch = useThunkDispatch();
 
     const handleConnectIndividually = () => {
+        if (selectedAips.count == 1) {
+            dispatch(aipActions.selectAip(selectedAips.rows[0].aipId));
+        }
 
+        if (aip) {
+            dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.aip.assignment.individually.title'),
+                    <AipIndividualAssignmentModal aip={aip} tree={fund.fundTree}/>,
+                    "aip-assignment"
+                ),
+            );
+        }
     }
 
     const handleConnectBulk = () => {
