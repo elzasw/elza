@@ -25,10 +25,8 @@ import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.test.controller.vo.Fund;
-
 
 /**
  * Testy pro uživatelskou sekci.
@@ -54,7 +52,7 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void usersTest() throws ApiException {
+    public void usersTest() {
 
         Fund fund = createFund("Test", "TST");
 
@@ -244,7 +242,7 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void copyPermissionsTest() throws ApiException {
+    public void copyPermissionsTest() {
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
 

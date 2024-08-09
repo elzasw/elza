@@ -12,9 +12,7 @@ import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
-
 
 /**
  * Test vyvolání událostí.
@@ -26,7 +24,7 @@ public class ClientEventTest extends AbstractControllerTest {
     private ClientEventDispatcher clientEventDispatcher;
 
     @Test
-    public void testEventPublish() throws ApiException {
+    public void testEventPublish() {
         SimpleClientEventDispatcher testDispatcher = (SimpleClientEventDispatcher) clientEventDispatcher;
         testDispatcher.clearFiredEvents();
 

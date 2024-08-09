@@ -9,6 +9,8 @@ tags:
     description: Externí systémy
   - name: funds
     description: Archivní soubory
+  - name: descitems
+    description: Záznamy v archivních fondech
   - name: accesspoints
     description: Přístupové body a archivní entity
   - name: search
@@ -245,11 +247,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /accesspoints/{id}/copy:
+  /accesspoint/{id}/copy:
     put:
       tags:
         - accesspoints
-      operationId: copyAccessPoint
+      operationId: AccessPoint_copyAccessPoint
       description: Copying an archive entity
       parameters:
         - name: id
@@ -782,6 +784,72 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /descItems/{fundVersionId}/create:
+    put:
+      tags:
+        - descitems
+      operationId: DescItem_createDescItem
+      description: Create attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id AP version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+      requestBody:
+        description: new attribute value
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+  /descItems/{fundVersionId}/{createNewVersion}/update:
+    put:
+      tags:
+        - descitems
+      operationId: DescItem_updateDescItem
+      description: Update attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id AP version
+          schema:
+            type: integer
+        - name: createNewVersion
+          in: path
+          required: true
+          description: create a new version or not?
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: new attribute value
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
   /extsystem/property:
     get:
       tags:
@@ -891,14 +959,9 @@ paths:
         - name: filterType
           in: query
           required: false
-          description: >-
-            Optional filter to return only folders or files. If not specified
-            all items are returned
+          description: Optional filter to return only folders or files. If not specified all items are returned
           schema:
-            type: string
-            enum:
-              - FOLDER
-              - FILE
+            $ref: '#/components/schemas/FsItemType'
         - name: path
           in: query
           required: false
@@ -1185,8 +1248,6 @@ components:
           type: string
         properties:
           type: object
-          additionalProperties:
-            type: object
         stackTrace:
           type: string
       description: Error specification for the client
@@ -1207,6 +1268,236 @@ components:
             type: integer
           description: list of description element IDs not to copy
       description: Additional copy options
+    DataBit:
+      type: object
+      required:
+        #- type
+        - bitValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataBit
+        bitValue:
+          type: boolean
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+      description: ItemData classes extensions
+    DataCoordinates:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataCoordinates
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataDate:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataDate
+        value:
+          type: string
+          format: date
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataDecimal:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataDecimal
+        value:
+          type: number
+          format: decimal
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataFileRef:
+      type: object
+      required:
+        #- type
+        - fileId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataFileRef
+        fileId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataFormattedText:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - DataFormattedText
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataInteger:
+      type: object
+      required:
+        #- type
+        - integerValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataInteger
+        integerValue:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataJsonTable:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataJsonTable
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataNull:
+      type: object
+      #required:
+        #- type
+      #properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataNull
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataRecordRef:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataRecordRef
+        value:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataString:
+      type: object
+      required:
+        #- type
+        - stringValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataString
+        stringValue:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataStructureRef:
+      type: object
+      required:
+        #- type
+        - structuredObjectId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataStructureRef
+        structuredObjectId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataText:
+      type: object
+      required:
+        #- type
+        - textValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - DataText
+        textValue:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUnitdate:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUnitdate
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUnitid:
+      type: object
+      required:
+        #- type
+        - unitId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUnitid
+        unitId:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUriRef:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUriRef
+        nodeId:
+          type: integer
+        value:
+          type: string
+        description:
+          type: string
+        refTemplateId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -1369,6 +1660,50 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    ItemData:
+      type: object
+      properties:
+        dataId:
+          type: integer
+          description: data id
+        dataTypeId:
+          type: integer
+          description: data type id
+        type:
+          type: string
+          description: Discriminator property for ItemData.
+      discriminator:
+        propertyName: type
+        mapping:
+          DataBit: '#/components/schemas/DataBit'
+          DataCoordinates: '#/components/schemas/DataCoordinates'
+          DataDate: '#/components/schemas/DataDate'
+          DataDecimal: '#/components/schemas/DataDecimal'
+          DataFileRef: '#/components/schemas/DataFileRef'
+          DataInteger: '#/components/schemas/DataInteger'
+          DataJsonTable: '#/components/schemas/DataJsonTable'
+          DataNull: '#/components/schemas/DataNull'
+          DataRecordRef: '#/components/schemas/DataRecordRef'
+          DataString: '#/components/schemas/DataString'
+          DataStructureRef: '#/components/schemas/DataStructureRef'
+          DataText: '#/components/schemas/DataText'
+          DataFormattedText: '#/components/schemas/DataFormattedText'
+          DataUnitdate: '#/components/schemas/DataUnitdate'
+          DataUnitid: '#/components/schemas/DataUnitid'
+          DataUriRef: '#/components/schemas/DataUriRef'
+      description: Item data
+    ItemDataResult:
+      type: object
+      properties:
+        parent:
+          allOf:
+            - $ref: '#/components/schemas/Node'
+          description: parent node
+        item:
+          allOf:
+            - $ref: '#/components/schemas/NodeItem'
+          description: item
+      description: Výsledek vytvoření nebo aktualizace ArrDescItem
     LoggedUser:
       type: object
       required:
@@ -1402,6 +1737,61 @@ components:
           format: int32
           description: Total number of logged users
       description: List of logged users
+    Node:
+      type: object
+      required:
+        - id
+        - version
+        - uuid
+      properties:
+        id:
+          type: integer
+          description: id of node
+        version:
+          type: integer
+          description: node version
+        uuid:
+          type: string
+          description: node uuid
+      description: Náhrada za třídu ArrNodeVO
+    NodeItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id of item
+        itemObjectId:
+          type: integer
+          description: id value of item
+        position:
+          type: integer
+          description: pozition
+        undefined:
+          type: boolean
+          description: no value
+        itemTypeId:
+          type: integer
+          description: id type of item
+        itemSpecId:
+          type: integer
+          description: id spec of item
+        readOnly:
+          type: boolean
+          description: value cannot be changed
+        nodeId:
+          type: integer
+          description: id node
+        nodeVersion:
+          type: integer
+          description: node version
+        inhibited:
+          type: boolean
+          description: if inheritance is prohibited - true
+        data:
+          allOf:
+            - $ref: '#/components/schemas/ItemData'
+          description: item data
+      description: Náhrada za třídu ArrItemVO
     ReplaceType:
       type: string
       enum:
@@ -1441,15 +1831,15 @@ components:
       description: States of ApRevState
     UsedItemType:
       type: object
+      required:
+        - rulItemTypeId
+        - count
       properties:
         rulItemTypeId:
           type: integer
         count:
           type: integer
       description: Fund node item type id and quantity
-      required:
-        - rulItemTypeId
-        - count
     CreateFund:
       required:
         - name

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -303,7 +304,7 @@ public class FundController implements FundsApi {
     @Transactional
     public ResponseEntity<FsItems> fundFsRepoItems(@PathVariable("fundId") Integer fundId,
                                                    @PathVariable("fsrepoId") Integer fsrepoId,
-                                                   @RequestParam(value = "filterType", required = false) String filterType,
+                                                   @RequestParam(value = "filterType", required = false) FsItemType filterType,
                                                    @RequestParam(value = "path", required = false) String path,
                                                    @RequestParam(value = "lastKey", required = false) String lastKey) {
 
@@ -406,22 +407,21 @@ public class FundController implements FundsApi {
                     .set("itemPath", itemPath);
         }
 
-
         return ResponseEntity.ok(fsItems);
     }
 
-    private Function<Path, Boolean> prepareFSFilter(String filterType) {
+    private Function<Path, Boolean> prepareFSFilter(FsItemType filterType) {
         if (filterType == null) {
             return p -> true;
-        } else {
-            if ("FILE".equals(filterType)) {
+        }
+        switch (filterType) {
+        	case FILE: 
                 return p -> Files.isRegularFile(p);
-            } else if ("FOLDER".equals(filterType)) {
+        	case FOLDER:
                 return p -> Files.isDirectory(p);
-            } else {
+        	default:
                 throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
                         .set("filterType", filterType);
-            }
         }
     }
 
@@ -458,9 +458,9 @@ public class FundController implements FundsApi {
         // in new transaction>
         ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
 
-        Validate.notNull(daoLink);
-        Validate.notNull(daoLink.getDaoLinkId());
-        Validate.notNull(daoLink.getNodeId());
+        Objects.requireNonNull(daoLink);
+        Objects.requireNonNull(daoLink.getDaoLinkId());
+        Objects.requireNonNull(daoLink.getNodeId());
 
         return ResponseEntity.ok(daoLink.getDaoLinkId());
     }
@@ -469,8 +469,8 @@ public class FundController implements FundsApi {
     @Transactional
     public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId, 
                                                                 @PathVariable("fundVersionId") Integer fundVersionId) {
-        Validate.notNull(fundId);
-        Validate.notNull(fundVersionId);
+    	Objects.requireNonNull(fundId);
+    	Objects.requireNonNull(fundVersionId);
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         Validate.isTrue(fundVersion.getFundId() == fundId, "fundId does not match fundVersionId");

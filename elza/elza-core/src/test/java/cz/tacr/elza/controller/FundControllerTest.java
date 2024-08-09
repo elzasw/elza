@@ -11,7 +11,6 @@ import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
@@ -19,7 +18,7 @@ import cz.tacr.elza.test.controller.vo.UpdateFund;
 public class FundControllerTest extends AbstractControllerTest {
 
     @Test
-    public void createFund() throws ApiException {
+    public void createFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -39,7 +38,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void updateFund() throws ApiException {
+    public void updateFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -90,7 +89,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getFund() throws ApiException {
+    public void getFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -112,7 +111,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void findFunds() throws ApiException {
+    public void findFunds() {
 
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
