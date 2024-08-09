@@ -79,7 +79,7 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<EntityRef> copyAccessPoint(String id, @Valid CopyAccessPointDetail copyAccessPointDetail) {
+    public ResponseEntity<EntityRef> accessPointCopyAccessPoint(String id, @Valid CopyAccessPointDetail copyAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         ApScope scope = accessPointService.getApScope(copyAccessPointDetail.getScope());
         ApAccessPoint copyAccessPoint;

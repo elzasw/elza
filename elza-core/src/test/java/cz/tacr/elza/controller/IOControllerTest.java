@@ -2,14 +2,15 @@ package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
+import java.io.IOException;
 
 import org.junit.Test;
+import org.springframework.core.io.Resource;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.ExportParams;
 import cz.tacr.elza.test.controller.vo.ExportRequestState;
 import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
@@ -19,7 +20,7 @@ import cz.tacr.elza.test.controller.vo.FundSections;
 public class IOControllerTest extends AbstractControllerTest {
 
     @Test
-    public void ioExportFundTest() throws ApiException {
+    public void ioExportFundTest() throws IOException {
         Fund fund = createFund("fundName", "internalCode");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
@@ -45,7 +46,8 @@ public class IOControllerTest extends AbstractControllerTest {
         assertNotNull(expStatus);
         assertEquals(ExportRequestState.FINISHED, expStatus.getState());
 
-        File file = ioApi.ioGetExportFile(requestId);
+        Resource file = ioApi.ioGetExportFile(requestId);
         assertNotNull(file);
+        assertTrue(file.contentLength() > 100);
     }
 }

@@ -38,6 +38,8 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -186,6 +188,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
+
+    @Autowired
+    private ClientFactoryDO factoryDO;
 
     private TransactionSynchronization indexWorkNotify;
 
@@ -365,6 +370,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
+    @Deprecated
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
@@ -386,6 +392,41 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
+        saveNode(node, change);
+
+        return createDescriptionItem(descItem, node, fundVersion, change);
+    }
+
+    /**
+     * Vytvoření hodnoty atributu (nová).
+     * - s kontrolou verze uzlu
+     * - se spuštěním validace uzlu
+     *
+     * @param nodeItem      hodnota atributu
+     * @param fundVersionId identifikátor verze archivní pomůcky
+     * @return vytvořená hodnota atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
+    public ArrDescItem createDescriptionItem(final NodeItem nodeItem,
+            							     @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+        Assert.notNull(nodeItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor uzlu JP");
+        Assert.notNull(nodeItem.getNodeVersion(), "Nebyla vyplněna verze uzlu JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+
+        ArrDescItem descItem = factoryDO.createDescItem(nodeItem);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
+
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+
+        // uložení uzlu (kontrola optimistických zámků)
+        node.setVersion(nodeItem.getNodeVersion());
         saveNode(node, change);
 
         return createDescriptionItem(descItem, node, fundVersion, change);
@@ -1103,13 +1144,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     /**
      * Upravení hodnoty atributu.
      *
-     * @param descItem         hodnota atributu (změny)
+     * @param nodeItem         hodnota atributu (změny)
      * @param nodeVersion      verze uzlu (optimistické zámky)
      * @param fundVersionId    identifikátor verze archivní pomůcky
      * @param createNewVersion vytvořit novou verzi?
      * @param forceUpdate      ignorovat příznak readOnly
      * @return upravená výsledná hodnota atributu
      */
+	@Deprecated
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeVersion,
@@ -1162,7 +1204,76 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
-      //  asyncRequestService.enqueue(fundVersion, node, AsyncTypeEnum.NODE);
+
+        changeContext.validateAndPublish();
+
+        return descItemUpdated;
+    }
+
+    /**
+     * Upravení hodnoty atributu (nová).
+     *
+     * @param nodeItem         hodnota atributu (změny)
+     * @param nodeVersion      verze uzlu (optimistické zámky)
+     * @param fundVersionId    identifikátor verze archivní pomůcky
+     * @param createNewVersion vytvořit novou verzi?
+     * @param forceUpdate      ignorovat příznak readOnly
+     * @return upravená výsledná hodnota atributu
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
+    public ArrDescItem updateDescriptionItem(final NodeItem nodeItem,
+                                             final Integer nodeVersion,
+                                             @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                             final Boolean createNewVersion, final boolean forceUpdate) {
+        Assert.notNull(nodeItem, "Hodnota atributu musí být vyplněna");
+        Assert.notNull(nodeItem.getPosition(), "Pozice musí být vyplněna");
+        Assert.notNull(nodeItem.getItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+
+        ArrDescItem descItem = factoryDO.createDescItem(nodeItem);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+        ArrDescItem descItemDB = fetchOpenItemFromDB(descItem.getDescItemObjectId());
+
+        // kontrola zákazu změn
+        if (!forceUpdate) {
+            if (descItemDB.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        }
+
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
+        if (!descItemDB.getNodeId().equals(node.getNodeId())) {
+            throw new BusinessException("Hodnota atributu neodpovídá dané JP", BaseCode.INVALID_STATE);
+        }
+
+        ArrChange change = null;
+		ArrDescItem descItemUpdated;
+        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService,
+                fundVersionId, nodeId);
+        if (createNewVersion) {
+            node.setVersion(nodeVersion);
+
+            // vytvoření změny
+            change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
+
+            // uložení uzlu (kontrola optimistických zámků)
+            saveNode(node, change);
+
+			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
+                                                          HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
+                                                          descItem.getReadOnly(),
+                                                          changeContext);
+		} else {
+            descItemUpdated = updateValue(fundVersion, descItem, changeContext);
+        }
+
         changeContext.validateAndPublish();
 
         return descItemUpdated;
